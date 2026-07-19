@@ -213,10 +213,10 @@ i32 CGrunt::ResolveArrivalReposition() {
                 goto L8b5;
             }
             CGameObject* h = m_10;
-            i32 baseX = h->m_extentL;
-            i32 spanX = abs(h->m_extentR - baseX);
-            i32 baseY = h->m_extentT;
-            i32 spanY = abs(h->m_extentB - baseY);
+            i32 baseX = h->m_extent.left;
+            i32 spanX = abs(h->m_extent.right - baseX);
+            i32 baseY = h->m_extent.top;
+            i32 spanY = abs(h->m_extent.bottom - baseY);
             i32 outX = baseX;
             if (spanX != 0) {
                 outX += GruntRand() % spanX;
@@ -774,11 +774,11 @@ timeout:
             m_arrivalRerollHi = 0;
         } else {
             CGameObject* base = m_10;
-            u32 lx = static_cast<u32>(base->m_extentL);
-            i32 dxr = base->m_extentR - static_cast<i32>(lx);
+            u32 lx = static_cast<u32>(base->m_extent.left);
+            i32 dxr = base->m_extent.right - static_cast<i32>(lx);
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
-            u32 ly = static_cast<u32>(base->m_extentT);
-            i32 dyr = base->m_extentB - static_cast<i32>(ly);
+            u32 ly = static_cast<u32>(base->m_extent.top);
+            i32 dyr = base->m_extent.bottom - static_cast<i32>(ly);
             i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
             if (ax != 0) {
                 lx += GameRand() % ax;
@@ -1038,11 +1038,11 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollHi = 0;
                 } else {
                     CGameObject* base = this->m_10;
-                    u32 lo = base->m_extentL;
-                    i32 dx = base->m_extentR - static_cast<i32>(lo);
+                    u32 lo = base->m_extent.left;
+                    i32 dx = base->m_extent.right - static_cast<i32>(lo);
                     i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
-                    u32 lo2 = base->m_extentT;
-                    i32 dy = base->m_extentB - static_cast<i32>(lo2);
+                    u32 lo2 = base->m_extent.top;
+                    i32 dy = base->m_extent.bottom - static_cast<i32>(lo2);
                     i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
                     if (ax != 0) {
                         lo = lo + GruntRand() % ax;
@@ -1923,10 +1923,10 @@ i32 CGrunt::StepArrivalDefense() {
             }
             {
                 CGameObject* h = m_10;
-                i32 baseX = h->m_extentL;
-                i32 spanX = abs(h->m_extentR - baseX);
-                i32 baseY = h->m_extentT;
-                i32 spanY = abs(h->m_extentB - baseY);
+                i32 baseX = h->m_extent.left;
+                i32 spanX = abs(h->m_extent.right - baseX);
+                i32 baseY = h->m_extent.top;
+                i32 spanY = abs(h->m_extent.bottom - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
                     outX += GruntRand() % spanX;
@@ -2830,10 +2830,10 @@ i32 CGrunt::StepArrivalDefenseLean() {
             }
             {
                 CGameObject* h = m_10;
-                i32 baseX = h->m_extentL;
-                i32 spanX = abs(h->m_extentR - baseX);
-                i32 baseY = h->m_extentT;
-                i32 spanY = abs(h->m_extentB - baseY);
+                i32 baseX = h->m_extent.left;
+                i32 spanX = abs(h->m_extent.right - baseX);
+                i32 baseY = h->m_extent.top;
+                i32 spanY = abs(h->m_extent.bottom - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
                     outX += GruntRand() % spanX;

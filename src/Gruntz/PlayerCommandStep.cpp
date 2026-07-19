@@ -264,10 +264,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     g->m_defenderState = 0;
                     g->m_arrivalRow = -1;
                     g->m_arrivalActive = 0;
-                    g->m_10->m_extentL = 0;
-                    g->m_10->m_extentR = 0;
-                    g->m_10->m_extentT = 0;
-                    g->m_10->m_extentB = 0;
+                    g->m_10->m_extent.left = 0;
+                    g->m_10->m_extent.right = 0;
+                    g->m_10->m_extent.top = 0;
+                    g->m_10->m_extent.bottom = 0;
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = 0;

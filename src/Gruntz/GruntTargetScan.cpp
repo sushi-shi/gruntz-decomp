@@ -6,7 +6,7 @@
 // reason->priority switch (inlined 12x = 2 per compare site x 6 sites) that gates each
 // candidate, squared-distance min tracking, a PtInRect box gate, the m_defenderState
 // mode dispatch (0=wander/seek, 1=lock, 2=arrive), and a rand()-driven idle-wander tail
-// (idiv 0x7530 window + idiv m_extentR/m_extentB nearby jitter). All engine helpers +
+// (idiv 0x7530 window + idiv m_extent.right/m_extent.bottom nearby jitter). All engine helpers +
 // the manager/grid globals are external (reloc-masked); every CGrunt/CGruntHud field is
 // reached through its real typed member on the canonical class (the old F/P raw-offset
 // cast-hiding macros are gone; only offsets + code bytes are load-bearing).
@@ -337,11 +337,11 @@ i32 CGrunt::ScanNearestTarget() {
                 } else {
                     // not elapsed: jitter to a random nearby board cell.
                     CGameObject* hud = m_10;
-                    i32 baseCol = hud->m_extentL;
-                    i32 spanX = hud->m_extentR - baseCol;
-                    i32 baseRow = hud->m_extentT;
+                    i32 baseCol = hud->m_extent.left;
+                    i32 spanX = hud->m_extent.right - baseCol;
+                    i32 baseRow = hud->m_extent.top;
                     spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
-                    i32 spanY = hud->m_extentB - baseRow;
+                    i32 spanY = hud->m_extent.bottom - baseRow;
                     spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
                     if (spanX != 0) {
                         baseCol += rand() % spanX;

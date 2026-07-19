@@ -6851,7 +6851,7 @@ i32 CPlay::AddLevelGruntz() {
             g->m_12c,
             g->m_7c->m_2c,
             g->m_7c->m_30,
-            reinterpret_cast<i32>(&g->m_extentL)
+            reinterpret_cast<i32>(&g->m_extent.left)
         );
         if (r == -1) {
             CString msg;

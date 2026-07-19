@@ -138,9 +138,9 @@ i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
 // regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
 RVA(0x00167260, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
-    i32 xEnd = x + t->m_extentR;
-    i32 yHi = t->m_extentB + y;
-    i32 yLo = t->m_extentT + y;
+    i32 xEnd = x + t->m_extent.right;
+    i32 yHi = t->m_extent.bottom + y;
+    i32 yLo = t->m_extent.top + y;
     i32 state = 0;
     if (yLo > yHi) {
         goto helper;
@@ -185,12 +185,12 @@ looptop: {
         result = kTilePassable;
     }
     if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenX + t->m_extentR;
+        i32 lo = t->m_screenX + t->m_extent.right;
         i32 j = xEnd - 1;
         state |= 0x60000;
         for (; j > lo; j--) {
             if (AxisProbe(j, yLo) == kTilePassable) {
-                j -= t->m_extentR;
+                j -= t->m_extent.right;
                 goto have_x;
             }
         }
@@ -231,9 +231,9 @@ done_eq:
 // regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
 RVA(0x00167450, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
-    i32 xEnd = x + t->m_extentL;
-    i32 yHi = t->m_extentB + y;
-    i32 yLo = t->m_extentT + y;
+    i32 xEnd = x + t->m_extent.left;
+    i32 yHi = t->m_extent.bottom + y;
+    i32 yLo = t->m_extent.top + y;
     i32 state = 0;
     if (yLo > yHi) {
         goto helper;
@@ -278,12 +278,12 @@ looptop: {
         result = kTilePassable;
     }
     if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenX + t->m_extentL;
+        i32 lo = t->m_screenX + t->m_extent.left;
         i32 j = xEnd + 1;
         state |= 0xa0000;
         for (; j < lo; j++) {
             if (AxisProbe(j, yLo) == kTilePassable) {
-                j -= t->m_extentL;
+                j -= t->m_extent.left;
                 goto have_x;
             }
         }
@@ -324,9 +324,9 @@ done_eq:
 // regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
 RVA(0x00167640, 0x1eb)
 i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
-    i32 colHi = t->m_extentR + x;
-    i32 fixedY = y + t->m_extentB;
-    i32 col = t->m_extentL + x;
+    i32 colHi = t->m_extent.right + x;
+    i32 fixedY = y + t->m_extent.bottom;
+    i32 col = t->m_extent.left + x;
     i32 state = 0;
     if (col > colHi) {
         goto helper;
@@ -371,12 +371,12 @@ looptop: {
         result = kTilePassable;
     }
     if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenY + t->m_extentB;
+        i32 lo = t->m_screenY + t->m_extent.bottom;
         i32 j = fixedY - 1;
         state |= 0x1020000;
         for (; j > lo; j--) {
             if (AxisProbe(col, j) == kTilePassable) {
-                j -= t->m_extentB;
+                j -= t->m_extent.bottom;
                 goto have_y;
             }
         }
@@ -417,9 +417,9 @@ done_eq:
 // regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
 RVA(0x00167830, 0x1eb)
 i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
-    i32 colHi = t->m_extentR + x;
-    i32 fixedY = y + t->m_extentT;
-    i32 col = t->m_extentL + x;
+    i32 colHi = t->m_extent.right + x;
+    i32 fixedY = y + t->m_extent.top;
+    i32 col = t->m_extent.left + x;
     i32 state = 0;
     if (col > colHi) {
         goto helper;
@@ -464,12 +464,12 @@ looptop: {
         result = kTilePassable;
     }
     if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenY + t->m_extentT;
+        i32 lo = t->m_screenY + t->m_extent.top;
         i32 j = fixedY + 1;
         state |= 0x820000;
         for (; j < lo; j++) {
             if (AxisProbe(col, j) == kTilePassable) {
-                j -= t->m_extentT;
+                j -= t->m_extent.top;
                 goto have_y;
             }
         }
@@ -524,12 +524,12 @@ done_eq:
 // is source-steerable. Deferred to the final sweep.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extentR;
+    i32 limit = t->m_screenX + t->m_extent.right;
     for (i32 col = x - 1; col > limit; col--) {
         i32 result;
         PROBE_TILE(this, col, y, result);
         if (result == kTilePassable) {
-            return col - t->m_extentR;
+            return col - t->m_extent.right;
         }
     }
     return t->m_screenX;
@@ -540,12 +540,12 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
 // limit compute + the Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extentL;
+    i32 limit = t->m_screenX + t->m_extent.left;
     for (i32 col = x + 1; col < limit; col++) {
         i32 result;
         PROBE_TILE(this, col, y, result);
         if (result == kTilePassable) {
-            return col - t->m_extentL;
+            return col - t->m_extent.left;
         }
     }
     return t->m_screenX;
@@ -556,12 +556,12 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
 // Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extentB;
+    i32 limit = t->m_screenY + t->m_extent.bottom;
     for (i32 row = y - 1; row > limit; row--) {
         i32 result;
         PROBE_TILE(this, x, row, result);
         if (result == kTilePassable) {
-            return row - t->m_extentB;
+            return row - t->m_extent.bottom;
         }
     }
     return t->m_screenY;
@@ -572,12 +572,12 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
 // Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extentT;
+    i32 limit = t->m_screenY + t->m_extent.top;
     for (i32 row = y + 1; row < limit; row++) {
         i32 result;
         PROBE_TILE(this, x, row, result);
         if (result == kTilePassable) {
-            return row - t->m_extentT;
+            return row - t->m_extent.top;
         }
     }
     return t->m_screenY;
@@ -587,7 +587,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 // BroadPhase - 0x167ea0 (__thiscall, ret 0xc). The AABB broad-phase the steppers
 // tail into. `t` is the moving CGameObject; it walks the world's object chain
 // (this level's m_0c owner -> m_objChain) and, for every other collision-active
-// object whose category matches t's mask and whose extents are set (m_extentL !=
+// object whose category matches t's mask and whose extents are set (m_extent.left !=
 // sentinel), tests whether t currently overlaps it. If NOT (a separation on any
 // axis) but t's CANDIDATE box (at candX, candY) WOULD overlap, it stores the
 // other party in t->m_hitOther and fires t's worker m_notify; on a
@@ -610,20 +610,20 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         CDDrawGroupNode* nx = node->m_next;
         CGameObject* obj = node->m_gameObj;
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
-            && t->m_extentL != AXIS_UNSET && obj->m_extentL != AXIS_UNSET) {
-            i32 tLeft = t->m_extentL + t->m_screenX;
-            i32 tBot = t->m_extentT + t->m_screenY;
-            i32 tRight = t->m_screenX + t->m_extentR;
-            i32 tTop = t->m_extentB + t->m_screenY;
-            i32 oLeft = obj->m_screenX + obj->m_extentL;
-            i32 oBot = obj->m_extentT + obj->m_screenY;
-            i32 oTop = obj->m_screenY + obj->m_extentB;
-            i32 oRight = obj->m_screenX + obj->m_extentR;
+            && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
+            i32 tLeft = t->m_extent.left + t->m_screenX;
+            i32 tBot = t->m_extent.top + t->m_screenY;
+            i32 tRight = t->m_screenX + t->m_extent.right;
+            i32 tTop = t->m_extent.bottom + t->m_screenY;
+            i32 oLeft = obj->m_screenX + obj->m_extent.left;
+            i32 oBot = obj->m_extent.top + obj->m_screenY;
+            i32 oTop = obj->m_screenY + obj->m_extent.bottom;
+            i32 oRight = obj->m_screenX + obj->m_extent.right;
             if (tLeft > oRight || tRight < oLeft || tBot > oTop || tTop < oBot) {
-                i32 cLeft = candX + t->m_extentL;
-                i32 cRight = t->m_extentR + candX;
-                i32 cBot = t->m_extentT + candY;
-                i32 cTop = t->m_extentB + candY;
+                i32 cLeft = candX + t->m_extent.left;
+                i32 cRight = t->m_extent.right + candX;
+                i32 cBot = t->m_extent.top + candY;
+                i32 cTop = t->m_extent.bottom + candY;
                 if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
                     i32 fire;
                     if (t->m_collideWorker != 0) {

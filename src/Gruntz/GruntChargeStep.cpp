@@ -176,11 +176,11 @@ i32 CGrunt::ChargeStep() {
             }
             if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
                 CGameObject* mp = m_10;
-                i32 baseX = mp->m_extentL;
-                i32 spanX = mp->m_extentR - baseX;
+                i32 baseX = mp->m_extent.left;
+                i32 spanX = mp->m_extent.right - baseX;
                 spanX = spanX < 0 ? -spanX : spanX;
-                i32 baseY = mp->m_extentT;
-                i32 spanY = mp->m_extentB - baseY;
+                i32 baseY = mp->m_extent.top;
+                i32 spanY = mp->m_extent.bottom - baseY;
                 spanY = spanY < 0 ? -spanY : spanY;
                 if (spanX != 0) {
                     baseX += rand() % spanX;

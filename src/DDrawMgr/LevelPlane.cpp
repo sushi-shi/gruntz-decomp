@@ -660,7 +660,7 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 // `operator new(0x1dc)`d shared CGameObject (<Gruntz/UserLogic.h>) - the SAME
 // 0x1dc-byte instance CDDrawChildGroup::CreateSprite builds, brought up by the same
 // engine base ctor (0x15b390). The former local `WwdGameObj` view is FOLDED AWAY:
-// CGameObject's usage-proven field names win (m_stateFlags/m_extentL../m_strideX..,
+// CGameObject's usage-proven field names win (m_stateFlags/m_extent.left../m_strideX..,
 // slot [1] Delete / [10] Load reconciled from the ReadPlaneObjects call bytes); the
 // WWD-format-invented names (m_score/m_clipLeft/m_width..) do not survive. The +0xdc
 // CString slot CGameObject deliberately pads (a real member would inject a ctor into
@@ -974,14 +974,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     obj->m_120 = *p++;       // damage             (+0x120)
     obj->m_124 = *p++;       // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
     obj->m_placeMode = *p++; // health             (+0x128)
-    obj->m_extentL = *p++;   // moveRect.l         (+0x134)
-    obj->m_extentT = *p++;   // moveRect.t         (+0x138)
-    obj->m_extentR = *p++;   // moveRect.r         (+0x13c)
-    obj->m_extentB = *p++;   // moveRect.b         (+0x140)
-    obj->m_areaL = *p++;     // hitRect.l          (+0x144)
-    obj->m_areaT = *p++;     // hitRect.t          (+0x148)
-    obj->m_areaR = *p++;     // hitRect.r          (+0x14c)
-    obj->m_areaB = *p++;     // hitRect.b          (+0x150)
+    obj->m_extent.left = *p++;   // moveRect.l         (+0x134)
+    obj->m_extent.top = *p++;   // moveRect.t         (+0x138)
+    obj->m_extent.right = *p++;   // moveRect.r         (+0x13c)
+    obj->m_extent.bottom = *p++;   // moveRect.b         (+0x140)
+    obj->m_area.left = *p++;     // hitRect.l          (+0x144)
+    obj->m_area.top = *p++;     // hitRect.t          (+0x148)
+    obj->m_area.right = *p++;     // hitRect.r          (+0x14c)
+    obj->m_area.bottom = *p++;     // hitRect.b          (+0x150)
     obj->m_154 = *p++;       // attackRect.l       (+0x154)
     obj->m_158 = *p++;       // attackRect.t       (+0x158)
     obj->m_15c = *p++;       // attackRect.r       (+0x15c)
@@ -991,11 +991,11 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     obj->m_6c = *p++;        // clipRect.r         (+0x6c)
     obj->m_70 = *p++;        // clipRect.b         (+0x70)
 
-    if (obj->m_areaL == 0 && obj->m_areaR == 0) {
-        obj->m_areaL = static_cast<i32>(0x80000000);
+    if (obj->m_area.left == 0 && obj->m_area.right == 0) {
+        obj->m_area.left = static_cast<i32>(0x80000000);
     }
-    if (obj->m_extentL == 0 && obj->m_extentR == 0) {
-        obj->m_extentL = static_cast<i32>(0x80000000);
+    if (obj->m_extent.left == 0 && obj->m_extent.right == 0) {
+        obj->m_extent.left = static_cast<i32>(0x80000000);
     }
     if (obj->m_64 == 0 && obj->m_6c == 0) {
         obj->m_64 = static_cast<i32>(0x80000000);

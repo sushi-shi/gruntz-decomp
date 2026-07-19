@@ -582,8 +582,8 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_ec = 0;
     m_f0 = 0;
     m_collMask = 0;
-    m_extentL = static_cast<i32>(0x80000000);
-    m_areaL = static_cast<i32>(0x80000000);
+    m_extent.left = static_cast<i32>(0x80000000);
+    m_area.left = static_cast<i32>(0x80000000);
     m_154 = static_cast<i32>(0x80000000);
     m_region.m_object = this;
     m_region.m_x = m_screenX;
@@ -888,8 +888,8 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     ar->Write(&m_placeMode, 4);
     ar->Write(&m_12c, 4);
     ar->Write(&m_130, 4);
-    ar->Write(&m_extentL, 0x10);
-    ar->Write(&m_areaL, 0x10);
+    ar->Write(&m_extent.left, 0x10);
+    ar->Write(&m_area.left, 0x10);
     ar->Write(&m_154, 0x10);
     ar->Write(&m_164, 4);
     ar->Write(&m_168, 4);
@@ -976,8 +976,8 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(&m_placeMode, 4);
     ar->Read(&m_12c, 4);
     ar->Read(&m_130, 4);
-    ar->Read(&m_extentL, 0x10);
-    ar->Read(&m_areaL, 0x10);
+    ar->Read(&m_extent.left, 0x10);
+    ar->Read(&m_area.left, 0x10);
     ar->Read(&m_154, 0x10);
     ar->Read(&m_164, 4);
     ar->Read(&m_168, 4);

@@ -94,10 +94,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_latchedAnimId = 0x124f8;
         m_object->m_flags |= 0x20000;
     }
-    m_object->m_areaL = 1;
-    m_object->m_areaR = 1;
-    m_object->m_areaT = 1;
-    m_object->m_areaB = 1;
+    m_object->m_area.left = 1;
+    m_object->m_area.right = 1;
+    m_object->m_area.top = 1;
+    m_object->m_area.bottom = 1;
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;

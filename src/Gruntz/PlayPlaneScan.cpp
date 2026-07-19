@@ -24,7 +24,7 @@
 //   Plane        -> CGameObject (<Gruntz/UserLogic.h>): m_04/m_flags(|=0x10000
 //        consumed)/m_screenX/m_screenY/m_7c/m_114..m_130 and the four 16-byte
 //        quads are the NAMED extent/area/config bands (m_64..m_70 @0x64,
-//        m_extentL..B @0x134, m_areaL..B @0x144, m_154..m_160) - with the
+//        m_extent.left..B @0x134, m_area.left..B @0x144, m_154..m_160) - with the
 //        documented 0x80000000 = "unset" sentinel the scans normalize.
 //   PlaneDesc    -> AnimWorkerObj: the "+0x10 type-id fn ptr" IS m_notify (the
 //        same creator-fn compare AddLevelGruntz does), +0xf0/+0x100 the two
@@ -115,11 +115,11 @@ i32 CPlay::ScanBuildTiles() {
         if (p == 0) {
             continue;
         }
-        if (p->m_extentL == static_cast<i32>(0x80000000)) {
-            p->m_extentL = 0;
+        if (p->m_extent.left == static_cast<i32>(0x80000000)) {
+            p->m_extent.left = 0;
         }
-        if (p->m_areaL == static_cast<i32>(0x80000000)) {
-            p->m_areaL = 0;
+        if (p->m_area.left == static_cast<i32>(0x80000000)) {
+            p->m_area.left = 0;
         }
         if (p->m_154 == static_cast<i32>(0x80000000)) {
             p->m_154 = 0;
@@ -130,12 +130,12 @@ i32 CPlay::ScanBuildTiles() {
         GameObjNotifyFn vf = p->m_7c->m_notify;
         if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Rock)) {
             i32 buf[9]; // the extent/area/config bands as a 3x3 record
-            buf[0] = p->m_extentL;
-            buf[1] = p->m_extentT;
-            buf[2] = p->m_extentR;
-            buf[3] = p->m_areaL;
-            buf[4] = p->m_areaT;
-            buf[5] = p->m_areaR;
+            buf[0] = p->m_extent.left;
+            buf[1] = p->m_extent.top;
+            buf[2] = p->m_extent.right;
+            buf[3] = p->m_area.left;
+            buf[4] = p->m_area.top;
+            buf[5] = p->m_area.right;
             buf[6] = p->m_154;
             buf[7] = p->m_158;
             buf[8] = p->m_15c;
@@ -192,8 +192,8 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_164,
                     p->m_168,
                     p->m_04,
-                    *reinterpret_cast<CTrigParam*>(&p->m_extentL),
-                    *reinterpret_cast<CTrigParam*>(&p->m_areaL),
+                    *reinterpret_cast<CTrigParam*>(&p->m_extent.left),
+                    *reinterpret_cast<CTrigParam*>(&p->m_area.left),
                     *reinterpret_cast<CTrigParam*>(&p->m_154),
                     *reinterpret_cast<CTrigParam*>(&p->m_64),
                     *reinterpret_cast<CTrigParam*>(&p->m_7c->m_f0),
@@ -275,11 +275,11 @@ i32 CPlay::ScanShuffleQuads() {
             || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadE)) {
             p->m_124 = perm[p->m_124];
         } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadF)) {
-            if (p->m_extentL == static_cast<i32>(0x80000000)) {
-                p->m_extentL = 0;
+            if (p->m_extent.left == static_cast<i32>(0x80000000)) {
+                p->m_extent.left = 0;
             }
-            if (p->m_areaL == static_cast<i32>(0x80000000)) {
-                p->m_areaL = 0;
+            if (p->m_area.left == static_cast<i32>(0x80000000)) {
+                p->m_area.left = 0;
             }
             if (p->m_154 == static_cast<i32>(0x80000000)) {
                 p->m_154 = 0;
@@ -289,14 +289,14 @@ i32 CPlay::ScanShuffleQuads() {
             }
             // scatter-permute the four extent-quad corners
             i32 scatter[4];
-            scatter[perm[0]] = p->m_extentL;
-            scatter[perm[1]] = p->m_extentT;
-            scatter[perm[2]] = p->m_extentR;
-            scatter[perm[3]] = p->m_extentB;
-            p->m_extentL = scatter[0];
-            p->m_extentT = scatter[1];
-            p->m_extentR = scatter[2];
-            p->m_extentB = scatter[3];
+            scatter[perm[0]] = p->m_extent.left;
+            scatter[perm[1]] = p->m_extent.top;
+            scatter[perm[2]] = p->m_extent.right;
+            scatter[perm[3]] = p->m_extent.bottom;
+            p->m_extent.left = scatter[0];
+            p->m_extent.top = scatter[1];
+            p->m_extent.right = scatter[2];
+            p->m_extent.bottom = scatter[3];
         }
     }
     return 1;

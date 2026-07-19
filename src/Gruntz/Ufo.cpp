@@ -71,10 +71,10 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 0x8;
     m_object->m_fillFraction = 0x80;
-    m_object->m_areaL = 0;
-    m_object->m_areaR = 0;
-    m_object->m_areaT = 0;
-    m_object->m_areaB = 0;
+    m_object->m_area.left = 0;
+    m_object->m_area.right = 0;
+    m_object->m_area.top = 0;
+    m_object->m_area.bottom = 0;
 }
 
 // ---------------------------------------------------------------------------

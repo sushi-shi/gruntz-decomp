@@ -115,10 +115,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
     m_focus = 0;
-    m_object->m_areaL = 0;
-    m_object->m_areaR = 0;
-    m_object->m_areaT = 0;
-    m_object->m_areaB = 0;
+    m_object->m_area.left = 0;
+    m_object->m_area.right = 0;
+    m_object->m_area.top = 0;
+    m_object->m_area.bottom = 0;
     m_9c = -1;
     m_a0 = -1;
     m_a4 = 0;

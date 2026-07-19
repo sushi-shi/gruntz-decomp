@@ -698,15 +698,15 @@ CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 
 // HoldPayload/ProbeTarget/BPObj + the BP chain shells) are COLLAPSED into it; the
 // world chain (CDDrawChildGroup/CDDrawGroupNode) lives beside it in
 // UserLogic.h. The level steps each object's m_screenX/m_screenY through the tile
-// probes; m_extentL/T/R/B are the object's per-side collision extents,
-// m_areaL/T/R its stand/activation box, m_carrier + m_deltaX/Y the platform ride.
+// probes; m_extent.left/T/R/B are the object's per-side collision extents,
+// m_area.left/T/R its stand/activation box, m_carrier + m_deltaX/Y the platform ride.
 // ===========================================================================
 
 // ===========================================================================
 // The sibling move-leaf bodies (StepAxisLo/Hi, FreeMove, Advance{A,B},
 // StepAxisAlt, SpanCheck, + the 15fe40 stand-fit validator). All are plain
 // /O2 /MT __thiscall leaves (this=this level), NO relocations: they touch only
-// the moving object's m_extentL..B, m_screenX/Y, m_moveMode, m_strideX/Y, the
+// the moving object's m_extent.left..B, m_screenX/Y, m_moveMode, m_strideX/Y, the
 // level's main plane (+0x5c) tile grid, and the image-set array (+0x4c) -
 // dispatching the image set's GetCollisionAt (+0x20) to probe a tile, exactly
 // like AxisProbe (@0x161270) inlined.
@@ -1325,7 +1325,7 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     }
 
     if (a3 & 1) {
-        i32 limit = t->m_extentT + a2 - 1;
+        i32 limit = t->m_extent.top + a2 - 1;
         if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
                 i32 lo = coord;
@@ -1337,7 +1337,7 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
             t->m_moveMode = 6;
         }
     } else if (a3 & 2) {
-        i32 limit = t->m_extentB + a2 + 2;
+        i32 limit = t->m_extent.bottom + a2 + 2;
         if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
                 i32 lo = coord;
@@ -1398,7 +1398,7 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     }
 
     if (a3 & 1) {
-        i32 limit = t->m_extentT + a2 - 1;
+        i32 limit = t->m_extent.top + a2 - 1;
         i32 saved = coord;
         if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
@@ -1451,7 +1451,7 @@ i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     i32 cursor = AdvanceA(t, coord, a2, a3);
 
     if (a3 & 1) {
-        i32 limit = t->m_extentT + cursor - 1;
+        i32 limit = t->m_extent.top + cursor - 1;
         if (AxisProbe(coord, limit) == kTileHard) {
             i32 mid = coord;
             if (a3 & 0x10) {
@@ -1491,22 +1491,22 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     if (t->m_screenY >= a1) {
         cursor = AdvanceB(t, a2, a1, a3);
         if (t->m_moveMode != 1) {
-            i32 hi = t->m_extentB + cursor + 1;
-            i32 lo = t->m_extentT + cursor - 1;
+            i32 hi = t->m_extent.bottom + cursor + 1;
+            i32 lo = t->m_extent.top + cursor - 1;
             if (AxisProbe(a2, lo) != kTileHard && AxisProbe(a2, hi) != kTileHard) {
                 t->m_moveMode = 4;
             }
         }
     } else {
         cursor = AdvanceA(t, a1, a2, a3);
-        i32 hi = t->m_extentB + cursor + 1;
-        i32 lo = t->m_extentT + cursor - 1;
+        i32 hi = t->m_extent.bottom + cursor + 1;
+        i32 lo = t->m_extent.top + cursor - 1;
         if (AxisProbe(a2, lo) != kTileHard && AxisProbe(a2, hi) != kTileHard) {
             i32 probe = a2;
-            i32 want = (t->m_extentB + cursor + 1) - cursor + t->m_screenY;
-            if (SpanCheck(want, t->m_extentB + cursor + 1, probe, &probe) != 0 && probe > cursor) {
+            i32 want = (t->m_extent.bottom + cursor + 1) - cursor + t->m_screenY;
+            if (SpanCheck(want, t->m_extent.bottom + cursor + 1, probe, &probe) != 0 && probe > cursor) {
                 t->m_moveMode = 1;
-                cursor = probe - t->m_extentB - 1;
+                cursor = probe - t->m_extent.bottom - 1;
             }
         }
     }
@@ -1541,9 +1541,9 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // probe dispatch are exact. Deferred to the final sweep.
 RVA(0x0015e720, 0x14c)
 i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
-    i32 mid = t->m_extentR + a1;
-    i32 lo = t->m_extentT + a2;
-    i32 hi = t->m_extentB + a2;
+    i32 mid = t->m_extent.right + a1;
+    i32 lo = t->m_extent.top + a2;
+    i32 hi = t->m_extent.bottom + a2;
     i32 cur = lo;
 
     if (lo <= hi) {
@@ -1578,9 +1578,9 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
 // + offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015e870, 0x14c)
 i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
-    i32 mid = t->m_extentL + a1;
-    i32 lo = t->m_extentT + a2;
-    i32 hi = t->m_extentB + a2;
+    i32 mid = t->m_extent.left + a1;
+    i32 lo = t->m_extent.top + a2;
+    i32 hi = t->m_extent.bottom + a2;
     i32 cur = lo;
 
     if (lo <= hi) {
@@ -1620,9 +1620,9 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
 // conventions are exact. Deferred to the final sweep.
 RVA(0x0015eb00, 0x2d2)
 i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 mid = t->m_extentR + a1;
-    i32 cur = t->m_extentL + a1;
-    i32 hiY = t->m_extentB + a2 + 1;
+    i32 mid = t->m_extent.right + a1;
+    i32 cur = t->m_extent.left + a1;
+    i32 hiY = t->m_extent.bottom + a2 + 1;
 
     if (cur <= mid) {
         do {
@@ -1671,9 +1671,9 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // reproduces only for one spill order; logic + offsets + CFG exact. Deferred.
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 lo = t->m_extentL + a1;
-    i32 mid = t->m_extentR + a1;
-    i32 hiY = a2 + t->m_extentB + 1;
+    i32 lo = t->m_extent.left + a1;
+    i32 mid = t->m_extent.right + a1;
+    i32 hiY = a2 + t->m_extent.bottom + 1;
 
     i32 first;
     PROBE_TILE(this, a1, hiY, first);
@@ -1688,14 +1688,14 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
             i32 result;
             PROBE_TILE(this, cur, hiY, result);
             if (result == kTileSoft || result == kTileSoft2) {
-                i32 floor = t->m_screenY + t->m_extentB;
+                i32 floor = t->m_screenY + t->m_extent.bottom;
                 if (hiY >= floor) {
                     i32 y = hiY;
                     do {
                         i32 g = AxisProbe(cur, y);
                         if (g != kTileSoft && g != kTileSoft2) {
                             t->m_moveMode = 1;
-                            return y - t->m_extentB;
+                            return y - t->m_extent.bottom;
                         }
                         --y;
                     } while (y >= floor);
@@ -1708,7 +1708,7 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
                         do {
                             if (AxisProbe(cur, y) != kTileHard) {
                                 t->m_moveMode = 1;
-                                return (y + 1) - t->m_extentB - 1;
+                                return (y + 1) - t->m_extent.bottom - 1;
                             }
                             --y;
                         } while (y >= floor);
@@ -1737,22 +1737,22 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // CFG exact. Deferred to the final sweep.
 RVA(0x0015f1c0, 0x171)
 i32 CGameLevel::AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 cur = t->m_extentL + a1;
-    i32 mid = t->m_extentR + a1;
-    i32 ceil = a2 + t->m_extentT - 1;
+    i32 cur = t->m_extent.left + a1;
+    i32 mid = t->m_extent.right + a1;
+    i32 ceil = a2 + t->m_extent.top - 1;
 
     if (cur <= mid) {
         do {
             i32 result;
             PROBE_TILE(this, cur, ceil, result);
             if (result == kTileSoft) {
-                i32 floor = t->m_screenY + t->m_extentT - 1;
+                i32 floor = t->m_screenY + t->m_extent.top - 1;
                 if (ceil <= floor) {
                     i32 y = ceil;
                     do {
                         if (AxisProbe(cur, y) != kTileSoft) {
                             t->m_moveMode = 4;
-                            return y - t->m_extentT;
+                            return y - t->m_extent.top;
                         }
                         ++y;
                     } while (y <= floor);
@@ -1850,10 +1850,10 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
 RVA(0x0015fe40, 0xd4)
 i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, i32* outY, i32 a3) {
 
-    if (p->m_areaL == -1) {
+    if (p->m_area.left == -1) {
         goto fail;
     }
-    if (t->m_extentL == -1) {
+    if (t->m_extent.left == -1) {
         goto fail;
     }
     {
@@ -1862,13 +1862,13 @@ i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, 
             goto fail;
         }
 
-        i32 boxL = p->m_areaL + p->m_screenX;
-        i32 boxR = p->m_areaR + p->m_screenX;
-        i32 boxT = p->m_screenY + p->m_areaT;
-        i32 tLoA = t->m_extentL + a1;
-        i32 tMid = t->m_extentR + a1;
-        i32 tHi = t->m_extentB + a2;
-        i32 cmpHi = t->m_extentB + sy;
+        i32 boxL = p->m_area.left + p->m_screenX;
+        i32 boxR = p->m_area.right + p->m_screenX;
+        i32 boxT = p->m_screenY + p->m_area.top;
+        i32 tLoA = t->m_extent.left + a1;
+        i32 tMid = t->m_extent.right + a1;
+        i32 tHi = t->m_extent.bottom + a2;
+        i32 cmpHi = t->m_extent.bottom + sy;
 
         i32 over = p->m_deltaY;
         if (over > 0) {
@@ -1894,7 +1894,7 @@ i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, 
             }
         }
 
-        *outY = boxT - t->m_extentB - 1;
+        *outY = boxT - t->m_extent.bottom - 1;
         return 1;
     }
 fail:
@@ -1906,8 +1906,8 @@ fail:
 // latched to a carrier (p = et->m_carrier). Gated like AltStepValidate (a3 bit3
 // set, carrier category 0x80, both extents valid), it checks the rider's extent
 // box (offset by a1) still overlaps the carrier's stand area and returns whether
-// the rider's feet (m_extentB + a2) still sit exactly on the stand surface
-// (m_areaT-derived row - 1). All field reads; no calls. ret 0x14.
+// the rider's feet (m_extent.bottom + a2) still sit exactly on the stand surface
+// (m_area.top-derived row - 1). All field reads; no calls. ret 0x14.
 //
 // @early-stop
 // regalloc/spill wall (~90%): logic + offsets + CFG + the prologue gates + the
@@ -1926,20 +1926,20 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 a1, i32 a2, i32 a3
     if (p->m_collCategory != 0x80) {
         return 0;
     }
-    if (p->m_areaL == -1) {
+    if (p->m_area.left == -1) {
         return 0;
     }
-    if (et->m_extentL == -1) {
+    if (et->m_extent.left == -1) {
         return 0;
     }
 
     i32 ox = p->m_screenX;
-    i32 boxL = ox + p->m_areaL;
-    i32 boxR = ox + p->m_areaR;
-    i32 boxT = p->m_screenY + p->m_areaT;
-    i32 hi = et->m_extentB + a2;
-    i32 tMid = et->m_extentR + a1;
-    i32 tLoA = et->m_extentL + a1;
+    i32 boxL = ox + p->m_area.left;
+    i32 boxR = ox + p->m_area.right;
+    i32 boxT = p->m_screenY + p->m_area.top;
+    i32 hi = et->m_extent.bottom + a2;
+    i32 tMid = et->m_extent.right + a1;
+    i32 tLoA = et->m_extent.left + a1;
     if (tMid < boxL) {
         return 0;
     }
@@ -1990,7 +1990,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 
 // ---------------------------------------------------------------------------
 // ProbeHeadSoft (@0x160450): probe the tile straight above the object at
-// (m_screenX, m_screenY + m_extentT + dy) and return whether it is soft-blocking
+// (m_screenX, m_screenY + m_extent.top + dy) and return whether it is soft-blocking
 // (== kTileSoft). The inlined PROBE_TILE shape; the result==1 test is shared by
 // both the tile-hit and empty-tile paths (retail merges the sete). ret 8.
 //
@@ -2002,7 +2002,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 RVA(0x00160450, 0xd6)
 i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 px = t->m_screenX;
-    i32 py = t->m_screenY + t->m_extentT + dy;
+    i32 py = t->m_screenY + t->m_extent.top + dy;
     i32 result;
     PROBE_TILE(this, px, py, result);
     return result == kTileSoft;
@@ -2160,7 +2160,7 @@ i32 __stdcall WwdFile_CompressMainBlock(
 }
 // ---------------------------------------------------------------------------
 // ProbeFeetKind (@0x1608c0): the feet-edge twin of ProbeColumn - probe the tile at
-// (m_screenX + dx, m_extentB + m_screenY) and return the image set's GetCollisionAt
+// (m_screenX + dx, m_extent.bottom + m_screenY) and return the image set's GetCollisionAt
 // kind raw (0 for an empty/clear tile). The inlined PROBE_TILE shape. ret 8.
 //
 // @early-stop
@@ -2171,7 +2171,7 @@ i32 __stdcall WwdFile_CompressMainBlock(
 RVA(0x001608c0, 0xc0)
 i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
-    i32 py = t->m_extentB + t->m_screenY;
+    i32 py = t->m_extent.bottom + t->m_screenY;
     i32 result;
     PROBE_TILE(this, px, py, result);
     return result;
@@ -2179,7 +2179,7 @@ i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
 
 // ---------------------------------------------------------------------------
 // ProbeColumn (@0x160980): probe the single tile at the object's top edge
-// (m_screenX + dx, m_extentT + m_screenY), clamped into the main plane grid,
+// (m_screenX + dx, m_extent.top + m_screenY), clamped into the main plane grid,
 // returning the image set's GetCollisionAt (+0x20) dispatch (0 for an
 // empty/clear tile). The inlined AxisProbe shape (PROBE_TILE). ret 8.
 //
@@ -2190,14 +2190,14 @@ i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
 RVA(0x00160980, 0xc0)
 i32 CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
-    i32 py = t->m_extentT + t->m_screenY;
+    i32 py = t->m_extent.top + t->m_screenY;
     i32 result;
     PROBE_TILE(this, px, py, result);
     return result;
 }
 
 // ---------------------------------------------------------------------------
-// WalkColumnDown (@0x160a40): ground snap. From the object's feet row (m_extentB +
+// WalkColumnDown (@0x160a40): ground snap. From the object's feet row (m_extent.bottom +
 // m_screenY), probe the tile column at the fixed x (m_screenX) stepping the row
 // downward until GetCollisionAt reports a stop code (1/2/3) or the row runs off
 // the grid (>= plane height). On a stop, drop the object onto the ground
@@ -2212,7 +2212,7 @@ i32 CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
 // final sweep.
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
-    if (t->m_extentL == AXIS_UNSET) {
+    if (t->m_extent.left == AXIS_UNSET) {
         return 0;
     }
     if (m_mainPlane == 0) {
@@ -2220,7 +2220,7 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     }
 
     i32 px = t->m_screenX;
-    i32 row = t->m_extentB + t->m_screenY;
+    i32 row = t->m_extent.bottom + t->m_screenY;
     i32 startRow = row;
 
     i32 result;
@@ -2345,9 +2345,9 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
 // PROBE_TILE Y-clamp mainPlane-temp register (eax vs ecx). Not source-steerable.
 RVA(0x0015e9c0, 0x139)
 i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
-    i32 fixedY = t->m_extentT + y;
-    i32 hiX = t->m_extentR + x;
-    i32 col = t->m_extentL + x;
+    i32 fixedY = t->m_extent.top + y;
+    i32 hiX = t->m_extent.right + x;
+    i32 col = t->m_extent.left + x;
     while (col <= hiX) {
         i32 result;
         PROBE_TILE(this, col, fixedY, result);
@@ -2365,20 +2365,20 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
 
 // ---------------------------------------------------------------------------
 // SnapFloorDown (@0x15f090): scan the tile column at x downward from y to
-// (m_screenY + m_extentB) while the tiles stay soft (1/2); the first non-soft
-// tile commits *out = row - m_extentB and returns 1. An exhausted scan returns 0.
+// (m_screenY + m_extent.bottom) while the tiles stay soft (1/2); the first non-soft
+// tile commits *out = row - m_extent.bottom and returns 1. An exhausted scan returns 0.
 //
 // @early-stop
 // register-scheduling wall: PROBE_TILE-shape spill/register entropy (this/limit/row
 // slots); logic + offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015f090, 0x127)
 i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
-    i32 limit = t->m_screenY + t->m_extentB;
+    i32 limit = t->m_screenY + t->m_extent.bottom;
     for (i32 row = y; row >= limit; row--) {
         i32 result;
         PROBE_TILE(this, x, row, result);
         if (result != kTileSoft && result != kTileSoft2) {
-            *out = row - t->m_extentB;
+            *out = row - t->m_extent.bottom;
             return 1;
         }
     }
@@ -2387,20 +2387,20 @@ i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
 
 // ---------------------------------------------------------------------------
 // SnapCeilUp (@0x15f340): the mirror of SnapFloorDown scanning upward from y to
-// (m_screenY + m_extentT - 1) while tiles stay soft (1); the first non-soft tile
-// commits *out = row - m_extentT and returns 1. An exhausted scan returns 0.
+// (m_screenY + m_extent.top - 1) while tiles stay soft (1); the first non-soft tile
+// commits *out = row - m_extent.top and returns 1. An exhausted scan returns 0.
 //
 // @early-stop
 // register-scheduling wall: PROBE_TILE-shape spill/register entropy; logic +
 // offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015f340, 0x124)
 i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
-    i32 limit = t->m_screenY + t->m_extentT - 1;
+    i32 limit = t->m_screenY + t->m_extent.top - 1;
     for (i32 row = y; row <= limit; row++) {
         i32 result;
         PROBE_TILE(this, x, row, result);
         if (result != kTileSoft) {
-            *out = row - t->m_extentT;
+            *out = row - t->m_extent.top;
             return 1;
         }
     }
@@ -2409,14 +2409,14 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
 
 // ---------------------------------------------------------------------------
 // ProbeSpanHard (@0x15f470): hard-block test across the object's vertical span at
-// column x. Probe the tile at the top edge (m_extentT + off - 1); if it is hard-
-// blocking (== kTileHard) succeed. Otherwise probe the bottom edge (m_extentB +
+// column x. Probe the tile at the top edge (m_extent.top + off - 1); if it is hard-
+// blocking (== kTileHard) succeed. Otherwise probe the bottom edge (m_extent.bottom +
 // off + 1) and return whether IT is hard-blocking. Two inlined PROBE_TILE copies
 // (the top row succeeds early); x is re-clamped for each. ret 0xc.
 RVA(0x0015f470, 0x193)
 i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
-    i32 py2 = t->m_extentB + off + 1;
-    i32 py1 = t->m_extentT + off - 1;
+    i32 py2 = t->m_extent.bottom + off + 1;
+    i32 py1 = t->m_extent.top + off - 1;
     i32 r1;
     PROBE_TILE(this, x, py1, r1);
     if (r1 == kTileHard) {
@@ -2429,7 +2429,7 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
 
 // ---------------------------------------------------------------------------
 // ResolveMoveDown (@0x15f610): AdvanceA the cursor, gate the head/foot rows via
-// AxisProbe, then run a downward SpanCheck-style scan (from m_screenY+m_extentB+1
+// AxisProbe, then run a downward SpanCheck-style scan (from m_screenY+m_extent.bottom+1
 // down to headRow) for the first non-hard tile; on a hit past the cursor it turns
 // the object mode 1 and re-bases the cursor. Returns the resolved cursor.
 //
@@ -2443,8 +2443,8 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
 RVA(0x0015f610, 0x191)
 i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 cursor = AdvanceA(t, x, y, flags);
-    i32 headRow = t->m_extentB + cursor + 1;
-    i32 footRow = t->m_extentT + cursor - 1;
+    i32 headRow = t->m_extent.bottom + cursor + 1;
+    i32 footRow = t->m_extent.top + cursor - 1;
     if (AxisProbe(x, footRow) == kTileHard) {
         goto done;
     }
@@ -2452,7 +2452,7 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
         goto done;
     }
     {
-        i32 b = t->m_screenY + t->m_extentB + 1;
+        i32 b = t->m_screenY + t->m_extent.bottom + 1;
         if (b > headRow) {
             i32 cur = b - 1;
             if (cur >= headRow) {
@@ -2462,7 +2462,7 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
                     if (result != kTileHard) {
                         if (cur + 1 > cursor) {
                             t->m_moveMode = 1;
-                            cursor = cur + 1 - t->m_extentB - 1;
+                            cursor = cur + 1 - t->m_extent.bottom - 1;
                         }
                         goto done;
                     }
@@ -2491,8 +2491,8 @@ RVA(0x0015f7b0, 0x11f)
 i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 cursor = AdvanceB(t, x, y, flags);
     if (t->m_moveMode != 1) {
-        i32 headRow = t->m_extentB + cursor + 1;
-        i32 footRow = t->m_extentT + cursor - 1;
+        i32 headRow = t->m_extent.bottom + cursor + 1;
+        i32 footRow = t->m_extent.top + cursor - 1;
         i32 result;
         PROBE_TILE(this, x, footRow, result);
         if (result != kTileHard) {
@@ -2505,7 +2505,7 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// StepGroundDown (@0x15f9f0): probe the foot row (m_extentB+y+2) at x; a hard tile
+// StepGroundDown (@0x15f9f0): probe the foot row (m_extent.bottom+y+2) at x; a hard tile
 // returns 1 (with, when arg flags bit4 set, a ClampSpan re-bracket writing the span
 // midpoint into *out). A non-hard tile returns 0.
 //
@@ -2514,7 +2514,7 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
 // pin the spill slots; logic + offsets + CFG + the ClampSpan convention exact. Deferred.
 RVA(0x0015f9f0, 0x11a)
 i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
-    i32 probeY = t->m_extentB + y + 2;
+    i32 probeY = t->m_extent.bottom + y + 2;
     i32 result;
     PROBE_TILE(this, x, probeY, result);
     if (result != kTileHard) {
@@ -2532,14 +2532,14 @@ i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags
 
 // ---------------------------------------------------------------------------
 // StepGroundUp (@0x15fb10): the mirror of StepGroundDown, probing the head row
-// (m_extentT+y-1) at x. Same hard-tile / ClampSpan-midpoint behaviour.
+// (m_extent.top+y-1) at x. Same hard-tile / ClampSpan-midpoint behaviour.
 //
 // @early-stop
 // register-scheduling wall: same PROBE_TILE + ClampSpan shape as StepGroundDown;
 // logic + offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015fb10, 0x119)
 i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
-    i32 probeY = t->m_extentT + y - 1;
+    i32 probeY = t->m_extent.top + y - 1;
     i32 result;
     PROBE_TILE(this, x, probeY, result);
     if (result != kTileHard) {
@@ -2576,7 +2576,7 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 
 // ---------------------------------------------------------------------------
 // ProbeFootSoft (@0x160080): probe the tile at the object's foot (m_screenX+dx,
-// m_screenY+m_extentB+1); returns 1 if it is soft (1 or 2), else 0. (The retail
+// m_screenY+m_extent.bottom+1); returns 1 if it is soft (1 or 2), else 0. (The retail
 // re-probes the same tile per compare - two inlined copies.)
 //
 // @early-stop
@@ -2586,7 +2586,7 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 // tail. Not source-steerable. Deferred to the final sweep.
 RVA(0x00160080, 0x187)
 i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
-    i32 row = t->m_screenY + t->m_extentB + 1;
+    i32 row = t->m_screenY + t->m_extent.bottom + 1;
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
     if (r1 == kTileSoft) {
@@ -2616,7 +2616,7 @@ yes:
 // register pressure, not the shape. Not source-steerable. Deferred to the final sweep.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
-    i32 row = t->m_screenY + t->m_extentB + 1;
+    i32 row = t->m_screenY + t->m_extent.bottom + 1;
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
     if (r1 == kTileSoft) {

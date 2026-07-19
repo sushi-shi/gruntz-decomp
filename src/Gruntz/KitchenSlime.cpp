@@ -35,8 +35,8 @@
 
 // The slime's bound object (Level() == m_object, Anim() == m_38) IS the canonical
 // CGameObject; the ex CSlimeLevel / CSlimeAnimPlayer / CSlimeTiming views are
-// (+0x5c/+0x60), m_124 (travel dir), m_12c (lock-dir), m_extentL..m_extentB
-// (+0x134..+0x140, the on-screen tile window), m_areaL (+0x144, the cue-gate rect
+// (+0x5c/+0x60), m_124 (travel dir), m_12c (lock-dir), m_extent.left..m_extent.bottom
+// (+0x134..+0x140, the on-screen tile window), m_area.left (+0x144, the cue-gate rect
 // base), and m_7c->m_bc (the AnimWorkerObj per-tile-time override) - all cast-free.
 // The anim facet reaches the leaf-embedded +0x1a0 CAniAdvanceCursor (Advance
 // @0x15c360) by documented address and the +0x190.. frame cache through the
@@ -137,8 +137,8 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
 // The bound object the ctor reads IS the canonical CGameObject (m_object == m_38):
 // the screen position m_screenX/m_screenY (+0x5c/+0x60), the layer key
 // m_latchedAnimId (+0x74), the flags m_flags (+0x08), the on-screen travel window
-// m_extentL..m_extentB (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
-// the direction name at m_194+0x24, and the re-seeded rect m_areaL..m_areaB
+// m_extent.left..m_extent.bottom (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
+// the direction name at m_194+0x24, and the re-seeded rect m_area.left..m_area.bottom
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
 // snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
@@ -179,10 +179,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_38->m_flags |= 0x10000;
         return;
     }
-    o->m_extentL = (o->m_screenX < o->m_164) ? o->m_screenX : o->m_164;
-    o->m_extentR = (o->m_screenX <= o->m_164) ? o->m_164 : o->m_screenX;
-    o->m_extentT = (o->m_screenY >= o->m_168) ? o->m_168 : o->m_screenY;
-    o->m_extentB = (o->m_screenY <= o->m_168) ? o->m_168 : o->m_screenY;
+    o->m_extent.left = (o->m_screenX < o->m_164) ? o->m_screenX : o->m_164;
+    o->m_extent.right = (o->m_screenX <= o->m_164) ? o->m_164 : o->m_screenX;
+    o->m_extent.top = (o->m_screenY >= o->m_168) ? o->m_168 : o->m_screenY;
+    o->m_extent.bottom = (o->m_screenY <= o->m_168) ? o->m_168 : o->m_screenY;
 
     CGameObject* obj38 = Anim();
     if (obj38->m_194 != 0) {
@@ -209,10 +209,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    o->m_areaL = 0;
-    o->m_areaR = 0;
-    o->m_areaT = 0;
-    o->m_areaB = 0;
+    o->m_area.left = 0;
+    o->m_area.right = 0;
+    o->m_area.top = 0;
+    o->m_area.bottom = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -332,7 +332,7 @@ i32 CKitchenSlime::Tick() {
         CGrunt* ent = static_cast<CGrunt*>(reg->m_cmdGrid->FindGruntAt(
             lvl->m_screenX,
             lvl->m_screenY,
-            reinterpret_cast<RECT*>(&lvl->m_areaL),
+            &lvl->m_area,
             &outY,
             &outX,
             static_cast<RECT*>(0)
@@ -497,8 +497,8 @@ i32 CKitchenSlime::LoadSprites() {
             tileFlags = ((map->m_8[gy]))[gx * 7];
         }
 
-        if (tileY >= lvl->m_extentT && tileX <= lvl->m_extentR && tileY <= lvl->m_extentB
-            && tileX >= lvl->m_extentL && !(tileFlags & 0x939) && !(tileFlags & 2)) {
+        if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right && tileY <= lvl->m_extent.bottom
+            && tileX >= lvl->m_extent.left && !(tileFlags & 0x939) && !(tileFlags & 2)) {
             found = 1;
             break;
         }

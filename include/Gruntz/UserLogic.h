@@ -255,18 +255,16 @@ struct CGameObject {
     // left/top/right/bottom. Trigger ctors store TILE spans (world box = pos +/-
     // extent<<5 +/- 7); the movement steppers read them as PIXEL offsets (L stored
     // negative). 0x80000000 = unset (BroadPhase skips the object).
-    i32 m_extentL; // +0x134
-    i32 m_extentT; // +0x138
-    i32 m_extentR; // +0x13c
-    i32 m_extentB; // +0x140  the feet line (WalkColumnDown ground-snaps from it)
+    RECT m_extent; // +0x134  L/T/R/B (a REAL RECT: the broad-phase overlap helpers
+                   //         take it BY VALUE as tagRECT - the ex i32 quad's
+                   //         *(RECT*)&m_extent.left casts were the proof); .bottom is
+                   //         the feet line (WalkColumnDown ground-snaps from it)
     // +0x144..+0x150  the derived activation/stand box L/T/R/B (world-space in the
     // trigger initializers: VoiceTrigger InitActReg; the platform-carry fit tests
     // read L/T/R relative to the carrier's position - basis differs per family).
     // CSpotLight ctor zeros all four.
-    i32 m_areaL; // +0x144
-    i32 m_areaT; // +0x148  a platform's stand surface row (AltStepValidate/HoldMove)
-    i32 m_areaR; // +0x14c
-    i32 m_areaB; // +0x150
+    RECT m_area; // +0x144  L/T/R/B (same REAL-RECT proof as m_extent); .top is a
+                 //         platform's stand surface row (AltStepValidate/HoldMove)
     i32 m_154;   // +0x154  captured config block (checkpoint state slots 8..11)
     i32 m_158;   // +0x158
     i32 m_15c;   // +0x15c

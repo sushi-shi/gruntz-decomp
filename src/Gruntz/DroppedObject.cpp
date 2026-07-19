@@ -441,10 +441,10 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_drawFillArg = sel;
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    o->m_areaL = 1;
-    o->m_areaR = 1;
-    o->m_areaT = 1;
-    o->m_areaB = 1;
+    o->m_area.left = 1;
+    o->m_area.right = 1;
+    o->m_area.top = 1;
+    o->m_area.bottom = 1;
 }
 
 // CObjectDropper::InitActReg @0xc5f00 (ex the roster-parked "NetConfigureBe90") -
@@ -524,7 +524,7 @@ i32 CObjectDropper::Update() {
             i32 ty;
             CTmCell* found =
                 g_gameReg->m_cmdGrid
-                    ->FindGruntAt(o->m_screenX, o->m_screenY, reinterpret_cast<RECT*>(&o->m_areaL), &tx, &ty, &box);
+                    ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &tx, &ty, &box);
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {

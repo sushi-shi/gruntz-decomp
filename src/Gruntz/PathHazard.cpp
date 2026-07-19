@@ -160,14 +160,14 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_wp[0].x = o->m_screenX;
     m_wp[0].y = o->m_screenY;
-    m_wp[1].x = (o->m_extentL << 5) + 0x10;
-    m_wp[1].y = (o->m_extentT << 5) + 0x10;
-    m_wp[2].x = (o->m_extentR << 5) + 0x10;
-    m_wp[2].y = (o->m_extentB << 5) + 0x10;
-    m_wp[3].x = (o->m_areaL << 5) + 0x10;
-    m_wp[3].y = (o->m_areaT << 5) + 0x10;
-    m_wp[4].x = (o->m_areaR << 5) + 0x10;
-    m_wp[4].y = (o->m_areaB << 5) + 0x10;
+    m_wp[1].x = (o->m_extent.left << 5) + 0x10;
+    m_wp[1].y = (o->m_extent.top << 5) + 0x10;
+    m_wp[2].x = (o->m_extent.right << 5) + 0x10;
+    m_wp[2].y = (o->m_extent.bottom << 5) + 0x10;
+    m_wp[3].x = (o->m_area.left << 5) + 0x10;
+    m_wp[3].y = (o->m_area.top << 5) + 0x10;
+    m_wp[4].x = (o->m_area.right << 5) + 0x10;
+    m_wp[4].y = (o->m_area.bottom << 5) + 0x10;
     m_wp[5].x = (o->m_154 << 5) + 0x10;
     m_wp[5].y = (o->m_158 << 5) + 0x10;
     m_wp[6].x = (o->m_15c << 5) + 0x10;
@@ -270,7 +270,7 @@ i32 CPathHazard::Tick() {
         CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
-            reinterpret_cast<RECT*>(&obj->m_areaL),
+            &obj->m_area,
             &outA,
             &outB,
             reinterpret_cast<RECT*>(rect)
@@ -442,7 +442,7 @@ i32 CPathHazard::SiblingTick() {
         CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
-            reinterpret_cast<RECT*>(&obj->m_areaL),
+            &obj->m_area,
             &outA,
             &outB,
             reinterpret_cast<RECT*>(rect)

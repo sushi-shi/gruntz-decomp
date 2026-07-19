@@ -346,10 +346,10 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_object->m_areaL = m_object->m_screenX - (m_object->m_extentL << 5) - 7;
-    m_object->m_areaR = m_object->m_screenX + (m_object->m_extentR << 5) + 7;
-    m_object->m_areaT = m_object->m_screenY - (m_object->m_extentT << 5) - 7;
-    m_object->m_areaB = m_object->m_screenY + (m_object->m_extentB << 5) + 7;
+    m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << 5) - 7;
+    m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << 5) + 7;
+    m_object->m_area.top = m_object->m_screenY - (m_object->m_extent.top << 5) - 7;
+    m_object->m_area.bottom = m_object->m_screenY + (m_object->m_extent.bottom << 5) + 7;
 }
 
 // ===========================================================================
@@ -442,10 +442,10 @@ i32 CVoiceTrigger::Tick() {
     CTmCell* hit = g_gameReg->m_cmdGrid->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
-        reinterpret_cast<RECT*>(&m_object->m_extentL),
+        &m_object->m_extent,
         &outA,
         &outB,
-        reinterpret_cast<RECT*>(&m_object->m_areaL)
+        &m_object->m_area
     );
     if (hit && outA == g_curPlayer) {
         // hit is a CGrunt; its bound object sits at +0x10 (CUserLogic::m_object),

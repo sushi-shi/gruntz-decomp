@@ -1368,10 +1368,10 @@ void CGrunt::ResolveEntranceArrival() {
                     m_defenderState = 0;
                     m_arrivalActive = 0;
                     m_arrivalFlags |= 0x18040402;
-                    m_10->m_extentL = 0;
-                    m_10->m_extentR = 0;
-                    m_10->m_extentT = 0;
-                    m_10->m_extentB = 0;
+                    m_10->m_extent.left = 0;
+                    m_10->m_extent.right = 0;
+                    m_10->m_extent.top = 0;
+                    m_10->m_extent.bottom = 0;
                     EntranceArrivalHook(0, 0);
                 }
             }

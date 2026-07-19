@@ -61,10 +61,7 @@ struct PosSoundObj {
     char m_pad80[0x120 - 0x80];
     i32 m_120; // +0x120
     char m_pad124[0x134 - 0x124];
-    i32 m_extentL; // +0x134  per-side emit extents (L/T/R/B)
-    i32 m_extentT; // +0x138
-    i32 m_extentR; // +0x13c
-    i32 m_extentB; // +0x140
+    RECT m_extent; // +0x134  per-side emit extents (the same REAL RECT as CUserLogic's)
     RECT m_area;   // +0x144  emit source area (CopyRect base)
     RECT m_placed; // +0x154  placed rect written back on emit
     char m_pad164[0x19c - 0x164];

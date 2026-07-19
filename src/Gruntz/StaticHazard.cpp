@@ -214,10 +214,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         default:
             break;
     }
-    m_object->m_areaL = m_object->m_screenX - 7;
-    m_object->m_areaR = m_object->m_areaL + 14;
-    m_object->m_areaT = m_object->m_screenY - 7;
-    m_object->m_areaB = m_object->m_areaT + 14;
+    m_object->m_area.left = m_object->m_screenX - 7;
+    m_object->m_area.right = m_object->m_area.left + 14;
+    m_object->m_area.top = m_object->m_screenY - 7;
+    m_object->m_area.bottom = m_object->m_area.top + 14;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;

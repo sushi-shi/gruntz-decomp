@@ -989,16 +989,16 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
             }
             if (g_gameReg->m_inputState) {
                 PosSoundPlaced* placed;
-                if (obj->m_extentT > 0) {
+                if (obj->m_extent.top > 0) {
                     placed = WorldSoundCreateFull(
                         *reinterpret_cast<void**>((reinterpret_cast<char*>(layer) + 0x10)),
                         0x64,
                         &rc,
                         obj->m_120,
-                        obj->m_extentL,
-                        obj->m_extentT,
-                        obj->m_extentR,
-                        obj->m_extentB,
+                        obj->m_extent.left,
+                        obj->m_extent.top,
+                        obj->m_extent.right,
+                        obj->m_extent.bottom,
                         0
                     );
                 } else {

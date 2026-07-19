@@ -307,7 +307,7 @@ public:
 
     // The four per-mode move handlers DispatchMove dispatches into (each
     // __thiscall, this=this level, the moving object passed explicitly). They step
-    // the object's m_screenX/m_screenY toward (a1, a2), probe the m_extentT/B
+    // the object's m_screenX/m_screenY toward (a1, a2), probe the m_extent.top/B
     // limits and (when blocked) re-clamp, returning the accumulated state-flag word.
     //   MoveHandlerA (modes 1/2/5) - axis-1 step + axis-2 advance, low/high re-clamp.
     //   MoveHandlerB (mode 3)      - axis-1 step + axis-2 advance, low re-clamp.
@@ -328,30 +328,30 @@ public:
     // is blocked. The per-frame move driver (CMovingLogic::Update calls it).
     i32 MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3);
 
-    // ProbeColumn (@0x160980): probe the tile at (obj->m_screenX + dx, obj->m_extentT
+    // ProbeColumn (@0x160980): probe the tile at (obj->m_screenX + dx, obj->m_extent.top
     // + obj->m_screenY), clamped into the main plane grid, and return the image set's
     // GetCollisionAt (+0x20) dispatch (0 for an empty/clear tile). ret 8.
     i32 ProbeColumn(CGameObject* target, i32 dx);
 
-    // WalkColumnDown (@0x160a40): from the object's feet row (m_extentB + m_screenY),
+    // WalkColumnDown (@0x160a40): from the object's feet row (m_extent.bottom + m_screenY),
     // probe tiles stepping the row downward until the image set's GetCollisionAt (+0x20)
     // reports a stop code (1/2/3) or the row runs off the grid; on a stop, commit the
     // resolved row back into m_screenY (ground snap). ret 8 (2nd stack arg unused).
     i32 WalkColumnDown(CGameObject* target, i32 unused);
 
     // ProbeHeadSoft (@0x160450): probe the tile straight above the object at
-    // (m_screenX, m_screenY + m_extentT + dy) - top edge, offset dy - and return
+    // (m_screenX, m_screenY + m_extent.top + dy) - top edge, offset dy - and return
     // whether it is soft-blocking (GetCollisionAt == kTileSoft). ret 8.
     i32 ProbeHeadSoft(CGameObject* target, i32 dy);
 
     // ProbeFeetKind (@0x1608c0): probe the tile at the feet row (m_screenX + dx,
-    // m_extentB + m_screenY) and return the image set's GetCollisionAt kind (0 for
+    // m_extent.bottom + m_screenY) and return the image set's GetCollisionAt kind (0 for
     // an empty/clear tile). The feet-edge twin of ProbeColumn (top vs bottom). ret 8.
     i32 ProbeFeetKind(CGameObject* target, i32 dx);
 
     // ProbeSpanHard (@0x15f470): scan the object's column between its top and bottom
-    // edges at x, checking whether any tile from (m_extentT + off - 1) down to
-    // (m_extentB + off + 1) is hard-blocking (GetCollisionAt == kTileHard). ret 0xc.
+    // edges at x, checking whether any tile from (m_extent.top + off - 1) down to
+    // (m_extent.bottom + off + 1) is hard-blocking (GetCollisionAt == kTileHard). ret 0xc.
     i32 ProbeSpanHard(CGameObject* target, i32 x, i32 off);
 
     // Forwards a method (vtable +0x28/+0x2c) across every plane.

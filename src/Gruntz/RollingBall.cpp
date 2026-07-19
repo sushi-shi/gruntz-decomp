@@ -98,7 +98,7 @@ double RbFloor(double x);                                     // 0x120580 floor
 extern "C" i32 __ftol(double x);                              // 0x11f570
 
 // Registry slot calls on g_gameReg sub-objects (reloc-masked __thiscall).
-i32 RbProbeRect(void* obj, i32 cx, i32 cy, i32* rectBase, i32* outA, i32* outB, i32 z); // 0x32ce
+i32 RbProbeRect(void* obj, i32 cx, i32 cy, RECT* rect, i32* outA, i32* outB, i32 z); // 0x32ce (the object's m_area box)
 void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
 void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
 
@@ -129,7 +129,7 @@ static i32 VtblResolve(void* ent) {
 // The ctor's bound object (m_object == m_38) IS the canonical CGameObject and the
 // game registry IS the canonical CGameRegistry (g_gameReg, typed above): the ex
 // (+0x5c/+0x60), m_latchedAnimId (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
-// m_118/m_124/m_12c, m_areaL..m_areaB (+0x144..+0x150), m_194, and the registry's
+// m_118/m_124/m_12c, m_area.left..m_area.bottom (+0x144..+0x150), m_194, and the registry's
 // m_isEasyMode/m_134 all read cast-free through the canonical members.
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
@@ -219,10 +219,10 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
-    o->m_areaL = 0;
-    o->m_areaR = 0;
-    o->m_areaT = 0;
-    o->m_areaB = 0;
+    o->m_area.left = 0;
+    o->m_area.right = 0;
+    o->m_area.top = 0;
+    o->m_area.bottom = 0;
     m_moveDeltaHi = 0;
     m_moveDeltaLo = 0;
 }
@@ -336,7 +336,7 @@ i32 CRollingBall::Update() {
                 g_gameReg->m_cmdGrid,
                 logic2->m_screenX,
                 logic2->m_screenY,
-                &logic2->m_areaL,
+                &logic2->m_area,
                 &outB,
                 &outA,
                 0

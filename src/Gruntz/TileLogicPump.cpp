@@ -633,11 +633,11 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
         m_object->m_flags |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
-    if (m_object->m_extentL == 0x80000000) {
-        m_object->m_extentL = 0;
+    if (m_object->m_extent.left == 0x80000000) {
+        m_object->m_extent.left = 0;
     }
-    if (m_object->m_areaL == 0x80000000) {
-        m_object->m_areaL = 0;
+    if (m_object->m_area.left == 0x80000000) {
+        m_object->m_area.left = 0;
     }
     if (m_object->m_154 == 0x80000000) {
         m_object->m_154 = 0;
@@ -645,14 +645,14 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     if (m_object->m_64 == 0x80000000) {
         m_object->m_64 = 0;
     }
-    m_state[0] = m_object->m_extentL;
-    m_state[1] = m_object->m_extentT;
-    m_state[2] = m_object->m_extentR;
-    m_state[3] = m_object->m_extentB;
-    m_state[4] = m_object->m_areaL;
-    m_state[5] = m_object->m_areaT;
-    m_state[6] = m_object->m_areaR;
-    m_state[7] = m_object->m_areaB;
+    m_state[0] = m_object->m_extent.left;
+    m_state[1] = m_object->m_extent.top;
+    m_state[2] = m_object->m_extent.right;
+    m_state[3] = m_object->m_extent.bottom;
+    m_state[4] = m_object->m_area.left;
+    m_state[5] = m_object->m_area.top;
+    m_state[6] = m_object->m_area.right;
+    m_state[7] = m_object->m_area.bottom;
     m_state[8] = m_object->m_154;
     m_state[9] = m_object->m_158;
     m_state[10] = m_object->m_15c;

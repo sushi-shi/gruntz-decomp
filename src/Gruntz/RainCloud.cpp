@@ -27,10 +27,10 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawFillArg = n;
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
-    m_object->m_areaL = 1;
-    m_object->m_areaR = 1;
-    m_object->m_areaT = 1;
-    m_object->m_areaB = 1;
+    m_object->m_area.left = 1;
+    m_object->m_area.right = 1;
+    m_object->m_area.top = 1;
+    m_object->m_area.bottom = 1;
 }
 
 // ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
