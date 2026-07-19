@@ -871,7 +871,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -961,7 +961,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1055,7 +1055,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1147,7 +1147,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1237,7 +1237,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1326,7 +1326,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }

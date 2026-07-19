@@ -3330,7 +3330,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 static __inline void HiCueFind() {
     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
     if (host->m_30 == 0) {
-        void* obj = (reinterpret_cast<CDDrawSubMgrLeafScan*>(host))->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
+        void* obj = ((host))->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
             (static_cast<LeafCue*>(obj))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }

@@ -374,7 +374,7 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
     }
     m_index = 0;
     if (src->m_records.GetSize() > 0) {
-        e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
+        e = static_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
     }
@@ -402,7 +402,7 @@ void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
     m_index = 0;
     CAniDesc* e;
     if (src->m_records.GetSize() > 0) {
-        e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
+        e = static_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
     }
@@ -659,7 +659,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_14 != 0) {
                     m_index = 0;
-                    m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
+                    m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
                     m_28 = 0;
                     m_scale = 1.0f;
                     m_pendingDraw = m_element->m_drawValue;
@@ -669,10 +669,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 7: { // hold on the first two descriptors (m_index = 1 then 0)
                 m_index = 1;
-                m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(1));
+                m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(1));
                 if (m_element == 0) {
                     m_index = 0;
-                    m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
+                    m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
                 }
                 if (m_element != 0) {
                     m_28 = 0;
@@ -689,10 +689,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
                         m_index = j;
-                        m_element = reinterpret_cast<CAniDesc*>(a->AtChecked_06b270(j));
+                        m_element = static_cast<CAniDesc*>(a->AtChecked_06b270(j));
                         if (m_element == 0) {
                             m_index = 0;
-                            m_element = reinterpret_cast<CAniDesc*>(a->AtChecked_06b270(0));
+                            m_element = static_cast<CAniDesc*>(a->AtChecked_06b270(0));
                         }
                         if (m_element != 0) {
                             m_curDraw = m_pendingDraw;
@@ -733,14 +733,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     i = m_index + 1;
                     m_index = i;
                     if (i >= 0 && i < arr->m_records.GetSize()) {
-                        nd = reinterpret_cast<CAniDesc*>(arr->m_records.GetAt(i));
+                        nd = static_cast<CAniDesc*>(arr->m_records.GetAt(i));
                     } else {
                         nd = 0;
                     }
                     m_element = nd;
                     if (nd == 0) {
                         m_index = 0;
-                        m_element = reinterpret_cast<CAniDesc*>(arr->AtChecked_06b270(0));
+                        m_element = static_cast<CAniDesc*>(arr->AtChecked_06b270(0));
                     }
                     if (m_element != 0) {
                         m_curDraw = m_pendingDraw;
@@ -758,7 +758,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         m_index = j;
                         CAniDesc* p;
                         if (j >= 0 && j < a->m_records.GetSize()) {
-                            p = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(j));
+                            p = static_cast<CAniDesc*>(a->m_records.GetAt(j));
                         } else {
                             p = 0;
                         }
@@ -768,7 +768,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                             i32 cnt = a->m_records.GetSize();
                             CAniDesc* first;
                             if (cnt > 0) {
-                                first = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(0));
+                                first = static_cast<CAniDesc*>(a->m_records.GetAt(0));
                             } else {
                                 first = 0;
                             }
@@ -917,7 +917,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     if (w != 0) {
         CAniDesc* e;
         if (m_index >= 0 && m_index < w->m_records.GetSize()) {
-            e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(m_index));
+            e = static_cast<CAniDesc*>(w->m_records.GetAt(m_index));
         } else {
             e = 0;
         }
@@ -925,7 +925,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
         if (e == 0) {
             m_index = 0;
             if (w->m_records.GetSize() > 0) {
-                e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(0));
+                e = static_cast<CAniDesc*>(w->m_records.GetAt(0));
             } else {
                 e = 0;
             }

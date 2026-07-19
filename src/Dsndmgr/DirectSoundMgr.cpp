@@ -628,7 +628,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     m_cloneList.m_head = 0;
     m_cloneList.m_tail = 0;
     // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
-    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&m_cloneNode));
+    ((&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&m_cloneNode));
     m_playKey = 1;
 }
 
@@ -664,7 +664,7 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
         return 0;
     }
-    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
+    ((&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
     clone->m_playKey = a;
     return clone;
 }
@@ -682,7 +682,7 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
         buf->Release();
         clone->m_buffer = 0;
     }
-    (reinterpret_cast<DSoundList*>(&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
+    ((&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
     if (clone != this) {
         delete clone;
     }
@@ -736,8 +736,8 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
             return found;
         }
     }
-    (reinterpret_cast<DSoundList*>(&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
-    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertTail(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
+    ((&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
+    ((&m_cloneList))->InsertTail(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
     return found;
 }
 
