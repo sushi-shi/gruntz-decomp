@@ -1780,11 +1780,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;
-        *((unsigned char*)oc + 3) &= 0xdf;
+        *(reinterpret_cast<unsigned char*>(oc) + 3) &= 0xdf;
         i32* oc2 = g2->m_8[oy] + ox * 7;
         oc2[1] = -1;
         i32* nc = g2->m_8[nyt] + nxt * 7;
-        *((unsigned char*)nc + 3) |= 0x20;
+        *(reinterpret_cast<unsigned char*>(nc) + 3) |= 0x20;
         i32* nc2 = g2->m_8[nyt] + nxt * 7;
         nc2[1] = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
 

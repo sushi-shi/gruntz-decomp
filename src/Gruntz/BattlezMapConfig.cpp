@@ -3217,7 +3217,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         unit->m_254 = 0;
     }
     if (unit->m_390 != 0) {
-        __int64 elapsed = (__int64)static_cast<u32>(g_frameTime) - *reinterpret_cast<__int64*>(&m_scratch78);
+        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<__int64*>(&m_scratch78);
         if (elapsed >= *reinterpret_cast<__int64*>(&m_scratch80)) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;

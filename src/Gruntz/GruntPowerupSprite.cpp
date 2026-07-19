@@ -100,7 +100,7 @@ void CGruntPowerupSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntPowerupSprite::Update;
+    (reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
 // SetCell @0x080380 - stash the grunt cell (x,y) and powerup id, seed the bound

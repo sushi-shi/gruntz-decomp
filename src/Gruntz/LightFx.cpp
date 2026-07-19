@@ -119,7 +119,7 @@ void CLightFx::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CLightFx::AdvanceAnim;
+    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 
 // ===========================================================================

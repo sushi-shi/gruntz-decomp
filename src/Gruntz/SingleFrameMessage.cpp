@@ -113,7 +113,7 @@ void CSingleFrameMessage::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CSingleFrameMessage::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

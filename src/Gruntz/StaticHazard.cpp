@@ -282,7 +282,7 @@ void CStaticHazard::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes2;
+    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -300,7 +300,7 @@ void CStaticHazard::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id2)))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes;
+    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id2)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------

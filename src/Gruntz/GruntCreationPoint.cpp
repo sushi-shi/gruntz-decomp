@@ -206,7 +206,7 @@ void CGruntCreationPoint::RegisterActs() {
         g_typeCounter++;
     }
     *reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(id)) =
-        (i32 (CUserLogic::*)())&CGruntCreationPoint::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
 // CGruntCreationPoint::AdvanceAnim @0x03ecc0 - re-target the bound object's

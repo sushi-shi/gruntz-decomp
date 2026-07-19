@@ -116,7 +116,7 @@ void CGruntHealthSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntHealthSprite::HealthUpdate;
+    (reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
 // CGruntHealthSprite::SetHealthGlyph @0x07f0d0 - stash the two passed coordinates

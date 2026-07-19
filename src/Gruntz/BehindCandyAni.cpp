@@ -135,7 +135,7 @@ void CBehindCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CBehindCandyAni::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 
 // CBehindCandyAni::AdvanceAnim @0x0adbb0 - re-target the bound object's

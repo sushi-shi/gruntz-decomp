@@ -662,9 +662,9 @@ void CBattlezDlg::FlashCtrlD() {
         RECT rc;
         ::GetClientRect(it->m_hWnd, &rc);
         cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc));
-        cts(it->m_hWnd, (LPPOINT)&rc + 1);
+        cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc) + 1);
         stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc));
-        stc(m_hWnd, (LPPOINT)&rc + 1);
+        stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc) + 1);
         CBrush scratch;
         i32 color;
         if (it->IsWindowEnabled()) {

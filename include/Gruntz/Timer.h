@@ -56,7 +56,7 @@ public:
     // with a sub/sbb; CTimer::HandleEvent streams it as one 8-byte field). It stays two
     // i32s because CTimer::Init INTERLEAVES the halves with the +0x40 pair
     // (m_38, m_40, m_3c, m_44) - a single i64 member cannot emit that store order. Read
-    // it 64-bit the way the +0x30 pair already is: `*(i64*)&t->m_38`.
+    // it 64-bit the way the +0x30 pair already is: `*reinterpret_cast<i64*>(&t)->m_38`.
     i32 m_38;        // +0x38  level/lap start stamp, lo
     i32 m_3c;        // +0x3c  ... hi
     i32 m_40;        // +0x40  (serialized 64-bit pair m_40:m_44; cleared on expiry

@@ -91,7 +91,7 @@ void CGruntToySprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntToySprite::Update;
+    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
 // SetCell @0x07f920 - stash the (x,y) grunt cell, clear m_38 bit 0, return 1.

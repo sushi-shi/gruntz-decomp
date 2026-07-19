@@ -1578,7 +1578,7 @@ label_4cb4b:
         GruntBoard* bdl = g_gameReg->m_tileGrid;
         // Two separate row-table walks: the byte-store may alias m_8, so retail
         // reloads the row table between them.
-        *((u8*)&(reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7] + 3) &= 0xdf;
+        *(reinterpret_cast<u8*>(&(reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7]) + 3) &= 0xdf;
         (reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7 + 1] = -1;
 
         tgtTileX = tgtPxX >> 5;

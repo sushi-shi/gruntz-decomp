@@ -149,7 +149,7 @@ void CStatusBarSprite::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CStatusBarSprite::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
 // CStatusBarSprite::SerializeMove (0x11ae0), vtable slot 1 - the

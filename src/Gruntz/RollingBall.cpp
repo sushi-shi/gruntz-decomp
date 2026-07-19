@@ -274,7 +274,7 @@ void CRollingBall::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CRollingBall::Update;
+    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).

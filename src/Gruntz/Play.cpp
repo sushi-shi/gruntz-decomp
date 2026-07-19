@@ -390,7 +390,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
 //   * ALL the interval one-shots (cue +0x3f8, booty +0x328, ambient +0x338,
 //     win/lose, snapshot +0x4a0) are 64-BIT elapsed tests: retail does
 //     `sub ecx,lo; sbb eax,hi; cmp eax,intervalHi; jl/jg; cmp ecx,intervalLo; jb`
-//     ((i64)(u32)g_frameTime - *(i64*)&m_timerLo >= *(i64*)&m_intervalLo), not 32-bit.
+//     ((i64)(u32)g_frameTime - *reinterpret_cast<i64*>(&m_timerLo) >= *reinterpret_cast<i64*>(&m_intervalLo)), not 32-bit.
 //   * the in-game tail (after the view check) has 2 CPlay this-calls the carcass
 //     omits (0x2e2d(clock), 0x1519(view)) + a 3-arg cdecl(g_gameReg, m_guts,
 //     m_region0Gate) before m_c->m_level->PostStep(); surface flush is a __thiscall on

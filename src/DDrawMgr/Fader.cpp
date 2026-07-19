@@ -1317,9 +1317,9 @@ void CFaderRadial::RenderFrame(i32 frame) {
     // Inlined UnlockThunk: m_8->vtbl[0x80](m_8, 0) on both surfaces (dispatched by slot
     // on the forward-declared IDirectDrawSurface*).
     void* s8 = m_srcSurface->m_8;
-    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*(void***)s8 + 0x20)))(s8, 0);
+    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*reinterpret_cast<void***>(s8) + 0x20)))(s8, 0);
     void* d8 = dst->m_8;
-    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*(void***)d8 + 0x20)))(d8, 0);
+    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*reinterpret_cast<void***>(d8) + 0x20)))(d8, 0);
     RezFree(scratch);
 }
 

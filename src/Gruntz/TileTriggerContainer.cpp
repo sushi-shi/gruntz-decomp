@@ -708,7 +708,7 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
         if (elem == data) {
             m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
             m_list2.AddTail(elem);
-            *((i32*)elem + 14) = 0; // elem+0x38
+            *(reinterpret_cast<i32*>(elem) + 14) = 0; // elem+0x38
             return 1;
         }
     } while (node != 0);

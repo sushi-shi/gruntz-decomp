@@ -235,7 +235,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CSecretTeleporterTrigger::SpawnTeleporter;
+    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
 }
 
 // --- CSecretLevelTrigger 1-arg ctor (0x0424b0), vptr 0x5e8804 --- folds the inline
@@ -308,7 +308,7 @@ void CSecretLevelTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CSecretLevelTrigger::Tick;
+    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
 // CSecretLevelTrigger::Tick @0x042ac0 - probe the trigger's screen position; if a

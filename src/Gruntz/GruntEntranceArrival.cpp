@@ -934,7 +934,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
     i32 t0 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy1) + 0x24));
     i32 t1 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy2) + 0x24));
-    i64 elapsed = *(i64*)&m_toyClockLo - static_cast<i64>(static_cast<u32>(g_frameTime));
+    i64 elapsed = *reinterpret_cast<i64*>(&m_toyClockLo) - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
         cap = 0;

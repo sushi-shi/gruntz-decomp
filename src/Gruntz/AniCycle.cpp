@@ -103,7 +103,7 @@ void CAniCycle::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CAniCycle::AdvanceAnim;
+    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 
 #include <rva.h>

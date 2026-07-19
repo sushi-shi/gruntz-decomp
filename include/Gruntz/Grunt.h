@@ -1148,7 +1148,7 @@ public:
     //       `zDArray<int (CUserLogic::*)(void)>`, and it mixes CGrunt with
     //       CGruntBehaviorLeaf handlers, so the base IS its true type - that part is
     //       right). But g_reg_644af0's handlers are a MIX of void- and i32-returning
-    //       methods, and MSVC5 rejects `(i32 (CUserLogic::*)())&CGrunt::<void method>`.
+    //       methods, and MSVC5 rejects `static_cast<i32 (CUserLogic::*)()>(&CGrunt::)<void method>`.
     //       So the PMF retype cannot land until the void/i32 return split is
     //       reconciled from the BODIES (which arm actually materializes eax) - the same
     //       reconciliation blocker #4 already describes. Do that FIRST; the spine move

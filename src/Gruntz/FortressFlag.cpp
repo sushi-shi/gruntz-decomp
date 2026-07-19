@@ -319,7 +319,7 @@ void CFortressFlag::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CFortressFlag::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
 // CFortressFlag::AdvanceAnim @0x0463e0 - re-target the bound object's animation
@@ -534,7 +534,7 @@ void CParticlez::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CParticlez::Update;
+    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
 // CParticlez::Update @0x047090 - re-target the bound object's animation sub-object

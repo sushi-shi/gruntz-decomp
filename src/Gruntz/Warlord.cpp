@@ -690,7 +690,7 @@ i32 CGrunt::ResolveMovingAnimation() {
 //         g_gameReg->m_cueSink->Cue(m_object->m_188, 0x436, -1,-1,-1);   // 0x11b7c0
 //         m_cooldownWindowLo = 0x7530; m_cooldownWindowHi = 0; m_cooldownStampLo = g_frameTime;
 //     } else {                                 // multiplayer
-//         if ((i64)(u32)g_frameTime - *(i64*)&m_timer2StampLo >= *(i64*)&m_timer2WindowLo
+//         if ((i64)(u32)g_frameTime - *reinterpret_cast<i64*>(&m_timer2StampLo) >= *reinterpret_cast<i64*>(&m_timer2WindowLo)
 //             && ((CRegThreatHelper*)g_gameReg->m_cmdGrid)->m_2a0 == this) {
 //             g_gameReg->m_cueSink->Cue(m_object->m_188, 0x440, -1,-1,-1);
 //             if ((g_notifyShownFlag & 1) == 0) {                        // g_6445bc, one-shot

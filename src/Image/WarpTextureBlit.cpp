@@ -291,7 +291,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    (*reinterpret_cast<void (**)(void*, i32)>((*(void***)src->m_8 + 0x80 / 4)))(src->m_8, 0);
-    (*reinterpret_cast<void (**)(void*, i32)>((*(void***)dst->m_8 + 0x80 / 4)))(dst->m_8, 0);
+    (*reinterpret_cast<void (**)(void*, i32)>((*reinterpret_cast<void***>(src->m_8) + 0x80 / 4)))(src->m_8, 0);
+    (*reinterpret_cast<void (**)(void*, i32)>((*reinterpret_cast<void***>(dst->m_8) + 0x80 / 4)))(dst->m_8, 0);
     return 1;
 }

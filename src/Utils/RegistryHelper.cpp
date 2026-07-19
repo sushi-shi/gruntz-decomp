@@ -199,7 +199,7 @@ namespace Utils {
                    szValueName,
                    0,
                    1 /*REG_SZ*/,
-                   (LPBYTE)szValue,
+                   reinterpret_cast<LPBYTE>(const_cast<char*>(szValue)),
                    strlen(szValue) + 1
                )
                == 0;

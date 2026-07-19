@@ -224,7 +224,7 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
     // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *(i64*)&m_accumLo - static_cast<u32>(g_frameTime) + *reinterpret_cast<i64*>(&m_baseTimeLo);
+    i64 rem = *reinterpret_cast<i64*>(&m_accumLo) - static_cast<u32>(g_frameTime) + *reinterpret_cast<i64*>(&m_baseTimeLo);
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
@@ -395,7 +395,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63 - cur / 60000 - carry;
     }
     u32 total = (mins + secs * 60) * 1000;
-    *(u64*)&m_accumLo += total;
+    *reinterpret_cast<u64*>(&m_accumLo) += total;
 }
 
 // ---------------------------------------------------------------------------

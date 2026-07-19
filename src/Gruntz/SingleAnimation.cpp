@@ -108,7 +108,7 @@ void CSingleAnimation::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CSingleAnimation::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
 // CSingleAnimation::AdvanceAnim @0x0aed80 - advance the bound object's +0x1a0 anim

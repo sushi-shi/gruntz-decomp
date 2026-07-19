@@ -92,7 +92,7 @@ void CExitTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CExitTrigger::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }
 
 // (CWormhole's SIZE_UNKNOWN + CWormholeActEntry now ride <Gruntz/Wormhole.h>;

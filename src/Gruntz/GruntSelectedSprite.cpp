@@ -99,7 +99,7 @@ void CGruntSelectedSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntSelectedSprite::Update;
+    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
 // SetCell @0x07e9c0 - stash the (x,y) grunt cell, return 1.

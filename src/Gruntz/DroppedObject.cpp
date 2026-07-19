@@ -498,7 +498,7 @@ void CObjectDropper::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CObjectDropper::Update;
+    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
 // CObjectDropper::Update @0xc62e0 - the per-frame tick (re-homed from the
@@ -989,7 +989,7 @@ void CDroppedObjectShadow::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CDroppedObjectShadow::Advance;
+    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance

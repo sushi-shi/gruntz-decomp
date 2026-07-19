@@ -2119,7 +2119,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
     if (uncompress(
             dest + src->wwdSignature,
             &outLen,
-            (Bytef*)src + src->wwdSignature,
+            reinterpret_cast<Bytef*>(src) + src->wwdSignature,
             src->mainBlockLength
         )
         != 0) {

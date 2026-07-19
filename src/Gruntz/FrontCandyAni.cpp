@@ -206,7 +206,7 @@ void CEyeCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CEyeCandyAni::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
 // CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
@@ -294,7 +294,7 @@ void CFrontCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CFrontCandyAni::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
 // CFrontCandyAni::AdvanceAnim @0x0ad510 - re-target the bound object's animation
