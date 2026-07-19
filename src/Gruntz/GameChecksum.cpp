@@ -38,7 +38,7 @@ i32 CNetSession::Checksum() {
             // per-iteration reload of the 3-hop chain (retail re-derefs each time);
             // the grid cell IS the placed CGrunt (the CTmCell/CGrunt conflation is
             // the grid's own @identity question, not this reader's).
-            CGrunt* obj = reinterpret_cast<CGrunt*>(m_session->m_4->m_cmdGrid->m_grid[idx]);
+            CGrunt* obj = static_cast<CGrunt*>(m_session->m_4->m_cmdGrid->m_grid[idx]);
             if (obj != 0) {
                 CGameObject* sub = obj->m_10;
                 sum += obj->m_entranceCell.reason + obj->m_stamina + obj->m_toyTime + obj->m_health

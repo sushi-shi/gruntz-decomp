@@ -1219,7 +1219,7 @@ void AnimWorkerObj::Clear() {
 RVA(0x00151eb0, 0x43)
 void CDDrawWorker::DeleteAll() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
-        CImage* el = reinterpret_cast<CImage*>(m_items.GetAt(i));
+        CImage* el = static_cast<CImage*>(m_items.GetAt(i));
         if (el != 0) {
             delete el; // the slot-1 scalar-deleting dtor (push 1; call [eax+0x04])
         }
@@ -1243,7 +1243,7 @@ void CDDrawWorker::DeleteAll() {
 // 4th) - same wall as CreateFrame30.
 RVA(0x00151f00, 0xa4)
 CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
-    if (n < m_items.GetSize() && reinterpret_cast<CImage*>(m_items.GetAt(n)) != 0) {
+    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != 0) {
         return 0;
     }
     // Two casts SURVIVE here, and they are honest: they are telling us two types above them
@@ -1287,7 +1287,7 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
 CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
-    if (index < m_items.GetSize() && reinterpret_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
@@ -1316,7 +1316,7 @@ CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
 CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
-    if (index < m_items.GetSize() && reinterpret_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
@@ -1346,7 +1346,7 @@ CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152110, 0xa9)
 CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
-    if (index < m_items.GetSize() && reinterpret_cast<CImage*>(m_items.GetAt(index)) != 0) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
@@ -1447,7 +1447,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
         for (i32 i = 0; i < n; i++) {
             CImage* el;
             if (i >= m_minIndex && i <= m_maxIndex) {
-                el = reinterpret_cast<CImage*>(m_items.GetAt(i));
+                el = static_cast<CImage*>(m_items.GetAt(i));
             } else {
                 el = 0;
             }
@@ -1492,7 +1492,7 @@ RVA(0x001523b0, 0x3b)
 i32 CDDrawWorker::ReloadFrame(i32 rec, i32 n, i32 flag) {
     CImage* el;
     if (n >= m_minIndex && n <= m_maxIndex) {
-        el = reinterpret_cast<CImage*>(m_items.GetAt(n));
+        el = static_cast<CImage*>(m_items.GetAt(n));
     } else {
         el = 0;
     }
@@ -1599,7 +1599,7 @@ i32 CDDrawWorker::SetAllFormats(i32 format) {
 // lowest-indexed frame's owned sprite; returns 1 when that frame or its sprite is null.
 RVA(0x00152570, 0x24)
 i32 CDDrawWorker::GetFirstFrameState() {
-    CImage* frame = reinterpret_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == 0) {
         return 1;
     }
@@ -1615,7 +1615,7 @@ RVA(0x001525c0, 0x76)
 i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
         for (i32 i = 0; i < m_items.GetSize(); i++) {
-            CImage* cur = reinterpret_cast<CImage*>(m_items.GetAt(i));
+            CImage* cur = static_cast<CImage*>(m_items.GetAt(i));
             if (cur && cur == frame) {
                 if (outName) {
                     strcpy(outName, m_name);

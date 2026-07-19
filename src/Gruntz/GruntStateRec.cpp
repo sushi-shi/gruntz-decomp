@@ -126,7 +126,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
-        CSprite* gm = reinterpret_cast<CSprite*>(out);                                                 \
+        CSprite* gm = static_cast<CSprite*>(out);                                                 \
         CImage* r;                                                                                 \
         if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                                  \
             r = static_cast<CImage*>(gm->m_items.GetAt(i));                                                                    \

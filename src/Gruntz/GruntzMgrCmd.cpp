@@ -108,7 +108,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c =                                                                              \
-            reinterpret_cast<LeafCue*>(m_world->m_soundRegistry->Lookup_05b7e0(TAG));       \
+            static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup_05b7e0(TAG));       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -147,7 +147,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? reinterpret_cast<CGrunt*>(                                           \
+                            ? static_cast<CGrunt*>(                                           \
                                   m_cmdGrid->m_grid                                                \
                                       [reinterpret_cast<CTrigPoint*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \
@@ -177,7 +177,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? reinterpret_cast<CGrunt*>(                                           \
+                            ? static_cast<CGrunt*>(                                           \
                                   m_cmdGrid->m_grid                                                \
                                       [reinterpret_cast<CTrigPoint*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \

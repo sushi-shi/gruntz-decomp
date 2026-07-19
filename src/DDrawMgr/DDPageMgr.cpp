@@ -156,7 +156,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == 8) {
-        if (m_dd2->CreatePalette(4, reinterpret_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0) != 0) {
+        if (m_dd2->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0) != 0) {
             HandleError();
             return 0;
         }

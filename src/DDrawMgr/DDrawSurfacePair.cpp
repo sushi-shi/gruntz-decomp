@@ -111,7 +111,7 @@ RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::DestroyWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerBase* child = reinterpret_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
@@ -128,7 +128,7 @@ void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) 
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
-        CDDrawWorkerBase* child = reinterpret_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
         child->RenderFrame(a, b);
         child->m_refCount--;
         if ((b->m_surface != 0 && (b->m_flags & 0x20000) == 0) || child->m_refCount <= 0) {
@@ -145,7 +145,7 @@ RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerBase* child = reinterpret_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
