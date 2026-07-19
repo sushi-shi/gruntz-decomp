@@ -509,8 +509,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 cc = cell.col;
     i32 cr = cell.row;
     i32 base = cc + (cr + 2 * cc);
-    i32 idx2 = base + base * 12;
-    char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
+    char* buf = m_cells[base].m_attack.GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
@@ -545,8 +544,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 col = cell.col;
     i32 row = cell.row;
     i32 base = col + (row + 2 * col);
-    i32 idx2 = base + base * 12;
-    char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
+    char* buf = m_cells[base].m_attack.GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
@@ -1951,9 +1949,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             GruntEntranceCell cell = m_entranceCell;
             i32 col = cell.row + cell.col * 2;
             i32 base = cell.col + col;
-            i32 row = base * 3;
-            i32 idx = base + row * 4;
-            char* cn = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
+            char* cn = m_cells[base].m_walk.GetBuffer(0);
             m_38->ApplyName(cn);
         } else {
             ReseedIdleReset(1, 0, 0);
@@ -2077,9 +2073,7 @@ tail:
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        i32 row = base * 3;
-        i32 idx = base + row * 4;
-        char* cn = ((CString*)((char*)this + idx * 8 + 0x46c))->GetBuffer(0);
+        char* cn = m_cells[base].m_struck.GetBuffer(0);
         m_38->ApplyLookupSprite(cn, frame);
     }
     {
@@ -2298,9 +2292,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
-    i32 base = cell.col + col + 0xb;
-    i32 idx = base + base * 3 * 4;
-    char* name = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
+    i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
+    char* name = m_cells[base].m_item.GetBuffer(0);
     m_38->ApplyName(name);
 }
 
