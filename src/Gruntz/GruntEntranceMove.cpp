@@ -581,11 +581,11 @@ void CGrunt::RearmEntranceDrop() {
 
         i32 col = m_entranceCell.col;
         i32 row = m_entranceCell.row;
-        // (3col+row+0xb)*0x68 == &m_cells[3col+row].m_item (0xb*0x68 == 0x478). Kept
-        // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
-        // into idx*0x68 + 0x478 and diverge.
-        const char* name =
-            reinterpret_cast<const char*>(((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0));
+        // The retail call really is zDArray::IndexToPtr(0) on the m_item CString slot
+        // (the two classes share the head layout); the old (3col+row+0xb)*0x68 spelling
+        // was the m_cells base folded into the index - array form proven byte-identical.
+        const char* name = reinterpret_cast<const char*>(
+            reinterpret_cast<zDArray*>(&m_cells[3 * col + row].m_item)->IndexToPtr(0));
         m_38->ApplyLookupSprite(name, frame);
     }
 
@@ -700,9 +700,8 @@ i32 CGrunt::StartBombGruntRun() {
     m_38->m_1a0.Setup_15c2d0(m_poseItem);
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
-    i32 base = cell.col + col + 0xb;
-    i32 idx = base + base * 3 * 4;
-    char* cn = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
+    i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
+    char* cn = m_cells[base].m_item.GetBuffer(0);
     m_38->ApplyName(cn);
     return 0;
 }
