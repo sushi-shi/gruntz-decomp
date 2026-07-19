@@ -804,7 +804,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_284 != 0) {
         return 0;
     }
-    if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
+    if (g_gameReg->m_134 != 1) {
         return 0;
     }
     char* lvl = (char*)g_gameReg->m_curState;
@@ -813,8 +813,8 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 color = g_buteMgr.GetIntDef((char*)static_cast<const char*>(name), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
-    if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
-        || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
+    if (hy >= g_gameReg->m_viewOriginR || hy < g_gameReg->m_viewOriginL
+        || hx >= g_gameReg->m_viewOriginB || hx < g_gameReg->m_viewOriginT) {
         ((CPlay*)lvl)->ResetGoals(hy, hx);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
