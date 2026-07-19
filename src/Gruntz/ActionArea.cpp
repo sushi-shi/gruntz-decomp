@@ -316,15 +316,15 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
-    char* p = (char*)&m_timestamp;
+    i64* p = &m_timestamp;
     switch (tag) {
         case 4:
             ar->Write(p, 8);
-            ar->Write(p + 8, 8);
+            ar->Write(p + 1, 8);
             break;
         case 7:
             ar->Read(p, 8);
-            ar->Read(p + 8, 8);
+            ar->Read(p + 1, 8);
             break;
     }
     switch (tag) {

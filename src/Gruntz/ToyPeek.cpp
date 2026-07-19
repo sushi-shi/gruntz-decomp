@@ -75,16 +75,16 @@ i32 CToyPeek::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     }
     // The two i64 timer fields sit contiguous (m_startClock @+0x58, m_countdown
     // @+0x60); retail walks one pointer over the blob.
-    char* p = (char*)&m_startClockLo;
+    i32* p = &m_startClockLo;
     switch (mode) {
         case 4:
             ar->Write(p, 8);
-            p += 8;
+            p += 2;
             ar->Write(p, 8);
             break;
         case 7:
             ar->Read(p, 8);
-            p += 8;
+            p += 2;
             ar->Read(p, 8);
             break;
     }
