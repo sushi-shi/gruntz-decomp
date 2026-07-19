@@ -10,6 +10,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/GameRegPtr.h>
@@ -135,7 +136,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     if (map) {
         CImage* glyph;
         if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
-            glyph = reinterpret_cast<CImage*>(map->m_items.GetAt(slot));
+            glyph = static_cast<CImage*>(map->m_items.GetAt(slot));
         } else {
             glyph = 0;
         }
@@ -180,7 +181,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
         if (holder != 0) {
             CImage* glyph;
             if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
-                glyph = reinterpret_cast<CImage*>(holder->m_items.GetAt(slot));
+                glyph = static_cast<CImage*>(holder->m_items.GetAt(slot));
             } else {
                 glyph = 0;
             }

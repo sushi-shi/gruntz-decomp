@@ -5,6 +5,7 @@
 // flags="base" while SBI_RectOnly.cpp is flags="eh" (/GX). A TU is compiled with ONE
 // flag set, so a "base" obj cannot live inside an "eh" TU without changing its codegen.
 #include <Mfc.h>
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Ints.h>
@@ -63,7 +64,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
                 m_38 = 0;
             } else {
-                m_38 = reinterpret_cast<CImage*>(rec->m_items.GetAt(index));
+                m_38 = static_cast<CImage*>(rec->m_items.GetAt(index));
             }
             return 1;
         }

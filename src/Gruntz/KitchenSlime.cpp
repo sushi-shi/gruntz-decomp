@@ -1,4 +1,5 @@
 #include <Mfc.h>           // real MFC CString (direction-name match temp; reloc-masked)
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -594,7 +595,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_190 = 1;
-            player->m_layer = reinterpret_cast<CImage*>(spr->m_items.GetAt(1));
+            player->m_layer = static_cast<CImage*>(spr->m_items.GetAt(1));
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;

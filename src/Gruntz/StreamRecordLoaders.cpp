@@ -15,6 +15,7 @@
 // chain: the indexed "type table" is the same [m_firstFrame..m_lastFrame]-gated
 // CSprite frame resolve CSBI_Image::SerializeFields runs.
 #include <rva.h>
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
@@ -84,7 +85,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -103,7 +104,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -122,7 +123,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -141,7 +142,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -160,7 +161,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }

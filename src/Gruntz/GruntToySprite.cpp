@@ -8,6 +8,7 @@
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -121,7 +122,7 @@ i32 CGruntToySprite::Update() {
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
-                mapped = reinterpret_cast<CImage*>(h->m_items.GetAt(layer));
+                mapped = static_cast<CImage*>(h->m_items.GetAt(layer));
             } else {
                 mapped = 0;
             }

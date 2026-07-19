@@ -10,6 +10,7 @@
 //
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
 #include <Mfc.h>
+#include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Ints.h>
@@ -946,7 +947,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
-        return reinterpret_cast<i32>(reinterpret_cast<CImage*>(m_items.GetAt(n)));
+        return reinterpret_cast<i32>(static_cast<CImage*>(m_items.GetAt(n)));
     }
     return 0;
 }
@@ -968,7 +969,7 @@ void CAniRenderCtx::ClampFirst_15cc50() {
     i32 n = seq->m_minIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>(reinterpret_cast<CImage*>(seq->m_items.GetAt(n)));
+        m_curFrame = reinterpret_cast<i32>(static_cast<CImage*>(seq->m_items.GetAt(n)));
     } else {
         m_curFrame = 0;
     }
@@ -985,7 +986,7 @@ void CAniRenderCtx::ClampLast_15cc90() {
     i32 n = seq->m_maxIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>(reinterpret_cast<CImage*>(seq->m_items.GetAt(n)));
+        m_curFrame = reinterpret_cast<i32>(static_cast<CImage*>(seq->m_items.GetAt(n)));
     } else {
         m_curFrame = 0;
     }
