@@ -60,6 +60,9 @@
 #include <Gruntz/SoundCue.h>
 
 class CDDrawChildGroup; // +0x30 -> +0x08 the object collection / sprite factory (CreateSprite)
+namespace Utils {
+    class RegistryHelper; // the +0x38 settings writer (<Utils/RegistryHelper.h>)
+}
 class CGruntCueSink;    // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
                         // the pure-Win32 grunt-step TUs that can't pull Grunt.h,
                         // completed locally with just the 0x4039f4 6-arg cue - a
@@ -261,7 +264,7 @@ struct CGameRegistry {
     // +0x04  bound game window (base CGameMgr::m_gameWnd - typed CGameWnd* there
     // too, <Wap32/Wap32.h>; fwd-decl keeps this header MFC/afx-neutral).
     class CGameWnd* m_gameWnd;
-    void* m_owner;      // +0x08  owning app (base CGameMgr::m_owner)
+    class CGameApp* m_owner; // +0x08  owning app (base CGameMgr::m_owner)
     i32 m_frameGate;    // +0x0c  nonzero suppresses per-frame advance / busy-pause gate
                         //         (base CGameMgr::m_frameGate; toggled, CanQuickSave gate)
     i32 m_soundEnabled; // +0x10  sound-on flag (base CGameMgr::m_soundEnabled "Sound"; every
@@ -279,10 +282,10 @@ struct CGameRegistry {
     // +0x34  the level/rez symbol parser (== GruntzMgr.h m_symParser, the REAL CSymParser;
     // CState::LoadGameAssetNamespaces caches it into CState::m_8).
     class CSymParser* m_symParser;
-    void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
-    //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
+    Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (== GruntzMgr
+                                       //         m_settings; SetValueDword/LogPos/QueryPos)
     char m_pad3c[0x48 - 0x3c];
-    void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
+    class CGruntzSoundZ* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound)
     char m_pad4c[0x50 - 0x4c];
     CShadeTableCache* m_shadeCache; // +0x50  shade-table cache (== GruntzMgr.h m_shadeCache;
                                     //        CLightFxMgr::Init reads it to build its tables)
@@ -308,7 +311,8 @@ struct CGameRegistry {
                        //         ONE CTriggerMgr; its 5-arg HitTestCell @0x75af0 + 4-arg
                        //         CellDispatch @0x6bcb0 are FID-tagged CTriggerMgr methods and its
                        //         +0x1c m_grid is the 15-column cell grid every consumer indexes.
-    void* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object
+    class CGruntzCmdMgr* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object (RezSync
+                                      //         news a CGruntzCmdMgr into it)
     CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
                            //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (ONE object,
