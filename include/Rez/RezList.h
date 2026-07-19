@@ -77,4 +77,8 @@ struct CRezList : public CObjList {
 };
 SIZE(CRezList, 0xc); // {vptr,head,tail}
 
+// cl emits ??_7CObjList for the dtor-carrying list base; retail's stamps (CRezDir/CRezList
+// dtors, reloc-verified at exact offsets x2) target CObjListBase's bound table.
+RELOC_VTBL(CObjList, 0x001ef760);
+
 #endif // REZ_REZLIST_H

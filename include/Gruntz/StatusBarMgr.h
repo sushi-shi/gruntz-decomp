@@ -1029,4 +1029,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+// BuildStatusBarTabs' record ctor stamps 0x1eab8c == CSBI_RectOnly's bound table;
+// the sub-record's cl-emitted ??_7 reloc-masks it.
+RELOC_VTBL(CSbiRectSub, 0x001eab8c);
+
 #endif // GRUNTZ_SBI_RECTONLY_H

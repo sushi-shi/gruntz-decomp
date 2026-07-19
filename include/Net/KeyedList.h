@@ -45,4 +45,9 @@ public:
     i32 m_mode; // +0x1c  latched mode
 };
 
+// VTBL-coverage note (2026-07-19): our virtual-dtor model emits ??_7CKeyedList in the
+// base obj, but retail's ~ body (0xc5280, 0x49B) carries NO vptr stamp anywhere - either
+// retail's class is non-polymorphic (contradicting the CPtrList-derived dtor rules) or
+// 0xc5280 is mis-attributed. UNRESOLVED - the last uncatalogued emitter with CLatencyList.
+
 #endif // GRUNTZ_NET_KEYEDLIST_H

@@ -62,4 +62,8 @@ struct CAniRecordBase2 : public CObject {
 SIZE(CAniRecordBase2, 0x14);       // standalone map-worker allocation size (`new` 0x14)
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 
+// CreateAniEntry ctors stamp CObject's base then 0x1efba8 == CAniElement's bound
+// table - the record array is an element sibling; its ??_7 reloc-masks it.
+RELOC_VTBL(CAniRecordArray, 0x001efba8);
+
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H

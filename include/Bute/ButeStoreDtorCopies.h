@@ -51,4 +51,10 @@ struct CButeStoreResetCopyClear : public CButeStore {
 };
 SIZE(CButeStoreResetCopyClear, 0x2c);
 
+// The three /GX dtor-copy twins stamp zPTree's RTTI-named pair (0x1e94ac primary,
+// header doc above); their cl-emitted ??_7s reloc-mask that bound table.
+RELOC_VTBL(CButeStoreDtorCopyMgrA, 0x001e94ac);
+RELOC_VTBL(CButeStoreDtorCopyMgrB, 0x001e94ac);
+RELOC_VTBL(CButeStoreDtorCopyNode, 0x001e94ac);
+
 #endif // SRC_BUTE_BUTESTOREDTORCOPIES_H

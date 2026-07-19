@@ -1831,4 +1831,8 @@ extern char s_codeN[]; // "N" (0x0060dc04)
 extern char s_codeO[]; // "O" (0x0060dc0c)
 extern char s_codeQ[]; // "Q" (0x0060dc08)
 
+// The intermediate base never re-stamps its own table (cl elides for the derived
+// ctor chain); its cl-emitted ??_7 reloc-masks CGrunt's bound 0x1e8754.
+RELOC_VTBL(CGruntMovingBase, 0x001e8754);
+
 #endif // SRC_GRUNTZ_GRUNT_H
