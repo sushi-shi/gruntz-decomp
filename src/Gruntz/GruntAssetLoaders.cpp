@@ -204,7 +204,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
     if (a2 != -1) {
         m_370 = a2;
-        (*(CBattlezData**)((char*)g_gameReg + 0x7c))->BumpWin(a2, m_tileOwnerHi); // 0xfcc50
+        g_gameReg->m_scoreHud->BumpWin(a2, m_tileOwnerHi); // 0xfcc50 (+0x7c m_scoreHud)
     }
 
     switch (deathType) {
