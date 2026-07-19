@@ -384,7 +384,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         }
     }
 
-    CSprite* found = 0;
+    CAniElement* found = 0; // the ANIM registry resolves elements (the image registry holds the sprites)
     const char* base;
 
     if (mode == 1) {
@@ -422,7 +422,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         ResetEntranceAnimation(1, 0, 0);
     } else {
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(found));
+        m_38->m_1a0.Setup_15c2d0(found);
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         EntranceApplyFrame(key, elem[0x14 / 4]);
@@ -522,7 +522,7 @@ void CGrunt::LoadEntranceConfig() {
         void* found_ob = 0;
         void* cached = p->m_1a0.m_14;
         p->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
-        CSprite* found = static_cast<CSprite*>(found_ob);
+        CAniElement* found = static_cast<CAniElement*>(found_ob);
         if (static_cast<void*>(found) == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
@@ -726,7 +726,7 @@ i32 CGrunt::StartBombGruntRun() {
 // coin-flip); deferred to the final sweep. ~75%.
 RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
-    CSprite* _out;
+    CAniElement* _out;
     if (enable != 0) {
         m_wingzEnabled = 1;
         m_wingzDurationLo = static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
@@ -756,12 +756,12 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, reinterpret_cast<void*&>(_out));
-        m_poseWalk = reinterpret_cast<CAniElement*>(_out);
+        m_poseWalk = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, reinterpret_cast<void*&>(_out));
         m_poseIdle[2] = 0;
-        m_poseIdle[0] = reinterpret_cast<CAniElement*>(_out);
-        m_poseIdle[1] = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle[0] = _out;
+        m_poseIdle[1] = _out;
         m_poseIdle4 = 0;
         m_poseIdle5 = 0;
 
@@ -802,22 +802,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_WALK, reinterpret_cast<void*&>(_out));
-        m_poseWalk = reinterpret_cast<CAniElement*>(_out);
+        m_poseWalk = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE1, reinterpret_cast<void*&>(_out));
-        m_poseIdle[0] = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle[0] = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE2, reinterpret_cast<void*&>(_out));
-        m_poseIdle[1] = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle[1] = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE3, reinterpret_cast<void*&>(_out));
-        m_poseIdle[2] = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle[2] = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE4, reinterpret_cast<void*&>(_out));
-        m_poseIdle4 = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle4 = _out;
         _out = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE5, reinterpret_cast<void*&>(_out));
-        m_poseIdle5 = reinterpret_cast<CAniElement*>(_out);
+        m_poseIdle5 = _out;
     }
 
     // Re-stamp the current entrance-cell frame keyed by the active anim type.
