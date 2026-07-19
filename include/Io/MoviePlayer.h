@@ -298,7 +298,7 @@ public:
     };
     union {                  // +0x508
         i32 m_508;           //   InitMode's a31 pass-through scalar
-        void* m_directSound; //   the DirectSound the movie half reads
+        struct IDirectSound* m_directSound; //   the DirectSound the movie half reads
     };
     i32 m_50c; // +0x50c  frame-locked flag / reset to 0 by Configure
     union {    // +0x510
@@ -318,7 +318,7 @@ public:
     i32 m_originY;     // +0x530
     union {                // +0x534
         RECT* m_destRect;  //   explicit dest rect (or 0)
-        void* m_rezBuffer; //   the movie half's Rez buffer
+        u8* m_rezBuffer;   //   the movie half's Rez buffer (owned sized blob)
     };
     union {                   // +0x538
         i32 m_forceSingleRow; //   screen view
