@@ -67,7 +67,7 @@ public:
     i32 Allocate(u32 count);
 
     BrickzNode* m_block; // +0x00  the 0x24-byte search-record pool (was void*)
-    void* m_0;           // +0x04  (the heap block the dtor frees)
+    struct MapElemA* m_0; // +0x04  the owned element block (the dtor frees it)
     u32 m_count;         // +0x08
 };
 
@@ -87,7 +87,7 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    void* m_0;           // +0x00  (the heap block the dtor frees)
+    struct MapElemB* m_0; // +0x00  the owned element block (the dtor frees it)
     BrickzNode* m_block; // +0x04  the 0x0c-byte bucket-node pool (was void*)
     u32 m_count;         // +0x08
 };
