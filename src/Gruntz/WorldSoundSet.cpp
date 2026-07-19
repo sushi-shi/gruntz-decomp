@@ -975,12 +975,12 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
     if (aux->m_requestState == 0) {
         obj->m_flags08 |= 1;
         obj->m_flags40 |= 1;
-        if (aux->m_handler == static_cast<void*>(DefaultActionHandler_2d15)) {
+        if (aux->m_handler == DefaultActionHandler_2d15) {
             obj->m_flags08 |= 2;
         } else {
             obj->m_flags08 &= ~2;
         }
-        void* layer = obj->m_layer;
+        LeafCue* layer = obj->m_layer;
         if (layer && g_gameReg) {
             RECT rc;
             CopyRect(&rc, &obj->m_area);
@@ -1072,12 +1072,12 @@ void SpawnPosSound(PosSoundObj* obj) {
     obj->m_flags08 = (obj->m_flags08 & ~2) | 0x100001;
     obj->m_flags40 |= 1;
     aux->m_voice = 0;
-    void* layer = obj->m_layer;
+    LeafCue* layer = obj->m_layer;
     if (layer != 0 && g_gameReg != 0 && g_gameReg->m_inputState != 0) {
         i32 pt[2];
         pt[0] = obj->m_x;
         pt[1] = obj->m_y;
-        void* v = PosSoundSpawn(*reinterpret_cast<void**>((reinterpret_cast<char*>(layer) + 0x10)), 0x64, &pt, obj->m_120, 0);
+        void* v = PosSoundSpawn(layer->m_10, 0x64, &pt, obj->m_120, 0);
         if (v != 0) {
             aux->m_voice = static_cast<CAmbientPosSound*>(v);
         }

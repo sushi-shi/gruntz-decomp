@@ -26,7 +26,8 @@ struct PosSoundAux;
 // m_handler/m_requestState/m_srcL..m_srcB/m_voice (a shared-header rename), deferred.
 struct PosSoundAux {
     char m_pad00[0x10];
-    void* m_handler; // +0x10  the object's init/action handler (vs the default at 0x402d15)
+    void (*m_handler)(); // +0x10  the object's init/action handler fn
+                         //        (vs the DefaultActionHandler_2d15 label)
     char m_pad14[0x1c - 0x14];
     i32 m_requestState; // +0x1c  request state (0 spawn / 0x1e stop / 5 spawned)
     char m_pad20[0x2c - 0x20];
@@ -67,7 +68,8 @@ struct PosSoundObj {
     RECT m_area;   // +0x144  emit source area (CopyRect base)
     RECT m_placed; // +0x154  placed rect written back on emit
     char m_pad164[0x19c - 0x164];
-    void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory) - see the offset note
+    struct LeafCue* m_layer; // +0x19c  the resolved leaf cue (its m_10 clone-inst
+                             //        feeds the spawn factory)
 };
 
 // The create-helper return record: the factory (WorldSoundCreateFull == CreateRandom

@@ -29,6 +29,21 @@ import clang.cindex as cidx
 REPO = "/home/sheep/Projects/gruntz"
 CDB_PATH = REPO + "/build/clangd/compile_commands.json"
 
+# void* fields where void* IS the recovered truth - each entry carries its proof.
+# These count under "void* fields (documented keeps)", not the actionable metric.
+_VOID_KEEPS = {
+    # retail's own Build signature passes these as void* (11-arg __thiscall) - typing
+    # them would contradict the recovered retail shape (SymTab.h doc block).
+    ("CSymLeafBuilder", "m_record"), ("CSymLeafBuilder", "m_08"),
+    ("CSymLeafBuilder", "m_sourceStream"), ("CSymLeafBuilder", "m_38"),
+    # identity cookie by design: heterogeneous object addresses used as reap keys
+    # (SoundVoiceList.h "the owning buffer's address as their reap key").
+    ("DSoundElem", "m_key"),
+    # setter TU unmatched - typing would be a guess (Font.h doc block; unblocks when
+    # the setter TU is reconstructed).
+    ("FontRenderer", "m_surface"), ("FontRenderer", "m_clip"),
+}
+
 _NUMERIC = {cidx.TypeKind.INT, cidx.TypeKind.UINT, cidx.TypeKind.LONG, cidx.TypeKind.ULONG,
             cidx.TypeKind.LONGLONG, cidx.TypeKind.ULONGLONG, cidx.TypeKind.SHORT,
             cidx.TypeKind.USHORT, cidx.TypeKind.CHAR_S, cidx.TypeKind.CHAR_U,
@@ -150,8 +165,11 @@ def scan_tu(tu, board):
                     and t.get_pointee().get_canonical().kind == cidx.TypeKind.VOID:
                 rel = _rel(node)
                 if rel:
-                    board.add("void* fields", rel, node.extent.start.offset,
-                              node.spelling)
+                    cls = node.semantic_parent.spelling if node.semantic_parent else '?'
+                    key = "void* fields (documented keeps)" \
+                        if (cls, node.spelling) in _VOID_KEEPS else "void* fields"
+                    board.add(key, rel, node.extent.start.offset,
+                              cls + "::" + node.spelling)
         elif node.kind == cidx.CursorKind.VAR_DECL:
             if node.storage_class == cidx.StorageClass.EXTERN \
                     and not node.is_definition():
@@ -182,7 +200,7 @@ def main():
     print("=== cleanliness (AST, definitional) ===")
     order = ["c-style casts", "vendor-macro casts", "  target numeric", "  target char*", "  target class*",
              "  target other-ptr", "  operand this", "offset-casts", "self-casts",
-             "void* fields", "extern var decls (.cpp)"]
+             "void* fields", "void* fields (documented keeps)", "extern var decls (.cpp)"]
     for k in order:
         print("%-26s %5d" % (k, board.counts.get(k, 0)))
     for k in order:
