@@ -472,13 +472,13 @@ i32 CDirectDrawMgr::CreateDevice(
     // m_caps/m_helCaps are the driver + HEL DDCAPS_DX6 blocks (raw i32[0x5f] in the
     // lean header; sizeof(DDCAPS)==0x17c is exactly 0x5f*4). Access them through the
     // real SDK type so the dwSize/dwCaps fields are named, not magic indices.
-    ((LPDDCAPS)m_caps)->dwSize = sizeof(DDCAPS);
+    (reinterpret_cast<LPDDCAPS>(m_caps))->dwSize = sizeof(DDCAPS);
     ((LPDDCAPS)m_helCaps)->dwSize = sizeof(DDCAPS);
-    hr = m_device->GetCaps((LPDDCAPS)m_caps, (LPDDCAPS)m_helCaps);
+    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_caps), (LPDDCAPS)m_helCaps);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
-    m_bltCaps = ((LPDDCAPS)m_caps)->dwCaps & 0x8000000;
+    m_bltCaps = (reinterpret_cast<LPDDCAPS>(m_caps))->dwCaps & 0x8000000;
     SetupCaps();
 
     if (width > 0 && height > 0) {

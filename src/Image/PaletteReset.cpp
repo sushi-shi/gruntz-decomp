@@ -26,5 +26,5 @@ void CMoviePlayer::ResetPalette() {
         m_colorSlots[i * 4 + 1] = 0;
         m_colorSlots[i * 4 + 2] = 0;
     }
-    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_colorSlots);
+    m_palette->SetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_colorSlots));
 }

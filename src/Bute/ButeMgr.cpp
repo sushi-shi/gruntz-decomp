@@ -1506,7 +1506,7 @@ bool CButeMgr::Parse() {
                 kind = ReadValue(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << (unsigned char)m_curChar;
+                    m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 break;
@@ -1514,7 +1514,7 @@ bool CButeMgr::Parse() {
             case 2: // value char: scan, echo only, advance, loop
                 kind = ReadValue(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << (unsigned char)m_curChar;
+                    m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 break;
@@ -1523,7 +1523,7 @@ bool CButeMgr::Parse() {
                 ReadIdent(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << (unsigned char)m_curChar;
+                    m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -1535,7 +1535,7 @@ bool CButeMgr::Parse() {
             case 4: // identifier: scan, echo only, advance, recurse, terminate
                 ReadIdent(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum << (unsigned char)m_curChar;
+                    m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {

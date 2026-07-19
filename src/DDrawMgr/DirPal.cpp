@@ -378,7 +378,7 @@ i32 CDDPalette::GetEntries() {
             return 0;
         }
     }
-    i32 hr = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheB);
+    i32 hr = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheB));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
@@ -441,7 +441,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // loop (the elapsed/prev/t0 live-range packing). Not source-steerable.
 RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
-    i32 hr = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheA);
+    i32 hr = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
@@ -479,7 +479,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     if (m_active) {
         Flush();
     }
-    i32 err = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheA);
+    i32 err = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (err) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x311, err);
     }
@@ -510,7 +510,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durati
     if (m_active) {
         Flush();
     }
-    i32 err = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheA);
+    i32 err = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (err) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x34b, err);
     }

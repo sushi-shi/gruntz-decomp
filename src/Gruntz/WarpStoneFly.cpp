@@ -37,7 +37,7 @@ RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {
         CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
-        ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
+        ((CByteArray*)arr)->SetAtGrow(arr->m_index, static_cast<BYTE>(m_arrivalMode));
         m_owner->m_hlBusy = 0;
         if (m_owner->m_position != 2 && m_owner->m_activeTab == 5) {
             m_owner->ResetWidgets(0);

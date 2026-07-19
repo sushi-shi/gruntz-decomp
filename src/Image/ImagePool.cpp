@@ -617,7 +617,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
     m_transparent = 1;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
-    m_bih.biBitCount = (WORD)m_bitCount;
+    m_bih.biBitCount = static_cast<WORD>(m_bitCount);
     m_bih.biSize = sizeof(BITMAPINFOHEADER);
     m_bih.biHeight = height;
     m_bih.biPlanes = 1;

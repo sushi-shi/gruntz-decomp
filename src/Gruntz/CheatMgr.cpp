@@ -259,7 +259,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
         (CheatEntry*)((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value));
     if (found != 0) {
         if (found->commandId > 0) {
-            PostMessageA((HWND)m_count, 0x111, found->commandId, 0);
+            PostMessageA(reinterpret_cast<HWND>(m_count), 0x111, found->commandId, 0);
             if ((found->flag & 1) == 0) {
                 m_124 = 1;
             }
