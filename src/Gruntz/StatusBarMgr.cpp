@@ -26,7 +26,9 @@
 //   m_activeTab==1 -> Statz   m_activeTab==2 -> Gruntz   m_activeTab==3 -> Resource
 //   m_activeTab==4 -> Multiplayer   m_activeTab==5 -> Game
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Image/ImageSet.h>
 #include <Gruntz/GameRegistry.h>
@@ -161,7 +163,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[2].AddTail(it);
                     *aptr = reinterpret_cast<i32>(it);
                     i32 sel = g_gameReg->m_spriteFactory->GetSel(
-                        *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158 + g_curPlayer * 0x238)),
+                        g_gameReg->m_options[g_curPlayer].m_008,
                         0
                     );
                     if (sel == 0) {
@@ -767,15 +769,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
             {
                 i32* slot = m_61c; // +0x61c
                 i32 pi = 0;
-                i32 off = 0;
+                GruntzPlayer* p = g_gameReg->m_options; // pointer-inducted (== retail's off += 0x238)
                 do {
                     i32 sel;
-                    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + off + 0x178)) != 0
-                        && *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + off + 0x17c)) == 0) {
-                        sel = g_gameReg->m_spriteFactory->GetSel(
-                            *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + off + 0x158)),
-                            0
-                        );
+                    if (p->m_joined != 0 && p->m_doneFlag == 0) {
+                        sel = g_gameReg->m_spriteFactory->GetSel(p->m_008, 0);
                         if (pi == m_tabCycle) {
                             (reinterpret_cast<CSBI_WarlordHead*>(*slot))->SetState(1);
                         }
@@ -789,8 +787,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     (reinterpret_cast<CSBI_WarlordHead*>(*slot))->ShowFrames(0xa, reinterpret_cast<ShadeDescr*>(sel));
                     slot++;
                     pi++;
-                    off += 0x238;
-                } while (off < 0x8e0);
+                    p++;
+                } while (p < g_gameReg->m_options + 4);
             }
             // SMALLICONZ: 15 per-player CSBI_StatzTabGruntBar stat bars built via
             // BuildMultiplayerTabStatusBar. y steps 0x12; the id p3 = 0x13b + k and
