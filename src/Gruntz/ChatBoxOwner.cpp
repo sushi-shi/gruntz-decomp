@@ -177,7 +177,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 // is declared - so a partial reconstruction shifts every esp offset and gains nothing
 // (empirically confirmed on the simpler non-EH PlaceObjectFull: an under-declared frame
 // wholesale-diverges regalloc). Callee/local identities recovered (xref) for the redo:
-//   [esp+0x3c] = CButeSection (ctor ??0CButeSection 0x170210; ParseGroup 0x171580;
+//   [esp+0x3c] = CButeMgr (ctor ??0CButeMgr 0x170210; ParseGroup 0x171580;
 //                GetIntDef 0x171aa0 / Exists 0x171a60 / GetStringDef 0x173180; Init 0x170330)
 //   ebx        = CParseSource (m_34->LoadBute 0x13bff0; BeginParse 0x139960 / EndParse 0x1399d0)
 //   [esp+0x54/0x84/0xb0] = 3 scratch CButeStore locals (ctor/Clear 0x16e070; MI dtor

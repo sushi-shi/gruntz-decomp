@@ -48,7 +48,6 @@
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>              // g_emptyString
 #include <Bute/ButeStoreDtorCopies.h> // the 0x21310 zPTree store-dtor copy anchor (MgrA)
-#include <Bute/ButeSection.h>         // CBSecStream - its real dtor body lives here (0x21570)
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
@@ -944,35 +943,20 @@ CButeStoreDtorCopyMgrA::~CButeStoreDtorCopyMgrA() {}
 // (src/Gruntz/ChatBoxOwner.cpp).
 
 // ---------------------------------------------------------------------------
-// CButeMgr::~CButeMgr
-// The /GX (EH-frame) scalar destructor: tears down the three owned CButeStore
-// sub-trees (+0x18 / +0x48 / +0x74), the five CStrings (m_errStr @+0x10, m_tagName
-// @+0x100, m_str104 @+0x104, m_str108 @+0x108) and the +0x10f tail object, each at
-// its own descending trylevel in reverse declaration order. The body is empty:
-// every store/string/tail member is a value member with a non-trivial dtor, so the
-// compiler emits the full /GX teardown chain (the `push -1 / mov fs:0,esp` frame,
-// the `[esp+N]=state` trylevel writes, and the per-member `lea ecx,[this+off]; call
-// ~Member` invocations) automatically. The three CButeStore members each expand to
-// the inline multiply-derived teardown (two vptr re-stamps + the recursive clear +
-// the masked second-base restore + the primary-base dtor).
-// @early-stop
-// 68.6% inline-member EH-region-granularity wall (docs/patterns/
-// eh-dtor-inline-member-vtable-stamp-thisadjust.md). The teardown is byte-correct:
-// the /GX frame, the reverse-declaration member order (10f,108,104,100,74,48,18,10),
-// each CString dtor with its trylevel, AND each CButeStore's inline multiply-derived
-// teardown -- the two vptr re-stamps + `mov ecx,edi; call ClearRecursive` + the
-// masked `mov ecx,edi; neg ecx; sbb ecx,ecx; and ecx,ebx; call RestoreVptr`
-// second-base adjust + `mov ecx,edi; call BaseDtor` -- all match retail instruction
-// for instruction. The residual is the EH-state MACHINE only: retail destructs each
-// store member as a NESTED region using TWO state slots ([esp+0x2c] outer state
-// 8/a/c, [esp+0x28] inner 7/9/b + 2/1/0) and stores the member-`this` cleanup
-// pointer (`mov [esp+0x1c],edi`); the inline form collapses each store to a single
-// trylevel (2/1/0) with no member-`this` re-point. That coupling also makes retail
-// reserve a 0x10-larger frame (`sub esp,0x14`/`add esp,0x20` vs our `push ecx`/
-// `add esp,0x10`), shifting every `[esp+N]` operand by 0x10. Out-of-lining
-// ~CButeStore would emit the nested states but then ~CButeMgr would CALL it (retail
-// inlines), diverging worse. No source lever produces the nested two-slot EH region
-// from an inlined manual-vtable member dtor; deferred to the final sweep.
+// CButeMgr::~CButeMgr (100%)
+// The /GX (EH-frame) destructor: tears down the three owned CBSecStream sub-trees
+// (+0x18 / +0x48 / +0x74), the CStrings (m_errStr @+0x10, m_tagName @+0x100,
+// m_str104 @+0x104, m_str108 @+0x108) and the +0x10f tail object, each at its own
+// descending trylevel in reverse declaration order. The body is empty: every
+// store/string/tail member is a value member with a non-trivial dtor, so the
+// compiler emits the full /GX teardown chain (frame, trylevel writes, per-member
+// `lea ecx,[this+off]` teardown) automatically. Each CBSecStream member's INLINE
+// dtor expands in place - the derived pair's own vptr stamps are /O2 dead stores,
+// leaving zPTree's pair (0x1e94ac/0x1e949c x3, the retail bytes). The old
+// "EH-region-granularity wall" note here described a pre-fix state; with the
+// members correctly typed and ~CBSecStream inline the fn is byte-exact. Spelling
+// ~CBSecStream OUT-OF-LINE instead makes this fn CALL it and craters to 41%
+// (measured 2026-07-19) - the dtor must stay in-class.
 RVA(0x000213c0, 0x14c)
 CButeMgr::~CButeMgr() {}
 
@@ -980,11 +964,13 @@ CButeMgr::~CButeMgr() {}
 // 0x021570 - CBSecStream::~CBSecStream, the section-stream's REAL destructor (ex
 // "third ~CButeStore copy"). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
 // CBSecStream's vtable 0x1f0510 slot 0 is the sdd 0x174d30, whose ~ call reaches
-// exactly this body via ILT 0x3567. The empty user body is the inline ~zPTree
-// expansion (CBSecStream adds no destructible state; the derived pair's own stamps
-// are /O2 dead stores) - same bytes as 0x21310 above, different class. __thiscall, /GX.
-RVA(0x00021570, 0x70)
-CBSecStream::~CBSecStream() {}
+// exactly this body via ILT 0x3567. The dtor is spelled INLINE in-class (retail's
+// was compiler-generated: ~CButeMgr INLINES its expansion, and a user out-of-line
+// def would be CALLED there instead - measured, 100 -> 41). cl then emits this
+// linker-kept COMDAT copy of it in THIS obj on its own (MSVC5 no-/Gy inline-member
+// emission); the @rva-symbol pin below only NAMES that compiler-emitted copy for
+// the delink carve - no source body exists for it, and none must.
+// @rva-symbol: ??1CBSecStream@@UAE@XZ 0x00021570 0x70
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError

@@ -64,3 +64,12 @@ movement -> ACCEPTED as the clean-room cost of the binary-proven folds (the same
 HandleCommand +2.71 by fixing the views' fake call shapes). Re-attack when the CWorld*/EngObj
 locals get real headers (each include-as-lever conversion sheds one decl).
 
+
+FOURTH FIRING (2026-07-19, CButeSection==CButeMgr fold): adding a class DEFINITION
+(`struct CBSecStream : zPTree {...}`, + one file-scope fn decl + two ctor member decls) to
+ButeMgr.h re-cratered DecCounter 100→74.04 AND flipped one load pair in
+`CDDrawWorkerHost::Load` (levelplane, 100→99.98) with the closure fwd-decl census UNCHANGED
+(216=216, multiset-identical, verified via clang /E on both branches). So the sensitivity is
+to the per-TU type-table CONTENT/state, not only the fwd-decl COUNT — a new class definition
+entering the closure fires it too, and then there is NO count lever to pull. Accepted as the
+butterfly floor (structure-over-current-%); MAX-fuzzy retains the 100s.

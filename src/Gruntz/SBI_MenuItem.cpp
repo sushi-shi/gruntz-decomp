@@ -166,7 +166,11 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // under-threshold trick (definitions instead of fwd-decls in GruntzMgr.h) was
 // re-armed 2026-07-14 by the CSoundCueMgr==DSoundCloneInst identity fold (this TU
 // now pulls the real <Dsndmgr/DirectSoundMgr.h> for ConfigureItem); a header
-// fwd-decl diet did not get back under. @early-stop: 74% is the butterfly's
+// fwd-decl diet did not get back under. FOURTH FIRING 2026-07-19: the
+// CButeSection==CButeMgr fold (ButeMgr.h gained the CBSecStream class DEF) re-
+// cratered 100->74 with the closure fwd-decl census UNCHANGED (216=216, multiset-
+// identical) - the type-table CONTENT/position variant, no count lever exists.
+// @early-stop: 74% is the butterfly's
 // documented floor - the shape is byte-correct, final-sweep decl-census material.
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {

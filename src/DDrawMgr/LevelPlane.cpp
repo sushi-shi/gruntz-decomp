@@ -1382,6 +1382,11 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
+// @early-stop
+// 99.98% fwd-decl-census butterfly (docs/patterns/header-fwd-decl-count-regalloc-
+// butterfly.md): the 2026-07-19 CButeSection==CButeMgr fold's ButeMgr.h class-def
+// addition flipped ONE load pair here (closure census unchanged - the content/
+// position variant, same firing as SBI_MenuItem::DecCounter). Shape byte-correct.
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == 0) {

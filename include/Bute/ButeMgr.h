@@ -67,13 +67,38 @@
 // defining TU can include it without this header's zPTree stand-in.
 #include <Bute/ButeStore.h>
 
+// ---------------------------------------------------------------------------
+// CBSecStream - the concrete zPTree-derived node CButeMgr's three owned sub-trees
+// (+0x18/+0x48/+0x74) really are (ex <Bute/ButeSection.h>, dissolved here). BINARY
+// PROOF the members are this class and not plain CButeStore: the mgr ctor (0x170210)
+// stamps 0x1f0510 into all three (offsets +0x44/+0x63/+0x82 of the body) - the pair
+// cl emits only when constructing a class whose most-derived vtable IS 0x1f0510.
+// The per-value teardown callback its ctor passes is ButeStoreFreeAdapter (0x174de0,
+// ButeNode.cpp): the __cdecl -> __thiscall adapter onto ~CButeNode (a section
+// stream's tree values are CButeNode subtrees).
+// Its dtor (0x21570, ButeMgr.cpp) is spelled as a user out-of-line body; retail's
+// was the compiler-generated COMDAT (~CButeMgr INLINES its expansion, our
+// out-of-line def gets CALLED there instead - the known implicit-dtor pipeline gap,
+// see ~CButeMgr's note).
+void ButeStoreFreeAdapter(void* p); // 0x174de0 (ButeNode.cpp)
+struct CBSecStream : zPTree {
+    CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
+    virtual ~CBSecStream() OVERRIDE {} // inline: ~CButeMgr inlines the two-layer expansion
+};
+SIZE(CBSecStream, 0x2c);       // adds nothing to zPTree (m_tree +0x18 .. m_pNode +0x44)
+VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
+// The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
+// base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
+
 // The 1-byte embedded object at CButeMgr+0x10f. Its destructor (0x16f6b0) is a
 // bare `ret` (trivial teardown), but it is a NON-trivial member of the mgr (the
 // dtor schedules a trylevel slot for it). Modeled as a value member with an
 // external (no-body) member dtor so the mgr's /GX teardown emits its slot.
+// (Ex CBSecObj10f, dissolved: one +0x10f object, one class.)
 struct CButeTail {
-    char m_00;   // +0x00
-    void Dtor(); // 0x16f6b0  (ret)
+    char m_00;      // +0x00
+    CButeTail();    // 0x16f680  external ctor (`mov eax,ecx; ret`; BSecObj10fCtor.cpp)
+    void Dtor();    // 0x16f6b0  (ret)
     ~CButeTail() {
         Dtor();
     }
@@ -193,10 +218,13 @@ public:
     void* InvokeCallback(void* (*fn)(CButeMgr*));
     void ClearHelper();
 
-    // Reset/teardown of the manager's stores (0x170210, 280 B): restamps the store
-    // vtables and tears the sub-trees down through the scalar-deleting-destructor
-    // path. No-body extern (reloc-masked); the low-RVA thunk pool tail-forwards it.
-    void Term();
+    // The default constructor (0x170210, 280 B): the 8-state /GX EH ctor that
+    // default-constructs the five CStrings, the three CBSecStream sub-trees and the
+    // +0x10f tail, zeroes the scalars and Empty()s m_str108/m_tagName. Body in
+    // ButeSectionCtor.cpp. (Ex "CButeSection::CButeSection" - the CButeSection twin
+    // class is DISSOLVED: it was this same 0x113-B object modeled a second time; the
+    // phantom `void Term()` once claimed this RVA too, with zero callers.)
+    CButeMgr();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
@@ -258,10 +286,11 @@ public:
     char m_pad0e[0x10 - 0xe];     // +0x0e
     CString m_errStr;             // +0x10  scratch the error reporter formats into
     ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
-    CButeStore m_tree;            // +0x18  the keyed store root (0x2c bytes)
+    CBSecStream m_tree;           // +0x18  the keyed store root (0x2c bytes; the ctor's
+                                  //         0x1f0510 stamps prove the concrete type)
     CButeTree* m_pNode;           // +0x44  active store node (a CButeNode used as a keyed tree)
-    CButeStore m_tree48;          // +0x48  second store sub-tree
-    CButeStore m_tree74;          // +0x74  third store sub-tree
+    CBSecStream m_tree48;         // +0x48  second store sub-tree
+    CBSecStream m_tree74;         // +0x74  third store sub-tree
     istream* m_stream;            // +0xa0  input source stream: a real CRT istream* (the
                                   //         common base of the concrete streams stored -
                                   //         Parse's `new ifstream(...)` and the .rez path's

@@ -7,7 +7,7 @@
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
 #include <Globals.h>          // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
-#include <Bute/ButeSection.h> // real CButeSection (the 0x82b20 in-place ctor)
+#include <Bute/ButeMgr.h> // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
 #include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
 
 // ---------------------------------------------------------------------------
@@ -60,24 +60,22 @@ void Register82aa0() {
 // initializer @0x82990. Each is a tail-jmp `mov ecx,&g; jmp <ctor>` - the object's
 // in-place default construction (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md).
 // The callee 0x1b9b93 IS CString::CString() (NAFXCW default ctor, NOT the dtor);
-// 0x170210 is CButeSection::CButeSection(). All callees + global addresses are
+// 0x170210 is CButeMgr::CButeMgr(). All callees + global addresses are
 // reloc-masked, so only the OFFSETS + code bytes are load-bearing.
 // ---------------------------------------------------------------------------
 
 // The resource-config bute manager @0x6453d8 (RVA 0x2453d8). Tree-wide it is the
 // CButeMgr singleton g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, DATA-bound in FontConfig.cpp,
-// read by Projectile/DoNothing/... via GetInt/GetDword); its dynamic init here constructs
-// it in place through the CButeSection ctor (0x170210 == CButeSection::CButeSection). Bind
-// the reloc to the canonical g_buteMgr symbol (NOT a private g_resButeMgr - that leaves it
-// UNBOUND). @identity-TODO: CButeMgr and CButeSection are the same 280-B config object (one
-// ctor 0x170210) modeled as two classes; the (CButeSection*) cast is that conflation, to be
-// dissolved when the CButeMgr<->CButeSection hierarchy is unified. (Forward-decl only -
-// ButeMgr.h re-defines zPTree/zErrHandling that ButeSection.h already brings.)
-class CButeMgr;
+// read by Projectile/DoNothing/... via GetInt/GetDword); this thunk constructs it in
+// place through the real CButeMgr ctor (0x170210, ButeSectionCtor.cpp). Bind the reloc
+// to the canonical g_buteMgr symbol (NOT a private g_resButeMgr - that leaves it
+// UNBOUND). (The @identity-TODO here is RESOLVED 2026-07-19: CButeMgr and the ex
+// "CButeSection" were the same 280-B config object; the twin class is dissolved and
+// the (CButeSection*) conflation cast fell out with it.)
 extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void InitResButeMgr82b20() {
-    (reinterpret_cast<CButeSection*>(&g_buteMgr))->CButeSection::CButeSection();
+    (&g_buteMgr)->CButeMgr::CButeMgr();
 }
 
 // The debug-overlay / profiler text-sink CString globals (0x645524..0x645530).
