@@ -72,7 +72,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
-            LeafCue* spr = (LeafCue*)spr_ob;
+            LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
                 if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                     spr->m_14 = g_killCueClock;
@@ -112,7 +112,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHUP", spr_ob);
-            LeafCue* spr = (LeafCue*)spr_ob;
+            LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
                 if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                     spr->m_14 = g_killCueClock;

@@ -684,11 +684,11 @@ RVA(0x00168080, 0x1f6)
 i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8) {
     if (a1) {
         CWwdGridShell* g0 = new CWwdGridShell;
-        m_grid0 = (CWwdGrid*)g0;
+        m_grid0 = reinterpret_cast<CWwdGrid*>(g0);
         CWwdGridShell* g1 = new CWwdGridShell;
-        m_grid1 = (CWwdGrid*)g1;
+        m_grid1 = reinterpret_cast<CWwdGrid*>(g1);
         CWwdGridShell* g2 = new CWwdGridShell;
-        m_grid2 = (CWwdGrid*)g2;
+        m_grid2 = reinterpret_cast<CWwdGrid*>(g2);
         if (g0 && g1 && g2 && g0->Setup(*rc, p3[0], p3[1]) && g1->Setup(*rc, p4[0], p4[1])
             && g2->Setup(*rc, p5[0], p5[1])) {
             m_rect0Left = 0;
@@ -709,8 +709,8 @@ i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6,
             m_rect2Bottom = p8[1] - 1;
             m_org2x = p8[0] / 2;
             m_org2y = p8[1] / 2;
-            m_mgr = (CDDrawChildGroup*)a1;
-            SetRect((RECT*)&m_bbMinX, rc->left, rc->top, rc->right, rc->bottom);
+            m_mgr = static_cast<CDDrawChildGroup*>(a1);
+            SetRect(reinterpret_cast<RECT*>(&m_bbMinX), rc->left, rc->top, rc->right, rc->bottom);
             m_scrollX = static_cast<i32>(0xffffa932);
             m_scrollY = static_cast<i32>(0xffffa932);
             return 1;

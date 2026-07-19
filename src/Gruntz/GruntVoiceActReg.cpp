@@ -34,10 +34,10 @@ extern "C" void Handler_402dd8(); // 0x402dd8
 // The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    void** list = (void**)g_typeColl.m_alloc;
+    void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
     while (n-- != 0) {
         if (list != 0) {
-            ((CString*)list)->CString::~CString();
+            (reinterpret_cast<CString*>(list))->CString::~CString();
         }
         list++;
     }
@@ -54,23 +54,23 @@ RVA(0x00119fa0, 0x2ac)
 void RegisterActs_6514d8() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_actReg_6514d8.ResolveEntry(id) = (void*)&Handler_4037bf;
+    *reinterpret_cast<void**>(g_actReg_6514d8.ResolveEntry(id)) = static_cast<void*>(&Handler_4037bf);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
-        g_buteTree.Insert("B", (void*)g_typeCounter);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *(void**)g_actReg_6514d8.ResolveEntry(id2) = (void*)&Handler_402dd8;
+    *reinterpret_cast<void**>(g_actReg_6514d8.ResolveEntry(id2)) = static_cast<void*>(&Handler_402dd8);
 }

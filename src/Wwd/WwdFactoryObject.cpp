@@ -93,7 +93,7 @@ RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
-    m_0c = (CDDrawSurfaceMgr*)a; // (mangling-pinned i32 arg; a IS the mgr)
+    m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
     m_notify = 0;
     m_14 = 0;
     m_logic = 0;
@@ -191,16 +191,16 @@ CWwdGameObjectE::~CWwdGameObjectE() {
 RVA(0x0015b650, 0x4d)
 void CWwdGameObjectE::Notify_15b650(void* p) {
     char* o = reinterpret_cast<char*>(this);
-    if (*(unsigned char*)(o + 0x8) & 0x8) {
-        i32 d = *(i32*)(o + 0x128) - *(i32*)(reinterpret_cast<char*>(p) + 0x120);
-        *(i32*)(o + 0x128) = d;
+    if (*reinterpret_cast<unsigned char*>((o + 0x8)) & 0x8) {
+        i32 d = *(i32*)(o + 0x128) - *reinterpret_cast<i32*>((reinterpret_cast<char*>(p) + 0x120));
+        *reinterpret_cast<i32*>((o + 0x128)) = d;
         if (d <= 0) {
-            *(i32*)(*(char**)(o + 0x7c) + 0x1c) = 0x1c;
+            *reinterpret_cast<i32*>((*(char**)(o + 0x7c) + 0x1c)) = 0x1c;
         }
     } else {
-        AnimWorkerObj* h = *(AnimWorkerObj**)(o + 0x80);
+        AnimWorkerObj* h = *reinterpret_cast<AnimWorkerObj**>((o + 0x80));
         if (h != 0) {
-            *(void**)(o + 0x84) = p;
+            *reinterpret_cast<void**>((o + 0x84)) = p;
             h->m_notify(reinterpret_cast<CGameObject*>(this));
         }
     }
@@ -343,13 +343,13 @@ i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::Construct(void* srcv) {
     // role-dependent src: the owning wide object (game path) or a worker source
-    CAniElement* src = (CAniElement*)srcv;
-    m_10 = (CAniRenderCtx*)src;
+    CAniElement* src = static_cast<CAniElement*>(srcv);
+    m_10 = reinterpret_cast<CAniRenderCtx*>(src);
     m_28 = 1;
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *(i32*)(reinterpret_cast<char*>(src->m_records.m_pData) + 0x34) & 0x40;
+    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>(src->m_records.m_pData) + 0x34)) & 0x40;
 }
 
 // CAniAdvanceCursor::Unload (0x15c2c0, vtable slot 7; the ex Reset_15c2c0):
@@ -373,7 +373,7 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
     }
     m_index = 0;
     if (src->m_records.m_nSize > 0) {
-        e = (CAniDesc*)src->m_records.GetAt(0);
+        e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
     }
@@ -401,7 +401,7 @@ void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
     m_index = 0;
     CAniDesc* e;
     if (src->m_records.m_nSize > 0) {
-        e = (CAniDesc*)src->m_records.GetAt(0);
+        e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
     }
@@ -628,7 +628,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    ((LeafCue*)entry)->PlayIfElapsed(g_aniCueItem, 0, 0, 0);
+                    (reinterpret_cast<LeafCue*>(entry))->PlayIfElapsed(g_aniCueItem, 0, 0, 0);
                 }
             }
         }
@@ -638,7 +638,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         i32 reload = rd->m_frameTime;
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
-        if (*(i32*)&m_scale != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
+        if (*reinterpret_cast<i32*>(&m_scale) != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
             m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 
@@ -688,10 +688,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
                         m_index = j;
-                        m_element = (CAniDesc*)a->AtChecked_06b270(j);
+                        m_element = reinterpret_cast<CAniDesc*>(a->AtChecked_06b270(j));
                         if (m_element == 0) {
                             m_index = 0;
-                            m_element = (CAniDesc*)a->AtChecked_06b270(0);
+                            m_element = reinterpret_cast<CAniDesc*>(a->AtChecked_06b270(0));
                         }
                         if (m_element != 0) {
                             m_curDraw = m_pendingDraw;
@@ -732,14 +732,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     i = m_index + 1;
                     m_index = i;
                     if (i >= 0 && i < arr->m_records.m_nSize) {
-                        nd = (CAniDesc*)arr->m_records.GetAt(i);
+                        nd = reinterpret_cast<CAniDesc*>(arr->m_records.GetAt(i));
                     } else {
                         nd = 0;
                     }
                     m_element = nd;
                     if (nd == 0) {
                         m_index = 0;
-                        m_element = (CAniDesc*)arr->AtChecked_06b270(0);
+                        m_element = reinterpret_cast<CAniDesc*>(arr->AtChecked_06b270(0));
                     }
                     if (m_element != 0) {
                         m_curDraw = m_pendingDraw;
@@ -757,7 +757,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         m_index = j;
                         CAniDesc* p;
                         if (j >= 0 && j < a->m_records.m_nSize) {
-                            p = (CAniDesc*)a->m_records.GetAt(j);
+                            p = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(j));
                         } else {
                             p = 0;
                         }
@@ -767,7 +767,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                             i32 cnt = a->m_records.m_nSize;
                             CAniDesc* first;
                             if (cnt > 0) {
-                                first = (CAniDesc*)a->m_records.GetAt(0);
+                                first = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(0));
                             } else {
                                 first = 0;
                             }
@@ -866,7 +866,7 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     ar->Write(&m_scale, 4);
     char buf[0x80];
     for (i32 i = 0; i < 0x20; ++i) {
-        ((i32*)buf)[i] = 0;
+        (reinterpret_cast<i32*>(buf))[i] = 0;
     }
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
@@ -910,13 +910,13 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
         // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
         void* out = 0;
         (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_animRegistry->m_10.Lookup(buf, out);
-        m_14 = (CAniElement*)out;
+        m_14 = static_cast<CAniElement*>(out);
     }
     CAniElement* w = m_14;
     if (w != 0) {
         CAniDesc* e;
         if (m_index >= 0 && m_index < w->m_records.m_nSize) {
-            e = (CAniDesc*)w->m_records.GetAt(m_index);
+            e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(m_index));
         } else {
             e = 0;
         }
@@ -924,7 +924,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
         if (e == 0) {
             m_index = 0;
             if (w->m_records.m_nSize > 0) {
-                e = (CAniDesc*)w->m_records.GetAt(0);
+                e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(0));
             } else {
                 e = 0;
             }
@@ -968,7 +968,7 @@ void CAniRenderCtx::ClampFirst_15cc50() {
     i32 n = seq->m_minIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>((CImage*)seq->m_items.GetAt(n));
+        m_curFrame = reinterpret_cast<i32>(reinterpret_cast<CImage*>(seq->m_items.GetAt(n)));
     } else {
         m_curFrame = 0;
     }
@@ -985,7 +985,7 @@ void CAniRenderCtx::ClampLast_15cc90() {
     i32 n = seq->m_maxIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>((CImage*)seq->m_items.GetAt(n));
+        m_curFrame = reinterpret_cast<i32>(reinterpret_cast<CImage*>(seq->m_items.GetAt(n)));
     } else {
         m_curFrame = 0;
     }

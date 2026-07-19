@@ -55,7 +55,7 @@ typedef ::CPtrList TtcObList;
 // Typed intrusive-node access: a POSITION IS the CPtrList::CNode* the walkers step through
 // (MFC's CNode is protected, so the head is retrieved as a POSITION and typed here).
 inline TtcNode* TtcHead(const ::CPtrList& l) {
-    return (TtcNode*)l.GetHeadPosition();
+    return reinterpret_cast<TtcNode*>(l.GetHeadPosition());
 }
 
 // The former local element views are DISSOLVED onto the real classes:

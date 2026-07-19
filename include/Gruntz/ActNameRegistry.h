@@ -71,7 +71,7 @@ static inline char* ActNameLookup(i32 id) {
     char* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
-    } else if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
+    } else if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
         slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     } else {
         void* item = g_projActCache;

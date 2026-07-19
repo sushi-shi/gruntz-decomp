@@ -111,7 +111,7 @@ public:
     // The +0x38 kinematic band as a CMotionState (the real dev subobject), reached
     // via a cast so the flat-int ctor zero-init layout below overlays the same bytes.
     CMotionState* Motion() {
-        return (CMotionState*)(reinterpret_cast<char*>(this) + 0x38);
+        return reinterpret_cast<CMotionState*>((reinterpret_cast<char*>(this) + 0x38));
     }
 
     // CMovingLogic's own data begins at +0x40 (CTileLogic base ends at +0x40). The

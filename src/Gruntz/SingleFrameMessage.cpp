@@ -25,7 +25,7 @@ i32 CSingleFrameMessage::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CSingleFrameMessage::~CSingleFrameMessage @0x0f640 - empty vtable-anchor dtor;
@@ -70,7 +70,7 @@ CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ab530, 0x15)
 void CSingleFrameMessage::InitActReg() {
-    ((CZDArrayDerived*)&g_singleFrameActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_singleFrameActReg))->Construct(2000, 2010);
 }
 
 // CSingleFrameMessage::RunAct @0x0ab5b0 - resolve the registry entry for id; if a
@@ -78,9 +78,9 @@ void CSingleFrameMessage::InitActReg() {
 // entry pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
-    CSingleFrameActEntry* e = (CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id);
+    CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -99,20 +99,20 @@ void CSingleFrameMessage::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CSingleFrameMessage::AdvanceAnim;
 }
 

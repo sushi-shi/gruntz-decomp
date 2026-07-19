@@ -144,7 +144,7 @@ extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
             return 0;
         }
     }
-    return CallWindowProcA((WNDPROC)g_savedDlgWndProc, hWnd, msg, wParam, lParam);
+    return CallWindowProcA(reinterpret_cast<WNDPROC>(g_savedDlgWndProc), hWnd, msg, wParam, lParam);
 }
 
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
@@ -226,12 +226,12 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
-            i32* rec = (i32*)(m_slots + 0x158); // -> slot[0].m_158 (color / m_170 occupancy)
+            i32* rec = reinterpret_cast<i32*>((m_slots + 0x158)); // -> slot[0].m_158 (color / m_170 occupancy)
             for (i32 j = 0; j < 4; j++) {
                 if (rec[6] != 0 && rec[0] == i) { // occupied slot already using color i
                     avail = 0;
                 }
-                rec = (i32*)(reinterpret_cast<char*>(rec) + 0x238);
+                rec = reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0x238));
             }
             if (avail) {
                 long idx = pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
@@ -245,7 +245,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 // ---------------------------------------------------------------------------
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
-    return (const AFX_MSGMAP*)&g_msgmap_CBattlezDlgColors; // msgmap global still a placeholder type
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlgColors); // msgmap global still a placeholder type
 }
 
 // CBattlezDlgColors::OnMeasureItem (0x17ae0): the owner-draw colour-swatch list
@@ -576,7 +576,7 @@ void CBattlezDlg::CopyComboSelToChild() {
         return;
     }
     CString s;
-    ((CComboBox*)combo)->GetLBText(sel, s); // CComboBox::GetLBText @0x1ce7db
+    (static_cast<CComboBox*>(combo))->GetLBText(sel, s); // CComboBox::GetLBText @0x1ce7db
     if (s.GetLength() != 0) {
         CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         if (child != 0) {
@@ -661,9 +661,9 @@ void CBattlezDlg::FlashCtrlD() {
         }
         RECT rc;
         ::GetClientRect(it->m_hWnd, &rc);
-        cts(it->m_hWnd, (LPPOINT)&rc);
+        cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc));
         cts(it->m_hWnd, (LPPOINT)&rc + 1);
-        stc(m_hWnd, (LPPOINT)&rc);
+        stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc));
         stc(m_hWnd, (LPPOINT)&rc + 1);
         CBrush scratch;
         i32 color;

@@ -51,7 +51,7 @@ i32 CMoviePlayer::CheckGrid() {
     if (m_dd2->CreateSurface(&m_srcDesc, &m_28, 0) != 0) {
         return 0;
     }
-    if (m_28->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_srcSurf) != 0) {
+    if (m_28->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_srcSurf)) != 0) {
         return 0;
     }
     if (m_bpp == 8) {

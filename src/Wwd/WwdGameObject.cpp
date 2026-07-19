@@ -178,12 +178,12 @@ void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) 
 RVA(0x001504d0, 0x6c)
 void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
+    m_0c->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
             m_190 = frame;
-            m_layer = (CImage*)spr->m_items.GetAt(frame); // +0x198 union: frame ptr
+            m_layer = static_cast<CImage*>(spr->m_items.GetAt(frame)); // +0x198 union: frame ptr
         } else {
             m_190 = frame;
             m_layer = 0;
@@ -199,13 +199,13 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
 RVA(0x00150540, 0x65)
 void CGameObject::ApplyName(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
+    m_0c->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_minIndex;
         m_190 = n; // +0x190 role-union: the cached frame number
         if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
-            m_layer = (CImage*)spr->m_items.GetAt(n); // +0x198 union: the frame ptr
+            m_layer = static_cast<CImage*>(spr->m_items.GetAt(n)); // +0x198 union: the frame ptr
             return;
         }
     }
@@ -221,12 +221,12 @@ void CGameObject::ApplyName(const char* name) {
 RVA(0x001505b0, 0x5c)
 i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    m_0c->m_animRegistry->m_10.Lookup(name, (void*&)spr);
+    m_0c->m_animRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (!spr) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    m_1a0.Setup_15c2d0((CAniElement*)reinterpret_cast<i32>(spr));
+    m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(reinterpret_cast<i32>(spr)));
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }
@@ -244,7 +244,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_soundRegistry->m_10.Lookup(name, (void*&)spr);
+    m_0c->m_soundRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (spr != 0) {
         m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
@@ -262,7 +262,7 @@ RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_lastX, 36);
     if (m_38 != -1) {
-        RECT* r = (RECT*)&m_20;
+        RECT* r = reinterpret_cast<RECT*>(&m_20);
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
         m_38 = -1;
     }
@@ -286,8 +286,8 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
     i32 rc[4]; // reused src+dst blit rect buffer
     if (m_38 != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
-            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0));
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
             rc[0] = ir.left;
@@ -339,8 +339,8 @@ RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     if (m_38 != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
-            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0));
             i32 pos[2];
             i32 size[2];
             pos[0] = ir.left;
@@ -382,7 +382,7 @@ i32 CWwdGameObject::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
-        RECT* r = (RECT*)(reinterpret_cast<char*>(m_0c->m_level->m_mainPlane) + 0x40);
+        RECT* r = reinterpret_cast<RECT*>((reinterpret_cast<char*>(m_0c->m_level->m_mainPlane) + 0x40));
         if (right < r->left) {
             return 0;
         }
@@ -419,7 +419,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find((CSerialArchive*)a1, type, a3, a4) == 0) {
+    if (m_1a0.Find(reinterpret_cast<CSerialArchive*>(a1), type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -449,7 +449,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
 // operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObject::ReadState(i32 src) {
-    CSerialArchive* ar = (CSerialArchive*)src;
+    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
     if (ar == 0) {
         return 0;
     }
@@ -487,7 +487,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 // ---------------------------------------------------------------------------
 RVA(0x00150c30, 0x130)
 i32 CWwdGameObject::Sub150c30(i32 src) {
-    CSerialArchive* ar = (CSerialArchive*)src;
+    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
     if (ar == 0) {
         return 0;
     }
@@ -505,13 +505,13 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
         CDDrawSurfaceMgr* mgr = m_0c;
-        mgr->m_imageRegistry->m_10map.Lookup(name, (CObject*&)found);
+        mgr->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(found));
         m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
             CImage* frame;
             if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
-                frame = (CImage*)found->m_items.GetAt(idx);
+                frame = static_cast<CImage*>(found->m_items.GetAt(idx));
             } else {
                 frame = 0;
             }
@@ -527,7 +527,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         void* found = 0;
         CDDrawSurfaceMgr* mgr = m_0c;
         mgr->m_soundRegistry->m_10.Lookup(name, found);
-        m_19c = (LeafCue*)found;
+        m_19c = static_cast<LeafCue*>(found);
     }
     return 1;
 }
@@ -569,7 +569,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
     // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
     char* src = reinterpret_cast<char*>(a4);
-    if (w->Init((GameObjNotifyFn) * (i32*)(src + 0x10), *(i32*)(src + 0x08)) == 0) {
+    if (w->Init(reinterpret_cast<GameObjNotifyFn>(* reinterpret_cast<i32*>((src + 0x10))), *reinterpret_cast<i32*>((src + 0x08))) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -614,7 +614,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 != 0) {
         m_80->Clear();
     } else {
-        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
+        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -635,7 +635,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 == 0) {
         return 0;
     }
-    return m_80->Init((GameObjNotifyFn)src->m_10, 0);
+    return m_80->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
 // CGameObject's three built-in logic-handler registrars: look the logic-name key
@@ -649,7 +649,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
 RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker80(handler);
 }
 
@@ -671,7 +671,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 != 0) {
         m_88->Clear();
     } else {
-        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
+        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -692,7 +692,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 == 0) {
         return 0;
     }
-    return m_88->Init((GameObjNotifyFn)src->m_10, 0);
+    return m_88->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
 // @early-stop
@@ -700,7 +700,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
 RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker88(handler);
 }
 
@@ -716,7 +716,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker != 0) {
         m_collideWorker->Clear();
     } else {
-        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
+        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -737,7 +737,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker == 0) {
         return 0;
     }
-    return m_collideWorker->Init((GameObjNotifyFn)src->m_10, 0);
+    return m_collideWorker->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
 // @early-stop
@@ -745,7 +745,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
 RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker90(handler);
 }
 
@@ -779,10 +779,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = (void*)0x50;
+            w->m_1c = reinterpret_cast<void*>(0x50);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == (void*)0x50) {
+            if (w->m_1c == reinterpret_cast<void*>(0x50)) {
                 w->m_1c = saved;
             }
             break;
@@ -796,10 +796,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = (void*)0x51;
+            w->m_1c = reinterpret_cast<void*>(0x51);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == (void*)0x51) {
+            if (w->m_1c == reinterpret_cast<void*>(0x51)) {
                 w->m_1c = saved;
             }
             break;
@@ -813,10 +813,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = (void*)0x52;
+            w->m_1c = reinterpret_cast<void*>(0x52);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == (void*)0x52) {
+            if (w->m_1c == reinterpret_cast<void*>(0x52)) {
                 w->m_1c = saved;
             }
             break;
@@ -825,11 +825,11 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (m_0c->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
+                if (m_0c->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found) == 0) {
                     m_carrier = 0;
                 } else {
                     m_carrier =
-                        (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
+                        static_cast<CWwdGameObject*>(found); // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
                 m_carrier = 0;
@@ -839,16 +839,16 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = (void*)0x53;
+            w->m_1c = reinterpret_cast<void*>(0x53);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == (void*)0x53) {
+            if (w->m_1c == reinterpret_cast<void*>(0x53)) {
                 w->m_1c = saved;
             }
             break;
         }
     }
-    return m_7c->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
+    return m_7c->Dispatch(a1, type, reinterpret_cast<void*>(a3), reinterpret_cast<void*>(a4)) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -856,7 +856,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x00151320, 0x454)
 i32 CWwdGameObject::Serialize(i32 arParam) {
-    CSerialArchive* ar = (CSerialArchive*)arParam;
+    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
     if (ar == 0) {
         return 0;
     }
@@ -945,7 +945,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 // ---------------------------------------------------------------------------
 RVA(0x00151780, 0x40d)
 i32 CWwdGameObject::Sub151780(i32 arParam) {
-    CSerialArchive* ar = (CSerialArchive*)arParam;
+    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
     if (ar == 0) {
         return 0;
     }
@@ -954,7 +954,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 
     char name[0x80];
     ar->Read(name, 0x80);
-    *(CString*)&m_name = name;
+    *reinterpret_cast<CString*>(&m_name) = name;
 
     ar->Read(&m_moveMode, 4);
     ar->Read(&m_collCategory, 4);
@@ -1055,7 +1055,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
             m_carrier = 0;
             return 1;
         }
-        m_carrier = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
+        m_carrier = static_cast<CWwdGameObject*>(found); // CMapPtrToPtr value (void*) -> the linked object
         return 1;
     }
     m_carrier = 0;
@@ -1074,7 +1074,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
 // never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
 RVA(0x00151c00, 0x118)
 i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
-    CSerialArchive* ar = (CSerialArchive*)dst;
+    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(dst);
     if (ar == 0) {
         return 0;
     }
@@ -1254,13 +1254,13 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     //  reached through the typed Owner() accessor - the note that predicted "type that
     //  member and this falls out" was right, and it did.)
     CImage* worker = new CImage(n, Owner());         // real frame ctor (vptr interleaved)
-    if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
+    if (!worker->Resolve(static_cast<CParseSource*>(src), mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
-    m_items.SetAtGrow(n, (CObject*)worker);
+    m_items.SetAtGrow(n, static_cast<CObject*>(worker));
     if (n < m_minIndex) {
         m_minIndex = n;
     }
@@ -1293,14 +1293,14 @@ CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create((CImageFrameDesc*)a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
+    if (nf->Create(reinterpret_cast<CImageFrameDesc*>(a0), a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
 
-    m_items.SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1323,14 +1323,14 @@ CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
-    if (nf->LoadDispatch((CImageFrameDesc*)a0, static_cast<u32>(a1), (void*)a3, 1) == 0) {
+    if (nf->LoadDispatch(reinterpret_cast<CImageFrameDesc*>(a0), static_cast<u32>(a1), reinterpret_cast<void*>(a3), 1) == 0) {
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
 
-    m_items.SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1352,14 +1352,14 @@ CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create24((CImageFrameDesc*)a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+    if (nf->Create24(reinterpret_cast<CImageFrameDesc*>(a0), a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
 
-    m_items.SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1375,7 +1375,7 @@ CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 // ===========================================================================
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
-    m_items.SetAtGrow(index, (CObject*)elem); // CObArray::SetAtGrow @0x1b5822
+    m_items.SetAtGrow(index, static_cast<CObject*>(elem)); // CObArray::SetAtGrow @0x1b5822
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1398,7 +1398,7 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
     while (sym != 0) {
         void* val = tab->NextSym2(sym);
         while (val != 0) {
-            char* p = ((CParseSource*)val)->m_name;
+            char* p = (static_cast<CParseSource*>(val))->m_name;
             while (*p != 0) {
                 if (*p >= '0' && *p <= '9') {
                     break;
@@ -1461,9 +1461,9 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
     while (sym != 0) {
         void* val = tab->NextSym2(sym);
         while (val != 0) {
-            i32 tag = ((CParseSource*)val)->GetEntryTag();
+            i32 tag = (static_cast<CParseSource*>(val))->GetEntryTag();
             if (tag == 'PCX' || tag == 'BMP' || tag == 'RID' || tag == 'PID') {
-                char* p = ((CParseSource*)val)->m_name;
+                char* p = (static_cast<CParseSource*>(val))->m_name;
                 while (*p != 0) {
                     if (*p >= '0' && *p <= '9') {
                         break;
@@ -1501,7 +1501,7 @@ i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
     }
     // slot 13 = CImage::Reload(src, flag); `rec` stays i32 because it is this
     // virtual's own slot-signature word (the caller passes the CParseSource* as int).
-    return el->Reload((CParseSource*)rec, flag) != 0;
+    return el->Reload(reinterpret_cast<CParseSource*>(rec), flag) != 0;
 }
 
 // CDDrawWorker::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
@@ -1588,7 +1588,7 @@ i32 CDDrawWorker::SetAllFormats(i32 format) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->m_owned) {
-            frame->m_owned->m_palDescr = (ShadeDescr*)format;
+            frame->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(format);
             count++;
         }
     }

@@ -178,7 +178,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                     return 1;
                 }
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                ((CGruntzMgr*)(host))->AccrueScoreTime();
+                (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 return 1;
             }
             if (key == 0x4e || key == 0x1b) {
@@ -202,7 +202,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             // paused-only cheats S/R/N/O (cbee0)
             if (key == 0x53 && g_gameReg->m_134 == 1) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                ((CGruntzMgr*)(host))->AccrueScoreTime();
+                (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
             }
             if (key == 0x52) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
@@ -215,7 +215,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             if (key == 0x4e) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                    ((CGruntzMgr*)(host))->AccrueScoreTime();
+                    (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 }
                 return 1;
             }
@@ -381,17 +381,17 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             i32 v1 = obj->m_snappedY;
             i32* slot;
             if (self->arr488Count() < 4) {
-                CoordPoolNode* head = (CoordPoolNode*)g_coordPool.m_freeHead;
+                CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 CoordPoolNode* nx = head->m_next;
                 if (nx != 0) {
-                    slot = (i32*)&head->m_coord;
+                    slot = reinterpret_cast<i32*>(&head->m_coord);
                     g_coordPool.m_freeHead = nx;
                 } else {
                     slot = 0;
                 }
             } else {
-                slot = (i32*)self->m_488.GetAt(0);
-                ((CDWordArray*)&self->m_488)->RemoveAt(0, 1);
+                slot = static_cast<i32*>(self->m_488.GetAt(0));
+                (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(0, 1);
                 i32 c = self->m_49c - 1;
                 self->m_49c = c;
                 if (c < 0) {
@@ -401,11 +401,11 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             slot[0] = v0;
             slot[1] = v1;
             if (self->m_49c != self->arr488Count() - 1) {
-                ((CDWordArray*)&self->m_488)->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
+                (reinterpret_cast<CDWordArray*>(&self->m_488))->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
                 self->m_49c = self->m_49c + 1;
                 return 1;
             }
-            ((CDWordArray*)&self->m_488)->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
+            (reinterpret_cast<CDWordArray*>(&self->m_488))->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
             self->m_49c = self->m_49c + 1;
             return 1;
         }
@@ -425,7 +425,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                 self->m_49c = 0;
             }
         }
-        i32* e = (i32*)self->m_488.GetAt(self->m_49c);
+        i32* e = static_cast<i32*>(self->m_488.GetAt(self->m_49c));
         this->ResetGoals(e[0], e[1]);
         return 1;
     }
@@ -439,9 +439,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
         CoordPoolNode* node =
-            (CoordPoolNode*)(reinterpret_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset);
-        ((CDWordArray*)&self->m_488)->RemoveAt(cur, 1);
-        node->m_next = (CoordPoolNode*)g_coordPool.m_freeHead;
+            reinterpret_cast<CoordPoolNode*>((reinterpret_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset));
+        (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(cur, 1);
+        node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
         i32 c = self->m_49c - 1;
         self->m_49c = c;
@@ -618,7 +618,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
         h->m_cmdSubMgr
-            ->BlitTileMarker(1, g_curPlayer, *(i16*)&self->m_cursorX, *(i16*)&self->m_cursorY, 0);
+            ->BlitTileMarker(1, g_curPlayer, *reinterpret_cast<i16*>(&self->m_cursorX), *reinterpret_cast<i16*>(&self->m_cursorY), 0);
         return 1;
     }
     // P (ccca9): on bounds-fail or after the action, fall through to the x

@@ -81,10 +81,10 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -100,10 +100,10 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -119,10 +119,10 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -138,10 +138,10 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -157,10 +157,10 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -190,6 +190,6 @@ SIZE_UNKNOWN(CEventLoadRec);
 RVA(0x0009cab0, 0x23)
 i32 CDDrawWorkerCache::Find(const char* key) {
     i32 local = 0;
-    m_10.Lookup(key, (CObject*&)local);
+    m_10.Lookup(key, reinterpret_cast<CObject*&>(local));
     return local;
 }

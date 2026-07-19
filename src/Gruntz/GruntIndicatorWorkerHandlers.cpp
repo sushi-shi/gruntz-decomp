@@ -81,7 +81,7 @@ i32 Handler07db20(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntSelectedSprite((CGameObject*)owner);
+            CUserLogic* sub = new CGruntSelectedSprite(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -122,7 +122,7 @@ i32 Handler07dda0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntToySprite((CGameObject*)owner);
+            CUserLogic* sub = new CGruntToySprite(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;

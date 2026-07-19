@@ -78,7 +78,7 @@ static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
-    return ((i32*)b->m_8[ty])[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
 }
 
 // True if a move from the grunt's current tile to (moveX, moveY) is committable:
@@ -97,7 +97,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
         return 0;
     }
-    i32* tgt = &((i32*)board->m_8[mty])[mtx * 7];
+    i32* tgt = &(reinterpret_cast<i32*>(board->m_8[mty]))[mtx * 7];
     i32 tflags = *tgt;
     i32 hit = arr & tflags;
     if (hit & 0x20000000) {
@@ -119,25 +119,25 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     i32 stride = board->m_c * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
-            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg - 0x1c) & 0x2000)
-                || (*(i32*)(tg - stride) & 0x2000)) {
+            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
                 return 0;
             }
         } else {
-            if ((cur[0x1d] & 0x20) || (*(i32*)(cur - stride) & 0x2000)
-                || (*(i32*)(tg - 0x1c) & 0x2000) || (*(i32*)(tg + stride) & 0x2000)) {
+            if ((cur[0x1d] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000) || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
                 return 0;
             }
         }
     } else {
         if (dy > 0) {
-            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg + 0x1c) & 0x2000)
-                || (*(i32*)(tg - stride) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
                 return 0;
             }
         } else {
-            if ((cur[-0x1b] & 0x20) || (*(i32*)(cur - stride) & 0x2000)
-                || (*(i32*)(tg + 0x1c) & 0x2000) || (*(i32*)(tg + stride) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000) || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
                 return 0;
             }
         }
@@ -192,7 +192,7 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
-    return ((i32*)b->m_8[ty])[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
 }
 
 // CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
@@ -334,10 +334,10 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
 #undef REGION_INIT
 
-    ((CGruntzMgr*)(void*)g_gameReg)->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
+    (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code = ((i32*)((CGruntzMgr*)(void*)g_gameReg)
-                    ->m_tileGrid->m_8[m_lastTilePxY >> 5])[(m_lastTilePxX >> 5) * 7 + 4];
+    i32 code = (reinterpret_cast<i32*>((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+                    ->m_tileGrid->m_8[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc.
@@ -381,9 +381,9 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
 
     if (dx == 0) {
         if (y > h->m_screenY) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceN);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceN));
         } else if (y < h->m_screenY) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceS);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceS));
         }
         return;
     }
@@ -391,33 +391,33 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceN);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceN));
         } else {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceS);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceS));
         }
         return;
     }
     if (ratio <= 0.5 && ratio >= -0.5) {
         if (x > cx) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceE);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceE));
         } else {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceW);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceW));
         }
         return;
     }
     if (ratio > 0.5) {
         if (x > cx) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceSE);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE));
         } else {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceNW);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW));
         }
         return;
     }
     if (ratio < -0.5) {
         if (x > cx) {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceNE);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE));
         } else {
-            PlaySound(1000, *(CGruntVoiceRec*)g_voiceSW);
+            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW));
         }
     }
 }
@@ -485,8 +485,8 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 px = x >> 5;
     i32 py = y >> 5;
 
-    i32* ra = (i32*)(&m_reachRectLeft);
-    i32* rb = (i32*)(&m_2a0);
+    i32* ra = reinterpret_cast<i32*>((&m_reachRectLeft));
+    i32* rb = reinterpret_cast<i32*>((&m_2a0));
 
     RECT r1;
     r1.left = ra[0] + dx;
@@ -535,8 +535,8 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 dx = m_lastTilePxX >> 5;
     i32 dy = m_lastTilePxY >> 5;
 
-    i32* ra = (i32*)(&m_2b0);
-    i32* rb = (i32*)(&m_2c0);
+    i32* ra = reinterpret_cast<i32*>((&m_2b0));
+    i32* rb = reinterpret_cast<i32*>((&m_2c0));
 
     RECT r1;
     r1.left = ra[0] + dx;
@@ -594,65 +594,65 @@ i32 CGrunt::StepCompassMove() {
 
     if (s_TileFlags(board, tx, ty) & 0x80) {
         // The current tile carries a move command at field +0x10 (4th dword).
-        i32 cmd = ((i32*)board->m_8[ty])[tx * 7 + 4];
+        i32 cmd = (reinterpret_cast<i32*>(board->m_8[ty]))[tx * 7 + 4];
         switch (cmd - 0xb) {
             case 0:
             case 4:
                 moveY = y - 0x20;
-                voice = *(CGruntVoiceRec*)g_voiceS;
+                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
                 break;
             case 1:
             case 5:
                 moveY = y + 0x20;
-                voice = *(CGruntVoiceRec*)g_voiceN;
+                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
                 break;
             case 2:
             case 6:
                 moveX = x - 0x20;
-                voice = *(CGruntVoiceRec*)g_voiceW;
+                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
                 break;
             case 3:
             case 7:
                 moveX = x + 0x20;
-                voice = *(CGruntVoiceRec*)g_voiceE;
+                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
                 break;
             case 8:
                 switch (m_entranceCell.reason - 1) {
                     case 0:
                         moveY = y - 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceS;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
                         break;
                     case 1:
                         moveX = x + 0x20;
                         moveY = y - 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceNE;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
                         break;
                     case 2:
                         moveX = x + 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceE;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
                         break;
                     case 3:
                         moveY = y + 0x20;
                         moveX = x + 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceSE;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
                         break;
                     case 4:
                         moveY = y + 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceN;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
                         break;
                     case 5:
                         moveY = y + 0x20;
                         moveX = x - 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceSW;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
                         break;
                     case 6:
                         moveX = x - 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceW;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
                         break;
                     case 7:
                         moveX = x - 0x20;
                         moveY = y - 0x20;
-                        voice = *(CGruntVoiceRec*)g_voiceNW;
+                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
                         break;
                 }
                 break;
@@ -667,7 +667,7 @@ i32 CGrunt::StepCompassMove() {
             if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
                 owner = -1;
             } else {
-                owner = ((i32*)board->m_8[mty])[mtx * 7 + 1];
+                owner = (reinterpret_cast<i32*>(board->m_8[mty]))[mtx * 7 + 1];
             }
             m_tileMgr
                 ->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
@@ -694,44 +694,44 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        i32 toyCount = g_buteMgr.GetIntDef(const_cast<char*>((LPCTSTR)str), s_ToyTiles, 1);
+        i32 toyCount = g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.reason - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceS;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
                     break;
                 case 1:
                     moveY = y - 0x20;
                     moveX = x + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceNE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
                     break;
                 case 3:
                     moveY = y + 0x20;
                     moveX = x + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceSE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceN;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
                     break;
                 case 5:
                     moveY = y + 0x20;
                     moveX = x - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceSW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
                     break;
                 case 7:
                     moveX = x - 0x20;
                     moveY = y - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceNW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
@@ -766,39 +766,39 @@ i32 CGrunt::StepCompassMove() {
             switch (dir - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceS;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
                     break;
                 case 1:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceNE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
                     break;
                 case 3:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceSE;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceN;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
                     break;
                 case 5:
                     moveX = x - 0x20;
                     moveY = y + 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceSW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
                     break;
                 case 7:
                     moveY = y - 0x20;
                     moveX = x - 0x20;
-                    voice = *(CGruntVoiceRec*)g_voiceNW;
+                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
@@ -827,7 +827,7 @@ commit:
         i32 ox = m_lastTilePxX >> 5;
         i32 oy = m_lastTilePxY >> 5;
         b->m_8[oy][ox * 7 * 4 + 3] &= 0xdf;
-        *(i32*)&b->m_8[oy][ox * 7 * 4 + 4] = -1;
+        *reinterpret_cast<i32*>(&b->m_8[oy][ox * 7 * 4 + 4]) = -1;
     }
     {
         GruntBoard* b = g_gameReg->m_tileGrid;
@@ -835,7 +835,7 @@ commit:
         i32 ny = moveY >> 5;
         i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         b->m_8[ny][nx * 7 * 4 + 3] |= 0x20;
-        *(i32*)&b->m_8[ny][nx * 7 * 4 + 4] = owner;
+        *reinterpret_cast<i32*>(&b->m_8[ny][nx * 7 * 4 + 4]) = owner;
     }
     m_lastTilePxX = moveX;
     m_lastTilePxY = moveY;
@@ -910,7 +910,7 @@ i32 CGrunt::ClaimSwitchTile() {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         flags = 1;
     } else {
-        flags = ((i32*)b->m_8[ty])[tx * 7];
+        flags = (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
     }
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -931,12 +931,12 @@ i32 CGrunt::ClaimSwitchTile() {
     i32 oldTx = m_lastTilePxX >> 5;
     i32 oldTy = m_lastTilePxY >> 5;
     gb->m_8[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
-    *(i32*)&gb->m_8[oldTy][oldTx * 7 * 4 + 4] = -1;
+    *reinterpret_cast<i32*>(&gb->m_8[oldTy][oldTx * 7 * 4 + 4]) = -1;
 
     // Claim the new tile: set bit 5 of its flag byte, stamp the owner id.
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
     gb->m_8[ty][tx * 7 * 4 + 3] |= 0x20;
-    *(i32*)&gb->m_8[ty][tx * 7 * 4 + 4] = owner;
+    *reinterpret_cast<i32*>(&gb->m_8[ty][tx * 7 * 4 + 4]) = owner;
 
     m_lastTilePxX = x;
     m_lastTilePxY = y;
@@ -1079,7 +1079,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         }
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
@@ -1156,7 +1156,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
-    if (CUserLogic::SerializeMove((CSerialArchive*)ar, mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(static_cast<CSerialArchive*>(ar), mode, a3, a4) == 0) {
         return 0;
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
@@ -1164,7 +1164,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
-    if (((CWapX*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
+    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1181,10 +1181,10 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             }
             break;
         case 8:
-            m_tileMgr = (CTriggerMgr*)g_gameReg->m_68; // WwdGameReg view keeps m_68 as i32
+            m_tileMgr = reinterpret_cast<CTriggerMgr*>(g_gameReg->m_68); // WwdGameReg view keeps m_68 as i32
             break;
     }
-    ((CTriRecord*)(&m_entranceCell))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchorLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimerLo));
@@ -1193,12 +1193,12 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
-    ((CPairRecord*)(&m_wingzClockLo))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    ((CPairRecord*)(&m_8a0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    ((CPairRecord*)(&m_8b0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    ((CPairRecord*)(&m_8c0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    ((CPairRecord*)(&m_arrivalRerollLo))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    ((CPairRecord*)(&m_278))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8a0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8b0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8c0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_278)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
     return 1;
 }
 
@@ -1224,7 +1224,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     if (!ar) {
         return 0;
     }
-    CDDrawSubMgrLeaf* catalog = ((CGruntTypeCatalog*)*(void**)&m_3c)->m_c;
+    CDDrawSubMgrLeaf* catalog = (static_cast<CGruntTypeCatalog*>(*reinterpret_cast<void**>(&m_3c)))->m_c;
     if (!catalog) {
         return 0;
     }
@@ -1299,18 +1299,18 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, *(const char**)&m_448);
+    strcpy(buf, *reinterpret_cast<const char**>(&m_448));
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, *(const char**)&m_44c);
+    strcpy(buf, *reinterpret_cast<const char**>(&m_44c));
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
         CAniElement* id = m_poseWalk;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1320,7 +1320,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttack1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1330,7 +1330,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttack2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1340,7 +1340,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttackIdle;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1350,7 +1350,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseStruck1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1360,7 +1360,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseStruck2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1370,7 +1370,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[0];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1380,7 +1380,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[1];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1390,7 +1390,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[2];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1400,7 +1400,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle4;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1410,7 +1410,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle5;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1420,7 +1420,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseDeath;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1430,7 +1430,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToy1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1440,7 +1440,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToy2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1450,7 +1450,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToyBreak;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1460,7 +1460,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseItem;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1470,7 +1470,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseItem2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1480,7 +1480,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_pickupGeoSrc;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30((CObject*)id);
+            CString nm = catalog->KeyOfValue_152d30(reinterpret_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }

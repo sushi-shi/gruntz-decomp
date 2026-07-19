@@ -84,7 +84,7 @@ CMapArrayA::CMapArrayA() {
 // not source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
-    MapElemA* block = (MapElemA*)::operator new(count * sizeof(MapElemA));
+    MapElemA* block = static_cast<MapElemA*>(::operator new(count * sizeof(MapElemA)));
     m_0 = block;
     if (!block) {
         return reinterpret_cast<i32>(block);
@@ -92,7 +92,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 
     // @fold-TODO: MapElemA IS BrickzNode (0x24 B, links @+0x14/+0x18) - the pool's block
     // pointer is typed BrickzNode* on the shared class, so the element view casts once.
-    m_block = (BrickzNode*)block;
+    m_block = reinterpret_cast<BrickzNode*>(block);
     m_count = count;
     block->m_prev = 0;
 
@@ -145,7 +145,7 @@ CMapArrayB::CMapArrayB() {
 // source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
-    MapElemB* block = (MapElemB*)::operator new(count * sizeof(MapElemB));
+    MapElemB* block = static_cast<MapElemB*>(::operator new(count * sizeof(MapElemB)));
     m_0 = block;
     if (!block) {
         return 0;
@@ -153,7 +153,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 
     // @fold-TODO: MapElemB (0x0c B) is the bucket node the grid code reaches as a
     // BrickzNode* - it only ever touches its first three dwords (child/back/next).
-    m_block = (BrickzNode*)block;
+    m_block = reinterpret_cast<BrickzNode*>(block);
     m_count = count;
     block->m_prev = 0;
 
@@ -229,11 +229,11 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     m_width = width;
     m_height = height;
     m_cellCount = count;
-    m_cellPool = (BrickzCell*)RezAlloc(count * 0x1c);
+    m_cellPool = static_cast<BrickzCell*>(RezAlloc(count * 0x1c));
     if (m_cellPool == 0) {
         return 0;
     }
-    m_rows = (BrickzCell**)RezAlloc(height * 4);
+    m_rows = static_cast<BrickzCell**>(RezAlloc(height * 4));
     if (m_rows == 0) {
         return 0;
     }
@@ -241,16 +241,16 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     i32 stride = width * 0x1c;
     i32 off = 0;
     for (i32 i = 0; i < height; i++) {
-        m_rows[i] = (BrickzCell*)(reinterpret_cast<char*>(m_cellPool) + off);
+        m_rows[i] = reinterpret_cast<BrickzCell*>((reinterpret_cast<char*>(m_cellPool) + off));
         off += stride;
     }
-    if (((CMapArrayA*)&m_colA.m_block)->Allocate(count * 5) == 0) {
+    if ((reinterpret_cast<CMapArrayA*>(&m_colA.m_block))->Allocate(count * 5) == 0) {
         return 0;
     }
     if (m_colB.Allocate(count * 5) == 0) {
         return 0;
     }
-    m_stepCb = (void (*)())callback;
+    m_stepCb = reinterpret_cast<void (*)()>(callback);
     // Build the grid bounding rect: intersect the {0,0,width,height} box with
     // itself into m_originX (the {left,top,right,bottom} at +0x60); on an empty result
     // fall back to the box. m_gridW/m_gridH = the resulting width/height.
@@ -264,7 +264,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     b.top = 0;
     b.right = width;
     b.bottom = height;
-    RECT* out = (RECT*)&m_originX;
+    RECT* out = reinterpret_cast<RECT*>(&m_originX);
     if (!IntersectRect(out, &a, &b)) {
         *out = a;
     }
@@ -337,7 +337,7 @@ i32 CBrickzGrid::Search(
     m_maskC = maskC;
     m_maskB = maskB;
     m_maskA = maskA;
-    i32 flags = *(i32*)&m_rows[y2][x2];
+    i32 flags = *reinterpret_cast<i32*>(&m_rows[y2][x2]);
     if ((maskA & flags) != 0 && (maskC & flags) != 0) {
         return 0;
     }
@@ -346,7 +346,7 @@ i32 CBrickzGrid::Search(
         u32 i = 0;
         i32 off = 0;
         do {
-            *(i32*)(reinterpret_cast<char*>(m_cellPool) + off + 0x14) = 0;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_cellPool) + off + 0x14)) = 0;
             i++;
             off += 0x1c;
         } while (i < m_cellCount);
@@ -411,7 +411,7 @@ i32 CBrickzGrid::Search(
 reached:
     BrickzNode* p = node;
     do {
-        BrickzFreeRec* rec = (BrickzFreeRec*)g_coordPool.m_freeHead;
+        BrickzFreeRec* rec = reinterpret_cast<BrickzFreeRec*>(g_coordPool.m_freeHead);
         i32* slot = 0;
         if (rec->m_0 != 0) {
             slot = &rec->m_4;
@@ -419,8 +419,8 @@ reached:
             rec->m_8 = p->m_4;
             g_coordPool.m_freeHead = reinterpret_cast<CoordPoolNode*>(rec->m_0);
         }
-        ((CRezList*)list)->AddHead((CRezListNode*)slot);
-        p = (BrickzNode*)p->m_1c;
+        (static_cast<CRezList*>(list))->AddHead(reinterpret_cast<CRezListNode*>(slot));
+        p = reinterpret_cast<BrickzNode*>(p->m_1c);
     } while (p != 0);
     if (m_stepCb != 0) {
         m_stepCb();
@@ -461,9 +461,9 @@ i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     if (static_cast<u32>((nrow - m_originY)) >= static_cast<u32>(m_gridH)) {
         return 1;
     }
-    i32* ncell = (i32*)&m_rows[nrow][ncol];
+    i32* ncell = reinterpret_cast<i32*>(&m_rows[nrow][ncol]);
     i32 nflags = *ncell;
-    i32* cell = (i32*)&m_rows[node->m_4][node->m_0];
+    i32* cell = reinterpret_cast<i32*>(&m_rows[node->m_4][node->m_0]);
     if ((m_edgeMask & nflags) != 0) {
         return 1;
     }
@@ -493,9 +493,9 @@ i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     }
 relax:
     BrickzNode* closed = 0;
-    BrickzNode* head = ((BrickzCell*)ncell)->m_head;
+    BrickzNode* head = (reinterpret_cast<BrickzCell*>(ncell))->m_head;
     if (head != 0) {
-        closed = (BrickzNode*)head->m_0;
+        closed = reinterpret_cast<BrickzNode*>(head->m_0);
     }
     if (closed != 0) {
         if (ng >= reinterpret_cast<i32>(closed->m_8)) {
@@ -503,7 +503,7 @@ relax:
         }
     }
     BrickzNode* open;
-    if (((BrickzCell*)ncell)->m_count != 0) {
+    if ((reinterpret_cast<BrickzCell*>(ncell))->m_count != 0) {
         open = Find(ncol, nrow);
     } else {
         open = found0;
@@ -520,7 +520,7 @@ relax:
             Unlink(open);
             open->m_10 = ng + open->m_c;
             open->m_1c = reinterpret_cast<i32>(node);
-            open->m_8 = (BrickzNode*)ng;
+            open->m_8 = reinterpret_cast<BrickzNode*>(ng);
             Insert(open);
             return 1;
         }
@@ -529,10 +529,10 @@ relax:
         if (ng < reinterpret_cast<i32>(closed->m_8)) {
             CellPop(closed, 0);
             closed->m_1c = reinterpret_cast<i32>(node);
-            closed->m_8 = (BrickzNode*)ng;
+            closed->m_8 = reinterpret_cast<BrickzNode*>(ng);
             closed->m_10 = closed->m_c + ng;
             Insert(closed);
-            ((BrickzCell*)ncell)->m_count++;
+            (reinterpret_cast<BrickzCell*>(ncell))->m_count++;
             return 1;
         }
         CellPop(closed, 1);
@@ -553,7 +553,7 @@ relax:
     }
     rec->m_0 = ncol;
     rec->m_4 = nrow;
-    rec->m_8 = (BrickzNode*)ng;
+    rec->m_8 = reinterpret_cast<BrickzNode*>(ng);
     i32 hy = abs(m_goalY - nrow);
     i32 hx = abs(m_goalX - ncol);
     i32 h = (hy + hx) * 2;
@@ -564,7 +564,7 @@ relax:
     rec->m_18 = 0;
     rec->m_20 = 0;
     Insert(rec);
-    ((BrickzCell*)ncell)->m_count++;
+    (reinterpret_cast<BrickzCell*>(ncell))->m_count++;
     return 1;
 }
 
@@ -689,9 +689,9 @@ RVA(0x0009f540, 0x40)
 BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
     BrickzNode* n = m_rows[row][col].m_head;
     while (n != 0) {
-        BrickzNode* child = (BrickzNode*)n->m_0;
+        BrickzNode* child = reinterpret_cast<BrickzNode*>(n->m_0);
         if (child->m_0 == col && child->m_4 == row) {
-            return (BrickzNode*)n->m_0;
+            return reinterpret_cast<BrickzNode*>(n->m_0);
         }
         n = n->m_8;
     }
@@ -738,7 +738,7 @@ void CBrickzGrid::ResetCells() {
         while (node != 0) {
             BrickzNode** link = &node->m_8;
             BrickzNode* next = *link;
-            BrickzNode* child = (BrickzNode*)node->m_0;
+            BrickzNode* child = reinterpret_cast<BrickzNode*>(node->m_0);
             child->m_14 = m_colA.m_block;
             child->m_18 = 0;
             m_colA.m_block->m_18 = child;
@@ -798,22 +798,22 @@ RVA(0x0009f710, 0xa7)
 void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
     BrickzNode* slot = node->m_20;
-    if ((BrickzNode*)slot->m_4 != 0) {
+    if (reinterpret_cast<BrickzNode*>(slot->m_4) != 0) {
         if (slot->m_8 != 0) {
-            ((BrickzNode*)slot->m_4)->m_8 = slot->m_8;
+            (reinterpret_cast<BrickzNode*>(slot->m_4))->m_8 = slot->m_8;
             slot->m_8->m_4 = slot->m_4;
         }
     } else if (slot->m_8 == 0) {
         *head = 0;
-    } else if ((BrickzNode*)slot->m_4 == 0) {
+    } else if (reinterpret_cast<BrickzNode*>(slot->m_4) == 0) {
         BrickzNode* next = slot->m_8;
         if (next != 0) {
             *head = next;
             next->m_4 = 0;
         }
     }
-    if ((BrickzNode*)slot->m_4 != 0 && slot->m_8 == 0) {
-        ((BrickzNode*)slot->m_4)->m_8 = 0;
+    if (reinterpret_cast<BrickzNode*>(slot->m_4) != 0 && slot->m_8 == 0) {
+        (reinterpret_cast<BrickzNode*>(slot->m_4))->m_8 = 0;
     }
     node->m_18 = 0;
     node->m_14 = 0;

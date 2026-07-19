@@ -162,13 +162,13 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     void* obj; // the CMapPtrToPtr value type; the CObject-map call below re-types it
     char buf[0x80];
 
-    *(void**)(p + 0x424) = 0;
-    *(void**)(p + 0x428) = 0;
-    *(void**)(p + 0x264) = 0;
-    *(void**)(p + 0x268) = 0;
-    *(void**)(p + 0x270) = 0;
-    *(void**)(p + 0x26c) = 0;
-    *(void**)(p + 0x274) = 0;
+    *reinterpret_cast<void**>((p + 0x424)) = 0;
+    *reinterpret_cast<void**>((p + 0x428)) = 0;
+    *reinterpret_cast<void**>((p + 0x264)) = 0;
+    *reinterpret_cast<void**>((p + 0x268)) = 0;
+    *reinterpret_cast<void**>((p + 0x270)) = 0;
+    *reinterpret_cast<void**>((p + 0x26c)) = 0;
+    *reinterpret_cast<void**>((p + 0x274)) = 0;
 
     // 7 serial-id object refs (unrolled).
     SERIALREF(0x1b8);
@@ -311,7 +311,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     for (i32 gi = 0; gi < 3; ++gi) {
         char* cell = row;
         for (i32 gj = 0; gj < 3; ++gj) {
-            if (((GruntDataRecord*)cell)->DeserializeStrings(ar) == 0) {
+            if ((reinterpret_cast<GruntDataRecord*>(cell))->DeserializeStrings(ar) == 0) {
                 return 0;
             }
             cell += 0x68;
@@ -320,13 +320,13 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     }
 
     // Drain the m_320 list back to the engine free-list, then RemoveAll(m_31c).
-    if (*(void**)(p + 0x328) != 0) {
-        void* node = *(void**)(p + 0x320);
+    if (*reinterpret_cast<void**>((p + 0x328)) != 0) {
+        void* node = *reinterpret_cast<void**>((p + 0x320));
         if (node != 0) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
-                void* next = *(void**)node;
-                char* buf = *(char**)(reinterpret_cast<char*>(node) + 8);
+                void* next = *static_cast<void**>(node);
+                char* buf = *reinterpret_cast<char**>((reinterpret_cast<char*>(node) + 8));
                 if (buf != 0) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
@@ -336,7 +336,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
                 node = next;
             } while (node != 0);
         }
-        ((CPtrList*)(p + 0x31c))->RemoveAll();
+        (reinterpret_cast<CPtrList*>((p + 0x31c)))->RemoveAll();
     }
 
     // Rebuild m_31c from a count of 8-byte free-list nodes.
@@ -351,12 +351,12 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);
-        ((CPtrList*)(p + 0x31c))->AddTail(item);
+        (reinterpret_cast<CPtrList*>((p + 0x31c)))->AddTail(item);
     }
 
     // Drain + free the m_338 list.
-    while (*(void**)(p + 0x344) != 0 && *(i32*)(reinterpret_cast<char*>(*(void**)(p + 0x33c)) + 8) != 0) {
-        void* rem = ((CPtrList*)(p + 0x338))->RemoveHead();
+    while (*reinterpret_cast<void**>((p + 0x344)) != 0 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(*reinterpret_cast<void**>((p + 0x33c))) + 8)) != 0) {
+        void* rem = (reinterpret_cast<CPtrList*>((p + 0x338)))->RemoveHead();
         RezFree(rem);
     }
 
@@ -370,7 +370,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
             item = mem;
         }
         ar->Read(item, 0x2c);
-        ((CPtrList*)(p + 0x338))->AddTail(item);
+        (reinterpret_cast<CPtrList*>((p + 0x338)))->AddTail(item);
     }
 
     // Push the level-config event(s) into the grunt's HUD object (the

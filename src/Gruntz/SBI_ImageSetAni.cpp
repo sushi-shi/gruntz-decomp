@@ -62,7 +62,7 @@ i32 CSBI_ImageSetAni::Init(
         m_c = a2;
         if (key != 0) {
             CImageSet* tbl = 0;
-            ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)tbl);
+            (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(tbl));
             m_34 = tbl;
             if (tbl != 0) {
                 m_3c = b2;
@@ -75,7 +75,7 @@ i32 CSBI_ImageSetAni::Init(
                     m_30 = 0;
                     return 0;
                 }
-                m_30 = (CImage*)tbl->m_items.GetAt(m_4c);
+                m_30 = static_cast<CImage*>(tbl->m_items.GetAt(m_4c));
                 return m_30 != 0;
             }
         }
@@ -100,7 +100,7 @@ i32 CSBI_ImageSetAni::Tick() {
         CImageSet* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = (CImage*)tbl->m_items.GetAt(m_38);
+            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
         } else {
             cel = 0;
         }
@@ -108,10 +108,10 @@ i32 CSBI_ImageSetAni::Tick() {
         if (cel != 0) {
             i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
             cel->RenderFrame(
-                (void*)surfaceCtx,
-                (void*)(cel->m_anchorX + m_rect14.m_0),
-                (void*)(cel->m_anchorY + m_rect14.m_4),
-                (void*)0
+                reinterpret_cast<void*>(surfaceCtx),
+                reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
+                reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
+                static_cast<void*>(0)
             );
         }
         u32 now = timeGetTime();

@@ -815,7 +815,7 @@ public:
     CGruntMovingBase(CGameObject* owner);
     virtual void MovingSlot16(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
     CMotionState* Motion() {
-        return (CMotionState*)(reinterpret_cast<char*>(this) + 0x38);
+        return reinterpret_cast<CMotionState*>((reinterpret_cast<char*>(this) + 0x38));
     }
 };
 
@@ -1076,7 +1076,7 @@ public:
     // TypeName() at its five concat sites (codegen-neutral: same CString lvalue).
     void* m_typeName; // +0x54  (grunt-type CString body; not owned by ~CGrunt)
     CString& TypeName() {
-        return *(CString*)&m_typeName;
+        return *reinterpret_cast<CString*>(&m_typeName);
     }
     // +0x58..+0x7c: the resolved per-anim geometry sources - CAniElement* handles
     // looked up from m_0c->m_animRegistry->m_10 (the Ptr-band catalog); fed to the cursor's

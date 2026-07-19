@@ -161,12 +161,12 @@ i32 CGrunt::ChargeStep() {
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
                         i32 los = CGameLevel::PointInBounds(
-                            (const LevelCoordRect*)&mgr->m_world->m_level->m_mainPlane->m_originX,
+                            reinterpret_cast<const LevelCoordRect*>(&mgr->m_world->m_level->m_mainPlane->m_originX),
                             mp->m_screenX,
                             mp->m_screenY
                         );
                         if (los != 0) {
-                            ((CGruntSpawnConfig*)mgr->m_cueSink)
+                            (reinterpret_cast<CGruntSpawnConfig*>(mgr->m_cueSink))
                                 ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                         }
                     }

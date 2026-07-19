@@ -35,7 +35,7 @@ i32 CShadeTable::Set(u32 size, i32 id) {
         RezFree(m_data);
     }
     m_size = size;
-    m_data = (u8*)RezAlloc(size);
+    m_data = static_cast<u8*>(RezAlloc(size));
     if (!m_data) {
         return 0;
     }
@@ -90,7 +90,7 @@ i32 CShadeTable::LoadFromFile(const char* path, i32 id) {
 RVA(0x00150330, 0x87)
 i32 CShadeTable::LoadFromMem(void* buf, u32 len, i32 id) {
     CMemFile file(0x400);
-    file.Attach((BYTE*)buf, len);
+    file.Attach(static_cast<BYTE*>(buf), len);
     return ReadFrom(&file, id);
 }
 

@@ -44,7 +44,7 @@ i32 RotateRasterize(
 ) {
     float bound0, clip0, clip1, clip2;
     if (clipFlag == -1) {
-        RotateSrcImage* img = (RotateSrcImage*)(void*)a3;
+        RotateSrcImage* img = static_cast<RotateSrcImage*>(reinterpret_cast<void*>(a3));
         clip1 = 0.0f;
         clip0 = static_cast<float>(img->m_1c);
         clip2 = static_cast<float>(img->m_18);
@@ -164,7 +164,7 @@ i32 RotateRasterize(
         return 0;
     }
 
-    WarpTextureBlit(g_rasterVtxB, n, (CDDSurface*)a4, (CDDSurface*)a4, a5, a6);
+    WarpTextureBlit(g_rasterVtxB, n, reinterpret_cast<CDDSurface*>(a4), reinterpret_cast<CDDSurface*>(a4), a5, a6);
     return 1;
 }
 SIZE(ClipVtx, 0x1c);

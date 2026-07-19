@@ -56,7 +56,7 @@
 // sound-bank path does NOT go through it: m_4 is already typed CGruntzMgr*, so
 // m_4->m_sound is cast-free (the spelling CreditzAssets.cpp uses).
 static inline CGMOwner* Owner(CState* s) {
-    return (CGMOwner*)s->m_4;
+    return reinterpret_cast<CGMOwner*>(s->m_4);
 }
 
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
@@ -125,15 +125,15 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (!sounds) {
         return 0;
     }
-    m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)sounds, "CREDITZ", "_");
+    m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
 
-    CSymTab* midiz = (CSymTab*)SymTab2c()->ResolvePath("MIDIZ");
+    CSymTab* midiz = static_cast<CSymTab*>(SymTab2c()->ResolvePath("MIDIZ"));
     if (midiz) {
-        CParseSource* e = (CParseSource*)midiz->Insert("PLAY", (void*)0x584d49);
+        CParseSource* e = reinterpret_cast<CParseSource*>(midiz->Insert("PLAY", reinterpret_cast<void*>(0x584d49)));
         if (e) {
             i32 val = e->BeginParse();
             if (val) {
-                m_4->m_sound->CreateBank((void*)val, e->m_length, "CREDITZ"); // 0x138670
+                m_4->m_sound->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -141,11 +141,11 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // MONOLITH block, pinning midiz in edi across the PLAY calls
     // (docs/patterns/redundant-sibling-guard-retest.md).
     if (midiz) {
-        CParseSource* e2 = (CParseSource*)midiz->Insert("MONOLITH", (void*)0x584d49);
+        CParseSource* e2 = reinterpret_cast<CParseSource*>(midiz->Insert("MONOLITH", reinterpret_cast<void*>(0x584d49)));
         if (e2) {
             i32 val = e2->BeginParse();
             if (val) {
-                m_4->m_sound->CreateBank((void*)val, e2->m_length, "MONOLITH"); // 0x138670
+                m_4->m_sound->CreateBank(reinterpret_cast<void*>(val), e2->m_length, "MONOLITH"); // 0x138670
             }
         }
     }
@@ -173,7 +173,7 @@ void CCreditsState::ReleaseResources() {
     if (m_c) {
         SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
-            ((SoundStream*)r)->Stop();
+            (static_cast<SoundStream*>(r))->Stop();
         }
         m_c->m_soundRegistry->RemoveKeysEqual_157c70("CREDITZ", "_");
         m_c->m_imageRegistry->RemoveKeysEqual_155360("CREDITZ", "_");
@@ -264,7 +264,7 @@ i32 CCreditsState::Render() {
 
     if (m_1c4) {
         i32 s = Owner(this)->m_48->Find("MONOLITH");
-        if (s && !((CGMSoundEntry*)s)->Query()) {
+        if (s && !(reinterpret_cast<CGMSoundEntry*>(s))->Query()) {
             Sub3();
         }
     }
@@ -369,9 +369,9 @@ RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CDDrawSurfaceMgr* root = m_c;
     if (m_videoPlaying != 0) {
-        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158dc0();
-        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
-        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158d50(0);
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158dc0();
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158e90();
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158d50(0);
         root->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         return 1;
     }
@@ -382,18 +382,18 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(titleName, "TITLE%d", idx);
     void* saved = static_cast<void*>(m_2c);
     void* state = m_8->ResolvePath(stateName);
-    m_2c = (CResSource*)state;
+    m_2c = static_cast<CResSource*>(state);
     if (state == 0) {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = (CResSource*)saved;
+    m_2c = static_cast<CResSource*>(saved);
     if (faded == 0) {
         return 0;
     }
     CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
-    ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
+    (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158e90();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; ex "BuildMenuPage")
     return 1;
 }
@@ -491,7 +491,7 @@ RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
     // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
     // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
-    CParseSource* sect = (CParseSource*)SymTab2c()->Insert("CREDITZ", (void*)'TXT');
+    CParseSource* sect = reinterpret_cast<CParseSource*>(SymTab2c()->Insert("CREDITZ", reinterpret_cast<void*>('TXT')));
     if (sect) {
         char* src = reinterpret_cast<char*>(sect->BeginParse());
         if (!src) {

@@ -24,7 +24,7 @@ i32 CBehindCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CBehindCandy::~CBehindCandy @0x00fc30 - the leaf adds no destructible members

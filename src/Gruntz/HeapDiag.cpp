@@ -92,12 +92,12 @@ int HeapCheckDump(int walkOnBad) {
         return status;
     }
     memset(&hinfo, 0, sizeof(hinfo));
-    ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+    (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     OutputDebugStringA("Walking heap...\n");
     hinfo._pentry = 0;
-    int r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+    int r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     while (r == _HEAPOK) {
-        r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+        r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     }
     sprintf(
         buf,
@@ -160,10 +160,10 @@ int HeapStats() {
         hinfo._pentry = 0;
         hinfo._size = 0;
         hinfo._useflag = 0;
-        ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+        (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
         hinfo._pentry = 0;
         int r =
-            ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+            (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
         while (r == status) {
             total += hinfo._size;
             if (hinfo._useflag == _USEDENTRY) {
@@ -171,7 +171,7 @@ int HeapStats() {
             } else {
                 free += hinfo._size;
             }
-            r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(
+            r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
                 &hinfo
             );
         }
@@ -234,21 +234,21 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     }
 
     PFN_CreateSnapshot pCreate =
-        (PFN_CreateSnapshot)GetProcAddress(hK32, "CreateToolhelp32Snapshot");
+        reinterpret_cast<PFN_CreateSnapshot>(GetProcAddress(hK32, "CreateToolhelp32Snapshot"));
     if (pCreate == 0) {
         return 0;
     }
-    PFN_Process32 pFirst = (PFN_Process32)GetProcAddress(hK32, "Process32First");
+    PFN_Process32 pFirst = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32First"));
     if (pFirst == 0) {
         return 0;
     }
-    PFN_Process32 pNext = (PFN_Process32)GetProcAddress(hK32, "Process32Next");
+    PFN_Process32 pNext = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32Next"));
     if (pNext == 0) {
         return 0;
     }
 
     HANDLE hSnap = pCreate(TH32CS_SNAPPROCESS, 0);
-    if (hSnap == (HANDLE)-1) {
+    if (hSnap == reinterpret_cast<HANDLE>(-1)) {
         return 0;
     }
 

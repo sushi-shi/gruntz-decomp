@@ -34,7 +34,7 @@ i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CFrontCandy::~CFrontCandy @0x0fb00 - empty vtable-anchor dtor; folds the CUserLogic
@@ -52,7 +52,7 @@ i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CFrontCandyAni::~CFrontCandyAni @0xfe90 - empty vtable-anchor dtor (??_7CFrontCandyAni
@@ -75,7 +75,7 @@ i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CEyeCandyAni::~CEyeCandyAni @0x0ffc0 - empty vtable-anchor dtor; folds the
@@ -170,9 +170,9 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CEyeCandyActEntry* e = (CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id);
+    CEyeCandyActEntry* e = reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -192,20 +192,20 @@ void CEyeCandyAni::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CEyeCandyAni::AdvanceAnim;
 }
 
@@ -249,7 +249,7 @@ CActReg g_frontCandyActReg; // 0x6460b0
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad130, 0x15)
 void CFrontCandyAni::InitActReg() {
-    ((CZDArrayDerived*)&g_frontCandyActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_frontCandyActReg))->Construct(2000, 2010);
 }
 
 // CFrontCandyAni::FireActivation @0x0ad1b0 - look the activation coordinate up in
@@ -258,9 +258,9 @@ void CFrontCandyAni::InitActReg() {
 // CParticlez::FireActivation (0x046d30).
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CFrontCandyActEntry* e = (CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(coord);
+    CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CFrontCandyActEntry* e2 = (CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(coord);
+        CFrontCandyActEntry* e2 = reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -280,20 +280,20 @@ void CFrontCandyAni::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CFrontCandyAni::AdvanceAnim;
 }
 

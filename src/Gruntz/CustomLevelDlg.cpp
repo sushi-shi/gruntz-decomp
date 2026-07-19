@@ -53,9 +53,9 @@
 // retail) + the by-value CString-temp lifetime - not steerable from source.
 RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
-    CListBox* item = (CListBox*)GetDlgItem(0x516);
+    CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));
     if (pDX->m_bSaveAndValidate == 0) {
-        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->BeginWaitCursor();
         {
             char buf[0x400];
             _getcwd(buf, 0x400);
@@ -78,7 +78,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
             }
             ::SendMessageA(item->m_hWnd, 0x186, 0, 0);
         }
-        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->EndWaitCursor();
         return;
     }
     i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, 0x188, 0, 0));
@@ -95,7 +95,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
 // TYPE is still the placeholder void* cell in Globals.h.)
 RVA(0x000183d0, 0x6)
 const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
-    return (const AFX_MSGMAP*)&g_battlezCustomMsgMap;
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_battlezCustomMsgMap);
 }
 
 // ---------------------------------------------------------------------------
@@ -126,6 +126,6 @@ void CBattlezDlgCustom::PickIfSelected() {
 // load-bearing.
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    CCmdTarget* thread = *(CCmdTarget**)(reinterpret_cast<char*>(AfxGetModuleState()) + 4);
+    CCmdTarget* thread = *reinterpret_cast<CCmdTarget**>((reinterpret_cast<char*>(AfxGetModuleState()) + 4));
     thread->EndWaitCursor();
 }

@@ -53,7 +53,7 @@ i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the manager arrives as the slot-1 virtual's i32 arg; one cast at the seam.
-    CGruntzMgr* mgr = (CGruntzMgr*)mgrArg;
+    CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
     m_4 = mgr;
     m_8 = mgr->m_symParser;
     m_c = mgr->m_world;
@@ -89,14 +89,14 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         if (snd == 0) {
             return 0;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)snd, "GAME", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (m_c->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
         void* aniz = m_8->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
             return 0;
         }
-        m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)aniz, "GAME", "_");
+        m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(aniz), "GAME", "_");
     }
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).

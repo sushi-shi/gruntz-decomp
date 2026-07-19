@@ -120,10 +120,10 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (DirectDrawCreate(0, &m_dd, 0) != 0) {
         return 0;
     }
-    if (m_dd->QueryInterface(IID_IDirectDraw2, (void**)&m_dd2) != 0) {
+    if (m_dd->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_dd2)) != 0) {
         return 0;
     }
-    if (m_dd2->SetCooperativeLevel((HWND)window, coopFlags) != 0) {
+    if (m_dd2->SetCooperativeLevel(static_cast<HWND>(window), coopFlags) != 0) {
         HandleError();
         return 0;
     }
@@ -145,7 +145,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_primary)
+    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_primary))
         != 0) {
         return 0;
     }
@@ -153,7 +153,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     // Snapshot the system palette into the +0x108 table (retail pushes the WINDOW
     // - `mov eax,[esp+0x20]` - not the width; the old `OnModeSet(w)` fake-alias
     // decl mis-read both the callee class and the argument).
-    Snapshot((HWND)window);
+    Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == 8) {
         if (m_dd2->CreatePalette(4, reinterpret_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0) != 0) {
@@ -223,7 +223,7 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     // The bring-up is CMoviePlayer::Init @0x17c040 on this same object (a0 IS the
     // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
     // decl left this rel32 unresolved.
-    return Init(h, (DDModeInfo*)a0, static_cast<u32>(a1));
+    return Init(h, reinterpret_cast<DDModeInfo*>(a0), static_cast<u32>(a1));
 }
 
 // CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
@@ -427,7 +427,7 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
         m_540.Close();
         return 0;
     }
-    i32 hi = m_540.Lookup((unsigned int)a2);
+    i32 hi = m_540.Lookup(static_cast<unsigned int>(a2));
     if (!hi) {
         m_540.Close();
         return 0;
@@ -792,7 +792,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_tilesDown = 1;
                 m_originX = 0;
                 m_originY = 0;
-                m_destRect = (RECT*)RezAlloc(0x10);
+                m_destRect = static_cast<RECT*>(RezAlloc(0x10));
                 m_destRect->top = 0;
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
@@ -808,7 +808,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
             if (!rect) {
                 return 0;
             }
-            RECT* r = (RECT*)RezAlloc(0x10);
+            RECT* r = static_cast<RECT*>(RezAlloc(0x10));
             m_destRect = r;
             r->left = rect->left;
             r->top = rect->top;
@@ -900,15 +900,15 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     // buffers are the three ::operator delete calls retail makes at 0x17d63e/50/63.
     PLAYLISTINFOSTRUCT* rec = m_868c[idx - 1];
     if (rec->m_src) {
-        ::operator delete((void*)rec->m_src);
+        ::operator delete(reinterpret_cast<void*>(rec->m_src));
         rec->m_src = 0;
     }
     if (rec->m_10) {
-        ::operator delete((void*)rec->m_10);
+        ::operator delete(reinterpret_cast<void*>(rec->m_10));
         rec->m_10 = 0;
     }
     if (rec->m_14) {
-        ::operator delete((void*)rec->m_14);
+        ::operator delete(reinterpret_cast<void*>(rec->m_14));
         rec->m_14 = 0;
     }
     // the tail shuffle + count decrement retail emits IS CArray::RemoveAt inlined

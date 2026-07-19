@@ -37,7 +37,7 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
     if (m_nCount <= 0) {
         return 0;
     }
-    HWND combo = ::GetDlgItem((HWND)hDlg, ctrlId);
+    HWND combo = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), ctrlId);
     if (combo == 0) {
         return 0;
     }
@@ -45,12 +45,12 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
     CPtrList::CNode* node = m_pNodeHead;
     while (node != 0) {
         CPtrList::CNode* next = node->pNext;
-        CLatencyItem* rec = (CLatencyItem*)node->data;
+        CLatencyItem* rec = static_cast<CLatencyItem*>(node->data);
         i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
         i32 idx;
         {
             CString name = rec->GetName();
-            idx = ::SendMessageA(combo, CB_ADDSTRING, 0, reinterpret_cast<long>((LPCTSTR)name));
+            idx = ::SendMessageA(combo, CB_ADDSTRING, 0, reinterpret_cast<long>(static_cast<LPCTSTR>(name)));
         }
         if (idx != -1) {
             ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
@@ -85,7 +85,7 @@ CString CLatencyItem::GetName() {
 // so the local pSend caches it here.
 RVA(0x00038150, 0x91)
 i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
-    HWND list = ::GetDlgItem((HWND)hDlg, id);
+    HWND list = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), id);
     if (!list) {
         return 0;
     }

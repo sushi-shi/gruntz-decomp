@@ -146,18 +146,20 @@ extern "C" void Act_F(); // 0x402725
     do {                                                                                           \
         i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                                       \
         if (id_ == 0) {                                                                            \
-            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
+            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
             id_ = g_typeCounter;                                                                   \
-            CString* slot_ = (CString*)((_zvec*)&g_typeColl)->IndexToPtr(id_);                     \
-            CString* p_ = (CString*)g_typeColl.m_alloc;                                            \
+            CString* slot_ =                                                                       \
+                reinterpret_cast<CString*>(                                                         \
+                    (reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(id_));                     \
+            CString* p_ = reinterpret_cast<CString*>(g_typeColl.m_alloc);                          \
             for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                        \
-                ::new ((void*)p_) CString;                                                         \
+                ::new (static_cast<void*>(p_)) CString;                                            \
             }                                                                                      \
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = (void**)g_actionTable.Resolve(id_);                                        \
-        *aslot_ = (void*)(handler);                                                                \
+        void** aslot_ = reinterpret_cast<void**>(g_actionTable.Resolve(id_));                      \
+        *aslot_ = reinterpret_cast<void*>(handler);                                                \
     } while (0)
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)  - COMPILER-GENERATED, no source body
@@ -275,8 +277,8 @@ RVA(0x00042d40, 0x73e)
 // object handle; the cast to CGameObject* reproduces that (kept i32 so the mangled
 // symbol still binds to 0x42d40). Sibling leaf ctors (CGruntVoice, ...) took a real
 // CGameObject*; this one did not.
-CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg), CWapX((CGameObject*)arg) {
-    CGameObject* obj = (CGameObject*)arg;
+CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), CWapX(reinterpret_cast<CGameObject*>(arg)) {
+    CGameObject* obj = reinterpret_cast<CGameObject*>(arg);
 
     // Two 64-bit stamp/window cooldown timers, cleared.
     m_cooldownStampLo = 0;
@@ -335,7 +337,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg), CWapX((CGameObject*
             // Dual-view bridge: the singleton IS the RTTI-true CGruntzMgr, whose
             // ReportError @0x8dc60 (WPARAM,LPARAM) is the real symbol the rel32 binds
             // (the CGameRegistry facet's (i32,i32) name resolved to nothing).
-            ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x3e9);
+            (reinterpret_cast<CGruntzMgr*>(g_gameReg))->ReportError(0x8009, 0x3e9);
             return;
     }
 
@@ -430,7 +432,7 @@ CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg e
 // Free init thunk; the SAME archetype as the eyecandy classes' InitActReg.
 RVA(0x000445c0, 0x15)
 void CWarlord::InitActReg() {
-    ((CZDArrayDerived*)&g_actionTable)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actionTable))->Construct(2000, 2010);
 }
 
 // ===========================================================================
@@ -444,12 +446,12 @@ void CWarlord::InitActReg() {
 // empty, the ResolveEntry return pointer falls straight out in eax as the result.
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
-    void** slot = (void**)g_actionTable.ResolveEntry(key);
+    void** slot = reinterpret_cast<void**>(g_actionTable.ResolveEntry(key));
     if (*slot != 0) {
         // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
         // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
         typedef i32 (CUserLogic::*StateHandler)();
-        StateHandler h = *(StateHandler*)g_actionTable.ResolveEntry(key);
+        StateHandler h = *reinterpret_cast<StateHandler*>(g_actionTable.ResolveEntry(key));
         (this->*h)();
     }
 }
@@ -500,15 +502,15 @@ i32 CWarlord::LoadAttributes() {
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
         i32 dist =
-            ((CTriggerMgr*)reg->m_cmdGrid)->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+            (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
-        >= *(i64*)&m_cooldownWindowLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_cooldownStampLo)
+        >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
         if (rand() % 10 < 5) {
             (reinterpret_cast<CGrunt*>(this))->ResolveIdleAnimation();
             return 0;
@@ -544,19 +546,19 @@ i32 CWarlord::LoadAttributes2() {
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
         i32 dist =
-            ((CTriggerMgr*)reg->m_cmdGrid)->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+            (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
         }
     } else {
-        if (((CWarlordMission*)reg->m_curState)->m_objective->m_4c == 0) {
+        if ((reinterpret_cast<CWarlordMission*>(reg->m_curState))->m_objective->m_4c == 0) {
             (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
-            >= *(i64*)&m_cooldownWindowLo) {
-            ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_cooldownStampLo)
+            >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
+            (reinterpret_cast<CRegBattleEvent*>(reg->m_cueSink))->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;
             m_cooldownStampLo = g_frameTime;
@@ -592,10 +594,10 @@ i32 CWarlord::AdvanceMovingAnim() {
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
-    CRegThreatHelper* h = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
+    CRegThreatHelper* h = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
     if (h->m_288 != 0 && m_object->m_124 == g_curPlayer) {
         h->m_2a0 = 0;
-        CRegThreatHelper* h2 = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
+        CRegThreatHelper* h2 = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
         h2->m_window = 0x3e8;
         h2->m_stamp = static_cast<u32>(g_frameTime);
     }
@@ -816,7 +818,7 @@ i32 CGrunt::ResolveIdleAnimation() {
     m_animPlayer->m_1a0.Setup_15c2d0(m_idleGeoSrc[idx]);
 
     CAniElement* desc = m_animPlayer->m_1a0.m_14;
-    CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+    CAniDesc* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<CAniDesc*>(*desc->m_records.m_pData) : 0;
     i32 frame = elem->m_param;
 
     m_animPlayer->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);

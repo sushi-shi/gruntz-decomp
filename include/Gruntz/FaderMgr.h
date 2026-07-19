@@ -75,7 +75,7 @@ public:
     CFader* Add(i32 nFaderType, CFader* pInit); // 0x17d9c0
     RVA(0x0017e160, 0x8)
     i32 Flush() {
-        return ((CFaderMgr*)&m_sharedSet2cArg)->Flush();
+        return (reinterpret_cast<CFaderMgr*>(&m_sharedSet2cArg))->Flush();
     }
     void Remove(CFader* pFader); // 0x17e170
     void DeleteAll();            // 0x17e1d0

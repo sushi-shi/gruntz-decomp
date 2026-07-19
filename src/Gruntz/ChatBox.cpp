@@ -204,7 +204,7 @@ i32 CChatBox::Step(u32 dt) {
     if (!m_activeNode) {
         return 0;
     }
-    if (!m_activeNode->NotifyAll((void*)dt)) {
+    if (!m_activeNode->NotifyAll(reinterpret_cast<void*>(dt))) {
         return 0;
     }
     return Step(static_cast<i32>(dt)) != 0;
@@ -302,8 +302,8 @@ i32 CChatBox::AttachNode(void* n) {
     if (!n) {
         return 0;
     }
-    m_activeNode = (CMenuPage*)n;
-    ((CMenuPage*)n)->ReleaseAll();
+    m_activeNode = static_cast<CMenuPage*>(n);
+    (static_cast<CMenuPage*>(n))->ReleaseAll();
     m_activeNode->RestoreFocus();
     return 1;
 }
@@ -311,7 +311,7 @@ i32 CChatBox::AttachNode(void* n) {
 // find a node by key and make it active.
 RVA(0x00182dd0, 0x19)
 i32 CChatBox::ReplaceNode(void* n) {
-    return AttachNode((void*)Find(static_cast<const char*>(n)));
+    return AttachNode(reinterpret_cast<void*>(Find(static_cast<const char*>(n))));
 }
 
 // @early-stop
@@ -329,12 +329,12 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     }
     CObject* a_ob = 0;
     m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
-    CImageSet* a = (CImageSet*)a_ob;
+    CImageSet* a = static_cast<CImageSet*>(a_ob);
     m_row0Anim = a;
     if (!a) {
         return 0;
     }
-    m_row0Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
+    m_row0Frame = static_cast<CImage*>(a->m_items.GetAt(a->m_minIndex));
     m_row0FrameIdx = a->m_minIndex;
     m_row0Period = x;
     m_row0Timer = x;
@@ -354,12 +354,12 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     }
     CObject* a_ob = 0;
     m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
-    CImageSet* a = (CImageSet*)a_ob;
+    CImageSet* a = static_cast<CImageSet*>(a_ob);
     m_row1Anim = a;
     if (!a) {
         return 0;
     }
-    m_row1Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
+    m_row1Frame = static_cast<CImage*>(a->m_items.GetAt(a->m_minIndex));
     m_row1FrameIdx = a->m_minIndex;
     m_row1Period = x;
     m_row1Timer = x;
@@ -384,13 +384,13 @@ i32 CChatBox::Step(i32 delta) {
             m_row0FrameIdx = f;
             CImage* v;
             if (f >= a->m_minIndex && f <= a->m_maxIndex) {
-                v = (CImage*)a->m_items.GetAt(f);
+                v = static_cast<CImage*>(a->m_items.GetAt(f));
             } else {
                 v = 0;
             }
             m_row0Frame = v;
             if (v == 0) {
-                m_row0Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
+                m_row0Frame = static_cast<CImage*>(a->m_items.GetAt(a->m_minIndex));
                 m_row0FrameIdx = a->m_minIndex;
             }
         }
@@ -406,13 +406,13 @@ i32 CChatBox::Step(i32 delta) {
         m_row1FrameIdx = f;
         CImage* v;
         if (f >= b->m_minIndex && f <= b->m_maxIndex) {
-            v = (CImage*)b->m_items.GetAt(f);
+            v = static_cast<CImage*>(b->m_items.GetAt(f));
         } else {
             v = 0;
         }
         m_row1Frame = v;
         if (v == 0) {
-            m_row1Frame = (CImage*)b->m_items.GetAt(b->m_minIndex);
+            m_row1Frame = static_cast<CImage*>(b->m_items.GetAt(b->m_minIndex));
             m_row1FrameIdx = b->m_minIndex;
         }
     }
@@ -426,7 +426,7 @@ i32 CChatBox::Step(i32 delta) {
 // blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
 i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
-    CMenuItem* sprite = (CMenuItem*)sprite_;
+    CMenuItem* sprite = reinterpret_cast<CMenuItem*>(sprite_);
     if (!sprite) {
         return 0;
     }
@@ -440,11 +440,11 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
     }
     if (m_row0Frame) {
         i32 x = -(sprite->GetFrameWidth() / 2) - m_row0Offset + anchorX;
-        m_row0Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
+        m_row0Frame->RenderFrame(reinterpret_cast<void*>(arg2), reinterpret_cast<void*>(x), reinterpret_cast<void*>(anchorY), static_cast<void*>(0));
     }
     if (m_row1Frame) {
         i32 x = sprite->GetFrameWidth() / 2 + m_row1Offset + anchorX;
-        m_row1Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
+        m_row1Frame->RenderFrame(reinterpret_cast<void*>(arg2), reinterpret_cast<void*>(x), reinterpret_cast<void*>(anchorY), static_cast<void*>(0));
     }
     return 1;
 }
@@ -466,7 +466,7 @@ i32 CChatBox::ScrollRow0() {
     }
     void* t_ob = 0;
     roster->m_10.Lookup(static_cast<const char*>(m_row0Key), t_ob);
-    LeafCue* t = (LeafCue*)t_ob;
+    LeafCue* t = static_cast<LeafCue*>(t_ob);
     if (!t) {
         return 0;
     }
@@ -499,7 +499,7 @@ i32 CChatBox::ScrollRow1() {
     }
     void* t_ob = 0;
     roster->m_10.Lookup(static_cast<const char*>(m_row1Key), t_ob);
-    LeafCue* t = (LeafCue*)t_ob;
+    LeafCue* t = static_cast<LeafCue*>(t_ob);
     if (!t) {
         return 0;
     }

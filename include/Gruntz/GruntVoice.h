@@ -130,10 +130,10 @@ struct CVActEntry {
 static inline CVActEntry* VActLookup(i32 coord) {
     g_vactScratch = 0;
     if (coord >= g_vactLo && coord <= g_vactHi) {
-        return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
+        return reinterpret_cast<CVActEntry*>((g_vactBase + (coord - g_vactLo) * g_vactStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_vactColl)->GrowTo(coord, 0))) {
-        return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_vactColl))->GrowTo(coord, 0))) {
+        return reinterpret_cast<CVActEntry*>((g_vactBase + (coord - g_vactLo) * g_vactStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();

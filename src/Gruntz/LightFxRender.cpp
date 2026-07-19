@@ -202,7 +202,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     CTriggerMgr* board = m_cmdGrid;
     for (u32 y = 0; y < grid->m_height; y++) {
         for (u32 x = 0; x < grid->m_width; x++) {
-            u16* dst = (u16*)(reinterpret_cast<char*>(base) + y * m_surface->m_pitch + x * m_surface->m_b0);
+            u16* dst = reinterpret_cast<u16*>((reinterpret_cast<char*>(base) + y * m_surface->m_pitch + x * m_surface->m_b0));
             i32 tile;
             if (x < grid->m_width && y < grid->m_height) {
                 tile = grid->m_rows[y][x].m_4;
@@ -236,8 +236,8 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             // The combat clock/timeout i64 pairs are stored as lo/hi i32 halves
             // (every writer stamps them as (lo, hi=0)); the 64-bit compare reads
             // them as the i64 they are - the documented int-pair overlay.
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&desc->m_combatClockLo
-                    >= *(i64*)&desc->m_combatTimeoutLo
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&desc->m_combatClockLo)
+                    >= *reinterpret_cast<i64*>(&desc->m_combatTimeoutLo)
                 || desc->m_tileOwnerHi != g_curPlayer) {
                 CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
                 if (node == 0) {
@@ -301,7 +301,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
     if (surf == 0) {
         return 0;
     }
-    LfxRect* srcRect = (LfxRect*)&m_srcL;
+    LfxRect* srcRect = reinterpret_cast<LfxRect*>(&m_srcL);
     *srcRect = *src;
     i32 w = src->right - src->left + 1;
     i32 h = src->bottom - src->top + 1;
@@ -364,12 +364,12 @@ RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
-    u16* tp = (u16*)(reinterpret_cast<char*>(base) + r->top * m_surface->m_pitch + r->left * m_surface->m_b0);
+    u16* tp = reinterpret_cast<u16*>((reinterpret_cast<char*>(base) + r->top * m_surface->m_pitch + r->left * m_surface->m_b0));
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    u16* bp = (u16*)(reinterpret_cast<char*>(base) + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
+    u16* bp = reinterpret_cast<u16*>((reinterpret_cast<char*>(base) + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0));
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
@@ -378,8 +378,8 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
     char* lp = reinterpret_cast<char*>(base) + r->left * m_surface->m_b0 + r->top * m_surface->m_pitch;
     char* rp = reinterpret_cast<char*>(base) + r->right * m_surface->m_b0 + r->top * m_surface->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *(u16*)lp = static_cast<u16>(color);
-        *(u16*)rp = static_cast<u16>(color);
+        *reinterpret_cast<u16*>(lp) = static_cast<u16>(color);
+        *reinterpret_cast<u16*>(rp) = static_cast<u16>(color);
         lp += m_surface->m_pitch;
         rp += m_surface->m_pitch;
     }
@@ -401,18 +401,18 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
 RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
-    u16* base = (u16*)surf->Lock(0);
+    u16* base = reinterpret_cast<u16*>(surf->Lock(0));
     if (base == 0) {
         return;
     }
     i32 w = r->right - r->left + 1;
     // Top edge.
-    u16* tp = (u16*)(reinterpret_cast<char*>(base) + r->top * surf->m_pitch + r->left * surf->m_b0);
+    u16* tp = reinterpret_cast<u16*>((reinterpret_cast<char*>(base) + r->top * surf->m_pitch + r->left * surf->m_b0));
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    u16* bp = (u16*)(reinterpret_cast<char*>(base) + r->bottom * surf->m_pitch + r->left * surf->m_b0);
+    u16* bp = reinterpret_cast<u16*>((reinterpret_cast<char*>(base) + r->bottom * surf->m_pitch + r->left * surf->m_b0));
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
@@ -421,8 +421,8 @@ void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
     char* lp = reinterpret_cast<char*>(base) + r->left * surf->m_b0 + r->top * surf->m_pitch;
     char* rp = reinterpret_cast<char*>(base) + r->right * surf->m_b0 + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *(u16*)lp = static_cast<u16>(color);
-        *(u16*)rp = static_cast<u16>(color);
+        *reinterpret_cast<u16*>(lp) = static_cast<u16>(color);
+        *reinterpret_cast<u16*>(rp) = static_cast<u16>(color);
         lp += surf->m_pitch;
         rp += surf->m_pitch;
     }

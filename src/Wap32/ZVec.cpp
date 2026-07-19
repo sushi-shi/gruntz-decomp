@@ -49,7 +49,7 @@ extern void* const zDArrayLiveTable; // 0x5e70fc
 RVA(0x00008750, 0x15)
 i32 zDArray::Destroy() {
     i32 tmp = m_base;
-    *reinterpret_cast<void**>(this) = (void*)&zDArrayLiveTable; // re-stamp LIVE vtable (non-dtor wall)
+    *reinterpret_cast<void**>(this) = const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
     this->~zDArray();
     return tmp;
 }
@@ -77,7 +77,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     i32 n = m_grown;
     while (n-- != 0) {
         if (slot) {
-            new ((void*)slot) CString();
+            new (static_cast<void*>(slot)) CString();
         }
         slot += 4;
     }

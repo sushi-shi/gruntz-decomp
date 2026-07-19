@@ -65,7 +65,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sub->m_notify(sl);
             // The spotlight's bound logic leaf (CSpotLight): stash the UFO's owner
             // game-object into its reused +0x98 focus slot (both CGameObject*).
-            ((CSpotLight*)sl->m_7c->m_logic)->m_focus = m_object;
+            (static_cast<CSpotLight*>(sl->m_7c->m_logic))->m_focus = m_object;
         }
     }
     m_object->m_drawActive = 1;
@@ -109,7 +109,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
 // ---------------------------------------------------------------------------
 RVA(0x000b4cb0, 0x56)
 i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
-    if (!CPathHazard::SerializeMove((CGruntArchive*)stream, tag, c, d)) {
+    if (!CPathHazard::SerializeMove(static_cast<CGruntArchive*>(stream), tag, c, d)) {
         return 0;
     }
     if (tag == 8) {
@@ -171,7 +171,7 @@ i32 CPathHazard::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
+    if (Chain(static_cast<CSerialArchive*>(stream), tag, c, reinterpret_cast<CGameObject*>(d))
         == 0) {
         return 0;
     }

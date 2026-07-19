@@ -118,7 +118,7 @@ CMenuItem2::~CMenuItem2() {
 // shape; typing the params would just relocate the casts to the tangled callers.
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
-    CMenuItemTemplate* t = (CMenuItemTemplate*)a0;
+    CMenuItemTemplate* t = reinterpret_cast<CMenuItemTemplate*>(a0);
     if (!t) {
         return 0;
     }
@@ -222,19 +222,19 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     }
     i32 idx = m_state;
     CMenuItemPlacer* row;
-    if (idx >= *(i32*)(reinterpret_cast<char*>(page) + 0x64) && idx <= *(i32*)(reinterpret_cast<char*>(page) + 0x68)) {
-        row = ((CMenuItemPlacer**)(*(void**)(reinterpret_cast<char*>(page) + 0x14)))[idx];
+    if (idx >= *reinterpret_cast<i32*>((reinterpret_cast<char*>(page) + 0x64)) && idx <= *reinterpret_cast<i32*>((reinterpret_cast<char*>(page) + 0x68))) {
+        row = (static_cast<CMenuItemPlacer**>((*reinterpret_cast<void**>((reinterpret_cast<char*>(page) + 0x14)))))[idx];
     } else {
         row = 0;
     }
     if (!row) {
         return 0;
     }
-    ((CImage*)row)->RenderFrame((void*)ctx, (void*)py, (void*)px, (void*)0);
-    m_hitLeft = py - *(i32*)(reinterpret_cast<char*>(row) + 0x18);
-    m_hitRight = py + *(i32*)(reinterpret_cast<char*>(row) + 0x18);
-    m_hitTop = px - *(i32*)(reinterpret_cast<char*>(row) + 0x1c);
-    m_hitBottom = px + *(i32*)(reinterpret_cast<char*>(row) + 0x1c);
+    (reinterpret_cast<CImage*>(row))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(py), reinterpret_cast<void*>(px), static_cast<void*>(0));
+    m_hitLeft = py - *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x18));
+    m_hitRight = py + *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x18));
+    m_hitTop = px - *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x1c));
+    m_hitBottom = px + *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x1c));
     return 1;
 }
 // slot 10 (0x185690): scroll the host row when notified, then run the slot-6 hook.
@@ -251,7 +251,7 @@ RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     (reinterpret_cast<CChatBox*>(m_host))->ScrollRow1();
     NotifyCmd();
-    (reinterpret_cast<CChatBox*>(m_host))->ReplaceNode(*(void**)&m_key);
+    (reinterpret_cast<CChatBox*>(m_host))->ReplaceNode(*reinterpret_cast<void**>(&m_key));
     return 1;
 }
 // hit-test: is (x,y) inside the cached placed rect?
@@ -297,17 +297,17 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     sprintf(name, "%s_NORMAL", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteNormal = (CMenuSprite*)sprite;
+    m_spriteNormal = reinterpret_cast<CMenuSprite*>(sprite);
 
     sprintf(name, "%s_SELECTED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteSelected = (CMenuSprite*)sprite;
+    m_spriteSelected = reinterpret_cast<CMenuSprite*>(sprite);
 
     sprintf(name, "%s_DISABLED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteDisabled = (CMenuSprite*)sprite;
+    m_spriteDisabled = reinterpret_cast<CMenuSprite*>(sprite);
 
     return 1;
 }
@@ -344,7 +344,7 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     if (!f) {
         return 0;
     }
-    f->RenderFrame((void*)ctx, (void*)py, (void*)px, 0);
+    f->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(py), reinterpret_cast<void*>(px), 0);
     m_hitLeft = py - f->m_anchorX;
     m_hitRight = py + f->m_anchorX;
     m_hitTop = px - f->m_anchorY;

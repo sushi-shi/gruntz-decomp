@@ -108,20 +108,20 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_c = p3;
     h->m_imageRegistry->m_10map.Lookup(
         "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-        (CObject*&)rec
+        reinterpret_cast<CObject*&>(rec)
     );
     CImage* spr;
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = 0;
     } else {
-        spr = (CImage*)rec->m_items.GetAt(1);
+        spr = static_cast<CImage*>(rec->m_items.GetAt(1));
     }
     m_44 = spr;
     if (spr == 0) {
         return 0;
     }
     CImageSet* cfg = 0;
-    (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))->m_imageRegistry->m_10map.Lookup(key, (CObject*&)cfg);
+    (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(cfg));
     m_30 = cfg;
     if (cfg == 0) {
         return 0;
@@ -139,15 +139,15 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     i32 sel =
-        ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)
+        (static_cast<CSpriteRefTable*>(StatusBarTabBuilders::g_gameReg->m_spriteFactory))
             ->GetSel(
-                ((StatusBarTabBuilders::CSbWorldSlot*)(reinterpret_cast<char*>(StatusBarTabBuilders::g_gameReg)
-                                                       + 0x138))[StatusBarTabBuilders::g_curPlayer]
+                (reinterpret_cast<StatusBarTabBuilders::CSbWorldSlot*>((reinterpret_cast<char*>(StatusBarTabBuilders::g_gameReg)
+                                                       + 0x138)))[StatusBarTabBuilders::g_curPlayer]
                     .m_toolId,
                 0
             );
     if (sel == 0) {
-        sel = ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)->GetSel(1, 0);
+        sel = (static_cast<CSpriteRefTable*>(StatusBarTabBuilders::g_gameReg->m_spriteFactory))->GetSel(1, 0);
     }
     m_30->SetAllTypes(10);
     m_30->SetAllFormats(sel);
@@ -194,36 +194,36 @@ i32 CSBI_GruntMachine::Render() {
     m_28--;
     CImageSet* cfg = m_30;
 
-    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
+    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
     idx = m_40;
-    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
+    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
 
     i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
     CImage* f = m_44;
     if (f) {
         f->RenderFrame(
-            (void*)ctx,
-            (void*)(m_rect14.m_0 + f->m_anchorX),
-            (void*)(m_rect14.m_4 + f->m_anchorY),
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
             0
         );
     }
     f = m_3c;
     if (f) {
         f->RenderFrame(
-            (void*)ctx,
-            (void*)(m_rect14.m_0 + f->m_anchorX + 0x2c),
-            (void*)(m_rect14.m_4 + f->m_anchorY),
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX + 0x2c)),
+            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
             0
         );
     }
     f = m_34;
     if (f) {
         f->RenderFrame(
-            (void*)ctx,
-            (void*)(m_rect14.m_0 + f->m_anchorX),
-            (void*)(m_rect14.m_4 + f->m_anchorY),
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
             0
         );
     }
@@ -331,7 +331,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             if (strlen(buf) != 0) {
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                m_30 = (CImageSet*)out;
+                m_30 = static_cast<CImageSet*>(out);
             } else {
                 m_30 = 0;
             }
@@ -344,10 +344,10 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 i32 i = idx;
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                CImageSet* rec = (CImageSet*)out;
+                CImageSet* rec = static_cast<CImageSet*>(out);
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = (CImage*)rec->m_items.GetAt(i);
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
                     r = 0;
                 }
@@ -364,10 +364,10 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 i32 i = idx;
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                CImageSet* rec = (CImageSet*)out;
+                CImageSet* rec = static_cast<CImageSet*>(out);
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = (CImage*)rec->m_items.GetAt(i);
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
                     r = 0;
                 }
@@ -383,10 +383,10 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 i32 i = idx;
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                CImageSet* rec = (CImageSet*)out;
+                CImageSet* rec = static_cast<CImageSet*>(out);
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = (CImage*)rec->m_items.GetAt(i);
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
                     r = 0;
                 }
@@ -434,7 +434,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     i32 p12,
     i32 onLeft
 ) {
-    (void)p9;
+    static_cast<void>(p9);
     if (host == 0 || parent == 0) {
         return 0;
     }
@@ -459,13 +459,13 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImageSet* n = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            (CObject*&)n
+            reinterpret_cast<CObject*&>(n)
         );
         CImage* v;
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = (CImage*)n->m_items.GetAt(1);
+            v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
         m_topFrame = v;
         m_50 = -1;
@@ -474,13 +474,13 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImageSet* n = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
-            (CObject*&)n
+            reinterpret_cast<CObject*&>(n)
         );
         CImage* v;
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = (CImage*)n->m_items.GetAt(1);
+            v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
         m_topFrame = v;
         m_50 = 1;
@@ -575,15 +575,15 @@ i32 CSBI_SideTab::BuildHandle() {
         "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
         gm_ob
     );
-    CSprite* gm = (CSprite*)gm_ob;
+    CSprite* gm = static_cast<CSprite*>(gm_ob);
     i32 glyph;
     if (gm == 0 || val < gm->m_minIndex || val > gm->m_maxIndex) {
         glyph = 0;
     } else {
-        glyph = reinterpret_cast<i32>((CImage*)gm->m_items.GetAt(val));
+        glyph = reinterpret_cast<i32>(static_cast<CImage*>(gm->m_items.GetAt(val)));
     }
     m_sampledValue = val;
-    m_bottomFrame = (CImage*)glyph;
+    m_bottomFrame = reinterpret_cast<CImage*>(glyph);
     return 1;
 }
 
@@ -599,8 +599,8 @@ RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_58) {
         i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
-        m_topFrame->RenderFrame((void*)ctx, reinterpret_cast<void*>(m_48), reinterpret_cast<void*>(m_4c), 0);
-        m_bottomFrame->RenderFrame((void*)ctx, (void*)(m_48 + m_50), reinterpret_cast<void*>(m_4c), 0);
+        m_topFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(m_48), reinterpret_cast<void*>(m_4c), 0);
+        m_bottomFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((m_48 + m_50)), reinterpret_cast<void*>(m_4c), 0);
     }
     return 1;
 }
@@ -675,10 +675,10 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
                 i32 i = idx;
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                CImageSet* rec = (CImageSet*)out;
+                CImageSet* rec = static_cast<CImageSet*>(out);
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = (CImage*)rec->m_items.GetAt(i);
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
                     r = 0;
                 }
@@ -694,10 +694,10 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
                 i32 i = idx;
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                CImageSet* rec = (CImageSet*)out;
+                CImageSet* rec = static_cast<CImageSet*>(out);
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = (CImage*)rec->m_items.GetAt(i);
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
                 } else {
                     r = 0;
                 }
@@ -810,7 +810,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_rect14.m_c = g.bottom;
     CSprite* head = 0;
     m_c = p3;
-    h->m_imageRegistry->m_10map.Lookup(key, (CObject*&)head);
+    h->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(head));
     m_glyphMap = head;
     if (head == 0) {
         return 0;
@@ -819,7 +819,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
         v = 0;
     } else {
-        v = (CImage*)head->m_items.GetAt(0x21);
+        v = static_cast<CImage*>(head->m_items.GetAt(0x21));
     }
     m_statusGlyph = v;
     if (v == 0) {
@@ -829,7 +829,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
         w = 0;
     } else {
-        w = (CImage*)head->m_items.GetAt(0x22);
+        w = static_cast<CImage*>(head->m_items.GetAt(0x22));
     }
     m_abilityGlyph = w;
     if (w == 0) {
@@ -840,7 +840,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         CSprite* sel = 0;
         (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))
             ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (CObject*&)sel);
+            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;
@@ -854,7 +854,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         CSprite* sel = 0;
         (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))
             ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (CObject*&)sel);
+            .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;

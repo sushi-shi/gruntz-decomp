@@ -37,7 +37,7 @@ SIZE(DSoundLink, 0x8); // 2-word intrusive chain link
 // Every reap/tick walk recovers its typed element through this instead of open-coding
 // the pointer arithmetic.
 template<class T> inline T* elemOf(DSoundLink* link) {
-    return link ? (T*)(reinterpret_cast<char*>(link) - 4) : 0;
+    return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
 }
 
 // The abstract "pure" sound-element base (retail vtable 0x5ef6c8: 2 __purecall

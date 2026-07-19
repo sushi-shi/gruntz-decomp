@@ -29,7 +29,7 @@
 // 100% correct; deferred.
 RVA(0x000f0db0, 0x48)
 i32 MgrListFind(i32 a1, i32 a2) {
-    CTmRecNode* node = (CTmRecNode*)g_gameReg->m_cmdGrid->m_baseList.GetHeadPosition();
+    CTmRecNode* node = reinterpret_cast<CTmRecNode*>(g_gameReg->m_cmdGrid->m_baseList.GetHeadPosition());
     while (node) {
         CTmRecNode* cur = node;
         node = node->m_next;

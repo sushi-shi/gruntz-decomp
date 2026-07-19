@@ -103,7 +103,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
     using namespace modeinit;
     // a1 IS the CGruntzMgr singleton (the one cast is the mangling-locked i32 arg;
     // the CState slot-1 HHH signature cannot be retyped).
-    CGruntzMgr* a1 = (CGruntzMgr*)a1_i;
+    CGruntzMgr* a1 = reinterpret_cast<CGruntzMgr*>(a1_i);
     {
         if (a1 == 0) {
             return 0;
@@ -130,7 +130,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        CChatBoxOwner* ctl = (CChatBoxOwner*)RezAlloc(0x1c);
+        CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(RezAlloc(0x1c));
         if (ctl) {
             // the inline nothrow ctor (no EH state)
             ctl->m_18 = 0;
@@ -175,7 +175,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        CTileTriggerContainer* r78 = (CTileTriggerContainer*)RezAlloc(0x78);
+        CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(RezAlloc(0x78));
         if (r78) {
             // the inline ctor: the four CPtrList(0xa) members + the m_74 gate
             new (&r78->m_base) CPtrList(0xa);
@@ -194,7 +194,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        CTimer* r50 = (CTimer*)RezAlloc(0x50);
+        CTimer* r50 = static_cast<CTimer*>(RezAlloc(0x50));
         if (r50) {
             r50->Init();
         } else {

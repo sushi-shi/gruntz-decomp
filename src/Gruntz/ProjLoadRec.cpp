@@ -135,14 +135,14 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             s->Read(&key, 4);
             CGameObject* found = 0;
             i32 r;
-            if (reg->m_childGroup->m_map48.Lookup((void*)key, (void*&)found) == 0) {
+            if (reg->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found)) == 0) {
                 r = 0;
             } else if (found == 0) {
                 r = 0;
             } else {
                 r = (found->GetTypeId() == 5) ? reinterpret_cast<i32>(found) : 0;
             }
-            m_1fc = (CGameObject*)r;
+            m_1fc = reinterpret_cast<CGameObject*>(r);
             if (m_1fc == 0 && key != 0) {
                 return 0;
             }
@@ -150,14 +150,14 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             i32 cnt;
             s->Read(&cnt, 4);
             for (i32 ci = 0; ci < cnt; ci++) {
-                CoordPoolNode* node = (CoordPoolNode*)g_coordPool.m_freeHead;
+                CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 void* payload = 0;
                 if (node->m_next != 0) {
                     g_coordPool.m_freeHead = node->m_next;
                     payload = &node->m_coord;
                 }
                 s->Read(payload, 8);
-                m_204.AddTail((CRezListNode*)payload);
+                m_204.AddTail(static_cast<CRezListNode*>(payload));
             }
             break;
         }

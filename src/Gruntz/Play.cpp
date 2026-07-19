@@ -436,7 +436,7 @@ i32 CPlay::Render() {
             m_c->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
             m_c->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
-        m_beginMarker->FilterList2((void*)g_frameDelta);     // 0x2cc0  begin-marker
+        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));     // 0x2cc0  begin-marker
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta)); // 0x34bd  guts step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_cueToggle) ---
@@ -461,7 +461,7 @@ i32 CPlay::Render() {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));             // 0x3710  CTimer::Tick
         m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta));          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_c->m_drawTarget->m_backPair));           // 0x1519
         return 1;                                                             // -> draw tail
     }
@@ -563,7 +563,7 @@ i32 CPlay::Render() {
                 m_c->m_drawTarget->m_overlayPair
             );
         }
-        m_beginMarker->FilterList2((void*)g_frameDelta);
+        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
         InputSubStep(w->m_tileGrid); // m_4->m_70
 
@@ -582,7 +582,7 @@ i32 CPlay::Render() {
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
             m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
-            m_lightFx->ComputeRect(m_c->m_drawTarget->m_backPair, (LfxRect*)&rc);
+            m_lightFx->ComputeRect(m_c->m_drawTarget->m_backPair, reinterpret_cast<LfxRect*>(&rc));
         }
 
         m_4->m_inputState->Retune( // world sound retune off the plane scroll origin
@@ -613,7 +613,7 @@ i32 CPlay::Render() {
                     void* out = 0;
                     MapLookup(
                         g_gameReg->m_world->m_childGroup,
-                        (void*)g_gameReg->m_focusSlots[0].m_0c,
+                        reinterpret_cast<void*>(g_gameReg->m_focusSlots[0].m_0c),
                         out
                     );
                     if (out != 0) {
@@ -627,7 +627,7 @@ i32 CPlay::Render() {
                 tmp.Format("%s", "");
                 // m_30 is the shared CDDrawSurfaceMgr; this WIP path reads it
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
-                CopyRect(&m_hudRect, (const RECT*)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
+                CopyRect(&m_hudRect, reinterpret_cast<const RECT*>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24)));
                 Eng_HudDraw(g_gameReg->m_world, &m_hudRect, 1);
             }
             // (CString temp dtor runs here under the EH frame)
@@ -653,7 +653,7 @@ i32 CPlay::Render() {
             }
         }
 
-        m_beginMarker->FilterList2((void*)g_frameDelta);
+        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
         PostHud(0);
         if (m_worldReady != 0) { // optional HUD overlay draw
             Eng_HudDraw(
@@ -758,7 +758,7 @@ alt2:
                 }
             }
         }
-        m_beginMarker->FilterList2((void*)g_frameDelta);
+        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
         PostHud(0);
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
@@ -907,7 +907,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_4->m_timer->ClearSprites();
     self->m_4->RestoreVideoMode(0);
 
-    gameReg = (CGruntzMgr*)g_gameReg;
+    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
     if (gameReg->m_134 != 2) {
         g_curPlayer = 0;
         if (gameReg->m_frameGate != 0) {
@@ -919,7 +919,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // clear the 4 score/team slots at +0x384 (-4 .. +28, two dwords each)
     {
-        i32* p = (i32*)(reinterpret_cast<char*>(self) + 0x388);
+        i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(self) + 0x388));
         i32 n = 4;
         do {
             p[-1] = -1;
@@ -935,9 +935,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // team 0 ready, multi-mode zeroes the round counters.
     for (i32 t = 0; t < 4; ++t) {
         CGruntzMgr* hostBase = self->m_4;
-        gameReg = (CGruntzMgr*)g_gameReg;
+        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
         GruntzPlayer* team =
-            (GruntzPlayer*)(reinterpret_cast<char*>(hostBase) + t * 0x48 * 8 - t * 8 + 0x150); // [edx+ecx*8+0x150]
+            reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(hostBase) + t * 0x48 * 8 - t * 8 + 0x150)); // [edx+ecx*8+0x150]
         if (gameReg->m_134 == 1) {
             team->SeedForSlot(0);
             if (t == 0) {
@@ -961,7 +961,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_levelType = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
     }
 
-    gameReg = (CGruntzMgr*)g_gameReg;
+    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
     g_frameTime = 0;
     if (gameReg->m_134 == 3) {
         srand(timeGetTime());
@@ -969,7 +969,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     gameReg->m_scoreHud->Init();
-    ((CPtrList*)(reinterpret_cast<char*>(gameReg->m_cmdSubMgr) + 0x1c))->RemoveAll();
+    (reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(gameReg->m_cmdSubMgr) + 0x1c)))->RemoveAll();
     gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
     self->m_1bc = 0;
@@ -985,11 +985,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 goto fail0;
             }
             i32 ins =
-                ((CSymTab*)set)->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
+                (static_cast<CSymTab*>(set))->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
-            void* desc = (void*)((CParseSource*)set)->BeginParse();
+            void* desc = reinterpret_cast<void*>((static_cast<CParseSource*>(set))->BeginParse());
             if (desc == 0) {
                 goto fail0;
             }
@@ -1004,7 +1004,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            ((CParseSource*)set)->EndParse();
+            (static_cast<CParseSource*>(set))->EndParse();
             level = num;
         } else if (host->m_12c != 0) {
             // MULTI: same digit resolve off "GAME_MULTI".
@@ -1013,11 +1013,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 goto fail0;
             }
             i32 ins =
-                ((CSymTab*)set)->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
+                (static_cast<CSymTab*>(set))->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
-            void* desc = (void*)((CParseSource*)set)->BeginParse();
+            void* desc = reinterpret_cast<void*>((static_cast<CParseSource*>(set))->BeginParse());
             if (desc == 0) {
                 goto fail0;
             }
@@ -1032,11 +1032,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            ((CParseSource*)set)->EndParse();
+            (static_cast<CParseSource*>(set))->EndParse();
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
-            level = ValidateMainBlock((void*)static_cast<const char*>(self->m_4->GetWorldFileName()));
+            level = ValidateMainBlock(const_cast<char*>(static_cast<const char*>(self->m_4->GetWorldFileName())));
             self->m_1bc = 0;
             self->m_4->m_130 = 0;
         }
@@ -1050,7 +1050,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // ---- 3) build the level name + look it up ----
     sprintf(nameBuf, "AREA%i", self->m_levelType);
     set = self->m_8->ResolvePath(nameBuf);
-    self->m_levelBank = (CSymTab*)set;
+    self->m_levelBank = static_cast<CSymTab*>(set);
     if (set == 0) {
         goto fail0;
     }
@@ -1100,7 +1100,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // m_2c = m_28 (the resolved area descriptor); refresh the host window
     {
         CResSource* prevTiles = self->m_2c;
-        self->m_2c = (CResSource*)self->m_levelBank;
+        self->m_2c = reinterpret_cast<CResSource*>(self->m_levelBank);
         UpdateWindow(self->m_4->m_gameWnd->m_hwnd);
 
         host = self->m_4;
@@ -1111,7 +1111,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } else if (level > 0x24) {
             sprintf(nameBuf, "TRAINING", 0);
         }
-        (void)prevTiles;
+        static_cast<void>(prevTiles);
     }
 
     // ---- 5) the long linear init chain ----
@@ -1122,7 +1122,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
     self->m_2c = 0;
     {
-        i32* z = (i32*)(reinterpret_cast<char*>(nameBuf) + 0x20);
+        i32* z = reinterpret_cast<i32*>((reinterpret_cast<char*>(nameBuf) + 0x20));
         i32 n = 0x25;
         while (n--) {
             *z++ = 0;
@@ -1132,7 +1132,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     BuildHelpReveal(0);
     FreeListTeardown(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
     RegisterInputBindings();
 
@@ -1153,13 +1153,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            ((CMulti*)savedThis)->AckJoinFailure();
+            (static_cast<CMulti*>(savedThis))->AckJoinFailure();
         }
         RegisterInputBindings();
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            ((CMulti*)savedThis)->AckJoinFailure();
+            (static_cast<CMulti*>(savedThis))->AckJoinFailure();
         }
         RegisterInputBindings();
 
@@ -1171,10 +1171,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // a tail of paired BeginStep(0)/EndStep brackets around the real init steps.
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && ((CGruntzMgr*)g_gameReg)->m_134 == 1) {
+    if (modeFlag != 0 && (reinterpret_cast<CGruntzMgr*>(g_gameReg))->m_134 == 1) {
         BuildWarlordNameTable(reinterpret_cast<i32>(savedThis));
     }
     BuildHelpReveal(0);
@@ -1184,7 +1184,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameImages(1) /* 0x3346 -> 0xdb8a0 */) {
@@ -1192,10 +1192,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!BuildSpriteImageKeyTable((CMulti*)savedThis) /* 0x23b5 -> 0xdd540 */) {
+    if (!BuildSpriteImageKeyTable(static_cast<CMulti*>(savedThis)) /* 0x23b5 -> 0xdd540 */) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1205,7 +1205,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameSounds(1) /* 0x2964 -> 0xdb930 */) {
@@ -1213,7 +1213,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGruntSoundNamespaces(0) /* 0x2e9b -> 0xdd830 */) {
@@ -1221,12 +1221,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     SetEffectSpriteDurations(); // 0x4458 -> 0xdc060
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadLevelAnims(1) /* 0x2c07 -> 0xdb750 */) {
@@ -1234,7 +1234,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameAnims(1) /* 0x247d -> 0xdb9b0 */) {
@@ -1242,7 +1242,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!BuildWorldLevelPath(1)) { // vtable +0xa8 (CPlay slot 42)
@@ -1250,39 +1250,39 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
 
     // finalize the world planes
     self->m_4->RecomputeViewScale();
     if (self->m_c->m_level->m_mainPlane != 0) {
-        ((CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane)->GetSize_1633e0();
+        (static_cast<CDDrawWorkerHost*>(self->m_c->m_level->m_mainPlane))->GetSize_1633e0();
     }
     if (self->m_c->m_level->m_mainPlane != 0) {
-        ((CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane)->GetSize_1633e0();
+        (static_cast<CDDrawWorkerHost*>(self->m_c->m_level->m_mainPlane))->GetSize_1633e0();
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
 
     // view setup off host->m_70
     {
-        CDDrawWorkerHost* g5c = (CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane;
+        CDDrawWorkerHost* g5c = static_cast<CDDrawWorkerHost*>(self->m_c->m_level->m_mainPlane);
         CGruntzMapMgr* host70 = self->m_4->m_tileGrid;
         if (!host70->LoadAttributes(g5c->m_width, g5c->m_height)) {
             goto fail0;
         }
     }
-    if (!((CBrickzGrid*)self->m_4->m_tileGrid)->UpdateDiagonals(reinterpret_cast<i32>(self->m_4))) {
+    if (!(static_cast<CBrickzGrid*>(self->m_4->m_tileGrid))->UpdateDiagonals(reinterpret_cast<i32>(self->m_4))) {
         goto fail0;
     }
 
     // lazily allocate the level context at +0x320
     if (self->m_lightFx == 0) {
-        CLightFxRender* ctx = (CLightFxRender*)RezAlloc(0x43c);
+        CLightFxRender* ctx = static_cast<CLightFxRender*>(RezAlloc(0x43c));
         if (ctx != 0) {
             ctx->m_mgr = 0;
             ctx->m_cmdGrid = 0;
@@ -1305,7 +1305,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // ---- the WarpStone bute scan (single-mode only) ----
-    gameReg = (CGruntzMgr*)g_gameReg;
+    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
     if (gameReg->m_134 != 1) {
         CString warp; // [esp+0x14]
         i32 same = 0;
@@ -1334,10 +1334,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (self->m_4->m_134 == 3) {
         self->m_4->SyncOptionsState(); // 0x2e14, ecx=m_4
     }
-    self->m_4->m_saveSink->FillSlot2((SaveSlot*)&self->m_1d0, self->m_levelIndex, 0);
+    self->m_4->m_saveSink->FillSlot2(reinterpret_cast<SaveSlot*>(&self->m_1d0), self->m_levelIndex, 0);
     {
         CString key; // [esp+0x18]
-        gameReg = (CGruntzMgr*)g_gameReg;
+        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
         gameReg->m_cmdGrid->m_pendingFx = 0;
         i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4); // round-down-to-4 idiom
@@ -1356,10 +1356,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
     set = self->m_c->m_childGroup->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-    self->m_scrollSink = (CGameObject*)set;
+    self->m_scrollSink = static_cast<CGameObject*>(set);
     if (set != 0) {
         void* host8 = self->m_c->m_childGroup;
-        (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)host8) + 0x24))(host8, 0); // host8 vtable +0x24
+        (*reinterpret_cast<void (**)(void*, i32)>((reinterpret_cast<char*>(*static_cast<void**>(host8)) + 0x24)))(host8, 0); // host8 vtable +0x24
         if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
             CStatusBarMgr* tiles = self->m_guts;
@@ -1374,25 +1374,25 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), (i32*)(reinterpret_cast<char*>(nameBuf) + 0x20)) /* 0x2b80 */
+            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), reinterpret_cast<i32*>((reinterpret_cast<char*>(nameBuf) + 0x20))) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 void* host8b = self->m_c->m_childGroup;
-                (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)host8b) + 0x24))(host8b, 0);
+                (*reinterpret_cast<void (**)(void*, i32)>((reinterpret_cast<char*>(*static_cast<void**>(host8b)) + 0x24)))(host8b, 0);
                 self->m_guts->winapi_107d00_SetRect();
-                ((DirectInputMgr2*)g_inputMgr)->ReadAll();
+                (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
                 self->m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
                 if (self->m_c->m_level->m_mainPlane != 0) {
-                    ((CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane)->GetSize_1633e0();
+                    (static_cast<CDDrawWorkerHost*>(self->m_c->m_level->m_mainPlane))->GetSize_1633e0();
                 }
                 if (self->m_c->m_level->m_mainPlane != 0) {
-                    ((CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane)->GetSize_1633e0();
+                    (static_cast<CDDrawWorkerHost*>(self->m_c->m_level->m_mainPlane))->GetSize_1633e0();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {
-                    ((CMulti*)savedThis)->AckJoinFailure();
+                    (static_cast<CMulti*>(savedThis))->AckJoinFailure();
                 }
                 RegisterInputBindings();
                 if (BuildMusicCategoryTable(reload)) { // vtable +0xa4 (CPlay slot 41)
@@ -1406,20 +1406,20 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 okContinue:
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
     BuildHelpReveal(1);
     ActiveWait(0x64);
     if (savedThis != 0) {
-        ((CMulti*)savedThis)->AckJoinFailure();
+        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
 
-    gameReg = (CGruntzMgr*)g_gameReg;
+    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
     if (gameReg->m_114 == 0) {
         CDDSurface* mapHost = self->m_c->m_drawTarget->m_frontPair->m_surface;
         mapHost->ShadeRect(0x32, 0);
-        gameReg = (CGruntzMgr*)g_gameReg;
+        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
     }
 
     // ---- loading-screen blit (mode != 2 && m_114 == 0) ----
@@ -1434,7 +1434,7 @@ okContinue:
         rect[3] = 0x1e0;
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
-                (EngStrRenderObj*)self->m_c,
+                reinterpret_cast<EngStrRenderObj*>(self->m_c),
                 reinterpret_cast<i32>(rect),
                 reinterpret_cast<i32>((reinterpret_cast<char*>(nameBuf) + 0x4)),
                 0x78,
@@ -1471,7 +1471,7 @@ okContinue:
     self->m_renderDisabled = 1;
     g_playActive = 0;
     ResetViewport(); // 0x3d55 -> 0xd8c60
-    if (((CGruntzMgr*)g_gameReg)->m_134 == 2) {
+    if ((reinterpret_cast<CGruntzMgr*>(g_gameReg))->m_134 == 2) {
         g_playActive = 1;
         self->m_renderDisabled = 0;
         self->m_4->CheckSavedMode();
@@ -1635,7 +1635,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     if (container == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)container->GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(container->GetHeadPosition());
     i32 count = 0;
     while (node != 0) {
         CDDrawGroupNode* p = node;
@@ -1657,10 +1657,10 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 // CFontConfig draw sink.)
 RVA(0x000d00a0, 0x5a)
 void CPlay::PostSetup(void* dc) {
-    RECT src = *(RECT*)&m_c->m_level->m_planeCtx;
+    RECT src = *reinterpret_cast<RECT*>(&m_c->m_level->m_planeCtx);
     RECT dst;
     CopyRect(&dst, &src);
-    m_4->m_chatLog->DrawTextLines(8, (HDC)dc, &dst, 0x10);
+    m_4->m_chatLog->DrawTextLines(8, static_cast<HDC>(dc), &dst, 0x10);
 }
 
 // ===========================================================================
@@ -1717,9 +1717,9 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             if (m_gridHasSprite) {
                 CGruntzMgr* w = m_4;
                 i32 id = g_curPlayer;
-                void* spr = (void*)w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
+                void* spr = reinterpret_cast<void*>(w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0));
                 if (spr == 0) {
-                    spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, reinterpret_cast<i32>(spr));
+                    spr = reinterpret_cast<void*>(g_gameReg->m_spriteFactory->GetSel(1, reinterpret_cast<i32>(spr)));
                 }
                 m_grid->SetAllTypes(0xa);
                 m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
@@ -2066,12 +2066,12 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         m_gridCurFrame = 0;
     } else {
         CImageSet* set = 0;
-        ((CMapStringToPtr*)&res->m_imageRegistry->m_10map)
-            ->Lookup(static_cast<const char*>(buf80a), (void*&)set);
+        (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))
+            ->Lookup(static_cast<const char*>(buf80a), reinterpret_cast<void*&>(set));
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
             m_gridCurFrame = 0;
         } else {
-            m_gridCurFrame = (CImage*)set->m_items.GetAt(idx);
+            m_gridCurFrame = static_cast<CImage*>(set->m_items.GetAt(idx));
         }
     }
 
@@ -2083,8 +2083,8 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     if (strlen(buf80b) == 0) {
         m_grid = 0;
     } else {
-        ((CMapStringToPtr*)&res->m_imageRegistry->m_10map)->Lookup(buf80b, gridObj);
-        m_grid = (CImageSet*)gridObj;
+        (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))->Lookup(buf80b, gridObj);
+        m_grid = static_cast<CImageSet*>(gridObj);
     }
 
     ar->Read(&m_gridDelayBase, 4);
@@ -2097,13 +2097,13 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     // the serialize-referent class tag (retail keys the lookup off the spilled
     // grid-resolve slot; data flow preserved from the byte-validated shape).
     CGameObject* oe = 0;
-    res->m_childGroup->m_map48.Lookup(gridObj, (void*&)oe);
+    res->m_childGroup->m_map48.Lookup(gridObj, reinterpret_cast<void*&>(oe));
     CGameObject* sink;
     if (oe == 0) {
         sink = 0;
     } else {
         // GetClassId (slot 8) == CLASSID_SERIALREF (5): the serialize-map referent kind
-        sink = ((CWwdGameObjectE*)oe)->GetClassId() == CLASSID_SERIALREF ? oe : 0;
+        sink = (reinterpret_cast<CWwdGameObjectE*>(oe))->GetClassId() == CLASSID_SERIALREF ? oe : 0;
     }
     m_scrollSink = sink;
     if (sink == 0 && gridObj != 0) {
@@ -2201,7 +2201,7 @@ i32 CPlay::ResetViewport() {
         r.bottom = r.bottom + (0x60 - halfH);
     }
     m_viewMode = VIEW_MODE_IDLE;
-    m_c->m_level->BuildAllPlanes((LevelCoordRect*)&r); // 0x15da80
+    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
     m_4->RecomputeViewScale();
     return 1;
 }
@@ -2264,7 +2264,7 @@ i32 CPlay::ClampViewport(i32 inset) {
         return 0;
     }
 
-    m_c->m_level->BuildAllPlanes((LevelCoordRect*)&r); // 0x15da80
+    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_guts->Deactivate(); // 0x125d -> CStatusBarMgr::Deactivate @0x100cb0
     m_4->RecomputeViewScale();
@@ -2295,7 +2295,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CGruntzMgr* w = m_4;
     CStatusBarMgr* guts = m_guts;
 
-    i32* rp = (i32*)&v->m_level->m_planeCtx;
+    i32* rp = reinterpret_cast<i32*>(&v->m_level->m_planeCtx);
     RECT r;
     r.left = rp[0];
     r.top = rp[1];
@@ -2333,7 +2333,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
         return 0;
     }
 
-    m_c->m_level->BuildAllPlanes((LevelCoordRect*)&r); // 0x15da80
+    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_guts->Deactivate();
     m_4->RecomputeViewScale();
@@ -2393,7 +2393,7 @@ i32 CPlay::OnRegion2(i32 z) // (region-0 / gate m_region0Gate, timer +0x430)
     }
     m_region0Interval = REGION_INTERVAL_MS;
     m_region0IntervalHi = 0;
-    *(u64*)&m_region0TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
+    *reinterpret_cast<u64*>(&m_region0TimerLo) = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2409,7 +2409,7 @@ i32 CPlay::OnRegion1(i32 z) // (region-1 / gate m_region1Gate, timer +0x440)
     }
     m_region1Interval = REGION_INTERVAL_MS;
     m_region1IntervalHi = 0;
-    *(u64*)&m_region1TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
+    *reinterpret_cast<u64*>(&m_region1TimerLo) = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2426,7 +2426,7 @@ i32 CPlay::OnRegion3(i32 z) // (region-2 / gate m_region2Gate, timer +0x450)
     }
     m_region2Interval = REGION_INTERVAL_MS;
     m_region2IntervalHi = 0;
-    *(u64*)&m_region2TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
+    *reinterpret_cast<u64*>(&m_region2TimerLo) = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2443,7 +2443,7 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
     }
     m_region3Interval = REGION_INTERVAL_MS;
     m_region3IntervalHi = 0;
-    *(u64*)&m_region3TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
+    *reinterpret_cast<u64*>(&m_region3TimerLo) = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2499,9 +2499,9 @@ extern "C" {
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_c;
-    i32* vp = (i32*)&v->m_level->m_planeCtx;
+    i32* vp = reinterpret_cast<i32*>(&v->m_level->m_planeCtx);
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)v->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(v->m_childGroup->m_list.GetHeadPosition());
 
     RECT r;
     r.left = vp[0];
@@ -2512,12 +2512,12 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (node != 0) {
         CGameObject* o = node->m_gameObj;
-        void* id = (void*)o->m_7c->m_notify;
-        if (id == (void*)VisFn_40fe90 || id == (void*)VisFn_4bf150 || id == (void*)VisFn_423b40
-            || id == (void*)VisFn_Roll || id == (void*)VisFn_41e570 || id == (void*)VisFn_41e520
-            || id == (void*)VisFn_40fe90 || id == (void*)VisFn_49b410
-            || id == (void*)VisFn_IntersectRect || id == (void*)VisFn_49b310
-            || id == (void*)VisFn_CBattlezDlg || id == (void*)VisFn_4fce80) {
+        void* id = static_cast<void*>(o->m_7c->m_notify);
+        if (id == static_cast<void*>(VisFn_40fe90) || id == static_cast<void*>(VisFn_4bf150) || id == static_cast<void*>(VisFn_423b40)
+            || id == static_cast<void*>(VisFn_Roll) || id == static_cast<void*>(VisFn_41e570) || id == static_cast<void*>(VisFn_41e520)
+            || id == static_cast<void*>(VisFn_40fe90) || id == static_cast<void*>(VisFn_49b410)
+            || id == static_cast<void*>(VisFn_IntersectRect) || id == static_cast<void*>(VisFn_49b310)
+            || id == static_cast<void*>(VisFn_CBattlezDlg) || id == static_cast<void*>(VisFn_4fce80)) {
             o->Render(held); // slot 11 (+0x2c) - CGameObject's real per-object render hook
         }
         node = node->m_next;
@@ -2594,11 +2594,11 @@ i32 CPlay::StepInputA() {
     void* halfPtr;
     if (m_inputHalfSel == 0) {
         half = m_160;
-        edge = (Edge*)&m_188;
+        edge = reinterpret_cast<Edge*>(&m_188);
         halfPtr = &m_168;
     } else {
         half = m_164;
-        edge = (Edge*)&m_198;
+        edge = reinterpret_cast<Edge*>(&m_198);
         halfPtr = &m_178;
     }
 
@@ -2669,7 +2669,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (rectSrc != 0) {
-        i32* src = (i32*)rectSrc;
+        i32* src = reinterpret_cast<i32*>(rectSrc);
         i32 bottom = src[3] - g_buteMgr.GetInt("Font", "TextBottomEdge");
         i32 right = src[2] - g_buteMgr.GetInt("Font", "TextRightEdge");
         i32 top = src[1] + g_buteMgr.GetInt("Font", "TextTopEdge");
@@ -2718,7 +2718,7 @@ void CPlay::DrawWorldFrame() {
     ); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
         // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33).
-        ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle();
+        (reinterpret_cast<CGruntzMgr*>(g_gameReg))->AdvanceOptionsCycle();
     }
     m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta)); // guts step @0xffb20
 }
@@ -2769,7 +2769,7 @@ i32 CPlay::DrawWorldFrames() {
             m_c->m_childGroup->TickKillCues_159a70(0);
             m_4->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_134 == 3) {
-                ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0
+                (reinterpret_cast<CGruntzMgr*>(g_gameReg))->AdvanceOptionsCycle(); // 0x933e0
             }
             m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
             i++;
@@ -2940,7 +2940,7 @@ i32 CPlay::ProfileInputFrame() {
         m_c->m_level->m_mainPlane->CenterScrollB();
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
-    UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
+    UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
     return 1;
 }
 
@@ -3245,9 +3245,9 @@ i32 CPlay::DrawLevelInfoText() {
         s1.Format(g_emptyString);
     }
 
-    if (((CGruntzMgr*)g_gameReg)->GetWorldFileName().GetLength() != 0) {
+    if ((reinterpret_cast<CGruntzMgr*>(g_gameReg))->GetWorldFileName().GetLength() != 0) {
         char buf[128];
-        wsprintfA(buf, ((CGruntzMgr*)g_gameReg)->GetWorldFileName());
+        wsprintfA(buf, (reinterpret_cast<CGruntzMgr*>(g_gameReg))->GetWorldFileName());
         if (strchr(buf, '.')) {
             *strchr(buf, '.') = 0;
         }
@@ -3300,13 +3300,13 @@ i32 CPlay::ClearPlacedObjects() {
         i32 i = 0;
         i32 restart = 0;
         while (i < rec->GetSize()) {
-            CHitMarker* obj = (CHitMarker*)rec->GetAt(i);
+            CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
             CTileGrid* grid = g_gameReg->m_tileGrid;
             i32* cellObj = 0;
             if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_c) && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_10)) {
                 i32 stride = obj->m_0 * 7;
                 i32* row = grid->m_8[obj->m_4];
-                cellObj = (i32*)row[stride + 2];
+                cellObj = reinterpret_cast<i32*>(row[stride + 2]);
             }
             if (cellObj == 0) {
                 restart = 1;
@@ -3318,7 +3318,7 @@ i32 CPlay::ClearPlacedObjects() {
             CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
             i32* result = cellObj;
             if (map->Lookup(cellObj, out)) {
-                result = (i32*)out;
+                result = static_cast<i32*>(out);
             }
             if (result == 0) {
                 // cell vacated: clear the cell's occupant + flag bit and unlink.
@@ -3338,7 +3338,7 @@ i32 CPlay::ClearPlacedObjects() {
                 g_coordPool.m_freeHead = node;
                 return -1;
             }
-            if (*(i32*)(reinterpret_cast<char*>(result) + 0x124) != 0x14) {
+            if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(result) + 0x124)) != 0x14) {
                 restart = 1;
             }
             ++i;
@@ -3352,7 +3352,7 @@ i32 CPlay::ClearPlacedObjects() {
             }
             restart = 1;
         }
-        (void)restart;
+        static_cast<void>(restart);
     }
     return -1;
 }
@@ -3695,7 +3695,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 // ===========================================================================
 RVA(0x000dace0, 0x239)
 i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
-    CSerialArchive* ar = (CSerialArchive*)arArg;
+    CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
     char tmp[0x80];
     // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
     // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
@@ -3739,7 +3739,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
-    return ((CBattlezMapConfig*)&m_038)->Method_02bfc0(reinterpret_cast<i32>(ar), (void*)kind, a3, a4) != 0;
+    return (static_cast<CBattlezMapConfig*>(&m_038))->Method_02bfc0(reinterpret_cast<i32>(ar), reinterpret_cast<void*>(kind), a3, a4) != 0;
 }
 
 // ===========================================================================
@@ -3885,7 +3885,7 @@ i32 GruntzPlayer::Deactivate() {
         return 0;
     }
     if (m_014 == 0) {
-        ((CBattlezMapConfig*)&m_038)->Clear_02ade0();
+        (static_cast<CBattlezMapConfig*>(&m_038))->Clear_02ade0();
     }
     m_liveGate = 0;
     return 1;
@@ -3917,13 +3917,13 @@ i32 CPlay::StepGridWalk(i32 dt) {
     CImageSet* g = m_grid;
     CImage* frame;
     if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
-        frame = (CImage*)g->m_items.GetAt(idx);
+        frame = static_cast<CImage*>(g->m_items.GetAt(idx));
     } else {
         frame = 0;
     }
     m_gridCurFrame = frame;
     if (frame == 0) {
-        m_gridCurFrame = (CImage*)g->m_items.GetAt(g->m_minIndex);
+        m_gridCurFrame = static_cast<CImage*>(g->m_items.GetAt(g->m_minIndex));
         m_gridRow = g->m_minIndex;
     }
     return 1;
@@ -4007,7 +4007,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         CSndHost* set = m_4->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
-            set->m_10.Lookup("GAME_TABHIGHLIGHT1", (void*&)e); // Ptr map out-param idiom
+            set->m_10.Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<void*&>(e)); // Ptr map out-param idiom
             if (e != 0) {
                 e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
@@ -4027,7 +4027,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         return 1;
     }
 
-    RECT* rc = (RECT*)&m_c->m_level->m_planeCtx;
+    RECT* rc = reinterpret_cast<RECT*>(&m_c->m_level->m_planeCtx);
     i32 rl = rc->left;
     i32 rt = rc->top;
     i32 rr = rc->right;
@@ -4099,7 +4099,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     }
     CImageSet* grid = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
-    m_c->m_imageRegistry->m_10map.Lookup(key, (CObject*&)grid);
+    m_c->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(grid));
     m_grid = grid;
     if (grid == 0) {
         return 1;
@@ -4108,7 +4108,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (hasGrid != 0) {
         CGruntzMgr* w = m_4;
         i32 id = g_curPlayer;
-        void* spr = w->m_spriteFactory->LoadSprite((void*)w->m_options[id].m_008, 0);
+        void* spr = w->m_spriteFactory->LoadSprite(reinterpret_cast<void*>(w->m_options[id].m_008), 0);
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
         }
@@ -4118,7 +4118,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     CImageSet* g = m_grid;
     CImage* frame;
     if (index >= g->m_minIndex && index <= g->m_maxIndex) {
-        frame = (CImage*)g->m_items.GetAt(index);
+        frame = static_cast<CImage*>(g->m_items.GetAt(index));
     } else {
         frame = 0;
     }
@@ -4331,7 +4331,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 // reconstruction still lacks (final-sweep item).
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
-    (void) final;
+    static_cast<void>(final);
     CImage* view = reinterpret_cast<CImage*>(m_c->m_drawTarget->m_backPair);
     if (view == 0) {
         return 0;
@@ -4499,11 +4499,11 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             goto mode_36c;
         }
         i32 placed = 0;
-        RECT* gr = (RECT*)&m_guts->m_10; // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+        RECT* gr = reinterpret_cast<RECT*>(&m_guts->m_10); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
             // inside the guts HUD rect -> finalize with placed == 0
         } else {
-            RECT* wr = (RECT*)&geom->m_planeCtx;
+            RECT* wr = reinterpret_cast<RECT*>(&geom->m_planeCtx);
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
                     char tok = *reinterpret_cast<char*>(&g_curPlayer);
@@ -4514,7 +4514,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             }
         }
         if (placed == 0) {
-            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)
+            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
                 ->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
         }
         m_dragInhibit1 = 0;
@@ -4533,7 +4533,7 @@ mode_36c:
         goto drag_path;
     }
     {
-        RECT* gr = (RECT*)&m_guts->m_10; // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+        RECT* gr = reinterpret_cast<RECT*>(&m_guts->m_10); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
             if (m_guts->SetFallRect(xr, y, *reinterpret_cast<char*>(&m_cursorFrame))) {
                 m_dragInhibit2 = 0;
@@ -4544,7 +4544,7 @@ mode_36c:
         }
         CGruntzMgr* w = m_4;
         CGameLevel* geom = w->m_world->m_level;
-        RECT* wr = (RECT*)&geom->m_planeCtx;
+        RECT* wr = reinterpret_cast<RECT*>(&geom->m_planeCtx);
         if (!(xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top)) {
             goto waypoint_cancel;
         }
@@ -4567,7 +4567,7 @@ mode_36c:
         box.bottom = wy + 0xf;
         i32 out28[2] = {0, 0};
         i32 col = 0;
-        CTmCell* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, (RECT*)out28, &col, &y, &box);
+        CTmCell* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, reinterpret_cast<RECT*>(out28), &col, &y, &box);
         if (p == 0 || g_curPlayer != p->m_tileOwnerHi) {
             goto waypoint_cancel;
         }
@@ -4583,7 +4583,7 @@ waypoint_cancel:
 
 drag_path: {
     // m_4->m_frameGate != 0: an active grunt is selected -> drag / guts dispatch
-    (void)y;
+    static_cast<void>(y);
     if (m_guts == 0) {
         return 1;
     }
@@ -4593,13 +4593,13 @@ drag_path: {
             // the guts +0x08 slot holds the dragged widget's display object
             // (screen pos at +0x5c/+0x60 - the CGameObject shape); snap origin =
             // widget pos - click pos.
-            CGameObject* g8 = *(CGameObject**)(reinterpret_cast<char*>(m_guts) + 8);
+            CGameObject* g8 = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(m_guts) + 8));
             i32 dx = 0;
             if (g8 != 0) {
                 dx = g8->m_screenX - xr;
             }
             m_snapOriginX = dx;
-            CGameObject* g8b = *(CGameObject**)(reinterpret_cast<char*>(m_guts) + 8);
+            CGameObject* g8b = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(m_guts) + 8));
             if (g8b == 0) {
                 m_snapOriginY = 0;
                 return 1;
@@ -4610,7 +4610,7 @@ drag_path: {
         goto drag_box;
     }
     // m_guts->m_position != 2: guts-rect dispatch
-    RECT* gr = (RECT*)&m_guts->m_10; // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+    RECT* gr = reinterpret_cast<RECT*>(&m_guts->m_10); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
     if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
         FlushPendingOps();
         return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
@@ -4625,7 +4625,7 @@ drag_box: {
         goto ret1;
     }
     CGruntzMgr* w = m_4;
-    RECT* wr = (RECT*)&w->m_world->m_level->m_planeCtx;
+    RECT* wr = reinterpret_cast<RECT*>(&w->m_world->m_level->m_planeCtx);
     if (!(x < wr->right && x >= wr->left && y < wr->bottom)) {
         goto ret1;
     }
@@ -4665,11 +4665,11 @@ drag_box: {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CTmCell* slot = 0;
         if (1 == cg->m_recList.GetCount()) { // exactly one record node
-            i32* sel = *(i32**)(*(char**)(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8);
+            i32* sel = *reinterpret_cast<i32**>((*(char**)(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8));
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
-            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)
+            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
                 ->SpawnVoiceDriver(reinterpret_cast<i32>(slot), 0x324, -1, 0, -1, -1);
         }
     }
@@ -4908,7 +4908,7 @@ i32 CPlay::Vslot06() {
     i32 savedH = w->m_savedModeH;
     i32 liveH = w->m_modeH;
     if (savedW != liveW || savedH != liveH) {
-        if (((CGruntzMgr*)w)->SetVideoMode(savedW, savedH, 1) == 0) {
+        if ((static_cast<CGruntzMgr*>(w))->SetVideoMode(savedW, savedH, 1) == 0) {
             return 0;
         }
     }
@@ -5159,7 +5159,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_dragClampMaxY = 0;
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
-        ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
+        (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
         this->m_bootyInterval = BOOTY_INTERVAL_MS;
         this->m_bootyIntervalHi = 0;
         this->m_bootyTimerLo = g_frameTime;
@@ -5643,11 +5643,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_8) {
         return 0;
     }
-    self->m_gruntzBank = (CSymTab*)self->m_8->ResolvePath("GRUNTZ");
+    self->m_gruntzBank = static_cast<CSymTab*>(self->m_8->ResolvePath("GRUNTZ"));
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = (CSymTab*)self->m_8->ResolvePath("GAME");
+    self->m_gameBank = static_cast<CSymTab*>(self->m_8->ResolvePath("GAME"));
     return self->m_gameBank != 0;
 }
 
@@ -5662,13 +5662,13 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
         return 0;
     }
     if (!force
-        && ((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->HasKeyEqual_155550("ACTION")) {
+        && (static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->HasKeyEqual_155550("ACTION")) {
         return 1;
     }
 
-    ((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    (static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
         ->RemoveKeysEqual_155360("ACTION", g_emptyString);
-    ((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    (static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
         ->RemoveKeysEqual_155360("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
@@ -5690,18 +5690,18 @@ i32 CPlay::LoadLevelSounds(i32 force) {
         return 0;
     }
     if (!force
-        && ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)->HasKeyEqual_1583c0("LEVEL")) {
+        && (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))->HasKeyEqual_1583c0("LEVEL")) {
         return 1;
     }
 
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)->RemoveKeysEqual_157c70("LEVEL", "_");
+    (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))->RemoveKeysEqual_157c70("LEVEL", "_");
 
     void* sounds = (self->m_levelBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-        ->ScanTree_157ee0((CSymTab*)sounds, "LEVEL", "_");
+    (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+        ->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "LEVEL", "_");
     return 1;
 }
 
@@ -5734,7 +5734,7 @@ i32 CPlay::LoadLevelAnims(i32 force) {
     if (e == 0) {
         return 0;
     }
-    m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)e, "LEVEL", "_");
+    m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(e), "LEVEL", "_");
     return 1;
 }
 
@@ -5748,11 +5748,11 @@ i32 CPlay::LoadLevelImages(i32 force) {
         return 0;
     }
     if (!force
-        && ((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->HasKeyEqual_155550("LEVEL")) {
+        && (static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->HasKeyEqual_155550("LEVEL")) {
         return 1;
     }
 
-    ((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->RemoveKeysEqual_155360("LEVEL", "_");
+    (static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->RemoveKeysEqual_155360("LEVEL", "_");
     g_resourceInstallActive = 0;
 
     void* images = (self->m_levelBank)->ResolvePath("IMAGEZ");
@@ -5773,7 +5773,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->HasKeyEqual_155550("GAME")) {
+    if ((static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->HasKeyEqual_155550("GAME")) {
         return 1;
     }
 
@@ -5795,7 +5795,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)->HasKeyEqual_1583c0("GAME")) {
+    if ((static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))->HasKeyEqual_1583c0("GAME")) {
         return 1;
     }
 
@@ -5803,8 +5803,8 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-        ->ScanTree_157ee0((CSymTab*)sounds, "GAME", "_");
+    (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+        ->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "GAME", "_");
     return 1;
 }
 
@@ -5824,7 +5824,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)anims, "GAME", "_");
+    self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(anims), "GAME", "_");
     return 1;
 }
 
@@ -5857,30 +5857,30 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* levelSet = static_cast<CSymTab*>(m_levelBank->ResolvePath("MIDIZ"));
     if (levelSet) {
-        CParseSource* e = (CParseSource*)levelSet->Insert("AMBIENT0", (void*)MUSIC_TAG_XMI);
+        CParseSource* e = reinterpret_cast<CParseSource*>(levelSet->Insert("AMBIENT0", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
-        e = (CParseSource*)levelSet->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
+        e = reinterpret_cast<CParseSource*>(levelSet->Insert("AMBIENT1", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
-        e = (CParseSource*)levelSet->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
+        e = reinterpret_cast<CParseSource*>(levelSet->Insert("INTRO0", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "INTRO0");
             }
         }
-        e = (CParseSource*)levelSet->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
+        e = reinterpret_cast<CParseSource*>(levelSet->Insert("INTRO1", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "INTRO1");
             }
@@ -5889,23 +5889,23 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* gameSet = static_cast<CSymTab*>(m_gameBank->ResolvePath("MIDIZ"));
     if (gameSet) {
-        CParseSource* e = (CParseSource*)gameSet->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
+        CParseSource* e = reinterpret_cast<CParseSource*>(gameSet->Insert("POWERUP", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "POWERUP");
             }
         }
-        e = (CParseSource*)gameSet->Insert("CURSE", (void*)MUSIC_TAG_XMI);
+        e = reinterpret_cast<CParseSource*>(gameSet->Insert("CURSE", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "CURSE");
             }
         }
-        e = (CParseSource*)gameSet->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
+        e = reinterpret_cast<CParseSource*>(gameSet->Insert("MONOLITH", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
         if (e) {
-            void* res = (void*)e->BeginParse();
+            void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "MONOLITH");
             }
@@ -5932,67 +5932,67 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         return 0;
     }
 
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
              ->HasKeyEqual_1583c0("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
              ->HasKeyEqual_1583c0("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
              ->HasKeyEqual_1583c0("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
              ->HasKeyEqual_1583c0("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
+    if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
              ->HasKeyEqual_1583c0("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
         if (s) {
-            ((CDDrawSubMgrLeafScan*)self->m_c->m_soundRegistry)
-                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
+            (static_cast<CDDrawSubMgrLeafScan*>(self->m_c->m_soundRegistry))
+                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -6038,16 +6038,16 @@ i32 CState::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) == 0) {
-            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->DtorBody();
-            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->DestroyAllAnims();
+            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))->DtorBody();
+            (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
-                RECT r = *(RECT*)&g_gameReg->m_world->m_level->m_planeCtx;
+                RECT r = *reinterpret_cast<RECT*>(&g_gameReg->m_world->m_level->m_planeCtx);
                 RECT r2;
                 CopyRect(&r2, &r);
                 EngStr_DrawText(
-                    (EngStrRenderObj*)g_gameReg->m_world,
+                    reinterpret_cast<EngStrRenderObj*>(g_gameReg->m_world),
                     reinterpret_cast<i32>(&cs),
                     reinterpret_cast<i32>(&r2),
                     0x82,
@@ -6067,7 +6067,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             m_c->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
-                ((CMulti*)finishGate)->AckJoinFailure(); // 0x35e4, ecx=notify
+                (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
             }
         }
         if (m_c->m_soundRegistry->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
@@ -6075,7 +6075,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (tree != 0) {
                 // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
                 // `tree` is the real CSymTab - DirNode was a view of it.
-                m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)tree, "GRUNTZ_" + name, "_");
+                m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
             }
         }
         if (m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
@@ -6084,7 +6084,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)tree, "GRUNTZ_" + name, "_");
+            m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;
@@ -6093,7 +6093,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_c->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) != 0) {
         m_c->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_" + name, "_");
         if (finishGate != 0) {
-            ((CMulti*)finishGate)->AckJoinFailure(); // 0x35e4, ecx=notify
+            (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
         }
     }
     if (m_c->m_soundRegistry->HasKeyEqual_1583c0("GRUNTZ_" + name) != 0) {
@@ -6121,7 +6121,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         return 0;
     }
     g_resourceInstallActive = 1;
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
              ->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
         if (!s) {
@@ -6132,7 +6132,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
@@ -6142,7 +6142,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
              ->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
         if (!s) {
@@ -6153,7 +6153,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
@@ -6163,7 +6163,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
              ->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
@@ -6174,7 +6174,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
              ->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
         if (!s) {
@@ -6185,7 +6185,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_imageRegistry)
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_c->m_imageRegistry))
              ->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
         if (!s) {
@@ -6217,7 +6217,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6227,7 +6227,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6237,7 +6237,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6247,7 +6247,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6257,7 +6257,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6267,7 +6267,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6277,7 +6277,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
+        self->m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6435,18 +6435,18 @@ i32 CPlay::ResetPlayState() {
         CGameRegistry* reg = g_gameReg;
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
-        if (*(i32*)(*(char**)(reinterpret_cast<char*>(reg) + 0xc8) - 8) == 0) {
+        if (*reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(reg) + 0xc8) - 8)) == 0) {
             m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
-            if (*(i32*)(*(char**)(reinterpret_cast<char*>(reg) + 0x44) + 0x124) == 0) {
+            if (*reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(reg) + 0x44) + 0x124)) == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
-                    ((CSaveGame*)reg->m_saveSink)->SetMaxLevel(id);
+                    (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
                     reg = g_gameReg;
                 }
             }
-            ((CSaveGame*)reg->m_saveSink)->Save(0, 0x81a6);
+            (static_cast<CSaveGame*>(reg->m_saveSink))->Save(0, 0x81a6);
         }
         CGameLevel* g = m_4->m_world->m_level;
         ResetGoalGeom(g->m_header.startX, g->m_header.startY);
@@ -6467,7 +6467,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CBattlezMapConfig*)(reinterpret_cast<char*>(g_gameReg) + 0x188 + off))->Method_025c20();
+        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(g_gameReg) + 0x188 + off)))->Method_025c20();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
@@ -6493,14 +6493,14 @@ i32 CPlay::ResetPlayState() {
     tl->m_pendingFxKind = 0;
     // zero the goo/resource i64 timer pairs half-by-half, preserving retail's
     // lo(base), lo(window), hi(base), hi(window) store order per pair
-    ((i32*)&tl->m_gooTimerBase)[0] = 0;
-    ((i32*)&tl->m_gooInterval)[0] = 0;
-    ((i32*)&tl->m_gooTimerBase)[1] = 0;
-    ((i32*)&tl->m_gooInterval)[1] = 0;
-    ((i32*)&tl->m_resourceTimerBase)[0] = 0;
-    ((i32*)&tl->m_resourceInterval)[0] = 0;
-    ((i32*)&tl->m_resourceTimerBase)[1] = 0;
-    ((i32*)&tl->m_resourceInterval)[1] = 0;
+    (reinterpret_cast<i32*>(&tl->m_gooTimerBase))[0] = 0;
+    (reinterpret_cast<i32*>(&tl->m_gooInterval))[0] = 0;
+    (reinterpret_cast<i32*>(&tl->m_gooTimerBase))[1] = 0;
+    (reinterpret_cast<i32*>(&tl->m_gooInterval))[1] = 0;
+    (reinterpret_cast<i32*>(&tl->m_resourceTimerBase))[0] = 0;
+    (reinterpret_cast<i32*>(&tl->m_resourceInterval))[0] = 0;
+    (reinterpret_cast<i32*>(&tl->m_resourceTimerBase))[1] = 0;
+    (reinterpret_cast<i32*>(&tl->m_resourceInterval))[1] = 0;
     tl->m_3ec = 0;
     tl->m_rollingballWanted = 0;
     tl->m_teleportWanted = 0;
@@ -6567,7 +6567,7 @@ void CPlay::FreeListTeardown() {
     m_scrollSink = 0;
     m_4->m_cmdGrid->OverlayTick();
     CTriggerMgr* tl68 = m_4->m_cmdGrid;
-    ((CPtrArray*)&tl68->m_byteArr)->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
+    (reinterpret_cast<CPtrArray*>(&tl68->m_byteArr))->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
     tl68->m_284 = 0;
     m_4->m_cmdGrid->m_baseList
         .RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
@@ -6603,8 +6603,8 @@ void CPlay::FreeListTeardown() {
     }
     m_488.SetSize(0, -1); // CPtrArray::SetSize @0x1b52e8
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CBattlezMapConfig*)(reinterpret_cast<char*>(m_4) + 0x188 + off))->FreeArrays();
-        ((CBattlezMapConfig*)(reinterpret_cast<char*>(m_4) + 0x188 + off))->Clear_02ade0();
+        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(m_4) + 0x188 + off)))->FreeArrays();
+        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(m_4) + 0x188 + off)))->Clear_02ade0();
     }
     m_49c = -1;
 }
@@ -6642,7 +6642,7 @@ void CPlay::ReleaseResources() {
     i32 off = 0;
     do {
         off += 0x238;
-        *(i32*)(reinterpret_cast<char*>(g_gameReg) + off - 0xc8) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + off - 0xc8)) = 0;
     } while (off < 0x8e0);
     if (m_4 && m_4->m_chatLog) {
         m_4->m_chatLog->FreeNodes();
@@ -6718,7 +6718,7 @@ void CPlay::ReleaseResources() {
 // leaves) keeps it reloc-fuzzy; codegen plateau, not source-steerable.
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
-    ((CGruntzMgr*)g_gameReg)->CheckSavedMode();
+    (reinterpret_cast<CGruntzMgr*>(g_gameReg))->CheckSavedMode();
     m_guts->Deactivate();
     m_guts->LoadDestructButtonSprite(0);
     m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
@@ -6726,7 +6726,7 @@ i32 CPlay::EnterMode(i32 mode) {
     if (m_1c4 != 0) {
         m_1c4 = 0;
         m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-        UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
@@ -6827,7 +6827,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == 0) {
             continue;
         }
-        if ((void*)g->m_7c->m_notify != (void*)CreateGruntStartingPoint) {
+        if (static_cast<void*>(g->m_7c->m_notify) != static_cast<void*>(CreateGruntStartingPoint)) {
             continue;
         }
         if (g->m_124 == g_curPlayer) {
@@ -6859,7 +6859,7 @@ i32 CPlay::AddLevelGruntz() {
             // `mov ecx,[0x64556c]; push msg; call 0x417e` (read off the retail site):
             // a __thiscall on the singleton - CGruntzMgr::EnterModalUI @0x8ef10 (ILT
             // 0x417e).
-            ((CGruntzMgr*)g_gameReg)->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
+            (reinterpret_cast<CGruntzMgr*>(g_gameReg))->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
             return 0;
         }
         g->m_flags |= 0x10000;
@@ -7016,8 +7016,8 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         CGameObject* obj = node->m_gameObj;
         CDDrawGroupNode* nxt = node->m_next;
         if (obj) {
-            void* marker = (void*)obj->m_7c->m_notify;
-            if (marker == (void*)CreateGruntStartingPoint) {
+            void* marker = static_cast<void*>(obj->m_7c->m_notify);
+            if (marker == static_cast<void*>(CreateGruntStartingPoint)) {
                 i32 v = obj->m_11c;
                 if (v) {
                     if (!BuildGruntTypeNameTable(v, 1, 0, ctx)) {
@@ -7112,7 +7112,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                 }
-            } else if (marker == (void*)CreateInGameIcon) {
+            } else if (marker == static_cast<void*>(CreateInGameIcon)) {
                 i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_4->m_scoreHud->m_34++;
@@ -7157,7 +7157,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[obj->m_118] = 1;
                     }
                 }
-            } else if (marker == (void*)CreateCoveredPowerup || marker == (void*)CreateGiantRock) {
+            } else if (marker == static_cast<void*>(CreateCoveredPowerup) || marker == static_cast<void*>(CreateGiantRock)) {
                 i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_4->m_scoreHud->m_34++;
@@ -7228,162 +7228,162 @@ RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     CSbiCueRecord* d;
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_PYRAMIDMOVE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_PYRAMIDMOVE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTEROPEN", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTEROPEN", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERCLOSE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERCLOSE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERALL", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERALL", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 4000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_BRICKBREAK", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_BRICKBREAK", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_ROCKBREAK", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_ROCKBREAK", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_LAVAGEYSER", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_LAVAGEYSER", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOORCLOSE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOORCLOSE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOOROPEN", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOOROPEN", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEIGNITE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEIGNITE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEUP", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEUP", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEDOWN", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEDOWN", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLAIR2", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLAIR2", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLHOLE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLHOLE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLSINK", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLSINK", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GAME_EXPLOSION1", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GAME_EXPLOSION1", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_OUTLETHAZARD", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_OUTLETHAZARD", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 10000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 3000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_c->m_soundRegistry->m_10.Lookup("LEVEL_PLANEHAZARDFLY", (void*&)d);
+    m_c->m_soundRegistry->m_10.Lookup("LEVEL_PLANEHAZARDFLY", reinterpret_cast<void*&>(d));
     if (d != 0) {
         d->m_18 = 5000;
     }

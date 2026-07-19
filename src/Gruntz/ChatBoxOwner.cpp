@@ -202,8 +202,8 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 // intent placeholder rather than a half-reconstructed body that would diverge regalloc.
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
-    (void)a;
-    (void)b;
+    static_cast<void>(a);
+    static_cast<void>(b);
 }
 
 // ===========================================================================
@@ -244,30 +244,30 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         return 1;
     }
 
-    CDDrawSurfacePair* ctx = (CDDrawSurfacePair*)arg1;
+    CDDrawSurfacePair* ctx = reinterpret_cast<CDDrawSurfacePair*>(arg1);
     CDDSurface* host = ctx->m_surface;
     if (!host) {
         return 0;
     }
 
     CSprite* spr = 0;
-    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", (CObject*&)spr);
+    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", reinterpret_cast<CObject*&>(spr));
     if (!spr) {
         return 0;
     }
 
     if (self->m_8 == 3) {
-        CImage* frame = (CImage*)spr->m_items.GetAt(spr->m_maxIndex);
+        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_maxIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame((void*)arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
+        frame->RenderFrame(reinterpret_cast<void*>(arg1), reinterpret_cast<void*>((self->m_0 + 0x140)), reinterpret_cast<void*>((self->m_4 + 0x20)), 0);
     } else {
-        CImage* frame = (CImage*)spr->m_items.GetAt(spr->m_minIndex);
+        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame((void*)arg1, (void*)(self->m_0 + 0xf0), (void*)(self->m_4 + 0x20), 0);
+        frame->RenderFrame(reinterpret_cast<void*>(arg1), reinterpret_cast<void*>((self->m_0 + 0xf0)), reinterpret_cast<void*>((self->m_4 + 0x20)), 0);
     }
 
     HDC hdc = 0;
@@ -281,17 +281,17 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
 
     void* rect[4];
     if (self->m_8 == 3) {
-        rect[0] = (void*)(self->m_0 + 0x4c);
-        rect[2] = (void*)(self->m_0 + 0x267);
-        rect[1] = (void*)(self->m_4 + 0x2b);
-        rect[3] = (void*)(self->m_4 + 0x37);
-        self->m_14->RenderInputText(hdc, 0x21b, (RECT*)rect);
+        rect[0] = reinterpret_cast<void*>((self->m_0 + 0x4c));
+        rect[2] = reinterpret_cast<void*>((self->m_0 + 0x267));
+        rect[1] = reinterpret_cast<void*>((self->m_4 + 0x2b));
+        rect[3] = reinterpret_cast<void*>((self->m_4 + 0x37));
+        self->m_14->RenderInputText(hdc, 0x21b, reinterpret_cast<RECT*>(rect));
     } else {
-        rect[0] = (void*)(self->m_0 + 0x4c);
-        rect[2] = (void*)(self->m_0 + 0x1c7);
-        rect[1] = (void*)(self->m_4 + 0x2b);
-        rect[3] = (void*)(self->m_4 + 0x37);
-        self->m_14->RenderInputText(hdc, 0x17b, (RECT*)rect);
+        rect[0] = reinterpret_cast<void*>((self->m_0 + 0x4c));
+        rect[2] = reinterpret_cast<void*>((self->m_0 + 0x1c7));
+        rect[1] = reinterpret_cast<void*>((self->m_4 + 0x2b));
+        rect[3] = reinterpret_cast<void*>((self->m_4 + 0x37));
+        self->m_14->RenderInputText(hdc, 0x17b, reinterpret_cast<RECT*>(rect));
     }
     host->m_8->ReleaseDC(hdc);
     return 1;

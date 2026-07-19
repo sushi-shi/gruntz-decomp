@@ -117,7 +117,7 @@ CAniRecordView::~CAniRecordView() {
     if (r->m_indices != 0) {
         ::operator delete(r->m_indices);
     }
-    r->m_owner = (CAniRecordOwner*)0xffff;
+    r->m_owner = reinterpret_cast<CAniRecordOwner*>(0xffff);
     r->m_count = 0;
     r->m_indices = 0;
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
@@ -146,7 +146,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
-    m_owner = (CAniRecordOwner*)*p++;
+    m_owner = reinterpret_cast<CAniRecordOwner*>(*p++);
     m_buf = *p++;
     m_seedFrame = *p++;
     m_frameCount = *p++;
@@ -160,7 +160,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     if (m_flags & 0x2) {
         const char* name = reinterpret_cast<const char*>(p);
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
-        ResolveIndices((CAniMapOwner*)ctx, name);
+        ResolveIndices(static_cast<CAniMapOwner*>(ctx), name);
     }
     return 1;
 }
@@ -205,12 +205,12 @@ void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
     }
     m_count = tokens.GetSize();
     if (m_count > 0) {
-        m_indices = (i32*)operator new(static_cast<u32>((m_count * 4)));
+        m_indices = static_cast<i32*>(operator new(static_cast<u32>((m_count * 4))));
         for (i32 i = 0; i < m_count; i++) {
             // GetAt reaches the OUT-OF-LINE CStringArray::GetAt COMDAT (0x168e70), which
             // MFC models _AFXCOLL_INLINE - so it is bound as the layout-identical
             // CAniStrArray shim (vptr@0 / m_data@0x04 == m_pData). See AniRecordViews.h.
-            CString t = ((CAniStrArray*)&tokens)->GetAt(i);
+            CString t = (reinterpret_cast<CAniStrArray*>(&tokens))->GetAt(i);
             void* v = 0;
             owner->m_map.Lookup(t, v);
             m_indices[i] = reinterpret_cast<i32>(v);
@@ -253,13 +253,13 @@ void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB2(size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return (void*)0; // tail returns 1 only on the success path below
+        return static_cast<void*>(0); // tail returns 1 only on the success path below
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return (void*)1;
+    return reinterpret_cast<void*>(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -267,16 +267,16 @@ void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_pool->MakeB((void*)size, 0x44);
+    CDDPalette* buf = m_owner->m_pool->MakeB(reinterpret_cast<void*>(size), 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return (void*)0;
+        return static_cast<void*>(0);
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return (void*)1;
+    return reinterpret_cast<void*>(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -286,13 +286,13 @@ void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->Create(handle, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return (void*)0;
+        return static_cast<void*>(0);
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return (void*)1;
+    return reinterpret_cast<void*>(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -302,13 +302,13 @@ void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB3(a, size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return (void*)0;
+        return static_cast<void*>(0);
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return (void*)1;
+    return reinterpret_cast<void*>(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -318,7 +318,7 @@ RVA(0x00168fb0, 0x1f)
 void CAniRecordView::FreeBuf() {
     i32 buf = m_buf;
     if (buf != 0) {
-        m_owner->m_pool->RemoveItemB((CDDPalette*)buf);
+        m_owner->m_pool->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
         m_buf = 0;
     }
 }

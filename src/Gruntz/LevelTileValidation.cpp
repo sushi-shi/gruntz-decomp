@@ -199,7 +199,7 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
     // +0x4c is m_imageSets' data pointer (the CObArray sits at +0x48). The array holds the
     // CImageSet1/2/3 variants; all three declare GetCollisionAt at slot 8, so the dispatch
     // (`call [eax+0x20]`) is the same whichever kind the cell names.
-    CImageSet1* tc = (CImageSet1*)level->m_imageSets.GetAt(cell & 0xffff);
+    CImageSet1* tc = static_cast<CImageSet1*>(level->m_imageSets.GetAt(cell & 0xffff));
     return tc->GetCollisionAt(subX, subY);
 }
 
@@ -228,7 +228,7 @@ i32 CPlay::PlaceStartGruntz() {
         return 0;
     }
     CGruntzMgr* reg = m_4;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
@@ -243,8 +243,8 @@ i32 CPlay::PlaceStartGruntz() {
         CDDrawGroupNode* next = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            void* who = (void*)aux->m_notify; // +0x10: WHICH leaf class built this object
-            if (who == (void*)0x4024a5) {
+            void* who = static_cast<void*>(aux->m_notify); // +0x10: WHICH leaf class built this object
+            if (who == reinterpret_cast<void*>(0x4024a5)) {
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,
                     (obj->m_screenX & ~0x1f) + 0x10,
@@ -268,11 +268,11 @@ i32 CPlay::PlaceStartGruntz() {
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10
                     );
-                    g_gameReg->EnterModalUI(static_cast<const char*>((LPCSTR)s)); // 0x8ef10
+                    g_gameReg->EnterModalUI(static_cast<const char*>(static_cast<LPCSTR>(s))); // 0x8ef10
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
-            } else if (g_gameReg->m_134 != 1 && who == (void*)0x4017e4
+            } else if (g_gameReg->m_134 != 1 && who == reinterpret_cast<void*>(0x4017e4)
                        && obj->m_124 == g_tileKindMagic) {
                 // The per-player start record: m_options[k] (+0x150, stride 0x238); +0x228 is
                 // the cap on start gruntz for that player (the roster's m_comboSel field).
@@ -314,7 +314,7 @@ i32 CPlay::ValidateLevelTiles() {
     if (list == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
     if (node == 0) {
         return 1;
     }
@@ -329,9 +329,9 @@ i32 CPlay::ValidateLevelTiles() {
 
         // 2-load leaf identity: [obj+0x7c] -> +0x10 == AnimWorkerObj::Init (the per-leaf
         // post-create driver fn-ptr). The constants are those leaves' Init thunks.
-        void* who = (void*)obj->m_7c->m_notify;
+        void* who = static_cast<void*>(obj->m_7c->m_notify);
 
-        if (who == (void*)0x401799) {
+        if (who == reinterpret_cast<void*>(0x401799)) {
             CGameLevel* grid = LevelOf(m_c); // recomputed per-arm (retail spills it)
             i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
             if (type == 0x21) {
@@ -368,11 +368,11 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 i32 rel = (obj->m_168 - row) * 3 - col + obj->m_164;
                 // the tag-0x16 hit IS a CGiantRockLogic; +0xac = m_matrix[rel + 4]
-                i32 tcidx = ((CGiantRockLogic*)hit)->m_matrix[rel + 4];
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = ((CImageSet1*)grid->m_imageSets.GetAt(tcidx))->GetCollisionAt(0, 0);
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))->GetCollisionAt(0, 0);
             }
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
@@ -385,7 +385,7 @@ i32 CPlay::ValidateLevelTiles() {
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = ((CImageSet1*)grid->m_imageSets.GetAt(tcidx))->GetCollisionAt(0, 0);
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))->GetCollisionAt(0, 0);
             }
             switch (type - 0x33) {
                 case 4: // 0x37
@@ -395,19 +395,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x38,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -420,19 +420,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x3c,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -445,19 +445,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -470,19 +470,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x40,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -495,19 +495,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x42,
                             obj->m_120,
                             obj->m_124
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -520,19 +520,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -545,19 +545,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -570,19 +570,19 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
-                            *(RECT*)&obj->m_extentL,
-                            *(RECT*)&obj->m_areaL,
-                            *(RECT*)&obj->m_154,
-                            *(RECT*)&obj->m_64,
-                            *(RECT*)&obj->m_7c->m_f0,
-                            *(RECT*)&obj->m_7c->m_100,
+                            *reinterpret_cast<RECT*>(&obj->m_extentL),
+                            *reinterpret_cast<RECT*>(&obj->m_areaL),
+                            *reinterpret_cast<RECT*>(&obj->m_154),
+                            *reinterpret_cast<RECT*>(&obj->m_64),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_f0),
+                            *reinterpret_cast<RECT*>(&obj->m_7c->m_100),
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -591,15 +591,15 @@ i32 CPlay::ValidateLevelTiles() {
                 default:
                     break;
             }
-        } else if (who == (void*)0x403bfc) {
+        } else if (who == reinterpret_cast<void*>(0x403bfc)) {
             i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
-            (void)type;
+            static_cast<void>(type);
             obj->m_flags |= 0x10000;
-        } else if (who == (void*)0x4037b0) {
+        } else if (who == reinterpret_cast<void*>(0x4037b0)) {
             i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
-            (void)type;
+            static_cast<void>(type);
             obj->m_flags |= 0x10000;
-        } else if (who == (void*)0x401b09) {
+        } else if (who == reinterpret_cast<void*>(0x401b09)) {
             // seed the on-screen level timer from the marker's (min,sec) pair; the
             // callee is ?SetTime@CTimer@@ @0x9c090 (thunk 0x2de7) on m_frameMarker,
             // gated on the manager's m_134 mode (retail: cmp [this->m_4+0x134],2).
@@ -616,12 +616,12 @@ i32 CPlay::ValidateLevelTiles() {
                 m_frameMarker->SetTime(b, a);
             }
             obj->m_flags |= 0x10000;
-        } else if (who == (void*)0x40288d) {
+        } else if (who == reinterpret_cast<void*>(0x40288d)) {
             if (obj->m_124 == 0x32) {
                 // ?InsertPtr@CStatusBarMgr@@ @0x108410 (thunk 0x1d2f) on m_guts
                 m_guts->InsertPtr(obj->m_118, obj->m_114);
             }
-        } else if (who == (void*)0x4017e4) {
+        } else if (who == reinterpret_cast<void*>(0x4017e4)) {
             if (obj->m_124 == g_tileKindMagic) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
@@ -630,11 +630,11 @@ i32 CPlay::ValidateLevelTiles() {
                     g_coordPool.m_freeHead = cell->m_next;
                 }
                 if (slot != 0) {
-                    ((i32*)slot)[0] = (obj->m_screenX & ~0x1f) + 0x10;
-                    ((i32*)slot)[1] = (obj->m_screenY & ~0x1f) + 0x10;
+                    (static_cast<i32*>(slot))[0] = (obj->m_screenX & ~0x1f) + 0x10;
+                    (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~0x1f) + 0x10;
                 }
             }
-        } else if (who == (void*)0x4019bf) {
+        } else if (who == reinterpret_cast<void*>(0x4019bf)) {
             // resolve the raw tile handle at the object's grid cell (inlined
             // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
             // a tile-action event with the extent rect (AddToList3 @0x116a40,
@@ -657,10 +657,10 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_flags |= 0x10000;
                 }
             }
-        } else if (who == (void*)0x402a68) {
+        } else if (who == reinterpret_cast<void*>(0x402a68)) {
             // ?PlacePuddle@CTriggerMgr@@ @0x7a240 (thunk 0x35fd) on the command grid
             m_4->m_cmdGrid->PlacePuddle(obj, 0);
-        } else if (who == (void*)0x40164f) {
+        } else if (who == reinterpret_cast<void*>(0x40164f)) {
             // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_tileGrid: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
             // check against the registry grid, tally the per-kind counter, and OR
@@ -704,18 +704,18 @@ i32 CPlay::ValidateLevelTiles() {
                     if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
                         continue;
                     }
-                    i32* cellRow = (i32*)(reinterpret_cast<char*>(gg->m_8[0]) + ofs);
-                    *(i32*)(reinterpret_cast<char*>(cellRow) + ebp) |= bit;
+                    i32* cellRow = reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_8[0]) + ofs));
+                    *reinterpret_cast<i32*>((reinterpret_cast<char*>(cellRow) + ebp)) |= bit;
                 }
             }
-        } else if (who == (void*)0x40182a) {
+        } else if (who == reinterpret_cast<void*>(0x40182a)) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 cy = obj->m_screenX >> 5;
             i32 cx = obj->m_screenY >> 5;
             if (static_cast<u32>(cy) < gg->m_c && static_cast<u32>(cx) < gg->m_10) {
                 // poke the cell
             }
-        } else if (who == (void*)0x401f0a) {
+        } else if (who == reinterpret_cast<void*>(0x401f0a)) {
             if (g_gameReg->m_134 != ok) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 if (cell->m_next != 0) {

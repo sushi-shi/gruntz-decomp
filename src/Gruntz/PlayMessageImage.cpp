@@ -51,7 +51,7 @@ RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
     m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
-    CImageSet* set = (CImageSet*)set_ob;
+    CImageSet* set = static_cast<CImageSet*>(set_ob);
     if (set != 0) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
@@ -80,7 +80,7 @@ i32 CPlay::Vslot23() {
 
     CObject* lookup_ob = 0;
     m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
-    CImageSet* lookup = (CImageSet*)lookup_ob;
+    CImageSet* lookup = static_cast<CImageSet*>(lookup_ob);
     CImageSet* set = lookup;
     if (set == 0) {
         return 0;
@@ -99,7 +99,7 @@ i32 CPlay::Vslot23() {
     if (surf == 0) {
         return 0;
     }
-    ((CImage*)frame)->RenderFrame(surf, (void*)(surf->m_width / 2), (void*)(surf->m_height / 2), 0);
-    m_c->m_drawTarget->m_frontPair->m_surface->Flip((CDDSurface*)0);
+    (static_cast<CImage*>(frame))->RenderFrame(surf, reinterpret_cast<void*>((surf->m_width / 2)), reinterpret_cast<void*>((surf->m_height / 2)), 0);
+    m_c->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }

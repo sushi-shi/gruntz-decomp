@@ -153,9 +153,9 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 box.right = (b2.m_x >> 5) + 5;
                 box.bottom = (b3.m_y >> 5) + 5;
                 RECT gb;
-                (RECT*)new (&gb) CRect(0, 0, grid->m_width, grid->m_height);
-                if (!IntersectRect((RECT*)&grid->m_originX, &box, &gb)) {
-                    *(RECT*)&grid->m_originX = box;
+                static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
+                if (!IntersectRect(reinterpret_cast<RECT*>(&grid->m_originX), &box, &gb)) {
+                    *reinterpret_cast<RECT*>(&grid->m_originX) = box;
                 }
                 grid->m_gridW = grid->m_boundRight - grid->m_originX;
                 grid->m_gridH = grid->m_boundBottom - grid->m_originY;
@@ -199,7 +199,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
-                    ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>(g->m_14->m_1c)))->m_0;
+                    (reinterpret_cast<CTypeNode*>((static_cast<zDArray*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(g->m_14->m_1c))))->m_0;
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
                     && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0
                     && strcmp(nm, "C") != 0 && strcmp(nm, "R") != 0) {
@@ -254,9 +254,9 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             box.right = (d2.m_x >> 5) + 5;
             box.bottom = (d3.m_y >> 5) + 5;
             RECT gb;
-            (RECT*)new (&gb) CRect(0, 0, grid->m_width, grid->m_height);
-            if (!IntersectRect((RECT*)&grid->m_originX, &box, &gb)) {
-                *(RECT*)&grid->m_originX = box;
+            static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
+            if (!IntersectRect(reinterpret_cast<RECT*>(&grid->m_originX), &box, &gb)) {
+                *reinterpret_cast<RECT*>(&grid->m_originX) = box;
             }
             grid->m_gridW = grid->m_boundRight - grid->m_originX;
             grid->m_gridH = grid->m_boundBottom - grid->m_originY;

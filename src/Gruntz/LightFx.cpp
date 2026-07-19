@@ -75,7 +75,7 @@ CActReg g_lightFxActReg; // 0x645ad0
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0009d140, 0x15)
 void CLightFx::InitActReg() {
-    ((CZDArrayDerived*)&g_lightFxActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_lightFxActReg))->Construct(2000, 2010);
 }
 
 // CLightFx::RunAct @0x9d1c0 - the slot-4 (UserLogicVfunc2) impl: resolve the class
@@ -85,9 +85,9 @@ void CLightFx::InitActReg() {
 // The SAME archetype as CEyeCandyAni::RunAct (0x0acbb0).
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
-    CLightFxActEntry* e = (CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id);
+    CLightFxActEntry* e = reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -106,20 +106,20 @@ void CLightFx::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CLightFx::AdvanceAnim;
+    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CLightFx::AdvanceAnim;
 }
 
 // ===========================================================================
@@ -143,13 +143,13 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), (CObject*&)node);
+    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), reinterpret_cast<CObject*&>(node));
     i32 found = node;
-    g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
+    g_gameReg->m_logicPump->Push(reinterpret_cast<CImageSet*>(found), anchorA, 7);
     if (found != 0) {
         // The spec lookup result IS a CImageSet (it is pushed to the pump as one);
         // read the lowest-indexed frame in its [m_minIndex, m_maxIndex] range.
-        CImageSet* en = (CImageSet*)found;
+        CImageSet* en = reinterpret_cast<CImageSet*>(found);
         i32 key = en->m_minIndex;
         // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
         // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
@@ -158,9 +158,9 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
-            val = reinterpret_cast<i32>((CImage*)en->m_items.GetAt(key));
+            val = reinterpret_cast<i32>(static_cast<CImage*>(en->m_items.GetAt(key)));
         }
-        m_38->m_layer = (CImage*)val;
+        m_38->m_layer = reinterpret_cast<CImage*>(val);
         m_38->m_190 = key;
     }
     node = 0;
@@ -169,12 +169,12 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), (void*&)node);
+    m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
     if (node != 0) {
         node = 0;
-        m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), (void*&)node);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0((CAniElement*)node);
+        m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(node));
         RebindNode();
     }
     return 0;
@@ -188,20 +188,20 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
 // ===========================================================================
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4) == 0) {
         return 0;
     }
-    if (Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            ((CSerialArchive*)ar)->Write(&m_anchorA, 4);
-            ((CSerialArchive*)ar)->Write(&m_anchorB, 4);
+            (static_cast<CSerialArchive*>(ar))->Write(&m_anchorA, 4);
+            (static_cast<CSerialArchive*>(ar))->Write(&m_anchorB, 4);
             break;
         case 7:
-            ((CSerialArchive*)ar)->Read(&m_anchorA, 4);
-            ((CSerialArchive*)ar)->Read(&m_anchorB, 4);
+            (static_cast<CSerialArchive*>(ar))->Read(&m_anchorA, 4);
+            (static_cast<CSerialArchive*>(ar))->Read(&m_anchorB, 4);
             break;
         case 8:
             g_gameReg->m_logicPump->Push(reinterpret_cast<CImageSet*>(m_38->m_194), m_anchorA, 7);
@@ -277,12 +277,12 @@ i32 CLightFx::AdvanceAnim() {
 RVA(0x0009cdc0, 0xf1)
 i32 LightFxLogicDispatch(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch (static_cast<u32>((size_t)aux->m_1c)) {
+    switch (static_cast<u32>(reinterpret_cast<size_t>(aux->m_1c))) {
         case 0:
-            aux->m_1c = (void*)0x3e8;
+            aux->m_1c = reinterpret_cast<void*>(0x3e8);
             {
                 CLightFx* p = new CLightFx(obj);
-                ((CUserLogic*)p)->Activate();
+                (static_cast<CUserLogic*>(p))->Activate();
                 aux->m_logic = p;
             }
             break;
@@ -307,7 +307,7 @@ i32 LightFxLogicDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
             break;
     }
     return 1;

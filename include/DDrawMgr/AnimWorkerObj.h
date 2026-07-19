@@ -77,7 +77,7 @@ struct AnimWorkerObj : public CObject {
     AnimWorkerObj(i32 a, i32 b) {
         m_04 = b;
         m_08 = 0;
-        m_0c = (CDDrawSurfaceMgr*)a; // (mangling-pinned i32 arg; a IS the mgr)
+        m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
         m_notify = 0;
         m_14 = 0;
         m_logic = 0;

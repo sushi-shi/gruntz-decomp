@@ -55,7 +55,7 @@ struct CAniRecordView : public CObject {
     inline CAniRecordView() {
         m_count = 0;
         m_indices = 0;
-        m_owner = (CAniRecordOwner*)0xffff;
+        m_owner = reinterpret_cast<CAniRecordOwner*>(0xffff);
     }
 
     // vptr implicit at +0x00

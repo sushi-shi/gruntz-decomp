@@ -358,7 +358,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     desc.dwFlags = a;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = (LPWAVEFORMATEX)&wf;
+    desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
 
     i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
@@ -936,6 +936,6 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
         }
-        MessageBoxA((HWND)0, szLine, "DirectSoundMgr", MB_ICONEXCLAMATION);
+        MessageBoxA(static_cast<HWND>(0), szLine, "DirectSoundMgr", MB_ICONEXCLAMATION);
     }
 }

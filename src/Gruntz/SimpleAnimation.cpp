@@ -30,7 +30,7 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
@@ -101,10 +101,10 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     } else {
         i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set((void*)v, sentinel, 0xc);
+        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
         r = v->m_spare;
     }
-    CString* slot = (CString*)v->m_alloc;
+    CString* slot = reinterpret_cast<CString*>(v->m_alloc);
     i32 n = v->m_grown;
     while (n-- != 0) {
         if (slot) {
@@ -127,7 +127,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     }
     i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set((void*)v, sentinel, 0xc);
+    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
     return v->m_spare;
 }
 
@@ -159,7 +159,7 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 // ===========================================================================
 RVA(0x000abb90, 0x15)
 void InitSimpleAnimDispatch() {
-    ((CZDArrayDerived*)&g_simpleAnimDispatch)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_simpleAnimDispatch))->Construct(0x7d0, 0x7da);
 }
 
 // The stored handler is a CUserLogic member-fn-ptr (the same shape the whole
@@ -175,8 +175,8 @@ typedef i32 (CUserLogic::*LogicFn)();
 // ===========================================================================
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    if (*(void**)ResolveSlot(&g_simpleAnimDispatch, idx) != 0) {
-        LogicFn fn = *(LogicFn*)ResolveSlot(&g_simpleAnimDispatch, idx);
+    if (*reinterpret_cast<void**>(ResolveSlot(&g_simpleAnimDispatch, idx)) != 0) {
+        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_simpleAnimDispatch, idx));
         (this->*fn)();
     }
 }
@@ -200,13 +200,13 @@ RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
     i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "A";
+        *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_simpleAnimDispatch, idx);
-    *(void**)dslot = (void*)&SimpleAnimLogic_4028b0;
+    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&SimpleAnimLogic_4028b0);
 }
 
 // CSimpleAnimation::AdvanceAnim @0x0abf70 - re-target the bound object's

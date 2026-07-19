@@ -290,7 +290,7 @@ i32 g_appHInstance;
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 1: coord-pool free list -------------------------------
-    CoordPoolNode* pool = (CoordPoolNode*)RezAlloc(0x3a980);
+    CoordPoolNode* pool = static_cast<CoordPoolNode*>(RezAlloc(0x3a980));
     g_coordPool.m_block = pool;
     if (!pool) {
         ReportError(0x800a, 0x404);
@@ -323,12 +323,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     // --- Phase 3: "Monolith Productions" registry --------------------
-    Utils::RegistryHelper* reg = (Utils::RegistryHelper*)RezAlloc(0x21c);
+    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(RezAlloc(0x21c));
     if (reg) {
         reg->m_open = 0;
     }
     m_settings = reg;
-    if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, (HKEY)0x80000002, 0)) {
+    if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, reinterpret_cast<HKEY>(0x80000002), 0)) {
         ReportError(0x800a, 0x406);
         return 0;
     }
@@ -471,7 +471,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // CDDrawSurfaceMgr == CDDrawSurfaceMgr dual view; the DDraw side carries the
     // boot Init/SetHwnd virtuals, the game side is what m_world is typed as).
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
-    m_world = (CDDrawSurfaceMgr*)world;
+    m_world = static_cast<CDDrawSurfaceMgr*>(world);
     i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
     if (g_enableEmulation) {
         flags |= 0x10;
@@ -489,9 +489,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         rect[3] = 0x1df;
         m_modeW = 0x280;
         m_modeH = 0x1e0;
-        world->m_level->BuildAllPlanes((LevelCoordRect*)rect);
+        world->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(rect));
     }
-    world->SetHwnd((void*)&cb_403193);
+    world->SetHwnd(static_cast<void*>(&cb_403193));
     world->m_level->m_maxStepX = 0xe;
     world->m_level->m_maxStepY = 0xe;
     world->m_drawTarget->Method_158cb0(0, 0x30000);
@@ -510,7 +510,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_symParser = new CSymParser;
     {
         CString fn = GetRezPath();
-        i32 ok = m_symParser->ParseBuffer(*(void**)&fn, 1, 0) != 0;
+        i32 ok = m_symParser->ParseBuffer(*reinterpret_cast<void**>(&fn), 1, 0) != 0;
         if (!ok) {
             ReportError(0x800b, 0x409);
             return 0;
@@ -591,12 +591,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scrollSpeed = vScroll;
 
     // --- Phase 11: settings host (m_logicPump, m_saveSink) -----------------------
-    m_logicPump = (CLightFxMgr*)RezAlloc(0x3c);
+    m_logicPump = static_cast<CLightFxMgr*>(RezAlloc(0x3c));
     if (m_logicPump) {
         i32* z = reinterpret_cast<i32*>(m_logicPump);
         z[1] = z[2] = z[3] = z[4] = 0;
         for (i32 k = 0; k < 10; ++k) {
-            *(i32*)(reinterpret_cast<char*>(m_logicPump) + 0x14 + k * 4) = 0;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_logicPump) + 0x14 + k * 4)) = 0;
         }
     }
     if (!m_logicPump->Init(0, static_cast<void*>(this))) {
@@ -618,14 +618,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scoreHud->InitWithRecords(reinterpret_cast<char*>(m_saveSink) + 0x24);
 
     // --- Phase 12: the grunt spawn-config singleton (g_spawnConfig) -------
-    g_spawnConfig = (CGruntSpawnConfig*)RezAlloc(0x28);
+    g_spawnConfig = static_cast<CGruntSpawnConfig*>(RezAlloc(0x28));
     if (g_spawnConfig) {
-        i32* z = (i32*)g_spawnConfig;
+        i32* z = reinterpret_cast<i32*>(g_spawnConfig);
         z[0] = z[1] = z[2] = z[4] = z[5] = 0;
     }
-    if (!g_spawnConfig->Init((CSpawnOwner*)g_inputMgr)) {
+    if (!g_spawnConfig->Init(static_cast<CSpawnOwner*>(g_inputMgr))) {
         if (g_spawnConfig) {
-            i32* z = (i32*)g_spawnConfig;
+            i32* z = reinterpret_cast<i32*>(g_spawnConfig);
             z[0] = z[1] = z[2] = z[4] = z[5] = 0;
             RezFree(g_spawnConfig);
             g_spawnConfig = 0;
@@ -647,14 +647,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x415);
         return 0;
     }
-    m_spriteFactory = (CSpriteRefTable*)RezAlloc(0x94);
+    m_spriteFactory = static_cast<CSpriteRefTable*>(RezAlloc(0x94));
     if (m_spriteFactory) {
         i32* z = reinterpret_cast<i32*>(m_spriteFactory);
         z[0] = z[1] = 0;
-        *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 0x90) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 0x90)) = 0;
         for (i32 k = 0; k < 0x11; ++k) {
-            *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 8 + k * 4) = 0;
-            *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 0x4c + k * 4) = 0;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 8 + k * 4)) = 0;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 0x4c + k * 4)) = 0;
         }
     }
     if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
@@ -678,20 +678,20 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         CSymParser* mgr = m_symParser;
         i32 node = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
-        g_buteMgr.SetErrCallback((ErrCallback)&cb_401bc2);
+        g_buteMgr.SetErrCallback(reinterpret_cast<ErrCallback>(&cb_401bc2));
         i32 ok = 0;
         if (node) {
-            CParseSource* stream = (CParseSource*)node;
+            CParseSource* stream = reinterpret_cast<CParseSource*>(node);
             g_buteMgr.m_10e = 1;
             i32 esz = stream->BeginParse();
-            void* src = *(void**)(reinterpret_cast<char*>(stream) + 0xc);
+            void* src = *reinterpret_cast<void**>((reinterpret_cast<char*>(stream) + 0xc));
             istrstream* rdr = new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
-            Blowfish_InitKey((unsigned char*)"1212C");
+            Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
             ostrstream* snk = new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
             BitStreamBlowfishDecode(snk, rdr);
             // carcass gap: retail allocs a third 0x60 stream object here with no
             // visible ctor call in the recovered bytes; kept as the bare allocation.
-            g_buteMgr.m_stream = (istream*)::operator new(0x60);
+            g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));
             stream->EndParse();
             g_buteMgr.Init();
             g_store6453f0.ClearRecursive(0);
@@ -733,7 +733,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
-    *(i32*)(reinterpret_cast<char*>(m_timer) + 0x2c) = vScroll;
+    *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_timer) + 0x2c)) = vScroll;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;
@@ -747,12 +747,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (!sz) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sz), "GAME", "_");
     }
     {
         void* mv = 0;
         m_world->m_soundRegistry->m_10.Lookup("GAME_MOVIE", mv);
-        m_world->m_soundRegistry->MatchSub_1584f0((LeafCue*)mv, 0);
+        m_world->m_soundRegistry->MatchSub_1584f0(static_cast<LeafCue*>(mv), 0);
     }
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
@@ -775,7 +775,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified(static_cast<const char*>(*(void**)&title), &g_lab504358)) {
+        while (attract->ResolveQualified(static_cast<const char*>(*reinterpret_cast<void**>(&title)), &g_lab504358)) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

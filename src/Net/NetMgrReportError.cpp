@@ -305,6 +305,6 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, g_szCode, g_code, g_szMsg);
         }
-        MessageBoxA((HWND)hWnd, szLine, "Net Manager", MB_ICONEXCLAMATION);
+        MessageBoxA(static_cast<HWND>(hWnd), szLine, "Net Manager", MB_ICONEXCLAMATION);
     }
 }

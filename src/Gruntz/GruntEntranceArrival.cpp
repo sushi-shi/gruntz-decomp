@@ -78,11 +78,11 @@ extern const char k_60df94[]; // 0x60df94
 // each non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntPosScratchTeardown() {
-    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            (reinterpret_cast<CString*>(slot))->~CString();
         }
         slot++;
         cnt--;
@@ -125,7 +125,7 @@ static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
-    return ((i32*)b->m_8[ty])[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
 }
 
 // ===========================================================================
@@ -149,11 +149,11 @@ static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
 // non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            (reinterpret_cast<CString*>(slot))->~CString();
         }
         slot++;
         cnt--;
@@ -269,8 +269,8 @@ void CGrunt::FinalizeStep(i32 arg) {
         i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
         i32 base = 3 * col + row;
         char* cell = reinterpret_cast<char*>(&m_cells[base]);
-        double d48 = *(double*)(cell + 0x48);
-        double d50 = *(double*)(cell + 0x50);
+        double d48 = *reinterpret_cast<double*>((cell + 0x48));
+        double d50 = *reinterpret_cast<double*>((cell + 0x50));
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
         m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400 + m_410;
         i32 nx = static_cast<i32>((*(double*)(cell + 0x58) + m_408));
@@ -301,8 +301,8 @@ void CGrunt::FinalizeStep(i32 arg) {
         GruntEntranceCell c = m_entranceCell;
         i32 base = 3 * c.col + c.row;
         char* cell = reinterpret_cast<char*>(&m_cells[base]);
-        double d48 = *(double*)(cell + 0x48);
-        double d50 = *(double*)(cell + 0x50);
+        double d48 = *reinterpret_cast<double*>((cell + 0x48));
+        double d50 = *reinterpret_cast<double*>((cell + 0x50));
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
         m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400 + m_410;
         i32 nx = static_cast<i32>((*(double*)(cell + 0x58) + m_408));
@@ -348,17 +348,17 @@ i32 CGrunt::ResetGeometry() {
     m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+    i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
     i32 frame = elem[0x14 / 4];
 
     i32 col = m_entranceCell.col;
     i32 row = m_entranceCell.row;
     i32 index = 3 * col + row;
-    const char* name = reinterpret_cast<const char*>(((zDArray*)&m_cells[index])->IndexToPtr(0));
+    const char* name = reinterpret_cast<const char*>((reinterpret_cast<zDArray*>(&m_cells[index]))->IndexToPtr(0));
     m_38->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_animKeyA);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
     return 0;
 }
 
@@ -409,7 +409,7 @@ i32 CGrunt::UpdateGruntStatus() {
     CGameRegistry* g = g_gameReg;
     i32 x = m_10->m_screenX;
     i32 y = m_10->m_screenY;
-    i32* vr = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+    i32* vr = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
         g->m_cueSink->CueSpawn(this, 2, -1, -1, -1);
     }
@@ -444,7 +444,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_neighborCol = col;
     m_neighborRow = row;
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_codeF);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeF));
 
     m_combatActive = 1;
 
@@ -482,7 +482,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         CGameRegistry* g = g_gameReg;
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
-        i32* rect = (i32*)(*(i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c) + 0x40);
+        i32* rect = reinterpret_cast<i32*>((*(i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c) + 0x40));
         if (xx < rect[2] && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 1, -1, -1, -1);
         }
@@ -502,7 +502,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     p->m_1a0.Setup_15c2d0((&m_poseAttack1)[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+    i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = m_entranceCell;
@@ -530,14 +530,14 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 RVA(0x00061bc0, 0xb2)
 i32 CGrunt::RearmAttackAnim2() {
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_codeF);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeF));
 
     CGameObject* p = m_38;
     m_value = p->m_1a0.m_14;
     p->m_1a0.Setup_15c2d0(m_poseAttack2);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+    i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = m_entranceCell;
@@ -609,7 +609,7 @@ i32 CGrunt::StepAttackFire() {
                     0x40003
                 );
                 spr->m_7c->m_notify(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
+                CProjectile* s = static_cast<CProjectile*>(spr->m_7c->m_logic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_tileOwnerHi,
@@ -634,7 +634,7 @@ i32 CGrunt::StepAttackFire() {
                     0x40003
                 );
                 spr->m_7c->m_notify(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
+                CProjectile* s = static_cast<CProjectile*>(spr->m_7c->m_logic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_tileOwnerHi,
@@ -670,7 +670,7 @@ i32 CGrunt::StepAttackFire() {
                     0x40003
                 );
                 spr->m_7c->m_notify(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
+                CProjectile* s = static_cast<CProjectile*>(spr->m_7c->m_logic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_tileOwnerHi,
@@ -716,7 +716,7 @@ i32 CGrunt::StepAttackFire() {
 
         // impact tail (0x61f08)
         m_entranceActive = 1;
-        i32 dt = g_buteMgr.GetDword(*(char**)&m_animSetName, "AttackDowntime");
+        i32 dt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), "AttackDowntime");
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0; // Roidz grunt: no attack recovery time
         }
@@ -822,7 +822,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
         // Recycle the occupied-coord list (+0x320) onto the free pool, then RemoveAll.
         if (CoordCount() != 0) {
-            void** node = (void**)CoordHead();
+            void** node = reinterpret_cast<void**>(CoordHead());
             while (node != 0) {
                 void* next = node[0];
                 void* buf = node[2];
@@ -831,7 +831,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                     sp->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = sp;
                 }
-                node = (void**)next;
+                node = static_cast<void**>(next);
             }
             m_31c.RemoveAll();
         }
@@ -848,15 +848,15 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
         if (m_entranceReason == 0x1e) {
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)g_buteTree.Find("P");
+            m_14->m_1c = static_cast<void*>(g_buteTree.Find("P"));
             i32 toyIdx = rand() % 2;
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+            i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
             i32 frame = el[0x14 / 4];
-            char* buf = ((CString*)&m_448)->GetBuffer(0);
+            char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
@@ -881,7 +881,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             }
             return 0;
         } else {
-            DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
+            DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
             m_toyDurationLo = static_cast<i32>(tt);
             m_toyDurationHi = 0;
             m_toyClockLo = static_cast<i32>(g_frameTime);
@@ -902,7 +902,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             ReseedIdleReset(1, 0, 0);
         }
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find("L");
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find("L"));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
@@ -911,7 +911,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         char* nm = m_cells[basev].m_walk.GetBuffer(0);
         m_38->ApplyName(nm);
 
-        DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
+        DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
         m_idleDelayLo = static_cast<i32>((tt >> 1));
         m_idleDelayHi = 0;
         m_idleAnchorLo = static_cast<i32>(g_frameTime);
@@ -921,7 +921,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
     // a1 == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find("G");
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find("G"));
 
     CGameObject* h = m_10;
     i32 z = h->m_screenY + 0xc3500;
@@ -932,8 +932,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
     // Pick the active toy pose by comparing the two toy-pose timers (m_3c4/m_3c8 ->+0x24)
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
-    i32 t0 = *(i32*)(reinterpret_cast<char*>(m_poseToy1) + 0x24);
-    i32 t1 = *(i32*)(reinterpret_cast<char*>(m_poseToy2) + 0x24);
+    i32 t0 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy1) + 0x24));
+    i32 t1 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy2) + 0x24));
     i64 elapsed = *(i64*)&m_toyClockLo - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
@@ -957,9 +957,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(want);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+        i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
         i32 frame = el[0x14 / 4];
-        char* buf = ((CString*)&m_448)->GetBuffer(0);
+        char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
     }
 
@@ -969,9 +969,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     CGameRegistry* g = g_gameReg;
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
-    i32* rectBase = (i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c);
+    i32* rectBase = reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c));
     i32 lim = rectBase[0x48 / 4];
-    i32* rect = (i32*)(reinterpret_cast<char*>(rectBase) + 0x40);
+    i32* rect = reinterpret_cast<i32*>((reinterpret_cast<char*>(rectBase) + 0x40));
     if (sel != 0) {
         if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xb, -1, -1, -1);
@@ -1011,7 +1011,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find("A");
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find("A"));
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
         CGameRegistry* g = g_gameReg;
@@ -1022,7 +1022,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = ((i32*)grid->m_8[ty])[tx * 7];
+            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -1038,8 +1038,8 @@ i32 CGrunt::StepEntranceRelatchA() {
         return 0;
     }
     // sub-player armed-but-still-running: the toy-break timer path.
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_toyClockLo;
-    if (diff >= *(i64*)&m_toyDurationLo && m_entranceStamped == 0 && ready == 1) {
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_toyClockLo);
+    if (diff >= *reinterpret_cast<i64*>(&m_toyDurationLo) && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != 0) {
             m_toyTimeSprite->m_flags |= 0x10000;
             m_toyTimeSprite = 0;
@@ -1047,16 +1047,16 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseToyBreak);
         CAniElement* desc = m_38->m_1a0.m_14;
-        CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+        CAniDesc* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<CAniDesc*>(*desc->m_records.m_pData) : 0;
         i32 frame = elem->m_param;
-        char* nm = ((CString*)&m_448)->GetBuffer(0);
+        char* nm = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
         m_38->ApplyLookupSprite(nm, frame);
         m_entranceStamped = 1;
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        CCueRect* r = (CCueRect*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+        CCueRect* r = reinterpret_cast<CCueRect*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
         }
@@ -1247,7 +1247,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
 
 latch:
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_animKeyA);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
 
     if (!applied && apply == 0) {
         return;
@@ -1285,7 +1285,7 @@ latch:
     CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].m_idle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
+    i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
 
@@ -1322,7 +1322,7 @@ void CGrunt::ResolveEntranceArrival() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = ((i32*)grid->m_8[ty])[tx * 7];
+            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
         }
         if (!(flags & 0x80)) {
             m_entranceActive = 0;
@@ -1331,7 +1331,7 @@ void CGrunt::ResolveEntranceArrival() {
 
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleTimerLo) >= *reinterpret_cast<i64*>(&m_idleWindowLo)) {
         CGameRegistry* g = g_gameReg;
         i32 mode = g->m_134;
         if (mode != 1) {
@@ -1385,7 +1385,7 @@ tail:
         }
         return;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleAnchorLo) >= *reinterpret_cast<i64*>(&m_idleDelayLo) && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
 }
@@ -1451,11 +1451,11 @@ i32 CGrunt::StepEntranceReinit() {
     if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_c) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_10)) {
         flag = 1;
     } else {
-        flag = ((i32*)b->m_8[co->m_y])[co->m_x * 7];
+        flag = (reinterpret_cast<i32*>(b->m_8[co->m_y]))[co->m_x * 7];
     }
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseWalk);
     } else {
@@ -1466,14 +1466,14 @@ i32 CGrunt::StepEntranceReinit() {
         if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
             flag2 = 1;
         } else {
-            flag2 = ((i32*)b->m_8[ty])[tx * 7];
+            flag2 = (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
         }
         if (!(flag2 & 0x80)) {
             return 0;
         }
         m_entranceActive = 1;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseWalk);
     }
@@ -1503,7 +1503,7 @@ i32 CGrunt::StepEntranceReinit() {
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_8c0;
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_8c0);
     u32 elapsed;
     if (diff >= 0) {
         elapsed = static_cast<u32>(diff);
@@ -1558,7 +1558,7 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     CGameRegistry* g = g_gameReg;
-    CCueRect* r = (CCueRect*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+    CCueRect* r = reinterpret_cast<CCueRect*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
@@ -1638,7 +1638,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_animKeyA);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
 
@@ -1649,7 +1649,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = ((i32*)grid->m_8[ty])[tx * 7];
+            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -1658,8 +1658,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - *(i64*)&m_toyClockLo;
-    if (elapsed >= *(i64*)&m_toyDurationLo) {
+    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - *reinterpret_cast<i64*>(&m_toyClockLo);
+    if (elapsed >= *reinterpret_cast<i64*>(&m_toyDurationLo)) {
         if (m_entranceStamped == 0 && m_10->m_screenX == m_lastTilePxX
             && m_10->m_screenY == m_lastTilePxY) {
             if (m_toyTimeSprite) {
@@ -1672,15 +1672,15 @@ void CGrunt::LoadVehicleGruntAnimations() {
             m_38->ApplyGeometryDirect(m_poseToyBreak, 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
-            char* buf = ((CString*)&m_448)->GetBuffer(0);
+            i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+            char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, elem[0x14 / 4]);
 
             CGameObject* h = m_10;
             CGameRegistry* g = g_gameReg;
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
-            i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+            i32* rect = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                 g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
                 ClearSubA();
@@ -1691,13 +1691,13 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - *(i64*)&m_idleAnchorLo;
-    if (elapsed2 >= *(i64*)&m_idleDelayLo) {
+    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleAnchorLo);
+    if (elapsed2 >= *reinterpret_cast<i64*>(&m_idleDelayLo)) {
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+        i32* rect = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xd, -1, -1, -1);
         }
@@ -1787,7 +1787,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_exitKeyB);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_exitKeyB));
 
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
@@ -1823,7 +1823,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    ((CEffect6b*)(&m_34))->Apply(reinterpret_cast<i32>(found), 0);
+    (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(reinterpret_cast<i32>(found), 0);
     i32* elem = reinterpret_cast<i32*>(m_38->m_1a0.m_14->AtChecked_06b270(0));
     i32 frame = elem[0x14 / 4];
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
@@ -1848,7 +1848,7 @@ i32 CGrunt::StepWarpExit() {
         i32 lvl = st->m_levelIndex + 0x64; // secret level = level + 100
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
-        if (st->m_levelBank->ResolveQualified((LPCTSTR)s, (void*)REZ_TAG_WWD)) {
+        if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), reinterpret_cast<void*>(REZ_TAG_WWD))) {
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, GOTOLEVEL, lvl);
         }
     }
@@ -1943,7 +1943,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             }
             m_35c = 0;
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+            m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
             m_value = m_38->m_1a0.m_14;
             m_38->m_1a0.Setup_15c2d0(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
@@ -1984,7 +1984,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         ApplySetState1(1);
         if (flag != 0) {
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+            m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
             OnCoordCommit(m_coordToggle);
         }
     }
@@ -2038,10 +2038,10 @@ tail:
         GruntScratchTeardown();
         if (strcmp(rec->m_name, s_codeO) != 0) {
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)g_buteTree.Find(s_codeH);
+            m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeH));
             void* cellObj = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
             if (cellObj != 0) {
-                CGameObject* oh = ((CGrunt*)cellObj)->m_10;
+                CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_10;
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
                 if (m_358 != 0 && m_entranceCommitted != 0 && IsInCombatRange(cx, cy)) {
@@ -2063,7 +2063,7 @@ tail:
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem;
         if (desc->m_records.m_nSize > 0) {
-            elem = (i32*)desc->m_records.m_pData[0];
+            elem = reinterpret_cast<i32*>(desc->m_records.m_pData[0]);
         } else {
             elem = 0;
         }
@@ -2080,8 +2080,8 @@ tail:
         CGameObject* h = m_10;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        char* sc = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
-        i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
+        char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
+        i32* rect = reinterpret_cast<i32*>((*(char**)(sc + 0x5c) + 0x40));
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
             g_gameReg->m_cueSink->CueSpawn(this, 7, -1, -1, -1);
         }
@@ -2118,7 +2118,7 @@ i32 CGrunt::StepArrivalCommitA() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
-        flags = ((i32*)grid->m_8[ty])[tx * 7];
+        flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
@@ -2169,7 +2169,7 @@ i32 CGrunt::StepArrivalCommitB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
-        flags = ((i32*)grid->m_8[ty])[tx * 7];
+        flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         return 0;
@@ -2220,7 +2220,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
-        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+        i32* rect = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
         if (GruntPointVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY)) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
@@ -2239,7 +2239,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     if (m_entranceReason == 1) {
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeM);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeM));
         m_10->m_stateFlags &= ~8;
         m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
         m_entranceActive = 1;
@@ -2248,7 +2248,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else if (m_entranceReason == 0x12) {
         m_entranceActive = 1;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeN);
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeN));
         m_coordToggle = (m_coordToggle == 0);
     } else if (m_entranceReason == 0x13) {
         i32 base;
@@ -2272,18 +2272,18 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+        i32* rect = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
         }
 
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find("I");
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find("I"));
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
     } else {
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find("I");
+        m_14->m_1c = static_cast<void*>(g_buteTree.Find("I"));
         SetEntrancePos(1, 1);
     }
 
@@ -2381,7 +2381,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         CreateToySprite();
     }
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
+    m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
     OnCoordCommit(m_coordToggle);
     CGameRegistry* g = g_gameReg;
     CTileGrid* grid = g->m_tileGrid;
@@ -2391,7 +2391,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         f1 = 1;
     } else {
-        f1 = ((i32*)grid->m_8[ty])[tx * 7];
+        f1 = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
     }
     if (f1 & 0x2000000) {
         BuildGruntLoseItemAnimation();
@@ -2402,28 +2402,28 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         cellObj = 0;
     } else {
-        cellObj = (void*)((i32*)grid->m_8[ty])[tx * 7 + 2];
+        cellObj = reinterpret_cast<void*>((reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7 + 2]);
     }
     if (cellObj == 0) {
         return 0;
     }
     CGameObject* found = 0;
     CGameObject* result = 0;
-    if (g->m_world->m_childGroup->m_map48.Lookup(cellObj, (void*&)found)) {
+    if (g->m_world->m_childGroup->m_map48.Lookup(cellObj, reinterpret_cast<void*&>(found))) {
         result = found;
     }
     if (result != 0) {
         // The cell sprite's bound logic leaf (worker m_logic) IS the in-game tile
         // icon here (the +2 grid slot only ever holds icon sprites) - the one
         // base->leaf downcast the language forces.
-        CInGameIcon* icon = (CInGameIcon*)result->m_7c->m_logic;
+        CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_7c->m_logic);
         icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
         return 0;
     }
     grid = g_gameReg->m_tileGrid;
     if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-        ((i32*)grid->m_8[ty])[tx * 7 + 2] = 0;
-        ((i32*)grid->m_8[ty])[tx * 7] &= ~0x40000;
+        (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7 + 2] = 0;
+        (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7] &= ~0x40000;
     }
     return 0;
 }
@@ -2462,7 +2462,7 @@ RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
-    anim->Setup_15c2d0((CAniElement*)a);
+    anim->Setup_15c2d0(reinterpret_cast<CAniElement*>(a));
     if (b != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }

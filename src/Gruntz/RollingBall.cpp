@@ -104,8 +104,8 @@ void RbClearCell(void* obj, i32 a, i32 b, i32 z);                               
 
 // Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[ent]; call [edx+0x20].
 static i32 VtblResolve(void* ent) {
-    void* vtbl = *(void**)ent;
-    return (*(i32(**)(void*, i32, i32))(reinterpret_cast<char*>(vtbl) + 0x20))(ent, 0, 0);
+    void* vtbl = *static_cast<void**>(ent);
+    return (*reinterpret_cast<i32(**)(void*, i32, i32)>((reinterpret_cast<char*>(vtbl) + 0x20)))(ent, 0, 0);
 }
 
 // ===========================================================================
@@ -182,7 +182,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         CString name;
         name = obj38->m_194 + 0x24;
         const char* s;
-        s = (LPCTSTR)name;
+        s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;
             m_stepDirX = 0;
@@ -232,7 +232,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000afd60, 0x15)
 void CRollingBall::InitActReg() {
-    ((CZDArrayDerived*)&g_rollingBallActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_rollingBallActReg))->Construct(2000, 2010);
 }
 
 // CRollingBall::RunAct @0x0afde0 - resolve the registry entry for id; if a handler
@@ -240,9 +240,9 @@ void CRollingBall::InitActReg() {
 // pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CRollingBallActEntry* e = (CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id);
+    CRollingBallActEntry* e = reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -261,20 +261,20 @@ void CRollingBall::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CRollingBall::Update;
+    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CRollingBall::Update;
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
@@ -328,7 +328,7 @@ i32 CRollingBall::Update() {
         i32 cy = logic->m_screenY;
         if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
             && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
-            *(i32*)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x3f8) = 1;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x3f8)) = 1;
         }
         CGameObject* logic2 = m_object;
         i32 outA, outB;
@@ -378,7 +378,7 @@ i32 CRollingBall::Update() {
             if (ax < 0) {
                 ax = 0;
             } else {
-                i32 w = *(i32*)(*(char**)(lvl + 0x5c) + 0x28);
+                i32 w = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x28));
                 if (ax >= w) {
                     ax = w - 1;
                 }
@@ -386,18 +386,18 @@ i32 CRollingBall::Update() {
             if (ay < 0) {
                 ay = 0;
             } else {
-                i32 h = *(i32*)(*(char**)(lvl + 0x5c) + 0x2c);
+                i32 h = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x2c));
                 if (ay >= h) {
                     ay = h - 1;
                 }
             }
-            i32 col = *(i32*)(*(char**)(lvl + 0x5c) + 0x24);
+            i32 col = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x24));
             i32 idx = *(i32*)(reinterpret_cast<char*>(col) + ay * 4) + ax;
-            i32 raw = *(i32*)(*(char**)(lvl + 0x20) + idx * 4);
+            i32 raw = *reinterpret_cast<i32*>((*(char**)(lvl + 0x20) + idx * 4));
             i32 obj = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
-                void* tbl = *(void**)(lvl + 0x4c);
-                void* ent = *(void**)(reinterpret_cast<char*>(tbl) + (raw & 0xffff) * 4);
+                void* tbl = *reinterpret_cast<void**>((lvl + 0x4c));
+                void* ent = *reinterpret_cast<void**>((reinterpret_cast<char*>(tbl) + (raw & 0xffff) * 4));
                 obj = VtblResolve(ent);
             }
 
@@ -434,34 +434,34 @@ i32 CRollingBall::Update() {
     // m_subX/m_subY are doubles; the direction arms zero/seed them (and m_moveDelta)
     // as int pairs in this exact interleaved store order, so their halves are
     // addressed as ints via ((i32*)&member)[0/1] (matching retail's dword stores).
-    ((i32*)&m_subX)[0] = 0;
-    ((i32*)&m_subY)[0] = 0;
-    ((i32*)&m_subX)[1] = 0;
-    ((i32*)&m_subY)[1] = 0;
+    (reinterpret_cast<i32*>(&m_subX))[0] = 0;
+    (reinterpret_cast<i32*>(&m_subY))[0] = 0;
+    (reinterpret_cast<i32*>(&m_subX))[1] = 0;
+    (reinterpret_cast<i32*>(&m_subY))[1] = 0;
     CGameObject* lg = m_object;
     switch (lg->m_12c) {
         case 1:
-            m_subY = -*(double*)&m_moveDeltaLo;
+            m_subY = -*reinterpret_cast<double*>(&m_moveDeltaLo);
             m_targetX -= 0x20;
             m_stepDirX = -1;
             m_stepDirY = -1;
             break;
         case 2:
-            ((i32*)&m_subX)[0] = m_moveDeltaLo;
-            ((i32*)&m_subX)[1] = m_moveDeltaHi;
+            (reinterpret_cast<i32*>(&m_subX))[0] = m_moveDeltaLo;
+            (reinterpret_cast<i32*>(&m_subX))[1] = m_moveDeltaHi;
             m_targetX += 0x20;
             m_stepDirX = 1;
             m_stepDirY = 0;
             break;
         case 4:
-            ((i32*)&m_subY)[0] = m_moveDeltaLo;
-            ((i32*)&m_subY)[1] = m_moveDeltaHi;
+            (reinterpret_cast<i32*>(&m_subY))[0] = m_moveDeltaLo;
+            (reinterpret_cast<i32*>(&m_subY))[1] = m_moveDeltaHi;
             m_targetX += 0x20;
             m_stepDirX = 0;
             m_stepDirY = 1;
             break;
         case 3:
-            m_subX = -*(double*)&m_moveDeltaLo;
+            m_subX = -*reinterpret_cast<double*>(&m_moveDeltaLo);
             m_targetX -= 0x20;
             m_stepDirX = -1;
             m_stepDirY = 0;
@@ -540,7 +540,7 @@ i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
 

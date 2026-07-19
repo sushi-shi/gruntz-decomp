@@ -89,10 +89,10 @@ void CGruntSpawnConfig::Clear() {
     }
     m_voiceLists.SetSize(0, -1);
     if (m_configTree != 0 && m_configTree->m_20 != 0) {
-        void** p = (void**)&m_stream0;
+        void** p = reinterpret_cast<void**>(&m_stream0);
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                (reinterpret_cast<SoundStream*>(m_configTree->m_20))->DestroyVoice((StreamVoice*)p[0]);
+                (reinterpret_cast<SoundStream*>(m_configTree->m_20))->DestroyVoice(static_cast<StreamVoice*>(p[0]));
                 p[0] = 0;
             }
             p++;
@@ -117,7 +117,7 @@ RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
     i32 i = 0;
-    void** slot = (void**)&m_voice0;
+    void** slot = reinterpret_cast<void**>(&m_voice0);
     for (; i < 2; i++, slot++) {
         CGameObject* spr =
             m_configTree->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
@@ -193,24 +193,24 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (!IsReady()) {
         return 0;
     }
-    void* index = GetButeSlot((CSpawnButeConfig*)param_1, (CSpawnButeTarget*)param_2);
+    void* index = GetButeSlot(reinterpret_cast<CSpawnButeConfig*>(param_1), reinterpret_cast<CSpawnButeTarget*>(param_2));
     CString local_10;
     CString local_14;
     local_14.Format("SG%i", reinterpret_cast<int>(index));
     local_10.Format("G%i", param_2);
     if (param_5 == -1) {
-        param_5 = g_buteMgr.GetIntDef((LPCTSTR)local_14, "Per", -1);
+        param_5 = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Per", -1);
         if (param_5 == -1) {
-            param_5 = g_buteMgr.GetIntDef("GruntPercent", (LPCTSTR)local_10, 0);
+            param_5 = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(local_10), 0);
         }
     }
     if (param_5 < 100 && param_5 < g_gameReg->Rand() % 0x65) {
         return 0;
     }
     if (param_4 == -1) {
-        param_4 = g_buteMgr.GetIntDef((LPCTSTR)local_14, "Pri", -1);
+        param_4 = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Pri", -1);
         if (param_4 == -1) {
-            param_4 = g_buteMgr.GetIntDef("GruntPriority", (LPCTSTR)local_10, 1);
+            param_4 = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
         }
     }
     CGruntVoice** voices = &m_voice0;
@@ -230,32 +230,32 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     StreamVoice** streams = &m_stream0;
-    CSpawnButeConfig* gate = (CSpawnButeConfig*)param_1;
+    CSpawnButeConfig* gate = reinterpret_cast<CSpawnButeConfig*>(param_1);
     i32 chosen;
     if (b < a) {
         chosen = 1;
         if (c == gate->m_10->m_188) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
-                ((DirectSoundMgr*)streams[1])->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                (static_cast<DirectSoundMgr*>(streams[1]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
         } else if (a != 0 && streams[0] != 0) {
-            ((DirectSoundMgr*)streams[0])->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            (static_cast<DirectSoundMgr*>(streams[0]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     } else {
         chosen = 0;
         if (d == gate->m_10->m_188) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
-                ((DirectSoundMgr*)streams[0])->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                (static_cast<DirectSoundMgr*>(streams[0]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && streams[1] != 0) {
-            ((DirectSoundMgr*)streams[1])->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            (static_cast<DirectSoundMgr*>(streams[1]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (streams[chosen] == 0) {
         streams[chosen] = (reinterpret_cast<SoundStream*>(m_configTree->m_20))
-                              ->OpenStream((CParseSource*)src, 0x5000, 0x1400, 0x100e0, 0, 0);
+                              ->OpenStream(reinterpret_cast<CParseSource*>(src), 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -263,11 +263,11 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     StreamVoice* stream = streams[chosen];
     i32 vol = m_gruntPercent;
     stream->m_feeder.Pause();
-    if (stream->SetSource((CParseSource*)src) != 0) {
+    if (stream->SetSource(reinterpret_cast<CParseSource*>(src)) != 0) {
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_10->m_188, (void*)stream, param_4, 0) != 0;
+    return voice->Setup(gate->m_10->m_188, static_cast<void*>(stream), param_4, 0) != 0;
 }
 
 // ===========================================================================
@@ -409,8 +409,8 @@ void* CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, CSpawnButeTarget*
 // redo (per matcher.md: a >512B non-converging fn is left stubbed, not half-done).
 RVA(0x0011bee0, 0x230)
 i32 CGruntSpawnConfig::PickWeighted(i32 index, i32 seed) {
-    (void)index;
-    (void)seed;
+    static_cast<void>(index);
+    static_cast<void>(seed);
     return 0;
 }
 
@@ -510,13 +510,13 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
 // (m_08/m_0c) is set, reset it (CGruntVoice::Reset @0x11a870).
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::DtorBody() {
-    void** p = (void**)&m_voice0;
+    void** p = reinterpret_cast<void**>(&m_voice0);
     for (i32 k = 0; k < 2; k++) {
         if (p[2] != 0) {
-            ((StreamVoice*)p[2])->m_feeder.Pause();
+            (static_cast<StreamVoice*>(p[2]))->m_feeder.Pause();
         }
         if (p[0] != 0) {
-            ((CGruntVoice*)p[0])->Reset();
+            (static_cast<CGruntVoice*>(p[0]))->Reset();
         }
         p++;
     }

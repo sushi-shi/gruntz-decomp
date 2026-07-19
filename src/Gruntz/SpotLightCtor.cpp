@@ -142,9 +142,9 @@ extern CActReg g_actReg_646188; // 0x646188
 // spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CSpotActEntry* e = (CSpotActEntry*)g_actReg_646188.ResolveEntry(id);
+    CSpotActEntry* e = reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CSpotActEntry*)g_actReg_646188.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -171,14 +171,14 @@ void CSpotLight::FireActivation(i32 id) {
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
-    if (CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, c, d) == 0) {
+    if (CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, c, d) == 0) {
         return 0;
     }
-    if (Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {
+    if (Chain(static_cast<CSerialArchive*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;
-    CSerialArchive* s = (CSerialArchive*)arc;
+    CSerialArchive* s = static_cast<CSerialArchive*>(arc);
     switch (mode) {
         case 4: // Write
             s->Write(&m_58, 8);
@@ -215,7 +215,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup((void*)id, (void*&)out);
+                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
@@ -223,7 +223,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                         resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
                     }
                 }
-                m_focus = (CGameObject*)resolved;
+                m_focus = reinterpret_cast<CGameObject*>(resolved);
                 if (m_focus == 0 && id != 0) {
                     return 0;
                 }
@@ -294,18 +294,18 @@ extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || *(i32*)(reinterpret_cast<char*>(reg) + 0x134) != 1) {
+    if (reg->m_isEasyMode == 0 || *reinterpret_cast<i32*>((reinterpret_cast<char*>(reg) + 0x134)) != 1) {
         char* o = reinterpret_cast<char*>(m_object);
         CGrunt* tgt =
-            (CGrunt*)Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
+            static_cast<CGrunt*>(Probe_32ce(*reinterpret_cast<i32*>((o + 0x5c)), *reinterpret_cast<i32*>((o + 0x60)), o + 0x144, &m_9c, &m_a0, 0));
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("B");
             // CGrunt's +0x10 bound geometry source (undeclared base padding; by offset).
-            char* t = *(char**)(reinterpret_cast<char*>(tgt) + 0x10);
-            *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);
-            *(i32*)(o + 0x60) = *(i32*)(t + 0x60);
-            if (*(i32*)(o + 0x114) == 1) {
+            char* t = *reinterpret_cast<char**>((reinterpret_cast<char*>(tgt) + 0x10));
+            *reinterpret_cast<i32*>((o + 0x5c)) = *reinterpret_cast<i32*>((t + 0x5c));
+            *reinterpret_cast<i32*>((o + 0x60)) = *reinterpret_cast<i32*>((t + 0x60));
+            if (*reinterpret_cast<i32*>((o + 0x114)) == 1) {
                 reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 5, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {

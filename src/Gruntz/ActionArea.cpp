@@ -68,10 +68,10 @@ i32 g_projRegScratch;              // 0x6293a8
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     g_projRegScratch = 0;
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
-        return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
+        return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_projReg)->GrowTo(coord, 0))) {
-        return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_projReg))->GrowTo(coord, 0))) {
+        return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -93,15 +93,15 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    ((CVariantSlot*)g_typeColl.m_errSink)->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
+    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
 // The R3 handler stored into the per-class table (LAB_00403517, an ILT thunk).
@@ -200,7 +200,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // global registry.
 RVA(0x00008060, 0x15)
 void ProjActRegisterDefaults() {
-    ((CZDArrayDerived*)&g_projReg)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_projReg))->Construct(0x7d0, 0x7da);
 }
 
 // 0x80e0: CActionArea::FireActivation - look the activation coordinate up in the
@@ -234,16 +234,16 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->~CString();
+                    (reinterpret_cast<CString*>(nodes))->~CString();
                 }
                 nodes++;
             } while (--cnt);
@@ -251,7 +251,7 @@ void CProjActObj::RegisterType() {
         slot->m_name = "A";
         g_typeCounter++;
     }
-    *(void**)R3Lookup(id) = (void*)&ProjActHandlerThunk;
+    *reinterpret_cast<void**>(R3Lookup(id)) = static_cast<void*>(&ProjActHandlerThunk);
 }
 
 // 0x8440: per-frame pulse. Every 500 ms the phase flag toggles and the timestamp
@@ -287,13 +287,13 @@ i32 CActionArea::ApplyColor(i32 owner) {
         case 1: {
             m_38->ApplyName("GAME_ACTIONAREA_BLUE");
             char* rec = m_38->m_194;
-            ((CImageSet*)rec)->SetAllTypes(8);
+            (reinterpret_cast<CImageSet*>(rec))->SetAllTypes(8);
             break;
         }
         case 2: {
             m_38->ApplyName("GAME_ACTIONAREA_RED");
             char* rec = m_38->m_194;
-            ((CImageSet*)rec)->SetAllTypes(8);
+            (reinterpret_cast<CImageSet*>(rec))->SetAllTypes(8);
             break;
         }
         default:
@@ -310,10 +310,10 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), tag, c, d)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     i64* p = &m_timestamp;

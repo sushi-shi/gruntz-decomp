@@ -56,13 +56,13 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
         }
         void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
         m_3c->m_0c->m_animRegistry->m_10.Lookup(name, val);
-        m_value = (CAniElement*)val; // the map stores void*; KeyOfValue takes the CObject* upcast
+        m_value = static_cast<CAniElement*>(val); // the map stores void*; KeyOfValue takes the CObject* upcast
         return 1;
     }
     if (mode == 4) {
         // WRITE: re-derive the value's name into the key buffer, then write both.
         for (i32 i = 0; i < 0x20; i++) {
-            ((i32*)name)[i] = 0;
+            (reinterpret_cast<i32*>(name))[i] = 0;
         }
         if (m_value != 0) {
             CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue_152d30(m_value);

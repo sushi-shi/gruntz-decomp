@@ -131,7 +131,7 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     if (tag != 4 && tag == 8) {
@@ -160,7 +160,7 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // import thunk). Free init thunk.
 RVA(0x0003e8e0, 0x15)
 void CGruntCreationPoint::InitActReg() {
-    ((CZDArrayDerived*)&g_creationPointActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_creationPointActReg))->Construct(2000, 2010);
 }
 
 // CGruntCreationPoint::FireActivation @0x03e960 - look the activation coordinate
@@ -170,9 +170,9 @@ void CGruntCreationPoint::InitActReg() {
 // ResolveEntry + PMF dispatch.
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CreationPointHandler* e = (CreationPointHandler*)g_creationPointActReg.ResolveEntry(coord);
+    CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
     if (*e != 0) {
-        CreationPointHandler* e2 = (CreationPointHandler*)g_creationPointActReg.ResolveEntry(coord);
+        CreationPointHandler* e2 = reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }
@@ -192,20 +192,20 @@ void CGruntCreationPoint::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(CreationPointHandler*)g_creationPointActReg.ResolveEntry(id) =
+    *reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(id)) =
         (i32 (CUserLogic::*)())&CGruntCreationPoint::AdvanceAnim;
 }
 

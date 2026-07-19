@@ -36,8 +36,8 @@ CWarpStoneFly::CWarpStoneFly() {
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {
-        CWsfTabArray* arr = (CWsfTabArray*)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x260);
-        ((CByteArray*)arr)->SetAtGrow(arr->m_index, static_cast<BYTE>(m_arrivalMode));
+        CWsfTabArray* arr = reinterpret_cast<CWsfTabArray*>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x260));
+        (reinterpret_cast<CByteArray*>(arr))->SetAtGrow(arr->m_index, static_cast<BYTE>(m_arrivalMode));
         m_owner->m_hlBusy = 0;
         if (m_owner->m_position != 2 && m_owner->m_activeTab == 5) {
             m_owner->ResetWidgets(0);
@@ -82,10 +82,10 @@ i32 CWarpStoneFly::Tick(i32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
-            (void*)((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
-            (void*)static_cast<i32>(m_currentX),
-            (void*)static_cast<i32>(m_currentY),
-            (void*)0
+            reinterpret_cast<void*>((reinterpret_cast<CWsfGameMgr*>(g_gameReg->m_world))->m_drawable->m_context),
+            reinterpret_cast<void*>(static_cast<i32>(m_currentX)),
+            reinterpret_cast<void*>(static_cast<i32>(m_currentY)),
+            static_cast<void*>(0)
         );
     return 1;
 }

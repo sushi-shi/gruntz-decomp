@@ -99,9 +99,8 @@ i32 SfDeviceInitKeys() {
     }
     g_sfCfgA2 = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
-        g_sfCfgA0 = (WORD)i;
-        ((SfGetLoadedBankPathname2)
-             g_sfDevice->SF_GetLoadedBankPathname)(g_sfDeviceId, (PSFMIDILOCATION)&g_sfCfgA0);
+        g_sfCfgA0 = static_cast<WORD>(i);
+        (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(g_sfDeviceId, reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0));
     }
     g_sfCfgA0 = 1;
     return 1;
@@ -137,16 +136,16 @@ i32 BuildSoundFontPath(char drive) {
     if (FileExistsCopyF90F0(g_sfCurPath)) {
         res = g_sfDevice->SF_LoadBank(
             g_sfDeviceId,
-            (PSFMIDILOCATION)&g_sfCfgA0,
-            (PSFBUFFEROBJECT)&g_sfCfgB0
+            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0),
+            reinterpret_cast<PSFBUFFEROBJECT>(&g_sfCfgB0)
         );
     }
     if (res != 0) {
         g_sfCurPath = hiVer ? g_sfMusic4 : g_sfMusic;
         res = g_sfDevice->SF_LoadBank(
             g_sfDeviceId,
-            (PSFMIDILOCATION)&g_sfCfgA0,
-            (PSFBUFFEROBJECT)&g_sfCfgB0
+            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0),
+            reinterpret_cast<PSFBUFFEROBJECT>(&g_sfCfgB0)
         );
     }
     return res == 0;

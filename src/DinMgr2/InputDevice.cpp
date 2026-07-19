@@ -37,7 +37,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->CreateDevice(*(const GUID*)deviceGuid, &m_device, 0);
+    i32 hr = di->CreateDevice(*static_cast<const GUID*>(deviceGuid), &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -45,7 +45,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
     if (m_device == 0) {
         return 0;
     }
-    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, (void**)&m_device2);
+    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, reinterpret_cast<void**>(&m_device2));
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);
         return 0;
@@ -143,7 +143,7 @@ i32 CInputDevRoot::SetDataFormat(const void* fmt) {
     if (fmt == 0) {
         return 0;
     }
-    i32 hr = m_device2->SetDataFormat((LPCDIDATAFORMAT)fmt);
+    i32 hr = m_device2->SetDataFormat(static_cast<LPCDIDATAFORMAT>(fmt));
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -171,7 +171,7 @@ i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
-    i32 hr = m_device2->SetProperty(rguid, (LPCDIPROPHEADER)prop);
+    i32 hr = m_device2->SetProperty(rguid, static_cast<LPCDIPROPHEADER>(prop));
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -222,7 +222,7 @@ i32 CInputDevRoot::Escape(void* data) {
     if (data == 0) {
         return 0;
     }
-    i32 hr = m_device2->Escape((LPDIEFFESCAPE)data);
+    i32 hr = m_device2->Escape(static_cast<LPDIEFFESCAPE>(data));
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1b8, hr);
         return 0;

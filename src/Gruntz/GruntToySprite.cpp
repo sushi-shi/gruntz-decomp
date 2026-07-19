@@ -49,7 +49,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 // the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007f540, 0x15)
 void CGruntToySprite::InitActReg() {
-    ((CZDArrayDerived*)&g_toyActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_toyActReg))->Construct(2000, 2010);
 }
 
 // CGruntToySprite::RunAct @0x07f5c0 - resolve the coordinate-registry entry for `id`
@@ -58,8 +58,8 @@ void CGruntToySprite::InitActReg() {
 // it has side effects and cl cannot CSE it across the guard. See RunAct notes elsewhere.
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if (((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn != 0) {
-        (this->*((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn)();
+    if ((reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn != 0) {
+        (this->*(reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -78,20 +78,20 @@ void CGruntToySprite::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntToySprite::Update;
+    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntToySprite::Update;
 }
 
 // SetCell @0x07f920 - stash the (x,y) grunt cell, clear m_38 bit 0, return 1.
@@ -109,7 +109,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 // -0x20) into the bound renderable. Returns 0.
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }
@@ -121,7 +121,7 @@ i32 CGruntToySprite::Update() {
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
-                mapped = (CImage*)h->m_items.GetAt(layer);
+                mapped = reinterpret_cast<CImage*>(h->m_items.GetAt(layer));
             } else {
                 mapped = 0;
             }
@@ -153,5 +153,5 @@ i32 CGruntToySprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) 
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    return Chain(ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(ar, mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }

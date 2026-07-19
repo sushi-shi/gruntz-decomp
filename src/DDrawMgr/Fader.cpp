@@ -283,7 +283,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
         float ff = static_cast<float>(frame);
         char* pData = reinterpret_cast<char*>(m_58.m_pData);
         for (i32 i = 0; i < m_58.m_nSize; i++) {
-            i32* rec = (i32*)(pData + i * 0x28);
+            i32* rec = reinterpret_cast<i32*>((pData + i * 0x28));
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
             i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
             float t = ff / static_cast<float>(GetFrameCount());
@@ -398,7 +398,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 i;
     m_20 = 0;
     m_40 = desc->m_0c;
-    FaderSrc* src = (FaderSrc*)desc->m_04;
+    FaderSrc* src = reinterpret_cast<FaderSrc*>(desc->m_04);
     if (!src) {
         src = reinterpret_cast<FaderSrc*>(m_timerA);
     }
@@ -407,7 +407,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     if (!alt) {
         alt = m_timerB;
     }
-    m_3c = (FaderSrc*)alt;
+    m_3c = reinterpret_cast<FaderSrc*>(alt);
     if (!m_38) {
         goto fail;
     }
@@ -504,14 +504,14 @@ SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 // same instruction selection + scheduling, only the register names differ. Final sweep.
 RVA(0x0001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT2* d = (CFxModeT2*)desc; // fader type 1 -> the id-2 mode record
+    CFxModeT2* d = static_cast<CFxModeT2*>(desc); // fader type 1 -> the id-2 mode record
     m_20 = 0;
-    CDDSurface* s = (CDDSurface*)d->m_04;
+    CDDSurface* s = reinterpret_cast<CDDSurface*>(d->m_04);
     if (s == 0) {
         s = reinterpret_cast<CDDSurface*>(m_timerA); // the base's default-surface dword
     }
     m_surface = s;
-    CDDSurface* b = (CDDSurface*)d->m_08; // desc dword holds a surface (m_3c is CDDSurface*)
+    CDDSurface* b = reinterpret_cast<CDDSurface*>(d->m_08); // desc dword holds a surface (m_3c is CDDSurface*)
     if (b == 0) {
         m_3c = reinterpret_cast<CDDSurface*>(m_timerB);
     } else {
@@ -520,7 +520,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     m_lightGate = d->m_10;
     m_centerX = d->m_18;
     m_centerY = d->m_1c;
-    CDDPalette* pal = (CDDPalette*)d->m_0c;
+    CDDPalette* pal = reinterpret_cast<CDDPalette*>(d->m_0c);
     m_palette = pal;
     i32 cnt = d->m_14;
     m_spanCount = cnt;
@@ -571,7 +571,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
             m_flag = 1;
             return 1;
         }
-        m_table = (CShadeTable*)d->m_20;
+        m_table = reinterpret_cast<CShadeTable*>(d->m_20);
     }
     return 1;
 }
@@ -907,16 +907,16 @@ RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     // The arg is the type-6 CFxMode transition descriptor; m_58 is this fader's real
     // growable mesh buffer (CRezBufferObject).
-    CFxModeT6* cfg = (CFxModeT6*)descOpaque;
+    CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_58;
 
-    m_3c = cfg->m_04 ? (CDDSurface*)cfg->m_04 : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_38 = cfg->m_08 ? (CDDSurface*)cfg->m_08 : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_3c = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
+    m_38 = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
     if (cfg->m_10 == 0) {
         return 0;
     }
-    m_40 = (CDDSurface*)cfg->m_0c;
-    m_44 = (CDDSurface*)cfg->m_10;
+    m_40 = reinterpret_cast<CDDSurface*>(cfg->m_0c);
+    m_44 = reinterpret_cast<CDDSurface*>(cfg->m_10);
     m_48 = cfg->m_18;
     m_4c = cfg->m_14;
     m_50 = cfg->m_1c;
@@ -1006,7 +1006,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 mesh->m_nMaxSize = 0;
                 mesh->m_nSize = 0;
             } else if (mesh->m_pData == 0) {
-                mesh->m_pData = (RezElem40*)RezAlloc(newSize * sizeof(RezElem40));
+                mesh->m_pData = static_cast<RezElem40*>(RezAlloc(newSize * sizeof(RezElem40)));
                 memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
                 mesh->m_nMaxSize = newSize;
                 mesh->m_nSize = newSize;
@@ -1029,7 +1029,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 if (newSize > newMax) {
                     newMax = newSize;
                 }
-                RezElem40* nd = (RezElem40*)RezAlloc(newMax * sizeof(RezElem40));
+                RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
                 memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
                 memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
                 RezFree(mesh->m_pData);
@@ -1070,7 +1070,7 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == 0) {
-        m_pData = (RezElem40*)RezAlloc(nNewSize * sizeof(RezElem40));
+        m_pData = static_cast<RezElem40*>(RezAlloc(nNewSize * sizeof(RezElem40)));
         memset(m_pData, 0, nNewSize * sizeof(RezElem40));
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
@@ -1094,7 +1094,7 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        RezElem40* pNewData = (RezElem40*)RezAlloc(nNewMax * sizeof(RezElem40));
+        RezElem40* pNewData = static_cast<RezElem40*>(RezAlloc(nNewMax * sizeof(RezElem40)));
         memcpy(pNewData, m_pData, m_nSize * sizeof(RezElem40));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(RezElem40));
         RezFree(m_pData);
@@ -1123,14 +1123,14 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 // for the m_src reload + s->m_10 store schedule differs from this cl's.
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT5* s = (CFxModeT5*)desc;
+    CFxModeT5* s = static_cast<CFxModeT5*>(desc);
     i32 a = s->m_04;
     if (!a) {
         a = m_timerA; // the base's default dword
     }
     m_38 = a;
     if (s->m_08) {
-        m_src = (FaderSrc*)s->m_08;
+        m_src = reinterpret_cast<FaderSrc*>(s->m_08);
     } else {
         m_src = reinterpret_cast<FaderSrc*>(m_timerB);
     }
@@ -1138,7 +1138,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     m_percent = s->m_10;
     m_20 = 0;
     m_48 = s->m_14;
-    m_frames = (i32*)RezAlloc(m_src->m_frameCount << 2);
+    m_frames = static_cast<i32*>(RezAlloc(m_src->m_frameCount << 2));
     for (i32 i = 0; i < m_src->m_frameCount; i++) {
         m_frames[i] = 0;
     }
@@ -1205,27 +1205,27 @@ extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade -
 // de-view also drops the three (i32) truncations the old FrCell forced.)
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT4* cfg = (CFxModeT4*)desc;
+    CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
     if (cfg->m_04 == 0) {
         m_dstSurface = reinterpret_cast<CDDSurface*>(m_timerA);
     } else {
-        m_dstSurface = (CDDSurface*)cfg->m_04;
+        m_dstSurface = reinterpret_cast<CDDSurface*>(cfg->m_04);
     }
 
     if (cfg->m_08 == 0) {
         m_srcSurface = reinterpret_cast<CDDSurface*>(m_timerB);
     } else {
-        m_srcSurface = (CDDSurface*)cfg->m_08;
+        m_srcSurface = reinterpret_cast<CDDSurface*>(cfg->m_08);
     }
 
     if (cfg->m_14 == 0) {
         // build the fade shade table from the descriptor's palette (m_cache is the
         // CFader base's embedded CShadeTableCache at this+0x04)
-        CDDPalette* pal = (CDDPalette*)cfg->m_10;
-        m_table = m_cache.HueRampTable((PalEntry*)pal->m_cacheA, 0x10, 0);
+        CDDPalette* pal = reinterpret_cast<CDDPalette*>(cfg->m_10);
+        m_table = m_cache.HueRampTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x10, 0);
         m_flag = 1; // we own it: ~CFader will FindRemove it
     } else {
-        m_table = (CShadeTable*)cfg->m_14;
+        m_table = reinterpret_cast<CShadeTable*>(cfg->m_14);
         m_flag = 0;
     }
     if (m_table == 0) {
@@ -1239,7 +1239,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     m_fadeDivisor = static_cast<float>(s->m_width) * g_faderHalf; // width * 0.5
     m_centerX = s->m_width / 2;
     m_centerY = s->m_height / 2;
-    m_cells = (CFaderRadialCell*)::operator new(s->m_height * s->m_width * 16);
+    m_cells = static_cast<CFaderRadialCell*>(::operator new(s->m_height * s->m_width * 16));
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
@@ -1257,7 +1257,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             u8 pix;
             i32 base = m_srcSurface->Lock(0);
             if (base != 0) {
-                pix = *(u8*)(base + m_srcSurface->m_b0 * x + m_srcSurface->m_pitch * y);
+                pix = *reinterpret_cast<u8*>((base + m_srcSurface->m_b0 * x + m_srcSurface->m_pitch * y));
                 m_srcSurface->UnlockThunk();
             } else {
                 pix = 0;
@@ -1309,7 +1309,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
             i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
             i32 py = m_centerY - static_cast<i32>((c->m_vy / sf));
             if (px > 0 && px < dst->m_width && py > 0 && py < dst->m_height) {
-                ((u8*)base)[py * dst->m_pitch + px] = static_cast<u8>(c->m_pixel);
+                (reinterpret_cast<u8*>(base))[py * dst->m_pitch + px] = static_cast<u8>(c->m_pixel);
             }
         }
     }
@@ -1317,9 +1317,9 @@ void CFaderRadial::RenderFrame(i32 frame) {
     // Inlined UnlockThunk: m_8->vtbl[0x80](m_8, 0) on both surfaces (dispatched by slot
     // on the forward-declared IDirectDrawSurface*).
     void* s8 = m_srcSurface->m_8;
-    (*(void(__stdcall**)(void*, i32))(*(void***)s8 + 0x20))(s8, 0);
+    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*(void***)s8 + 0x20)))(s8, 0);
     void* d8 = dst->m_8;
-    (*(void(__stdcall**)(void*, i32))(*(void***)d8 + 0x20))(d8, 0);
+    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*(void***)d8 + 0x20)))(d8, 0);
     RezFree(scratch);
 }
 
@@ -1396,22 +1396,22 @@ extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 // AddFromArray path builds, diverge. Same family as CFaderRadial::ApplyInit (0x17fa40).
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT1* pInit = (CFxModeT1*)desc;
+    CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
     i32 i;
     m_20 = 0;
     if (pInit == 0) {
         return 0;
     }
 
-    m_surfA = pInit->m_04 ? (CDDSurface*)pInit->m_04 : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_surfB = pInit->m_08 ? (CDDSurface*)pInit->m_08 : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_surfA = pInit->m_04 ? reinterpret_cast<CDDSurface*>(pInit->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
+    m_surfB = pInit->m_08 ? reinterpret_cast<CDDSurface*>(pInit->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
     if (m_surfA == 0) {
         return 0;
     }
     if (m_surfB == 0) {
         return 0;
     }
-    m_surfC = pInit->m_0c ? (CDDSurface*)pInit->m_0c : m_surfB;
+    m_surfC = pInit->m_0c ? reinterpret_cast<CDDSurface*>(pInit->m_0c) : m_surfB;
 
     if (!m_cache.Init()) {
         return 0;
@@ -1459,7 +1459,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
     }
 
-    m_warpTable = (i32*)RezAlloc(m_halfWidth * 8);
+    m_warpTable = static_cast<i32*>(RezAlloc(m_halfWidth * 8));
     for (i = 0; i < 2 * m_halfWidth; i++) {
         m_warpTable[i] =
             static_cast<i32>((acos((static_cast<float>(i) - static_cast<float>(m_halfWidth)) / static_cast<float>(m_halfWidth)) * static_cast<float>(m_halfWidth)));
@@ -1473,28 +1473,28 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_useLut != 0) {
         if (pInit->m_20) {
             m_flag = 0; // a caller-supplied table: ~CFader must NOT FindRemove it
-            m_table = (CShadeTable*)pInit->m_20;
+            m_table = reinterpret_cast<CShadeTable*>(pInit->m_20);
         } else if (_access(pInit->m_24, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_24);
             if (m_table == 0) {
                 m_useLut = 0;
             }
         } else {
-            CDDPalette* pal = (CDDPalette*)pInit->m_28;
-            m_table = m_cache.FlashTable((PalEntry*)pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
+            CDDPalette* pal = reinterpret_cast<CDDPalette*>(pInit->m_28);
+            m_table = m_cache.FlashTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x20, 0x20, 0x32, 0xc8);
         }
 
         i32 m = m_halfWidth << 1;
-        m_shadeRamp = (u8*)RezAlloc(m);
+        m_shadeRamp = static_cast<u8*>(RezAlloc(m));
         for (i = 0; i < m; i++) {
             i32 t = static_cast<i32>((sin(static_cast<float>(i) / static_cast<float>(m_halfWidth) * 3.14f) * -32.0));
             m_shadeRamp[i] = static_cast<u8>((0x10 - t));
         }
     }
 
-    m_rowOfsA = (i32*)RezAlloc(m_rowCount * 4);
-    m_rowOfsB = (i32*)RezAlloc(m_rowCountB * 4);
-    m_rowOfsC = (i32*)RezAlloc(m_rowCountC * 4);
+    m_rowOfsA = static_cast<i32*>(RezAlloc(m_rowCount * 4));
+    m_rowOfsB = static_cast<i32*>(RezAlloc(m_rowCountB * 4));
+    m_rowOfsC = static_cast<i32*>(RezAlloc(m_rowCountC * 4));
     for (i = 0; i < m_rowCount; i++) {
         m_rowOfsA[i] = m_surfA->m_pitch * i;
         m_rowOfsB[i] = m_surfB->m_pitch * i;
@@ -1502,7 +1502,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     i32 mx = (m_rowCount > m_span) ? m_rowCount : m_span;
-    m_lineBuf = (u8*)RezAlloc(m_surfA->m_b0 * mx);
+    m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_b0 * mx));
     return 1;
 }
 

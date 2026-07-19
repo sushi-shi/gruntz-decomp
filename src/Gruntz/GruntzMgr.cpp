@@ -709,7 +709,7 @@ CMulti::CMulti() {
 // ===========================================================================
 RVA(0x0008b960, 0x7c4)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
-    (void)a4;
+    static_cast<void>(a4);
     CState* cur = m_curState;
     i32 local10 = 0;
     if (cur != 0) {
@@ -855,7 +855,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     }
     if (next <= 0x20 || next >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (((CPlay*)st)->LoadByMode(next, 1)) {
+        if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -881,7 +881,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     }
     if (prev <= 0x20 || prev >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (((CPlay*)st)->LoadByMode(prev, 1)) {
+        if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -917,7 +917,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     if (list == 0) { // retail's dead null-guard on the lea (je exit)
         return;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1219,7 +1219,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
             CPlaneRender* layer =
-                (idx < 0 || idx >= count) ? 0 : (CPlaneRender*)view->m_planes[idx];
+                (idx < 0 || idx >= count) ? 0 : static_cast<CPlaneRender*>(view->m_planes[idx]);
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1258,7 +1258,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
         CGameLevel* view = m_world->m_level;
         if (view) {
             CPlaneRender* layer =
-                (view->m_planes.GetSize() > 0) ? (CPlaneRender*)view->m_planes[0] : 0;
+                (view->m_planes.GetSize() > 0) ? static_cast<CPlaneRender*>(view->m_planes[0]) : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1285,7 +1285,7 @@ RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];
-    if (RegQueryValueA((HKEY)0x80000000, "http\\shell\\open\\command", cmd, &len)) {
+    if (RegQueryValueA(reinterpret_cast<HKEY>(0x80000000), "http\\shell\\open\\command", cmd, &len)) {
         return 0;
     }
     if (strlen(cmd) < 3) {
@@ -1296,7 +1296,7 @@ i32 __stdcall LaunchWebBrowser(char* url) {
     // "IEXPLORE.EXE" (uppercase) substring test below.
     _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
-        FindProcessByName("IEXPLORE.EXE", 1, (void**)&quoted);
+        FindProcessByName("IEXPLORE.EXE", 1, reinterpret_cast<void**>(&quoted));
     }
     char* dash = strchr(cmd, '-');
     i32 dn = dash - cmd + 1;
@@ -1666,7 +1666,7 @@ CState* CGruntzMgr::TopState() {
     if (st->GetSize() <= 0) {
         return 0;
     }
-    return (CState*)st->GetAt(st->GetSize() - 1);
+    return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
 }
 
 // -------------------------------------------------------------------------
@@ -1678,7 +1678,7 @@ void CGruntzMgr::PushState(CState* s) {
         return;
     }
     CPtrArray* st = &m_stateStack;
-    st->SetAtGrow(st->GetSize(), (void*)s);
+    st->SetAtGrow(st->GetSize(), static_cast<void*>(s));
 }
 
 // -------------------------------------------------------------------------
@@ -1844,12 +1844,12 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* out = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
-    CImageSet* rec = (CImageSet*)out;
+    CImageSet* rec = static_cast<CImageSet*>(out);
     if (rec == 0) {
         return 0;
     }
     i32 savedIdx = rec->m_minIndex;
-    CImage* e = (CImage*)rec->m_items.GetAt(savedIdx);
+    CImage* e = static_cast<CImage*>(rec->m_items.GetAt(savedIdx));
     if (e == 0) {
         return 0;
     }
@@ -1862,7 +1862,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         if (spr == 0) {
             return 0;
         }
-        spr->m_frameSets.SetAtGrow(0, (CObject*)rec);
+        spr->m_frameSets.SetAtGrow(0, static_cast<CObject*>(rec));
         spr->m_flags |= 0xc;
         spr->m_zBound = 0xf4241; // z bound above every object -> logo always draws
         i32 parity = 1;
@@ -1903,9 +1903,9 @@ i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
         CObject* out = 0; // CMapStringToOb::Lookup (0x1b8008) takes a CObject&
         m_world->m_imageRegistry->m_10map.Lookup(key, out);
-        CImageSet* row = (CImageSet*)out;
+        CImageSet* row = static_cast<CImageSet*>(out);
         if (row) {
-            CImage* dst = (CImage*)row->m_items.GetAt(row->m_minIndex);
+            CImage* dst = static_cast<CImage*>(row->m_items.GetAt(row->m_minIndex));
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != 0) {
@@ -1972,7 +1972,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     }
     CObject* found = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_DEVHEADS", found);
-    CImageSet* out = (CImageSet*)found;
+    CImageSet* out = static_cast<CImageSet*>(found);
     if (out == 0) {
         return 0;
     }
@@ -2015,9 +2015,9 @@ void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CImageSet* set = (CImageSet*)found;
+        CImageSet* set = static_cast<CImageSet*>(found);
         if (set) {
-            CImage* fr = (CImage*)set->m_items.GetAt(set->m_minIndex);
+            CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
@@ -2035,7 +2035,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         // the image registry's CMapStringToOb above.
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
-                        LeafCue* cue = (LeafCue*)cue_ob;
+                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
@@ -2074,9 +2074,9 @@ void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CImageSet* set = (CImageSet*)found;
+        CImageSet* set = static_cast<CImageSet*>(found);
         if (set) {
-            CImage* fr = (CImage*)set->m_items.GetAt(set->m_minIndex);
+            CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
@@ -2095,7 +2095,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         // the image registry's CMapStringToOb above.
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
-                        LeafCue* cue = (LeafCue*)cue_ob;
+                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
@@ -2143,7 +2143,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
             i32 ady = abs(obj->m_screenY - y);
             if (adx * adx + ady + ady < r2) {
                 count++;
-                if (((ScanCb)cb)(obj, user) == 0) {
+                if ((reinterpret_cast<ScanCb>(cb))(obj, user) == 0) {
                     return count;
                 }
             }
@@ -2170,7 +2170,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
     if (cb == 0) {
         return 0;
     }
-    RECT* r = (RECT*)rect;
+    RECT* r = reinterpret_cast<RECT*>(rect);
     if (r == 0) {
         return 0;
     }
@@ -2190,7 +2190,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
                 i32 oy = obj->m_screenY;
                 if (oy >= loY && oy <= hiY) {
                     count++;
-                    if (((ScanCb)cb)(obj, user) == 0) {
+                    if ((reinterpret_cast<ScanCb>(cb))(obj, user) == 0) {
                         return count;
                     }
                 }
@@ -2281,7 +2281,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in = m_inputState;
     if (in) {
         in->Deactivate();
-        ((CPtrList*)(reinterpret_cast<char*>(in) + 8))->CPtrList::~CPtrList();
+        (reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(in) + 8)))->CPtrList::~CPtrList();
         RezFree(in);
     }
     m_inputState = 0;
@@ -2306,7 +2306,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    m_world->SetHwnd((void*)ModeResetCallback);
+    m_world->SetHwnd(static_cast<void*>(ModeResetCallback));
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
@@ -2325,7 +2325,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     m_symParser = new CSymParser;
 
     CString path = GetRezPath();
-    if (m_symParser->ParseBuffer(*(void**)&path, 1, 0)) {
+    if (m_symParser->ParseBuffer(*reinterpret_cast<void**>(&path), 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }
@@ -2548,7 +2548,7 @@ extern void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-ma
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RunModalDialog("DEBUG_SETSKILL", (void*)&Lab401947, 1);
+        RunModalDialog("DEBUG_SETSKILL", static_cast<void*>(&Lab401947), 1);
     }
     return 0;
 }
@@ -2670,7 +2670,7 @@ CState* CGruntzMgr::FindStateById(i32 id) {
     }
     CPtrArray* st = &m_stateStack;
     for (i32 i = 0; i < st->GetSize(); i++) {
-        CState* s = (CState*)st->GetAt(i);
+        CState* s = static_cast<CState*>(st->GetAt(i));
         if (s && s->Update() == id) {
             return s;
         }
@@ -2682,7 +2682,7 @@ CState* CGruntzMgr::FindStateById(i32 id) {
 // Out-of-line (retail emits it standalone; the inline member folded away).
 RVA(0x00092990, 0x8)
 CPlay* CGruntzMgr::PickPlayOrPausedState() {
-    return (CPlay*)FindStateById(3);
+    return static_cast<CPlay*>(FindStateById(3));
 }
 
 // -------------------------------------------------------------------------
@@ -2740,7 +2740,7 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
 // dialog (through the engine's DialogBoxParamA wrapper) and returns 1.
 RVA(0x00092500, 0x17)
 i32 CGruntzMgr::RunLoadGameDialog() {
-    RunModalDialog("GAME_LOAD", (void*)GruntzLoadGameDlgProc, 0);
+    RunModalDialog("GAME_LOAD", static_cast<void*>(GruntzLoadGameDlgProc), 0);
     return 1;
 }
 
@@ -2827,7 +2827,7 @@ RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
     if (m_curState->Update() == 3) {
-        ran = RunModalDialog("DEBUG_GRUNTTYPE", (void*)GruntzDebugGruntTypeProc, 1);
+        ran = RunModalDialog("DEBUG_GRUNTTYPE", static_cast<void*>(GruntzDebugGruntTypeProc), 1);
     }
     return ran != 0;
 }
@@ -2838,7 +2838,7 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
 // PassClickToPlayState(level, 0, 1). Returns 0 when the dialog is cancelled.
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
-    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", (void*)LevelNumberDialogProcThunk, 1);
+    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", static_cast<void*>(LevelNumberDialogProcThunk), 1);
     if (level > 0) {
         return PassClickToPlayState(level, 0, 1);
     }
@@ -2866,8 +2866,8 @@ i32 CGruntzMgr::LoadOptionsSlotName(
         // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
         // and drops the match (verified -3%). Kept raw.
         char* s = reinterpret_cast<char*>(this) + slot * 0x238;
-        if (*(i32*)(s + 0x170) == 0) {    // slot.m_020  (options base +0x150 +0x20)
-            *(CString*)(s + 0x154) = val; // slot.m_name (options base +0x150 +0x04)
+        if (*reinterpret_cast<i32*>((s + 0x170)) == 0) {    // slot.m_020  (options base +0x150 +0x20)
+            *reinterpret_cast<CString*>((s + 0x154)) = val; // slot.m_name (options base +0x150 +0x04)
         }
     }
     return 0;
@@ -2902,7 +2902,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
         if (s != 0) {
             s->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
         }
-        s = (GruntzPlayer*)(reinterpret_cast<char*>(s) + 0x238);
+        s = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(s) + 0x238));
     }
 }
 
@@ -2916,7 +2916,7 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     char* p = reinterpret_cast<char*>(&m_options[0]) + 0x14; // &m_options[0].m_14
     for (i32 d = 4; d != 0; d--) {
         char* slot = p - 0x14; // slot base
-        if (slot && *(i32*)(p + 0xc) != 0 && (anyState != 0 || *(i32*)p != 0)) {
+        if (slot && *reinterpret_cast<i32*>((p + 0xc)) != 0 && (anyState != 0 || *reinterpret_cast<i32*>(p) != 0)) {
             count++;
         }
         p += 0x238;
@@ -2943,7 +2943,7 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
             return slot;
         }
         i++;
-        slot = (GruntzPlayer*)(reinterpret_cast<char*>(slot) + 0x238);
+        slot = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(slot) + 0x238));
     } while (i < 4);
     return 0;
 }
@@ -3097,32 +3097,32 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 
     GruntzPlayer* slot = m_options;
     for (i32 i = 0; i < 4; i++) {
-        if (slot == 0 || ((CTriggerMgr*)slot)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+        if (slot == 0 || (reinterpret_cast<CTriggerMgr*>(slot))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
             return 0;
         }
-        slot = (GruntzPlayer*)(reinterpret_cast<char*>(slot) + 0x238);
+        slot = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(slot) + 0x238));
     }
 
-    if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+    if (m_cmdGrid->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CTriggerMgr*)PickPlayOrPausedState())->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+    if ((reinterpret_cast<CTriggerMgr*>(PickPlayOrPausedState()))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
     // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CSerialArchive* it hands
     // to its own Save/Load slots. BroadcastCmd carries it as an i32 - hence the cast; the
     // arg's REAL type is the archive.
-    if (m_tileGrid->Visit((CSerialArchive*)a0, cmd, a2, a3) == 0) {
+    if (m_tileGrid->Visit(reinterpret_cast<CSerialArchive*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
     // 0x93570: `push ebx/ebp/esi/edi; call 0x17da; add esp,0x10` - the __cdecl
     // scroll-state serializer 0x0ec230 (MapLogic.cpp). This 4-push/`add esp,0x10` site
     // is what PROVES its arity is 4; the callee reads only the first two.
-    if (MapSerializeCurve((CSerialArchive*)a0, cmd, a2, a3) == 0) {
+    if (MapSerializeCurve(reinterpret_cast<CSerialArchive*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
     return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
@@ -3311,7 +3311,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
     // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
-    m_saveSink->CopySlot((SaveSlot*)dst, (const SaveSlot*)(src + 0x1d0));
+    m_saveSink->CopySlot(reinterpret_cast<SaveSlot*>(dst), reinterpret_cast<const SaveSlot*>((src + 0x1d0)));
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
@@ -3343,7 +3343,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         char* p = reinterpret_cast<char*>(base) + 0x20;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
-            if (p && *(i32*)p == 3) {
+            if (p && *reinterpret_cast<i32*>(p) == 3) {
                 done++;
             }
             p += 0x64;
@@ -3491,10 +3491,10 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     RefreshGameClock();
     // The freshly-activated object IS the live PLAY/paused state (a CPlay).
-    CPlay* o = (CPlay*)PickPausedThenPlayState();
+    CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_guts) {
-            ((CStatusBarMgr*)o->m_guts)->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_guts))->Deactivate();
         }
         o->PostHudRect();
     }
@@ -3620,8 +3620,8 @@ void CGruntzMgr::ClearOptionsSlots() {
     for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {
-            *(i32*)(p - 4) = 0; // elem.m_20
-            *(i32*)p = 0;       // elem.m_24
+            *reinterpret_cast<i32*>((p - 4)) = 0; // elem.m_20
+            *reinterpret_cast<i32*>(p) = 0;       // elem.m_24
         }
         p += 0x238;
     }
@@ -3696,10 +3696,10 @@ i32 CGruntzMgr::SyncOptionsState() {
                 return 0;
             }
             tick->Clear_02ade0();
-            arm = (i32*)(reinterpret_cast<char*>(arm) + 0x238);
-            cfgp = (i32*)(reinterpret_cast<char*>(cfgp) + 0x238);
+            arm = reinterpret_cast<i32*>((reinterpret_cast<char*>(arm) + 0x238));
+            cfgp = reinterpret_cast<i32*>((reinterpret_cast<char*>(cfgp) + 0x238));
             idx++;
-            tick = (CBattlezMapConfig*)(reinterpret_cast<char*>(tick) + 0x238);
+            tick = reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(tick) + 0x238));
             *arm = 0;
             cfg = *cfgp;
             if (matched) {
@@ -3719,9 +3719,9 @@ i32 CGruntzMgr::SyncOptionsState() {
             }
         }
         idx++;
-        arm = (i32*)(reinterpret_cast<char*>(arm) + 0x238);
-        cfgp = (i32*)(reinterpret_cast<char*>(cfgp) + 0x238);
-        tick = (CBattlezMapConfig*)(reinterpret_cast<char*>(tick) + 0x238);
+        arm = reinterpret_cast<i32*>((reinterpret_cast<char*>(arm) + 0x238));
+        cfgp = reinterpret_cast<i32*>((reinterpret_cast<char*>(cfgp) + 0x238));
+        tick = reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(tick) + 0x238));
     }
     return 1;
 }
@@ -3939,8 +3939,8 @@ void CGruntzMgr::AccrueScoreTime() {
     if (m_134 == 3) {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
-        CTimer* clk = ((CPlay*)st)->m_frameMarker;
-        i64 d = static_cast<i64>(g_frameTime) - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
+        CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
+        i64 d = static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&clk->m_38); // the +0x38:+0x3c start stamp
         g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;
@@ -3987,10 +3987,10 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    ((CMapStringToPtr*)&m_world->m_soundRegistry->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
+    (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
     i32 base;
     if (out != 0) {
-        ((CMapStringToPtr*)&m_world->m_soundRegistry->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
+        (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
@@ -4089,7 +4089,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
 
     m_modalBusy = 1;
     i32 result =
-        ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, (DLGPROC)dlgProc, 0);
+        ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, static_cast<DLGPROC>(dlgProc), 0);
     NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
@@ -4101,10 +4101,10 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     }
 
     RefreshGameClock();
-    CPlay* o = (CPlay*)PickPausedThenPlayState();
+    CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_guts) {
-            ((CStatusBarMgr*)o->m_guts)->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_guts))->Deactivate();
         }
         o->PostHudRect();
     }
@@ -4122,8 +4122,8 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
-    } else if (RunModalDialog("GAME_SAVE", (void*)GruntzSaveGameDlgProc, 0) == 1) {
-        RunModalDialog("GAME_SAVEMSG", (void*)GruntzSaveMsgDlgProc, 0);
+    } else if (RunModalDialog("GAME_SAVE", static_cast<void*>(GruntzSaveGameDlgProc), 0) == 1) {
+        RunModalDialog("GAME_SAVEMSG", static_cast<void*>(GruntzSaveMsgDlgProc), 0);
     }
     return 1;
 }
@@ -4322,7 +4322,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = *(RECT*)(reinterpret_cast<char*>(m_world->m_level) + 0x10);
+    local = *reinterpret_cast<RECT*>((reinterpret_cast<char*>(m_world->m_level) + 0x10));
     *out = local;
     return out;
 }

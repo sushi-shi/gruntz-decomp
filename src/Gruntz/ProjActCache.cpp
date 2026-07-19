@@ -65,7 +65,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
                 break;
             }
             i32 b = node->m_8;
-            dir = (1 << (b & 7)) & static_cast<i32>((signed char)key[b >> 3]);
+            dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
             *p++ = dir;
             CTrieNode* child = dir ? node->m_4 : node->m_0;
             m_20 = child;
@@ -88,7 +88,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     } else {
         critbit = FirstDiffBit(key, m_20->m_c);
     }
-    CTrieNode* nn = (CTrieNode*)RezAlloc(0x14);
+    CTrieNode* nn = static_cast<CTrieNode*>(RezAlloc(0x14));
     if (nn != 0) {
         nn->m_8 = critbit;
         nn->m_10 = value;
@@ -97,7 +97,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
         if (kb != 0) {
             memcpy(kb, key, strlen(key) + 1);
 
-            i32 selfdir = (1 << (critbit & 7)) & static_cast<i32>((signed char)key[critbit >> 3]);
+            i32 selfdir = (1 << (critbit & 7)) & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
             if (selfdir) {
                 nn->m_4 = nn;
             } else {
@@ -159,8 +159,8 @@ zBitVec* zBitVec::Or(zBitVec* o) {
         }
     }
     i32 nwords = static_cast<i32>((static_cast<u32>((o->m_capacity + 1)) >> 5));
-    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : (u32*)&o->m_words;
-    u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : (u32*)&m_words;
+    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : reinterpret_cast<u32*>(&o->m_words);
+    u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : reinterpret_cast<u32*>(&m_words);
     for (i32 i = 0; i < nwords; i++) {
         tbuf[i] |= obuf[i];
     }
@@ -195,7 +195,7 @@ i32 zBitVec::EnsureSize(i32 nbits) {
         memset(nbuf, 0, ndwords * 4);
         memcpy(nbuf, &m_words, 4);
     }
-    m_words = (u32*)nbuf;
+    m_words = static_cast<u32*>(nbuf);
     m_capacity = ndwords * 32;
     return 1;
 fail:

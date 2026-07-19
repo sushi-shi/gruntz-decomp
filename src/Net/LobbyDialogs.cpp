@@ -126,7 +126,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInit_bda00(hWnd, g_curMulti);
                 GetAsyncKeyState(0x13);
                 return 1;
@@ -182,7 +182,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInit_bdb90(hWnd, g_curMulti);
                 return 1;
             case 0x111:
@@ -229,7 +229,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInit_bdd60(hWnd, g_curMulti);
                 return 1;
             case 0x111:
@@ -283,7 +283,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInit_bdfe0(hWnd, g_curMulti);
                 return 1;
             case 0x111:
@@ -342,8 +342,8 @@ namespace NetLobby {
     RVA(0x000be030, 0x49)
     void Init_2522(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            EnableWindow(GetDlgItem(hWnd, 0x4cc), ((CMulti*)ctx)->m_isHost);
-            EnableWindow(GetDlgItem(hWnd, 0x4cd), ((CMulti*)ctx)->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4cc), (static_cast<CMulti*>(ctx))->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4cd), (static_cast<CMulti*>(ctx))->m_isHost);
         }
     }
 
@@ -359,7 +359,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInitDropWait(hWnd, g_curMulti);
                 return 1;
             case 0x111:
@@ -410,8 +410,8 @@ namespace NetLobby {
         if (hWnd && ctx) {
             CString banner;
             if (g_sessionName.GetLength() != 0) {
-                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_sessionName);
-                SetDlgItemTextA(hWnd, 0x44b, (LPCTSTR)banner);
+                banner.Format("Not Receiving Data From Client: %s", static_cast<LPCTSTR>(g_sessionName));
+                SetDlgItemTextA(hWnd, 0x44b, static_cast<LPCTSTR>(banner));
             }
             Init_be3e0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
@@ -470,7 +470,7 @@ namespace NetLobby {
         switch (msg) {
             case 0x110:
                 g_curDlg = hWnd;
-                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 NetDlgInitDropIn(hWnd, g_curMulti);
                 return 1;
             case 0x111:
@@ -519,7 +519,7 @@ namespace NetLobby {
             // The pending drop-in player's name = g_str649618's CString data (m_pszData,
             // the char* stored at 0x249618); its length lives 8 bytes before the data.
             const char* pn = g_str649618;
-            if (*(i32*)(pn - 8)) {
+            if (*reinterpret_cast<const i32*>((pn - 8))) {
                 sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
@@ -536,8 +536,8 @@ namespace NetLobby {
     RVA(0x000be820, 0x49)
     void Init_2ed7(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            EnableWindow(GetDlgItem(hWnd, 0x4d0), ((CMulti*)ctx)->m_isHost);
-            EnableWindow(GetDlgItem(hWnd, 0x4d1), ((CMulti*)ctx)->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4d0), (static_cast<CMulti*>(ctx))->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4d1), (static_cast<CMulti*>(ctx))->m_isHost);
         }
     }
 } // namespace NetLobby

@@ -86,12 +86,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 reason,
     i32 sel
 ) {
-    (void)ownerHi;
-    (void)ownerLo;
+    static_cast<void>(ownerHi);
+    static_cast<void>(ownerLo);
     CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
 
     CDDrawSurfaceMgr* level = m_world;
-    CPlay* state = (CPlay*)g_gameReg->m_curState; // retail reads [g_gameReg+0x2c]
+    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState); // retail reads [g_gameReg+0x2c]
     CGameLevel* grid = level->m_level;
     CPlaneRender* g = grid->m_mainPlane;
 
@@ -116,7 +116,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
         cellType = 0;
     } else {
-        CTileImageSet* tc = (CTileImageSet*)grid->m_imageSets.GetAt(cell & 0xffff);
+        CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));
         cellType = tc->GetCollisionAt(0, 0);
     }
 
@@ -132,7 +132,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
-                if (PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
+                if (PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
                     CGameObject* set =
                         level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
                     if (set != 0) {

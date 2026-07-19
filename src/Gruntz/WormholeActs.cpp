@@ -45,7 +45,7 @@ CActReg g_exitTriggerActReg; // 0x6445c0 (ex "g_wormholeActReg" - an RVA-proximi
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0003f210, 0x15)
 void CExitTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_exitTriggerActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_exitTriggerActReg))->Construct(2000, 2010);
 }
 
 // CWormhole::FireAct @0x03f290 [@identity-TODO: retail says this is CExitTrigger's
@@ -56,9 +56,9 @@ void CExitTrigger::InitActReg() {
 // archetype as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
-    CExitActEntry* e = (CExitActEntry*)g_exitTriggerActReg.ResolveEntry(coord);
+    CExitActEntry* e = reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CExitActEntry* e2 = (CExitActEntry*)g_exitTriggerActReg.ResolveEntry(coord);
+        CExitActEntry* e2 = reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -78,20 +78,20 @@ void CExitTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CExitActEntry*)g_exitTriggerActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CExitTrigger::AdvanceAnim;
 }
 

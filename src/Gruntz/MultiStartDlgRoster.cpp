@@ -155,7 +155,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* c2 = GetCtrlD(ch);         // 0x30da -> 0xc2840
     ColourBtn1753(ch);               // 0x1753 (side effect only)
     ReadyCheck1159(ch);              // 0x1159 (side effect only)
-    ChannelSlot* s = (ChannelSlot*)(reinterpret_cast<char*>(m_host) + ch * 0x238 + 0x150);
+    ChannelSlot* s = reinterpret_cast<ChannelSlot*>((reinterpret_cast<char*>(m_host) + ch * 0x238 + 0x150));
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
@@ -276,9 +276,9 @@ i32 CMultiStartDlg::FlashCtrlD() {
         }
         RECT rc;
         ::GetClientRect(it->m_hWnd, &rc);
-        cts(it->m_hWnd, (LPPOINT)&rc);
+        cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc));
         cts(it->m_hWnd, (LPPOINT)&rc + 1);
-        stc(m_hWnd, (LPPOINT)&rc);
+        stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc));
         stc(m_hWnd, (LPPOINT)&rc + 1);
         CBrush scratch;
         i32 color;
@@ -701,10 +701,10 @@ void CMultiStartDlg::OnCustomWorld() {
         CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
         if (child != 0) {
             dlg.m_customName.MakeUpper();
-            child->SetWindowTextA((LPCTSTR)dlg.m_customName);
+            child->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
             m_6c = 1;
             g_multiState->m_5b0 = 1;
-            g_multiState->m_5b8 = (LPCTSTR)dlg.m_customName;
+            g_multiState->m_5b8 = static_cast<LPCTSTR>(dlg.m_customName);
             g_multiState->m_5b4 = g_emptyString;
             g_multiState->SaveConfig(0);
         }
@@ -727,13 +727,13 @@ void CMultiStartDlg::Sub_c3e30() {
             i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
-                ((CComboBox*)item)->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
+                (static_cast<CComboBox*>(item))->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
                 if (name.GetLength() != 0) {
                     m_6c = 0;
                 }
                 g_multiState->m_5b0 = 0;
                 g_multiState->m_5b8 = g_emptyString;
-                g_multiState->m_5b4 = (LPCTSTR)name;
+                g_multiState->m_5b4 = static_cast<LPCTSTR>(name);
                 g_multiState->SaveConfig(0);
             }
         }
@@ -817,7 +817,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<CFocusSlot*>(m_host))[t].m_16c : 1;
     i32 off = 0;
     do {
-        CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + off + 0x150);
+        CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + off + 0x150));
         if (slot) {
             if (slot->m_18 != g_multiState->m_hostIndex && slot->m_14 && slot->m_20) {
                 f18 = 1;
@@ -863,8 +863,8 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             if (slot->m_20) {
                 {
-                    CString name = ((GruntzPlayer*)slot)->GetName();
-                    LPCTSTR pch = (LPCTSTR)name;
+                    CString name = (reinterpret_cast<GruntzPlayer*>(slot))->GetName();
+                    LPCTSTR pch = static_cast<LPCTSTR>(name);
                     force = 0;
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
                 }
@@ -1051,7 +1051,7 @@ void CMultiStartDlg::Watchdog() {
 // OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    i32* slot = (i32*)(reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(g_multiState->m_hostIndex);
+    i32* slot = reinterpret_cast<i32*>((reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(g_multiState->m_hostIndex));
     if (slot == 0) {
         return -1;
     }
@@ -1076,16 +1076,16 @@ void CMultiStartDlg::VerifyCustomLevel() {
     i32 token;
     if (g_multiState->m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
+        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
+        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
     }
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {
         g_multiState->m_530 = 0;
         EnableWindow(0);
-        ((CGruntzMgr*)(void*)g_gameReg)
+        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
             ->EnterModalUI("Unable to verify custom level with other players");
         EnableWindow(1);
     } else if (g_multiState->m_levelVerifyResult == 0) {
@@ -1094,7 +1094,7 @@ void CMultiStartDlg::VerifyCustomLevel() {
     } else {
         g_multiState->m_530 = 0;
         EnableWindow(0);
-        ((CGruntzMgr*)(void*)g_gameReg)
+        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
             ->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
@@ -1148,7 +1148,7 @@ void CMultiStartDlg::CommitLatencyOption() {
     }
     i32 lo, hi;
     i32 h = GetSafe1c();
-    GetSelItemData((HWND)h, 0x527, &lo, &hi);
+    GetSelItemData(reinterpret_cast<HWND>(h), 0x527, &lo, &hi);
     if (lo != 0 || hi != 0) {
         g_multiState->m_5a4 = lo;
         g_multiState->m_drainReload = hi;
@@ -1175,7 +1175,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         return;
     }
     i32 sel = ::SendMessageA(it->m_hWnd, 0xf0, 0, 0);
-    CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + idx * 0x238 + 0x150);
+    CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + idx * 0x238 + 0x150));
     if (!slot) {
         return;
     }

@@ -370,7 +370,7 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
         }
-        MessageBoxA((HWND)0, szLine, "DirectDrawMgr", MB_ICONEXCLAMATION);
+        MessageBoxA(static_cast<HWND>(0), szLine, "DirectDrawMgr", MB_ICONEXCLAMATION);
     }
 }
 
@@ -431,7 +431,7 @@ i32 CDirectDrawMgr::CreateDevice(
     if (dd != 0) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate((GUID*)hwnd, &m_dd1, 0);
+        i32 chr = DirectDrawCreate(static_cast<GUID*>(hwnd), &m_dd1, 0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == 0) {
@@ -439,7 +439,7 @@ i32 CDirectDrawMgr::CreateDevice(
             }
             return 0;
         }
-        chr = m_dd1->QueryInterface(IID_IDirectDraw2, (void**)&m_device);
+        chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -449,7 +449,7 @@ i32 CDirectDrawMgr::CreateDevice(
         }
     }
 
-    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, coopFlags);
+    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), coopFlags);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
@@ -496,7 +496,7 @@ i32 CDirectDrawMgr::CreateDevice(
     if (bpp == 0) {
         DDSURFACEDESC desc;
         i32 j;
-        i32* d = (i32*)&desc;
+        i32* d = reinterpret_cast<i32*>(&desc);
         for (j = 0x1b; j != 0; j--) {
             *d++ = 0;
         }
@@ -526,7 +526,7 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
         return 0;
     }
     g_ddCreateCtx = 0;
-    i32 hr = DirectDrawEnumerateA((LPDDENUMCALLBACKA)CreateDirectDrawVia, factory);
+    i32 hr = DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
@@ -623,7 +623,7 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->ResolveEx(this, (void*)a, b, c, d, e)) {
+    if (item->ResolveEx(this, reinterpret_cast<void*>(a), b, c, d, e)) {
         AddItemA(item);
         return item;
     }
@@ -1016,7 +1016,7 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    if (!item->Create(m_surf0, (void*)a, b)) {
+    if (!item->Create(m_surf0, reinterpret_cast<void*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1036,7 +1036,7 @@ CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
 RVA(0x001430c0, 0x81)
 CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
     CDDPalette* item = new CDDPalette;
-    if (!item->CreateFromTrailing(m_surf0, (void*)a, b, c)) {
+    if (!item->CreateFromTrailing(m_surf0, reinterpret_cast<void*>(a), b, c)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1103,7 +1103,7 @@ void CDirectDrawMgr::SetupCaps() {
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_device->EnumDisplayModes(0, 0, 0, (LPDDENUMMODESCALLBACK)DdEnumModesCallback);
+    i32 hr = m_device->EnumDisplayModes(0, 0, 0, reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -1150,8 +1150,8 @@ i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
 // Ordered compare: unsigned m_c then m_8, then m_54 as a 0/1 tie-break. __stdcall.
 RVA(0x001433d0, 0x4f)
 i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
-    CDdMode* a = (CDdMode*)pa;
-    CDdMode* b = (CDdMode*)pb;
+    CDdMode* a = static_cast<CDdMode*>(pa);
+    CDdMode* b = static_cast<CDdMode*>(pb);
     if (a->m_c > b->m_c) {
         return 1;
     }
@@ -1298,7 +1298,7 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
 void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
-    CDdCreateArg* arg0 = (CDdCreateArg*)arg0v;
+    CDdCreateArg* arg0 = static_cast<CDdCreateArg*>(arg0v);
     void* outA = 0;
     void* outB;
     i32 hr = arg0->m_8->Make(&outB, &outA);
@@ -1314,7 +1314,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     // "init"; a failed init `delete`s the item (slot-0 scalar-deleting dtor under the
     // compiler's null-guard).
     CDDSurface* item = new CDDSurface;
-    if (item->Refresh((IDirectDrawSurface*)outA) == 0) {
+    if (item->Refresh(static_cast<IDirectDrawSurface*>(outA)) == 0) {
         delete item;
         return 0;
     }
@@ -1329,7 +1329,7 @@ RVA(0x00143740, 0x93)
 i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
     i32 j;
-    i32* d = (i32*)&desc;
+    i32* d = reinterpret_cast<i32*>(&desc);
     for (j = 0x1b; j != 0; j--) {
         *d++ = 0;
     }
@@ -1383,7 +1383,7 @@ i32 RestoreLostSurfaces_1437f0() {
 // by value would pollute every includer for a 43-byte forwarder. Deferred.
 RVA(0x00143810, 0x2b)
 i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
-    return m_device->GetAvailableVidMem((LPDDSCAPS)&caps, (LPDWORD)total, (LPDWORD)free) == 0;
+    return m_device->GetAvailableVidMem(reinterpret_cast<LPDDSCAPS>(&caps), reinterpret_cast<LPDWORD>(total), reinterpret_cast<LPDWORD>(free)) == 0;
 }
 
 // CDDrawMgr::GetFreeVidMem (__thiscall, no args). Query the device for available
@@ -1444,7 +1444,7 @@ void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag
     if (pal == 0) {
         return;
     }
-    i32* src = (i32*)pal->m_cacheA;
+    i32* src = reinterpret_cast<i32*>(pal->m_cacheA);
     if (src == 0) {
         return;
     }
@@ -1471,7 +1471,7 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     if (buf == 0) {
         return 0;
     }
-    const u8* src = (const u8*)buf;
+    const u8* src = static_cast<const u8*>(buf);
     u8* dst = reinterpret_cast<u8*>(m_palette);
     for (i32 i = 0; i < 256; i++) {
         dst[0] = src[0];
@@ -1483,7 +1483,7 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_940 = z;
-    return (CDDPalette*)1; // retail returns the success flag as the CDDPalette* result
+    return reinterpret_cast<CDDPalette*>(1); // retail returns the success flag as the CDDPalette* result
 }
 
 // ---------------------------------------------------------------------------

@@ -53,7 +53,7 @@ CHashElement* CHashElement::Next() {
             CHashSlot* b = coll->m_buckets;
             do {
                 void* link = b[i].m_chain.m_head;
-                n = link ? (CHashElement*)(reinterpret_cast<char*>(link) - 4) : 0;
+                n = link ? reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(link) - 4)) : 0;
                 if (n) {
                     break;
                 }
@@ -192,7 +192,7 @@ CHashElement* CHashBase::First() {
     CHashElement* n;
     do {
         void* link = m_buckets[i].m_chain.m_head;
-        n = link ? (CHashElement*)(reinterpret_cast<char*>(link) - 4) : 0;
+        n = link ? reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(link) - 4)) : 0;
         i++;
     } while (n == 0 && i < m_count);
     return n;

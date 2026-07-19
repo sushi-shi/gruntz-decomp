@@ -107,7 +107,7 @@ i32 CPlay::ScanBuildTiles() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = (CDDrawGroupNode*)pl->GetHeadPosition();
+    CDDrawGroupNode* pos = reinterpret_cast<CDDrawGroupNode*>(pl->GetHeadPosition());
     while (pos != 0) {
         CDDrawGroupNode* node = pos;
         pos = node->m_next;
@@ -128,7 +128,7 @@ i32 CPlay::ScanBuildTiles() {
             p->m_64 = 0;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
-        if ((void*)vf == (void*)PlaneType_Rock) {
+        if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Rock)) {
             i32 buf[9]; // the extent/area/config bands as a 3x3 record
             buf[0] = p->m_extentL;
             buf[1] = p->m_extentT;
@@ -151,7 +151,7 @@ i32 CPlay::ScanBuildTiles() {
                 m_guts->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
-        } else if ((void*)vf == (void*)PlaneType_Covered) {
+        } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Covered)) {
             CGameLevel* ds = v->m_level;
             i32 x = p->m_screenX;
             i32 y = p->m_screenY;
@@ -184,7 +184,7 @@ i32 CPlay::ScanBuildTiles() {
                 tile = 0;
             } else {
                 // the m_imageSets CObArray element's slot-8 per-pixel collision query
-                tile = ((CImageSet1*)ds->m_imageSets[cell & 0xffff])->GetCollisionAt(subX, subY);
+                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))->GetCollisionAt(subX, subY);
             }
             if (m_beginMarker->AddLogic(
                     tile,
@@ -192,12 +192,12 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_164,
                     p->m_168,
                     p->m_04,
-                    *(CTrigParam*)&p->m_extentL,
-                    *(CTrigParam*)&p->m_areaL,
-                    *(CTrigParam*)&p->m_154,
-                    *(CTrigParam*)&p->m_64,
-                    *(CTrigParam*)&p->m_7c->m_f0,
-                    *(CTrigParam*)&p->m_7c->m_100,
+                    *reinterpret_cast<CTrigParam*>(&p->m_extentL),
+                    *reinterpret_cast<CTrigParam*>(&p->m_areaL),
+                    *reinterpret_cast<CTrigParam*>(&p->m_154),
+                    *reinterpret_cast<CTrigParam*>(&p->m_64),
+                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_f0),
+                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_100),
                     p->m_124,
                     p->m_11c,
                     p->m_118,
@@ -241,7 +241,7 @@ i32 CPlay::ScanShuffleQuads() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = (CDDrawGroupNode*)pl->GetHeadPosition();
+    CDDrawGroupNode* pos = reinterpret_cast<CDDrawGroupNode*>(pl->GetHeadPosition());
 
     i32 perm[4];
     ::CByteArray arr;
@@ -270,11 +270,11 @@ i32 CPlay::ScanShuffleQuads() {
             continue;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
-        if ((void*)vf == (void*)PlaneQuadA || (void*)vf == (void*)PlaneQuadB
-            || (void*)vf == (void*)PlaneQuadC || (void*)vf == (void*)PlaneQuadD
-            || (void*)vf == (void*)PlaneQuadE) {
+        if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadA) || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadB)
+            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadC) || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadD)
+            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadE)) {
             p->m_124 = perm[p->m_124];
-        } else if ((void*)vf == (void*)PlaneQuadF) {
+        } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadF)) {
             if (p->m_extentL == static_cast<i32>(0x80000000)) {
                 p->m_extentL = 0;
             }

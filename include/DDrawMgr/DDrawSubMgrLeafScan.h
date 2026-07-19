@@ -57,7 +57,7 @@ public:
 
 inline LeafScanBase::~LeafScanBase() {
     m_04 = -1;
-    *(i32*)&m_pad08[0] = 0; // +0x08 = 0
+    *reinterpret_cast<i32*>(&m_pad08[0]) = 0; // +0x08 = 0
     m_0c = 0;
 }
 

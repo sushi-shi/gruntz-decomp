@@ -63,7 +63,7 @@ i32 CGruntzSoundZ::Init(i32 mdiHandle, i32 digHandle, i32 skipInit) {
     m_digHandle = digHandle;
     m_pCurrent = 0;
     m_enabled = 1;
-    g_ailDriver64 = (HMDIDRIVER)mdiHandle;
+    g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(mdiHandle);
     if (skipInit == 0) {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
@@ -99,16 +99,16 @@ void CGruntzSoundZ::StopAndFlush() {
     if (m_pCurrent != 0) {
         m_pCurrent->Stop();
     }
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    if (pos != (POSITION)0) {
+    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
+    if (pos != static_cast<POSITION>(0)) {
         do {
             CString key;
             CObject* val = 0;
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete (CGruntzSoundInnerZ*)val;
+                delete static_cast<CGruntzSoundInnerZ*>(val);
             }
-        } while (pos != (POSITION)0);
+        } while (pos != static_cast<POSITION>(0));
     }
     m_map.RemoveAll();
     m_pCurrent = 0;
@@ -165,7 +165,7 @@ void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
     if (m_enabled == 0) {
         return;
     }
-    m_map[inner->m_name] = (CObject*)inner;
+    m_map[inner->m_name] = static_cast<CObject*>(inner);
     if (m_pCurrent == 0) {
         m_pCurrent = inner;
     }
@@ -185,7 +185,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
         return 0;
     }
     CObject* result = 0;
-    return m_map.Lookup(key, result) ? (CGruntzSoundInnerZ*)result : 0;
+    return m_map.Lookup(key, result) ? static_cast<CGruntzSoundInnerZ*>(result) : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -414,11 +414,11 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
 // the locked bytes to DecodeBuf. Returns 0 on any resource-load failure.
 RVA(0x00138d50, 0x74)
 i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
-    HRSRC rsrc = FindResourceA((HMODULE)g_ailDriver64, resName, "MIDI");
+    HRSRC rsrc = FindResourceA(reinterpret_cast<HMODULE>(g_ailDriver64), resName, "MIDI");
     if (rsrc == 0) {
         return 0;
     }
-    HGLOBAL hRes = ::LoadResource((HMODULE)g_ailDriver64, rsrc);
+    HGLOBAL hRes = ::LoadResource(reinterpret_cast<HMODULE>(g_ailDriver64), rsrc);
     if (hRes == 0) {
         return 0;
     }
@@ -426,7 +426,7 @@ i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
     if (p == 0) {
         return 0;
     }
-    u32 size = SizeofResource((HMODULE)g_ailDriver64, rsrc);
+    u32 size = SizeofResource(reinterpret_cast<HMODULE>(g_ailDriver64), rsrc);
     return DecodeBuf(p, size, name);
 }
 

@@ -96,7 +96,7 @@ i32 CDDrawShadeBlit::BuildRle(
     i32 keyVal,
     void* palette
 ) {
-    u8* src = (u8*)pixels;
+    u8* src = static_cast<u8*>(pixels);
     if (src == 0) {
         return 0;
     }
@@ -146,7 +146,7 @@ i32 CDDrawShadeBlit::BuildRle(
         ::operator delete(m_rleData);
     }
     m_rleLen = ba.GetSize();
-    m_rleData = (u8*)::operator new(ba.GetSize());
+    m_rleData = static_cast<u8*>(::operator new(ba.GetSize()));
     i32 n = m_rleLen;
     for (i32 k = 0; k < n; k++) {
         m_rleData[k] = ba.GetData()[k];
@@ -156,7 +156,7 @@ i32 CDDrawShadeBlit::BuildRle(
         if (m_palette != 0) {
             ::operator delete(m_palette);
         }
-        m_palette = (u8*)::operator new(0x400);
+        m_palette = static_cast<u8*>(::operator new(0x400));
         memcpy(m_palette, palette, 0x400);
     }
     return 1;
@@ -178,7 +178,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
     if (bits == 0) {
         return 0;
     }
-    i32 r = BuildRle((void*)bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
+    i32 r = BuildRle(reinterpret_cast<void*>(bits), surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
     surf->m_8->Unlock(0);
     return r;
 }
@@ -197,7 +197,7 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
     }
     void* buf = ::operator new(file.GetLength());
     file.Read(buf, file.GetLength());
-    i32 r = Build((CImageBuildDesc*)buf, file.GetLength(), fmt);
+    i32 r = Build(static_cast<CImageBuildDesc*>(buf), file.GetLength(), fmt);
     file.Close();
     ::operator delete(buf);
     return r;
@@ -261,7 +261,7 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
             if (m_palette != 0) {
                 ::operator delete(m_palette);
             }
-            m_palette = (u8*)::operator new(0x400);
+            m_palette = static_cast<u8*>(::operator new(0x400));
             i32 i = 0;
             i32 d = 0;
             do {
@@ -279,13 +279,13 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     if (m_rleData != 0) {
         ::operator delete(m_rleData);
     }
-    m_rleData = (u8*)::operator new(m_rleLen);
+    m_rleData = static_cast<u8*>(::operator new(m_rleLen));
     memcpy(m_rleData, src->m_frameData, m_rleLen);
 
     if (m_srcBpp == 2) {
         void* remapped = EncodeRle16(m_rleData);
         ::operator delete(m_rleData);
-        m_rleData = (u8*)remapped;
+        m_rleData = static_cast<u8*>(remapped);
         ::operator delete(m_palette);
         m_palette = 0;
     }

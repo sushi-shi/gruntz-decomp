@@ -99,11 +99,11 @@ i32 CTriggerMgr::PlaceObject(
     i32 a2c,
     i32 a30
 ) {
-    (void)a8;
-    (void)a18;
-    (void)a24;
-    (void)a28;
-    (void)a2c;
+    static_cast<void>(a8);
+    static_cast<void>(a18);
+    static_cast<void>(a24);
+    static_cast<void>(a28);
+    static_cast<void>(a2c);
     if (m_world == 0) {
         return -1;
     }
@@ -154,7 +154,7 @@ i32 CTriggerMgr::PlaceObject(
     // Same shape as CTriggerMgr::SpawnGrunt (0x7c110), and the same correction: the grid
     // holds the sprite's LOGIC leaf, not the CreateSprite result (retail reassigns the
     // register to aux->m_logic before the `mov [grid],reg`). It stored the sprite here too.
-    CGrunt* logic = (CGrunt*)sprite->m_7c->m_logic;
+    CGrunt* logic = static_cast<CGrunt*>(sprite->m_7c->m_logic);
     // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
     // here; reconstructed to plateau)
     m_grid[row * TM_GRID_COLS + free] = logic;
@@ -205,9 +205,9 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     // Route==LoadGruntDeathAnimations @0x60150). The m_grid CTmCell*->CGrunt* retype is
     // deferred cross-lane (FindGruntAt's return type ripples into Play.cpp et al.).
     if (kind == 0xd) {
-        ((CGrunt*)cell)->BuildGruntExitAnimation();
+        (static_cast<CGrunt*>(cell))->BuildGruntExitAnimation();
     } else {
-        ((CGrunt*)cell)->LoadGruntDeathAnimations(kind, arg);
+        (static_cast<CGrunt*>(cell))->LoadGruntDeathAnimations(kind, arg);
     }
     return 1;
 }
@@ -250,7 +250,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
                 col++;
                 cell++;
             } while (col < 15);
-            *(i32*)(reinterpret_cast<char*>(perRow) - 0x100) = 0;
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(perRow) - 0x100)) = 0;
             perRow[0] = 0;
             perRow[4] = 0;
             perRow++;
@@ -403,7 +403,7 @@ RVA(0x0006c130, 0xd62)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     // retail loads the play state early and spills it ([esp+0x10]); the switch
     // container walks below read it back per arm.
-    CPlay* state = (CPlay*)g_gameReg->m_curState;
+    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
 
     if (g != 0) {
         g->m_358 = 1;
@@ -432,7 +432,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 raw = plane->m_tileGrid[plane->m_colOffsets[ty] + tx];
     i32 tag = 0;
     if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
-        CTileImageSet* ts = (CTileImageSet*)level->m_imageSets.GetAt(raw & 0xffff);
+        CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
         tag = ts->GetCollisionAt(subX, subY);
     }
 
@@ -459,7 +459,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     TtcNode* n;
     trig = state->m_beginMarker;
     for (n = TtcHead(trig->m_list2); n != 0; n = n->m_next) {
-        CTileTriggerLogic* el = (CTileTriggerLogic*)n->m_data;
+        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(n->m_data);
         if (el->FindIndexByKey(sw->m_key1) != 0) {
             anyHit = 1; // retail branches into the shared success tail (0x6cc7e)
             break;
@@ -467,7 +467,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     }
     trig = state->m_beginMarker;
     for (n = TtcHead(trig->m_list1); n != 0; n = n->m_next) {
-        CTileTriggerLogic* el = (CTileTriggerLogic*)n->m_data;
+        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(n->m_data);
         if (el->FindIndexByKey(sw->m_key1) != 0) {
             el->RecordMove();
             anyHit = 1;
@@ -499,15 +499,15 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 // topic:wall topic:eh.
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
-    (void)g;
+    static_cast<void>(g);
     char* plane = reinterpret_cast<char*>(g_gameReg->m_curState);
-    char* view = *(char**)(reinterpret_cast<char*>(m_world) + 0x24);
+    char* view = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_world) + 0x24));
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = *(i32*)(*(char**)(view + 0x5c) + 0x30);
+        i32 w = *reinterpret_cast<i32*>((*(char**)(view + 0x5c) + 0x30));
         if (x >= w) {
             x = w - 1;
         }
@@ -515,21 +515,21 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = *(i32*)(*(char**)(view + 0x5c) + 0x34);
+        i32 h = *reinterpret_cast<i32*>((*(char**)(view + 0x5c) + 0x34));
         if (y >= h) {
             y = h - 1;
         }
     }
-    char* scroll = *(char**)(view + 0x5c);
-    i32 sh = *(i32*)(scroll + 0x8c);
-    i32 sw = *(i32*)(scroll + 0x90);
+    char* scroll = *reinterpret_cast<char**>((view + 0x5c));
+    i32 sh = *reinterpret_cast<i32*>((scroll + 0x8c));
+    i32 sw = *reinterpret_cast<i32*>((scroll + 0x90));
     i32 cell = *(i32*)(*(char**)(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
-    i32 attr = *(i32*)(*(char**)(scroll + 0x20) + cell * 4);
+    i32 attr = *reinterpret_cast<i32*>((*(char**)(scroll + 0x20) + cell * 4));
     i32 kind;
     if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
         kind = 0;
     } else {
-        CUserLogic* logic = (CUserLogic*)*(void**)(*(char**)(view + 0x4c) + (attr & 0xffff) * 4);
+        CUserLogic* logic = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*(char**)(view + 0x4c) + (attr & 0xffff) * 4)));
         kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
     }
     i32 op = kind - 0x34;
@@ -538,7 +538,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     }
     i32 cx = x;
     i32 cy = y;
-    CUserLogic* obj = (CUserLogic*)*(void**)(*(char**)(plane + 0x2e4) + 0);
+    CUserLogic* obj = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*(char**)(plane + 0x2e4) + 0)));
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
@@ -717,12 +717,12 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (k != 0x14) {
         return;
     }
-    CPlay* world = (CPlay*)g_gameReg->m_curState;
+    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     // world->m_3f4 IS CPlay::m_frameMarker (the CTimer): read its i64 start stamp
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&sub->m_38;
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
     if (diff < 0) {
         diff = 0;
     }

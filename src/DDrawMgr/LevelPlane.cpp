@@ -198,7 +198,7 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     }
     if (bounds->minX != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
-        CopyRect((RECT*)&local, (RECT*)bounds);
+        CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(bounds));
         m_bounds50 = local;
         i32 pw2 = m_bounds50.maxX - m_bounds50.minX + 1;
         i32 ph2 = m_bounds50.maxY - m_bounds50.minY + 1;
@@ -210,8 +210,8 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     }
     m_scaleX = static_cast<float>(m_94) * 0.01f;
     m_scaleY = static_cast<float>(m_98) * 0.01f;
-    m_tileGrid = (i32*)operator new(m_width * m_height * 4);
-    m_colOffsets = (i32*)operator new(m_height * 4);
+    m_tileGrid = static_cast<i32*>(operator new(m_width * m_height * 4));
+    m_colOffsets = static_cast<i32*>(operator new(m_height * 4));
     for (i32 i = 0; i < m_height; i++) {
         m_colOffsets[i] = i * m_width;
     }
@@ -379,7 +379,7 @@ RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
     if (coords->minX != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
-        CopyRect((RECT*)&local, (RECT*)coords);
+        CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(coords));
         m_bounds50 = local;
         i32 width = m_bounds50.maxX - m_bounds50.minX + 1;
         i32 height = m_bounds50.maxY - m_bounds50.minY + 1;
@@ -775,16 +775,16 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     i32 p4[2] = {hdr->m_rectBWidth, hdr->m_rectBHeight};
     i32 p5[2] = {hdr->m_rectCWidth, hdr->m_rectCHeight};
 
-    CWwdSpatialMgr* nw = (CWwdSpatialMgr*)::operator new(0xb8);
+    CWwdSpatialMgr* nw = static_cast<CWwdSpatialMgr*>(::operator new(0xb8));
     if (nw) {
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x74) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x78) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x00) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x04) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x08) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0x0c) = 0;
-        *(i32*)(reinterpret_cast<char*>(nw) + 0xb4) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x74)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x78)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x00)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x04)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x08)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0x0c)) = 0;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(nw) + 0xb4)) = 0;
     }
     worker = nw;
     if (nw->Init(src, &rc, p0, p1, p2, p3, p4, p5) == 0) {
@@ -799,7 +799,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     }
 
     for (i32 i = 0; i < count; i++) {
-        i32 r = ReadPlaneObjects((const i32*)base);
+        i32 r = ReadPlaneObjects(reinterpret_cast<const i32*>(base));
         if (r == 0) {
             return 0;
         }
@@ -833,7 +833,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     i32 z = src[7];
     i32 gridIndex = src[8];
 
-    CGameObject* obj = (CGameObject*)operator new(0x1dc);
+    CGameObject* obj = static_cast<CGameObject*>(operator new(0x1dc));
     if (obj == 0) {
         return 0;
     }
@@ -843,7 +843,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
-    new ((void*)&obj->m_1a0)
+    new (static_cast<void*>(&obj->m_1a0))
         CLoadable(reinterpret_cast<i32>(m_mapData), id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_1a0.m_10 = 0;
@@ -930,7 +930,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    i32* sub = (i32*)anim;
+    i32* sub = reinterpret_cast<i32*>(anim);
 
     // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
     if (logic.GetLength() != 0) {
@@ -949,7 +949,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     // Apply imageSet -> the +0xdc CString slot (CGameObject pads it; raw-offset assign).
     if (imageSet.GetLength() != 0) {
-        ((CString*)(reinterpret_cast<char*>(obj) + 0xdc))->operator=(static_cast<const char*>(imageSet));
+        (reinterpret_cast<CString*>((reinterpret_cast<char*>(obj) + 0xdc)))->operator=(static_cast<const char*>(imageSet));
     }
 
     // Scatter the trailing record fields. `p` advances through the record from
@@ -1052,7 +1052,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // registers the object with it. (The old view took the ADDRESS of +0xb0 and called
     // CObList::AddTail on it - a `lea` where retail emits a `mov`, and a mis-bound
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
-    m_scroll->RemoveObject((CWwdGameObject*)obj);
+    m_scroll->RemoveObject(reinterpret_cast<CWwdGameObject*>(obj));
 
     return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
 }

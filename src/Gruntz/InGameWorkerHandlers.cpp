@@ -50,7 +50,7 @@ i32 Handler095750(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameIcon((CGameObject*)owner);
+            CUserLogic* sub = new CInGameIcon(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -88,7 +88,7 @@ i32 Handler095890(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameText((CGameObject*)owner);
+            CUserLogic* sub = new CInGameText(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -127,7 +127,7 @@ i32 Handler0959d0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CToyPeek((CGameObject*)owner);
+            CUserLogic* sub = new CToyPeek(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;

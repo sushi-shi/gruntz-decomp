@@ -209,10 +209,10 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_HSCROLL: { // 0x114
             i32 code = static_cast<i32>((wParam & 0xffff));
             i32 pos = static_cast<i32>((wParam >> 0x10));
-            if ((HWND)lParam == g_optHwndResSlider) {
-                SaveVideoResolutionConfig(hDlg, (HWND)lParam, code, pos);
+            if (reinterpret_cast<HWND>(lParam) == g_optHwndResSlider) {
+                SaveVideoResolutionConfig(hDlg, reinterpret_cast<HWND>(lParam), code, pos);
             } else {
-                ScrollDialog(hDlg, (HWND)lParam, code, pos);
+                ScrollDialog(hDlg, reinterpret_cast<HWND>(lParam), code, pos);
             }
             return TRUE;
         }
@@ -221,14 +221,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             switch (wParam) {
                 case 2: // IDCANCEL: discard
                     if (g_gameReg->m_curState->Update() == 0x11) {
-                        ((CMulti*)g_gameReg->m_curState)->SendChannelStat423();
+                        (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit
                     if (g_gameReg->m_curState->Update() == 0x11) {
-                        ((CMulti*)g_gameReg->m_curState)->SendChannelStat423();
+                        (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
@@ -252,23 +252,23 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 }
             }
             // control notifications: route each checkbox to its handler
-            if (g_optHwndMusic != 0 && (HWND)lParam == g_optHwndMusic) {
+            if (g_optHwndMusic != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndMusic) {
                 OnToggleMusicOption(hDlg);
                 return FALSE;
             }
-            if (g_optHwndVoice != 0 && (HWND)lParam == g_optHwndVoice) {
+            if (g_optHwndVoice != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndVoice) {
                 OnToggleVoiceOption(hDlg);
                 return FALSE;
             }
-            if (g_optHwndSpeech != 0 && (HWND)lParam == g_optHwndSpeech) {
+            if (g_optHwndSpeech != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndSpeech) {
                 OnToggleSpeechOption(hDlg);
                 return FALSE;
             }
-            if (g_optHwndEasy != 0 && (HWND)lParam == g_optHwndEasy) {
+            if (g_optHwndEasy != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndEasy) {
                 OnToggleEasyModeOption(hDlg);
                 return FALSE;
             }
-            if (g_optHwndResSlider != 0 && (HWND)lParam == g_optHwndResSlider) {
+            if (g_optHwndResSlider != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndResSlider) {
                 OnToggleCk5Option(hDlg);
                 return FALSE;
             }
@@ -287,7 +287,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
             if (g_gameReg->m_curState->Update() != 3) {
                 if (g_gameReg->m_curState->Update() == 0x11) {
-                    ((CMulti*)g_gameReg->m_curState)->SendChannelStat422();
+                    (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat422();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
                 }
@@ -597,7 +597,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
 // stores it into the global mode, then rebuilds the caption (same tail as Load).
 RVA(0x000370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 /*code*/, i32 /*pos*/) {
-    CWnd* pCtrl = CWnd::FromHandle((HWND__*)hCombo);
+    CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
     if (!pCtrl) {
         return;
     }
@@ -723,7 +723,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         }
         void* cue_ob = 0;
         host->m_10.Lookup("GAME_VOICE", cue_ob);
-        LeafCue* cue = (LeafCue*)cue_ob;
+        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
         if (!cue) {
             return;
         }
@@ -748,7 +748,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         }
         void* cue_ob = 0;
         host->m_10.Lookup("GAME_CHIPFALLOUT", cue_ob);
-        LeafCue* cue = (LeafCue*)cue_ob;
+        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
         if (!cue) {
             return;
         }

@@ -186,7 +186,7 @@ RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY) {
-        r = RunModalDialog("DEBUG_POSITION", (void*)&WarpDialogProcThunk, 1);
+        r = RunModalDialog("DEBUG_POSITION", static_cast<void*>(&WarpDialogProcThunk), 1);
         if (r == 1) {
             HWND hwnd = m_gameWnd->m_hwnd;
             PostMessageA(hwnd, 0x111, 0x805c, 0);
@@ -248,10 +248,10 @@ i32 CGruntzMgr::MakeRezPath() {
     {
         CString rez(s_rezName);
         m_haveRez = 0;
-        RezFormat(&m_strRezPath, s_join, cwd, (LPCTSTR)rez);
+        RezFormat(&m_strRezPath, s_join, cwd, static_cast<LPCTSTR>(rez));
         if (!RezFileExists(m_strRezPath)) {
             if (drive) {
-                RezFormat(&m_strRezPath, s_dataPath, drive, (LPCTSTR)rez);
+                RezFormat(&m_strRezPath, s_dataPath, drive, static_cast<LPCTSTR>(rez));
                 if (RezFileExists(m_strRezPath)) {
                     m_haveRez = 1;
                 } else {
@@ -270,15 +270,15 @@ i32 CGruntzMgr::MakeRezPath() {
 
     m_haveMoviez = 0;
     i32 movFound = 0;
-    RezFormat(&m_strMoviePath, s_join, cwd, (LPCTSTR)fec);
+    RezFormat(&m_strMoviePath, s_join, cwd, static_cast<LPCTSTR>(fec));
     if (!m_inGameDir && !RezFileExists(m_strMoviePath) && !g_disableHqMovie) {
-        RezFormat(&m_strMoviePath, s_join, cwd, (LPCTSTR)fecHi);
+        RezFormat(&m_strMoviePath, s_join, cwd, static_cast<LPCTSTR>(fecHi));
         if (RezFileExists(m_strMoviePath)) {
             movFound = 1;
         }
     }
     if (!movFound && drive) {
-        RezFormat(&m_strMoviePath, s_moviezPath, drive, (LPCTSTR)fec);
+        RezFormat(&m_strMoviePath, s_moviezPath, drive, static_cast<LPCTSTR>(fec));
         if (RezFileExists(m_strMoviePath)) {
             m_haveMoviez = 1;
         }

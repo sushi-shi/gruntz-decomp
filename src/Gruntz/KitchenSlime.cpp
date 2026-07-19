@@ -115,7 +115,7 @@ CActReg g_kslimeColl;
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline, typed to this registry's entry.
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
-    return (CKSlimeEntry*)g_kslimeColl.ResolveEntry(coord);
+    return reinterpret_cast<CKSlimeEntry*>(g_kslimeColl.ResolveEntry(coord));
 }
 
 // CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
@@ -187,7 +187,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (obj38->m_194 != 0) {
         CString name;
         name = obj38->m_194 + 0x24;
-        const char* s = (LPCTSTR)name;
+        const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
             o->m_124 = 1;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
@@ -236,15 +236,15 @@ i32 g_typeCounter = 2000;
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
+    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
 // The slime's activation handler (LAB_0040180c, an ILT thunk). Referenced by
@@ -266,16 +266,16 @@ RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->~CString();
+                    (reinterpret_cast<CString*>(nodes))->~CString();
                 }
                 nodes++;
             } while (--cnt);
@@ -283,7 +283,7 @@ void CKitchenSlime::RegisterType() {
         slot->m_name = "A";
         g_typeCounter++;
     }
-    *(void**)KSlimeLookup(id) = (void*)&KSlimeActivationHandler;
+    *reinterpret_cast<void**>(KSlimeLookup(id)) = static_cast<void*>(&KSlimeActivationHandler);
 }
 
 // CKitchenSlime::RegisterRange @0x0b28c0 - seed the slime's activation table's
@@ -292,7 +292,7 @@ void CKitchenSlime::RegisterType() {
 // archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000b28c0, 0x15)
 void CKitchenSlime::RegisterRange() {
-    ((CZDArrayDerived*)&g_kslimeColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_kslimeColl))->Construct(0x7d0, 0x7da);
 }
 
 // CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in
@@ -328,16 +328,16 @@ i32 CKitchenSlime::Tick() {
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CGameObject* lvl = Level();
         i32 outX, outY;
-        CGrunt* ent = (CGrunt*)reg->m_cmdGrid->FindGruntAt(
+        CGrunt* ent = static_cast<CGrunt*>(reg->m_cmdGrid->FindGruntAt(
             lvl->m_screenX,
             lvl->m_screenY,
-            (RECT*)&lvl->m_areaL,
+            reinterpret_cast<RECT*>(&lvl->m_areaL),
             &outY,
             &outX,
-            (RECT*)0
-        );
+            static_cast<RECT*>(0)
+        ));
         if (ent && ent->m_gruntKind != 0x38) {
-            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(outY, outX, 5, -1);
+            (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->CellDispatch(outY, outX, 5, -1);
         }
     }
 
@@ -348,7 +348,7 @@ i32 CKitchenSlime::Tick() {
     }
 
     double step = static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta)))) * m_speed;
-    double* m88d = (double*)&m_stepMag;
+    double* m88d = reinterpret_cast<double*>(&m_stepMag);
 
     i32 newX;
     if (m_dirX > g_slimeZero) {
@@ -449,7 +449,7 @@ i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    return Chain(stream, tag, c, (CGameObject*)d)
+    return Chain(stream, tag, c, reinterpret_cast<CGameObject*>(d))
            != 0;
 }
 
@@ -493,7 +493,7 @@ i32 CKitchenSlime::LoadSprites() {
         if (static_cast<u32>(gx) >= static_cast<u32>(map->m_c) || static_cast<u32>(gy) >= static_cast<u32>(map->m_10)) {
             tileFlags = 1;
         } else {
-            tileFlags = ((i32*)map->m_8[gy])[gx * 7];
+            tileFlags = (reinterpret_cast<i32*>(map->m_8[gy]))[gx * 7];
         }
 
         if (tileY >= lvl->m_extentT && tileX <= lvl->m_extentR && tileY <= lvl->m_extentB
@@ -527,10 +527,10 @@ i32 CKitchenSlime::LoadSprites() {
     i32 changed = (Level()->m_124 != savedDir);
     switch (Level()->m_124 - 1) {
         case 0: // north
-            m_posY = -static_cast<double>(*(i32*)&m_stepMag);
+            m_posY = -static_cast<double>(*reinterpret_cast<i32*>(&m_stepMag));
             m_dirX = 0;
             m_dirY = 0;
-            *(i32*)&m_dirY = 0;
+            *reinterpret_cast<i32*>(&m_dirY) = 0;
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
@@ -538,7 +538,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
             break;
         case 1: // east
-            *(i32*)&m_posX = m_stepMag;
+            *reinterpret_cast<i32*>(&m_posX) = m_stepMag;
             *((i32*)&m_posX + 1) = *((i32*)&m_stepMag + 1);
             m_dirX = 0;
             m_dirY = 0;
@@ -549,7 +549,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
             break;
         case 2: // south
-            *(i32*)&m_posY = m_stepMag;
+            *reinterpret_cast<i32*>(&m_posY) = m_stepMag;
             *((i32*)&m_posY + 1) = *((i32*)&m_stepMag + 1);
             m_dirX = 0;
             m_dirY = 0;
@@ -560,7 +560,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
             break;
         case 3: // west
-            m_posX = -static_cast<double>(*(i32*)&m_stepMag);
+            m_posX = -static_cast<double>(*reinterpret_cast<i32*>(&m_stepMag));
             m_dirX = 0;
             m_dirY = 0;
             *((i32*)&m_dirX + 1) = 0xbff00000;
@@ -594,7 +594,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_190 = 1;
-            player->m_layer = (CImage*)spr->m_items.GetAt(1);
+            player->m_layer = reinterpret_cast<CImage*>(spr->m_items.GetAt(1));
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;

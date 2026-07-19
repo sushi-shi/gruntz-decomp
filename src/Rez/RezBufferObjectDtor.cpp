@@ -23,7 +23,7 @@
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
-        ::new ((void*)p) RezElem40;
+        ::new (static_cast<void*>(p)) RezElem40;
     }
 }
 
@@ -86,7 +86,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == 0) {
-            m_pData = (RezElem40*)RezAlloc(n * sizeof(RezElem40));
+            m_pData = static_cast<RezElem40*>(RezAlloc(n * sizeof(RezElem40)));
             ConstructRezElems(m_pData, n);
             m_nMaxSize = n;
             m_nSize = n;
@@ -109,7 +109,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             if (n >= newMax) {
                 newMax = n;
             }
-            RezElem40* nd = (RezElem40*)RezAlloc(newMax * sizeof(RezElem40));
+            RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
             ConstructRezElems(&nd[m_nSize], n - m_nSize);
             ::operator delete(m_pData);

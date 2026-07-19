@@ -45,23 +45,23 @@ namespace Utils {
             }
 
             PFNCREATESNAPSHOT pCreateSnapshot =
-                (PFNCREATESNAPSHOT)GetProcAddress(k32, "CreateToolhelp32Snapshot");
+                reinterpret_cast<PFNCREATESNAPSHOT>(GetProcAddress(k32, "CreateToolhelp32Snapshot"));
             if (!pCreateSnapshot) {
                 return 0;
             }
 
-            PFNMODULEWALK pModuleFirst = (PFNMODULEWALK)GetProcAddress(k32, "Module32First");
+            PFNMODULEWALK pModuleFirst = reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
             if (!pModuleFirst) {
                 return 0;
             }
 
-            PFNMODULEWALK pModuleNext = (PFNMODULEWALK)GetProcAddress(k32, "Module32Next");
+            PFNMODULEWALK pModuleNext = reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
             if (!pModuleNext) {
                 return 0;
             }
 
             HANDLE snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
-            if (snap == (HANDLE)-1) {
+            if (snap == reinterpret_cast<HANDLE>(-1)) {
                 return 0;
             }
 

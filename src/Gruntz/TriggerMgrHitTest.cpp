@@ -182,7 +182,7 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             }
             i32 val;
             if (static_cast<u32>(x) < static_cast<u32>(grid->m_c) && static_cast<u32>(y) < static_cast<u32>(grid->m_10)) {
-                val = *(i32*)(reinterpret_cast<char*>(grid->m_8[y]) + x * 0x1c + 4);
+                val = *reinterpret_cast<i32*>((reinterpret_cast<char*>(grid->m_8[y]) + x * 0x1c + 4));
             } else {
                 val = -1;
             }

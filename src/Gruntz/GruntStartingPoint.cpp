@@ -37,7 +37,7 @@ i32 CGruntStartingPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CGruntStartingPoint::~CGruntStartingPoint (0x10670) - the /GX leaf dtor folds
@@ -89,7 +89,7 @@ CActReg g_actReg4;
 // the file's registry-init static, frag slot i550.)
 RVA(0x0003e120, 0x15)
 void Register6446d8Range() {
-    ((CZDArrayDerived*)&g_actReg4)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actReg4))->Construct(0x7d0, 0x7da);
 }
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
@@ -107,15 +107,15 @@ extern "C" void ActReg4Handler(); // 0x4040a2
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
+    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
 // (The R4 dispatch-entry record StartActEntry lives with the class in
@@ -125,7 +125,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // scalars it used to run over ARE g_actReg4's fields). (The ex-`R4Entry { void* m_fn; }`
 // twin of StartActEntry is GONE - one entry shape, the PMF slot.)
 static inline StartActEntry* R4Lookup(i32 coord) {
-    return (StartActEntry*)g_actReg4.ResolveEntry(coord);
+    return reinterpret_cast<StartActEntry*>(g_actReg4.ResolveEntry(coord));
 }
 
 // CGruntStartingPoint::UserLogicVfunc2 / FireActivation (0x3e1a0), vtable slot 4 -
@@ -156,16 +156,16 @@ RVA(0x0003e300, 0x18d)
 void ActReg4RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->~CString();
+                    (reinterpret_cast<CString*>(nodes))->~CString();
                 }
                 nodes++;
             } while (--cnt);
@@ -175,7 +175,7 @@ void ActReg4RegisterType() {
     }
     // raw-slot store: a plain fn ptr into the PMF slot (the registrar's own idiom;
     // MSVC5 has no fn-ptr->PMF conversion, so the write goes through the raw slot).
-    *(void**)R4Lookup(id) = (void*)&ActReg4Handler;
+    *reinterpret_cast<void**>(R4Lookup(id)) = static_cast<void*>(&ActReg4Handler);
 }
 
 SIZE_UNKNOWN(CActReg4);

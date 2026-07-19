@@ -81,7 +81,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
         return 0;
     }
 
-    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1) ? (CImage*)cfg->m_items.GetAt(1) : 0;
+    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1) ? static_cast<CImage*>(cfg->m_items.GetAt(1)) : 0;
     if (f == 0) {
         return 0;
     }
@@ -92,7 +92,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
         f->m_owned->m_palDescr = palDescr;
     }
 
-    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? (CImage*)cfg->m_items.GetAt(2) : 0;
+    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? static_cast<CImage*>(cfg->m_items.GetAt(2)) : 0;
     if (f == 0) {
         return 0;
     }
@@ -139,28 +139,28 @@ i32 CSBI_WarlordHead::Render() {
     CImageSet* cfg = m_34;
     CImage* f;
     if (m_3c == 1) {
-        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : (CImage*)cfg->m_items.GetAt(3);
+        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(3));
     } else {
-        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4) ? 0 : (CImage*)cfg->m_items.GetAt(4);
+        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(4));
     }
     if (f) {
         f->RenderFrame(
-            (void*)ctx,
-            (void*)(m_rect14.m_0 + f->m_anchorX),
-            (void*)(m_rect14.m_4 + f->m_anchorY),
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
             0
         );
     }
 
     cfg = m_34;
     i32 idx = m_38;
-    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
+    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
     m_30 = g;
     if (g) {
         g->RenderFrame(
-            (void*)ctx,
-            (void*)(m_rect14.m_0 + g->m_anchorX),
-            (void*)(m_rect14.m_4 + g->m_anchorY),
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_rect14.m_0 + g->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + g->m_anchorY)),
             0
         );
     }

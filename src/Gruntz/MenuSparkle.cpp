@@ -85,21 +85,21 @@ extern "C" void LogicHandler_0ad2a0();
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        void** nodes = (void**)g_typeColl.m_alloc;
+        void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->CString::~CString();
+                    (reinterpret_cast<CString*>(nodes))->CString::~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
     return id;
@@ -110,7 +110,7 @@ static inline i32 RegisterActionName() {
 // static-init at 0xadd58, immediately after this TU's ctor.
 RVA(0x000adde0, 0x15)
 void ConstructLogicActRange_646010() {
-    ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_646010))->Construct(0x7d0, 0x7da);
 }
 
 // CMenuSparkle::Dispatch @0x0ade60 - per-coordinate activation dispatch over this
@@ -137,9 +137,9 @@ typedef void (CUserLogic::*MenuSparkleActHandler)();
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
     char* e = g_logicActReg_646010.ResolveEntry(coord);
-    if (*(void**)e != 0) {
+    if (*reinterpret_cast<void**>(e) != 0) {
         char* e2 = g_logicActReg_646010.ResolveEntry(coord);
-        MenuSparkleActHandler h = *(MenuSparkleActHandler*)e2;
+        MenuSparkleActHandler h = *reinterpret_cast<MenuSparkleActHandler*>(e2);
         (this->*h)();
     }
 }
@@ -152,7 +152,7 @@ void CMenuSparkle::FireActivation(i32 coord) {
 RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
-    *(void**)g_logicActReg_646010.ResolveEntry(id) = (void*)&LogicHandler_0ad2a0;
+    *reinterpret_cast<void**>(g_logicActReg_646010.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_0ad2a0);
 }
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
@@ -184,7 +184,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         if (anim != 0) {
             anim->Recompute_15c320(1);
         }
-        *(i32*)(reinterpret_cast<char*>(m_3c) + 0x20) = rand() % 0xfa1 + 0x3e8;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_3c) + 0x20)) = rand() % 0xfa1 + 0x3e8;
     }
     return 0;
 }

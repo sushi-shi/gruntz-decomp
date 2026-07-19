@@ -35,7 +35,7 @@ void CImageSet3::FreePixels() {
 // ecx (one fewer move). Logic + memcpy byte-exact; not source-steerable.
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
-    i32* p = (i32*)(reinterpret_cast<char*>(record) + 8);
+    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(record) + 8));
     i32 w = *p++;
     m_width = w;
     i32 h = *p++;
@@ -49,7 +49,7 @@ i32 CImageSet3::Parse(void* record) {
         return 0;
     }
     // the (u8*) is language-forced (operator new returns void*), not a mis-model cast
-    u8* dst = (u8*)::operator new(m_byteSize);
+    u8* dst = static_cast<u8*>(::operator new(m_byteSize));
     m_pixels = dst;
     if (dst == 0) {
         return 0;

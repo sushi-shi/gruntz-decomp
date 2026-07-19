@@ -64,7 +64,7 @@ void operator delete(void*);
 // precedent, <Bute/SymTab.h>.)
 
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
-    return *(const i32*)(reinterpret_cast<const char*>(p) + 0x1c);
+    return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
 }
 
 static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
@@ -94,10 +94,10 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
             }
             return 0;
         }
-        parent->m_10map[key] = (CObject*)worker;
-        found = (CObject*)worker;
+        parent->m_10map[key] = static_cast<CObject*>(worker);
+        found = static_cast<CObject*>(worker);
     }
-    return (CDDrawWorker*)found;
+    return static_cast<CDDrawWorker*>(found);
 }
 
 // ---------------------------------------------------------------------------
@@ -204,14 +204,14 @@ i32 CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4
 // Reloc-masked EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
-    CSymTab* dir = (CSymTab*)tree;
+    CSymTab* dir = static_cast<CSymTab*>(tree);
     char* buf = static_cast<char*>(operator new(0x100));
     i32 count = 0;
     if (buf == 0) {
         return count;
     }
     buf[0] = 0;
-    CSymTab* e = (CSymTab*)dir->FirstSub();
+    CSymTab* e = static_cast<CSymTab*>(dir->FirstSub());
     while (e != 0) {
         if (sub != 0 && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -219,7 +219,7 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
             strcpy(buf, e->m_name);
         }
         count += InstallTree(e, buf, prefix); // recursive slot-18 self-dispatch (+0x48)
-        e = (CSymTab*)dir->NextSub(e);
+        e = static_cast<CSymTab*>(dir->NextSub(e));
     }
     if (sub != 0 && *sub != 0) {
         CDDrawWorker* w = FindOrCreateWorker(this, sub);
@@ -249,10 +249,10 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
 // buffer/entry/count register schedule + reloc-masked thunk names are the residual.
 RVA(0x00155160, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
-    CSymTab* dir = (CSymTab*)tree;
+    CSymTab* dir = static_cast<CSymTab*>(tree);
     char* buf = static_cast<char*>(operator new(0x100));
     i32 count = 0;
-    CSymTab* e = (CSymTab*)dir->FirstSub();
+    CSymTab* e = static_cast<CSymTab*>(dir->FirstSub());
     while (e != 0) {
         if (sub != 0 && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -265,14 +265,14 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
             return -1;
         }
         count += r;
-        e = (CSymTab*)dir->NextSub(e);
+        e = static_cast<CSymTab*>(dir->NextSub(e));
     }
     if (sub != 0 && *sub != 0) {
         CObject* out = 0;
         m_10map.Lookup(sub, out);
         if (out != 0) {
             // Typed map-value retrieval: the stored values are CDDrawWorker.
-            CDDrawWorker* w = (CDDrawWorker*)out;
+            CDDrawWorker* w = static_cast<CDDrawWorker*>(out);
             if (w->ValidateFramesFromSymTab(dir) == -1) {
                 operator delete(buf);
                 return -1;
@@ -302,13 +302,13 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0() {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10map.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_10map.GetCount() != 0 ? -1 : 0));
     CString key;
-    if (*(volatile i32*)&pos != 0) {
+    if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
             m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((CDDrawWorker*)val); // the map values ARE the keyed workers
+                delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
             }
         } while (pos != 0);
     }
@@ -332,7 +332,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
         if (strncmp(key, match, len) == 0) {
             m_10map.RemoveKey(key);
             if (val != 0) {
-                delete ((CDDrawWorker*)val); // the map values ARE the keyed workers
+                delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
             }
             ++n;
         }
@@ -359,7 +359,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
             m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                    total += ((CImageSet*)val)->GetMemoryUsage(a2);
+                    total += (static_cast<CImageSet*>(val))->GetMemoryUsage(a2);
                 }
             }
         } while (pos != 0);
@@ -401,7 +401,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i
     POSITION pos = m_10map.GetStartPosition();
     while (pos != 0) {
         m_10map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CImageSet*)val)->FindFrame(frame, outName, outIndex)) {
+        if (val != 0 && (static_cast<CImageSet*>(val))->FindFrame(frame, outName, outIndex)) {
             return 1;
         }
     }

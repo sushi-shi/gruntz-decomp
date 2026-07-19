@@ -31,7 +31,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
             "Portal",
             "1.0",
             0,
-            (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/,
+            reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
             0
         )) {
         return 0;

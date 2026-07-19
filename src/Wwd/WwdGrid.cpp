@@ -175,7 +175,7 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                     WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].m_head); // list head -> typed node
                     while (r) {
                         i32 x = r->m_x;
-                        WwdRegion* next = (WwdRegion*)r->m_next;
+                        WwdRegion* next = static_cast<WwdRegion*>(r->m_next);
                         if (x >= a0 && r->m_y >= a1 && x <= a2 && r->m_y <= a3) {
                             if (doRemove) {
                                 m_buckets[idx].Unlink(r);
@@ -233,7 +233,7 @@ RVA(0x00191ad0, 0x34)
 WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
     // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied as a
     // contiguous 16-byte block - the four bounds ints ARE the query rect.
-    WwdRect full = *(WwdRect*)&grid->m_minX;
+    WwdRect full = *reinterpret_cast<WwdRect*>(&grid->m_minX);
     return Init(grid, full, remove);
 }
 
@@ -286,7 +286,7 @@ WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_row = m_rowStart;
     m_rowBase = base;
     m_cell = base;
-    m_next = (WwdGridNode*)grid->m_buckets[base].m_head;
+    m_next = reinterpret_cast<WwdGridNode*>(grid->m_buckets[base].m_head);
     return GetNext();
 }
 

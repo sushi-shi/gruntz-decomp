@@ -57,7 +57,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = (void*)0x3e8;
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate(); // slot 6
             rec->m_logic = inst;
@@ -84,7 +84,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)rec->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(rec->m_logic));
             break;
     }
     return 1;
@@ -158,7 +158,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
 RVA(0x001147e0, 0x15)
 void CToobSpikez::Register_1147e0() {
-    ((CZDArrayDerived*)&g_toobColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_toobColl))->Construct(0x7d0, 0x7da);
 }
 
 // CToobSpikez::GetTypeTag (0x00012ba0) is now an inline member in the class header.
@@ -171,7 +171,7 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
@@ -192,9 +192,9 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // (0x0e1830).
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
-    ToobHandler* e = (ToobHandler*)g_toobColl.ResolveEntry(coord);
+    ToobHandler* e = reinterpret_cast<ToobHandler*>(g_toobColl.ResolveEntry(coord));
     if (*e != 0) {
-        ToobHandler* e2 = (ToobHandler*)g_toobColl.ResolveEntry(coord);
+        ToobHandler* e2 = reinterpret_cast<ToobHandler*>(g_toobColl.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }
@@ -213,20 +213,20 @@ void CToobSpikez::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_toobColl.ResolveEntry(id) = (void*)&ToobLogic_114bc0;
+    *reinterpret_cast<void**>(g_toobColl.ResolveEntry(id)) = static_cast<void*>(&ToobLogic_114bc0);
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

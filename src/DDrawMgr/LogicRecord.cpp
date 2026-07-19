@@ -48,13 +48,13 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             break;
         case 4:
             // the serialize walk (ForEachSerialize_15b020, WRITES the stream)
-            if (Save((CSerialArchive*)a) == 0) {
+            if (Save(reinterpret_cast<CSerialArchive*>(a)) == 0) {
                 return 0;
             }
             break;
         case 7:
             // the deserialize walk (Deserialize_15b0e0, READS the stream)
-            if (Load((CSerialArchive*)a) == 0) {
+            if (Load(reinterpret_cast<CSerialArchive*>(a)) == 0) {
                 return 0;
             }
             break;
@@ -62,14 +62,14 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             if (m_174) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
-                m_170 = res->Lookup(reinterpret_cast<void*>(m_174), out) ? (CGameObject*)out : (CGameObject*)0;
+                m_170 = res->Lookup(reinterpret_cast<void*>(m_174), out) ? static_cast<CGameObject*>(out) : static_cast<CGameObject*>(0);
             }
             break;
         default: // 5, 6
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove((CGruntArchive*)a, mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
+        if (m_logic->SerializeMove(reinterpret_cast<CGruntArchive*>(a), mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
             return 0;
         }
     }
@@ -285,7 +285,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
         if (!res->Lookup(reinterpret_cast<void*>(m_174), out)) {
             m_170 = 0;
         } else {
-            m_170 = (CGameObject*)out;
+            m_170 = static_cast<CGameObject*>(out);
         }
     }
     return 1;

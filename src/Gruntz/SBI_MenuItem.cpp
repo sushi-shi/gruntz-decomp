@@ -87,7 +87,7 @@ i32 CSBI_MenuItem::SetupImage(
     i32 frame,
     i32 unused
 ) {
-    (void)unused;
+    static_cast<void>(unused);
     if (key == 0) {
         return 0;
     }
@@ -135,7 +135,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = reinterpret_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
-    CImageSet* rec = (CImageSet*)rec_v;
+    CImageSet* rec = static_cast<CImageSet*>(rec_v);
     m_38 = rec;
     if (rec == 0) {
         return reinterpret_cast<i32>(rec);
@@ -143,11 +143,11 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CImageSet* r = rec;
     if (a == -1) {
         i32 lo = r->m_minIndex;
-        m_30 = (CImage*)r->m_items.GetAt(lo);
+        m_30 = static_cast<CImage*>(r->m_items.GetAt(lo));
         return m_30 != 0;
     }
     if (a >= r->m_minIndex && a <= r->m_maxIndex) {
-        CImage* v = (CImage*)r->m_items.GetAt(a);
+        CImage* v = static_cast<CImage*>(r->m_items.GetAt(a));
         m_30 = v;
         return v != 0;
     }
@@ -175,9 +175,9 @@ i32 CSBI_MenuItem::DecCounter() {
         CImage* f = m_30;
         if (f) {
             f->RenderFrame(
-                (void*)g_gameReg->m_world->m_drawTarget->m_backPair,
-                (void*)(m_rect14.m_0 + f->m_anchorX),
-                (void*)(m_rect14.m_4 + f->m_anchorY),
+                static_cast<void*>(g_gameReg->m_world->m_drawTarget->m_backPair),
+                reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
+                reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
                 0
             );
         }
@@ -206,17 +206,17 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
     CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c);
     if (state == 3) {
-        ((CStatusBarMgr*)host)->ClearTabGroup();
+        (reinterpret_cast<CStatusBarMgr*>(host))->ClearTabGroup();
         host->m_10c = m_c;
-        ((CStatusBarMgr*)host)->LoadTabSprites();
-        ((CStatusBarMgr*)host)->Deactivate();
+        (reinterpret_cast<CStatusBarMgr*>(host))->LoadTabSprites();
+        (reinterpret_cast<CStatusBarMgr*>(host))->Deactivate();
     } else if (state == 2 && a) {
         // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
         // cue facet's map @+0x10 differs from CDDrawSubMgrLeafScan's install map).
-        CMiMusicHost* mh = (CMiMusicHost*)g_gameReg->m_world->m_soundRegistry;
+        CMiMusicHost* mh = reinterpret_cast<CMiMusicHost*>(g_gameReg->m_world->m_soundRegistry);
         if (mh->m_30 == 0) {
             CMiCue* found = 0;
-            ((CMapStringToOb*)(reinterpret_cast<char*>(mh) + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
+            (reinterpret_cast<CMapStringToOb*>((reinterpret_cast<char*>(mh) + 0x10)))->Lookup("GAME_TABHIGHLIGHT2", reinterpret_cast<CObject*&>(found));
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
@@ -233,7 +233,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     CImageSet* r = m_38;
     CImage* frame;
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
-        frame = (CImage*)r->m_items.GetAt(state);
+        frame = static_cast<CImage*>(r->m_items.GetAt(state));
     } else {
         frame = 0;
     }
@@ -296,7 +296,7 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
-                m_38 = (CImageSet*)found_ob;
+                m_38 = static_cast<CImageSet*>(found_ob);
             } else {
                 m_38 = 0;
             }

@@ -33,10 +33,10 @@ extern "C" void Handler_402252(); // 0x402252
 // The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    void** list = (void**)g_typeColl.m_alloc;
+    void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
     while (n-- != 0) {
         if (list != 0) {
-            ((CString*)list)->CString::~CString();
+            (reinterpret_cast<CString*>(list))->CString::~CString();
         }
         list++;
     }
@@ -45,7 +45,7 @@ static inline void FreeNameSlotNodes() {
 // The static initializer that builds registry 646250's fast [0x7d0, 0x7da] id range.
 RVA(0x000b3ae0, 0x15)
 void ConstructActRange_646250() {
-    ((CZDArrayDerived*)&g_actReg_646250)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actReg_646250))->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -58,23 +58,23 @@ RVA(0x000b3cc0, 0x2ac)
 void RegisterActs_646250() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_actReg_646250.ResolveEntry(id) = (void*)&Handler_4021d5;
+    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id)) = static_cast<void*>(&Handler_4021d5);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
-        g_buteTree.Insert("B", (void*)g_typeCounter);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *(void**)g_actReg_646250.ResolveEntry(id2) = (void*)&Handler_402252;
+    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id2)) = static_cast<void*>(&Handler_402252);
 }

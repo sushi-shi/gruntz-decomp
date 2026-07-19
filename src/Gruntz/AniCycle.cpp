@@ -32,7 +32,7 @@ i32 CAniCycle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic
@@ -61,7 +61,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000aaf00, 0x15)
 void CAniCycle::InitActReg() {
-    ((CZDArrayDerived*)&g_aniCycleActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_aniCycleActReg))->Construct(2000, 2010);
 }
 
 // CAniCycle::RunAct @0x0aaf80 - resolve the registry entry for id; if a handler is
@@ -69,9 +69,9 @@ void CAniCycle::InitActReg() {
 // the entry pointer. ResolveEntry is inlined twice (side-effectful; no CSE).
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
-    CAniCycleActEntry* e = (CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id);
+    CAniCycleActEntry* e = reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -90,20 +90,20 @@ void CAniCycle::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CAniCycle::AdvanceAnim;
+    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CAniCycle::AdvanceAnim;
 }
 
 #include <rva.h>

@@ -186,12 +186,12 @@ void MonoNewline() {
         i32 i = 0xa0;
         do {
             i += 2;
-            *(u16*)(g_monoBuffer + i - 0xa2) = *(u16*)(g_monoBuffer + i - 2);
+            *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) = *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
         } while (i < 0xfa0);
         i = 0xf00;
         do {
             i += 2;
-            *(u16*)(g_monoBuffer + i - 2) = 0x720;
+            *reinterpret_cast<u16*>((g_monoBuffer + i - 2)) = 0x720;
         } while (i < 0xfa0);
         g_monoRow--;
     }
@@ -209,7 +209,7 @@ void MonoClear() {
     i32 i = 0;
     do {
         i += 2;
-        *(u16*)(g_monoBuffer + i - 2) = 0x720;
+        *reinterpret_cast<u16*>((g_monoBuffer + i - 2)) = 0x720;
     } while (i < 0xfa0);
     g_monoRow = 0;
     g_monoCol = 0;
@@ -231,7 +231,7 @@ extern "C" {
     void RezAssertFail(char* fmt, ...) {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
+            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
             vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
@@ -243,7 +243,7 @@ extern "C" {
     void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
+            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
@@ -256,7 +256,7 @@ extern "C" {
     void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
+            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
             vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
@@ -268,7 +268,7 @@ extern "C" {
     void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
+            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);

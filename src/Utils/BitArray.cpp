@@ -15,7 +15,7 @@ zBitVec* zBitVec::SetBit(u32 idx) {
         if (static_cast<u32>(m_capacity) > 0x20) {
             p = reinterpret_cast<i32*>(m_words);
         } else {
-            p = (i32*)&m_words;
+            p = reinterpret_cast<i32*>(&m_words);
         }
         p[idx >> 5] |= 1 << (idx & 0x1f);
     }

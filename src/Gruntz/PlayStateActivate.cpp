@@ -91,7 +91,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-    UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate);
+    UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050

@@ -24,7 +24,7 @@ float g_zeroF = 0.0f; // 0x5eab40
 RVA(0x000fc9c0, 0x17)
 i32 CBattlezData::InitWithRecords(void* records) {
     Init();
-    m_records = (BattlezRecord*)records;
+    m_records = static_cast<BattlezRecord*>(records);
     return 1;
 }
 
@@ -131,7 +131,7 @@ i32 CBattlezData::SumFlags(i32 y) {
 RVA(0x000fcc10, 0x2f)
 i32 CBattlezData::GetFlag(i32 x, i32 y) {
     if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
-        return *(i32*)(reinterpret_cast<char*>(m_flags) + x * 0x10 + y * 4);
+        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_flags) + x * 0x10 + y * 4));
     }
     return 0;
 }
@@ -157,7 +157,7 @@ void CBattlezData::ClearWins() {
 RVA(0x000fccb0, 0x21)
 i32 CBattlezData::SumWinRow(i32 y) {
     i32 sum = 0;
-    i32* p = (i32*)(reinterpret_cast<char*>(m_wins) + y * 0x10);
+    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(m_wins) + y * 0x10));
     for (i32 c = 0; c < 4; c++) {
         sum += *p++;
     }
@@ -415,7 +415,7 @@ i32 CBattlezData::GetRecordValue(i32 b) {
 // registry), any other phase writes the tail.
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
-    i32* rec = (i32*)(reinterpret_cast<char*>(m_records) + index * 0x40 - 0x40);
+    i32* rec = reinterpret_cast<i32*>((reinterpret_cast<char*>(m_records) + index * 0x40 - 0x40));
     if (phase == 0) {
         rec[0] = 1;
         rec[2] = m_score;

@@ -32,21 +32,21 @@ extern "C" void LogicHandler_039910();
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        void** nodes = (void**)g_typeColl.m_alloc;
+        void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->CString::~CString();
+                    (reinterpret_cast<CString*>(nodes))->CString::~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
     return id;
@@ -56,7 +56,7 @@ static inline i32 RegisterActionName() {
 // dispatch table 0x62bfa0's fast [0x7d0, 0x7da] id range (CZDArrayDerived::Construct).
 RVA(0x0003a530, 0x15)
 void ConstructLogicActRange_62bfa0() {
-    ((CZDArrayDerived*)&g_logicActReg_62bfa0)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_62bfa0))->Construct(0x7d0, 0x7da);
 }
 
 // RegisterXLogic @0x03a710 - bind CCursorSnapSprite's logic to its activation handler
@@ -71,5 +71,5 @@ void ConstructLogicActRange_62bfa0() {
 RVA(0x0003a710, 0x18d)
 void RegisterXLogic_62bfa0() {
     i32 id = RegisterActionName();
-    *(void**)g_logicActReg_62bfa0.ResolveEntry(id) = (void*)&LogicHandler_039910;
+    *reinterpret_cast<void**>(g_logicActReg_62bfa0.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_039910);
 }

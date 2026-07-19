@@ -139,9 +139,9 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(dialog);
 
-    i32 reason = ((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_3ec;
+    i32 reason = (reinterpret_cast<TabzGmFactory*>(g_gameReg->m_cmdGrid))->m_3ec;
 
-    if (((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_288 == 1) {
+    if ((reinterpret_cast<TabzGmFactory*>(g_gameReg->m_cmdGrid))->m_288 == 1) {
         // mission accomplished
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
@@ -303,9 +303,9 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_178 != 0
-            && ((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_17c == 0
-            && ((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_174 == 0) {
+        if ((reinterpret_cast<TabzPlayer*>((reinterpret_cast<char*>(g_gameReg) + 0x174)))[i].m_178 != 0
+            && (reinterpret_cast<TabzPlayer*>((reinterpret_cast<char*>(g_gameReg) + 0x174)))[i].m_17c == 0
+            && (reinterpret_cast<TabzPlayer*>((reinterpret_cast<char*>(g_gameReg) + 0x174)))[i].m_174 == 0) {
             count++;
         }
     }

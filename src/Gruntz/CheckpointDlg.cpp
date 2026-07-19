@@ -47,7 +47,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 // ---------------------------------------------------------------------------
 RVA(0x00023570, 0x6)
 const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
-    return (const AFX_MSGMAP*)&g_msgmap_CCheckpointDlg; // msgmap global still a placeholder type
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CCheckpointDlg); // msgmap global still a placeholder type
 }
 
 // CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"
@@ -76,9 +76,9 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
 // ---------------------------------------------------------------------------
 RVA(0x000238d0, 0xd)
 void Init238d0() {
-    ((CPtrList*)&g_singleCmdList)->CPtrList::CPtrList(0xa);
+    (static_cast<CPtrList*>(&g_singleCmdList))->CPtrList::CPtrList(0xa);
 }
 RVA(0x00023960, 0xd)
 void InitGlobalObList62b640() {
-    ((CPtrList*)&g_multiCmdList)->CPtrList::CPtrList(0xa);
+    (static_cast<CPtrList*>(&g_multiCmdList))->CPtrList::CPtrList(0xa);
 }

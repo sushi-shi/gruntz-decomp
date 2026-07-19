@@ -44,7 +44,7 @@ i32 StatusBarSpriteStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
-            ctl->m_1c = (void*)0x3e8;
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);
             CStatusBarSprite* t = new CStatusBarSprite(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -71,7 +71,7 @@ i32 StatusBarSpriteStep(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));
             break;
     }
     return 1;
@@ -102,7 +102,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0010c430, 0x15)
 void CStatusBarSprite::InitActReg() {
-    ((CZDArrayDerived*)&g_statusBarSpriteActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_statusBarSpriteActReg))->Construct(2000, 2010);
 }
 
 // CStatusBarSprite::FireActivation @0x10c4b0 - look the activation coordinate up in
@@ -112,10 +112,10 @@ void CStatusBarSprite::InitActReg() {
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
     CStatusBarSpriteActEntry* e =
-        (CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(coord);
+        reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CStatusBarSpriteActEntry* e2 =
-            (CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(coord);
+            reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -135,20 +135,20 @@ void CStatusBarSprite::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CStatusBarSprite::AdvanceAnim;
 }
 
@@ -156,10 +156,10 @@ void CStatusBarSprite::RegisterActs() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011ae0, 0x47)
 i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the

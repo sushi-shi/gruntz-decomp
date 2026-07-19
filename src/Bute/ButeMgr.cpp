@@ -1027,10 +1027,10 @@ RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeInt) {
-                return *(i32*)rec->pValue;
+                return *static_cast<i32*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1046,10 +1046,10 @@ RVA(0x00171af0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeInt) {
-                return *(i32*)rec->pValue;
+                return *static_cast<i32*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return static_cast<i32>(0x80000000);
@@ -1078,37 +1078,37 @@ RVA(0x00172040, 0xfc)
 CButeValue* CButeValue::CopyValue(CButeValue* other) {
     switch (type) {
         case kButeInt:
-            *(i32*)pValue = *(i32*)other->pValue;
+            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
             break;
         case kButeDword:
         case kButeFloat:
-            *(i32*)pValue = *(i32*)other->pValue;
+            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
             break;
         case kButeDouble:
-            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
-            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
+            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
             break;
         case kButeString:
-            *(CString*)pValue = *(CString*)other->pValue;
+            *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
             break;
         case kButeRef5:
-            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
-            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
-            ((i32*)pValue)[2] = ((i32*)other->pValue)[2];
-            ((i32*)pValue)[3] = ((i32*)other->pValue)[3];
+            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
+            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
+            (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
+            (static_cast<i32*>(pValue))[3] = (static_cast<i32*>(other->pValue))[3];
             break;
         case kButeRef6:
-            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
-            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
+            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
             break;
         case kButeRef7:
-            *(ButeRefLarge*)pValue = *(ButeRefLarge*)other->pValue;
+            *static_cast<ButeRefLarge*>(pValue) = *static_cast<ButeRefLarge*>(other->pValue);
             break;
         case kButeRef8:
-            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
-            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
-            ((i32*)pValue)[2] = ((i32*)other->pValue)[2];
-            ((i32*)pValue)[3] = ((i32*)other->pValue)[3];
+            (static_cast<i32*>(pValue))[0] = (static_cast<i32*>(other->pValue))[0];
+            (static_cast<i32*>(pValue))[1] = (static_cast<i32*>(other->pValue))[1];
+            (static_cast<i32*>(pValue))[2] = (static_cast<i32*>(other->pValue))[2];
+            (static_cast<i32*>(pValue))[3] = (static_cast<i32*>(other->pValue))[3];
             break;
     }
     return this;
@@ -1132,21 +1132,21 @@ RVA(0x00172160, 0x52)
 CButeValue::~CButeValue() {
     switch (type) {
         case kButeString:
-            delete (CString*)pValue;
+            delete static_cast<CString*>(pValue);
             break;
         case kButeDouble:
         case kButeRef6:
-            delete (double*)pValue;
+            delete static_cast<double*>(pValue);
             break;
         case kButeInt:
         case kButeFloat:
         case kButeRef7:
-            delete (i32*)pValue;
+            delete static_cast<i32*>(pValue);
             break;
         case kButeDword:
         case kButeRef5:
         case kButeRef8:
-            delete (u32*)pValue;
+            delete static_cast<u32*>(pValue);
             break;
     }
 }
@@ -1159,11 +1159,11 @@ RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeDword:
-                    return *(DWORD*)rec->pValue;
+                    return *static_cast<DWORD*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1178,11 +1178,11 @@ RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeDword:
-                    return *(DWORD*)rec->pValue;
+                    return *static_cast<DWORD*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return 0;
@@ -1202,13 +1202,13 @@ RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return static_cast<float>(*(i32*)rec->pValue);
+                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
                 case kButeFloat:
-                    return *(float*)rec->pValue;
+                    return *static_cast<float*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1225,13 +1225,13 @@ RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return static_cast<float>(*(i32*)rec->pValue);
+                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
                 case kButeFloat:
-                    return *(float*)rec->pValue;
+                    return *static_cast<float*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return s_floatErr;
@@ -1251,13 +1251,13 @@ RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return static_cast<double>(*(i32*)rec->pValue);
+                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
                 case kButeDouble:
-                    return *(double*)rec->pValue;
+                    return *static_cast<double*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1274,13 +1274,13 @@ RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return static_cast<double>(*(i32*)rec->pValue);
+                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
                 case kButeDouble:
-                    return *(double*)rec->pValue;
+                    return *static_cast<double*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return s_doubleErr;
@@ -1300,10 +1300,10 @@ RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeString) {
-                return (CString*)rec->pValue;
+                return static_cast<CString*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1326,7 +1326,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeString) {
                 return static_cast<char*>(rec->pValue);
@@ -1350,10 +1350,10 @@ RVA(0x00173720, 0x4e)
 CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef5) {
-                return (CButeRef5*)rec->pValue;
+                return static_cast<CButeRef5*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1365,10 +1365,10 @@ RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef6) {
-                return (CButeRef6*)rec->pValue;
+                return static_cast<CButeRef6*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1393,7 +1393,7 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
 RVA(0x001741b0, 0x39)
 CButeValue::CButeValue(i32 type, CButeValue* src) {
     this->type = type;
-    CButeValue* n = (CButeValue*)operator new(8);
+    CButeValue* n = static_cast<CButeValue*>(operator new(8));
     if (n) {
         n->type = src->type;
         n->pValue = src->pValue;
@@ -1407,10 +1407,10 @@ RVA(0x001741f0, 0x4e)
 CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key, CButeRef7* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef7) {
-                return (CButeRef7*)rec->pValue;
+                return static_cast<CButeRef7*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1422,10 +1422,10 @@ RVA(0x00174770, 0x4e)
 CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key, CButeRef8* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef8) {
-                return (CButeRef8*)rec->pValue;
+                return static_cast<CButeRef8*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1470,7 +1470,7 @@ bool CButeMgr::ParseTagLine() {
         // The node IS the per-tag keyed store; ParseAttributeFile reaches it as a
         // CButeTree. The bridging cast flags the deferred CButeNode-derives-CButeTree
         // dedup (see ButeTree.h) - once modeled, this cast vanishes too.
-        m_pNode = (CButeTree*)node;
+        m_pNode = reinterpret_cast<CButeTree*>(node);
         t->Insert(tok, node);
     }
 
@@ -1616,7 +1616,7 @@ bool ButeMgr::ParseAttributeFile() {
         return false;
     }
     if (m_writeMode) {
-        m_pText->accum << (unsigned char)0x20;
+        m_pText->accum << static_cast<unsigned char>(0x20);
         m_captureText = 0;
     }
     if (!Parse()) {
@@ -1630,10 +1630,10 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 m_pText->accum << static_cast<int>(GetInt(m_tagName, m_str104));
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 0;
-                    i32* p = (i32*)operator new(4);
+                    i32* p = static_cast<i32*>(operator new(4));
                     if (p) {
                         *p = vi;
                         n->pValue = p;
@@ -1652,12 +1652,12 @@ bool ButeMgr::ParseAttributeFile() {
             vd = ButeRead_Dword(m_token, 0, 10);
             if (m_writeMode) {
                 m_pText->accum << s_strDword;
-                m_pText->accum << (unsigned long)GetDword(m_tagName, m_str104);
+                m_pText->accum << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 1;
-                    DWORD* p = (DWORD*)operator new(4);
+                    DWORD* p = static_cast<DWORD*>(operator new(4));
                     if (p) {
                         *p = vi;
                         n->pValue = p;
@@ -1677,10 +1677,10 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 (m_pText->accum << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 3;
-                    i32* p = (i32*)operator new(4);
+                    i32* p = static_cast<i32*>(operator new(4));
                     if (p) {
                         *p = vi;
                         n->pValue = p;
@@ -1698,10 +1698,10 @@ bool ButeMgr::ParseAttributeFile() {
                 m_pText->accum << static_cast<double>(GetFloat(m_tagName, m_str104));
                 m_pText->accum << s_strFloatSuffix;
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 3;
-                    i32* p = (i32*)operator new(4);
+                    i32* p = static_cast<i32*>(operator new(4));
                     if (p) {
                         *p = vi;
                         n->pValue = p;
@@ -1718,10 +1718,10 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 m_pText->accum << static_cast<double>(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 2;
-                    double* p = (double*)operator new(8);
+                    double* p = static_cast<double*>(operator new(8));
                     if (p) {
                         *p = dv;
                         n->pValue = p;
@@ -1744,10 +1744,10 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << static_cast<long>(r->d);
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 5;
-                    i32* p = (i32*)operator new(0x10);
+                    i32* p = static_cast<i32*>(operator new(0x10));
                     if (p) {
                         p[0] = a;
                         p[1] = b;
@@ -1771,10 +1771,10 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << static_cast<long>(r->b);
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 6;
-                    i32* p = (i32*)operator new(8);
+                    i32* p = static_cast<i32*>(operator new(8));
                     if (p) {
                         p[0] = a;
                         p[1] = b;
@@ -1792,18 +1792,18 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
                 CButeRef7* r = GetRef7(m_tagName, m_str104);
-                double dx = *(double*)&r->a;
-                double dy = *(double*)&r->c;
-                double dz = *(double*)&r->e;
+                double dx = *reinterpret_cast<double*>(&r->a);
+                double dy = *reinterpret_cast<double*>(&r->c);
+                double dz = *reinterpret_cast<double*>(&r->e);
                 (m_pText->accum << s_strLt) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 (m_pText->accum << s_strComma) << static_cast<double>(dz);
                 m_pText->accum << s_strGt;
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 7;
-                    double* p = (double*)operator new(0x18);
+                    double* p = static_cast<double*>(operator new(0x18));
                     if (p) {
                         p[0] = x;
                         p[1] = y;
@@ -1822,16 +1822,16 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
-                double dx = *(double*)&r->a;
-                double dy = *(double*)&r->c;
+                double dx = *reinterpret_cast<double*>(&r->a);
+                double dy = *reinterpret_cast<double*>(&r->c);
                 (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 m_pText->accum << s_strRBrack;
             } else if (!bDup) {
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 8;
-                    double* p = (double*)operator new(0x10);
+                    double* p = static_cast<double*>(operator new(0x10));
                     if (p) {
                         p[0] = x;
                         p[1] = y;
@@ -1847,12 +1847,12 @@ bool ButeMgr::ParseAttributeFile() {
         case 8: { // quoted string -> type 4
             if (m_writeMode) {
                 CString tmp(GetString(m_tagName, m_str104));
-                m_pText->accum << (unsigned char)0x22;
+                m_pText->accum << static_cast<unsigned char>(0x22);
                 m_pText->accum << tmp.GetBuffer(0);
-                m_pText->accum << (unsigned char)0x22;
+                m_pText->accum << static_cast<unsigned char>(0x22);
             } else if (!bDup) {
                 CString s(m_token);
-                CButeValue* n = (CButeValue*)operator new(8);
+                CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
                     n->type = 4;
                     n->pValue = new CString(s);
@@ -1910,10 +1910,10 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef5) {
-                return (CButeRef5*)rec->pValue;
+                return static_cast<CButeRef5*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1931,10 +1931,10 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef6) {
-                return (CButeRef6*)rec->pValue;
+                return static_cast<CButeRef6*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1958,10 +1958,10 @@ CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef7) {
-                return (CButeRef7*)rec->pValue;
+                return static_cast<CButeRef7*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1982,10 +1982,10 @@ CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef8) {
-                return (CButeRef8*)rec->pValue;
+                return static_cast<CButeRef8*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2028,8 +2028,8 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // [ecx-0x14], which pins the class). So `this` is the stream base and cl computes the
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
-    ((iostream*)static_cast<void*>(this))->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
-    ((ios*)(void*)(reinterpret_cast<char*>(this) + 0x14))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
+    (static_cast<iostream*>(static_cast<void*>(this)))->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
+    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0x14))))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
 }
 
 // ===========================================================================
@@ -2311,7 +2311,7 @@ bool CButeMgr::ParseGroup() {
             return false;
         }
         if (m_writeMode) {
-            CButeTree* grp = (CButeTree*)Tree48()->Find(m_tagName);
+            CButeTree* grp = static_cast<CButeTree*>(Tree48()->Find(m_tagName));
             if (grp) {
                 grp->Walk(&ButeGroup_Apply, m_pText, 0);
             }
@@ -2348,7 +2348,7 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
         if (key == 0) {
             return true;
         }
-        if (((CButeTree*)grp)->Find(key)) {
+        if ((static_cast<CButeTree*>(grp))->Find(key)) {
             return true;
         }
     }

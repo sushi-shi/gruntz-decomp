@@ -169,12 +169,12 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
         TtcNode* cur = node; // savePos (esi)
         TtcNode* pn = node;  // GetNext local (ecx)
         node = node->m_next;
-        CTileTriggerSwitchLogic* data = (CTileTriggerSwitchLogic*)pn->m_data;
+        CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(pn->m_data);
         if (data->m_04 == k2 && data->m_key1 == k1) {
             // ~CTileTriggerSwitchLogic is non-virtual + inline: the dtor restamps the vptr
             // (`mov [data],offset ??_7`) + clears m_20, then ??3 frees it.
             delete data;
-            m_base.RemoveAt((POSITION)cur);
+            m_base.RemoveAt(reinterpret_cast<POSITION>(cur));
             return 1;
         }
     }
@@ -532,12 +532,12 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
     do {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
-        if (elem == (CTileTriggerLogic*)data) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
+        if (elem == static_cast<CTileTriggerLogic*>(data)) {
             // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
             // (??_7CTileTriggerLogic @0x5eaea4) + clears m_1c, then ??3.
             delete elem;
-            m_list1.RemoveAt((POSITION)cur);
+            m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
             return 1;
         }
     } while (node != 0);
@@ -557,7 +557,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
     while (node) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileTriggerSwitchLogic* data = (CTileTriggerSwitchLogic*)cur->m_data;
+        CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(cur->m_data);
         if (data->m_key1 == k1) {
             if (k2 == 0 || data->m_04 == k2) {
                 return data;
@@ -579,7 +579,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+            CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
             if (elem->m_10 == a) {
                 if (b == 0) {
                     return elem;
@@ -595,7 +595,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+            CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
             if (elem->m_10 == a) {
                 if (b == 0) {
                     return elem;
@@ -623,7 +623,7 @@ void CTileTriggerContainer::RemoveAll() {
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
         delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
     }
     m_list1.RemoveAll();
@@ -631,7 +631,7 @@ void CTileTriggerContainer::RemoveAll() {
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileTriggerSwitchLogic* elem = (CTileTriggerSwitchLogic*)cur->m_data;
+        CTileTriggerSwitchLogic* elem = static_cast<CTileTriggerSwitchLogic*>(cur->m_data);
         delete elem; // vptr 0x5eae8c restamp + m_20 = 0, then ??3
     }
     m_base.RemoveAll();
@@ -639,7 +639,7 @@ void CTileTriggerContainer::RemoveAll() {
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
         delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
     }
     m_list2.RemoveAll();
@@ -647,7 +647,7 @@ void CTileTriggerContainer::RemoveAll() {
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileActionEvent* elem = (CTileActionEvent*)cur->m_data;
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(cur->m_data);
         delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
     }
     m_list3.RemoveAll();
@@ -672,13 +672,13 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+            CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
             i32 r = elem->Classify(reinterpret_cast<i32>(arg));
             if (r == 0) {
-                m_list2.RemoveAt((POSITION)cur);
+                m_list2.RemoveAt(reinterpret_cast<POSITION>(cur));
                 delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
             } else if (r == -1) {
-                m_list2.RemoveAt((POSITION)cur);
+                m_list2.RemoveAt(reinterpret_cast<POSITION>(cur));
                 m_list1.AddTail(elem);
             }
         } while (node != 0);
@@ -706,7 +706,7 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
         node = node->m_next;
         void* elem = cur->m_data;
         if (elem == data) {
-            m_list1.RemoveAt((POSITION)cur);
+            m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
             m_list2.AddTail(elem);
             *((i32*)elem + 14) = 0; // elem+0x38
             return 1;
@@ -728,7 +728,7 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
     while (node) {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileActionEvent* data = (CTileActionEvent*)cur->m_data;
+        CTileActionEvent* data = static_cast<CTileActionEvent*>(cur->m_data);
         if (data->m_c == key) {
             return data;
         }
@@ -749,10 +749,10 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
 RVA(0x00117200, 0x53)
 i32 CTileTriggerContainer::DelFromList3(void* data) {
     for (TtcNode* node = TtcHead(m_list3); node != 0; node = node->m_next) {
-        CTileActionEvent* elem = (CTileActionEvent*)node->m_data;
-        if (elem == (CTileActionEvent*)data) {
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(node->m_data);
+        if (elem == static_cast<CTileActionEvent*>(data)) {
             delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
-            m_list3.RemoveAt((POSITION)node);
+            m_list3.RemoveAt(reinterpret_cast<POSITION>(node));
             return 1;
         }
     }
@@ -789,28 +789,28 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         i32 cnt = m_base.GetCount();
         s->Write(&cnt, 4);
         for (node = TtcHead(m_base); node != 0; node = node->m_next) {
-            if (SerializeApplyA(s, 4, a3, a4, (CTileTriggerSwitchLogic*)node->m_data) == 0) {
+            if (SerializeApplyA(s, 4, a3, a4, static_cast<CTileTriggerSwitchLogic*>(node->m_data)) == 0) {
                 return 0;
             }
         }
         cnt = m_list1.GetCount();
         s->Write(&cnt, 4);
         for (node = TtcHead(m_list1); node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (CTileTriggerLogic*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, static_cast<CTileTriggerLogic*>(node->m_data)) == 0) {
                 return 0;
             }
         }
         cnt = m_list2.GetCount();
         s->Write(&cnt, 4);
         for (node = TtcHead(m_list2); node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (CTileTriggerLogic*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, static_cast<CTileTriggerLogic*>(node->m_data)) == 0) {
                 return 0;
             }
         }
         cnt = m_list3.GetCount();
         s->Write(&cnt, 4);
         for (node = TtcHead(m_list3); node != 0; node = node->m_next) {
-            if (((CTileActionEvent*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
+            if ((static_cast<CTileActionEvent*>(node->m_data))->Serialize(s, 4, a3, a4) == 0) {
                 return 0;
             }
         }
@@ -922,7 +922,7 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTr
     s->Write(&tag, 4);
     switch (tag) {
         case 0x16:
-            return ((CGiantRockLogic*)o)->ApplyByType(s, a2, a3, a4) != 0;
+            return (static_cast<CGiantRockLogic*>(o))->ApplyByType(s, a2, a3, a4) != 0;
         case 0x15:
         case 0x17:
         case 0x18:
@@ -1086,7 +1086,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
                 // m_imageSets' CObArray payload -> the CTileImageSet collision record;
                 // retail pushes two zeros: GetCollisionAt(0, 0) (the 0-arg "TypeId"
                 // view mis-modeled this slot).
-                CTileImageSet* rec = (CTileImageSet*)level->m_imageSets.GetData()[tile & 0xffff];
+                CTileImageSet* rec = static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
                 type = rec->GetCollisionAt(0, 0);
             }
             if (type == 0x67 || type == 0x68) {
@@ -1184,7 +1184,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
             // tag 0x16 (== factory id 22) IS the CGiantRockLogic discriminant, so
             // the hit is a rock element - the ONE checked downcast lives here so
             // every caller is cast-free.
-            CGiantRockLogic* r = (CGiantRockLogic*)FindInLists12(py + base, TRIGID_GIANT_ROCK_22);
+            CGiantRockLogic* r = static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
             if (r != 0) {
                 return r;
             }

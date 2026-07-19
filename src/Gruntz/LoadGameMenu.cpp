@@ -74,7 +74,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
         default:
             return 0;
         case WM_INITDIALOG: { // 0x110
-            g_dlgLoadSink = (CSaveGame*)g_gameReg->m_saveSink;
+            g_dlgLoadSink = static_cast<CSaveGame*>(g_gameReg->m_saveSink);
             FillGameInfoDialog(hDlg, g_dlgLoadSink);
             return 1;
         }
@@ -110,7 +110,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 RVA(0x0009e2d0, 0x84)
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
-    if (TempFileExists_e5700((SaveTempRec*)item)) {
+    if (TempFileExists_e5700(reinterpret_cast<SaveTempRec*>(item))) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
         flag = 1;
     } else {
@@ -176,7 +176,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = reinterpret_cast<i32>(dlg->GetSlot(idx));
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            g_gameReg->RunModalDialog("GAME_INFO", (void*)LoadInfoDlgProc, 0);
+            g_gameReg->RunModalDialog("GAME_INFO", static_cast<void*>(LoadInfoDlgProc), 0);
             EnableWindow(hwnd, TRUE);
         }
         return 0;
@@ -218,7 +218,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = reinterpret_cast<i32>(dlg->GetSlot(idx));
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", (void*)LoadDeleteDlgProc, 0);
+            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", static_cast<void*>(LoadDeleteDlgProc), 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);
@@ -266,7 +266,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             i32 r = dlg->VerifySlot(slot);
             EnableWindow(hwnd, TRUE);
             if (r) {
-                g_gameReg->m_saveInfoRec = (SaveInfo*)slot;
+                g_gameReg->m_saveInfoRec = reinterpret_cast<SaveInfo*>(slot);
                 PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
                 EndDialog(hwnd, 1);
             }

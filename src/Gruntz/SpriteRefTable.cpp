@@ -39,8 +39,8 @@ i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
     if (!p0) {
         return p0;
     }
-    m_factory = (CShadeTableCache*)p0;
-    m_spriteMgrHolder = (CDDrawSurfaceMgr*)p1;
+    m_factory = reinterpret_cast<CShadeTableCache*>(p0);
+    m_spriteMgrHolder = reinterpret_cast<CDDrawSurfaceMgr*>(p1);
     m_built = 0;
     return 1;
 }
@@ -124,16 +124,16 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (!out) {
         return 0;
     }
-    void* sprite = ((CLookupResult*)out)->m_sprite->m_frameData;
+    void* sprite = (reinterpret_cast<CLookupResult*>(out))->m_sprite->m_frameData;
     if (!sprite) {
         return 0;
     }
-    void* alpha = m_factory->AlphaTable((unsigned char*)sprite);
+    void* alpha = m_factory->AlphaTable(static_cast<unsigned char*>(sprite));
     if (!alpha) {
         return 0;
     }
     CSpriteRef* node;
-    CSpriteRef* tmp = (CSpriteRef*)::operator new(0x10);
+    CSpriteRef* tmp = static_cast<CSpriteRef*>(::operator new(0x10));
     if (tmp) {
         tmp->m_cache = 0;
         tmp->m_alphaKey = 0;
@@ -191,11 +191,11 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", reinterpret_cast<char*>(name));
-    void* pal = (void*)((CSymParser*)src)->ResolveQualified(buf, (void*)0x50414c);
+    void* pal = reinterpret_cast<void*>((reinterpret_cast<CSymParser*>(src))->ResolveQualified(buf, reinterpret_cast<void*>(0x50414c)));
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->Factory_1658c0((CDDrawSurfaceSource*)pal, 0, 0) != 0;
+    return m_spriteMgrHolder->m_workerMap->Factory_1658c0(static_cast<CDDrawSurfaceSource*>(pal), 0, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------

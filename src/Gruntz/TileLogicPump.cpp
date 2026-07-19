@@ -154,10 +154,10 @@ CActReg g_tileActReg;
 // helper on `this`, then (only on success) the +0x34 CSerialObjRef sub-object.
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // CWarpStonePad::~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor; folds the bare
@@ -171,10 +171,10 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // CTileTriggerSwitch::SerializeMove @0x11050, vtable slot 1.
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // CTileTriggerSwitch::~CTileTriggerSwitch @0x110f0 - the 0x44 folded CUserLogic teardown.
@@ -197,10 +197,10 @@ CTileTrigger::CTileTrigger() {}
 // (inherited) by CGiantRock/CCoveredPowerup/CTileSecretTrigger (no leaf override).
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead of
@@ -224,7 +224,7 @@ i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
@@ -270,10 +270,10 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
@@ -321,7 +321,7 @@ i32 CheckpointTriggerStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
-            ctl->m_1c = (void*)0x3e8;
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -348,7 +348,7 @@ i32 CheckpointTriggerStep(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));
             break;
     }
     return 1;
@@ -381,17 +381,17 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CWarpStonePad::InitActReg @0x10d840 - construct g_warpStonePadActReg over [2000,2010].
 RVA(0x0010d840, 0x15)
 void CWarpStonePad::InitActReg() {
-    ((CZDArrayDerived*)&g_warpStonePadActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_warpStonePadActReg))->Construct(2000, 2010);
 }
 
 // CWarpStonePad::FireWarp @0x10d8c0, vtable slot 4 - resolve the coordinate; if the
 // entry carries a handler PMF, re-resolve and dispatch it __thiscall on this.
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
-    CWarpStonePadActEntry* e = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
+    CWarpStonePadActEntry* e = reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CWarpStonePadActEntry* e2 =
-            (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
+            reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -407,20 +407,20 @@ void CWarpStonePad::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CWarpStonePad::AdvanceAnim;
 }
 
@@ -437,17 +437,17 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
 // CTileTriggerSwitch::InitActReg @0x10de20 - construct g_tileTriggerSwitchActReg.
 RVA(0x0010de20, 0x15)
 void CTileTriggerSwitch::InitActReg() {
-    ((CZDArrayDerived*)&g_tileTriggerSwitchActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_tileTriggerSwitchActReg))->Construct(2000, 2010);
 }
 
 // CTileTriggerSwitch::FireActivation @0x10dea0, vtable slot 4.
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
     CTileTriggerSwitchActEntry* e =
-        (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
+        reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CTileTriggerSwitchActEntry* e2 =
-            (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
+            reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -462,20 +462,20 @@ void CTileTriggerSwitch::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CTileTriggerSwitch::AdvanceAnim;
 }
 
@@ -495,15 +495,15 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CTileTrigger::InitActReg (0x10e420) - construct g_tileTriggerActReg over [2000,2010].
 RVA(0x0010e420, 0x15)
 void CTileTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_tileTriggerActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_tileTriggerActReg))->Construct(2000, 2010);
 }
 
 // CTileTrigger::FireActivation (0x10e4a0), vtable slot 4.
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
-    CTileTriggerActEntry* e = (CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(coord);
+    CTileTriggerActEntry* e = reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CTileTriggerActEntry* e2 = (CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(coord);
+        CTileTriggerActEntry* e2 = reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -518,20 +518,20 @@ void CTileTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CTileTrigger::AdvanceAnim;
 }
 
@@ -571,16 +571,16 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CBrickz::InitActReg @0x10ea00 - construct g_brickzActReg over [2000,2010].
 RVA(0x0010ea00, 0x15)
 void CBrickz::InitActReg() {
-    ((CZDArrayDerived*)&g_brickzActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_brickzActReg))->Construct(2000, 2010);
 }
 
 // CBrickz::FireActivation (0x10ea80), vtable slot 4 - the double-ResolveEntry
 // + PMF-fire archetype (ResolveEntry has side effects, so re-run for the actual call).
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
-    CBrickzActEntry* e = (CBrickzActEntry*)g_brickzActReg.ResolveEntry(coord);
+    CBrickzActEntry* e = reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CBrickzActEntry* e2 = (CBrickzActEntry*)g_brickzActReg.ResolveEntry(coord);
+        CBrickzActEntry* e2 = reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -594,23 +594,23 @@ RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CString*)list)->CString::~CString();
+                    (reinterpret_cast<CString*>(list))->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CBrickzActEntry*)g_brickzActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CBrickz::Trigger;
 }
 
@@ -670,16 +670,16 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
 // CCheckpointTrigger::InitActReg (0x10f160) - construct g_checkpointActReg.
 RVA(0x0010f160, 0x15)
 void CCheckpointTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_checkpointActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_checkpointActReg))->Construct(2000, 2010);
 }
 
 // CCheckpointTrigger::FireActivation (0x10f1e0), vtable slot 4 (RTTI: its slot 4 is
 // ILT 0x001366 -> jmp here; the 0x10ea80 body it used to claim is CBrickz's).
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
-    CCheckpointActEntry* e = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+    CCheckpointActEntry* e = reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CCheckpointActEntry* e2 = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+        CCheckpointActEntry* e2 = reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -696,39 +696,39 @@ void CCheckpointTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f6a0;
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", (void*)id2);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
         char* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id2))->m_fn =
+    (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id2)))->m_fn =
         (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f970;
 }
 
@@ -752,7 +752,7 @@ i32 CCheckpointTrigger::Act_10f6a0() {
 // +0x34 CSerialObjRef sub-object's Chain.
 RVA(0x0010f9a0, 0x8f)
 i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* sa = (CSerialArchive*)arc;
+    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
     if (mode == 4) {
         sa->Write(m_state, 0x3c);
         sa->Write(&m_firstEmpty, 4);
@@ -760,10 +760,10 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
 }
 
 // --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) --- each chains
@@ -801,7 +801,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 // in the global tile-trigger activation registry (ecx/this unused).
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
-    ((CZDArrayDerived*)&g_tileActReg)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_tileActReg))->Construct(0x7d0, 0x7da);
 }
 
 // FireActivation (0x10fd10), vtable slot 4 - look the activation coordinate up in the class
@@ -809,9 +809,9 @@ void CTileTriggerTransition::Register_10fc90() {
 // again and dispatch it __thiscall on `this`. Same double-ResolveEntry + PMF-fire archetype.
 RVA(0x0010fd10, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {
-    TileActEntry* e = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+    TileActEntry* e = reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        TileActEntry* e2 = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+        TileActEntry* e2 = reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -829,20 +829,20 @@ void CTileTriggerTransition::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CTileTriggerTransition::Handler_110110;
+    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CTileTriggerTransition::Handler_110110;
 }
 
 // ApplyAnimation (0x110070) - reads the object's +0x1b4 animation descriptor, applies the
@@ -855,7 +855,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
         return 0;
     }
     CAniElement* desc = m_38->m_1a0.m_14;
-    CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+    CAniDesc* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<CAniDesc*>(*desc->m_records.m_pData) : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_objAux->m_1c = g_buteTree.Find("A");

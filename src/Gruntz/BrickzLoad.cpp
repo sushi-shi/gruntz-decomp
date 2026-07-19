@@ -365,7 +365,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     // Freelist-recycle pass: for each moving object of the footprint kind, seed a
     // 3x3 footprint of recycled free nodes, then commit them into the grid.
     CDDrawChildGroup* mgr = g_gameReg->m_world->m_childGroup;
-    mgr->m_walkCursor = (CDDrawGroupNode*)mgr->m_list.GetHeadPosition();
+    mgr->m_walkCursor = reinterpret_cast<CDDrawGroupNode*>(mgr->m_list.GetHeadPosition());
     CGameObject* obj;
     if (mgr->m_walkCursor != 0) {
         CDDrawGroupNode* n = mgr->m_walkCursor;

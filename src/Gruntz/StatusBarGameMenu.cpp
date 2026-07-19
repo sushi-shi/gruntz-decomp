@@ -121,7 +121,7 @@ void CStatusBarMgr::BuildGameMenu() {
             }
             m_tabLists[5].AddTail(it);
         }
-        m_tabSprite5 = (CSBI_MenuItem*)it;
+        m_tabSprite5 = static_cast<CSBI_MenuItem*>(it);
 
         // ---- LOAD ----
         it = new CSBI_MenuItem;
@@ -136,7 +136,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_tabSprite6 = (CSBI_MenuItem*)it;
+        m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
             it->m_4 = 0;
         }
@@ -154,7 +154,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_tabSprite7 = (CSBI_MenuItem*)it;
+        m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
             it->m_4 = 0;
         }
@@ -181,7 +181,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_tabSprite8 = (CSBI_MenuItem*)it;
+        m_tabSprite8 = static_cast<CSBI_MenuItem*>(it);
 
         // ---- HELP ----
         it = new CSBI_MenuItem;
@@ -196,7 +196,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_tabSprite9 = (CSBI_MenuItem*)it;
+        m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
             it->m_4 = 0;
         }
@@ -214,7 +214,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_tabSprite10 = (CSBI_MenuItem*)it;
+        m_tabSprite10 = static_cast<CSBI_MenuItem*>(it);
 
         // ---- DESTRUCT (CSBI_ImageSet, tag 4) ----
         it = new CSBI_ImageSet;
@@ -238,7 +238,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_modeNotify = (CSbiSlotPtr*)it;
+        m_modeNotify = reinterpret_cast<CSbiSlotPtr*>(it);
         if (g_gameReg->m_134 != 1) {
             it->m_4 = 0;
             m_modeState = 7;
@@ -250,7 +250,7 @@ void CStatusBarMgr::BuildGameMenu() {
 
     // ---- briefing variant: a single MISSIONSTATUS widget ----
     it = new CSBI_ImageSet;
-    i32 variant = (((CGmFactory*)g_gameReg->m_cmdGrid)->m_variant == 1) ? 1 : 2;
+    i32 variant = ((reinterpret_cast<CGmFactory*>(g_gameReg->m_cmdGrid))->m_variant == 1) ? 1 : 2;
     r.left = bx;
     r.top = by + 0xd7;
     r.right = bx + 0x9f;

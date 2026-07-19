@@ -101,8 +101,8 @@ i32 CMenuPage::Configure(
     m_offsetY = 0;
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
-    void* slot = (void*)slot_ob;
-    m_subPage = (CMenuPage*)slot;
+    void* slot = static_cast<void*>(slot_ob);
+    m_subPage = static_cast<CMenuPage*>(slot);
     return slot != 0;
 }
 
@@ -143,8 +143,8 @@ RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
-    void* slot = (void*)slot_ob;
-    m_subPage = (CMenuPage*)slot;
+    void* slot = static_cast<void*>(slot_ob);
+    m_subPage = static_cast<CMenuPage*>(slot);
     return slot != 0;
 }
 
@@ -155,7 +155,7 @@ void* CMenuPage::Append(CMenuItem* item) {
         return 0;
     }
     item->m_listPos = m_items.AddTail(item);
-    return (void*)1;
+    return reinterpret_cast<void*>(1);
 }
 
 // release the current focus item, then detach every child item.
@@ -241,7 +241,7 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
         m_focus->Release();
     }
     m_focus = item;
-    return item->Configure((void*)notify) != 0;
+    return item->Configure(reinterpret_cast<void*>(notify)) != 0;
 }
 
 // notify every child item.
@@ -403,12 +403,12 @@ i32 CMenuPage::Layout(i32 ctx) {
     i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
-        i32 idx = *(i32*)(reinterpret_cast<char*>(sub) + 0x64);
-        CMenuItem** tab = *(CMenuItem***)(reinterpret_cast<char*>(sub) + 0x14);
+        i32 idx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(sub) + 0x64));
+        CMenuItem** tab = *reinterpret_cast<CMenuItem***>((reinterpret_cast<char*>(sub) + 0x14));
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;
-            ((CImage*)head)->RenderFrame((void*)ctx, (void*)x, (void*)y, (void*)0);
+            (reinterpret_cast<CImage*>(head))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(x), reinterpret_cast<void*>(y), static_cast<void*>(0));
             y += m_headGap + head->m_1c;
         }
     }
@@ -446,7 +446,7 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!m_host->ReplaceNode((void*)static_cast<const char*>(m_switchKey))) {
+    if (!m_host->ReplaceNode(const_cast<char*>(static_cast<const char*>(m_switchKey)))) {
         return 0;
     }
     if (refocus) {
@@ -492,12 +492,12 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
-        i32 idx = *(i32*)(reinterpret_cast<char*>(sub) + 0x64);
-        CMenuItem** tab = *(CMenuItem***)(reinterpret_cast<char*>(sub) + 0x14);
+        i32 idx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(sub) + 0x64));
+        CMenuItem** tab = *reinterpret_cast<CMenuItem***>((reinterpret_cast<char*>(sub) + 0x14));
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;
-            ((CImage*)head)->RenderFrame((void*)ctx, (void*)x, (void*)y, (void*)0);
+            (reinterpret_cast<CImage*>(head))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(x), reinterpret_cast<void*>(y), static_cast<void*>(0));
             y += m_headGap + head->m_1c;
         }
     }
@@ -540,7 +540,7 @@ i32 CMenuPage::FocusForwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)cur->m_listPos;
+    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
     if (!pos) {
         return 0;
     }
@@ -581,7 +581,7 @@ i32 CMenuPage::FocusBackwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)cur->m_listPos;
+    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
     if (!pos) {
         return 0;
     }

@@ -99,9 +99,9 @@ i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a3 == 0) {
         return 0;
     }
-    m_0 = (CNetCmdBuf*)a1;
+    m_0 = static_cast<CNetCmdBuf*>(a1);
     m_session = a2; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
-    m_netMgr = (CNetMgr*)a3;
+    m_netMgr = static_cast<CNetMgr*>(a3);
     Reset();
     m_period = a2->m_5a4;
     return 1;
@@ -230,7 +230,7 @@ i32 CNetSession::Poll(i32 delta) {
     } else {
         i32 got;
         IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 r = ep->GetMessageCount(m_localDesc->m_playerId, (LPDWORD)&got);
+        i32 r = ep->GetMessageCount(m_localDesc->m_playerId, reinterpret_cast<LPDWORD>(&got));
         avail = (r == 0) ? got : 0;
     }
 
@@ -240,7 +240,7 @@ i32 CNetSession::Poll(i32 delta) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
         IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_lobbyRecvBuf, (LPDWORD)&len);
+        i32 st = ep->Receive(reinterpret_cast<LPDPID>(&a), reinterpret_cast<LPDPID>(&chan), 1, g_lobbyRecvBuf, reinterpret_cast<LPDWORD>(&len));
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
             if (st != 0) {
@@ -250,7 +250,7 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_playerId) {
-            Dispatch(a, (LobbyMsg*)g_lobbyRecvBuf, len);
+            Dispatch(a, reinterpret_cast<LobbyMsg*>(g_lobbyRecvBuf), len);
         }
     }
     return received;
@@ -273,7 +273,7 @@ i32 CNetSession::Dispatch(i32 a, LobbyMsg* b, i32 c) {
     }
     obj->m_timer = 0;
     CNetCmdSlot* target = obj;
-    unsigned char* p = (unsigned char*)b;
+    unsigned char* p = reinterpret_cast<unsigned char*>(b);
     if (!(p[0] & 0x80) && (p[0] & 1)) {
         target = &m_slots[p[1]];
         if (!target) {
@@ -295,20 +295,20 @@ i32 CNetSession::DispatchMsg(LobbyMsg* m, i32 arg2) {
     }
     switch (m->m_type) {
         case 3:
-            m_session->LoadMenuSelectSprite((void*)m);
+            m_session->LoadMenuSelectSprite(static_cast<void*>(m));
             return 1;
         case 5:
             if (m->m_04 == 1) {
-                void* p = (void*)m->m_08;
+                void* p = reinterpret_cast<void*>(m->m_08);
                 m_session->OnPlayerLeft(reinterpret_cast<i32>(p));
                 m_session->ResetPlayerCommands(reinterpret_cast<i32>(p));
                 return 1;
             }
             return 1;
         case 49:
-            return m_session->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+            return m_session->HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(m), arg2);
         case 257:
-            return m_session->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+            return m_session->HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(m), arg2);
         default:
             return 1;
     }
@@ -362,7 +362,7 @@ i32 CNetSession::SendAll() {
             do {
                 if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
                     for (i32 v = lo; v <= hi; v++) {
-                        GruntRec* r = (GruntRec*)outer->FindCmd(v);
+                        GruntRec* r = reinterpret_cast<GruntRec*>(outer->FindCmd(v));
                         if (r) {
                             i32 flag = (v == hi) ? 3 : 1;
                             if (m_slots[0]
@@ -393,8 +393,8 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
         return 1;
     }
     gA_seq = seq;
-    gA_flag = (unsigned char)flag;
-    gA_slot = (unsigned char)slot;
+    gA_flag = static_cast<unsigned char>(flag);
+    gA_slot = static_cast<unsigned char>(slot);
     gA_e04 = rec->m_checksum;
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
@@ -496,7 +496,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
     if (slot == 0) {
         return 0;
     }
-    ((CNetCmdSlot*)slot)->ResetAll();
+    (static_cast<CNetCmdSlot*>(slot))->ResetAll();
     return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
@@ -746,7 +746,7 @@ i32 CNetSession::Verify() {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
             if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0) {
-                CNetCmd* c = (CNetCmd*)slot->FindCmd(seq);
+                CNetCmd* c = static_cast<CNetCmd*>(slot->FindCmd(seq));
                 if (c != 0 && c->m_4 != e->m_4) {
                     return 0;
                 }
@@ -773,7 +773,7 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    m_owner = (CMulti*)a1; // the session passes its owning CMulti in as an i32 handle
+    m_owner = reinterpret_cast<CMulti*>(a1); // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
     m_resetGuard = 0;
     m_latchedSeq = 0;
@@ -861,7 +861,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     if (rec == 0) {
         return 0;
     }
-    u8 opcode = *(u8*)rec;
+    u8 opcode = *static_cast<u8*>(rec);
     i32 odd = opcode & 1;
     char* p = reinterpret_cast<char*>(rec) + 1;
     if (m_state != 3) {
@@ -886,7 +886,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         p++;
         rem--;
     }
-    CNetCmdHdr* h = (CNetCmdHdr*)p;
+    CNetCmdHdr* h = reinterpret_cast<CNetCmdHdr*>(p);
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
     i32 flags = h->m_flags;
@@ -924,16 +924,16 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     AdvanceSeq(seq);
 
-    CNetCmdPacket* pkt = (CNetCmdPacket*)Unmatched_bf530(0);
+    CNetCmdPacket* pkt = static_cast<CNetCmdPacket*>(Unmatched_bf530(0));
     pkt->m_sequence = seq;
     pkt->m_owner = this;
     pkt->m_flags = static_cast<u8>(flags);
     pkt->m_payloadLength = rem;
     memcpy(pkt->m_payload, cursor, rem);
-    AddCmd((CNetCmd*)pkt);
+    AddCmd(reinterpret_cast<CNetCmd*>(pkt));
 
     for (i32 i = count & 0xff; i > 0; i--) {
-        u8 b = *(u8*)cursor;
+        u8 b = *reinterpret_cast<u8*>(cursor);
         CGruntzCommand* obj;
         if (b & 1) {
             obj = CGruntzSingleCommand::Allocate();
@@ -1090,7 +1090,7 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
         CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
             if (node != 0) {
-                m_cmds.RemoveAt((POSITION)node->m_prev);
+                m_cmds.RemoveAt(reinterpret_cast<POSITION>(node->m_prev));
             } else {
                 m_cmds.RemoveTail();
             }

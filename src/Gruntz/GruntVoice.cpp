@@ -94,7 +94,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
@@ -163,7 +163,7 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members
@@ -190,7 +190,7 @@ i32 GruntVoiceStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
-            ctl->m_1c = (void*)0x3e8;
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);
             CGruntVoice* t = new CGruntVoice(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -217,7 +217,7 @@ i32 GruntVoiceStep(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));
             break;
     }
     return 1;
@@ -233,7 +233,7 @@ i32 VoiceTriggerStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
-            ctl->m_1c = (void*)0x3e8;
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);
             CVoiceTrigger* t = new CVoiceTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -260,7 +260,7 @@ i32 VoiceTriggerStep(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));
             break;
     }
     return 1;
@@ -360,7 +360,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
 RVA(0x00119dc0, 0x15)
 void CGruntVoice::InitActReg() {
-    ((CZDArrayDerived*)&g_actReg_6514d8)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actReg_6514d8))->Construct(2000, 2010);
 }
 
 // ===========================================================================
@@ -385,7 +385,7 @@ void CGruntVoice::FireActivation(i32 coord) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_vtrigActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_vtrigActReg))->Construct(2000, 2010);
 }
 
 // CVoiceTrigger::FireActivation @0x11a3a0 - vtable slot 4. Look the activation
@@ -395,9 +395,9 @@ void CVoiceTrigger::InitActReg() {
 // CSecretTeleporterTrigger::FireActivation.
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
-    CVTrigEntry* e = (CVTrigEntry*)g_vtrigActReg.ResolveEntry(coord);
+    CVTrigEntry* e = reinterpret_cast<CVTrigEntry*>(g_vtrigActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CVTrigEntry* e2 = (CVTrigEntry*)g_vtrigActReg.ResolveEntry(coord);
+        CVTrigEntry* e2 = reinterpret_cast<CVTrigEntry*>(g_vtrigActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -416,20 +416,20 @@ void CVoiceTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_vtrigActReg.ResolveEntry(id) = (void*)&VTrigLogic_11a700;
+    *reinterpret_cast<void**>(g_vtrigActReg.ResolveEntry(id)) = static_cast<void*>(&VTrigLogic_11a700);
 }
 
 // CVoiceTrigger::Tick @0x11a700 - query the entity under the trigger's screen
@@ -442,20 +442,20 @@ i32 CVoiceTrigger::Tick() {
     CTmCell* hit = g_gameReg->m_cmdGrid->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
-        (RECT*)&m_object->m_extentL,
+        reinterpret_cast<RECT*>(&m_object->m_extentL),
         &outA,
         &outB,
-        (RECT*)&m_object->m_areaL
+        reinterpret_cast<RECT*>(&m_object->m_areaL)
     );
     if (hit && outA == g_curPlayer) {
         // hit is a CGrunt; its bound object sits at +0x10 (CUserLogic::m_object),
         // reached by offset since CGrunt is only forward-declared in this TU.
-        CGameObject* hs = *(CGameObject**)(reinterpret_cast<char*>(hit) + 0x10);
+        CGameObject* hs = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(hit) + 0x10));
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
-            if (((CGruntSpawnConfig*)g_gameReg->m_cueSink)
+            if ((reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
                     ->SpawnVoiceDriver(
                         reinterpret_cast<i32>(hit),
                         m_object->m_124,
@@ -499,7 +499,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_source = a0;
     m_owner = a3;
     m_sample = reinterpret_cast<i32>(sample);
-    m_durationMs = ((StreamVoice*)sample)->ComputeRatio();
+    m_durationMs = (static_cast<StreamVoice*>(sample))->ComputeRatio();
     m_64 = 0;
     m_icon = g_frameTime;
     m_5c = 0;
@@ -540,7 +540,7 @@ void CGruntVoice::Reset() {
 // CSpotLight::SerializeMove's Read path.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0 || static_cast<i64>(g_frameTime) - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
+    if (m_sample == 0 || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon) >= *reinterpret_cast<i64*>(&m_durationMs)) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;
@@ -552,8 +552,8 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)(reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48))
-                           ->Lookup((void*)src, (void*&)out);
+        i32 resolved = (reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48)))
+                           ->Lookup(reinterpret_cast<void*>(src), reinterpret_cast<void*&>(out));
         if (resolved != 0) {
             if (out == 0) {
                 resolved = 0;
@@ -565,7 +565,7 @@ i32 CGruntVoice::Update() {
             m_object->m_stateFlags |= 1;
             return 0;
         }
-        CUserLogic* logic = ((CGameObject*)resolved)->m_7c->m_logic;
+        CUserLogic* logic = (reinterpret_cast<CGameObject*>(resolved))->m_7c->m_logic;
         if (logic == 0) {
             m_object->m_stateFlags |= 1;
             return 0;
@@ -576,8 +576,8 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)(reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48))
-                           ->Lookup((void*)src, (void*&)out);
+        i32 resolved = (reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48)))
+                           ->Lookup(reinterpret_cast<void*>(src), reinterpret_cast<void*&>(out));
         if (resolved != 0) {
             if (out == 0) {
                 resolved = 0;
@@ -591,13 +591,13 @@ i32 CGruntVoice::Update() {
         }
         m_object->m_stateFlags &= ~1;
         i32 dx = 0, dy = 0;
-        CImage* layer = ((CGameObject*)resolved)->m_layer;
+        CImage* layer = (reinterpret_cast<CGameObject*>(resolved))->m_layer;
         if (layer != 0) {
             dx = layer->m_originX;
             dy = layer->m_originY;
         }
-        m_object->m_screenX = ((CGameObject*)resolved)->m_screenX + dx;
-        m_object->m_screenY = ((CGameObject*)resolved)->m_screenY + dy - 0x32;
+        m_object->m_screenX = (reinterpret_cast<CGameObject*>(resolved))->m_screenX + dx;
+        m_object->m_screenY = (reinterpret_cast<CGameObject*>(resolved))->m_screenY + dy - 0x32;
     }
     return 0;
 }

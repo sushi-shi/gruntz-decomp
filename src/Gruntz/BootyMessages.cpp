@@ -162,7 +162,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
         } else {
             if (rec->m_worldFlag != 0) {
-                if (((CBattlezData*)rec)->GroupAllScored()) {
+                if ((reinterpret_cast<CBattlezData*>(rec))->GroupAllScored()) {
                     s.Format("WARP letterz recovered! Prepare to warp!");
                 } else {
                     s = "WARP letterz not recovered! No checkpoint this time.";
@@ -201,7 +201,7 @@ void CBootyState::ShowLevelCompleteMessage() {
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0
-        && ((CBattlezData*)g_gameReg->m_levelRecord)->AllRecordsInBounds()) {
+        && (reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->AllRecordsInBounds()) {
         CString s;
         if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
             return 0;
@@ -223,7 +223,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         return 1;
     }
 
-    i32 count = static_cast<i32>((((CBattlezData*)g_gameReg->m_levelRecord)->GroupRatio() * g_secretRatioScale));
+    i32 count = static_cast<i32>(((reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->GroupRatio() * g_secretRatioScale));
     i32 rowBase = (g_gameReg->m_levelRecord->m_levelIndex - 1) / 4;
     i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
 
@@ -304,7 +304,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
     BzLevelRecord* rec = g_gameReg->m_levelRecord;
     if (rec->m_suppressGate != 0) {
-        PostMessageA((HWND)g_gameReg->m_wnd->m_hwnd, 0x111, 0x8023, 0);
+        PostMessageA(reinterpret_cast<HWND>(g_gameReg->m_wnd->m_hwnd), 0x111, 0x8023, 0);
         return 1;
     }
     if (m_initOnce == 0) {
@@ -313,10 +313,10 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
                 BzSoundEntry* res = 0;
-                ((CMapStringToPtr*)&ss->m_findTable)
-                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", (void*&)res);
+                (reinterpret_cast<CMapStringToPtr*>(&ss->m_findTable))
+                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", reinterpret_cast<void*&>(res));
                 if (res != 0) {
-                    ((LeafCue*)res)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    (reinterpret_cast<LeafCue*>(res))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
             if (g_gameReg->m_levelRecord->m_levelIndex < 0x24) {
@@ -325,7 +325,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                     m_animSprites[p]->m_screenY = 0xdc;
                     m_animSprites[p]->m_stateFlags &= ~1;
-                    if (((CBattlezData*)g_gameReg->m_levelRecord)->GetRecordValue(p) != 0) {
+                    if ((reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->GetRecordValue(p) != 0) {
                         CString letter;
                         switch (p) {
                             case 0:
@@ -369,7 +369,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             return 1;
         }
     } else if (rec->m_worldFlag != 0 && rec->m_levelIndex < 0x24 && state == 0xc7) {
-        if (((CBattlezData*)rec)->GroupAllScored()) {
+        if ((reinterpret_cast<CBattlezData*>(rec))->GroupAllScored()) {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
@@ -381,7 +381,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
 
     if (m_activation == 0xfffffffe
-        && ((CBattlezData*)g_gameReg->m_levelRecord)->AllRecordsInBounds()
+        && (reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->AllRecordsInBounds()
         && m_secretBannerOnce == 0) {
         m_secretBannerOnce = 1;
         if (!ShowSecretBonusMessage()) {
@@ -398,12 +398,12 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (sub != 0) {
             sub->Stop();
         }
-        ((CGruntzMgr*)g_gameReg)->ChangeState_8fab0(3); // g_gameReg IS the CGruntzMgr singleton (see below)
-        PostMessageA((HWND)g_gameReg->m_wnd->m_hwnd, 0x111, 0x8021, 0);
+        (reinterpret_cast<CGruntzMgr*>(g_gameReg))->ChangeState_8fab0(3); // g_gameReg IS the CGruntzMgr singleton (see below)
+        PostMessageA(reinterpret_cast<HWND>(g_gameReg->m_wnd->m_hwnd), 0x111, 0x8021, 0);
     } else {
         // 0x8d780: DISASM-PROVEN receiver ecx = *0x24556c (the CGruntzMgr singleton),
         // NOT `this`; g_gameReg IS that singleton, so cast the view to its real class.
-        ((CGruntzMgr*)g_gameReg)->PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);
+        (reinterpret_cast<CGruntzMgr*>(g_gameReg))->PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);
     }
     return 1;
 }

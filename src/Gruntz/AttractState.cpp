@@ -102,8 +102,8 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
 
     owner()->RestoreVideoMode(0);
 
-    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath("STATEZ_ATTRACT");
-    m_2c = (CResSource*)state;
+    CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
+    m_2c = reinterpret_cast<CResSource*>(state);
     if (state == 0) {
         return 0;
     }
@@ -113,7 +113,7 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->ScanTree_157ee0((CSymTab*)sound, "ATTRACT", "_");
+    (reinterpret_cast<CDDrawSubMgrLeafScan*>(menuRoot()->m_28))->ScanTree_157ee0(static_cast<CSymTab*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -138,9 +138,9 @@ RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     CAttractRegistrar* reg = menuRoot()->m_28;
     if (reg->m_2c) {
-        ((SoundStream*)reg->m_2c)->Stop();
+        (reinterpret_cast<SoundStream*>(reg->m_2c))->Stop();
     }
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70("ATTRACT", "_");
+    (reinterpret_cast<CDDrawSubMgrLeafScan*>(menuRoot()->m_28))->RemoveKeysEqual_157c70("ATTRACT", "_");
     // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
     // CState vtable slot 2 default body; qualified -> direct call).
     CState::ReleaseResources();
@@ -175,7 +175,7 @@ i32 CAttract::Vslot09(i32 arg) {
     CString s;
     s.Format("TITLE%d", idx);
     RunTitleSeq(s, 0, 0, 1, 0);
-    CDDrawSubMgrPages* page = (CDDrawSubMgrPages*)menuRoot()->m_04;
+    CDDrawSubMgrPages* page = reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04);
     page->Method_158c70(page->m_backPair);
 
     i32 seed;
@@ -192,10 +192,10 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    CMapStringToOb* map = (CMapStringToOb*)(reinterpret_cast<char*>(menuRoot()->m_28) + 0x10);
+    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>((reinterpret_cast<char*>(menuRoot()->m_28) + 0x10));
     CObject* found = 0;
     map->Lookup(buf, found);
-    m_host = (CAttractHost*)found;
+    m_host = reinterpret_cast<CAttractHost*>(found);
     if (found != 0 && m_activeFlag != 0) {
         if (g_sndEnabled) {
             m_host->m_10->ApplyAndPlay(0x64, 0, 0, 0);
@@ -236,7 +236,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
     do {
         CAttractPooledRes* r = menuRoot()->m_28->m_2c;
         if (r) {
-            ((SoundDevice*)r)->PurgeVoiceList(-1);
+            (reinterpret_cast<SoundDevice*>(r))->PurgeVoiceList(-1);
         }
     } while (m_host->m_10->IsPlaying());
     return 1;
@@ -267,7 +267,7 @@ i32 CAttract::Render() {
 
     CAttractPooledRes* res = menuRoot()->m_28->m_2c;
     if (res) {
-        ((SoundDevice*)res)->PurgeVoiceList(-1);
+        (reinterpret_cast<SoundDevice*>(res))->PurgeVoiceList(-1);
     }
 
     if (g_frameDelta < m_idleTimer) {
@@ -300,7 +300,7 @@ RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
     // The page "loaded?" gate is CDDrawSubMgrPages::Method_158bc0 (0x158bc0), reached
     // through the page's real class (the CMenuPage view's IsLoaded @0x158bc0 == this).
-    if (((CDDrawSubMgrPages*)menuRoot()->m_04)->Method_158bc0() == 0) {
+    if ((reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04))->Method_158bc0() == 0) {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__

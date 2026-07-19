@@ -64,7 +64,7 @@ i32 Font::AllocateMemory(i32 count) {
         return 0;
     }
 
-    m_surfaces = (void**)operator new(m_count * sizeof(void*));
+    m_surfaces = static_cast<void**>(operator new(m_count * sizeof(void*)));
     m_glyphs = new Glyph[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
@@ -328,7 +328,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         rc.bottom = m.height;
     }
 
-    u16* bits = (u16*)surf->Lock(0);
+    u16* bits = reinterpret_cast<u16*>(surf->Lock(0));
     if (bits == 0) {
         return;
     }
@@ -490,7 +490,7 @@ void FontRenderer::DrawWrapped(
             text = "";
             if (y + lineAdvance <= rc.bottom) {
                 if (hcenter) {
-                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -523,7 +523,7 @@ void FontRenderer::DrawWrapped(
                 x = headW + x;
             } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
-                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -539,10 +539,10 @@ void FontRenderer::DrawWrapped(
                 if (head.GetLength() > 0) {
                     while (y < rc.bottom) {
                         i32 chW =
-                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(0)), 1)).width;
+                            MeasureText(CString(static_cast<char>((reinterpret_cast<CharCursor*>(&head))->GetChar(0)), 1)).width;
                         if (chW + x > rc.right) {
                             if (hcenter) {
-                                i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2
+                                i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2
                                          - MeasureText(line).width / 2;
                                 DrawLine(line, surf, cx, y, z);
                             } else {
@@ -565,7 +565,7 @@ void FontRenderer::DrawWrapped(
             }
             if (breakNL) {
                 if (hcenter) {
-                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -578,7 +578,7 @@ void FontRenderer::DrawWrapped(
     }
     if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
-            i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
+            i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
             DrawLine(line, surf, cx, y, z);
         } else {
             DrawLine(line, surf, rc.left, y, z);
@@ -702,7 +702,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     i32 j = 0;
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(j)), 1)).width;
+                            MeasureText(CString(static_cast<char>((reinterpret_cast<CharCursor*>(&head))->GetChar(j)), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;
@@ -809,7 +809,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                 if (head.GetLength() > 0) {
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(0)), 1)).width;
+                            MeasureText(CString(static_cast<char>((reinterpret_cast<CharCursor*>(&head))->GetChar(0)), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;

@@ -75,7 +75,7 @@
 // is the canonical m_strWorldFile "world file name", which demo mode blanks.)
 RVA(0x0003bfa0, 0x42)
 i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
-    ((CGruntzMgr*)ctx)->m_strWorldFile.Empty();
+    (reinterpret_cast<CGruntzMgr*>(ctx))->m_strWorldFile.Empty();
     if (CPlay::LoadGameAssetNamespaces(ctx, a1, a2) == 0) {
         return 0;
     }
@@ -119,11 +119,11 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    i32 node = m_28->ResolveQualified(key, (void*)0x575744);
+    i32 node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
     if (node == 0) {
         return 0;
     }
-    if (m_0c->m_24->LoadFromSource((CParseSource*)node) == 0) {
+    if (m_0c->m_24->LoadFromSource(reinterpret_cast<CParseSource*>(node)) == 0) {
         return 0;
     }
     m_0c->m_24->NotifyAllPlanes();
@@ -186,7 +186,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
     switch (reinterpret_cast<i32>(st->m_1c)) {
         case 1: {
             // step the current scroll position one unit toward the target.
-            CGameLevel* gh = ((CDDrawSurfaceMgr*)st->m_0c)->m_level;
+            CGameLevel* gh = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level;
             i32 curX = gh->m_mainPlane->m_originX;
             i32 curY = gh->m_mainPlane->m_originY;
             if (curX < st->m_scrollTargetX) {
@@ -213,7 +213,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             // apply the same coords to every plane layer (the m_planes CObArray;
             // the element cast is the devs' own - CObArray stores CObject*).
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
-                CLevelPlane* p = (CLevelPlane*)gh->m_planes[i];
+                CLevelPlane* p = static_cast<CLevelPlane*>(gh->m_planes[i]);
                 float px = static_cast<float>(curX);
                 float py = static_cast<float>(curY);
                 if (!(p->m_flags & 1)) {
@@ -232,11 +232,11 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
         }
         case 0: {
             // pick a fresh random per-axis target within the main plane's wrap range.
-            i32 rx = ((CDDrawSurfaceMgr*)st->m_0c)->m_level->m_mainPlane->m_wrapW;
+            i32 rx = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level->m_mainPlane->m_wrapW;
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = ((CDDrawSurfaceMgr*)st->m_0c)->m_level->m_mainPlane->m_wrapH;
+            i32 ry = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
-            st->m_1c = (void*)1;
+            st->m_1c = reinterpret_cast<void*>(1);
             break;
         }
     }
@@ -248,7 +248,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
 class CGrunt;
 RVA(0x0003c7f0, 0x18)
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
-    return *(void**)(reinterpret_cast<char*>(a) + 8) == *(void**)(reinterpret_cast<char*>(b) + 8);
+    return *reinterpret_cast<void**>((reinterpret_cast<char*>(a) + 8)) == *reinterpret_cast<void**>((reinterpret_cast<char*>(b) + 8));
 }
 
 // ---------------------------------------------------------------------------
@@ -382,14 +382,14 @@ i32 Gap_03c990(void) {
 // <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
-    ((ifstream*)static_cast<void*>(this))->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
-    ((ios*)(void*)(reinterpret_cast<char*>(this) + 0xc))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
+    (static_cast<ifstream*>(static_cast<void*>(this)))->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
+    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0xc))))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
-    ((ofstream*)static_cast<void*>(this))->ofstream::~ofstream(); // 0x16a8e0 ??1ofstream@@UAE@XZ
-    ((ios*)(void*)(reinterpret_cast<char*>(this) + 0x8))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
+    (static_cast<ofstream*>(static_cast<void*>(this)))->ofstream::~ofstream(); // 0x16a8e0 ??1ofstream@@UAE@XZ
+    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0x8))))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
 }
 
 // ---------------------------------------------------------------------------
@@ -490,7 +490,7 @@ i32 Handler03d2b0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntStartingPoint((CGameObject*)owner);
+            CUserLogic* sub = new CGruntStartingPoint(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -528,7 +528,7 @@ i32 Handler03d3f0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CExitTrigger((CGameObject*)owner);
+            CUserLogic* sub = new CExitTrigger(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -566,7 +566,7 @@ i32 Handler03d530(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntCreationPoint((CGameObject*)owner);
+            CUserLogic* sub = new CGruntCreationPoint(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -604,7 +604,7 @@ i32 Handler03d670(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CWormhole((CGameObject*)owner);
+            CUserLogic* sub = new CWormhole(reinterpret_cast<CGameObject*>(owner));
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -642,7 +642,7 @@ i32 Handler03d7b0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntPuddle((CGameObject*)owner);
+            CUserLogic* sub = new CGruntPuddle(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -680,7 +680,7 @@ i32 Handler03d8f0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CTeleporter((CGameObject*)owner);
+            CUserLogic* sub = new CTeleporter(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -718,7 +718,7 @@ i32 Handler03da30(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CSecretTeleporterTrigger((CGameObject*)owner);
+            CUserLogic* sub = new CSecretTeleporterTrigger(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -796,7 +796,7 @@ i32 Handler03dcb0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CFortressFlag((CGameObject*)owner);
+            CUserLogic* sub = new CFortressFlag(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -834,7 +834,7 @@ i32 Handler03ddf0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CSecretLevelTrigger((CGameObject*)owner);
+            CUserLogic* sub = new CSecretLevelTrigger(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;

@@ -77,7 +77,7 @@ i32 CSBI_WellGoo::Tick() {
     }
 
     CGooRenderCtx* ctx = g_gameReg->m_gameMgr->m_drawable->m_renderCtx;
-    m_baseFrame->RenderFrame((void*)ctx, reinterpret_cast<void*>(m_drawX), (void*)(m_rect14.m_c + 3), 0);
+    m_baseFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_rect14.m_c + 3)), 0);
 
     // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
@@ -89,7 +89,7 @@ i32 CSBI_WellGoo::Tick() {
     }
     m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.m_c) - fill));
 
-    m_blitter->Blit((ShadeRect*)&m_srcRect, m_gooSrc, (ShadeRect*)&m_srcRect, 0, 0);
+    m_blitter->Blit(reinterpret_cast<ShadeRect*>(&m_srcRect), m_gooSrc, reinterpret_cast<ShadeRect*>(&m_srcRect), 0, 0);
 
     m_drawGuard++;
     m_blitGuard++;
@@ -97,7 +97,7 @@ i32 CSBI_WellGoo::Tick() {
     m_blitGuard--;
     m_drawGuard--;
 
-    m_fgFrame->RenderFrame((void*)ctx, reinterpret_cast<void*>(m_drawX), (void*)(m_fgTop - 2), 0);
+    m_fgFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_fgTop - 2)), 0);
     return 1;
 }
 
@@ -178,8 +178,8 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)(reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10))
-                    ->Lookup(buf, (void*&)set);
+                (reinterpret_cast<CMapStringToPtr*>((reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10)))
+                    ->Lookup(buf, reinterpret_cast<void*&>(set));
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_fgFrame = set->m_frames[idx];
                 } else {
@@ -193,8 +193,8 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)(reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10))
-                    ->Lookup(buf, (void*&)set);
+                (reinterpret_cast<CMapStringToPtr*>((reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10)))
+                    ->Lookup(buf, reinterpret_cast<void*&>(set));
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_baseFrame = set->m_frames[idx];
                 } else {
@@ -211,7 +211,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = *(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158 + (g_curPlayer * 71) * 8);
+            i32 sel = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158 + (g_curPlayer * 71) * 8));
             i32 node = g_gameReg->m_refTable->GetSel(sel, 0);
             if (node == 0) {
                 node = g_gameReg->m_refTable->GetSel(1, 0);
@@ -221,21 +221,21 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_30->m_owned != 0) {
-                m_30->m_owned->m_palDescr = (ShadeDescr*)node;
+                m_30->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(node);
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_baseFrame->m_owned != 0) {
-                m_baseFrame->m_owned->m_palDescr = (ShadeDescr*)node;
+                m_baseFrame->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(node);
             }
             fr = m_fgFrame;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_fgFrame->m_owned != 0) {
-                m_fgFrame->m_owned->m_palDescr = (ShadeDescr*)node;
+                m_fgFrame->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(node);
             }
             break;
         }

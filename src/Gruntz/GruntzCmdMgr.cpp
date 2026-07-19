@@ -105,7 +105,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *(GzTargetObj**)(reinterpret_cast<char*>(pos) + 8);
+        GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
         i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
@@ -116,7 +116,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
             }
         }
         if (isPlay) {
-            table[*(u8*)(reinterpret_cast<char*>(obj) + 4)] = obj;
+            table[*reinterpret_cast<u8*>((reinterpret_cast<char*>(obj) + 4))] = obj;
         } else {
             obj->Select(sp);
             obj->Deselect();
@@ -147,7 +147,7 @@ RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *(GzTargetObj**)(reinterpret_cast<char*>(pos) + 8);
+        GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
         if (obj->m_6 == static_cast<u8>(typeByte) && obj->m_4 == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
             obj->Deselect();
@@ -235,9 +235,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
     }
     if (flag) {
         if (m_38->m_curState->Update() == GAMESTATE_PLAY) {
-            ((CGruntzCommand*)cmd)->m_submitted = 2; // submit-context = playing
+            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2; // submit-context = playing
         } else if (m_38->m_curState->Update() == GAMESTATE_NONE) {
-            ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
+            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4; // submit-context = ready
         }
         m_1c.AddTail(cmd);
     }
@@ -314,9 +314,9 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
     if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
         return 0;
     }
-    *(u16*)&m_10 = 0;
+    *reinterpret_cast<u16*>(&m_10) = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
-        *(u16*)&m_10 |= g_cmdBitTable[buf[i]];
+        *reinterpret_cast<u16*>(&m_10) |= g_cmdBitTable[buf[i]];
     }
     return 1;
 }
@@ -342,14 +342,14 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     m_4 = *buf++;
     m_5 = *buf++;
     m_6 = *buf++;
-    m_8 = *(i16*)buf;
+    m_8 = *reinterpret_cast<i16*>(buf);
     buf += 2;
-    m_a = *(i16*)buf;
+    m_a = *reinterpret_cast<i16*>(buf);
     buf += 2;
     m_10 = *buf++;
     // read m_5 as an unsigned byte (retail `cmp byte,8; jb`) via the &-address form so
     // the codegen is identical to an unsigned member conversion without a member cast.
-    if (*(u8*)&m_5 >= 8) {
+    if (*reinterpret_cast<u8*>(&m_5) >= 8) {
         m_11 = *buf++;
     }
     return buf - static_cast<char*>(data);
@@ -370,11 +370,11 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     m_4 = *buf++;
     m_5 = *buf++;
     m_6 = *buf++;
-    m_8 = *(i16*)buf;
+    m_8 = *reinterpret_cast<i16*>(buf);
     buf += 2;
-    m_a = *(i16*)buf;
+    m_a = *reinterpret_cast<i16*>(buf);
     buf += 2;
-    *(i16*)&m_10 = *(i16*)buf;
+    *reinterpret_cast<i16*>(&m_10) = *reinterpret_cast<i16*>(buf);
     buf += 2;
     return buf - static_cast<char*>(data);
 }
@@ -395,9 +395,9 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     *++buf = m_5;
     *++buf = m_6;
     char* w = buf + 1;
-    *(i16*)w = m_8;
+    *reinterpret_cast<i16*>(w) = m_8;
     w += 2;
-    *(i16*)w = m_a;
+    *reinterpret_cast<i16*>(w) = m_a;
     w += 2;
     *w = m_10;
     w++;
@@ -421,11 +421,11 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     *++buf = m_5;
     *++buf = m_6;
     char* w = buf + 1;
-    *(i16*)w = m_8;
+    *reinterpret_cast<i16*>(w) = m_8;
     w += 2;
-    *(i16*)w = m_a;
+    *reinterpret_cast<i16*>(w) = m_a;
     w += 2;
-    *(i16*)w = *(i16*)&m_10;
+    *reinterpret_cast<i16*>(w) = *reinterpret_cast<i16*>(&m_10);
     w += 2;
     return w - start;
 }
@@ -456,7 +456,7 @@ i32 CGruntzCommand::ApplyMask(CPlay* p) {
     }
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
-        if (g_cmdBitTable[i] & *(u16*)&m_10) {
+        if (g_cmdBitTable[i] & *reinterpret_cast<u16*>(&m_10)) {
             if (!p->ExecCommand(m_4, static_cast<char>(i), m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
@@ -476,7 +476,7 @@ i32 CGruntzCommand::ApplyMask(CPlay* p) {
 RVA(0x00024220, 0x2b)
 CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     if (g_singleCmdCount) {
-        return (CGruntzSingleCommand*)g_singleCmdList.RemoveTail();
+        return static_cast<CGruntzSingleCommand*>(g_singleCmdList.RemoveTail());
     }
     return new CGruntzSingleCommand;
 }
@@ -529,7 +529,7 @@ void* CGruntzCommand::ScalarDtor(u32 flags) {
 RVA(0x00024360, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     if (g_multiCmdCount) {
-        return (CGruntzMultiCommand*)g_multiCmdList.RemoveTail();
+        return static_cast<CGruntzMultiCommand*>(g_multiCmdList.RemoveTail());
     }
     return new CGruntzMultiCommand;
 }
@@ -557,7 +557,7 @@ void CGruntzCommand::CGruntzCommand_024430() {
 RVA(0x00024450, 0x29)
 void CGruntzSingleCommand::FreeAll() {
     while (g_singleCmdCount) {
-        CGruntzCommand* node = (CGruntzCommand*)g_singleCmdList.RemoveTail();
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(g_singleCmdList.RemoveTail());
         if (node) {
             delete node;
         }
@@ -572,7 +572,7 @@ void CGruntzSingleCommand::FreeAll() {
 RVA(0x00024490, 0x29)
 void CGruntzMultiCommand::FreeAll() {
     while (g_multiCmdCount) {
-        CGruntzCommand* node = (CGruntzCommand*)g_multiCmdList.RemoveTail();
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(g_multiCmdList.RemoveTail());
         if (node) {
             delete node;
         }

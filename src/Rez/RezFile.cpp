@@ -64,7 +64,7 @@ CRezItmBase::CRezItmBase(void* parent) {
     // (mangled ??0CRezItmBase@@QAE@PAX@Z = PAX), while the stored member is the
     // typed Retry-gate CRezItmOwner*. Storing the void* param into the typed
     // member requires the reinterpret.
-    m_parent = (CRezItmOwner*)parent;
+    m_parent = static_cast<CRezItmOwner*>(parent);
 }
 
 // ---------------------------------------------------------------------------
@@ -463,7 +463,7 @@ CRezFile::~CRezFile() {
 // unsigned-zero-guard-le-not-eq.md).
 RVA(0x0013cc00, 0x9f)
 i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
-    (void)a;
+    static_cast<void>(a);
     if (count <= 0) {
         return 0;
     }
@@ -489,7 +489,7 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
 // RezFRead); same open/seek/retry gating. Returns the bytes written (== count) or 0.
 RVA(0x0013cca0, 0x9f)
 i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
-    (void)a;
+    static_cast<void>(a);
     if (count <= 0) {
         return 0;
     }

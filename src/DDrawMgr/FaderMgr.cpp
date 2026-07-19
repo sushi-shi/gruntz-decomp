@@ -39,7 +39,7 @@ extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)
 // descriptor's +0) against nFaderType. Read here through the CFader* the retail
 // signature carries - a bounded interface-forced reinterpret, not a class miscast.
 static inline i32 InitTypeId(CFader* pInit) {
-    return *(i32*)pInit;
+    return *reinterpret_cast<i32*>(pInit);
 }
 
 // ===========================================================================
@@ -248,7 +248,7 @@ append:
             m_arr.m_nMaxSize = 0;
             m_arr.m_nSize = 0;
         } else if (m_arr.m_pData == 0) {
-            m_arr.m_pData = (CFader**)operator new(newSize * 4);
+            m_arr.m_pData = static_cast<CFader**>(operator new(newSize * 4));
             memset(m_arr.m_pData, 0, newSize * 4);
             m_arr.m_nMaxSize = newSize;
             m_arr.m_nSize = newSize;
@@ -271,7 +271,7 @@ append:
             if (newSize > newMax) {
                 newMax = newSize;
             }
-            CFader** nd = (CFader**)operator new(newMax * 4);
+            CFader** nd = static_cast<CFader**>(operator new(newMax * 4));
             memcpy(nd, m_arr.m_pData, m_arr.m_nSize * 4);
             memset(&nd[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
             operator delete(m_arr.m_pData);
@@ -375,7 +375,7 @@ void CFaderMgr::DeleteAll() {
 // ===========================================================================
 RVA(0x0017e230, 0xc)
 void __stdcall Fader_TraceStr(CString s) {
-    (void)s;
+    static_cast<void>(s);
 }
 
 // ===========================================================================
@@ -405,7 +405,7 @@ void CFaderArray::Serialize(CArchive& ar) {
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == 0) {
-            m_pData = (CFader**)::operator new(n * 4);
+            m_pData = static_cast<CFader**>(::operator new(n * 4));
             memset(m_pData, 0, n * 4);
             m_nMaxSize = n;
             m_nSize = n;
@@ -428,7 +428,7 @@ void CFaderArray::Serialize(CArchive& ar) {
             if (n >= newMax) {
                 newMax = n;
             }
-            CFader** nd = (CFader**)::operator new(newMax * 4);
+            CFader** nd = static_cast<CFader**>(::operator new(newMax * 4));
             memcpy(nd, m_pData, m_nSize * 4);
             memset(nd + m_nSize, 0, (n - m_nSize) * 4);
             ::operator delete(m_pData);

@@ -302,8 +302,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatProgrammingGod: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
-                                (LeafCue*)(static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup_05b7e0("GAME_MINORCHEAT");
+                                static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                                    ->Lookup_05b7e0("GAME_MINORCHEAT"));
                             if (_c) {
                                 _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                             }
@@ -448,16 +448,16 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
                         CGameRegistry* _s =
-                            (CGameRegistry*)g_gameReg; // dual-view bridge (same object)
-                        void* _key = (void*)_s->m_focusSlots[0].m_0c; // death/monologo sprite key
+                            static_cast<CGameRegistry*>(g_gameReg); // dual-view bridge (same object)
+                        void* _key = reinterpret_cast<void*>(_s->m_focusSlots[0].m_0c); // death/monologo sprite key
                         if (_key) {
                             CWwdGameObjectE* _dr = 0;
-                            if (_s->m_world->m_childGroup->m_map48.Lookup((void*)_key, (void*&)_dr)
+                            if (_s->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
                                 && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
                                 // AnimWorkerObj::m_logic holds the bound grunt logic leaf
-                                CGrunt* _d = (CGrunt*)_dr->m_7c->m_logic;
+                                CGrunt* _d = static_cast<CGrunt*>(_dr->m_7c->m_logic);
                                 if (_d) {
                                     _d->ResolveDeathAnimation();
                                 }
@@ -565,8 +565,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatWawa:
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
-                                (LeafCue*)(static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup_05b7e0("GAME_WAWA");
+                                static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                                    ->Lookup_05b7e0("GAME_WAWA"));
                             if (_c) {
                                 _c->PlayIfElapsed(0x64, 0, 0, 0);
                             }
@@ -582,7 +582,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         }
                         // the guts/UI subsystem's concrete methods are CStatusBarMgr's (@0x10bc30) -
                         // retype CPlay::m_guts pending the Play.cpp reconciliation
-                        ((CStatusBarMgr*)_g->m_guts)->UpdateDestructButton(0x1387);
+                        (static_cast<CStatusBarMgr*>(_g->m_guts))->UpdateDestructButton(0x1387);
                         AppendChatMessage(
                             "My name is Kevin Lambert.  You typed in my cheat "
                             "code.  Prepare to die."
@@ -603,7 +603,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (!_g->m_guts) {
                             return 0;
                         }
-                        ((CStatusBarMgr*)_g->m_guts)->AdvanceGauge(0x64); // +100 goo
+                        (static_cast<CStatusBarMgr*>(_g->m_guts))->AdvanceGauge(0x64); // +100 goo
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;
@@ -633,7 +633,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatPsyche:
                         RunModalDialog(
                             "PSYCHE",
-                            (void*)0x402649,
+                            reinterpret_cast<void*>(0x402649),
                             0
                         ); // bare imm matches the target (LAB_, no reloc/symbol)
                         return 1;
@@ -677,7 +677,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             void* _c_ob = 0;
                             m_world->m_soundRegistry->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
-                            LeafCue* _c = (LeafCue*)_c_ob;
+                            LeafCue* _c = static_cast<LeafCue*>(_c_ob);
                             if (_c && g_sndEnabled) {
                                 i32 now = g_killCueClock;
                                 if (static_cast<u32>((now - _c->m_14)) >= static_cast<u32>(_c->m_18)) {
@@ -704,7 +704,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             m_114 = 1;
             CString tmp(si->m_levelName);
             m_strWorldFile = tmp;
-            (void)notifyCode;
+            static_cast<void>(notifyCode);
             if (tmp.GetLength()) {
                 if (si->m_isWon) {
                     if (si->m_f8) {
@@ -1113,7 +1113,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             RunModalDialog(
                 "CONFIG_SETTINGS",
-                (void*)0x403ae4,
+                reinterpret_cast<void*>(0x403ae4),
                 0
             ); // bare imm matches the target (LAB_)
             if (mus) {
@@ -1180,8 +1180,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             Fwd114ec0(
                 m_settings,
                 this,
-                ((CGameRegistry*)g_gameReg)->m_modeW,
-                ((CGameRegistry*)g_gameReg)->m_modeH,
+                (static_cast<CGameRegistry*>(g_gameReg))->m_modeW,
+                (static_cast<CGameRegistry*>(g_gameReg))->m_modeH,
                 0,
                 0
             );

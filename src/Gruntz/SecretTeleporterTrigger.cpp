@@ -79,10 +79,10 @@ i32 g_actScratch;
 static inline CActEntry* ActLookup(i32 coord) {
     g_actScratch = 0;
     if (coord >= g_actLo && coord <= g_actHi) {
-        return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
+        return reinterpret_cast<CActEntry*>((g_actBase + (coord - g_actLo) * g_actStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_actColl)->GrowTo(coord, 0))) {
-        return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_actColl))->GrowTo(coord, 0))) {
+        return reinterpret_cast<CActEntry*>((g_actBase + (coord - g_actLo) * g_actStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -119,7 +119,7 @@ i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -149,7 +149,7 @@ i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
@@ -190,7 +190,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
 // (0x408710). Free init thunk; reloc-masked.
 RVA(0x000420d0, 0x15)
 void CSecretTeleporterTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_actColl)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actColl))->Construct(2000, 2010);
 }
 
 // --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---
@@ -222,20 +222,20 @@ void CSecretTeleporterTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CTelActEntry*)ActLookup(id))->m_fn = (i32 (CUserLogic::*)())&CSecretTeleporterTrigger::SpawnTeleporter;
+    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
 // --- CSecretLevelTrigger 1-arg ctor (0x0424b0), vptr 0x5e8804 --- folds the inline
@@ -264,7 +264,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
 // reloc-masked.
 RVA(0x000426e0, 0x15)
 void CSecretLevelTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_secretActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_secretActReg))->Construct(2000, 2010);
 }
 
 // CSecretLevelTrigger::FireActivation @0x042760 - look the activation coordinate up
@@ -273,9 +273,9 @@ void CSecretLevelTrigger::InitActReg() {
 // as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
-    CSecretActEntry* e = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+    CSecretActEntry* e = reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CSecretActEntry* e2 = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+        CSecretActEntry* e2 = reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -295,20 +295,20 @@ void CSecretLevelTrigger::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CSecretActEntry*)g_secretActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CSecretLevelTrigger::Tick;
+    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CSecretLevelTrigger::Tick;
 }
 
 // CSecretLevelTrigger::Tick @0x042ac0 - probe the trigger's screen position; if a
@@ -320,8 +320,7 @@ i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CGameObject* spr = m_object;
     CTrigger* hit =
-        (CTrigger*)
-            g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+        reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1));
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -354,7 +353,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CGameObject* o = m_object;
     CTrigger* hit =
-        (CTrigger*)g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
+        reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1));
     if (hit) {
         o = m_object;
         CDDrawChildGroup* fac = g_gameReg->m_world->m_childGroup;
@@ -383,7 +382,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CLevelPlane* rc = g->m_world->m_level->m_mainPlane;
             if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
                 && ey >= rc->m_originY) {
-                ((CGruntSpawnConfig*)g->m_cueSink)
+                (reinterpret_cast<CGruntSpawnConfig*>(g->m_cueSink))
                     ->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
             }
         }

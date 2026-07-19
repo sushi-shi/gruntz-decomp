@@ -168,7 +168,7 @@ void operator delete(void* p);
 // its m_nCount). A separate inline so its read schedules before the handle read,
 // matching the factory's register assignment.
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
-    return *(const i32*)(reinterpret_cast<const char*>(p) + 0x1c);
+    return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
 }
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
@@ -222,7 +222,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     if (gate == 0) {
         return 0;
     }
-    LeafCue* p = (LeafCue*)val;
+    LeafCue* p = static_cast<LeafCue*>(val);
     // Throttle: when the interval has elapsed, restamp the clock and tail-return the
     // (void-modeled) ConfigureItem result so the success epilogue falls through
     // WITHOUT zeroing eax (retail's split-epilogue shape: the guard-failure paths
@@ -337,7 +337,7 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     if (m_10map.Lookup(key, val)) {
         m_10map.RemoveKey(key);
-        delete ((CDDrawWorker*)val); // the map values ARE the keyed workers
+        delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
     }
 }
 
@@ -394,7 +394,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
         }
         return 0;
     }
-    m_workers.AddTail((::CObject*)w);
+    m_workers.AddTail(static_cast<::CObject*>(w));
     return w;
 }
 
@@ -461,9 +461,9 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((::CObject*)w);
+        m_workers.AddHead(static_cast<::CObject*>(w));
     } else {
-        m_workers.AddTail((::CObject*)w);
+        m_workers.AddTail(static_cast<::CObject*>(w));
     }
     return w;
 }
@@ -559,9 +559,9 @@ void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((::CObject*)w);
+        m_workers.AddHead(static_cast<::CObject*>(w));
     } else {
-        m_workers.AddTail((::CObject*)w);
+        m_workers.AddTail(static_cast<::CObject*>(w));
     }
     return w;
 }
@@ -577,9 +577,9 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((::CObject*)w);
+        m_workers.AddHead(static_cast<::CObject*>(w));
     } else {
-        m_workers.AddTail((::CObject*)w);
+        m_workers.AddTail(static_cast<::CObject*>(w));
     }
     return w;
 }
@@ -855,12 +855,12 @@ i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
     if (mgr == 0) {
         return 0;
     }
-    char* cue = *(char**)(mgr + 0x20);
+    char* cue = *reinterpret_cast<char**>((mgr + 0x20));
     if (force == 0) {
         if (cue == 0) {
             return 0;
         }
-        if (*(i32*)(cue + 0x78) == 0) {
+        if (*reinterpret_cast<i32*>((cue + 0x78)) == 0) {
             return 0;
         }
     }
@@ -904,10 +904,10 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
     if (p == 0) {
         return;
     }
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
     CString key;
     void* value = 0;
-    if (pos != (POSITION)0) {
+    if (pos != static_cast<POSITION>(0)) {
         do {
             m_map.GetNextAssoc(pos, key, value);
             if (value == p) {
@@ -915,7 +915,7 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
                 delete p;
                 break;
             }
-        } while (pos != (POSITION)0);
+        } while (pos != static_cast<POSITION>(0));
     }
 }
 
@@ -930,13 +930,13 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
 RVA(0x00157bc0, 0xa2)
 void CDDrawSubMgrLeafScan::ClearMap() {
     void* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
-    if (*(volatile i32*)&pos != 0) {
+    if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((LeafCue*)val); // the cache values ARE the LeafCue elements
+                delete (static_cast<LeafCue*>(val)); // the cache values ARE the LeafCue elements
             }
         } while (pos != 0);
     }
@@ -962,7 +962,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
         if (strncmp(key, match, len) == 0) {
             m_10.RemoveKey(key);
             if (val != 0) {
-                delete ((LeafCue*)val);
+                delete (static_cast<LeafCue*>(val));
             }
             ++n;
         }
@@ -992,7 +992,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
     if (e == 0) {
         return 0;
     }
-    if (e->Configure_158760((CParseSource*)arg2) == 0) {
+    if (e->Configure_158760(static_cast<CParseSource*>(arg2)) == 0) {
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
@@ -1073,7 +1073,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
         return 0;
     }
     buf[0] = 0;
-    CSymTab* node = (CSymTab*)tree->FirstSub();
+    CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != 0) {
         if (prefix != 0 && *prefix != 0) {
             sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
@@ -1081,7 +1081,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
             strcpy(buf, node->m_name);
         }
         count += ScanTree_157ee0(node, buf, suffix);
-        node = (CSymTab*)tree->NextSub(node);
+        node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     // `file` stays void*: the outer leaf-table record has its next-link at +0x04 (NextSym)
     // and its entry chain at +0x24 (NextSym2) - neither offset is CParseSource's, so this
@@ -1089,7 +1089,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
     void* file = tree->FirstSym();
     if (file != 0) {
         do {
-            CParseSource* fn = (CParseSource*)tree->NextSym2(file);
+            CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(file));
             while (fn != 0) {
                 if (fn->GetEntryTag() == PARSETAG_VAW) {
                     if (prefix != 0 && *prefix != 0) {
@@ -1105,7 +1105,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
                         }
                     }
                 }
-                fn = (CParseSource*)tree->NextSym3(fn);
+                fn = static_cast<CParseSource*>(tree->NextSym3(fn));
             }
             file = tree->NextSym(file);
         } while (file != 0);
@@ -1139,9 +1139,9 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
         m_10.GetNextAssoc(pos, key, val);
         if (val != 0) {
             if (str == 0 || *str == 0) {
-                sum += ((LeafCue*)val)->m_10->m_sampleCount;
+                sum += (static_cast<LeafCue*>(val))->m_10->m_sampleCount;
             } else if (strncmp(key, str, strlen(str)) == 0) {
-                sum += ((LeafCue*)val)->m_10->m_sampleCount;
+                sum += (static_cast<LeafCue*>(val))->m_10->m_sampleCount;
             }
         }
     }
@@ -1164,12 +1164,12 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
 // A dead function still belongs to a class; here its own neighbours name it.
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
-    char* p24 = *(char**)(reinterpret_cast<char*>(m_0c) + 0x24);
-    if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_30 == 0) {
+    char* p24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_0c) + 0x24));
+    if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_30 == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
-            return ((CAniBlitTrigger*)val)->TriggerBlit_1587f0(pos, -1, range1, range2);
+            return (static_cast<CAniBlitTrigger*>(val))->TriggerBlit_1587f0(pos, -1, range1, range2);
         }
     }
     return 0;
@@ -1187,14 +1187,14 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
     if (m_30 != 0) {
         return 0;
     }
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     if (pos == 0) {
         return 0;
     }
     void* val = 0;
     CString key;
     m_10.GetNextAssoc(pos, key, val);
-    return (LeafCue*)val;
+    return static_cast<LeafCue*>(val);
 }
 
 // ---------------------------------------------------------------------------
@@ -1211,7 +1211,7 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafCue* target) {
     if (m_30 != 0) {
         return 0;
     }
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     if (pos == 0) {
         return 0;
     }
@@ -1219,13 +1219,13 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafCue* target) {
     CString key;
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if (val == (void*)target) {
+        if (val == static_cast<void*>(target)) {
             if (pos == 0) {
                 return 0;
             }
             val = 0;
             m_10.GetNextAssoc(pos, key, val);
-            return (LeafCue*)val;
+            return static_cast<LeafCue*>(val);
         }
     }
     return 0;
@@ -1317,7 +1317,7 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue* target) {
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if (val == (void*)target) {
+        if (val == static_cast<void*>(target)) {
             return key;
         }
     }
@@ -1398,7 +1398,7 @@ i32 LeafCue::Configure_158760(CParseSource* src) {
         src->EndParse();
         return 0;
     }
-    DSoundCloneInst* buf = dev->Acquire((void*)blob, 0x100ea, 0);
+    DSoundCloneInst* buf = dev->Acquire(reinterpret_cast<void*>(blob), 0x100ea, 0);
     m_10 = buf;
     i32 ok = buf != 0;
     src->EndParse();
@@ -1450,15 +1450,15 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         return 0;
     }
     if (center <= 0) {
-        center = *(i32*)(*(char**)(*(char**)(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84);
+        center = *reinterpret_cast<i32*>((*(char**)(*(char**)(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84));
     }
     if (range1 <= 0) {
-        char* m4 = *(char**)(reinterpret_cast<char*>(m_ctx) + 0x4);
-        range1 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) << 2;
+        char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
+        range1 = *reinterpret_cast<i32*>((*(char**)(m4 + 0x10) + 0x10)) << 2;
     }
     if (range2 <= 0) {
-        char* m4 = *(char**)(reinterpret_cast<char*>(m_ctx) + 0x4);
-        range2 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) / 3;
+        char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
+        range2 = *reinterpret_cast<i32*>((*(char**)(m4 + 0x10) + 0x10)) / 3;
     }
     i32 d = pos - center;
     i32 pan;
@@ -1501,9 +1501,9 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
     CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(reinterpret_cast<i32>(m_0c), 0, 0);
-    m_frontPair = (CDDrawSurfacePair*)a;
+    m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(a);
 
-    CDDrawSurfacePair* b = (CDDrawSurfacePair*)operator new(0x34);
+    CDDrawSurfacePair* b = static_cast<CDDrawSurfacePair*>(operator new(0x34));
     if (b != 0) {
         new (b) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 1, 0);
         b->m_width = 0;
@@ -1512,7 +1512,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
     m_backPair = b;
 
-    CDDrawSurfacePair* c = (CDDrawSurfacePair*)operator new(0x34);
+    CDDrawSurfacePair* c = static_cast<CDDrawSurfacePair*>(operator new(0x34));
     if (c != 0) {
         new (c) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 2, 0);
         c->m_width = 0;
@@ -1584,7 +1584,7 @@ i32 CDDrawSubMgrPages::Method_158b10(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->ResolveImage_163ee0((CParseSource*)arg1);
+    return p->ResolveImage_163ee0(reinterpret_cast<CParseSource*>(arg1));
 }
 
 // 0x158b40: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x34.
@@ -1602,7 +1602,7 @@ i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->LoadImage_163e50((CParseSource*)arg1);
+    return p->LoadImage_163e50(reinterpret_cast<CParseSource*>(arg1));
 }
 
 // 0x158b90: flip m_frontPair's surface, then broadcast (back-pair, overlay-pair)

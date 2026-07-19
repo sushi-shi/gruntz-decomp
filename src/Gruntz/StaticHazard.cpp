@@ -90,7 +90,7 @@ CCoordColl g_haznColl;
 // src/Stub/BoundaryLowerThunks.cpp (was RegRangefbb70).
 RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
-    ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_haznColl))->Construct(0x7d0, 0x7da);
 }
 
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
@@ -117,7 +117,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
@@ -147,10 +147,10 @@ i32 g_haznScratch;
 static inline CHaznEntry* HaznLookup(i32 coord) {
     g_haznScratch = 0;
     if (coord >= g_haznLo && coord <= g_haznHi) {
-        return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
+        return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_haznColl)->GrowTo(coord, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
-        return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_haznColl))->GrowTo(coord, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
+        return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -191,7 +191,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+        CAniRecordView* e = d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     // snap the bound object's screen position to tile center.
@@ -228,7 +228,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_pulseEpoch = g_frameTime;
     void* entry_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) void*& out-param
     g_gameReg->m_world->m_animRegistry->m_10.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
-    CAniElement* entry = (CAniElement*)entry_ob;
+    CAniElement* entry = static_cast<CAniElement*>(entry_ob);
     if (entry != 0) {
         // base AniPad window + the resolved anim's frame total (the per-effect AniPad bias)
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
@@ -269,38 +269,38 @@ void CStaticHazard::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CHaznEntry2*)HaznLookup(id))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes2;
+    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes2;
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", (void*)id2);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
         char* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    ((CHaznEntry2*)HaznLookup(id2))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes;
+    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id2)))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes;
 }
 
 // ---------------------------------------------------------------------------
@@ -336,7 +336,7 @@ i32 CStaticHazard::LoadAttributes2() {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+        CAniRecordView* e = d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -374,7 +374,7 @@ i32 CStaticHazard::LoadAttributes() {
             {
                 CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
-                    d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                    d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_latchedAnimId != 0) {
@@ -394,7 +394,7 @@ i32 CStaticHazard::LoadAttributes() {
         {
             CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
-                d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -417,7 +417,7 @@ i32 CStaticHazard::LoadAttributes() {
         {
             CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
-                d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -461,7 +461,7 @@ dispatch:
             {
                 CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
-                    d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                    d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
@@ -496,7 +496,7 @@ SIZE_UNKNOWN(WwdAnimSub);
 // archetype, but with the field block emitted before the chain gates.
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* arc = (CSerialArchive*)ar;
+    CSerialArchive* arc = static_cast<CSerialArchive*>(ar);
     switch (mode) {
         case 4:
             arc->Write(&m_pulseEpoch, 4);
@@ -515,8 +515,8 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(arc, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }

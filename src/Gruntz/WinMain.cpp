@@ -144,7 +144,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         void* pValue;
         UINT uLen;
-        VerQueryValueA(pInfo, (LPSTR) "\\StringFileInfo\\040904B0\\FileVersion", &pValue, &uLen);
+        VerQueryValueA(pInfo, const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"), &pValue, &uLen);
         VersionScan(
             static_cast<const char*>(pValue),
             "%d, %d, %d, %d",
@@ -213,7 +213,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
             g_hInstance,
             "CONFIG_ADVANCED",
             0,
-            (DLGPROC)&AdvancedOptionsDialogProc,
+            reinterpret_cast<DLGPROC>(&AdvancedOptionsDialogProc),
             0
         );
         if (nDlgResult == 0) {

@@ -57,7 +57,7 @@ namespace ApiCallerStubs {
             out[i + 2] = raw[i + 0];
             out[i + 3] = 0;
         }
-        return Build((PALETTEENTRY*)out, 0);
+        return Build(reinterpret_cast<PALETTEENTRY*>(out), 0);
     }
 
     // __thiscall(path, arg): find/load/lock a PALETTE resource from the app resource

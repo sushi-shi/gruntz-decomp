@@ -59,13 +59,13 @@ i32 CSBI_ImageSet::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    (void)extra;
+    static_cast<void>(extra);
     if (host == 0 || owner == 0) {
         return 0;
     }
     m_2c = reinterpret_cast<i32>(owner);
     m_10 = obj;
-    i32* rc = (i32*)&m_rect14;
+    i32* rc = reinterpret_cast<i32*>(&m_rect14);
     m_24 = reinterpret_cast<i32>(host);
     m_28 = 0;
     m_4 = 1;
@@ -78,7 +78,7 @@ i32 CSBI_ImageSet::SetupImage(
         return 0;
     }
     CImageSet* rec = 0;
-    ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)rec);
+    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
     m_34 = rec;
     if (rec == 0) {
         return 0;
@@ -89,7 +89,7 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_38 = f;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        m_30 = (CImage*)rec->m_items.GetAt(f);
+        m_30 = static_cast<CImage*>(rec->m_items.GetAt(f));
     } else {
         m_30 = 0;
     }
@@ -122,17 +122,17 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
         CImageSet* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = (CImage*)tbl->m_items.GetAt(m_38);
+            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
         } else {
             cel = 0;
         }
         m_30 = cel;
         if (cel != 0) {
             cel->RenderFrame(
-                (void*)reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair),
-                (void*)(cel->m_anchorX + m_rect14.m_0),
-                (void*)(cel->m_anchorY + m_rect14.m_4),
-                (void*)0
+                reinterpret_cast<void*>(reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)),
+                reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
+                reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
+                static_cast<void*>(0)
             );
         }
     }
@@ -168,7 +168,7 @@ i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) 
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CImageSet* out;
-                reg->m_imageRegistry->m_10map.Lookup(buf, (CObject*&)out);
+                reg->m_imageRegistry->m_10map.Lookup(buf, reinterpret_cast<CObject*&>(out));
                 m_34 = out;
             } else {
                 m_34 = 0;

@@ -64,7 +64,7 @@ int StartUpPrompt(HWND hWnd) {
 
     CString strPath;
     CString strRez = "Gruntz.REZ";
-    strPath.Format("%s\\%s", szDir, (LPCTSTR)strRez);
+    strPath.Format("%s\\%s", szDir, static_cast<LPCTSTR>(strRez));
 
     char szText[128];
     char szCaption[62];

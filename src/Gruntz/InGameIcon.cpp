@@ -122,10 +122,10 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     } else {
         i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set((void*)v, sentinel, 0xc);
+        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
         r = v->m_spare;
     }
-    CString* slot = (CString*)v->m_alloc;
+    CString* slot = reinterpret_cast<CString*>(v->m_alloc);
     i32 n = v->m_grown;
     while (n-- != 0) {
         if (slot) {
@@ -148,7 +148,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     }
     i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set((void*)v, sentinel, 0xc);
+    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
     return v->m_spare;
 }
 
@@ -321,28 +321,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 1;
-            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             lvl->m_anchors[0].m_x = m_object->m_screenX;
             lvl->m_anchors[0].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 2;
-            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             lvl->m_anchors[1].m_x = m_object->m_screenX;
             lvl->m_anchors[1].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 3;
-            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             lvl->m_anchors[2].m_x = m_object->m_screenX;
             lvl->m_anchors[2].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 4;
-            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             lvl->m_anchors[3].m_x = m_object->m_screenX;
             lvl->m_anchors[3].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
@@ -480,7 +480,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // WarpStone test-mode: re-apply the per-level warp target sprite name.
     if (m_object->m_124 == 0x14 && g_gameReg->m_134 == 1) {
-        CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+        CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
         levelStr.Format("Level%i", lvl->m_levelIndex);
         CString warpName;
@@ -523,12 +523,12 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_c)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
         char* cell = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
-        *(i32*)(cell + 8) = mv;
+        *reinterpret_cast<i32*>((cell + 8)) = mv;
         char* cell0 = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
         if (mv != 0) {
-            *(i32*)cell0 |= 0x40000;
+            *reinterpret_cast<i32*>(cell0) |= 0x40000;
         } else {
-            *(i32*)cell0 &= ~0x40000;
+            *reinterpret_cast<i32*>(cell0) &= ~0x40000;
         }
     }
     m_object->m_stateFlags &= ~1;
@@ -566,7 +566,7 @@ i32 CInGameIcon::HandleInput() {
             return 0;
         }
         i32 slot = key * 71;
-        i32 icon = ((i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[slot * 2];
+        i32 icon = (reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[slot * 2];
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
@@ -623,8 +623,8 @@ i32 CInGameIcon::HandleInput() {
 // rather than CSE-ing - hence the two inline expansions.
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*(IconActHandler*)ResolveSlot(&g_iconActionTable, id) != 0) {
-        (this->*(*(IconActHandler*)ResolveSlot(&g_iconActionTable, id)))();
+    if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&g_iconActionTable, id)) != 0) {
+        (this->*(*reinterpret_cast<IconActHandler*>(ResolveSlot(&g_iconActionTable, id))))();
     }
 }
 
@@ -635,7 +635,7 @@ void CInGameIcon::FireActivation(i32 id) {
 // index band [0x7d0, 0x7da].
 RVA(0x00097800, 0x15)
 void InitIconActionTable() {
-    ((CZDArrayDerived*)&g_iconActionTable)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_iconActionTable))->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -656,23 +656,23 @@ RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
     i32 idxA = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idxA == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "A";
+        *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
     i32 dslotA = ResolveSlot(&g_iconActionTable, idxA);
-    *(void**)dslotA = (void*)&IconAction_4023d3;
+    *reinterpret_cast<void**>(dslotA) = static_cast<void*>(&IconAction_4023d3);
 
     i32 idxB = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (idxB == 0) {
-        g_buteTree.Insert("B", (void*)g_typeCounter);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "B";
+        *reinterpret_cast<CString*>(slot) = "B";
         g_typeCounter++;
     }
     i32 dslotB = ResolveSlot(&g_iconActionTable, idxB);
-    *(void**)dslotB = (void*)&IconAction_403c06;
+    *reinterpret_cast<void**>(dslotB) = static_cast<void*>(&IconAction_403c06);
 }
 
 // ===========================================================================
@@ -682,7 +682,7 @@ void RegisterIconActions() {
 // index band [0x7d0, 0x7da].
 RVA(0x00097d60, 0x15)
 void InitIconStateTable() {
-    ((CZDArrayDerived*)&g_iconStateTable)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_iconStateTable))->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -700,8 +700,8 @@ void InitIconStateTable() {
 // (and so the PMF's class) is corrected.
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*(ToyPeekActHandler*)ResolveSlot(&g_iconStateTable, id) != 0) {
-        (this->*(*(ToyPeekActHandler*)ResolveSlot(&g_iconStateTable, id)))();
+    if (*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&g_iconStateTable, id)) != 0) {
+        (this->*(*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&g_iconStateTable, id))))();
     }
 }
 
@@ -721,13 +721,13 @@ RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
     i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "A";
+        *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_iconStateTable, idx);
-    *(void**)dslot = (void*)&IconState_40370b;
+    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&IconState_40370b);
 }
 
 // ===========================================================================
@@ -742,8 +742,8 @@ i32 CInGameIcon::RefreshCell() {
     CGameObject* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_driftPos;
-    if (delta < *(i64*)&m_driftThresh) {
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
+    if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c)
@@ -812,7 +812,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_68 >= *(i64*)&m_70) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_68) >= *reinterpret_cast<i64*>(&m_70)) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -850,10 +850,10 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = reinterpret_cast<char*>(*(i32**)(reinterpret_cast<char*>(grid->m_8) + rowByte));
-        *(i32*)(cell0 + cellOff + 8) = 0;
-        char* cell1 = reinterpret_cast<char*>(*(i32**)(reinterpret_cast<char*>(grid->m_8) + rowByte));
-        *(i32*)(cell1 + cellOff) &= ~0x40000;
+        char* cell0 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_8) + rowByte)));
+        *reinterpret_cast<i32*>((cell0 + cellOff + 8)) = 0;
+        char* cell1 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_8) + rowByte)));
+        *reinterpret_cast<i32*>((cell1 + cellOff)) &= ~0x40000;
     }
 }
 
@@ -891,14 +891,14 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
-        CIconRecord* cell = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
+        CIconRecord* cell = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
         i32 ok;
         if (cell == 0 || cell->m_1fc == 0) {
             ok = 0;
         } else if (matchActive) {
-            ok = ((CGrunt*)cell)->LoadPickupSprites(param, flag, 0, sub, 0);
+            ok = (reinterpret_cast<CGrunt*>(cell))->LoadPickupSprites(param, flag, 0, sub, 0);
         } else {
-            ok = ((CGrunt*)cell)->LoadGruntTypeTable(param, flag, sub, 0);
+            ok = (reinterpret_cast<CGrunt*>(cell))->LoadGruntTypeTable(param, flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == 0) {
@@ -922,19 +922,19 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
-    CIconRecord* cell = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
+    CIconRecord* cell = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
     i32 ok;
     if (cell == 0 || cell->m_1fc == 0) {
         ok = 0;
     } else {
-        ok = ((CGrunt*)cell)->LoadPickupSprites(cmd, 0, 0, sub, 1);
+        ok = (reinterpret_cast<CGrunt*>(cell))->LoadPickupSprites(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
     if (ok == 0) {
         return 0;
     }
     if (cmd == 0x14) {
-        CIconRecord* placed = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
+        CIconRecord* placed = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
         if (placed != 0) {
             placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;
@@ -994,8 +994,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_driftPos;
-    if (delta >= *(i64*)&m_driftThresh) {
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
+    if (delta >= *reinterpret_cast<i64*>(&m_driftThresh)) {
         CGameObject* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
@@ -1015,10 +1015,10 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if (((CMapPtrToPtr*)(reinterpret_cast<char*>(reg->m_world->m_childGroup) + 0x48))
-                    ->Lookup((void*)cellVal, found)
+            if ((reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(reg->m_world->m_childGroup) + 0x48)))
+                    ->Lookup(reinterpret_cast<void*>(cellVal), found)
                 && found != 0) {
-                ((CGameObject*)found)->m_flags |= 0x10000;
+                (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
             }
         }
         reg = g_gameReg;
@@ -1147,7 +1147,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
 RVA(0x000993e0, 0x15)
 void CInGameText::InitActReg() {
-    ((CZDArrayDerived*)&g_textDispatch)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_textDispatch))->Construct(2000, 2010);
 }
 
 // ===========================================================================
@@ -1159,8 +1159,8 @@ void CInGameText::InitActReg() {
 // computed once for the null-test and once for the call.
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*(void**)ResolveSlot(&g_textDispatch, idx) != 0) {
-        LogicFn fn = *(LogicFn*)ResolveSlot(&g_textDispatch, idx);
+    if (*reinterpret_cast<void**>(ResolveSlot(&g_textDispatch, idx)) != 0) {
+        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_textDispatch, idx));
         (this->*fn)();
     }
 }
@@ -1185,13 +1185,13 @@ RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "A";
+        *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_textDispatch, idx);
-    *(void**)dslot = (void*)&TextLogic_402013;
+    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&TextLogic_402013);
 }
 
 // ===========================================================================
@@ -1208,7 +1208,7 @@ i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
     if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
         return 0;
     }
-    if (Chain(ar, tag, a, (CGameObject*)b) == 0) {
+    if (Chain(ar, tag, a, reinterpret_cast<CGameObject*>(b)) == 0) {
         return 0;
     }
     switch (tag) {
@@ -1237,7 +1237,7 @@ void CInGameIcon::SetField54(i32 v) {
     void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
     if (v != 0) {
         found = 0;
-        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
+        (reinterpret_cast<CGameRegMapHolder*>(g_gameReg->m_world))->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
     }
     m_cmapId = reinterpret_cast<i32>(found);
 }

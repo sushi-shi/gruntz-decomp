@@ -102,7 +102,7 @@ i32 Gap_0d5c10(void) {
 // [ecx+0x10]; xor eax,eax; test edx,edx; setg al; ret`.
 RVA(0x000d5dc0, 0xb)
 i32 CWapObj::IsLoaded() {
-    return *(i32*)(reinterpret_cast<char*>(this) + 0x10) > 0;
+    return *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x10)) > 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -220,7 +220,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
         return 0;
     }
     i32 result =
-        this->LoadDispatch((CImageFrameDesc*)resolved, static_cast<u32>(index), (void*)src->m_length, arg);
+        this->LoadDispatch(reinterpret_cast<CImageFrameDesc*>(resolved), static_cast<u32>(index), reinterpret_cast<void*>(src->m_length), arg);
     src->EndParse();
     return result;
 }
@@ -349,7 +349,7 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     if (owned == 0) {
         return 0;
     }
-    if (!owned->Build((CImageBuildDesc*)desc, reinterpret_cast<i32>(a), m_parent->m_04->m_10[0x18 / 4])) {
+    if (!owned->Build(reinterpret_cast<CImageBuildDesc*>(desc), reinterpret_cast<i32>(a), m_parent->m_04->m_10[0x18 / 4])) {
         return 0;
     }
     i32 w = m_owned->m_width;
@@ -502,10 +502,10 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     // src->m_length its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
     return m_surface->Resolve(
         m_parent->m_1c,
-        (void*)resolved,
+        reinterpret_cast<void*>(resolved),
         index,
         static_cast<u32>(src->m_length),
-        (void*)g_surfaceColorKey
+        reinterpret_cast<void*>(g_surfaceColorKey)
     );
 }
 
@@ -593,7 +593,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect srcClip = m_parent->m_24->m_10;
         RECT destClip;
-        CopyRect(&destClip, (const RECT*)&srcClip);
+        CopyRect(&destClip, reinterpret_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
             dleft += destClip.left - x;
         }
@@ -695,7 +695,7 @@ RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
     if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
-        this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
+        this->RenderImage(reinterpret_cast<CBlitInfo*>(&clip), static_cast<CImage*>(a));
     }
 }
 
@@ -730,12 +730,12 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
     if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
         if (rect != 0) {
-            g_imageClipRect[0] = ((i32*)rect)[0];
-            g_imageClipRect[1] = ((i32*)rect)[1];
-            g_imageClipRect[2] = ((i32*)rect)[2];
-            g_imageClipRect[3] = ((i32*)rect)[3];
+            g_imageClipRect[0] = (static_cast<i32*>(rect))[0];
+            g_imageClipRect[1] = (static_cast<i32*>(rect))[1];
+            g_imageClipRect[2] = (static_cast<i32*>(rect))[2];
+            g_imageClipRect[3] = (static_cast<i32*>(rect))[3];
         }
-        this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
+        this->RenderImage(reinterpret_cast<CBlitInfo*>(&clip), static_cast<CImage*>(a));
     }
 }
 
@@ -777,7 +777,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -836,7 +836,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -871,7 +871,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -930,7 +930,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -961,7 +961,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1020,7 +1020,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1055,7 +1055,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1107,12 +1107,12 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1147,7 +1147,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1199,12 +1199,12 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1237,7 +1237,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1289,12 +1289,12 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1326,7 +1326,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, (const RECT*)&clipA);
+        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -1378,12 +1378,12 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *(BlitRect*)&d;
+    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;

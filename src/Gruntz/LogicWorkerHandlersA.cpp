@@ -136,27 +136,27 @@ i32 HandlerA9E00(DnnOwner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             DnnRec* sub = new DnnRec(owner);
-            ((EngRec*)sub)->Activate();
+            (reinterpret_cast<EngRec*>(sub))->Activate();
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            ((EngRec*)rec->m_18)->V2C();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V2C();
             break;
         case 0x1e:
-            ((EngRec*)rec->m_18)->V28();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V28();
             break;
         case 0x50:
-            ((EngRec*)rec->m_18)->V38();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V38();
             break;
         case 0x53:
-            ((EngRec*)rec->m_18)->V3C();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V3C();
             break;
         case 0x52:
-            ((EngRec*)rec->m_18)->V30();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V30();
             break;
         case 0x51:
-            ((EngRec*)rec->m_18)->V34();
+            (reinterpret_cast<EngRec*>(rec->m_18))->V34();
             break;
         case 0x3e8:
             break;

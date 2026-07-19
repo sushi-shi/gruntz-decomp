@@ -59,11 +59,11 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             }
             CObject* out = 0;
             lvl->m_imageRegistry->m_10map.Lookup(name, out);
-            CSprite* rec = (CSprite*)out;
+            CSprite* rec = static_cast<CSprite*>(out);
             if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
                 m_38 = 0;
             } else {
-                m_38 = (CImage*)rec->m_items.GetAt(index);
+                m_38 = reinterpret_cast<CImage*>(rec->m_items.GetAt(index));
             }
             return 1;
         }

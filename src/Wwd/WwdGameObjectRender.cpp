@@ -99,13 +99,13 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
 
     {
         CDDSurface* surf = a->m_surface;
-        i32 base = surf->Lock((void*)0);
+        i32 base = surf->Lock(static_cast<void*>(0));
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_b0 * x;
             *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_18c);
             void* n = surf->m_8;
-            (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)n) + 0x80))(n, 0);
+            (*reinterpret_cast<void (**)(void*, i32)>((reinterpret_cast<char*>(*static_cast<void**>(n)) + 0x80)))(n, 0);
         }
     }
     m_lastX = m_screenX;
@@ -267,7 +267,7 @@ RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
     POSITION pos = m_subList.GetHeadPosition();
     while (pos != 0) {
-        CObject* p = (CObject*)static_cast<void*>(m_subList.GetNext(pos));
+        CObject* p = static_cast<CObject*>(static_cast<void*>(m_subList.GetNext(pos)));
         if (p != 0) {
             delete p;
         }
@@ -295,7 +295,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
     if (obj != 0) {
         int root = m_0c; // the CLoadable owner int handle (== this->m_0c, the CDDrawSurfaceMgr)
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
-        result = (CWwdGameObjectA*)obj;
+        result = reinterpret_cast<CWwdGameObjectA*>(obj);
         // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
         // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128
         // vptr stamp is compiler-emitted-vtable-dropped (% ok per drive-to-0).
@@ -321,7 +321,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
-    POSITION node = m_1dc.AddTail((CObject*)result);
+    POSITION node = m_1dc.AddTail(static_cast<CObject*>(result));
     if (node == 0) {
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
@@ -329,11 +329,11 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
     result->m_posCache = reinterpret_cast<i32>(node);
     if (result->m_08 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
-        result->m_7c->m_notify((CGameObject*)result);
+        result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
     }
     // the flat CWwdGameObject dispatch model and the CWwdGameObjectA family model are two
     // reconstructions of the ONE retail object (offset-0 identity); the return reinterprets.
-    return (CWwdGameObject*)(void*)result;
+    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
 }
 
 // CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
@@ -363,7 +363,7 @@ i32 CWwdGameObjectB::AddChild_1667e0(CWwdGameObjectE* child) {
     if (child == 0) {
         return 0;
     }
-    POSITION pos = m_1dc.AddTail((CObject*)child);
+    POSITION pos = m_1dc.AddTail(static_cast<CObject*>(child));
     if (pos == 0) {
         return 0;
     }
@@ -398,7 +398,7 @@ i32 CWwdGameObjectB::RemoveChild_166850(CWwdGameObjectE* child) {
     if (child == 0) {
         return 0;
     }
-    POSITION pos = (POSITION)child->m_posCache;
+    POSITION pos = reinterpret_cast<POSITION>(child->m_posCache);
     if (pos == 0) {
         return 0;
     }
@@ -418,7 +418,7 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CWwdGameObjectE* o = cur->m_obj;
-        o->m_7c->m_notify((CGameObject*)o);
+        o->m_7c->m_notify(reinterpret_cast<CGameObject*>(o));
         count++;
     }
     return count;

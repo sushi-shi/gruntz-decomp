@@ -94,8 +94,19 @@ def _classify_ptr(node, tgt_type, tgt_const):
     except Exception:  # noqa
         return ('skip:no-type', is_this)
     k = ot.kind
+    if tgt_type.kind in _INTISH:
+        # numeric-typedef target (WORD, DWORD, UINT...): pointer operand -> reinterpret,
+        # numeric operand -> static value cast.
+        return ('reinterpret' if k in _PTRISH else 'static', is_this)
     tgt_pointee = tgt_type.get_pointee() if tgt_type.kind == cidx.TypeKind.POINTER else None
     tgt_is_void = tgt_pointee is not None and tgt_pointee.get_canonical().kind == cidx.TypeKind.VOID
+    if tgt_pointee is not None and k == cidx.TypeKind.POINTER:
+        # const-drop the C-style hid: same-pointee handled below as const_cast; a
+        # DIFFERENT-pointee const-drop needs a composed spelling - skip for hand review.
+        if ot.get_pointee().is_const_qualified() and not tgt_pointee.is_const_qualified() \
+                and ot.get_pointee().get_canonical().spelling.replace('const ', '') \
+                != tgt_pointee.get_canonical().spelling.replace('const ', ''):
+            return ('skip:const-drop-compose', is_this)
     if k == cidx.TypeKind.POINTER:
         op_pointee = ot.get_pointee()
         opk = op_pointee.get_canonical().kind
@@ -121,10 +132,11 @@ def _classify_ptr(node, tgt_type, tgt_const):
 
 
 def _accept_target(ttext):
-    """A pointer target we own: ends with '*', not the two char* spellings cast_str handles."""
+    """A target we own by SPELLING: anything except the two char* spellings cast_str
+    handles. The real gate is the CANONICAL kind check in the visitor - typedef targets
+    (LPCSTR, HBRUSH, WORD, HKEY, fn-ptr typedefs) are canonically pointers/ints even
+    though their spelled text has no '*'."""
     t = ttext.strip()
-    if not t.endswith('*'):
-        return False
     if t in ('char *', 'char*', 'const char *', 'const char*'):
         return False
     return True

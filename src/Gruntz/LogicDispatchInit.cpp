@@ -29,5 +29,5 @@ extern LogicFnTable g_eyeCandyDispatch;
 // construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)
 void InitLogicDispatch_646060() {
-    ((CZDArrayDerived*)&g_eyeCandyDispatch)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_eyeCandyDispatch))->Construct(0x7d0, 0x7da);
 }

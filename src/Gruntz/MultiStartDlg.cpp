@@ -111,7 +111,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_host = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_multiState = (CMulti*)g_gameReg->m_curState;
+    g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
 
 // ---------------------------------------------------------------------------
@@ -125,16 +125,16 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    CSymTab* st = (CSymTab*)(reinterpret_cast<CNetDlgHost*>(m_host))->m_registry->ResolvePath("GAME_MULTI");
+    CSymTab* st = static_cast<CSymTab*>((reinterpret_cast<CNetDlgHost*>(m_host))->m_registry->ResolvePath("GAME_MULTI"));
     if (st == 0) {
         return 0;
     }
-    MpSymItem* item = (MpSymItem*)st->NextSym2(st->FirstSym());
+    MpSymItem* item = static_cast<MpSymItem*>(st->NextSym2(st->FirstSym()));
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
-        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>((LPCTSTR)name));
-        item = (MpSymItem*)st->NextSym3(item);
+        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name)));
+        item = static_cast<MpSymItem*>(st->NextSym3(item));
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
     CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));
@@ -160,7 +160,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
             return 0;
         }
     }
-    return CallWindowProcA((WNDPROC)g_savedMultiWndProc, hWnd, msg, wParam, lParam);
+    return CallWindowProcA(reinterpret_cast<WNDPROC>(g_savedMultiWndProc), hWnd, msg, wParam, lParam);
 }
 
 // ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
     if (!it4e9) {
         return 0;
     }
-    ::SendMessageA(it4ff->m_hWnd, 0x14e, (WPARAM)-1, 0);
+    ::SendMessageA(it4ff->m_hWnd, 0x14e, static_cast<WPARAM>(-1), 0);
     m_6c = g_multiState->m_5b0;
     if (g_multiState->m_5b0 != 0) {
         CString name = g_multiState->Name42ff();
@@ -257,16 +257,16 @@ i32 CMultiStartDlg::BuildSlotList() {
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
-        if (((InterfaceObject*)pi)->IsInterface1()) {
+        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface1()) {
             count = 1;
         }
-        if (((InterfaceObject*)pi)->IsInterface2()) {
+        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface2()) {
             count = 2;
         }
-        if (((InterfaceObject*)pi)->IsInterface3()) {
+        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface3()) {
             count = 3;
         }
-        if (((InterfaceObject*)pi)->IsInterface4()) {
+        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface4()) {
             count = 4;
         }
     }
@@ -337,10 +337,10 @@ i32 CMultiStartDlg::UpdateSlot() {
 // 0x2c44xx USER32 fn-ptr table is unbound infra, same as g_pPostMessageA).
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
-    Utils::RegistryHelper* reg = (Utils::RegistryHelper*)g_gameReg->m_settings;
+    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == 0) {
         GetDlgItem(0x512)->SetWindowTextA(g_multiState->GetString59c());
-        NetLobby::g_curDlg = (HWND__*)GetSafe1c();
+        NetLobby::g_curDlg = reinterpret_cast<HWND__*>(GetSafe1c());
         if (!SetupWorldCombo()) {
             return;
         }

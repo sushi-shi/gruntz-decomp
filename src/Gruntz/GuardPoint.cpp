@@ -15,7 +15,7 @@ i32 CGuardPoint::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CGuardPoint::~CGuardPoint (0x10410) - the /GX leaf dtor folds the bare

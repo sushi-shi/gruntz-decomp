@@ -190,7 +190,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == 0) {
         return 0;
     }
-    i32 tint = ((CGlitterColorTable*)g_gameReg->m_78)
+    i32 tint = (static_cast<CGlitterColorTable*>(g_gameReg->m_78))
                    ->m_arr14[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
@@ -442,7 +442,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
-                        LeafCue* cue = (LeafCue*)cue_ob;
+                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                         if (cue != 0) {
                             cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
@@ -510,7 +510,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             if (host->m_emitGate == 0) {
                 void* cue_ob = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
-                LeafCue* cue = (LeafCue*)cue_ob;
+                LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                 if (cue != 0 && g_sndEnabled != 0
                     && static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
                     cue->m_14 = g_killCueClock;

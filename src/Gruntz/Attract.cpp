@@ -122,9 +122,9 @@ i32 g_suppress_64e360 = 0; // 0x24e360
 // tag, and returns 1.
 RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
-    ((CGruntzSoundZ*)video()->m_48)->IsPlaying();
-    ((CGruntzSoundZ*)video()->m_48)->StopAndFlush();
-    m_2c = (CResSource*)stateMgr()->ResolvePath("STATEZ_ATTRACT");
+    (reinterpret_cast<CGruntzSoundZ*>(video()->m_48))->IsPlaying();
+    (reinterpret_cast<CGruntzSoundZ*>(video()->m_48))->StopAndFlush();
+    m_2c = static_cast<CResSource*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -145,27 +145,27 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         sprintf(titleName, "TITLE%d", idx);
 
         CSymTab* saved = attractState();
-        CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
-        m_2c = (CResSource*)state;
+        CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+        m_2c = reinterpret_cast<CResSource*>(state);
         if (state == 0) {
             return 0;
         }
 
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-        m_2c = (CResSource*)saved;
+        m_2c = reinterpret_cast<CResSource*>(saved);
         if (faded == 0) {
             return 0;
         }
 
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
-        ((CDDSurface*)tgt)
-            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
+        (reinterpret_cast<CDDSurface*>(tgt))
+            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
         menuRoot()->m_04->TransTitle();
     } else {
         menuRoot()->m_04->TransEnter();
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
-        ((CDDSurface*)tgt)
-            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
+        (reinterpret_cast<CDDSurface*>(tgt))
+            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
         menuRoot()->m_04->TransExit();
     }
 
@@ -201,28 +201,28 @@ i32 CAttract::Activate() {
         return gate;
     }
 
-    ((CMenuBrightnessReset*)menuRoot()->m_04->m_14->m_2c)->Reset(0);
+    (reinterpret_cast<CMenuBrightnessReset*>(menuRoot()->m_04->m_14->m_2c))->Reset(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
 
     CSymTab* saved = attractState();
-    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
-    m_2c = (CResSource*)state;
+    CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+    m_2c = reinterpret_cast<CResSource*>(state);
     if (state == 0) {
         return 0;
     }
 
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = (CResSource*)saved;
+    m_2c = reinterpret_cast<CResSource*>(saved);
     if (faded == 0) {
         return 0;
     }
 
     CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
-    ((CDDSurface*)tgt)
-        ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
+    (reinterpret_cast<CDDSurface*>(tgt))
+        ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
     menuRoot()->m_04->TransTitle();
 
     RetireScene(0x50, 0x3e8, 0,
@@ -251,10 +251,10 @@ i32 CAttract::Activate() {
 // (reloc-masked DIR32). Not source-steerable. topic:wall.
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
-    (void)a;
-    (void)b;
-    (void)c;
-    (void)d;
+    static_cast<void>(a);
+    static_cast<void>(b);
+    static_cast<void>(c);
+    static_cast<void>(d);
     if (!m_c) {
         return 0;
     }
@@ -270,7 +270,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (page == 0) {
         return 0;
     }
-    CDDrawSubMgrPages* w = (CDDrawSubMgrPages*)menuRoot()->m_04;
+    CDDrawSubMgrPages* w = reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04);
     if (w->Method_158b40(reinterpret_cast<i32>(page), e != 0 ? 2 : 1) != 0) {
         return 1;
     }
@@ -357,7 +357,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_1c = a2;
     t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
-    CFader* f = mgr->Add(1, (CFader*)&t);
+    CFader* f = mgr->Add(1, reinterpret_cast<CFader*>(&t));
     if (f == 0) {
         return 0;
     }
@@ -404,7 +404,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_18 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(1, (CFader*)&t);
+    CFader* f = mgr->Add(1, reinterpret_cast<CFader*>(&t));
     if (f == 0) {
         return 0;
     }
@@ -481,7 +481,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
     if (f == 0) {
         return 0;
     }
@@ -538,7 +538,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
     if (f == 0) {
         return 0;
     }
@@ -573,7 +573,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
     if (f == 0) {
         return 0;
     }
@@ -727,8 +727,8 @@ void CState::Present(i32 arg0) {
         return;
     }
     fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
-    fxRes()->m_worker->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
-    fxRes()->m_worker->m_frontPair->m_surface->Flip((CDDSurface*)0);
+    fxRes()->m_worker->m_backPair->m_surface->ShadeRect(arg0, static_cast<RECT*>(0));
+    fxRes()->m_worker->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
 }
 

@@ -42,7 +42,7 @@ i32 ParseSerial(CGameRegistry* mgr, char* s) {
     if (mgr->m_world == 0) {
         return 0;
     }
-    return Parse156530((void*)&Lab4024e6, s, 0) != 0;
+    return Parse156530(static_cast<void*>(&Lab4024e6), s, 0) != 0;
 }
 
 // SerialObjectFactory (0xd2a0, __cdecl, ends 0xec24): the game's (de)serialize object

@@ -231,9 +231,9 @@ extern CActReg g_actReg_646250; // 0x646250
 // block, not this TU's body run.
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
-    CPathHazardActEntry* e = (CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id);
+    CPathHazardActEntry* e = reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -267,14 +267,14 @@ i32 CPathHazard::Tick() {
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CPathEntity* ent = (CPathEntity*)reg->m_cmdGrid->FindGruntAt(
+        CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
-            (RECT*)&obj->m_areaL,
+            reinterpret_cast<RECT*>(&obj->m_areaL),
             &outA,
             &outB,
-            (RECT*)rect
-        );
+            reinterpret_cast<RECT*>(rect)
+        ));
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
@@ -439,14 +439,14 @@ i32 CPathHazard::SiblingTick() {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CPathEntity* ent = (CPathEntity*)reg->m_cmdGrid->FindGruntAt(
+        CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
-            (RECT*)&obj->m_areaL,
+            reinterpret_cast<RECT*>(&obj->m_areaL),
             &outA,
             &outB,
-            (RECT*)rect
-        );
+            reinterpret_cast<RECT*>(rect)
+        ));
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) {
@@ -501,7 +501,7 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
         if (host->m_emitGate == 0) {
             void* out_ob = 0;
             host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
-            LeafCue* out = (LeafCue*)out_ob;
+            LeafCue* out = static_cast<LeafCue*>(out_ob);
             if (out != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;

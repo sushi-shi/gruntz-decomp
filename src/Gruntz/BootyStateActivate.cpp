@@ -180,7 +180,7 @@ i32 CBootyState::Vslot09(i32) {
     i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
-        set->m_10.Lookup("BOOTY_LOOP", (void*&)res);
+        set->m_10.Lookup("BOOTY_LOOP", reinterpret_cast<void*&>(res));
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
             if (now - static_cast<u32>(res->m_14) >= static_cast<u32>(res->m_18)) {
@@ -208,10 +208,10 @@ i32 CBootyState::FrameSlot28(i32) {
         "BOOTY_LOOP",
         obj
     ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
-    LeafCue* found = (LeafCue*)obj;
-    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
-        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
-        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+    LeafCue* found = static_cast<LeafCue*>(obj);
+    if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
+        (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
+        while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
             if (m_c->m_soundRegistry->m_2c != 0) {
                 m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
@@ -552,7 +552,7 @@ i32 CBootyState::CheckPerfectBonus() {
             void* found = 0;
             m28->m_10.Lookup("BOOTY_PERFECT", found); // ::CMapStringToPtr::Lookup @0x1b8438
             if (found && g_sndEnabled != 0) {
-                LeafCue* p = (LeafCue*)found;
+                LeafCue* p = static_cast<LeafCue*>(found);
                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -670,7 +670,7 @@ i32 CMultiBootyState::Vslot09(i32) {
         void* found = 0;
         m28->m_10.Lookup("BOOTY_LOOP", found); // ::CMapStringToPtr::Lookup @0x1b8438
         if (found && g_sndEnabled != 0) {
-            LeafCue* p = (LeafCue*)found;
+            LeafCue* p = static_cast<LeafCue*>(found);
             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                 p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 1);
@@ -692,10 +692,10 @@ i32 CMultiBootyState::FrameSlot28(i32) {
         "BOOTY_LOOP",
         obj
     ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
-    LeafCue* found = (LeafCue*)obj;
-    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
-        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
-        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+    LeafCue* found = static_cast<LeafCue*>(obj);
+    if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
+        (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
+        while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
             if (m_c->m_soundRegistry->m_2c != 0) {
                 m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
@@ -717,8 +717,8 @@ i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     char* rec = base + 0x174;
     for (; i < 4; i++) {
-        if (*(i32*)(rec + 4) != 0 && *(i32*)rec == 0) {
-            return *(i32*)(rec - 0x24);
+        if (*reinterpret_cast<i32*>((rec + 4)) != 0 && *reinterpret_cast<i32*>(rec) == 0) {
+            return *reinterpret_cast<i32*>((rec - 0x24));
         }
         rec += 0x238;
     }
@@ -791,7 +791,7 @@ RECT g_labelRects[7] = {
 // one type: the `extern "C" CGruntzMgr* g_gameReg` above.
 
 static __inline i32 sumRun(CBattlezData* base, i32 off, i32 n) {
-    i32* p = (i32*)(reinterpret_cast<char*>(base) + off);
+    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(base) + off));
     i32 s = 0;
     i32 k;
     for (k = 0; k < n; k++) {
@@ -819,7 +819,7 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
-        if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238) != 0) {
+        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238)) != 0) {
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -836,7 +836,7 @@ void CMultiBootyState::DrawBattleStats() {
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", *(i32*)(reinterpret_cast<char*>(g_gameReg->m_scoreHud) + 0x48 + i * 4));
+            s.Format("%d", *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_scoreHud) + 0x48 + i * 4)));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
@@ -877,9 +877,9 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Colour loop: team-colour name per active player, drawn in that colour.
     for (i = 0; i < 4; i++) {
-        if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238) != 0) {
+        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238)) != 0) {
             i32 color;
-            switch (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158 + i * 0x238)) {
+            switch (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158 + i * 0x238))) {
                 case 0:
                     color = 0x80ff;
                     break;

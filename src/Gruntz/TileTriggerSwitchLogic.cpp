@@ -338,7 +338,7 @@ static i32 PbResolveCell(CGameLevel* level, i32 x, i32 y) {
         return 0;
     }
     // CObArray stores CObject*; the element cast is the devs' own (GameLevel.h).
-    CTileImageSet* set = (CTileImageSet*)level->m_imageSets[cell & 0xffff];
+    CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
     return set->GetCollisionAt(0, 0);
 }
 
@@ -378,7 +378,7 @@ i32 CTileTriggerLogic::Tick() {
         POINT pt;
         pt.x = sx;
         pt.y = sy;
-        if (!PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt) || srcId == 0x68
+        if (!PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt) || srcId == 0x68
             || srcId == 0x67) {
             transId = 0;
         } else {
@@ -416,7 +416,7 @@ i32 CTileTriggerLogic::Tick() {
         default:
             break;
     }
-    (void)transId; // consumed by the still-unreconstructed bridge arms
+    static_cast<void>(transId); // consumed by the still-unreconstructed bridge arms
 
     return 0;
 }
@@ -460,7 +460,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         }
         TtcNode* cur = node;
         node = node->m_next;
-        child = (CTileTriggerLogic*)cur->m_data;
+        child = static_cast<CTileTriggerLogic*>(cur->m_data);
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
@@ -527,7 +527,7 @@ i32 CTileTriggerSwitchLogic::Broadcast() {
             node->SwitchUp(); // virtual slot 3
             i32 any = 0;
             for (TtcNode* it = TtcHead(m_owner->m_list1); it != 0; it = it->m_next) {
-                CTileTriggerLogic* o = (CTileTriggerLogic*)it->m_data;
+                CTileTriggerLogic* o = static_cast<CTileTriggerLogic*>(it->m_data);
                 if (o != 0 && o->FindIndexByKey(node->m_key1)) {
                     o->Tick(); // slot 0
                     counter++;
@@ -614,7 +614,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     POINT pt;
     pt.y = (m_0c << 5) + 0x10;
     pt.x = (m_08 << 5) + 0x10;
-    if (PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
+    if (PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
         inRect = 1;
     }
 
@@ -676,7 +676,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     }
     void* out_ob = 0;
     sreg->m_10.Lookup("LEVEL_ROCKBREAK", out_ob);
-    LeafCue* out = (LeafCue*)out_ob;
+    LeafCue* out = static_cast<LeafCue*>(out_ob);
     if (out == 0) {
         return;
     }
@@ -999,7 +999,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         }
         TtcNode* cur = node;
         node = node->m_next;
-        child = (CTileTriggerLogic*)cur->m_data;
+        child = static_cast<CTileTriggerLogic*>(cur->m_data);
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
@@ -1220,7 +1220,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
     }
 
-    CGrunt* brick = (CGrunt*)arg;
+    CGrunt* brick = reinterpret_cast<CGrunt*>(arg);
     if (effect != 0 && brick != 0) {
         if (effect == 0x132) {
             brick->LoadGruntTypeTable(0, 1, 0, 0);
@@ -1233,9 +1233,9 @@ i32 CTileActionEvent::Process(i32 arg) {
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
-                LeafCue* snd = (LeafCue*)g_gameReg->m_world->m_soundRegistry->Lookup_05b7e0(
+                LeafCue* snd = static_cast<LeafCue*>(g_gameReg->m_world->m_soundRegistry->Lookup_05b7e0(
                     "GRUNTZ_NORMALGRUNT_IMPACTMM3"
-                );
+                ));
                 if (snd != 0) {
                     snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
                 }
@@ -1589,12 +1589,12 @@ i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
     }
     switch (type) {
         case 4:
-            if (Serialize((CSerialArchive*)archive) == 0) {
+            if (Serialize(static_cast<CSerialArchive*>(archive)) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (Deserialize((CSerialArchive*)archive) == 0) {
+            if (Deserialize(static_cast<CSerialArchive*>(archive)) == 0) {
                 return 0;
             }
             break;
@@ -1693,12 +1693,12 @@ i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
     }
     switch (type) {
         case 4:
-            if (SerializeMatrix((CSerialArchive*)archive) == 0) {
+            if (SerializeMatrix(static_cast<CSerialArchive*>(archive)) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (DeserializeMatrix((CSerialArchive*)archive) == 0) {
+            if (DeserializeMatrix(static_cast<CSerialArchive*>(archive)) == 0) {
                 return 0;
             }
             break;
@@ -1802,7 +1802,7 @@ i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
 // Returns 0 if ar or the registry's +0x30 sub-object is null, else 1.
 RVA(0x00113f60, 0xa2)
 i32 CTileActionEvent::SerializeFields(void* ar) {
-    CSerialArchive* a = (CSerialArchive*)ar;
+    CSerialArchive* a = static_cast<CSerialArchive*>(ar);
     if (a == 0) {
         return 0;
     }
@@ -1830,7 +1830,7 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
 // +0x30 sub-object is null, else 1.
 RVA(0x00114040, 0xa2)
 i32 CTileActionEvent::DeserializeFields(void* ar) {
-    CSerialArchive* a = (CSerialArchive*)ar;
+    CSerialArchive* a = static_cast<CSerialArchive*>(ar);
     if (a == 0) {
         return 0;
     }

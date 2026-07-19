@@ -34,7 +34,7 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
         b->EnableWindow(0);
         d->EnableWindow(0);
         rec->m_170 = 0;
-        c = (CWnd*)c->EnableWindow(0);
+        c = reinterpret_cast<CWnd*>(c->EnableWindow(0));
     }
     return reinterpret_cast<i32>(c);
 }

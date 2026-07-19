@@ -43,7 +43,7 @@ extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
 // differently. Not source-steerable; deferred to the final sweep. topic:wall.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
-    ClipVtx* prev = (ClipVtx*)(reinterpret_cast<char*>(verts) + count * 0x1c - 0x1c);
+    ClipVtx* prev = reinterpret_cast<ClipVtx*>((reinterpret_cast<char*>(verts) + count * 0x1c - 0x1c));
     ClipVtx* cur = verts;
     i32 minYi = 0x1001;
     i32 maxYi = -1;
@@ -92,14 +92,14 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
         } while (--n != 0);
     }
     i32 rowOff = minYi * 0x1c;
-    i32 stride = *(i32*)(reinterpret_cast<char*>(surf) + 0x20);
+    i32 stride = *reinterpret_cast<i32*>((reinterpret_cast<char*>(surf) + 0x20));
     i32 bits = surf->Lock(0);
     i32 rowPtr = bits + stride * minYi;
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
-        i32* pDesc = (i32*)(reinterpret_cast<char*>(g_rasterEdgeL) + rowOff + 0x10);
-        i32* pAsc = (i32*)(reinterpret_cast<char*>(g_rasterEdgeR) + rowOff + 0x10);
+        i32* pDesc = reinterpret_cast<i32*>((reinterpret_cast<char*>(g_rasterEdgeL) + rowOff + 0x10));
+        i32* pAsc = reinterpret_cast<i32*>((reinterpret_cast<char*>(g_rasterEdgeR) + rowOff + 0x10));
         do {
             i32 xB = *pAsc >> 0xe;
             i32 xA = *pDesc >> 0xe;
@@ -112,17 +112,17 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             i32 width = hi - lo;
             if (width > 0) {
                 g_rasterDestPtr = rowPtr + lo * 2;
-                i16* p = (i16*)g_rasterDestPtr;
+                i16* p = reinterpret_cast<i16*>(g_rasterDestPtr);
                 i32 w = width;
                 do {
                     *p++ = color;
                 } while (--w != 0);
                 rowPtr = g_rasterDestRow;
             }
-            rowPtr += *(i32*)(reinterpret_cast<char*>(surf) + 0x20);
+            rowPtr += *reinterpret_cast<i32*>((reinterpret_cast<char*>(surf) + 0x20));
             g_rasterDestRow = rowPtr;
-            pAsc = (i32*)(reinterpret_cast<char*>(pAsc) + 0x1c);
-            pDesc = (i32*)(reinterpret_cast<char*>(pDesc) + 0x1c);
+            pAsc = reinterpret_cast<i32*>((reinterpret_cast<char*>(pAsc) + 0x1c));
+            pDesc = reinterpret_cast<i32*>((reinterpret_cast<char*>(pDesc) + 0x1c));
         } while (--rowCount != 0);
     }
     surf->m_8->Unlock(0);

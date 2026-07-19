@@ -89,7 +89,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             m_c->m_soundRegistry
-                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", "_");
+                ->ScanTree_157ee0(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }
     }
     m_1bc = "PREVIEW0";
@@ -228,7 +228,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
         if (h->m_emitGate == 0) {
             void* p_ob = 0;
             h->m_10.Lookup("GAME_TELEPORTEROPEN", p_ob);
-            LeafCue* p = (LeafCue*)p_ob;
+            LeafCue* p = static_cast<LeafCue*>(p_ob);
             if (p != 0) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0 && static_cast<u32>((g_killCueClock - p->m_14)) >= static_cast<u32>(p->m_18)) {
@@ -300,5 +300,5 @@ void CPreviewState::Cancel() {
         m_4->DelayedQuit();
         return;
     }
-    PostMessageA((HWND)(m_4->m_gameWnd->m_hwnd), 0x111, 0x8027, 0);
+    PostMessageA(static_cast<HWND>((m_4->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
 }

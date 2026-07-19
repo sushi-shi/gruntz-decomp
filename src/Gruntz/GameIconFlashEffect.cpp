@@ -36,6 +36,6 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     }
     obj->m_flags |= 1;
     obj->ApplyLookupGeometry("GAME_ICONFLASH", 0);
-    w->m_1c = (void*)5;
+    w->m_1c = reinterpret_cast<void*>(5);
     return 1;
 }

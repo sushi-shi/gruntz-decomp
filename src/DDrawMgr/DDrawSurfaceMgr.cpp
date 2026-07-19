@@ -229,7 +229,7 @@ extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 // Relays the hWnd argument to an external manager function.
 RVA(0x00155f50, 0x10)
 void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
-    RelayHwnd((i32(__cdecl*)())hWnd);
+    RelayHwnd(static_cast<i32(__cdecl*)()>(hWnd));
 }
 
 // ---------------------------------------------------------------------------
@@ -325,7 +325,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     CFileMem S;
     S.Reset();
 
-    if (S.SetName(static_cast<const char*>((void*)cb), 0, 0) == 0) {
+    if (S.SetName(static_cast<const char*>(static_cast<void*>(cb)), 0, 0) == 0) {
         return 0;
     }
     if (S.Open() == 0) {
@@ -336,15 +336,15 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     CTime now;
     char header[0x120];
     memset(header, 0, sizeof(header));
-    *(i32*)(header + 0x04) = 1;
-    *(i32*)(header + 0x08) = now.GetLocalTm(0)->tm_mon + 1;
-    *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
-    *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
+    *reinterpret_cast<i32*>((header + 0x04)) = 1;
+    *reinterpret_cast<i32*>((header + 0x08)) = now.GetLocalTm(0)->tm_mon + 1;
+    *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_mday;
+    *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
     i32 probe = m_childGroup->CountActive_15abc0();
-    *(u32*)(header + 0x114) = g_wwdObjIdCounter;
-    *(i32*)(header + 0x118) = probe;
-    S.Write((const void*)header, 0x120);
+    *reinterpret_cast<u32*>((header + 0x114)) = g_wwdObjIdCounter;
+    *reinterpret_cast<i32*>((header + 0x118)) = probe;
+    S.Write(static_cast<const void*>(header), 0x120);
 
     // ---- dispatch the five blit modes over the children ----
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
@@ -359,7 +359,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 3, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 3, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 3, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
@@ -368,7 +368,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachSerialize_15b020(&S, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 4, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 4, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
@@ -377,7 +377,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 5, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 5, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -430,9 +430,9 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 2, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    g_wwdObjIdCounter = *(u32*)(header + 0x114);
+    g_wwdObjIdCounter = *reinterpret_cast<u32*>((header + 0x114));
     m_childGroup->DestroyChildren_159ef0();
-    if (m_childGroup->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
+    if (m_childGroup->LoadObjects(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(header)) == 0) {
@@ -441,16 +441,16 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 6, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 6, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
+    if (m_childGroup->Deserialize_15b0e0(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 7, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(header)) == 0) {
@@ -459,7 +459,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 8, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch((void*)&S, 8, 0, 0) == 0) {
+    if (m_level->EditDispatch(static_cast<void*>(&S), 8, 0, 0) == 0) {
         return 0;
     }
 

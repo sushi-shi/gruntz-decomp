@@ -69,7 +69,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 && py >= r->m_viewOriginT) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_30 == 0) {
-                    LeafCue* e = (LeafCue*)set->Lookup_05b7e0("GAME_PYRAMIDMOVE");
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup_05b7e0("GAME_PYRAMIDMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
@@ -85,7 +85,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 && py >= r->m_viewOriginT) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_30 == 0) {
-                    LeafCue* e = (LeafCue*)set->Lookup_05b7e0("LEVEL_WATERBRIDGEMOVE");
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup_05b7e0("LEVEL_WATERBRIDGEMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }

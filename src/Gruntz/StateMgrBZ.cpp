@@ -74,65 +74,63 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     m_mode = 0;
     switch (static_cast<u32>(mode)) {
         case 1: {
-            CInputDevice* d = (CInputDevice*)src->m_deviceA;
+            CInputDevice* d = static_cast<CInputDevice*>(src->m_deviceA);
             m_keyboard = d;
             m_device = d;
             break;
         }
         case 2: {
             CInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
+                (src->m_devices.GetSize() > 0) ? static_cast<CInputDevice*>(src->m_devices.GetAt(0)) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 3: {
             CInputDevice* d =
-                (src->m_devices.GetSize() > 1) ? (CInputDevice*)src->m_devices.GetAt(1) : 0;
+                (src->m_devices.GetSize() > 1) ? static_cast<CInputDevice*>(src->m_devices.GetAt(1)) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 4: {
             CInputDevice* d =
-                (src->m_devices.GetSize() > 2) ? (CInputDevice*)src->m_devices.GetAt(2) : 0;
+                (src->m_devices.GetSize() > 2) ? static_cast<CInputDevice*>(src->m_devices.GetAt(2)) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 5: {
             CInputDevice* d =
-                (src->m_devices.GetSize() > 3) ? (CInputDevice*)src->m_devices.GetAt(3) : 0;
+                (src->m_devices.GetSize() > 3) ? static_cast<CInputDevice*>(src->m_devices.GetAt(3)) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 6: {
-            m_keyboard = (CInputDevice*)src->m_deviceA;
+            m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
+                (src->m_devices.GetSize() > 0) ? static_cast<CInputDevice*>(src->m_devices.GetAt(0)) : 0;
             m_joystick = d;
             m_deviceList =
-                (SbzDeviceList*)src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), 0, 0, 0, 0, 0);
+                static_cast<SbzDeviceList*>(src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), 0, 0, 0, 0, 0));
             break;
         }
         case 8: {
-            m_keyboard = (CInputDevice*)src->m_deviceA;
+            m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
+                (src->m_devices.GetSize() > 0) ? static_cast<CInputDevice*>(src->m_devices.GetAt(0)) : 0;
             m_joystick = d;
-            m_joystick2 = (CInputDevice*)src->m_deviceB;
+            m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList =
-                (SbzDeviceList*)
-                    src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0);
+                static_cast<SbzDeviceList*>(src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0));
             break;
         }
         case 7:
-            m_keyboard = (CInputDevice*)src->m_deviceA;
-            m_joystick2 = (CInputDevice*)src->m_deviceB;
+            m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
+            m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList =
-                (SbzDeviceList*)
-                    src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0, 0);
+                static_cast<SbzDeviceList*>(src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0, 0));
             break;
         case 0:
             m_keyboard = 0;

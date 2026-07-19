@@ -60,7 +60,7 @@ i32 ProjectWallQuad(
     double hw = static_cast<double>(p5);
 
     // The workspace is written as a flat float grid (7 floats == one ClipVtx record).
-    float* w = (float*)g_rasterVtxB;
+    float* w = reinterpret_cast<float*>(g_rasterVtxB);
     w[0] = static_cast<float>((-s));
     w[1] = static_cast<float>(len);
     w[5] = static_cast<float>(c);
@@ -82,7 +82,7 @@ i32 ProjectWallQuad(
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon(g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, static_cast<i16>(p6));
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, reinterpret_cast<CDDSurface*>(p0), static_cast<i16>(p6));
     }
     return 1;
 }

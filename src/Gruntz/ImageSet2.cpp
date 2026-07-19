@@ -31,7 +31,7 @@ i32 CImageSet2::GetCollisionAt(i32 x, i32 y) {
 // 8th's +4 displacement. Body otherwise byte-exact; not source-steerable.
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(void* record) {
-    i32* p = (i32*)(reinterpret_cast<char*>(record) + 8);
+    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(record) + 8));
     m_04 = *p++;
     m_08 = *p++;
     m_0c = *p++;

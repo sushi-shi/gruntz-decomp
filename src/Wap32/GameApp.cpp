@@ -258,12 +258,12 @@ RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
     i32 i;
     for (i = 0; i < 10; i++) {
-        ((i32*)&m_wc)[i] = 0;
+        (reinterpret_cast<i32*>(&m_wc))[i] = 0;
     }
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
     if (m_gameInfo.windowClassFlags & 1) {
-        hCursor = LoadCursorA(0, (LPCSTR)0x7f00 /*IDC_ARROW*/);
+        hCursor = LoadCursorA(0, reinterpret_cast<LPCSTR>(0x7f00) /*IDC_ARROW*/);
     }
 
     m_wc.style = 8; // CS_DBLCLKS
@@ -273,7 +273,7 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.hInstance = m_hInstance;
     m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
     m_wc.hCursor = hCursor;
-    m_wc.hbrBackground = (HBRUSH)GetStockObject(4);
+    m_wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(4));
     m_wc.lpszMenuName = 0;
     m_wc.lpszClassName = m_gameInfo.szWindowClassName;
 }
@@ -288,7 +288,7 @@ RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
     i32 i;
     for (i = 0; i < 12; i++) {
-        ((i32*)&m_createStruct)[i] = 0;
+        (reinterpret_cast<i32*>(&m_createStruct))[i] = 0;
     }
 
     HMENU hMenu = 0;

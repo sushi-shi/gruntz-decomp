@@ -63,7 +63,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
 // (no `this`); the ctor is reloc-masked.
 RVA(0x0007ecf0, 0x15)
 void CGruntHealthSprite::InitActReg() {
-    ((CZDArrayDerived*)&g_healthActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_healthActReg))->Construct(2000, 2010);
 }
 
 // CGruntHealthSprite::RunAct @0x07ed70 - resolve the coordinate-registry entry for `id`
@@ -72,8 +72,8 @@ void CGruntHealthSprite::InitActReg() {
 // no CSE across the guard).
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if (((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn != 0) {
-        (this->*((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn)();
+    if ((reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn != 0) {
+        (this->*(reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -103,20 +103,20 @@ void CGruntHealthSprite::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntHealthSprite::HealthUpdate;
+    (reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntHealthSprite::HealthUpdate;
 }
 
 // CGruntHealthSprite::SetHealthGlyph @0x07f0d0 - stash the two passed coordinates
@@ -135,7 +135,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     if (map) {
         CImage* glyph;
         if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
-            glyph = (CImage*)map->m_items.GetAt(slot);
+            glyph = reinterpret_cast<CImage*>(map->m_items.GetAt(slot));
         } else {
             glyph = 0;
         }
@@ -168,7 +168,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
     CGameRegistry* reg = g_gameReg;
-    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }
@@ -180,7 +180,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
         if (holder != 0) {
             CImage* glyph;
             if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
-                glyph = (CImage*)holder->m_items.GetAt(slot);
+                glyph = reinterpret_cast<CImage*>(holder->m_items.GetAt(slot));
             } else {
                 glyph = 0;
             }
@@ -215,5 +215,5 @@ i32 CGruntHealthSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    return Chain(ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(ar, mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }

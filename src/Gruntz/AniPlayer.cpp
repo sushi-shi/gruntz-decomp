@@ -71,7 +71,7 @@ i32 CAniPlayer::Start(
 // ===========================================================================
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
-    if ((__int64)g_frameTime - *(__int64*)&m_58 >= *(__int64*)&m_60) {
+    if ((__int64)g_frameTime - *reinterpret_cast<__int64*>(&m_58) >= *reinterpret_cast<__int64*>(&m_60)) {
         m_38 = (m_38 == m_4c) ? m_50 : m_4c;
         m_60 = m_3c;
         m_64 = 0;
@@ -94,7 +94,7 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     CImageSet* tbl = m_34;
     CImage* cel;
     if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-        cel = (CImage*)tbl->m_items.GetAt(m_38);
+        cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
     } else {
         cel = 0;
     }
@@ -102,10 +102,10 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     if (cel != 0) {
         i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
         cel->RenderFrame(
-            (void*)surfaceCtx,
-            (void*)(cel->m_anchorX + m_rect14.m_0),
-            (void*)(cel->m_anchorY + m_rect14.m_4),
-            (void*)0
+            reinterpret_cast<void*>(surfaceCtx),
+            reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
+            reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
+            static_cast<void*>(0)
         );
     }
     return 1;
@@ -132,7 +132,7 @@ i32 CAniPlayer::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     // no RTTI row, so whether 0xe5c90 is CAniPlayer's own slot 1 is unproven. Naming it
     // SerializeFields would give it the base virtual's exact name+signature and silently
     // make it an override (C++ implicit virtual), claiming a slot on no evidence.
-    if (CSBI_ImageSetAni::SerializeFields((CImageSetStream*)arc, mode, a3, a4) == 0) {
+    if (CSBI_ImageSetAni::SerializeFields(static_cast<CImageSetStream*>(arc), mode, a3, a4) == 0) {
         return 0;
     }
     if (mode == 4) {

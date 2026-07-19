@@ -146,11 +146,11 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    CSerialArchive* arc = (CSerialArchive*)ar;
-    if (!Chain(arc, mode, a3, (CGameObject*)a4)) {
+    CSerialArchive* arc = static_cast<CSerialArchive*>(ar);
+    if (!Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4))) {
         return 0;
     }
 
@@ -163,7 +163,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             if (key != 0) {
                 CGameObject* found = 0;
                 CGameObject* obj =
-                    holder->m_childGroup->m_map48.Lookup((void*)key, (void*&)found) ? found : 0;
+                    holder->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found)) ? found : 0;
                 m_warlordLogic = obj->m_7c->m_logic;
                 if (m_warlordLogic == 0) {
                     return 0;

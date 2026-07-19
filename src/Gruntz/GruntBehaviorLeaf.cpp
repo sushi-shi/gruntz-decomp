@@ -68,7 +68,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
             m_decayTimerLo = static_cast<i32>(g_frameTime);
         }
         m_decayTimerHi = 0;
-        i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo;
+        i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_decayTimerLo);
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
         i32 r = static_cast<i32>((static_cast<double>(elapsed) * 256.0
                       / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8))));
@@ -94,7 +94,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
 // clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_decayTimerLo) >= *reinterpret_cast<i64*>(&m_decayDurationLo)) {
         m_drawState->m_stateFlags |= 1;
         m_drawState->m_imageSet->SetAllTypes(1);
         if (m_animSuppress == 0) {
@@ -103,7 +103,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
         m_drawState->m_flags |= 0x10000;
         return 0;
     }
-    i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo;
+    i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_decayTimerLo);
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     i32 r =
         static_cast<i32>((static_cast<double>(elapsed) * 256.0 / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8))));

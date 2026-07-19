@@ -42,10 +42,10 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
 
     CString dir, scratch, sub, name;
     scratch.Format("SG%i", n);
-    scratch = *g_buteMgr.GetStringDef((LPCTSTR)scratch, "DIR", &dir);
+    scratch = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), "DIR", &dir);
 
     sub.Format("S%i", 1);
-    sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
+    sub = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub), &dir);
 
     CSpawnList* list = 0;
     if (!scratch.IsEmpty()) {
@@ -57,18 +57,18 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
         do {
             i++;
             if (sub.IsEmpty()) {
-                name.Format("VOICES_%s", (LPCTSTR)scratch);
+                name.Format("VOICES_%s", static_cast<LPCTSTR>(scratch));
             } else {
-                name.Format("VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
+                name.Format("VOICES_%s_%s", static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub));
             }
-            void* res = (void*)(reinterpret_cast<CSymParser*>(m_owner->m_34))
-                            ->ResolveQualified((LPCTSTR)name, (void*)0x574156);
+            void* res = reinterpret_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
+                            ->ResolveQualified(static_cast<LPCTSTR>(name), reinterpret_cast<void*>(0x574156)));
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot
                 // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.
                 list->AddVoiceSound(name, 0);
                 sub.Format("S%i", i);
-                sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
+                sub = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub), &dir);
             } else {
                 sub.Empty();
             }

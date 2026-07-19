@@ -100,9 +100,9 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 
     m_active = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
-    CSprite* spr = (CSprite*)spr_ob;
+    CSprite* spr = static_cast<CSprite*>(spr_ob);
     m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
-                  ? (CImage*)spr->m_items.GetAt(1)
+                  ? static_cast<CImage*>(spr->m_items.GetAt(1))
                   : 0;
     if (!m_frame) {
         return 0;
@@ -111,7 +111,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     spr = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_NORMCHIPZ",
-        (CObject*&)spr
+        reinterpret_cast<CObject*&>(spr)
     );
     m_normChipSprite = spr;
     if (!spr) {
@@ -121,7 +121,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     spr = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_HIGHCHIPZ",
-        (CObject*&)spr
+        reinterpret_cast<CObject*&>(spr)
     );
     m_highChipSprite = spr;
     if (!spr) {
@@ -131,7 +131,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     spr = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_GREYCHIPZ",
-        (CObject*&)spr
+        reinterpret_cast<CObject*&>(spr)
     );
     m_greyChipSprite = spr;
     if (!spr) {
@@ -197,7 +197,7 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGrunt* grunt = ((CGrunt**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY];
+    CGrunt* grunt = (reinterpret_cast<CGrunt**>(g_gameReg->m_cmdGrid))[m_gridX * 15 + m_gridY];
     if (grunt != 0) {
         m_button1Icon = grunt->m_198;
         if (grunt->m_entranceReason >= 0x17) {
@@ -237,21 +237,21 @@ i32 CActionOptionsMenuBar::Refresh() {
                 CSprite* s = m_normChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
+                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
+                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
+                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
             default:
@@ -282,29 +282,29 @@ i32 CActionOptionsMenuBar::Render() {
     (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
     i32 r[4];
-    i32* src = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
+    i32* src = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
     i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];
     r[3] = src[3];
-    m_frame->RenderFrameClipped((void*)ctx, (void*)sy, (void*)sx, r, 0);
+    m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(sy), reinterpret_cast<void*>(sx), r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
+        i32* src2 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
         r[3] = src2[3];
-        m_frame->RenderFrameClipped((void*)ctx, (void*)(sy - 0xc), (void*)(sx + 2), r, 0);
+        m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((sy - 0xc)), reinterpret_cast<void*>((sx + 2)), r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
+        i32* src3 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];
         r[3] = src3[3];
-        m_frame->RenderFrameClipped((void*)ctx, (void*)(sy + 0x10), (void*)(sx + 2), r, 0);
+        m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((sy + 0x10)), reinterpret_cast<void*>((sx + 2)), r, 0);
     }
     return 1;
 }
@@ -321,7 +321,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    if (((CGrunt**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY] == 0) {
+    if ((reinterpret_cast<CGrunt**>(g_gameReg->m_cmdGrid))[m_gridX * 15 + m_gridY] == 0) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).
@@ -523,7 +523,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_normChipSprite = (CSprite*)out;
+        m_normChipSprite = static_cast<CSprite*>(out);
     } else {
         m_normChipSprite = 0;
     }
@@ -533,7 +533,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_highChipSprite = (CSprite*)out;
+        m_highChipSprite = static_cast<CSprite*>(out);
     } else {
         m_highChipSprite = 0;
     }
@@ -543,7 +543,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_greyChipSprite = (CSprite*)out;
+        m_greyChipSprite = static_cast<CSprite*>(out);
     } else {
         m_greyChipSprite = 0;
     }
@@ -555,10 +555,10 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -574,10 +574,10 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }
@@ -593,10 +593,10 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = (CSprite*)out;
+        CSprite* tt = static_cast<CSprite*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = (CImage*)tt->m_items.GetAt(i);
+            r = static_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
             r = 0;
         }

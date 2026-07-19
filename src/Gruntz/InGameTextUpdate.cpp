@@ -62,8 +62,8 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = (CGrunt*)g_gameReg->m_cmdGrid
-                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    CGrunt* found = reinterpret_cast<CGrunt*>(g_gameReg->m_cmdGrid
+                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1));
     if (found == 0) {
         m_cachedSubId = -1;
         m_38->m_stateFlags &= ~1;
@@ -76,9 +76,9 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    char** node = (char**)((_zvec*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>(found->m_14->m_1c));
+    char** node = reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(found->m_14->m_1c)));
     CString* p =
-        (CString*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
+        reinterpret_cast<CString*>(g_typeColl.m_alloc); // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {
@@ -104,7 +104,7 @@ i32 CInGameText::Update() {
         if (set->m_30 == 0) {
             void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
             set->m_10.Lookup("GAME_HELPBOOK", res_ob);
-            LeafCue* res = (LeafCue*)res_ob;
+            LeafCue* res = static_cast<LeafCue*>(res_ob);
             if (res != 0) {
                 i32 enable = g_sndEnabled;
                 i32 token = g_sndCueTag;

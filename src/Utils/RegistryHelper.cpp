@@ -86,8 +86,8 @@ namespace Utils {
                     szValueName,
                     0,
                     &dwType,
-                    (LPBYTE)szValueBuffer,
-                    (LPDWORD)pValueBufferSize
+                    reinterpret_cast<LPBYTE>(szValueBuffer),
+                    reinterpret_cast<LPDWORD>(pValueBufferSize)
                 ) == 0
                 && dwType == 1 /*REG_SZ*/) {
                 return szValueBuffer;
@@ -126,8 +126,8 @@ namespace Utils {
                     szValueName,
                     0,
                     &dwType,
-                    (LPBYTE)pBuffer,
-                    (LPDWORD)pBufferSize
+                    static_cast<LPBYTE>(pBuffer),
+                    reinterpret_cast<LPDWORD>(pBufferSize)
                 ) == 0
                 && dwType == 3 /*REG_BINARY*/) {
                 return pBuffer;
@@ -155,7 +155,7 @@ namespace Utils {
 
         if (m_open && szValueName) {
             cbData = 4;
-            if (RegQueryValueExA(m_valueKey, szValueName, 0, &dwType, (LPBYTE)&dwData, &cbData) == 0
+            if (RegQueryValueExA(m_valueKey, szValueName, 0, &dwType, reinterpret_cast<LPBYTE>(&dwData), &cbData) == 0
                 && dwType == 4 /*REG_DWORD*/) {
                 return dwData;
             }
@@ -219,7 +219,7 @@ namespace Utils {
         if (!pData) {
             return 0;
         }
-        return RegSetValueExA(m_valueKey, szValueName, 0, 3 /*REG_BINARY*/, (LPBYTE)pData, dataSize)
+        return RegSetValueExA(m_valueKey, szValueName, 0, 3 /*REG_BINARY*/, static_cast<LPBYTE>(pData), dataSize)
                == 0;
     }
 
@@ -234,7 +234,7 @@ namespace Utils {
         if (!szValueName) {
             return 0;
         }
-        return RegSetValueExA(m_valueKey, szValueName, 0, 4 /*REG_DWORD*/, (LPBYTE)&value, 4) == 0;
+        return RegSetValueExA(m_valueKey, szValueName, 0, 4 /*REG_DWORD*/, reinterpret_cast<LPBYTE>(&value), 4) == 0;
     }
 
     // -------------------------------------------------------------------------

@@ -48,7 +48,7 @@ i32 GruntDataRecord::DeserializeStrings(CSerialArchive* ar) {
     i32 i;
     for (i = 0; i < 5; i++) {
         ar->Read(buf, sizeof(buf));
-        *(CString*)&m_str[i] = buf;
+        *reinterpret_cast<CString*>(&m_str[i]) = buf;
     }
 
     ar->Read(m_14, 0x10);

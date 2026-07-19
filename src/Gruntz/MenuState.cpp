@@ -96,7 +96,7 @@ extern "C" {
 // The owning game-manager (CState::m_4, a real CGruntzMgr*) reached through the
 // gamemode-local CGMOwner reduced view (same helper the sibling state TUs use).
 static inline CGMOwner* Owner(CState* s) {
-    return (CGMOwner*)s->m_4;
+    return reinterpret_cast<CGMOwner*>(s->m_4);
 }
 
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
@@ -243,7 +243,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (set == 0) {
             return 0;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)set, "MENU", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(set), "MENU", "_");
     }
 
     if (!m_c->m_drawTarget->Method_158d20()) {
@@ -267,16 +267,16 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (m_1b4->AdvanceRow0((void*)"MENU_CURSOR", 0x64, 0x20)) {
-        m_1b4->AdvanceRow1((void*)"MENU_CURSOR", 0x64, 0x20);
+    if (m_1b4->AdvanceRow0(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
+        m_1b4->AdvanceRow1(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
     }
     m_1b4->m_row0Key = "MENU_SELECT";
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
-    m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+    m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
     if (e != 0) {
-        m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+        m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
         m_1b8 = e->m_10->m_durationMs;
     } else {
         m_1b8 = 0;
@@ -287,8 +287,8 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     }
 
     LeafCue* fm;
-    ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_soundRegistry)
-        ->m_10.Lookup("MENU_MENU", (void*&)fm);
+    (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))
+        ->m_10.Lookup("MENU_MENU", reinterpret_cast<void*&>(fm));
     m_1bc = fm;
     return 1;
 }
@@ -330,7 +330,7 @@ void CMenuState::ReleaseResources() {
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
         SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
-            ((SoundStream*)r)->Stop();
+            (static_cast<SoundStream*>(r))->Stop();
         }
         m_c->m_workerList->ClearWorkers();
     }
@@ -351,7 +351,7 @@ void CMenuState::StartMusic() {
     if (m_1bc == 0) {
         return;
     }
-    if (((WwdGameReg*)g_gameReg)->m_10 == 0) {
+    if ((reinterpret_cast<WwdGameReg*>(g_gameReg))->m_10 == 0) {
         return;
     }
     i32 saved = g_sndEnabled;
@@ -360,7 +360,7 @@ void CMenuState::StartMusic() {
         flag = 1;
         g_sndEnabled = 1;
     }
-    i32 item = ((WwdGameReg*)g_gameReg)->m_11c;
+    i32 item = (reinterpret_cast<WwdGameReg*>(g_gameReg))->m_11c;
     LeafCue* mus = m_1bc;
     if (flag) {
         u32 clk = g_killCueClock;
@@ -392,7 +392,7 @@ void CMenuState::StopMusicChain() {
     do {
         SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
-            ((SoundDevice*)r)->PurgeVoiceList(-1);
+            (static_cast<SoundDevice*>(r))->PurgeVoiceList(-1);
         }
     } while (m_1bc->m_10->IsPlaying());
 }

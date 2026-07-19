@@ -161,13 +161,13 @@ i32 CGrunt::ScanNearestTarget() {
     // center falls outside it.
     i32 halfBox = m_defenderRadius + m_reachRadius + 1;
     i32 pt[2];
-    GetScreenPos((GruntTilePos*)pt);
+    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
     i32 by = pt[1] >> 5;
-    GetScreenPos((GruntTilePos*)pt);
+    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
     i32 bx = pt[0] >> 5;
-    GetScreenPos((GruntTilePos*)pt);
+    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
     i32 t3y = pt[1] >> 5;
-    GetScreenPos((GruntTilePos*)pt);
+    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
     i32 t4x = pt[0] >> 5;
     RECT box;
     box.left = t4x - halfBox;
@@ -290,7 +290,7 @@ i32 CGrunt::ScanNearestTarget() {
             }
             {
                 i32 cc[4];
-                best->GetScreenPos((GruntTilePos*)cc);
+                best->GetScreenPos(reinterpret_cast<GruntTilePos*>(cc));
                 if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_scanDone;
                 }
@@ -301,7 +301,7 @@ i32 CGrunt::ScanNearestTarget() {
             m_defenderState = 1;
             {
                 if (BoardTest(
-                        (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
+                        reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
                         m_10->m_screenX,
                         m_10->m_screenY
                     )
@@ -349,7 +349,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (spanY != 0) {
                         baseRow += rand() % spanY;
                     }
-                    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
+                    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_10)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }

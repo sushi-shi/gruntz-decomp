@@ -125,7 +125,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
@@ -145,7 +145,7 @@ extern i32 DropActB_c7be0();
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline (the seven g_drop* scalars it used to run over ARE g_dropColl's fields).
 static inline CDropEntry* DropLookup(i32 coord) {
-    return (CDropEntry*)g_dropColl.ResolveEntry(coord);
+    return reinterpret_cast<CDropEntry*>(g_dropColl.ResolveEntry(coord));
 }
 
 // The default case's shared type-keyed record serializer (0x16e4f0, owned +
@@ -257,7 +257,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = (void*)0x3e8;
+            aux->m_1c = reinterpret_cast<void*>(0x3e8);
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
             aux->m_logic = h;
@@ -284,7 +284,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
             break;
     }
     return 1;
@@ -295,7 +295,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = (void*)0x3e8;
+            aux->m_1c = reinterpret_cast<void*>(0x3e8);
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
             aux->m_logic = h;
@@ -322,7 +322,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
             break;
     }
     return 1;
@@ -333,7 +333,7 @@ i32 DroppedObjectShadowPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = (void*)0x3e8;
+            aux->m_1c = reinterpret_cast<void*>(0x3e8);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
             aux->m_logic = h;
@@ -360,7 +360,7 @@ i32 DroppedObjectShadowPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
             break;
     }
     return 1;
@@ -454,7 +454,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // thunk; reloc-masked.
 RVA(0x000c5f00, 0x15)
 void CObjectDropper::InitActReg() {
-    ((CZDArrayDerived*)&g_dropperActReg)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_dropperActReg))->Construct(0x7d0, 0x7da);
 }
 
 // CObjectDropper::FireAct (0xc5f80): the runtime side of the registry - resolve the
@@ -463,8 +463,8 @@ void CObjectDropper::InitActReg() {
 // rather than cached; the null-slot path just returns (eax = the entry ptr).
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if (((CDropperActEntry*)g_dropperActReg.ResolveEntry(actId))->m_fn != 0) {
-        (this->*(((CDropperActEntry*)g_dropperActReg.ResolveEntry(actId))->m_fn))();
+    if ((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn != 0) {
+        (this->*((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn))();
     }
 }
 
@@ -482,23 +482,23 @@ RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CString*)list)->CString::~CString();
+                    (reinterpret_cast<CString*>(list))->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CDropperActEntry*)g_dropperActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CObjectDropper::Update;
+    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CObjectDropper::Update;
 }
 
 // CObjectDropper::Update @0xc62e0 - the per-frame tick (re-homed from the
@@ -524,7 +524,7 @@ i32 CObjectDropper::Update() {
             i32 ty;
             CTmCell* found =
                 g_gameReg->m_cmdGrid
-                    ->FindGruntAt(o->m_screenX, o->m_screenY, (RECT*)&o->m_areaL, &tx, &ty, &box);
+                    ->FindGruntAt(o->m_screenX, o->m_screenY, reinterpret_cast<RECT*>(&o->m_areaL), &tx, &ty, &box);
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {
@@ -543,7 +543,7 @@ i32 CObjectDropper::Update() {
                             // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
                             // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
                             // BrickzCell** tree-wide.
-                            flags = static_cast<u32>(((BrickzCell*)plane->m_8[cy])[cx].m_0);
+                            flags = static_cast<u32>((reinterpret_cast<BrickzCell*>(plane->m_8[cy]))[cx].m_0);
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
@@ -607,7 +607,7 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
 
@@ -710,7 +710,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // atexit thunk 0xc6b80); same archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000c6b50, 0x15)
 void CDroppedObject::RegisterRange() {
-    ((CZDArrayDerived*)&g_dropColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_dropColl))->Construct(0x7d0, 0x7da);
 }
 
 // CDroppedObject::FireActivation @0x0c6bd0 - look the activation coordinate up
@@ -742,38 +742,38 @@ void CDroppedObject::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)DropLookup(id) = (void*)&DropActA_c7090;
+    *reinterpret_cast<void**>(DropLookup(id)) = static_cast<void*>(&DropActA_c7090);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", (void*)id2);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
         char* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *(void**)DropLookup(id2) = (void*)&DropActB_c7be0;
+    *reinterpret_cast<void**>(DropLookup(id2)) = static_cast<void*>(&DropActB_c7be0);
 }
 
 // CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
@@ -811,7 +811,7 @@ i32 CDroppedObject::ActA() {
             i32 cy = m_landY >> 5;
             if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
                 && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-                cell = *(i32*)(reinterpret_cast<char*>(g->m_8[cy]) + cx * 0x1c);
+                cell = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_8[cy]) + cx * 0x1c));
             } else {
                 cell = 1;
             }
@@ -893,7 +893,7 @@ i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     switch (tag) {
@@ -950,7 +950,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
 // @0xc76b0, atexit thunk 0xc7700). Free init thunk; reloc-masked.
 RVA(0x000c76d0, 0x15)
 void CDroppedObjectShadow::InitActReg() {
-    ((CZDArrayDerived*)&g_shadowActReg)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_shadowActReg))->Construct(0x7d0, 0x7da);
 }
 
 // CDroppedObjectShadow::FireActivation (0xc7750): runtime dispatch for the
@@ -958,8 +958,8 @@ void CDroppedObjectShadow::InitActReg() {
 // CObjectDropper::FireAct.
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if (((CShadowActEntry*)g_shadowActReg.ResolveEntry(coord))->m_fn != 0) {
-        (this->*(((CShadowActEntry*)g_shadowActReg.ResolveEntry(coord))->m_fn))();
+    if ((reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(coord)))->m_fn != 0) {
+        (this->*((reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(coord)))->m_fn))();
     }
 }
 
@@ -973,23 +973,23 @@ RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CString*)list)->CString::~CString();
+                    (reinterpret_cast<CString*>(list))->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CShadowActEntry*)g_shadowActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CDroppedObjectShadow::Advance;
+    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CDroppedObjectShadow::Advance;
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
@@ -1025,10 +1025,10 @@ i32 CDroppedObjectShadow::Advance() {
 // mode-8 archetype.
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, c, d)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, c, d)) {
         return 0;
     }
-    if (!Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {
+    if (!Chain(static_cast<CSerialArchive*>(ar), mode, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     if (mode == 8) {

@@ -57,7 +57,7 @@ RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
     void* val = 0;
     m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
-    return (CObject*)val;
+    return static_cast<CObject*>(val);
 }
 
 // The leaf vtable slots 6/7 (S2-resident tiny virtuals, out-of-line like retail).
@@ -92,7 +92,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
     void* val = 0;
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if ((void*)target == val) {
+        if (static_cast<void*>(target) == val) {
             m_10.RemoveKey(key);
             delete target;
             break;
@@ -113,13 +113,13 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
 RVA(0x00152720, 0xa2)
 void CDDrawSubMgrLeaf::FreeAll_152720() {
     void* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
-    if (*(volatile i32*)&pos != 0) {
+    if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((CCatalogNode*)val);
+                delete (static_cast<CCatalogNode*>(val));
             }
         } while (pos != 0);
     }
@@ -150,7 +150,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
         if (strncmp(key, match, len) == 0) {
             m_10.RemoveKey(key);
             if (val != 0) {
-                delete ((CCatalogNode*)val);
+                delete (static_cast<CCatalogNode*>(val));
             }
             ++n;
         }
@@ -223,7 +223,7 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
         return 0;
     }
     buf[0] = 0;
-    CSymTab* node = (CSymTab*)tree->FirstSub();
+    CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != 0) {
         if (prefix != 0 && *prefix != 0) {
             sprintf(buf, g_fmtPathJoin, prefix, suffix, node->m_name);
@@ -231,14 +231,14 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
             strcpy(buf, node->m_name);
         }
         count += ScanTree_152ad0(node, buf, suffix);
-        node = (CSymTab*)tree->NextSub(node);
+        node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     void* grp = tree->FirstSym();
     if (grp != 0) {
         do {
-            CSymTab* fn = (CSymTab*)tree->NextSym2(grp);
+            CSymTab* fn = static_cast<CSymTab*>(tree->NextSym2(grp));
             while (fn != 0) {
-                if (((CParseSource*)fn)->GetEntryTag() == 0x414e49) {
+                if ((reinterpret_cast<CParseSource*>(fn))->GetEntryTag() == 0x414e49) {
                     if (prefix != 0 && *prefix != 0) {
                         sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
                     } else {
@@ -248,7 +248,7 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
                         ++count;
                     }
                 }
-                fn = (CSymTab*)tree->NextSym3(fn);
+                fn = static_cast<CSymTab*>(tree->NextSym3(fn));
             }
             grp = tree->NextSym(grp);
         } while (grp != 0);

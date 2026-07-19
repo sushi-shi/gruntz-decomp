@@ -62,7 +62,7 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     if (id == static_cast<i32>(0xeeeeeeee) || id == -1) {
         typeCode = 0;
     } else {
-        typeCode = ((CTileImageSet*)level->m_imageSets.GetAt(id & 0xffff))->GetCollisionAt(0, 0);
+        typeCode = (static_cast<CTileImageSet*>(level->m_imageSets.GetAt(id & 0xffff)))->GetCollisionAt(0, 0);
     }
     i32 oldFlags = cell->m_0;
     i32 keep = oldFlags & 0x1bf40000;

@@ -50,7 +50,7 @@ DATA(0x002451a8)
 CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    ((CZDArrayDerived*)&g_actRegCaption)->Construct(reinterpret_cast<i32>((void*)"Gruntz"), 0);
+    (reinterpret_cast<CZDArrayDerived*>(&g_actRegCaption))->Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ class CButeMgr;
 extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void InitResButeMgr82b20() {
-    ((CButeSection*)&g_buteMgr)->CButeSection::CButeSection();
+    (reinterpret_cast<CButeSection*>(&g_buteMgr))->CButeSection::CButeSection();
 }
 
 // The debug-overlay / profiler text-sink CString globals (0x645524..0x645530).
@@ -272,7 +272,7 @@ CContainerErr::CContainerErr(void* errSink) {
     // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
     // register with, not a string: ~CContainerErr loads +0x04 into ecx as a __thiscall
     // `this` (see <Wap32/zBitVec.h>). The default-sink buffer is taken by address.
-    m_errSink = (CVariantSlot*)(errSink ? errSink : g_defaultErrMsg);
+    m_errSink = static_cast<CVariantSlot*>((errSink ? errSink : g_defaultErrMsg));
 
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";

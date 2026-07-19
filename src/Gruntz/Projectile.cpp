@@ -388,28 +388,28 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
-    m_frame1 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
+    m_frame1 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     if (m_frame1 == 0) {
         return 0;
     }
     out = 0;
     map.Lookup(key + "2", out);
-    m_frame2 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
+    m_frame2 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "3", out);
-    m_frame3 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
+    m_frame3 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "4", out);
-    m_frame4 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
+    m_frame4 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "5", out);
-    m_frame5 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
+    m_frame5 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "IMPACT", out);
-    m_impactSprite = (CAniElement*)out;
+    m_impactSprite = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "FALL", out);
-    m_fallSprite = (CAniElement*)out;
+    m_fallSprite = static_cast<CAniElement*>(out);
 
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup_15c2d0(m_frame1);
@@ -451,8 +451,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     // Spawn the LightFx shadow companion + activate its two frames.
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow =
-        (CGameObject*)factory
-            ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
+        static_cast<CGameObject*>(factory
+            ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003));
     if (m_shadow != 0) {
         m_shadow->m_7c->m_notify(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_7c->m_logic))
@@ -523,10 +523,10 @@ extern "C" void ProjActivationHandler(); // 0x403896
 static inline CProjActEntry* ProjActLookup(i32 coord) {
     g_projActScratch = 0;
     if (coord >= g_projActLo && coord <= g_projActHi) {
-        return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
+        return reinterpret_cast<CProjActEntry*>((g_projActBase + (coord - g_projActLo) * g_projActStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_projActColl)->GrowTo(coord, 0))) {
-        return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_projActColl))->GrowTo(coord, 0))) {
+        return reinterpret_cast<CProjActEntry*>((g_projActBase + (coord - g_projActLo) * g_projActStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -538,22 +538,22 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
 static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
-        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
+        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
+    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
 // CProjectile::RegisterRange @0x0df920 - seed the projectile's activation table's
 // fast-range bounds (RegisterRange(0x7d0, 0x7da)). A static initializer.
 RVA(0x000df920, 0x15)
 void CProjectile::RegisterRange() {
-    ((CZDArrayDerived*)&g_projActColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_projActColl))->Construct(0x7d0, 0x7da);
 }
 
 // (CProjActEntry - the __thiscall handler entry, a 4-byte single-inheritance PMF of
@@ -584,16 +584,16 @@ RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = ProjTypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->~CString();
+                    (reinterpret_cast<CString*>(nodes))->~CString();
                 }
                 nodes++;
             } while (--cnt);
@@ -601,7 +601,7 @@ void CProjectile::RegisterType() {
         slot->m_name = "A";
         g_typeCounter++;
     }
-    *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;
+    *reinterpret_cast<void**>(ProjActLookup(id)) = static_cast<void*>(&ProjActivationHandler);
 }
 
 // ===========================================================================
@@ -948,7 +948,7 @@ void CProjectile::ScanTargets(i32 impact) {
         for (; col < 0xf; col++, colOff += 4) {
             // authentic: sliding-window grid access - 0x1c row-stride overlaps the
             // 4-byte column pitch, so it is raw byte arithmetic, not a 2D pointer array.
-            CGrunt* g = *(CGrunt**)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + colOff);
+            CGrunt* g = *reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + colOff));
             if (g == 0) {
                 continue;
             }
@@ -990,7 +990,7 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             // fresh hit: pull a key node off the free-list, record + deliver.
             Coord* slot = 0;
-            CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead; // freelist head is void*
+            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead); // freelist head is void*
             if (p->m_next != 0) {
                 slot = &p->m_coord; // the {x,y} payload overlays +4 (past the link word)
                 slot->m_x = keyX;
@@ -1057,7 +1057,7 @@ i32 g_tbombScratch;
 // src/Stub/BoundaryLowerThunks.cpp.
 RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {
-    ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_tbombColl))->Construct(0x7d0, 0x7da);
 }
 // g_projActCache (0x2bf464) + g_retAddrBreadcrumb come from <Gruntz/ActColl.h>.
 
@@ -1069,10 +1069,10 @@ void ConstructTBombRange() {
 static inline CTBombEntry* TBombLookup(i32 coord) {
     g_tbombScratch = 0;
     if (coord >= g_tbombLo && coord <= g_tbombHi) {
-        return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
+        return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_tbombColl)->GrowTo(coord, 0))) {
-        return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
+    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_tbombColl))->GrowTo(coord, 0))) {
+        return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -1104,7 +1104,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
@@ -1167,20 +1167,20 @@ void CTimeBomb::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)TBombLookup(id) = (void*)&TBombLogic_e1e60;
+    *reinterpret_cast<void**>(TBombLookup(id)) = static_cast<void*>(&TBombLogic_e1e60);
 }
 
 // ---------------------------------------------------------------------------
@@ -1233,7 +1233,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     if (cx < g->m_c && cy < g->m_10) {
         char* row = reinterpret_cast<char*>(g->m_8[cy]);
-        *(i32*)(row + cx * 0x1c) |= 0x1000000;
+        *reinterpret_cast<i32*>((row + cx * 0x1c)) |= 0x1000000;
     }
     m_object->m_124 = -1;
 }
@@ -1254,7 +1254,7 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = reinterpret_cast<char*>(g->m_8[cy]);
-        return *(i32*)(row + cx * 0x1c);
+        return *reinterpret_cast<i32*>((row + cx * 0x1c));
     }
     return 1;
 }
@@ -1265,7 +1265,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = reinterpret_cast<char*>(g->m_8[cy]);
-        *(i32*)(row + cx * 0x1c) &= ~0x1000000;
+        *reinterpret_cast<i32*>((row + cx * 0x1c)) &= ~0x1000000;
     }
 }
 
@@ -1296,7 +1296,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (static_cast<i64>(g_frameTime) - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
+    if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_startTimeLo) < *reinterpret_cast<i64*>(&m_durationLo)) {
         return 0;
     }
     if (m_fastPhase == 0) {
@@ -1336,7 +1336,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    CSerialArchive* sa = (CSerialArchive*)arc;
+    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
     if (mode == 4) {
         sa->Write(&m_startTimeLo, 8);
         sa->Write(&m_durationLo, 8);
@@ -1349,10 +1349,10 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         sa->Read(&m_fastPhase, 4);
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1381,7 +1381,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     void* entry_ob = 0;
     reg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
-    LeafCue* entry = (LeafCue*)entry_ob;
+    LeafCue* entry = static_cast<LeafCue*>(entry_ob);
     if (entry == 0) {
         return 0;
     }
@@ -1390,7 +1390,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
     // view); the projectile owns the same buffer as its m_sound sound sample.
-    m_sound = (DirectSoundMgr*)entry->m_10->GetItem();
+    m_sound = static_cast<DirectSoundMgr*>(entry->m_10->GetItem());
     if (m_sound == 0) {
         return 0;
     }

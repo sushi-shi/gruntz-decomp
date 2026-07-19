@@ -45,7 +45,7 @@ void ImageRotateBlit(
     i32 mode,
     i32 colorkey
 ) {
-    RotateSrcImage* in = (RotateSrcImage*)inp;
+    RotateSrcImage* in = static_cast<RotateSrcImage*>(inp);
     i32 h = in->m_1c;
     i32 w = in->m_18;
 

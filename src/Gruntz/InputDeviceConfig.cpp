@@ -81,7 +81,7 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
         CString s;
         i++;
         s.Format("Joystick %i", i);
-        SendMessageA(ctrl, 0x143, 0, reinterpret_cast<LPARAM>((LPCTSTR)s));
+        SendMessageA(ctrl, 0x143, 0, reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(s)));
     }
     if (selIndex >= 0) {
         SendMessageA(ctrl, 0x14e, selIndex, 0); // CB_SETCURSEL

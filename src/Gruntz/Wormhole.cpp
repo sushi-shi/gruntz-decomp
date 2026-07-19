@@ -170,10 +170,10 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
         i32 sentinel =
             reinterpret_cast<i32>(g_projActCache); // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set((void*)v, sentinel, 0xc);
+        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
         r = v->m_spare;
     }
-    CString* slot = (CString*)v->m_alloc;
+    CString* slot = reinterpret_cast<CString*>(v->m_alloc);
     i32 n = v->m_grown;
     while (n-- != 0) {
         if (slot) {
@@ -196,7 +196,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     }
     i32 sentinel = reinterpret_cast<i32>(g_projActCache); // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set((void*)v, sentinel, 0xc);
+    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
     return v->m_spare;
 }
 
@@ -204,10 +204,10 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // assigning the key (the same archetype LogicActRegistrars.cpp keeps).
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    void** list = (void**)g_typeColl.m_alloc;
+    void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
     while (n-- != 0) {
         if (list != 0) {
-            ((CString*)list)->CString::~CString();
+            (reinterpret_cast<CString*>(list))->CString::~CString();
         }
         list++;
     }
@@ -282,10 +282,10 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 kind = m_object->m_124;
     i32 color;
     if (kind == -1) {
-        i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+        i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
         color = colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
     } else {
-        i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+        i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
         color = colorTable[kind + 0x14 / 4];
     }
     CGameObject* s = m_object;
@@ -307,7 +307,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     if (tag == 8) {
@@ -316,11 +316,11 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
         i32 kind = m_object->m_124;
         i32 color;
         if (kind == -1) {
-            i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+            i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
             color =
                 colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
         } else {
-            i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+            i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
             color = colorTable[kind + 0x14 / 4];
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
@@ -339,7 +339,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ===========================================================================
 RVA(0x0003ffd0, 0x15)
 void InitWormholeDispatch() {
-    ((CZDArrayDerived*)&g_wormholeDispatch)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_wormholeDispatch))->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -351,8 +351,8 @@ void InitWormholeDispatch() {
 // ===========================================================================
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    if (*(void**)ResolveSlot(&g_wormholeDispatch, idx) != 0) {
-        LogicFn fn = *(LogicFn*)ResolveSlot(&g_wormholeDispatch, idx);
+    if (*reinterpret_cast<void**>(ResolveSlot(&g_wormholeDispatch, idx)) != 0) {
+        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_wormholeDispatch, idx));
         (this->*fn)();
     }
 }
@@ -376,13 +376,13 @@ RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
     i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = "A";
+        *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_wormholeDispatch, idx);
-    *(void**)dslot = (void*)&WormholeLogic_40181b;
+    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&WormholeLogic_40181b);
 }
 
 // ---------------------------------------------------------------------------
@@ -425,7 +425,7 @@ void CWormhole::SpawnPartners() {
     if (list == 0) {
         return;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
     if (node == 0) {
         return;
     }
@@ -434,9 +434,9 @@ void CWormhole::SpawnPartners() {
         node = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            if ((void*)aux->m_notify == (void*)&WormholeTypeMarker && obj->m_screenX == tx
+            if (static_cast<void*>(aux->m_notify) == static_cast<void*>(&WormholeTypeMarker) && obj->m_screenX == tx
                 && obj->m_screenY == ty && aux->m_logic != 0) {
-                ((CWormhole*)aux->m_logic)->ReapplyConfig();
+                (static_cast<CWormhole*>(aux->m_logic))->ReapplyConfig();
             }
         }
     } while (node != 0);
@@ -478,7 +478,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // ===========================================================================
 RVA(0x000406d0, 0x15)
 void InitLogicDispatch_6445e8() {
-    ((CZDArrayDerived*)&g_logicDispatch_6445e8)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_logicDispatch_6445e8))->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -490,9 +490,9 @@ void InitLogicDispatch_6445e8() {
 // expands twice, side-effecting so it isn't CSE'd).
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CPuddleActEntry* e = (CPuddleActEntry*)g_logicDispatch_6445e8.ResolveEntry(id);
+    CPuddleActEntry* e = reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CPuddleActEntry* e2 = (CPuddleActEntry*)g_logicDispatch_6445e8.ResolveEntry(id);
+        CPuddleActEntry* e2 = reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }
@@ -508,25 +508,25 @@ RVA(0x000408b0, 0x2ac)
 void RegisterLogic_6445e8() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_logicDispatch_6445e8.ResolveEntry(id) = (void*)&Handler_4021f8;
+    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id)) = static_cast<void*>(&Handler_4021f8);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
-        g_buteTree.Insert("B", (void*)g_typeCounter);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *(void**)g_logicDispatch_6445e8.ResolveEntry(id2) = (void*)&Handler_403418;
+    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id2)) = static_cast<void*>(&Handler_403418);
 }
 
 // ===========================================================================
@@ -603,13 +603,13 @@ i32 CGruntPuddle::Remove() {
         i32 flags;
         if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c)
             && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-            flags = ((i32*)grid->m_8[ty])[tx * 7];
+            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
         } else {
             flags = 1;
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
             m_38->m_flags |= 0x10000;
-            CObjList* list = (CObjList*)g_gameReg->m_cmdGrid;
+            CObjList* list = reinterpret_cast<CObjList*>(g_gameReg->m_cmdGrid);
             CObjListNode* node = list->m_head;
             while (node != 0) {
                 CObjListNode* next = node->m_next;
@@ -653,7 +653,7 @@ i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     switch (tag) {
@@ -744,7 +744,7 @@ void CWormhole::LoadColors() {
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
     CGameObject* s = m_object;
-    i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+    i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
     i32 colorEntry = colorTable[s->m_placeMode + 0x14 / 4];
     s->m_drawActive = 1;
     s->m_drawFillCmd = 7;
@@ -783,7 +783,7 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one
@@ -819,7 +819,7 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000414a0, 0x15)
 void CTeleporter::InitActReg() {
-    ((CZDArrayDerived*)&g_teleporterActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_teleporterActReg))->Construct(2000, 2010);
 }
 
 // CTeleporter::FireActivation @0x041520 - look the activation coordinate up in
@@ -828,9 +828,9 @@ void CTeleporter::InitActReg() {
 // CParticlez::FireActivation (double ResolveEntry + dispatch).
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CTeleporterActEntry* e = (CTeleporterActEntry*)g_teleporterActReg.ResolveEntry(coord);
+    CTeleporterActEntry* e = reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CTeleporterActEntry* e2 = (CTeleporterActEntry*)g_teleporterActReg.ResolveEntry(coord);
+        CTeleporterActEntry* e2 = reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -847,25 +847,25 @@ RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *(void**)g_teleporterActReg.ResolveEntry(id) = (void*)&Handler_40187a;
+    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id)) = static_cast<void*>(&Handler_40187a);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
-        g_buteTree.Insert("B", (void*)g_typeCounter);
+        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=("B");
+        (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *(void**)g_teleporterActReg.ResolveEntry(id2) = (void*)&Handler_403846;
+    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id2)) = static_cast<void*>(&Handler_403846);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
@@ -944,7 +944,7 @@ i32 CTeleporter::Update() {
         i32 x = o->m_screenX;
         if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
             && y >= mgr->m_viewOriginT) {
-            ((CTriggerMgr*)mgr->m_cmdGrid)->m_teleportWanted =
+            (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_teleportWanted =
                 1; // an on-screen wormhole keeps GAME_TELEPORTLOOP playing
         }
     }
@@ -955,8 +955,8 @@ i32 CTeleporter::Update() {
 
     CGameObject* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_armClockLo;
-        if (delta >= *(i64*)&m_intervalLo) {
+        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_armClockLo);
+        if (delta >= *reinterpret_cast<i64*>(&m_intervalLo)) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_7c->m_bc = 0;
@@ -967,8 +967,8 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CGrunt* found = (CGrunt*)((CTriggerMgr*)mgr->m_cmdGrid)
-                        ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
+    CGrunt* found = reinterpret_cast<CGrunt*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
+                        ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1));
     if (found == 0) {
         return 0;
     }
@@ -1016,17 +1016,17 @@ i32 CTeleporter::Update() {
     m_tickHandled = 1;
     mgr = g_gameReg;
     CGrunt* current;
-    if (((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetCount() != 1) {
+    if ((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetCount() != 1) {
         current = 0;
     } else {
-        i32* pair = (i32*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetHead();
+        i32* pair = static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());
         i32 row = pair[0];
         i32 col = pair[1];
-        current = ((CGrunt**)(reinterpret_cast<char*>((CTriggerMgr*)mgr->m_cmdGrid) + 0x1c))[row * 15 + col];
+        current = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(static_cast<CTriggerMgr*>(mgr->m_cmdGrid)) + 0x1c)))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_object;
-        ((CPlay*)mgr->m_curState)->ResetGoals(g->m_screenX, g->m_screenY);
+        (static_cast<CPlay*>(mgr->m_curState))->ResetGoals(g->m_screenX, g->m_screenY);
     }
     return 0;
 }

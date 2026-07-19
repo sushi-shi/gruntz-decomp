@@ -134,7 +134,7 @@ i16 InitializeBlowfish(u8* key, i16 keybytes) {
         g_bfP[i] = g_bfInitP[i];
     }
     for (i = 0; i < 1024; i++) {
-        BF_S[i] = ((const u32*)g_bfInitS)[i];
+        BF_S[i] = (reinterpret_cast<const u32*>(g_bfInitS))[i];
     }
 
     j = 0;

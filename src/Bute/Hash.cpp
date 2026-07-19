@@ -72,7 +72,7 @@ void* CHash::Walk(const char* name, i32 ci) {
     CHashElement* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
-            const char* key = *(const char**)e->m_record;
+            const char* key = *static_cast<const char**>(e->m_record);
             if (_strcmpi(key, name) == 0) {
                 return e->m_record;
             }
@@ -81,7 +81,7 @@ void* CHash::Walk(const char* name, i32 ci) {
         return 0;
     }
     while (e) {
-        const char* key = *(const char**)e->m_record;
+        const char* key = *static_cast<const char**>(e->m_record);
         if (strcmp(key, name) == 0) {
             return e->m_record;
         }
@@ -110,7 +110,7 @@ RVA(0x0013c360, 0x47)
 void* CHash::FindInt(u32 key) {
     CHashElement* e = Lookup(HashInt(key));
     while (e) {
-        if (*(u32*)e->m_record == key) {
+        if (*static_cast<u32*>(e->m_record) == key) {
             return e->m_record;
         }
         e = FromLink(e->m_link.m_next);
@@ -153,7 +153,7 @@ void* CHashB::Walk(const char* name, i32 ci) {
     CHashElement* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
-            const char* key = *(const char**)e->m_record;
+            const char* key = *static_cast<const char**>(e->m_record);
             if (_strcmpi(key, name) == 0) {
                 return e->m_record;
             }
@@ -162,7 +162,7 @@ void* CHashB::Walk(const char* name, i32 ci) {
         return 0;
     }
     while (e) {
-        const char* key = *(const char**)e->m_record;
+        const char* key = *static_cast<const char**>(e->m_record);
         if (strcmp(key, name) == 0) {
             return e->m_record;
         }

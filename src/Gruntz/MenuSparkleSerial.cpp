@@ -26,10 +26,10 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     // The slot-1 base serialize is the shared CMovingLogicBase::Serialize @0x16e7f0
     // (the real callee - CUserLogic::SerializeMove was a fake, unbound name for it).
-    if (!CUserLogic::SerializeMove((CSerialArchive*)arc, mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(static_cast<CSerialArchive*>(arc), mode, a3, a4)) {
         return 0;
     }
-    if (!Chain((CSerialArchive*)arc, mode, a3, (CGameObject*)a4)) {
+    if (!Chain(static_cast<CSerialArchive*>(arc), mode, a3, reinterpret_cast<CGameObject*>(a4))) {
         return 0;
     }
     if (mode != 4) {

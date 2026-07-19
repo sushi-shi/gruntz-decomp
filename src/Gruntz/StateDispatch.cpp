@@ -45,7 +45,7 @@ i32 StateDispatch(CGameObject* obj) {
     // variant), read/written through the int view at this site.
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = (void*)0x3e8;
+            aux->m_1c = reinterpret_cast<void*>(0x3e8);
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
             aux->m_logic = h;
@@ -72,7 +72,7 @@ i32 StateDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_logic);
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
             break;
     }
     return 1;

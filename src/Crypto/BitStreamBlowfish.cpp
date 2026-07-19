@@ -22,7 +22,7 @@ void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
         in->read(reinterpret_cast<char*>(&blk[0]), 8);
         int sample = in->gcount();
         if (sample == 1) {
-            sample = *(signed char*)&blk[0];
+            sample = *reinterpret_cast<signed char*>(&blk[0]);
         }
         if (!first) {
             out->write(reinterpret_cast<const char*>(&blk[3]), sample);

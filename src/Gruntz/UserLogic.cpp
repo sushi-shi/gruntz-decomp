@@ -39,7 +39,7 @@ i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
 LogicTypeId CUserBase::GetTypeTag() {
-    return (LogicTypeId)0;
+    return static_cast<LogicTypeId>(0);
 }
 
 i32 CUserLogic::UserLogicVfunc1() {

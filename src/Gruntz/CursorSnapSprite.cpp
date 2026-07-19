@@ -27,7 +27,7 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible
@@ -52,7 +52,7 @@ i32 Handler03a200(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CCursorSnapSprite((CGameObject*)owner);
+            CUserLogic* sub = new CCursorSnapSprite(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -111,9 +111,9 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
 // CTeleporter::FireActivation (the ResolveEntry inline expands twice).
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
-    CSnapActEntry* e = (CSnapActEntry*)g_logicActReg_62bfa0.ResolveEntry(id);
+    CSnapActEntry* e = reinterpret_cast<CSnapActEntry*>(g_logicActReg_62bfa0.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CSnapActEntry* e2 = (CSnapActEntry*)g_logicActReg_62bfa0.ResolveEntry(id);
+        CSnapActEntry* e2 = reinterpret_cast<CSnapActEntry*>(g_logicActReg_62bfa0.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }

@@ -258,24 +258,24 @@ public:
     // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to
     // the raw m_markerData/m_markerCount fields).
     CHitMarker** markerData() {
-        return *(CHitMarker***)(reinterpret_cast<char*>(&m_startMarkers) + 4);
+        return *reinterpret_cast<CHitMarker***>((reinterpret_cast<char*>(&m_startMarkers) + 4));
     }
     i32 markerCount() {
-        return *(i32*)(reinterpret_cast<char*>(&m_startMarkers) + 8);
+        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_startMarkers) + 8));
     }
     // The same data(+4)/count(+8) reads over the four +0x3a4 placed-object arrays
     // and the +0x488 array (the serialize/free-list walks read them raw).
     void** arrData(i32 k) {
-        return *(void***)(reinterpret_cast<char*>(&m_3a4[k]) + 4);
+        return *reinterpret_cast<void***>((reinterpret_cast<char*>(&m_3a4[k]) + 4));
     }
     i32 arrCount(i32 k) {
-        return *(i32*)(reinterpret_cast<char*>(&m_3a4[k]) + 8);
+        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_3a4[k]) + 8));
     }
     void** arr488Data() {
-        return *(void***)(reinterpret_cast<char*>(&m_488) + 4);
+        return *reinterpret_cast<void***>((reinterpret_cast<char*>(&m_488) + 4));
     }
     i32 arr488Count() {
-        return *(i32*)(reinterpret_cast<char*>(&m_488) + 8);
+        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_488) + 8));
     }
 
     // CPlay's own per-frame helper methods (the thunks Render dispatches to

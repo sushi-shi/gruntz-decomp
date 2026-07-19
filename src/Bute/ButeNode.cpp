@@ -62,24 +62,24 @@
 // ===========================================================================
 RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
-    CButeValue* v = (CButeValue*)pValue;
+    CButeValue* v = static_cast<CButeValue*>(pValue);
     switch (v->type) {
         case kButeString:
-            delete (CString*)v->pValue;
+            delete static_cast<CString*>(v->pValue);
             break;
         case kButeDouble:
         case kButeRef6:
-            delete (double*)v->pValue;
+            delete static_cast<double*>(v->pValue);
             break;
         case kButeInt:
         case kButeFloat:
         case kButeRef7:
-            delete (i32*)v->pValue;
+            delete static_cast<i32*>(v->pValue);
             break;
         case kButeDword:
         case kButeRef5:
         case kButeRef8:
-            delete (u32*)v->pValue;
+            delete static_cast<u32*>(v->pValue);
             break;
     }
 }
@@ -140,5 +140,5 @@ CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode() {}
 // keeps the dispatch direct (the tail-jmp), matching retail.
 RVA(0x00174de0, 0x9)
 void ButeStoreFreeAdapter(void* p) {
-    ((CButeStoreDtorCopyNode*)p)->CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode();
+    (static_cast<CButeStoreDtorCopyNode*>(p))->CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode();
 }

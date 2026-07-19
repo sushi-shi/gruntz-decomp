@@ -54,15 +54,15 @@ extern HINSTANCE g_resModule;
 // DirectDraw palette via IDirectDraw::CreatePalette into m_palette.
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
-    m_cacheA = (u8*)::operator new(0x400);
+    m_cacheA = static_cast<u8*>(::operator new(0x400));
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
     // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_cacheA + i) = *(i32*)(reinterpret_cast<char*>(entries) + i);
+        *reinterpret_cast<i32*>((m_cacheA + i)) = *reinterpret_cast<i32*>((reinterpret_cast<char*>(entries) + i));
     }
-    m_cacheB = (u8*)::operator new(0x400);
-    i32 hr = dd->CreatePalette(flags, (LPPALETTEENTRY)entries, &m_palette, 0);
+    m_cacheB = static_cast<u8*>(::operator new(0x400));
+    i32 hr = dd->CreatePalette(flags, static_cast<LPPALETTEENTRY>(entries), &m_palette, 0);
     if (hr == 0) {
         return 1;
     }
@@ -95,7 +95,7 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
 RVA(0x001474d0, 0x60)
 i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
     u8 entries[0x400];
-    u8* src = (u8*)rgb;
+    u8* src = static_cast<u8*>(rgb);
     for (i32 i = 0; i < 0x100; i++) {
         entries[i * 4 + 0] = src[0];
         entries[i * 4 + 1] = src[1];
@@ -313,7 +313,7 @@ i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    return m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)data);
+    return m_palette->SetEntries(0, start, count, reinterpret_cast<LPPALETTEENTRY>(data));
 }
 
 // CDDPalette::SetEntriesQuad (0x147b10, __thiscall, ret 0x10 => 4 args). Allocate
@@ -321,7 +321,7 @@ i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
 // LoadBmp) into PALETTEENTRY, SetAndNotify the range, free, return the HRESULT.
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
-    u8* buf = (u8*)::operator new(count * 4);
+    u8* buf = static_cast<u8*>(::operator new(count * 4));
     if (buf == 0) {
         return 0x80070057;
     }
@@ -331,7 +331,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
         buf[i * 4 + 2] = quads[i * 4 + 0];
         buf[i * 4 + 3] = 0;
     }
-    i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
+    i32 hr = SetAndNotify(start, count, reinterpret_cast<i32*>(buf), a4);
     ::operator delete(buf);
     return hr;
 }
@@ -345,7 +345,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
 // Twin SetEntriesQuad (stride-4 read) IS exact; the stride-3 read reshuffles the tail.
 RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
-    u8* buf = (u8*)::operator new(count * 4);
+    u8* buf = static_cast<u8*>(::operator new(count * 4));
     if (buf == 0) {
         return 0x80070057;
     }
@@ -358,7 +358,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
         d[3] = 0;
         d += 4;
     }
-    i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
+    i32 hr = SetAndNotify(start, count, reinterpret_cast<i32*>(buf), a4);
     ::operator delete(buf);
     return hr;
 }
@@ -373,7 +373,7 @@ i32 CDDPalette::GetEntries() {
     // `xor eax,eax` this `return 0` emits. MSVC 5.0 C++ forbids fall-off
     // (C2561), so the one-instruction `xor` gap can't be reproduced from clean C.
     if (m_cacheB == 0) {
-        m_cacheB = (u8*)::operator new(0x400);
+        m_cacheB = static_cast<u8*>(::operator new(0x400));
         if (m_cacheB == 0) {
             return 0;
         }
@@ -402,13 +402,13 @@ void CDDPalette::Apply(i32 a1) {
     }
     // Byte-offset copy loop (i+=4, cmp 0x400) matches retail's index-walk form.
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_cacheA + i) = *(i32*)(readback + i);
+        *reinterpret_cast<i32*>((m_cacheA + i)) = *reinterpret_cast<i32*>((readback + i));
     }
     if (g_DirectDrawMgr != 0) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)readback);
+    m_palette->SetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(readback));
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
@@ -419,7 +419,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
         m_cacheA[i * 4 + 1] = g;
         m_cacheA[i * 4 + 2] = b;
     }
-    i32 hr = m_palette->SetEntries(flags, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
+    i32 hr = m_palette->SetEntries(flags, start, count, reinterpret_cast<LPPALETTEENTRY>((m_cacheA + start * 4)));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -445,9 +445,9 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
-    u8* snapshot = (u8*)::operator new(0x400);
+    u8* snapshot = static_cast<u8*>(::operator new(0x400));
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(snapshot + i) = *(i32*)(m_cacheA + i);
+        *reinterpret_cast<i32*>((snapshot + i)) = *reinterpret_cast<i32*>((m_cacheA + i));
     }
     i32 t0 = ::timeGetTime();
     i32 prev = 9;
@@ -461,7 +461,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
                 m_cacheA[j * 4 + 2] =
                     static_cast<u8>((((b & 0xff) - snapshot[j * 4 + 2]) * t / durationMs + snapshot[j * 4 + 2]));
             }
-            m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
+            m_palette->SetEntries(0, start, count, reinterpret_cast<LPPALETTEENTRY>((m_cacheA + start * 4)));
         }
         prev = t;
     }
@@ -493,10 +493,10 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     m_fixedG = g;
     m_fixedB = b;
     if (!m_sourcePalette) {
-        m_sourcePalette = (u8*)::operator new(0x400);
+        m_sourcePalette = static_cast<u8*>(::operator new(0x400));
     }
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_sourcePalette + i) = *(i32*)(m_cacheA + i);
+        *reinterpret_cast<i32*>((m_sourcePalette + i)) = *reinterpret_cast<i32*>((m_cacheA + i));
     }
     m_active = 1;
     Tick();
@@ -521,10 +521,10 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durati
     m_targetPalette = target;
     m_lastElapsedMs = -1;
     if (!m_sourcePalette) {
-        m_sourcePalette = (u8*)::operator new(0x400);
+        m_sourcePalette = static_cast<u8*>(::operator new(0x400));
     }
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_sourcePalette + i) = *(i32*)(m_cacheA + i);
+        *reinterpret_cast<i32*>((m_sourcePalette + i)) = *reinterpret_cast<i32*>((m_cacheA + i));
     }
     m_active = 1;
     Tick();
@@ -572,7 +572,7 @@ i32 CDDPalette::Tick() {
                 0,
                 m_firstColorIndex,
                 m_colorCount,
-                (LPPALETTEENTRY)(m_cacheA + m_firstColorIndex * 4)
+                reinterpret_cast<LPPALETTEENTRY>((m_cacheA + m_firstColorIndex * 4))
             );
         }
     } else {
@@ -599,7 +599,7 @@ i32 CDDPalette::Tick() {
                 0,
                 m_firstColorIndex,
                 m_colorCount,
-                (LPPALETTEENTRY)(m_cacheA + m_firstColorIndex * 4)
+                reinterpret_cast<LPPALETTEENTRY>((m_cacheA + m_firstColorIndex * 4))
             );
         }
     }
@@ -623,17 +623,17 @@ void CDDPalette::Flush() {
     u8* v = m_targetPalette;
     m_active = 0;
     if (v != 0) {
-        SetAndNotify(m_firstColorIndex, m_colorCount, (i32*)v, 0);
+        SetAndNotify(m_firstColorIndex, m_colorCount, reinterpret_cast<i32*>(v), 0);
         m_targetPalette = 0;
     } else {
         char buf[8];
-        *(i32*)buf = *(i32*)&m_fixedR;
+        *reinterpret_cast<i32*>(buf) = *reinterpret_cast<i32*>(&m_fixedR);
         SetRange(
             m_firstColorIndex,
             m_colorCount,
-            *(i32*)buf,
-            *(i32*)(buf + 1),
-            *(i32*)(buf + 2),
+            *reinterpret_cast<i32*>(buf),
+            *reinterpret_cast<i32*>((buf + 1)),
+            *reinterpret_cast<i32*>((buf + 2)),
             0
         );
     }
@@ -658,7 +658,7 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) 
         u8 cb = m_cacheA[i * 4 + 2];
         m_cacheA[i * 4 + 2] = static_cast<u8>((((b & 0xff) - cb) * pct / 100 + cb));
     }
-    i32 hr = m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
+    i32 hr = m_palette->SetEntries(0, start, count, reinterpret_cast<LPPALETTEENTRY>((m_cacheA + start * 4)));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x406, hr);
     }
@@ -716,7 +716,7 @@ i32 CDDPalette::CaptureSystemPalette() {
         dest[i].peGreen = lp.palPalEntry[i].peGreen;
         dest[i].peBlue = lp.palPalEntry[i].peBlue;
     }
-    i32 rc = SetAndNotify(0, 0x100, (i32*)dest, 0);
+    i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<i32*>(dest), 0);
     if (rc != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x495, rc);
         return 0;
@@ -751,7 +751,7 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peBlue = 0;
             lp.palPalEntry[i].peFlags = 4; // PC_NOCOLLAPSE
         }
-        HPALETTE hpal = ::CreatePalette((LOGPALETTE*)&lp);
+        HPALETTE hpal = ::CreatePalette(reinterpret_cast<LOGPALETTE*>(&lp));
         if (hpal != 0) {
             HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);

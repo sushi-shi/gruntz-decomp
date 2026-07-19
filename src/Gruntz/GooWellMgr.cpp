@@ -111,9 +111,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (!m_rollingballLoop) {
                 void* out_v = 0;
                 g_gameReg->m_world->m_soundRegistry->m_10.Lookup("LEVEL_ROLLINGBALL", out_v);
-                LeafCue* out = (LeafCue*)out_v;
+                LeafCue* out = static_cast<LeafCue*>(out_v);
                 if (out && out->m_10) {
-                    m_rollingballLoop = (DirectSoundMgr*)out->m_10->GetItem();
+                    m_rollingballLoop = static_cast<DirectSoundMgr*>(out->m_10->GetItem());
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }
@@ -128,9 +128,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (!m_teleportLoop) {
                 void* out_v = 0;
                 g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_TELEPORTLOOP", out_v);
-                LeafCue* out = (LeafCue*)out_v;
+                LeafCue* out = static_cast<LeafCue*>(out_v);
                 if (out && out->m_10) {
-                    m_teleportLoop = (DirectSoundMgr*)out->m_10->GetItem();
+                    m_teleportLoop = static_cast<DirectSoundMgr*>(out->m_10->GetItem());
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }
@@ -153,10 +153,10 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == 2 && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleActive == 0
-        && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleHandle == 0 && m_pendingFx == 0) {
+    if (count <= 1 && m_phase == 2 && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0 && m_pendingFx == 0) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
-            ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
         }
     }
 
@@ -172,9 +172,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (g_gameReg->m_134 == 2) {
                 // +0x594 lives past CPlay's tail: it is CMulti::m_594 (CMulti : CPlay),
                 // and the m_134 == 2 arm is exactly the mode where m_curState is a CMulti.
-                ((CMulti*)g_gameReg->m_curState)->m_594 = 1;
+                (static_cast<CMulti*>(g_gameReg->m_curState))->m_594 = 1;
             }
-            ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
             m_countdownActive = 0;
             return 0;
         }
@@ -188,13 +188,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 == 1 && m_pendingFx != 0) {
             goto done;
         }
-        ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+        (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
         m_countdownActive = 0;
         return 0;
     }
 
     {
-        CPlay* obj = (CPlay*)g_gameReg->m_curState;
+        CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
         if (g_gameReg->m_134 != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
@@ -205,15 +205,15 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_curPlayer == i) {
                             LoadFinishLevelSprite(5);
                         }
-                        CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x150 + off);
+                        CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x150 + off));
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
                             CWwdGameObjectE* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup((void*)slot->m_0c, (void*&)out)
+                                    .Lookup(reinterpret_cast<void*>(slot->m_0c), reinterpret_cast<void*&>(out))
                                 && out) {
                                 if (out->m_7c->m_logic) {
-                                    ((CGrunt*)out->m_7c->m_logic)->ResolveDeathAnimation();
+                                    (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveDeathAnimation();
                                 }
                             }
                             ClearRowAndRefresh(i);
@@ -225,10 +225,10 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CWwdGameObjectE* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup((void*)lastSlot->m_0c, (void*&)out)
+                                    .Lookup(reinterpret_cast<void*>(lastSlot->m_0c), reinterpret_cast<void*&>(out))
                                 && out) {
                                 if (out->m_7c->m_logic) {
-                                    ((CGrunt*)out->m_7c->m_logic)->ResolveAnimation();
+                                    (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveAnimation();
                                 }
                             }
                             ClearRow(i);

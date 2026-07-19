@@ -198,9 +198,9 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(&m_2c, 4);
         arc->Read(&g_logicTypesRegistered, 4);
         arc->Read(&m_prevAnimSetNode, 4);
-        m_0c = (CGameObject*)a4;
-        m_object = (CGameObject*)a4;
-        m_objAux = ((CGameObject*)a4)->m_7c;
+        m_0c = reinterpret_cast<CGameObject*>(a4);
+        m_object = reinterpret_cast<CGameObject*>(a4);
+        m_objAux = (reinterpret_cast<CGameObject*>(a4))->m_7c;
         m_04 = 0;
         m_08 = 0;
         m_28 = 0x3e9;
@@ -343,7 +343,7 @@ i32 CMovingLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         char buf[0x100];
         CButeWriteTemp accum;
         accum.Ctor(buf, 0x100, 2, 1);
-        WriteCurve(*(ostream*)&accum, *Motion());
+        WriteCurve(*reinterpret_cast<ostream*>(&accum), *Motion());
         i32 len = accum.Length();
         arc->Write(&len, 4);
         arc->Write(accum.GetBuffer(), len);
@@ -361,7 +361,7 @@ i32 CMovingLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(buf, len);
         CButeReadTemp accum;
         accum.Ctor(buf, len, 1);
-        ReadCurve(*(istream*)&accum, *Motion());
+        ReadCurve(*reinterpret_cast<istream*>(&accum), *Motion());
         RezFree(buf);
         arc->Read(&m_140, 4);
         arc->Read(&m_144, 4);

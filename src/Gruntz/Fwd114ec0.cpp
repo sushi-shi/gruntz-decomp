@@ -46,5 +46,5 @@ void Fwd114f00(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
     }
     // (the CGameRegistry cast is the documented CGruntzMgr/CGameRegistry dual-view of
     // the one 0x24556c singleton - SaveScreenshot's own signature names that view.)
-    SaveScreenshot(pair->m_surface, bute, (CGameRegistry*)mgr, w, h, name, arg7);
+    SaveScreenshot(pair->m_surface, bute, reinterpret_cast<CGameRegistry*>(mgr), w, h, name, arg7);
 }

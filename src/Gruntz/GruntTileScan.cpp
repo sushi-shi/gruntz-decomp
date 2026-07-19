@@ -70,7 +70,7 @@ RVA(0x00032ce0, 0x448)
 i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
         if (g->CoordCount() != 0) {
-            GruntTilePos* c = (GruntTilePos*)g->CoordTail()->m_coord;
+            GruntTilePos* c = reinterpret_cast<GruntTilePos*>(g->CoordTail()->m_coord);
             i32 col = c->m_x;
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
@@ -86,7 +86,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                     GruntCoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
-                        g_coordPool.Push((void*)(cur->m_coord));
+                        g_coordPool.Push(static_cast<void*>((cur->m_coord)));
                     }
                 }
                 g->m_31c.RemoveAll();
@@ -96,7 +96,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
         if (g->m_dwell > m_cc && g->CoordCount() == 0) {
             CScanGrid* grid = m_c;
             GruntTilePos tp;
-            g->GetScreenPos((GruntTilePos*)&tp);
+            g->GetScreenPos(static_cast<GruntTilePos*>(&tp));
             i32 cx = tp.m_x >> 5;
             i32 cy = tp.m_y >> 5;
             RECT box;
@@ -134,7 +134,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                                 hits++;
                             }
                         }
-                        cell = (CScanCell*)(reinterpret_cast<char*>(cell) + 0x1c);
+                        cell = reinterpret_cast<CScanCell*>((reinterpret_cast<char*>(cell) + 0x1c));
                     }
                 }
             }

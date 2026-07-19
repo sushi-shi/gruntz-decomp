@@ -140,13 +140,13 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     i32 v = id;
     if (id == 0) {
         // m_gameWnd (CGameWnd*, CGameMgr+0x4) -> +0x4 window handle (raw offset read).
-        v = *(i32*)(reinterpret_cast<char*>(g_gameReg->m_gameWnd) + 4);
+        v = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_gameWnd) + 4));
     }
-    g_customWorldParent = (HWND)v;
+    g_customWorldParent = reinterpret_cast<HWND>(v);
     g_dat62c268 = reinterpret_cast<i32>(g_gameReg->m_world);
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
-    g_customWorldInst = (HINSTANCE) * (i32*)(reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc);
-    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
+    g_customWorldInst = reinterpret_cast<HINSTANCE>(* reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc)));
+    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", static_cast<void*>(CustomWorldDlgProc), 0) == 0) {
         g_pathStr.Empty();
     }
     g_dat62c268 = 0;
@@ -269,7 +269,7 @@ namespace m4 {
         _finddata_t fd;
         i32 h = _findfirst(pattern, &fd);
         i32 found = (h != -1);
-        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->BeginWaitCursor();
         if (found) {
             do {
                 char disp[260];
@@ -284,7 +284,7 @@ namespace m4 {
             } while (_findnext(h, &fd) != -1);
         }
         CustomGate(g_dotDot);
-        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->EndWaitCursor();
         return 1;
     }
 
@@ -320,7 +320,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
-    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -395,11 +395,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     // The world slot's +0x24 IS WwdWorldHolder::m_24 (the level-info source, WwdLevelInfoSrc*
     // - the same +0x24 FillLevelInfoDialog drives IsValidWwd on); ValidateMainBlock passes
     // that object pointer to CheckHeader's `const char* name` slot (retail's own pun).
-    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24 == 0) {
+    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24 == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(reinterpret_cast<const char*>(((WwdWorldHolder*)g_gameReg->m_world)->m_24), header)
+    if (WwdFile_CheckHeader(reinterpret_cast<const char*>((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24), header)
         == 0) {
         return -1;
     }
@@ -429,7 +429,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             char num[0x20];
             i32 bad = 1;
             if (g_dat62c268 != 0 && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
-                && ((WwdWorldHolder*)g_dat62c268)
+                && (reinterpret_cast<WwdWorldHolder*>(g_dat62c268))
                        ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
@@ -497,7 +497,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         g_customWorldInst,
         "CUSTOM_WORLDINFO",
         g_customWorldParent,
-        (DLGPROC)CustomWorldInfoDlgProcThunk, // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
+        reinterpret_cast<DLGPROC>(CustomWorldInfoDlgProcThunk), // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
         0
     );
     return 1;

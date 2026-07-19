@@ -56,7 +56,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007e5e0, 0x15)
 void CGruntSelectedSprite::InitActReg() {
-    ((CZDArrayDerived*)&g_selectedActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_selectedActReg))->Construct(2000, 2010);
 }
 
 // CGruntSelectedSprite::RunAct @0x07e660 - resolve the coordinate-registry entry for
@@ -66,8 +66,8 @@ void CGruntSelectedSprite::InitActReg() {
 // the guarded call rather than CSE-ing - hence the two inline expansions.
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if (((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn != 0) {
-        (this->*((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn)();
+    if ((reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn != 0) {
+        (this->*(reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -86,20 +86,20 @@ void CGruntSelectedSprite::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntSelectedSprite::Update;
+    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntSelectedSprite::Update;
 }
 
 // SetCell @0x07e9c0 - stash the (x,y) grunt cell, return 1.
@@ -128,7 +128,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_gameReg;
-    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_arrived != 0) {
         m_38->m_1a0.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
@@ -144,7 +144,7 @@ i32 CGruntSelectedSprite::Update() {
 // (CTimeBomb::SerializeMove / CGruntPuddle::Serialize).
 RVA(0x0007ea70, 0x6f)
 i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* sa = (CSerialArchive*)arc;
+    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
     // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
     // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.
     if (mode != 4) {
@@ -154,8 +154,8 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
     } else {
         sa->Write(&m_cellX, 8);
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
 }

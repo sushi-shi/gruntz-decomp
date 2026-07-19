@@ -58,7 +58,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007ffa0, 0x15)
 void CGruntPowerupSprite::InitActReg() {
-    ((CZDArrayDerived*)&g_powerupActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_powerupActReg))->Construct(2000, 2010);
 }
 
 // CGruntPowerupSprite::RunAct @0x080020 - resolve the coordinate-registry entry for `id`
@@ -67,8 +67,8 @@ void CGruntPowerupSprite::InitActReg() {
 // no CSE across the guard).
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if (((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn != 0) {
-        (this->*((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn)();
+    if ((reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn != 0) {
+        (this->*(reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -87,20 +87,20 @@ void CGruntPowerupSprite::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntPowerupSprite::Update;
+    (reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CGruntPowerupSprite::Update;
 }
 
 // SetCell @0x080380 - stash the grunt cell (x,y) and powerup id, seed the bound
@@ -137,7 +137,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
@@ -154,7 +154,7 @@ i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (Chain(ar, mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
         return 0;
     }
     switch (mode) {

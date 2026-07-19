@@ -85,43 +85,43 @@ i32 CSBI_StatzTabGruntBar::Blit() {
         m_28--;
         m_statusGlyph->RenderFrame(
             ctx,
-            (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX),
-            (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
+            reinterpret_cast<void*>((m_rect14.m_0 + m_statusGlyph->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + m_statusGlyph->m_anchorY)),
             0
         );
         m_abilityGlyph->RenderFrame(
             ctx,
-            (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
-            (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
+            reinterpret_cast<void*>((m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14)),
+            reinterpret_cast<void*>((m_rect14.m_4 + m_abilityGlyph->m_anchorY)),
             0
         );
         m_overrideGlyph->RenderFrame(
             ctx,
-            (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28),
-            (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
+            reinterpret_cast<void*>((m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28)),
+            reinterpret_cast<void*>((m_rect14.m_4 + m_overrideGlyph->m_anchorY)),
             0
         );
         if (m_selectKey != 0) {
             m_selectKey->RenderFrame(
                 ctx,
-                (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c),
-                (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
+                reinterpret_cast<void*>((m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c)),
+                reinterpret_cast<void*>((m_rect14.m_4 + m_selectKey->m_anchorY)),
                 0
             );
         }
         if (m_statusGlyphLatched != 0) {
             m_statusGlyphLatched->RenderFrame(
                 ctx,
-                (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX + 1),
-                (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
+                reinterpret_cast<void*>((m_rect14.m_0 + m_statusGlyph->m_anchorX + 1)),
+                reinterpret_cast<void*>((m_rect14.m_4 + m_statusGlyph->m_anchorY)),
                 0
             );
         }
         if (m_abilityGlyphLatched != 0) {
             m_abilityGlyphLatched->RenderFrame(
                 ctx,
-                (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
-                (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
+                reinterpret_cast<void*>((m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14)),
+                reinterpret_cast<void*>((m_rect14.m_4 + m_abilityGlyph->m_anchorY)),
                 0
             );
         }
@@ -132,16 +132,16 @@ i32 CSBI_StatzTabGruntBar::Blit() {
         if (m_overrideGlyphLatched != 0) {
             m_overrideGlyphLatched->RenderFrame(
                 ctx,
-                (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj),
-                (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
+                reinterpret_cast<void*>((m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj)),
+                reinterpret_cast<void*>((m_rect14.m_4 + m_overrideGlyph->m_anchorY)),
                 0
             );
         }
         if (m_selectGlyph != 0) {
             m_selectGlyph->RenderFrame(
                 ctx,
-                (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b),
-                (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
+                reinterpret_cast<void*>((m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b)),
+                reinterpret_cast<void*>((m_rect14.m_4 + m_selectKey->m_anchorY)),
                 0
             );
         }
@@ -149,8 +149,8 @@ i32 CSBI_StatzTabGruntBar::Blit() {
     if (m_timerGlyph != 0) {
         m_timerGlyph->RenderFrame(
             ctx,
-            (void*)(m_rect14.m_0 + m_timerGlyph->m_anchorX),
-            (void*)(m_rect14.m_4 + m_timerGlyph->m_anchorY),
+            reinterpret_cast<void*>((m_rect14.m_0 + m_timerGlyph->m_anchorX)),
+            reinterpret_cast<void*>((m_rect14.m_4 + m_timerGlyph->m_anchorY)),
             0
         );
     }
@@ -162,7 +162,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
     CStatzSelHost* table = g_gameReg->m_unitTable;
     CStatzGruntRec* unit =
-        *(CStatzGruntRec**)(reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c);
+        *reinterpret_cast<CStatzGruntRec**>((reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c));
 
     i32 statusVal;
     i32 abilityVal; // ebx
@@ -206,14 +206,14 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
         // selection-list glyph
         if (m_selectKey != 0) {
-            selectVal = ((CTriggerMgr*)table)->SelectionListFind(m_unitCol, m_unitRow);
+            selectVal = (reinterpret_cast<CTriggerMgr*>(table))->SelectionListFind(m_unitCol, m_unitRow);
         }
 
         // self-bumping anim timer
         timerVal = m_timerValue;
         if (unit->m_alive == 0) {
             timerVal = -1;
-        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
+        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_timerAnchorLo) >= *reinterpret_cast<i64*>(&m_timerWindowLo)) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {
@@ -234,7 +234,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
                                    ? 0
-                                   : (CImage*)gm->m_items.GetAt(statusVal);
+                                   : static_cast<CImage*>(gm->m_items.GetAt(statusVal));
         m_statusValue = statusVal;
         dirty = 1;
     }
@@ -243,7 +243,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
                                     ? 0
-                                    : (CImage*)gm->m_items.GetAt(abilityVal);
+                                    : static_cast<CImage*>(gm->m_items.GetAt(abilityVal));
         m_abilityValue = abilityVal;
         dirty = 1;
     }
@@ -252,19 +252,19 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
                                      ? 0
-                                     : (CImage*)gm->m_items.GetAt(overrideVal);
+                                     : static_cast<CImage*>(gm->m_items.GetAt(overrideVal));
         m_overrideValue = overrideVal;
         dirty = 1;
     }
     // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            m_selectGlyph = (CImage*)selectVal; // selectVal == 0 (store the reg, not imm)
+            m_selectGlyph = reinterpret_cast<CImage*>(selectVal); // selectVal == 0 (store the reg, not imm)
         } else {
             CSprite* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
             m_selectGlyph =
-                (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : (CImage*)gm->m_items.GetAt(key);
+                (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : static_cast<CImage*>(gm->m_items.GetAt(key));
         }
         m_selectValue = selectVal;
         dirty = 1;
@@ -275,7 +275,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         m_timerGlyph =
             (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
                 ? 0
-                : (CImage*)gm->m_items.GetAt(timerVal);
+                : static_cast<CImage*>(gm->m_items.GetAt(timerVal));
         m_timerValue = timerVal;
         dirty = 1;
     }

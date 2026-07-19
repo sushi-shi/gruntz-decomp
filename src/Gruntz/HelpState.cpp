@@ -128,7 +128,7 @@ i32 CHelpState::Render() {
 
     CAttractPooledRes* res = (reinterpret_cast<CMenuRoot*>(m_c))->m_28->m_2c;
     if (res) {
-        ((SoundDevice*)res)->PurgeVoiceList(-1);
+        (reinterpret_cast<SoundDevice*>(res))->PurgeVoiceList(-1);
     }
 
     AttractActorList* list = g_actorList;

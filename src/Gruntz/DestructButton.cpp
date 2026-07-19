@@ -27,7 +27,7 @@
 
 RVA(0x0010bc30, 0x78)
 void CStatusBarMgr::UpdateDestructButton(i32 arg) {
-    CPlay* play = (CPlay*)g_gameReg->m_curState;
+    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
     m_destructWarnActive = 1;
     m_modeState = 2;
     m_destructWarnDelay = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);

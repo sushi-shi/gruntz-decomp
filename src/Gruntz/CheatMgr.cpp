@@ -110,16 +110,16 @@ BOOL CCheatMgr::Init(i32 owner) {
 // per-iteration CString key + the throwing map calls force the /GX EH frame.
 RVA(0x00022b00, 0xaf)
 void CCheatMgr::Empty() {
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
+    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
     CString key;
-    if (pos != (POSITION)0) {
+    if (pos != static_cast<POSITION>(0)) {
         do {
             void* value = 0;
             m_map.GetNextAssoc(pos, key, value);
             if (value != 0) {
-                delete (CheatEntry*)value;
+                delete static_cast<CheatEntry*>(value);
             }
-        } while (pos != (POSITION)0);
+        } while (pos != static_cast<POSITION>(0));
     }
     m_map.RemoveAll();
     m_count = 0;
@@ -256,7 +256,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
 
     void* value = 0;
     CheatEntry* found =
-        (CheatEntry*)((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value));
+        reinterpret_cast<CheatEntry*>(((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value)));
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA(reinterpret_cast<HWND>(m_count), 0x111, found->commandId, 0);

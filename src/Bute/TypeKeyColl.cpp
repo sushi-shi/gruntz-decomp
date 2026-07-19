@@ -191,36 +191,36 @@ extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 //  identities are not recovered yet. @identity-TODO: model the record.)
 RVA(0x0016d000, 0x189)
 istream* LoadConfigFields(istream* r, char* d) {
-    *r >> *(double*)(d + 0x00);
-    *r >> *(double*)(d + 0x08);
-    *r >> *(double*)(d + 0x10);
-    *r >> *(double*)(d + 0x18);
-    *r >> *(double*)(d + 0x20);
-    *r >> *(double*)(d + 0x28);
-    *r >> *(double*)(d + 0x30);
-    *r >> *(double*)(d + 0x38);
-    *r >> *(double*)(d + 0x40);
-    *r >> *(double*)(d + 0x48);
-    *r >> *(double*)(d + 0x50);
-    *r >> *(double*)(d + 0x70);
-    *r >> *(double*)(d + 0x78);
-    *r >> *(double*)(d + 0x80);
-    *r >> *(double*)(d + 0x88);
-    *r >> *(double*)(d + 0x90);
-    *r >> *(double*)(d + 0x98);
-    *r >> *(double*)(d + 0xa0);
-    *r >> *(double*)(d + 0xa8);
-    *r >> *(double*)(d + 0xb0);
-    *r >> *(int*)(d + 0xb8);
-    *r >> *(double*)(d + 0xc0);
-    *r >> *(double*)(d + 0xc8);
-    *r >> *(double*)(d + 0xd0);
-    *r >> *(double*)(d + 0xd8);
-    *r >> *(double*)(d + 0xe0);
-    *r >> *(double*)(d + 0xe8);
-    *r >> *(double*)(d + 0xf0);
-    *r >> *(double*)(d + 0xf8);
-    *r >> *(double*)(d + 0x100);
+    *r >> *reinterpret_cast<double*>((d + 0x00));
+    *r >> *reinterpret_cast<double*>((d + 0x08));
+    *r >> *reinterpret_cast<double*>((d + 0x10));
+    *r >> *reinterpret_cast<double*>((d + 0x18));
+    *r >> *reinterpret_cast<double*>((d + 0x20));
+    *r >> *reinterpret_cast<double*>((d + 0x28));
+    *r >> *reinterpret_cast<double*>((d + 0x30));
+    *r >> *reinterpret_cast<double*>((d + 0x38));
+    *r >> *reinterpret_cast<double*>((d + 0x40));
+    *r >> *reinterpret_cast<double*>((d + 0x48));
+    *r >> *reinterpret_cast<double*>((d + 0x50));
+    *r >> *reinterpret_cast<double*>((d + 0x70));
+    *r >> *reinterpret_cast<double*>((d + 0x78));
+    *r >> *reinterpret_cast<double*>((d + 0x80));
+    *r >> *reinterpret_cast<double*>((d + 0x88));
+    *r >> *reinterpret_cast<double*>((d + 0x90));
+    *r >> *reinterpret_cast<double*>((d + 0x98));
+    *r >> *reinterpret_cast<double*>((d + 0xa0));
+    *r >> *reinterpret_cast<double*>((d + 0xa8));
+    *r >> *reinterpret_cast<double*>((d + 0xb0));
+    *r >> *reinterpret_cast<int*>((d + 0xb8));
+    *r >> *reinterpret_cast<double*>((d + 0xc0));
+    *r >> *reinterpret_cast<double*>((d + 0xc8));
+    *r >> *reinterpret_cast<double*>((d + 0xd0));
+    *r >> *reinterpret_cast<double*>((d + 0xd8));
+    *r >> *reinterpret_cast<double*>((d + 0xe0));
+    *r >> *reinterpret_cast<double*>((d + 0xe8));
+    *r >> *reinterpret_cast<double*>((d + 0xf0));
+    *r >> *reinterpret_cast<double*>((d + 0xf8));
+    *r >> *reinterpret_cast<double*>((d + 0x100));
     return r;
 }
 
@@ -306,7 +306,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
                 ::operator delete(m_words);
             }
             if (static_cast<u32>(that.m_capacity) > 0x20) {
-                m_words = (u32*)malloc((static_cast<u32>(that.m_capacity) >> 5) * 4);
+                m_words = static_cast<u32*>(malloc((static_cast<u32>(that.m_capacity) >> 5) * 4));
                 if (!m_words) {
                     void* cache = g_projActCache;
                     g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -317,8 +317,8 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
             }
             m_capacity = that.m_capacity;
         }
-        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20) ? that.m_words : (const u32*)&that.m_words;
-        u32* dst = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20) ? that.m_words : reinterpret_cast<const u32*>(&that.m_words);
+        u32* dst = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
         memcpy(dst, src, static_cast<u32>(m_capacity) >> 3);
     }
     return *this;
@@ -413,7 +413,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
             ++q;
         }
         {
-            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
             band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
         }
         if (*q == 0) {
@@ -443,7 +443,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
                 v2 = t;
             }
             for (i32 b = v + 1; b <= v2; ++b) {
-                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
                 band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
             }
             while (*q != 0 && !isdigit(*q)) {
@@ -520,7 +520,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     } else {
-        u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+        u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
         u32* slot = base + (static_cast<u32>(idx) >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
@@ -565,7 +565,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
         }
     } else {
         if (m_0c == 2) {
-            ((void(__cdecl*)(i32, i32))g_recs23[idx].m_4)(arg2, arg3);
+            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(arg2, arg3);
         } else if (m_0c == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
@@ -679,7 +679,7 @@ void* CButeTree::Insert(const char* key, void* value) {
         critbit = newbit - 1;
     }
 
-    CButeTreeNode* node = (CButeTreeNode*)::operator new(0x14);
+    CButeTreeNode* node = static_cast<CButeTreeNode*>(::operator new(0x14));
     if (node != 0) {
         node->m_value = value;
         node->m_bit = critbit;
@@ -829,7 +829,7 @@ RVA(0x0016df40, 0x22)
 zDArray::~zDArray() {
     i32 p = m_base;
     if (p) {
-        free((void*)p);
+        free(reinterpret_cast<void*>(p));
     }
     // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
 }
@@ -944,7 +944,7 @@ i32 zBitVec::SetSize(i32 nbits) {
     if (static_cast<u32>(nbits) > 0x20) {
         i32 nwords = (nbits >> 5) + ((nbits & 0x1f) != 0 ? 1 : 0);
         m_capacity = nwords;
-        u32* band = (u32*)malloc(nwords * 4);
+        u32* band = static_cast<u32*>(malloc(nwords * 4));
         m_words = band;
         if (!band) {
             return 0;
@@ -1055,7 +1055,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
             break;
         }
     } while (i-- != 0);
-    g_retAddrBreadcrumb = (void*)v;
+    g_retAddrBreadcrumb = reinterpret_cast<void*>(v);
     while (*hp != 0) {
         *q++ = *hp++;
     }
@@ -1161,7 +1161,7 @@ static inline char* TypeResolve(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
+    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
@@ -1172,12 +1172,12 @@ static inline char* TypeResolve(i32 key) {
 
 // Free the stale node array (g_typeColl.m_grown slots, walking g_typeColl.m_alloc).
 static inline void FreeNodes() {
-    CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+    CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
     i32 cnt = g_typeColl.m_grown;
     if (cnt != 0) {
         do {
             if (nodes != 0) {
-                ((CString*)nodes)->~CString();
+                (reinterpret_cast<CString*>(nodes))->~CString();
             }
             ++nodes;
         } while (--cnt);
@@ -1191,12 +1191,12 @@ static inline void FreeNodes() {
 // inlined lookup + the slot conventions are byte-faithful. Deferred to the final sweep.
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CXferArchive* ar) {
-    CTypeNameEntry* entry = (CTypeNameEntry*)TypeResolve(ar->m_14->m_1c);
+    CTypeNameEntry* entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(ar->m_14->m_1c));
     FreeNodes();
     ar->Xfer0c(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->Xfer10(ar->m_14->m_1c);
 
-    entry = (CTypeNameEntry*)TypeResolve(ar->m_14->m_1c);
+    entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(ar->m_14->m_1c));
     FreeNodes();
     ar->Xfer14(entry->m_name.GetBuffer(0));
     return 1;
@@ -1229,7 +1229,7 @@ void ButeTreeNopFree(void*);
 
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
-    g_buteTree.Construct((void*)&ButeTreeNopFree, 0);
+    g_buteTree.Construct(static_cast<void*>(&ButeTreeNopFree), 0);
 }
 
 // @early-stop
@@ -1278,15 +1278,15 @@ inline void* operator new(u32, void* p) {
 // Deferred to the final sweep.
 RVA(0x0016e730, 0x51)
 void DynInitTypeColl() {
-    new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, (void*)1);
-    CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+    new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, reinterpret_cast<void*>(1));
+    CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     if (nodes != 0) {
         i32 cnt = g_typeColl.m_grown;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->~CString();
+                    (reinterpret_cast<CString*>(nodes))->~CString();
                 }
                 ++nodes;
             } while (--cnt);

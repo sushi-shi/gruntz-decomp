@@ -64,7 +64,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     }
 
     // pass 2: allocate + emit.
-    u8* out = (u8*)RezAlloc(m_rleLen);
+    u8* out = static_cast<u8*>(RezAlloc(m_rleLen));
     {
         i32 outidx = 0, srcidx = 0;
         i32 x2 = 0, row2 = 0;

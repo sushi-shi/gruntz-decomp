@@ -76,7 +76,7 @@ char CheckCdRomRegistry() {
             "Gruntz",
             "1.0",
             0,
-            (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/,
+            reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
             0
         )) {
         valueSize = 0x1e;
@@ -143,7 +143,7 @@ char GetGruntzDriveLetter() {
                 "Gruntz",
                 "1.0",
                 0,
-                (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/,
+                reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
                 0
             )) {
             valueSize = 0x1e;

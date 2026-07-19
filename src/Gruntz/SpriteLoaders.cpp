@@ -82,17 +82,17 @@ RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
     m_c->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
-    CSprite* spr = (CSprite*)spr_ob;
+    CSprite* spr = static_cast<CSprite*>(spr_ob);
     if (!spr) {
         return 0;
     }
 
     m_revealCapStart =
-        (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) ? (CImage*)spr->m_items.GetAt(1) : 0;
+        (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) ? static_cast<CImage*>(spr->m_items.GetAt(1)) : 0;
     m_revealCapMid =
-        (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2) ? (CImage*)spr->m_items.GetAt(2) : 0;
+        (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2) ? static_cast<CImage*>(spr->m_items.GetAt(2)) : 0;
     m_revealCapEnd =
-        (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3) ? (CImage*)spr->m_items.GetAt(3) : 0;
+        (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3) ? static_cast<CImage*>(spr->m_items.GetAt(3)) : 0;
     m_revealFrame = 1;
     return 1;
 }
@@ -141,34 +141,34 @@ RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CObject* spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_TIMER", spr_ob);
-    CSprite* spr = (CSprite*)spr_ob;
+    CSprite* spr = static_cast<CSprite*>(spr_ob);
     m_sprite = spr;
     if (!spr) {
         return 0;
     }
 
     m_frameMinTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
     if (!m_frameMinTens) {
         return 0;
     }
     m_frameMinOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
     if (!m_frameMinOnes) {
         return 0;
     }
     m_frameColon =
-        (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11) ? (CImage*)spr->m_items.GetAt(11) : 0;
+        (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11) ? static_cast<CImage*>(spr->m_items.GetAt(11)) : 0;
     if (!m_frameColon) {
         return 0;
     }
     m_frameSecTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
     if (!m_frameSecTens) {
         return 0;
     }
     m_frameSecOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
     if (!m_frameSecOnes) {
         return 0;
     }
@@ -224,7 +224,7 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
     // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *(i64*)&m_accumLo - static_cast<u32>(g_frameTime) + *(i64*)&m_baseTimeLo;
+    i64 rem = *(i64*)&m_accumLo - static_cast<u32>(g_frameTime) + *reinterpret_cast<i64*>(&m_baseTimeLo);
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
@@ -236,7 +236,7 @@ i32 CTimer::Tick(i32 dt) {
         m_accumHi = 0;
         m_running = 0;
         m_currentMs = 0;
-        CPlay* ls = (CPlay*)g_gameReg->m_curState;
+        CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = 1;
         ls->m_cueInterval = 0x1f4;
         ls->m_cueIntervalHi = 0;
@@ -247,15 +247,15 @@ i32 CTimer::Tick(i32 dt) {
         if (slot != 0) {
             slot->m_24 = 1;
         }
-        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
+        i32* key = reinterpret_cast<i32*>(g_gameReg->m_focusSlots[0].m_0c);
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
-            CGameObject* obj = (CGameObject*)fv;
-            CGameObject* hit = found ? obj : (CGameObject*)key;
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(key), fv);
+            CGameObject* obj = static_cast<CGameObject*>(fv);
+            CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CGrunt*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
             }
@@ -264,15 +264,15 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
+        i32* key = reinterpret_cast<i32*>(g_gameReg->m_focusSlots[0].m_0c);
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
-            CGameObject* obj = (CGameObject*)fv;
-            CGameObject* hit = found ? obj : (CGameObject*)key;
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(key), fv);
+            CGameObject* obj = static_cast<CGameObject*>(fv);
+            CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_7c->m_logic)->NotifyFortUnderAttack();
             }
@@ -299,16 +299,16 @@ i32 CTimer::Tick(i32 dt) {
 
     CSprite* spr = m_sprite;
     m_frameMinTens = (spr->m_minIndex <= d10min && d10min <= spr->m_maxIndex)
-                         ? (CImage*)spr->m_items.GetAt(d10min)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(d10min))
                          : 0;
     m_frameMinOnes = (spr->m_minIndex <= d1min && d1min <= spr->m_maxIndex)
-                         ? (CImage*)spr->m_items.GetAt(d1min)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(d1min))
                          : 0;
     m_frameSecTens = (spr->m_minIndex <= d10sec && d10sec <= spr->m_maxIndex)
-                         ? (CImage*)spr->m_items.GetAt(d10sec)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(d10sec))
                          : 0;
     m_frameSecOnes = (spr->m_minIndex <= d1sec && d1sec <= spr->m_maxIndex)
-                         ? (CImage*)spr->m_items.GetAt(d1sec)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(d1sec))
                          : 0;
     return 1;
 }
@@ -327,23 +327,23 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     }
     if (m_frameMinTens) {
         m_frameMinTens
-            ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x22), (void*)(m_baseY), (void*)(0));
+            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX - 0x22)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
     }
     if (m_frameMinOnes) {
         m_frameMinOnes
-            ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x10), (void*)(m_baseY), (void*)(0));
+            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX - 0x10)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
     }
     if (m_frameColon) {
         m_frameColon
-            ->RenderFrame((void*)(pSurf), (void*)(m_baseX), (void*)(m_baseY), (void*)(0));
+            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
     }
     if (m_frameSecTens) {
         m_frameSecTens
-            ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x10), (void*)(m_baseY), (void*)(0));
+            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX + 0x10)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
     }
     if (m_frameSecOnes) {
         m_frameSecOnes
-            ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x22), (void*)(m_baseY), (void*)(0));
+            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX + 0x22)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
     }
     return 1;
 }

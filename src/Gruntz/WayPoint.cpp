@@ -16,7 +16,7 @@ i32 CWayPoint::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CWayPoint::~CWayPoint (0x102e0) - the /GX leaf dtor folds the bare CUserLogic

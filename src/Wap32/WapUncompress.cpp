@@ -40,9 +40,9 @@ int WapUncompress(
 ) {
     z_stream s;
     s.next_in = src;
-    s.avail_in = (unsigned int)srcLen;
+    s.avail_in = static_cast<unsigned int>(srcLen);
     s.next_out = dest;
-    s.avail_out = (unsigned int)*pDestLen;
+    s.avail_out = static_cast<unsigned int>(*pDestLen);
     s.zalloc = 0;
     s.zfree = 0;
     s.opaque = 0;

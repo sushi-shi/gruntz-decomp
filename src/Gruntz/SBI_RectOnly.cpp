@@ -142,7 +142,7 @@ void CStatusBarMgr::DtorMembers() {
     Teardown();
     reinterpret_cast<CByteArray*>(&m_ptrPool)
         ->CByteArray::~CByteArray(); // +0x530 real CByteArray teardown
-    Tm_DestroyArray(m_tabLists, 0x1c, 8, (void*)&SbiList_Dtor);
+    Tm_DestroyArray(m_tabLists, 0x1c, 8, static_cast<void*>(&SbiList_Dtor));
 }
 
 // ~CStatusBarItem is the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus) now, so
@@ -250,7 +250,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     if (entry == 0) {
         return 0;
     }
-    ((CPlay*)g_gameReg->m_curState)->ResetGoals(entry->m_10->m_screenX, entry->m_10->m_screenY);
+    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(entry->m_10->m_screenX, entry->m_10->m_screenY);
     if (commit != 0) {
         CTriggerMgr* obj = g_gameReg->m_cmdGrid;
         if (obj->RecordListHas(col, row)) {
@@ -489,7 +489,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
             return 0;
         }
     } else if (op == 8) {
-        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (m[0] == 0) {
             SubResetA();
             SubResetB();
@@ -516,7 +516,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
     }
 
     if (m[0x153] != 0) {
-        if (((CLevelSync*)m[0x153])->ChildSync(s, op, p4, p5) == 0) {
+        if ((reinterpret_cast<CLevelSync*>(m[0x153]))->ChildSync(s, op, p4, p5) == 0) {
             return 0;
         }
     }
@@ -624,12 +624,12 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
         i32 i = 0;
         i32* q = &m[99];
         do {
-            if (SyncSub* a = (SyncSub*)q[-0xf]) {
+            if (SyncSub* a = reinterpret_cast<SyncSub*>(q[-0xf])) {
                 if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
                 }
             }
-            if (SyncSub* b = (SyncSub*)*q) {
+            if (SyncSub* b = reinterpret_cast<SyncSub*>(*q)) {
                 if (b->Serialize(s, op, p4, p5) == 0) {
                     return 0;
                 }
@@ -642,7 +642,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
         i32 i = 0;
         i32* q = &m[0x81];
         do {
-            if (SyncSub* a = (SyncSub*)*q) {
+            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
                 if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
                 }
@@ -655,7 +655,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
         i32 i = 0;
         i32* q = &m[0xc2];
         do {
-            if (SyncSub* a = (SyncSub*)*q) {
+            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
                 if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
                 }
@@ -671,7 +671,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
             i32 i = 0;
             i32* q = base;
             do {
-                if (SyncSub* a = (SyncSub*)*q) {
+                if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
                     if (a->Serialize(s, op, p4, p5) == 0) {
                         return 0;
                     }
@@ -687,7 +687,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
         i32 i = 0;
         i32* q = &m[0x187];
         do {
-            if (SyncSub* a = (SyncSub*)*q) {
+            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
                 if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
                 }
@@ -734,7 +734,7 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    if (((CSbiGameMgr*)g_gameReg->m_world) == 0) {
+    if ((reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world)) == 0) {
         return 0;
     }
 
@@ -847,12 +847,12 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CSbiGameMgr* gm = ((CSbiGameMgr*)g_gameReg->m_world);
+    CSbiGameMgr* gm = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world));
     if (gm == 0) {
         return 0;
     }
     char* B = reinterpret_cast<char*>(this);
-    *(i32*)(B + 0x618) = 0;
+    *reinterpret_cast<i32*>((B + 0x618)) = 0;
     ResetWidgets(0);
 
     s->Read(B, 4);
@@ -863,11 +863,11 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     s->Read(&seq, 4);
 
     void* obj = 0;
-    CMapPtrToPtr* map = (CMapPtrToPtr*)(*(char**)(reinterpret_cast<char*>(gm) + 8) + 0x48);
+    CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>((*(char**)(reinterpret_cast<char*>(gm) + 8) + 0x48));
     i32 m8 = 0;
-    if (map->Lookup((void*)seq, obj)) {
+    if (map->Lookup(reinterpret_cast<void*>(seq), obj)) {
         if (obj != 0) {
-            m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? reinterpret_cast<i32>(obj) : 0;
+            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5) ? reinterpret_cast<i32>(obj) : 0;
         }
     }
     m_8 = m8;
@@ -1016,20 +1016,20 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 // string vs retail's REL32). Not a wall - matcher.md reloc-typing artifact.
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup0(i32 row) {
-    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_handle;
         i32* slot = &m_hlGrid[row].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+                CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+                map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
                 if (found) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -1052,20 +1052,20 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup1(i32 row) {
-    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
         i32 handle = m_hlGrid[row + 4].m_handle;
         i32* slot = &m_hlGrid[row + 4].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+                CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+                map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
                 if (found) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -1087,20 +1087,20 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::HlClickGroup2(i32 row) {
-    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
         i32 handle = m_hlGrid[row + 8].m_handle;
         i32* slot = &m_hlGrid[row + 8].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+                CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+                map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
                 if (found) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -1277,7 +1277,7 @@ i32 CStatusBarMgr::Deactivate() {
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiSlotPtr* cur = (CSbiSlotPtr*)tab.GetNext(m);
+        CSbiSlotPtr* cur = static_cast<CSbiSlotPtr*>(tab.GetNext(m));
         if (cur) {
             cur->Refresh();
         }
@@ -1338,7 +1338,7 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
 // pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
 RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
-    ((Utils::RegistryHelper*)g_gameReg->m_settings)
+    (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
         ->SetValueDword("StatusBar Position", m_position);
     ResetWidgets(0);
     for (i32 i = 0; i < m_ptrPool.GetSize(); i++) {
@@ -1455,7 +1455,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
-                LeafCue* spr = (LeafCue*)spr_ob;
+                LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                 if (spr) {
                     if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                         spr->m_14 = g_killCueClock;
@@ -1497,7 +1497,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == 1) {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&tab->m_8;
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&tab->m_8);
             i32 elapsed = (d >= 0) ? static_cast<i32>(d) : 0;
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
@@ -1508,7 +1508,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                 if (h->m_emitGate == 0) {
                     void* spr_ob = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
-                    LeafCue* spr = (LeafCue*)spr_ob;
+                    LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                     if (spr) {
                         if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                             spr->m_14 = g_killCueClock;
@@ -1574,7 +1574,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
-                        LeafCue* spr = (LeafCue*)spr_ob;
+                        LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                         if (spr) {
                             if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                                 spr->m_14 = g_killCueClock;
@@ -1589,8 +1589,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_fallLast;
-        if (d >= *(i64*)&m_fallDelay) {
+        i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_fallLast);
+        if (d >= *reinterpret_cast<i64*>(&m_fallDelay)) {
             i32 newLo = m_fallRectT + speed;
             m_fallRectT = newLo;
             i32 newHi = m_fallRectB + speed;
@@ -1641,14 +1641,14 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
-    m_owner = (CStatusBarMgr*)owner;
+    m_owner = static_cast<CStatusBarMgr*>(owner);
 
     void* spr_ob = 0;
     i32 n = phase + 1;
     g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
-    CSprite* spr = (CSprite*)spr_ob;
+    CSprite* spr = static_cast<CSprite*>(spr_ob);
     CImage* frame =
-        (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex) ? (CImage*)spr->m_items.GetAt(n) : 0;
+        (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex) ? static_cast<CImage*>(spr->m_items.GetAt(n)) : 0;
     m_sprite = frame;
     if (frame == 0) {
         return 1;
@@ -1695,7 +1695,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     if (h->m_emitGate == 0) {
         void* fly_ob = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
-        LeafCue* fly = (LeafCue*)fly_ob;
+        LeafCue* fly = static_cast<LeafCue*>(fly_ob);
         if (fly) {
             if (g_sndEnabled != 0 && g_killCueClock - fly->m_14 >= fly->m_18) {
                 fly->m_14 = g_killCueClock;
@@ -1741,8 +1741,8 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
     // CDestructBlock view onto the canonical class.)
     switch (m_destructWarnActive) {
         case 1: {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_destructWarnLast;
-            if (d >= *(i64*)&m_destructWarnDelay) {
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_destructWarnLast);
+            if (d >= *reinterpret_cast<i64*>(&m_destructWarnDelay)) {
                 if (++m_modeState >= 6) {
                     m_modeState = 6;
                     m_destructWarnActive = 2;
@@ -1760,8 +1760,8 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
             break;
         }
         case 2: {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_destructWarnLast;
-            if (d >= *(i64*)&m_destructWarnDelay) {
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_destructWarnLast);
+            if (d >= *reinterpret_cast<i64*>(&m_destructWarnDelay)) {
                 if (--m_modeState <= 2) {
                     m_modeState = 2;
                     m_destructWarnActive = 1;
@@ -1843,7 +1843,7 @@ CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     CPtrList& tab = m_tabLists[m_activeTab];
     n = tab.GetHeadPosition();
     while (n) {
-        CSbiRect* r = (CSbiRect*)tab.GetNext(n);
+        CSbiRect* r = static_cast<CSbiRect*>(tab.GetNext(n));
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -1879,8 +1879,8 @@ void CStatusBarMgr::InitTabRects() {
     m_fallActive = 0;
     m_extraNotifyArg1 = 0;
     // authentic: the 4-int rect blocks are Win32 RECTs; overlay the modeled first field.
-    SetRect((LPRECT)&m_fallRectL, 0, 0, 1, 1);
-    SetRect((LPRECT)&m_itemRectL, 0x49, 0xd7, 0x61, 0xef);
+    SetRect(reinterpret_cast<LPRECT>(&m_fallRectL), 0, 0, 1, 1);
+    SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
     m_pendingHlRow = -1;
 }
 
@@ -1941,21 +1941,21 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     char* B = reinterpret_cast<char*>(this);
     char* list = B + 0x2c;
     for (i32 outer = 8; outer != 0; outer--) {
-        POSITION n = ((CPtrList*)list)->GetHeadPosition();
+        POSITION n = (reinterpret_cast<CPtrList*>(list))->GetHeadPosition();
         while (n) {
-            CSbiNotifyTarget* cur = (CSbiNotifyTarget*)((CPtrList*)list)->GetNext(n);
+            CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>((reinterpret_cast<CPtrList*>(list))->GetNext(n));
             if (cur) {
                 cur->Notify(1);
             }
         }
-        ((CPtrList*)list)->RemoveAll();
+        (reinterpret_cast<CPtrList*>(list))->RemoveAll();
         list += 0x1c;
     }
     if (keepHost) {
-        CSbiResetHost* h = *(CSbiResetHost**)(B + 8);
+        CSbiResetHost* h = *reinterpret_cast<CSbiResetHost**>((B + 8));
         if (h) {
             h->m_40 |= 1;
-            h = *(CSbiResetHost**)(B + 8);
+            h = *reinterpret_cast<CSbiResetHost**>((B + 8));
             h->m_8 |= 0x10000;
         }
     }
@@ -1982,13 +1982,13 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i = 0; i < 15; i++) {
         m_statObj[i] = 0;
     }
-    i32* sp = (i32*)(B + 0x204);
+    i32* sp = reinterpret_cast<i32*>((B + 0x204));
     sp[0] = 0;
     sp[1] = 0;
     sp[2] = 0;
     sp[3] = 0;
     sp[4] = 0;
-    i32* gp = (i32*)(B + 0x308);
+    i32* gp = reinterpret_cast<i32*>((B + 0x308));
     gp[0] = 0;
     gp[1] = 0;
     gp[2] = 0;
@@ -2007,10 +2007,10 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_notify2 = 0;
     m_notify3 = 0;
     m_notify1 = 0;
-    *(i32*)(B + 0x348) = 0;
+    *reinterpret_cast<i32*>((B + 0x348)) = 0;
     m_gaugeNotify = 0;
     m_gaugeSink = 0;
-    *(i32*)(B + 0x358) = 0;
+    *reinterpret_cast<i32*>((B + 0x358)) = 0;
 }
 
 // Exit the alternate (toggle) mode: bail if not active; notify+clear the +0xd4
@@ -2071,12 +2071,12 @@ void CStatusBarMgr::ClearTabGroup() {
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION n = tab.GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)tab.GetNext(n);
+        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(tab.GetNext(n));
         if (cur) {
             cur->Notify(1);
         }
     }
-    ((CPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
+    (reinterpret_cast<CPtrList*>((B + m_activeTab * 0x1c + 0x2c)))->RemoveAll();
     switch (m_activeTab) {
         case 1:
             m_tabSprite5 = 0;
@@ -2102,7 +2102,7 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 4: {
-            i32* p = (i32*)(B + 0x204);
+            i32* p = reinterpret_cast<i32*>((B + 0x204));
             p[0] = 0;
             p[1] = 0;
             p[2] = 0;
@@ -2113,11 +2113,11 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 5: {
-            i32* p = (i32*)(B + 0x308);
+            i32* p = reinterpret_cast<i32*>((B + 0x308));
             p[0] = 0;
             p[1] = 0;
             p[2] = 0;
-            *(i32*)(B + 0x348) = 0;
+            *reinterpret_cast<i32*>((B + 0x348)) = 0;
             for (i32 i = 0; i < 12; i++) {
                 m_hlNotify[i] = 0;
             }
@@ -2353,16 +2353,16 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     i32 cmd = r->m_cmd;
     if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
-            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-            map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+            CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+            map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2388,16 +2388,16 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             (reinterpret_cast<CStatusBarMgr*>(m_statObj[idx]))->ResetGroupA();
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-                map->Lookup("GAME_STATZTABTOGGLE", (CObject*&)found);
+                CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+                map->Lookup("GAME_STATZTABTOGGLE", reinterpret_cast<CObject*&>(found));
                 if (found) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2443,8 +2443,8 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     } else if (x > xHi - 0x1a) {
         cx = xHi - 0x1a;
     }
-    i32 localX = cx - *(i32*)(B + 0x10);
-    i32 localY = 0x1b3 - *(i32*)(B + 0x14);
+    i32 localX = cx - *reinterpret_cast<i32*>((B + 0x10));
+    i32 localY = 0x1b3 - *reinterpret_cast<i32*>((B + 0x14));
     UpdateFallingItemStatusBar(item, localX, localY);
     EnterHlRow(1, item);
     return 1;
@@ -2462,7 +2462,7 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
 // one-instruction eager read in the find-slot loop. Documented walls; deferred.
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
-    if (((CPlay*)g_gameReg->m_curState)->m_4f0 != 0) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 != 0) {
         return 0;
     }
     if (idx == -1) {
@@ -2476,16 +2476,16 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (!ResolveHandle(0x66)) {
             return 0;
         }
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
-            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-            map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+            CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+            map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2506,16 +2506,16 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if (!ResolveHandle(0x66)) {
         return 0;
     }
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
     if (host->m_30 == 0) {
         void* found = 0;
-        CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-        map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+        CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+        map->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
         if (found) {
             i32 gate = g_sndEnabled;
             i32 item = g_sndCueTag;
             if (gate != 0) {
-                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2557,7 +2557,7 @@ i32 CStatusBarMgr::SetState(i32 state) {
     }
     old = m_position;
     m_position = state;
-    ((CPlay*)g_gameReg->m_curState)->PositionBridgeToggle(state, old);
+    (static_cast<CPlay*>(g_gameReg->m_curState))->PositionBridgeToggle(state, old);
     return 1;
 }
 
@@ -2569,9 +2569,9 @@ RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::RefreshA() {
     if (m_hlBusy == 0 && m_position != 1) {
         ResetWidgets(1);
-        SetRect((LPRECT)&m_10, 0, 0, 0xa0, 0x1e0);
+        SetRect(reinterpret_cast<LPRECT>(&m_10), 0, 0, 0xa0, 0x1e0);
         SetState(1);
-        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
             g_gameReg->ReportError(kActivateErrId, 0x448);
             return 0;
@@ -2601,9 +2601,9 @@ i32 CStatusBarMgr::winapi_0fe520_SetRect() {
     i32 w = g_gameReg->m_modeW;
     volatile POINT pt;
     pt.y = g_gameReg->m_modeH;
-    SetRect((LPRECT)&m_10, w - 0xa0, 0, w, 0x1e0);
+    SetRect(reinterpret_cast<LPRECT>(&m_10), w - 0xa0, 0, w, 0x1e0);
     SetState(0);
-    ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
         g_gameReg->ReportError(kActivateErrId, 0x449);
         return 0;
@@ -2620,9 +2620,9 @@ RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
     if (m_hlBusy == 0 && m_position != 2) {
         ResetWidgets(1);
-        SetRect((LPRECT)&m_10, -1, -1, -1, -1);
+        SetRect(reinterpret_cast<LPRECT>(&m_10), -1, -1, -1, -1);
         SetState(2);
-        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
     return 1;
 }
@@ -2692,14 +2692,14 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
-    CSbiFreeNode* head = (CSbiFreeNode*)g_coordPool.m_freeHead;
+    CSbiFreeNode* head = reinterpret_cast<CSbiFreeNode*>(g_coordPool.m_freeHead);
     CSbiFreeNode* node = 0;
     if (head->m_0 != 0) {
-        node = (CSbiFreeNode*)&head->m_4;
+        node = reinterpret_cast<CSbiFreeNode*>(&head->m_4);
         node->m_0 = a;
         node->m_4 = b;
         g_coordPool.m_freeHead
-            = reinterpret_cast<CoordPoolNode*>(((CSbiFreeNode*)g_coordPool.m_freeHead)->m_0);
+            = reinterpret_cast<CoordPoolNode*>((reinterpret_cast<CSbiFreeNode*>(g_coordPool.m_freeHead))->m_0);
     }
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
@@ -2845,10 +2845,10 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
-    if (!((CSBI_MenuItem*)it)
+    if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
                  this,
-                 (CDDrawSurfaceMgr*)code,
+                 static_cast<CDDrawSurfaceMgr*>(code),
                  1,
                  0,
                  SbRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
@@ -2862,14 +2862,14 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     m_tabLists[0].AddTail(it);
-    m_tabSprite0 = (CSBI_MenuItem*)it;
+    m_tabSprite0 = static_cast<CSBI_MenuItem*>(it);
 
     // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
-    if (!((CSBI_MenuItem*)it)
+    if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
                  this,
-                 (CDDrawSurfaceMgr*)code,
+                 static_cast<CDDrawSurfaceMgr*>(code),
                  2,
                  0,
                  SbRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
@@ -2883,14 +2883,14 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     m_tabLists[0].AddTail(it);
-    m_tabSprite2 = (CSBI_MenuItem*)it;
+    m_tabSprite2 = static_cast<CSBI_MenuItem*>(it);
 
     // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
-    if (!((CSBI_MenuItem*)it)
+    if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
                  this,
-                 (CDDrawSurfaceMgr*)code,
+                 static_cast<CDDrawSurfaceMgr*>(code),
                  3,
                  0,
                  SbRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
@@ -2904,14 +2904,14 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     m_tabLists[0].AddTail(it);
-    m_tabSprite1 = (CSBI_MenuItem*)it;
+    m_tabSprite1 = static_cast<CSBI_MenuItem*>(it);
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
-    if (!((CSBI_MenuItem*)it)
+    if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
                  this,
-                 (CDDrawSurfaceMgr*)code,
+                 static_cast<CDDrawSurfaceMgr*>(code),
                  4,
                  0,
                  SbRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
@@ -2925,14 +2925,14 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     m_tabLists[0].AddTail(it);
-    m_tabSprite3 = (CSBI_MenuItem*)it;
+    m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
     if (g_gameReg->m_134 == 1) {
-        CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
+        CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
         mp->m_34 = 4;
         CImageSet* f = mp->m_38;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
-            v = (CImage*)f->m_items.GetAt(4); // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
+            v = static_cast<CImage*>(f->m_items.GetAt(4)); // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
         } else {
             v = 0;
         }
@@ -2943,10 +2943,10 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- GAMETAB (menu item, type 5; inline ctor) ----
     it = new CSBI_MenuItem;
-    if (!((CSBI_MenuItem*)it)
+    if (!(static_cast<CSBI_MenuItem*>(it))
              ->SetupImage(
                  this,
-                 (CDDrawSurfaceMgr*)code,
+                 static_cast<CDDrawSurfaceMgr*>(code),
                  5,
                  0,
                  SbRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
@@ -2960,7 +2960,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     m_tabLists[0].AddTail(it);
-    m_tabSprite4 = (CSBI_MenuItem*)it;
+    m_tabSprite4 = static_cast<CSBI_MenuItem*>(it);
 
     if (Probe2e69() == 0) {
         return 0;
@@ -3027,7 +3027,7 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
     if (g_gameReg->m_134 == 1) {
         if (m_ptrPool.GetSize() > 0) {
             void* p = m_ptrPool.GetData()[0];
-            result = *(i32*)p;
+            result = *static_cast<i32*>(p);
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
@@ -3120,7 +3120,7 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
     }
     m_extraNotifyArg1 = result;
     m_machinePhase = 1;
-    SetRect((LPRECT)&m_itemRectL, 0x49, 0xd7, 0x61, 0xef);
+    SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
         i32 x = m_10;
         i32 y = m_rect14.m_0;
@@ -3215,7 +3215,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(5, 3);
-    if (((Utils::RegistryHelper*)g_gameReg->m_settings)->GetValueDword("StatusBar Position", 0)
+    if ((static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))->GetValueDword("StatusBar Position", 0)
         == 1) {
         RefreshA();
     }
@@ -3264,7 +3264,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
-                CSbiMainSetup* tgt = ((CSbiGameMgr*)g_gameReg->m_world)->m_4->m_14->m_mainSetup;
+                CSbiMainSetup* tgt = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_4->m_14->m_mainSetup;
                 struct {
                     i32 a, b, c, d;
                 } rc;
@@ -3272,17 +3272,17 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 rc.d = v;
                 rc.b = m_rect14.m_8;
                 rc.c = m_rect14.m_4;
-                ((CDDSurface*)tgt)->Restore(&rc, 0);
+                (reinterpret_cast<CDDSurface*>(tgt))->Restore(&rc, 0);
             }
             CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
             void* found = 0;
 
-            map->Lookup("GAME_STATUSBAR_MAINBAR", (CObject*&)found);
+            map->Lookup("GAME_STATUSBAR_MAINBAR", reinterpret_cast<CObject*&>(found));
             if (found) {
-                CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
+                CSbiMainBarCfg* cfg = static_cast<CSbiMainBarCfg*>(found);
                 CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
                 if (entry) {
-                    CSbiMainL1* l1 = ((CSbiGameMgr*)g_gameReg->m_world)->m_4;
+                    CSbiMainL1* l1 = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_4;
                     MainBarDrawFrame(l1->m_14, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
                 }
             }
@@ -3299,7 +3299,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         CPtrList& tab = m_tabLists[m_activeTab];
         POSITION m = tab.GetHeadPosition();
         while (m) {
-            CSbiNotifyPayload* cur = (CSbiNotifyPayload*)tab.GetNext(m);
+            CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(tab.GetNext(m));
             if (cur) {
                 cur->Tick();
             }
@@ -3328,36 +3328,36 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 // Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is
 // resolved by a direct FindCue on the host (returns the record) and played.
 static __inline void HiCueFind() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
     if (host->m_30 == 0) {
-        void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
+        void* obj = (reinterpret_cast<CDDrawSubMgrLeafScan*>(host))->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
-            ((LeafCue*)obj)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            (static_cast<LeafCue*>(obj))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 }
 
 // Variant 2: resolve via the +0x10 string map (Lookup out-param) then play now.
 static __inline void HiCueLookup() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
     if (host->m_30 == 0) {
         void* out = 0;
-        ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
+        (static_cast<CMapStringToOb*>(&host->m_map10))->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(out));
         if (out) {
-            ((LeafCue*)out)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            (static_cast<LeafCue*>(out))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 }
 
 // Variant 3: the standard draw-clock-gated cue play (like LoadGooCookingSprite).
 static __inline void HiCueTimed() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
     if (host->m_30 == 0) {
         void* found = 0;
-        ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
+        (static_cast<CMapStringToOb*>(&host->m_map10))->Lookup("GAME_TABHIGHLIGHT1", reinterpret_cast<CObject*&>(found));
         if (found && g_sndEnabled != 0) {
             i32 item = g_sndCueTag;
-            CSbiCueRecord* p = (CSbiCueRecord*)found;
+            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                 p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3530,7 +3530,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         g_gameReg->m_frameGate ^= 1;
                         g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
                     }
-                    ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(1);
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(1);
                     return 1;
                 case 0x1fa:
                     HiCueLookup();
@@ -3548,7 +3548,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     HiCueLookup();
                     {
-                        CPlay* sm = (CPlay*)g_gameReg->m_curState;
+                        CPlay* sm = static_cast<CPlay*>(g_gameReg->m_curState);
                         if (m_destructWarnActive == 0) {
                             m_destructWarnActive = 1;
                             m_modeState = 2;
@@ -3587,7 +3587,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         HiPost(0x806b);
                     } else {
                         HiCueLookup();
-                        ((CPlay*)g_gameReg->m_curState)->HiRefresh(0);
+                        (static_cast<CPlay*>(g_gameReg->m_curState))->HiRefresh(0);
                     }
                     return 1;
                 case 0x325:
@@ -3616,7 +3616,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x328:
                     HiCueTimed();
-                    ((CPlay*)g_gameReg->m_curState)->HiRefresh(0);
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->HiRefresh(0);
                     return 1;
                 default:
                     return 0;
@@ -3643,11 +3643,11 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
-                CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                 void* found = 0;
-                ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_DESTRUCT", (CObject*&)found);
+                (static_cast<CMapStringToOb*>(&host->m_map10))->Lookup("GAME_DESTRUCT", reinterpret_cast<CObject*&>(found));
                 if (found) {
-                    DSoundCloneInst* f = ((CSbiSpriteCfg*)found)->m_playFactory;
+                    DSoundCloneInst* f = (static_cast<CSbiSpriteCfg*>(found))->m_playFactory;
                     if (f) {
                         DirectSoundMgr* obj = f->GetItem();
                         m_destructButton = obj;
@@ -3677,7 +3677,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)tab.GetNext(m);
+        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(tab.GetNext(m));
         if (cur) {
             cur->Poll(arg);
         }
@@ -3763,16 +3763,16 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     g->m_state = g_frameTime;
     g->m_value = 0;
     if (m_activeTab == 2 && m_position != 2) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
-            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
-            map->Lookup("GAME_GOOCOOKING1", (CObject*&)found);
+            CMapStringToOb* map = static_cast<CMapStringToOb*>(&host->m_map10);
+            map->Lookup("GAME_GOOCOOKING1", reinterpret_cast<CObject*&>(found));
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3856,14 +3856,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 6:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CMapStringToOb*)&host->m_map10)
-                                ->Lookup("GAME_REZBELTRETURN", (CObject*&)found);
+                            (static_cast<CMapStringToOb*>(&host->m_map10))
+                                ->Lookup("GAME_REZBELTRETURN", reinterpret_cast<CObject*&>(found));
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3877,14 +3877,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 7:
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CMapStringToOb*)&host->m_map10)
-                                ->Lookup("GAME_REZBELTBACKUP", (CObject*&)found);
+                            (static_cast<CMapStringToOb*>(&host->m_map10))
+                                ->Lookup("GAME_REZBELTBACKUP", reinterpret_cast<CObject*&>(found));
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3917,8 +3917,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // shared-global DIR32 naming (g_gameReg/g_frameTime/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
-    SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
-    SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
+    SbiPhaseSlot* pA = reinterpret_cast<SbiPhaseSlot*>(&m_hudRectB_x);
+    SbiPhaseSlot* pB = reinterpret_cast<SbiPhaseSlot*>(&m_hudRectA_x);
     SbiPhaseSlot* g = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
     if (pA->m_state == 5) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
@@ -3983,14 +3983,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = static_cast<u32>(g_frameTime);
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                        CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CMapStringToOb*)&host->m_map10)
-                                ->Lookup("GAME_REZMACHINE", (CObject*&)found);
+                            (static_cast<CMapStringToOb*>(&host->m_map10))
+                                ->Lookup("GAME_REZMACHINE", reinterpret_cast<CObject*&>(found));
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -4041,14 +4041,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                ((CMapStringToOb*)&host->m_map10)
-                                    ->Lookup("GAME_REZBELTRETRACT", (CObject*&)fnd);
+                                (static_cast<CMapStringToOb*>(&host->m_map10))
+                                    ->Lookup("GAME_REZBELTRETRACT", reinterpret_cast<CObject*&>(fnd));
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
-                                    CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(fnd);
                                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -4060,14 +4060,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                            CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                ((CMapStringToOb*)&host->m_map10)
-                                    ->Lookup("GAME_REZBELTDROP", (CObject*&)fnd);
+                                (static_cast<CMapStringToOb*>(&host->m_map10))
+                                    ->Lookup("GAME_REZBELTDROP", reinterpret_cast<CObject*&>(fnd));
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
-                                    CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(fnd);
                                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -4162,14 +4162,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CMapStringToOb*)&host->m_map10)
-                            ->Lookup("GAME_CHIPFALLOUT", (CObject*&)found);
+                        (static_cast<CMapStringToOb*>(&host->m_map10))
+                            ->Lookup("GAME_CHIPFALLOUT", reinterpret_cast<CObject*&>(found));
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -4193,14 +4193,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRectT = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CMapStringToOb*)&host->m_map10)
-                            ->Lookup("GAME_CHIPLAND", (CObject*&)found);
+                        (static_cast<CMapStringToOb*>(&host->m_map10))
+                            ->Lookup("GAME_CHIPLAND", reinterpret_cast<CObject*&>(found));
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -4264,14 +4264,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
+                    CSbiMusicHost* host = (reinterpret_cast<CSbiGameMgr*>(g_gameReg->m_world))->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CMapStringToOb*)&host->m_map10)
-                            ->Lookup("GAME_CHIPLAND", (CObject*&)found);
+                        (static_cast<CMapStringToOb*>(&host->m_map10))
+                            ->Lookup("GAME_CHIPLAND", reinterpret_cast<CObject*&>(found));
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);

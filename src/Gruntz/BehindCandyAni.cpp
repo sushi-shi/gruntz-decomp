@@ -44,7 +44,7 @@ i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
@@ -92,7 +92,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad7d0, 0x15)
 void CBehindCandyAni::InitActReg() {
-    ((CZDArrayDerived*)&g_behindCandyActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_behindCandyActReg))->Construct(2000, 2010);
 }
 
 // CBehindCandyAni::RunAct @0x0ad850 - resolve the registry entry for id; if a
@@ -100,9 +100,9 @@ void CBehindCandyAni::InitActReg() {
 // entry pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
-    CBehindCandyActEntry* e = (CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id);
+    CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn)();
+        (this->*(reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -121,20 +121,20 @@ void CBehindCandyAni::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CBehindCandyAni::AdvanceAnim;
 }
 

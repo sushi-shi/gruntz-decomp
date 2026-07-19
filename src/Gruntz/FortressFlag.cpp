@@ -118,7 +118,7 @@ CActReg g_partColl;
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline, typed to this registry's entry.
 static inline CPartEntry* PartLookup(i32 coord) {
-    return (CPartEntry*)g_partColl.ResolveEntry(coord);
+    return reinterpret_cast<CPartEntry*>(g_partColl.ResolveEntry(coord));
 }
 
 // The CExplosion class dispatch table (@0x6447f8), constructed by
@@ -138,21 +138,21 @@ extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_typeCounter);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        void** nodes = (void**)g_typeColl.m_alloc;
+        void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CString*)nodes)->CString::~CString();
+                    (reinterpret_cast<CString*>(nodes))->CString::~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
     return id;
@@ -181,7 +181,7 @@ i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
@@ -203,7 +203,7 @@ i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
@@ -260,7 +260,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
-    i32 idx = ((WwdRefSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[m_object->m_124 * 71].m_idx;
+    i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[m_object->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
     CGameObject* spr = m_object;
     spr->m_drawActive = 1;
@@ -273,7 +273,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x00046000, 0x15)
 void CFortressFlag::InitActReg() {
-    ((CZDArrayDerived*)&g_fortressFlagActReg)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_fortressFlagActReg))->Construct(2000, 2010);
 }
 
 // CFortressFlag::FireActivation @0x046080 - look the activation coordinate up in the
@@ -282,10 +282,10 @@ void CFortressFlag::InitActReg() {
 // as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
-    CFortressFlagActEntry* e = (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
+    CFortressFlagActEntry* e = reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CFortressFlagActEntry* e2 =
-            (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
+            reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -305,20 +305,20 @@ void CFortressFlag::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(id))->m_fn =
+    (reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(id)))->m_fn =
         (i32 (CUserLogic::*)())&CFortressFlag::AdvanceAnim;
 }
 
@@ -342,12 +342,12 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     if (tag == 8) {
         CGameObject* spr = m_object;
-        i32 idx = ((WwdRefSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[spr->m_124 * 71].m_idx;
+        i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_74->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -397,7 +397,7 @@ i32 LogicDispatchC(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CParticlez((CGameObject*)owner);
+            CUserLogic* sub = new CParticlez(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -437,7 +437,7 @@ i32 Handler046990(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CExplosion((CGameObject*)owner);
+            CUserLogic* sub = new CExplosion(reinterpret_cast<CGameObject*>(owner));
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -489,7 +489,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // thunk (no `this`); reloc-masked.
 RVA(0x00046cb0, 0x15)
 void CParticlez::InitActReg() {
-    ((CZDArrayDerived*)&g_partColl)->Construct(2000, 2010);
+    (reinterpret_cast<CZDArrayDerived*>(&g_partColl))->Construct(2000, 2010);
 }
 
 // CParticlez::FireActivation @0x046d30 - look the activation coordinate up in
@@ -521,20 +521,20 @@ void CParticlez::RegisterActs() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", (void*)id);
+        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = (void**)g_typeColl.m_alloc;
+        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                ((CString*)list)->CString::~CString();
+                (reinterpret_cast<CString*>(list))->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=("A");
+        (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    ((CPartEntryI32*)PartLookup(id))->m_fn = (i32 (CUserLogic::*)())&CParticlez::Update;
+    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn = (i32 (CUserLogic::*)())&CParticlez::Update;
 }
 
 // CParticlez::Update @0x047090 - re-target the bound object's animation sub-object
@@ -580,7 +580,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // FireActivation.)
 RVA(0x000472d0, 0x15)
 void InitLogicDispatch_6447f8() {
-    ((CZDArrayDerived*)&g_logicActReg_6447f8)->Construct(0x7d0, 0x7da);
+    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_6447f8))->Construct(0x7d0, 0x7da);
 }
 
 // CExplosion::FireActivation @0x047350 - slot-4 (UserLogicVfunc2) override: resolve
@@ -589,9 +589,9 @@ void InitLogicDispatch_6447f8() {
 // (the ResolveEntry inline expands twice).
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
-    CExplosionActEntry* e = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+    CExplosionActEntry* e = reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CExplosionActEntry* e2 = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+        CExplosionActEntry* e2 = reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }
@@ -606,7 +606,7 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    *(void**)g_logicActReg_6447f8.ResolveEntry(id) = (void*)&LogicHandler_0466b0;
+    *reinterpret_cast<void**>(g_logicActReg_6447f8.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_0466b0);
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

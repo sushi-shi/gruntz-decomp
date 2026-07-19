@@ -343,7 +343,7 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     }
     i32 hr = di->EnumDevices(
         DIDEVTYPE_JOYSTICK,
-        (LPDIENUMDEVICESCALLBACKA)DinEnumDevicesCallback,
+        reinterpret_cast<LPDIENUMDEVICESCALLBACKA>(DinEnumDevicesCallback),
         this,
         DIEDFL_ATTACHEDONLY
     );
@@ -369,7 +369,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
     if (instance == 0) {
         return 1;
     }
-    DirectInputMgr2* mgr = (DirectInputMgr2*)ref;
+    DirectInputMgr2* mgr = static_cast<DirectInputMgr2*>(ref);
     if (mgr == 0) {
         return 1;
     }
@@ -466,7 +466,7 @@ void DirectInputMgr2::FreeDeviceList() {
     while (pos != 0) {
         CDeviceListNode* payload = reinterpret_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
         if (payload != 0) {
-            ((CFixedPtrArray32*)payload)->Clear();
+            (reinterpret_cast<CFixedPtrArray32*>(payload))->Clear();
             operator delete(payload);
         }
     }
@@ -483,9 +483,9 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if (((CFixedPtrArray32*)node)->FillFrom((void**)count, a2, a3) == 0) {
+    if ((reinterpret_cast<CFixedPtrArray32*>(node))->FillFrom(reinterpret_cast<void**>(count), a2, a3) == 0) {
         if (node != 0) {
-            ((CFixedPtrArray32*)node)->Clear();
+            (reinterpret_cast<CFixedPtrArray32*>(node))->Clear();
             operator delete(node);
         }
         return 0;
@@ -714,7 +714,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
         } else {
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
         }
-        MessageBoxA((HWND)0, szLine, "DirectInputMgr2", MB_ICONEXCLAMATION);
+        MessageBoxA(static_cast<HWND>(0), szLine, "DirectInputMgr2", MB_ICONEXCLAMATION);
     }
 }
 
@@ -752,7 +752,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = (DeviceState*)buf;
+    m_stateBuffer = static_cast<DeviceState*>(buf);
     m_stateBufferSize = STATE_BUFFER_SIZE;
     return 1;
 }
@@ -1089,7 +1089,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = (DeviceState*)buf;
+    m_stateBuffer = static_cast<DeviceState*>(buf);
     m_stateBufferSize = 0x10;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
@@ -1230,7 +1230,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = (DeviceState*)buf;
+    m_stateBuffer = static_cast<DeviceState*>(buf);
     m_stateBufferSize = 0x110;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;

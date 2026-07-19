@@ -137,13 +137,13 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (!soundz) {
             goto fail;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)soundz, "BOOTY", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), "BOOTY", "_");
 
         void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)wand, "GRUNTZ_WANDGRUNT", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {

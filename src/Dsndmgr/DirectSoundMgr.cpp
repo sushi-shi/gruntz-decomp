@@ -193,7 +193,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) == DSBCAPS_CTRLFREQUENCY) {
-        i32 hr = buf->GetFrequency((LPDWORD)&m_freq) != 0;
+        i32 hr = buf->GetFrequency(reinterpret_cast<LPDWORD>(&m_freq)) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x58, hr);
         }
@@ -201,7 +201,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     m_setFreq = m_freq;
 
     if ((m_caps & DSBCAPS_CTRLPAN) == DSBCAPS_CTRLPAN) {
-        i32 hr = buf->GetPan((LONG*)&m_pan) != 0;
+        i32 hr = buf->GetPan(reinterpret_cast<LONG*>(&m_pan)) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x60, hr);
         }
@@ -210,7 +210,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
-        i32 hr = buf->GetVolume((LONG*)&m_volume) != 0;
+        i32 hr = buf->GetVolume(reinterpret_cast<LONG*>(&m_volume)) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x68, hr);
         }
@@ -289,7 +289,7 @@ i32 DirectSoundMgr::IsPlaying() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->GetStatus((LPDWORD)&status) != 0;
+    i32 hr = m_buffer->GetStatus(reinterpret_cast<LPDWORD>(&status)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xac, hr);
         return 0;
@@ -307,7 +307,7 @@ i32 DirectSoundMgr::IsLooping() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->GetStatus((LPDWORD)&status) != 0;
+    i32 hr = m_buffer->GetStatus(reinterpret_cast<LPDWORD>(&status)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xbb, hr);
         return 0;
@@ -388,7 +388,7 @@ i32 DirectSoundMgr::GetVolume() {
         return 0;
     }
     i32 vol;
-    i32 hr = m_buffer->GetVolume((LONG*)&vol) != 0;
+    i32 hr = m_buffer->GetVolume(reinterpret_cast<LONG*>(&vol)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x10e, hr);
         return 0;
@@ -476,7 +476,7 @@ i32 DirectSoundMgr::GetPan() {
         return 0;
     }
     i32 pan;
-    i32 hr = m_buffer->GetPan((LONG*)&pan) != 0;
+    i32 hr = m_buffer->GetPan(reinterpret_cast<LONG*>(&pan)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x15e, hr);
         return 0;
@@ -573,7 +573,7 @@ i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetCurrentPosition((LPDWORD)play, (LPDWORD)write) != 0;
+    i32 hr = m_buffer->GetCurrentPosition(reinterpret_cast<LPDWORD>(play), reinterpret_cast<LPDWORD>(write)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -603,7 +603,7 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat((LPWAVEFORMATEX)fmt, size, (LPDWORD)written) != 0;
+    i32 hr = m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(fmt), size, reinterpret_cast<LPDWORD>(written)) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -628,7 +628,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     m_cloneList.m_head = 0;
     m_cloneList.m_tail = 0;
     // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
-    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&m_cloneNode);
+    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&m_cloneNode));
     m_playKey = 1;
 }
 
@@ -664,7 +664,7 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
         return 0;
     }
-    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&clone->m_cloneNode);
+    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertHead(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
     clone->m_playKey = a;
     return clone;
 }
@@ -682,7 +682,7 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
         buf->Release();
         clone->m_buffer = 0;
     }
-    ((DSoundList*)&m_cloneList)->Unlink((DSoundLink*)&clone->m_cloneNode);
+    (reinterpret_cast<DSoundList*>(&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&clone->m_cloneNode));
     if (clone != this) {
         delete clone;
     }
@@ -736,8 +736,8 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
             return found;
         }
     }
-    ((DSoundList*)&m_cloneList)->Unlink((DSoundLink*)&found->m_cloneNode);
-    ((DSoundList*)&m_cloneList)->InsertTail((DSoundLink*)&found->m_cloneNode);
+    (reinterpret_cast<DSoundList*>(&m_cloneList))->Unlink(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
+    (reinterpret_cast<DSoundList*>(&m_cloneList))->InsertTail(reinterpret_cast<DSoundLink*>(&found->m_cloneNode));
     return found;
 }
 
@@ -761,7 +761,7 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     void* p2;
     u32 n2;
     i32 hr =
-        m_buffer->Lock(0, bytes, &p1, (LPDWORD)&n1, &p2, (LPDWORD)&n2, DSBLOCK_FROMWRITECURSOR);
+        m_buffer->Lock(0, bytes, &p1, reinterpret_cast<LPDWORD>(&n1), &p2, reinterpret_cast<LPDWORD>(&n2), DSBLOCK_FROMWRITECURSOR);
     if (hr != 0) {
         GetErrorString(DSNDMGR_FILE, 0x27c, hr);
         return 0;
@@ -801,7 +801,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     u32 n1;
     u32 n2;
     i32 hr =
-        m_buffer->Lock(0, lockBytes, &p1, (LPDWORD)&n1, &p2, (LPDWORD)&n2, DSBLOCK_ENTIREBUFFER)
+        m_buffer->Lock(0, lockBytes, &p1, reinterpret_cast<LPDWORD>(&n1), &p2, reinterpret_cast<LPDWORD>(&n2), DSBLOCK_ENTIREBUFFER)
         != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
@@ -820,7 +820,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         // 16-bit signed -> 8-bit unsigned downconversion, per region.
         if (n1 > 0) {
             char* d = static_cast<char*>(p1);
-            i16* s = (i16*)src;
+            i16* s = static_cast<i16*>(src);
             char* end = reinterpret_cast<char*>(p1) + n1;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
@@ -830,7 +830,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
         if (n2 > 0) {
             char* d = static_cast<char*>(p2);
-            i16* s = (i16*)(reinterpret_cast<char*>(src) + n1);
+            i16* s = reinterpret_cast<i16*>((reinterpret_cast<char*>(src) + n1));
             char* end = reinterpret_cast<char*>(p2) + n2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
@@ -996,7 +996,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(off, bytes, p1, (LPDWORD)n1, p2, (LPDWORD)n2, flags) != 0;
+    i32 hr = m_buffer->Lock(off, bytes, p1, reinterpret_cast<LPDWORD>(n1), p2, reinterpret_cast<LPDWORD>(n2), flags) != 0;
     if (!hr) {
         return 1;
     }
@@ -1004,7 +1004,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->Lock(off, bytes, p1, (LPDWORD)n1, p2, (LPDWORD)n2, flags) != 0;
+        hr = m_buffer->Lock(off, bytes, p1, reinterpret_cast<LPDWORD>(n1), p2, reinterpret_cast<LPDWORD>(n2), flags) != 0;
         if (!hr) {
             return 1;
         }
@@ -1065,7 +1065,7 @@ i32 SoundDevice::Create(void* hwnd, u32 level, u32 flags) {
     if (created) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3b0, hr);
         m_device->Release();
@@ -1095,7 +1095,7 @@ i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
     if (m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3cf, hr);
         return 0;
@@ -1167,10 +1167,10 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     // and nBlockAlign|wBitsPerSample) must be punned to a single dword store -
     // field-by-field would emit two 16-bit moves. Language-forced (verified by disasm).
     WaveFormatX wf;
-    *(u32*)&wf.wFormatTag = *(u32*)&fmt->wFormatTag;
+    *reinterpret_cast<u32*>(&wf.wFormatTag) = *reinterpret_cast<u32*>(&fmt->wFormatTag);
     wf.nSamplesPerSec = fmt->nSamplesPerSec;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
-    *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
+    *reinterpret_cast<u32*>(&wf.nBlockAlign) = *reinterpret_cast<u32*>(&fmt->nBlockAlign);
     wf.cbSize = fmt->cbSize;
 
     IDirectSoundBuffer* out = 0;
@@ -1179,7 +1179,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = (LPWAVEFORMATEX)&wf;
+    desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
 
     i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
@@ -1193,11 +1193,11 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     // RezAlloc the 0x60B leaf, then BaseInit (the ctor 0x135b10, reached as a method)
     // stamps its vptr. The buffer's cached format/rate/sample fields (base offsets
     // +0x18/+0x38/+0x3c/+0x2c) are seeded from the wave header here.
-    DSoundCloneInst* voice = (DSoundCloneInst*)RezAlloc(0x60);
+    DSoundCloneInst* voice = static_cast<DSoundCloneInst*>(RezAlloc(0x60));
     if (voice) {
         voice->BaseInit(out, this);
     }
-    voice->m_freq = *(u32*)&wf.wFormatTag; // +0x18  format word (wFormatTag|nChannels)
+    voice->m_freq = *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
     voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor
@@ -1657,13 +1657,13 @@ i32 DSoundVoice::Stop() {
 RVA(0x00137110, 0x8d)
 SYMBOL(_ParseWaveChunks)
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
-    u32* p = (u32*)(reinterpret_cast<char*>(riff) + 4);
+    u32* p = reinterpret_cast<u32*>((reinterpret_cast<char*>(riff) + 4));
     u32 riffSize = *p;
     p++;
     u32 waveTag = *p;
     p++;
     char* end = reinterpret_cast<char*>(p) + riffSize - 4;
-    if (*(u32*)riff != mmioFOURCC('R', 'I', 'F', 'F')) {
+    if (*static_cast<u32*>(riff) != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
@@ -1676,13 +1676,13 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
         u32 size = p[1];
         p += 2;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            out->m_fmt = (WaveFormatX*)p;
+            out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p;
             *sizeOut = size;
             return out->m_fmt != 0;
         }
-        p = (u32*)(reinterpret_cast<char*>(p) + ((size + 1) & ~1));
+        p = reinterpret_cast<u32*>((reinterpret_cast<char*>(p) + ((size + 1) & ~1)));
     }
     return 0;
 }
@@ -1697,7 +1697,7 @@ i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->SetFormat((LPWAVEFORMATEX)fmt) != 0;
+    i32 hr = m_primaryBuffer->SetFormat(static_cast<LPWAVEFORMATEX>(fmt)) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;
