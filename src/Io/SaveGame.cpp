@@ -71,7 +71,7 @@ void* g_previewImage;                           // 0x64c868  (CRezImage* preview
 i32 __stdcall CloseTempFile_e5550(SaveSlot* r); // defined below (0x0e5550)
 // The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
-void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev);
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
 // FUN_00002e05 (thunk): per-slot delete driver (reloc-masked).
 void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
 // The three dialog sub-proc thunks passed as callbacks (reloc-masked code ptrs).
@@ -167,19 +167,19 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 return 1;
             }
             g_previewMgr = new CImagePool;
+            // Retail dataflow (byte-proven at 0xe37c6..0xe3803): BOTH the pool's
+            // second handle and the title call's window are edi = the dialog's own
+            // hDlg (stack arg), and the gate is g_gameReg->m_saveSink pushed raw -
+            // the old spelling passed g_previewMgr through two nonsense casts.
             if (g_previewMgr->SetHandles(
                     reinterpret_cast<i32>(* reinterpret_cast<HINSTANCE*>((reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc))),
-                    reinterpret_cast<i32>(g_previewMgr),
+                    reinterpret_cast<i32>(hDlg),
                     0
                 )
                 == 0) {
                 return 0;
             }
-            BuildLevelTitleString(
-                reinterpret_cast<HWND>(g_previewMgr),
-                reinterpret_cast<i32>(g_gameReg->m_saveSink),
-                reinterpret_cast<CLevelInfo*>(g_slotState)
-            );
+            BuildLevelTitleString(hDlg, g_gameReg->m_saveSink, reinterpret_cast<CLevelInfo*>(g_slotState));
             return 1;
         }
         case WM_COMMAND: {
@@ -539,14 +539,14 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 //       reloc) vs retail's absolute IAT slot - reloc-typing scoring artifact,
 //       code bytes identical (reloc-typing-vptr-global.md).
 RVA(0x000e44e0, 0x2b2)
-void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
     char title[0x80];
     char readBuf[0x3843a];
 
     if (!hDlg) {
         return;
     }
-    if (!bShow) {
+    if (!gate) {
         return;
     }
     if (!lev) {
