@@ -9,8 +9,8 @@
 //
 // STALE CLAIM REMOVED (2026-07-13): the reason given used to be "(whose
 // <Bute/ButeStore.h> CButeStore would clash with butenode's own store class)". That clash is
-// imaginary - ButeNode.cpp ALREADY includes <Bute/ButeStore.h> directly, and its "own store
-// class" (CButeStoreDtorCopyNode) DERIVES from that same canonical CButeStore. Verified: adding
+// imaginary - ButeNode.cpp ALREADY includes <Bute/ButeStore.h> directly, and its ~CButeNode
+// (0x174d70) inlines that same canonical CButeStore's dtor. Verified: adding
 // #include <Bute/ButeMgr.h> to ButeNode.cpp compiles clean under the real MSVC 5.0. Keeping
 // this header separate is fine (it is a shared canonical header, not a view) - but it is a
 // convenience, NOT a wall, so do not cite a C2011 to justify anything else.

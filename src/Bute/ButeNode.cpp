@@ -22,12 +22,11 @@
 // canonical shape, shared with <Bute/ButeMgr.h> (not pulled in here - it is simply not
 // needed). STALE CLAIM REMOVED (2026-07-13): the old reason ("its <Bute/ButeStore.h>
 // CButeStore would clash with this TU's own store class below") is imaginary - ButeStore.h
-// is included RIGHT BELOW, and the local CButeStoreDtorCopyNode DERIVES from that same canonical
-// CButeStore. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
+// is included RIGHT BELOW, and this TU's ~CButeNode (0x174d70) inlines that same canonical
+// CButeStore's dtor. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
 #include <Bute/ButeValue.h>
-#include <Bute/ButeStore.h>           // the canonical CButeStore (real bases; INLINE dtor)
-#include <Bute/ButeStoreDtorCopies.h> // CButeStoreDtorCopyNode anchor (0x174d70 ~ copy)
-#include <Gruntz/String.h>            // CString - the kButeString payload the teardown destructs
+#include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
+#include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
 
 // ===========================================================================
 // ButeValueTeardown (0x174df0) - the keyed store's __cdecl per-value teardown
@@ -110,20 +109,17 @@ RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
 // ---------------------------------------------------------------------------
-// CButeStore @0x174d70 - ONE OF THE THREE COPIES of the store's inline destructor.
+// CButeNode::~CButeNode @0x174d70 - the node's REAL destructor (ex "dtor-copy anchor").
 //
-// The class is now the canonical <Bute/ButeStore.h> CButeStore (CContainerErr @0 +
-// CButeNodeEntry @8), whose destructor is INLINE. Retail carries three byte-identical
-// copies of it - 0x174d70 here, 0x21310 and 0x21570 in butemgr - because MSVC5 (no /Gy)
-// emits an inline member as a per-object-file static while folding the vftable COMDAT,
-// which is exactly why all three copies stamp the ONE vtable pair (0x1e94ac / 0x1e949c).
-// C++ cannot give one symbol three RVAs, so each copy is anchored on its own thin
-// subclass; the inline ~CButeStore expands into each, reproducing the retail body:
-// stamp both vptrs, ClearRecursive(0) (now the REAL ?ClearRecursive@CButeStore@@ at
-// 0x16e070 - it used to be a per-copy fake declared nowhere), then fold the +0x08 base
-// (~CButeNodeEntry 0x16dfc0) and the +0x00 base (~CContainerErr 0x16da60).
-// (CButeStoreDtorCopyNode - the 0x174d70 anchor - is declared in the shared
-//  <Bute/ButeStoreDtorCopies.h>; its ~ body + the free-adapter below are this TU's.)
+// It is byte-identical to the ~zPTree copies in butemgr because CButeNode adds no
+// destructible state: the empty user body is just the inline ~zPTree expansion -
+// stamp zPTree's vtable pair (0x1e94ac / 0x1e949c; the derived pair's own stamps are
+// /O2 dead stores and vanish), ClearRecursive(0) (?ClearRecursive@CButeStore@@
+// 0x16e070), then fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
+// (~CContainerErr 0x16da60). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
+// CButeNode's own vtable 0x1f051c slot 0 is the sdd 0x174d50, whose ~ call targets
+// exactly 0x174d70 - the fabricated CButeStoreDtorCopyNode anchor said this body
+// stamped a vtable (0x1e94ac) that never dispatched it.
 
 // zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
 // destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
@@ -131,7 +127,7 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 // @data-symbol: ??_7zPTree@@6BCContainerErr@@@ 0x001e94ac
 // @data-symbol: ??_7zPTree@@6BCButeNodeEntry@@@ 0x001e949c 0x4
 RVA(0x00174d70, 0x70)
-CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode() {}
+CButeNode::~CButeNode() {}
 
 // The __cdecl -> __thiscall per-value teardown adapter the CBSecStream ctor passes
 // as zPTree's free-callback (retail 0x174de0: `mov ecx,[esp+4]; jmp 0x174d70`, laid
@@ -140,5 +136,5 @@ CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode() {}
 // keeps the dispatch direct (the tail-jmp), matching retail.
 RVA(0x00174de0, 0x9)
 void ButeStoreFreeAdapter(void* p) {
-    (static_cast<CButeStoreDtorCopyNode*>(p))->CButeStoreDtorCopyNode::~CButeStoreDtorCopyNode();
+    (static_cast<CButeNode*>(p))->CButeNode::~CButeNode();
 }

@@ -32,7 +32,8 @@
 void ButeStoreFreeAdapter(void* p); // 0x174de0 (ButeNode.cpp)
 struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
-    virtual ~CBSecStream() OVERRIDE; // slot 0 zPTree dtor; external (reloc-masked /GX unwind)
+    virtual ~CBSecStream() OVERRIDE; // slot 0 -> 0x21570 (body in ButeMgr.cpp; the audit-proven
+                                     // ex-"MgrB dtor copy" - empty body, inline ~zPTree expansion)
 };
 VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry

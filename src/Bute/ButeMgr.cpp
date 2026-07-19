@@ -47,7 +47,8 @@
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>              // g_emptyString
-#include <Bute/ButeStoreDtorCopies.h> // the 0x21310/0x21570 zPTree store-dtor anchors
+#include <Bute/ButeStoreDtorCopies.h> // the 0x21310 zPTree store-dtor copy anchor (MgrA)
+#include <Bute/ButeSection.h>         // CBSecStream - its real dtor body lives here (0x21570)
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
@@ -905,11 +906,15 @@ static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
 
 // ===========================================================================
-// 0x021310 - the SECOND of the three copies of ~CButeStore (the store's INLINE
-// destructor; the first is 0x174d70 in butenode, the third 0x21570 below). All three are
-// byte-identical and stamp the same vtable pair, because MSVC5 without /Gy emits an
-// inline member as a per-obj static while folding the vftable COMDAT. See
-// <Bute/ButeStoreDtorCopies.h>. The inline ~CButeStore expands here: stamp both vptrs,
+// 0x021310 - this TU's per-obj static copy of ~CButeStore (the store's INLINE
+// destructor) - the ONLY genuine copy-anchor left: zPTree's own vtable 0x1e94ac
+// slot 0 (sdd 0x212e0, via ILT 0x4372) dispatches to it, so it really is plain
+// ~zPTree as emitted in butemgr (MSVC5 without /Gy emits an inline member as a
+// per-obj static while folding the vftable COMDAT). See
+// <Bute/ButeStoreDtorCopies.h>. Its two ex-siblings were NOT copies: 0x174d70 is
+// the real ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - their
+// bodies are byte-identical to this one only because neither subclass adds
+// destructible state. The inline ~CButeStore expands here: stamp both vptrs,
 // ClearRecursive(0) (the REAL ?ClearRecursive@CButeStore@@ @0x16e070 - the old per-copy
 // CButeStoreZPTree::ClearRecursive was declared nowhere and would not have linked), then
 // fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base (~CContainerErr
@@ -972,10 +977,14 @@ RVA(0x000213c0, 0x14c)
 CButeMgr::~CButeMgr() {}
 
 // ---------------------------------------------------------------------------
-// 0x021570 - the THIRD copy of ~CButeStore (see 0x21310 above and
-// <Bute/ButeStoreDtorCopies.h>). Same inline body, same two base folds. __thiscall, /GX.
+// 0x021570 - CBSecStream::~CBSecStream, the section-stream's REAL destructor (ex
+// "third ~CButeStore copy"). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
+// CBSecStream's vtable 0x1f0510 slot 0 is the sdd 0x174d30, whose ~ call reaches
+// exactly this body via ILT 0x3567. The empty user body is the inline ~zPTree
+// expansion (CBSecStream adds no destructible state; the derived pair's own stamps
+// are /O2 dead stores) - same bytes as 0x21310 above, different class. __thiscall, /GX.
 RVA(0x00021570, 0x70)
-CButeStoreDtorCopyMgrB::~CButeStoreDtorCopyMgrB() {}
+CBSecStream::~CBSecStream() {}
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError
