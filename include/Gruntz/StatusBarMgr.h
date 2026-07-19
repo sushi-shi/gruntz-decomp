@@ -765,7 +765,7 @@ SIZE_UNKNOWN(CSbiGameMgr);
 // sub-object of the canonical CGameRegistry, not a facet of the singleton itself.
 struct CSbiWndHost {
     char m_pad0[0x4];
-    void* m_4; // +0x4  game window handle
+    HWND m_4;  // +0x4  game window handle
 };
 SIZE_UNKNOWN(CSbiWndHost);
 

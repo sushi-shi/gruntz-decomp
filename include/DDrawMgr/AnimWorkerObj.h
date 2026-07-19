@@ -107,7 +107,7 @@ struct AnimWorkerObj : public CObject {
     // `obj->m_collideWorker->m_notify(obj)` - a raw fn-ptr load off the worker,
     // NOT a vtable dispatch; zero-stamped at worker build = "no callback".
     GameObjNotifyFn m_notify;
-    void* m_14;                // +0x14  owned serialized payload (RezFree'd in Clear/dtor)
+    u8* m_14;                  // +0x14  owned serialized payload blob (RezFree'd in Clear/dtor)
     CUserLogic* m_logic;       // +0x18  the owned bound-logic leaf (CUserBase slot-0
                                //        scalar dtor via plain `delete`; slot-1
                                //        SerializeMove is the per-frame Step)

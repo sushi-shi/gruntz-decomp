@@ -256,7 +256,7 @@ i32 AnimWorkerObj::Load(CSerialArchive* ar) {
     ar->Read(p + 0x174, 4);
     ar->Read(&m_178, 4);
     if (m_178 > 0) {
-        m_14 = ::operator new(m_178);
+        m_14 = static_cast<u8*>(::operator new(m_178));
         ar->Read(m_14, m_178);
     }
     return 1;

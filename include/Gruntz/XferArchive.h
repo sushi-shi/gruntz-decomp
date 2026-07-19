@@ -28,7 +28,7 @@ struct CXferArchive {
     void Xfer0c(void* name); // vtbl +0x0c  per-field name transfer hook
     void Xfer10(i32 id);     // vtbl +0x10  per-field id transfer hook
     void Xfer14(void* name); // vtbl +0x14  per-field name transfer hook
-    void* m_00;              // +0x00  vtable
+    char _vft0[4];           // +0x00  engine vptr (reduced view; not dispatched)
     char pad_04[0x14 - 0x04];
     CXferField* m_14; // +0x14  field descriptor (its +0x1c is the type id)
 };

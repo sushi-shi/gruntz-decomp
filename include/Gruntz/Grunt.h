@@ -504,7 +504,7 @@ SIZE_UNKNOWN(CGruntListNode);
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
-    void* m_data; // +0x08  serialized payload (0x2c bytes)
+    u8* m_data;   // +0x08  serialized payload blob (0x2c bytes)
 };
 
 // The global running game clock (DAT_00645588) - already declared as g_frameTime

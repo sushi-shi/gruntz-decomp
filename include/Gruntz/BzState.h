@@ -23,7 +23,7 @@ class CString; // <Mfc.h>; used by reference in BzState::FormatHudText's declara
 // The per-level record (g_gameReg->m_levelRecord). m_recordBase points at the
 // group-records table GetRecordValue indexes (0x40-byte stride, +0x28 payload).
 struct BzLevelRecord {
-    void* m_recordBase; // +0x00  group-records table base
+    u8* m_recordBase;   // +0x00  group-records table base (raw record band)
     i32 m_levelIndex;   // +0x04  area/level index
     i32 m_suppressGate; // +0x08  suppress gate
     i32 m_worldFlag;    // +0x0c  world/training flag
