@@ -850,7 +850,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 // extent/area block documents.
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
-    if (a2->m_154 == static_cast<i32>(0x80000000)) {
+    if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
     if (a1->m_area.left == static_cast<i32>(0x80000000)) {
@@ -860,10 +860,10 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
     i32 a1R = a1->m_area.right + a1->m_screenX;
     i32 a1T = a1->m_area.top + a1->m_screenY;
     i32 a1B = a1->m_area.bottom + a1->m_screenY;
-    i32 a2L = a2->m_154 + a2->m_screenX;
-    i32 a2T = a2->m_158 + a2->m_screenY;
-    i32 a2B = a2->m_160 + a2->m_screenY;
-    i32 a2R = a2->m_15c + a2->m_screenX;
+    i32 a2L = a2->m_switchRect.left + a2->m_screenX;
+    i32 a2T = a2->m_switchRect.top + a2->m_screenY;
+    i32 a2B = a2->m_switchRect.bottom + a2->m_screenY;
+    i32 a2R = a2->m_switchRect.right + a2->m_screenX;
     if (a1L > a2R) {
         return 0;
     }

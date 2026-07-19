@@ -131,11 +131,11 @@ struct AnimWorkerObj : public CObject {
     i32 m_bc;                  // +0xbc  per-tile time (teleporter reads the bound clock here;
                                //        rolling-ball speed in LoadGruntAbilityTuning)
     char m_padc0[0xf0 - 0xc0];
-    // +0xf0/+0x100: two 4-dword L/T/R/B rect quads the tile-switch registrar takes
-    // BY VALUE (CPlay::ValidateLevelTiles pushes both, 16 bytes each, into every
+    // +0xf0/+0x100: the two REAL RECTs the tile-switch registrar takes BY VALUE
+    // (CPlay::ValidateLevelTiles pushes both, 16 bytes each, into every
     // RegisterSwitchLogic call).
-    i32 m_f0, m_f4, m_f8, m_fc;     // +0xf0
-    i32 m_100, m_104, m_108, m_10c; // +0x100
+    RECT m_switchRectA; // +0xf0
+    RECT m_switchRectB; // +0x100
     char m_pad110[0x130 - 0x110];
     i32 m_130; // +0x130
     char m_pad134[0x168 - 0x134];

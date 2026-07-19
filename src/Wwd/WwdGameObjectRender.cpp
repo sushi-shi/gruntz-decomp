@@ -65,7 +65,7 @@ inline void* operator new(u32, void* p) {
 RVA(0x001660f0, 0xd1)
 void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
     i32 x = m_screenX;
-    i32 m64 = m_64;
+    i32 m64 = m_clip.left;
     i32 y;
     if (m64 == static_cast<i32>(0x80000000)) {
         if (x < 0) {
@@ -86,13 +86,13 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
             goto reject;
         }
         y = m_screenY;
-        if (y < m_68) {
+        if (y < m_clip.top) {
             goto reject;
         }
-        if (x > m_6c) {
+        if (x > m_clip.right) {
             goto reject;
         }
-        if (y > m_70) {
+        if (y > m_clip.bottom) {
             goto reject;
         }
     }

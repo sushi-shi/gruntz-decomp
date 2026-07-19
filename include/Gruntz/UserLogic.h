@@ -192,10 +192,9 @@ struct CGameObject {
     i32 m_drawActive;    // +0x58  dirty/active flag
     i32 m_screenX;       // +0x5c  screen x
     i32 m_screenY;       // +0x60  screen y
-    i32 m_64;            // +0x64  captured config triple (checkpoint state slots 12..14)
-    i32 m_68;            // +0x68
-    i32 m_6c;            // +0x6c
-    i32 m_70;            // +0x70  (WwdFile record clipRect bottom)
+    RECT m_clip;         // +0x64  the record clip rect (WwdFile clipRect; .left/.top/
+                         //        .right also the checkpoint config triple, slots 12..14 -
+                         //        LTV passes the whole rect BY VALUE to RegisterSwitchLogic)
     i32 m_latchedAnimId; // +0x74  (also the manager's z-order sort key: Setup stores
                          //        its a3; CDDrawChildGroup::InsertSorted orders by it)
     i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the
@@ -265,10 +264,8 @@ struct CGameObject {
     // CSpotLight ctor zeros all four.
     RECT m_area; // +0x144  L/T/R/B (same REAL-RECT proof as m_extent); .top is a
                  //         platform's stand surface row (AltStepValidate/HoldMove)
-    i32 m_154;   // +0x154  captured config block (checkpoint state slots 8..11)
-    i32 m_158;   // +0x158
-    i32 m_15c;   // +0x15c
-    i32 m_160;   // +0x160
+    RECT m_switchRect; // +0x154  the tile-switch registrar rect (BY-VALUE arg of
+                       //          RegisterSwitchLogic; checkpoint state slots 8..11)
     i32 m_164;   // +0x164
     i32 m_168;   // +0x168
     i32 m_16c; // +0x16c

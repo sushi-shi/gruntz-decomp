@@ -121,11 +121,11 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_area.left == static_cast<i32>(0x80000000)) {
             p->m_area.left = 0;
         }
-        if (p->m_154 == static_cast<i32>(0x80000000)) {
-            p->m_154 = 0;
+        if (p->m_switchRect.left == static_cast<i32>(0x80000000)) {
+            p->m_switchRect.left = 0;
         }
-        if (p->m_64 == static_cast<i32>(0x80000000)) {
-            p->m_64 = 0;
+        if (p->m_clip.left == static_cast<i32>(0x80000000)) {
+            p->m_clip.left = 0;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
         if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Rock)) {
@@ -136,9 +136,9 @@ i32 CPlay::ScanBuildTiles() {
             buf[3] = p->m_area.left;
             buf[4] = p->m_area.top;
             buf[5] = p->m_area.right;
-            buf[6] = p->m_154;
-            buf[7] = p->m_158;
-            buf[8] = p->m_15c;
+            buf[6] = p->m_switchRect.left;
+            buf[7] = p->m_switchRect.top;
+            buf[8] = p->m_switchRect.right;
             if (m_beginMarker
                     ->AddToList1(p->m_164, p->m_168, p->m_04, buf, p->m_11c, p->m_118, p->m_130)
                 == 0) {
@@ -194,10 +194,10 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_04,
                     *reinterpret_cast<CTrigParam*>(&p->m_extent.left),
                     *reinterpret_cast<CTrigParam*>(&p->m_area.left),
-                    *reinterpret_cast<CTrigParam*>(&p->m_154),
-                    *reinterpret_cast<CTrigParam*>(&p->m_64),
-                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_f0),
-                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_100),
+                    *reinterpret_cast<CTrigParam*>(&p->m_switchRect.left),
+                    *reinterpret_cast<CTrigParam*>(&p->m_clip.left),
+                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_switchRectA.left),
+                    *reinterpret_cast<CTrigParam*>(&p->m_7c->m_switchRectB.left),
                     p->m_124,
                     p->m_11c,
                     p->m_118,
@@ -281,11 +281,11 @@ i32 CPlay::ScanShuffleQuads() {
             if (p->m_area.left == static_cast<i32>(0x80000000)) {
                 p->m_area.left = 0;
             }
-            if (p->m_154 == static_cast<i32>(0x80000000)) {
-                p->m_154 = 0;
+            if (p->m_switchRect.left == static_cast<i32>(0x80000000)) {
+                p->m_switchRect.left = 0;
             }
-            if (p->m_64 == static_cast<i32>(0x80000000)) {
-                p->m_64 = 0;
+            if (p->m_clip.left == static_cast<i32>(0x80000000)) {
+                p->m_clip.left = 0;
             }
             // scatter-permute the four extent-quad corners
             i32 scatter[4];

@@ -639,11 +639,11 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     if (m_object->m_area.left == 0x80000000) {
         m_object->m_area.left = 0;
     }
-    if (m_object->m_154 == 0x80000000) {
-        m_object->m_154 = 0;
+    if (m_object->m_switchRect.left == 0x80000000) {
+        m_object->m_switchRect.left = 0;
     }
-    if (m_object->m_64 == 0x80000000) {
-        m_object->m_64 = 0;
+    if (m_object->m_clip.left == 0x80000000) {
+        m_object->m_clip.left = 0;
     }
     m_state[0] = m_object->m_extent.left;
     m_state[1] = m_object->m_extent.top;
@@ -653,13 +653,13 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     m_state[5] = m_object->m_area.top;
     m_state[6] = m_object->m_area.right;
     m_state[7] = m_object->m_area.bottom;
-    m_state[8] = m_object->m_154;
-    m_state[9] = m_object->m_158;
-    m_state[10] = m_object->m_15c;
-    m_state[11] = m_object->m_160;
-    m_state[12] = m_object->m_64;
-    m_state[13] = m_object->m_68;
-    m_state[14] = m_object->m_6c;
+    m_state[8] = m_object->m_switchRect.left;
+    m_state[9] = m_object->m_switchRect.top;
+    m_state[10] = m_object->m_switchRect.right;
+    m_state[11] = m_object->m_switchRect.bottom;
+    m_state[12] = m_object->m_clip.left;
+    m_state[13] = m_object->m_clip.top;
+    m_state[14] = m_object->m_clip.right;
     for (m_firstEmpty = 0; m_firstEmpty < 15; m_firstEmpty++) {
         if (m_state[m_firstEmpty] == 0) {
             break;

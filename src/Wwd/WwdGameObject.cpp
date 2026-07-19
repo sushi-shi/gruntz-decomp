@@ -584,7 +584,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_collMask = 0;
     m_extent.left = static_cast<i32>(0x80000000);
     m_area.left = static_cast<i32>(0x80000000);
-    m_154 = static_cast<i32>(0x80000000);
+    m_switchRect.left = static_cast<i32>(0x80000000);
     m_region.m_object = this;
     m_region.m_x = m_screenX;
     m_region.m_y = m_screenY;
@@ -890,7 +890,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     ar->Write(&m_130, 4);
     ar->Write(&m_extent.left, 0x10);
     ar->Write(&m_area.left, 0x10);
-    ar->Write(&m_154, 0x10);
+    ar->Write(&m_switchRect.left, 0x10);
     ar->Write(&m_164, 4);
     ar->Write(&m_168, 4);
     ar->Write(&m_16c, 4);
@@ -908,7 +908,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     ar->Write(&m_drawFillCmd, 4);
     ar->Write(&m_fillFraction, 4);
     ar->Write(&m_drawActive, 4);
-    ar->Write(&m_64, 0x10); // +0x64 clip rect
+    ar->Write(&m_clip.left, 0x10); // +0x64 clip rect
     ar->Write(&m_04, 4);
     ar->Write(&m_flags, 4);
     ar->Write(&m_184, 4);
@@ -978,7 +978,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(&m_130, 4);
     ar->Read(&m_extent.left, 0x10);
     ar->Read(&m_area.left, 0x10);
-    ar->Read(&m_154, 0x10);
+    ar->Read(&m_switchRect.left, 0x10);
     ar->Read(&m_164, 4);
     ar->Read(&m_168, 4);
     ar->Read(&m_16c, 4);
@@ -996,7 +996,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(&m_drawFillCmd, 4);
     ar->Read(&m_fillFraction, 4);
     ar->Read(&m_drawActive, 4);
-    ar->Read(&m_64, 0x10); // +0x64 clip rect
+    ar->Read(&m_clip.left, 0x10); // +0x64 clip rect
     ar->Read(&m_04, 4);
     ar->Read(&m_flags, 4);
     ar->Read(&m_184, 4);

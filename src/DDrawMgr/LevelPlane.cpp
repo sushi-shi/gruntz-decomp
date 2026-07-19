@@ -982,14 +982,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     obj->m_area.top = *p++;     // hitRect.t          (+0x148)
     obj->m_area.right = *p++;     // hitRect.r          (+0x14c)
     obj->m_area.bottom = *p++;     // hitRect.b          (+0x150)
-    obj->m_154 = *p++;       // attackRect.l       (+0x154)
-    obj->m_158 = *p++;       // attackRect.t       (+0x158)
-    obj->m_15c = *p++;       // attackRect.r       (+0x15c)
-    obj->m_160 = *p++;       // attackRect.b       (+0x160)
-    obj->m_64 = *p++;        // clipRect.l         (+0x64)
-    obj->m_68 = *p++;        // clipRect.t         (+0x68)
-    obj->m_6c = *p++;        // clipRect.r         (+0x6c)
-    obj->m_70 = *p++;        // clipRect.b         (+0x70)
+    obj->m_switchRect.left = *p++;       // attackRect.l       (+0x154)
+    obj->m_switchRect.top = *p++;       // attackRect.t       (+0x158)
+    obj->m_switchRect.right = *p++;       // attackRect.r       (+0x15c)
+    obj->m_switchRect.bottom = *p++;       // attackRect.b       (+0x160)
+    obj->m_clip.left = *p++;        // clipRect.l         (+0x64)
+    obj->m_clip.top = *p++;        // clipRect.t         (+0x68)
+    obj->m_clip.right = *p++;        // clipRect.r         (+0x6c)
+    obj->m_clip.bottom = *p++;        // clipRect.b         (+0x70)
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = static_cast<i32>(0x80000000);
@@ -997,11 +997,11 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (obj->m_extent.left == 0 && obj->m_extent.right == 0) {
         obj->m_extent.left = static_cast<i32>(0x80000000);
     }
-    if (obj->m_64 == 0 && obj->m_6c == 0) {
-        obj->m_64 = static_cast<i32>(0x80000000);
+    if (obj->m_clip.left == 0 && obj->m_clip.right == 0) {
+        obj->m_clip.left = static_cast<i32>(0x80000000);
     }
-    if (obj->m_154 == 0 && obj->m_15c == 0) {
-        obj->m_154 = static_cast<i32>(0x80000000);
+    if (obj->m_switchRect.left == 0 && obj->m_switchRect.right == 0) {
+        obj->m_switchRect.left = static_cast<i32>(0x80000000);
     }
 
     sub[0xf0 / 4] = *p++;
