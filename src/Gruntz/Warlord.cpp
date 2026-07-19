@@ -303,7 +303,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), C
     // Resolve the per-owner sprite selector from the focus-slot config row (clamped to
     // [0,0x11); fall back to row 1 when the selector resolves empty).
     i32 owner = m_object->m_124;
-    i32 cfg = g_gameReg->m_focusSlots[owner].m_08;
+    i32 cfg = g_gameReg->m_options[owner].m_008;
     if (cfg < 0 || cfg >= 0x11) {
         cfg = 0;
     }
@@ -498,7 +498,7 @@ i32 CWarlord::LoadAttributes() {
         return 0;
     }
 
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
         i32 dist =
@@ -542,7 +542,7 @@ i32 CWarlord::LoadAttributes2() {
         return 0;
     }
 
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
         i32 dist =
@@ -731,7 +731,7 @@ i32 CGrunt::ResolveDeathAnimation() {
     }
     m_animResolved = 1;
 
-    CGameRegistry* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CGameObject* h = m_10;
         i32 x = h->m_screenX;
@@ -764,7 +764,7 @@ i32 CGrunt::ResolveAnimation() {
         return 0;
     }
 
-    CGameRegistry* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CGameObject* h = m_10;
         i32 x = h->m_screenX;
@@ -801,7 +801,7 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     i32 idx = GruntRand() % 3 + 1;
 
-    CGameRegistry* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CGameObject* h = m_10;
         i32 x = h->m_screenX;
@@ -841,7 +841,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
 
     i32 idx = GruntRand() % 3;
 
-    CGameRegistry* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CGameObject* h = m_10;
         i32 x = h->m_screenX;

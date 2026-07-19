@@ -460,7 +460,7 @@ i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
-// canonical element of g_gameReg->m_focusSlots[] (+0x150, stride 0x238),
+// canonical element of g_gameReg->m_options[] (+0x150, stride 0x238),
 // defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
 // its +0x14 gate.
 

@@ -44,7 +44,7 @@ class CGrunt;         // CTileScan::Scan arg (the scanned grunt)
 // scan header, not the .cpp); Scan's body is in TileScan.cpp.
 struct CTileScan {
     char _00[4];
-    CGameRegistry* m_4; // +0x04  registry (its +0x150 m_focusSlots[] the scan probes)
+    class CGruntzMgr* m_4; // +0x04  the manager singleton (its +0x150 m_options[] the scan probes)
     char _08[0xc - 8];
     CScanGrid* m_c; // +0x0c  tile board (dims + row table)
     char _10[0xc8 - 0x10];

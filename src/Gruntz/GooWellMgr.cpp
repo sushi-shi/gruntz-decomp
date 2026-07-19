@@ -19,7 +19,9 @@
 //      (m_resourceTimerBase/m_resourceInterval, "TimePerResource") respawn timers,
 //      reading the intervals from g_buteMgr.
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>
@@ -80,7 +82,7 @@
 // (LeafCue*) at the use site is the devs' own cast.
 // ---------------------------------------------------------------------------
 
-// One player slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
+// One player slot is CFocusSlot, the g_gameReg->m_options[] element
 // (<Gruntz/GameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
 // this round" mark, m_0c the row's sound id.
 
@@ -146,10 +148,10 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
     // Count joined-and-alive players; remember the last slot scanned.
     i32 count = 0;
-    CFocusSlot* pslot = 0;
+    GruntzPlayer* pslot = 0;
     for (i32 k = 0; k < 4; k++) {
-        pslot = &g_gameReg->m_focusSlots[k];
-        if (pslot->m_28 && !pslot->m_2c && !pslot->m_24) {
+        pslot = &g_gameReg->m_options[k];
+        if (pslot->m_joined && !pslot->m_doneFlag && !pslot->m_clearedRound) {
             count++;
         }
     }
@@ -198,19 +200,19 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
-                CFocusSlot* lastSlot = pslot;
+                GruntzPlayer* lastSlot = pslot;
                 i32 i;
                 for (i = 0, off = 0; off < 0x8e0; i++, off += 0x238) {
                     if (i != idx) {
                         if (g_curPlayer == i) {
                             LoadFinishLevelSprite(5);
                         }
-                        CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x150 + off));
-                        if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
-                            slot->m_24 = 1;
+                        GruntzPlayer* slot = &g_gameReg->m_options[i];
+                        if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
+                            slot->m_clearedRound = 1;
                             CWwdGameObjectE* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup(reinterpret_cast<void*>(slot->m_0c), reinterpret_cast<void*&>(out))
+                                    .Lookup(reinterpret_cast<void*>(slot->m_00c), reinterpret_cast<void*&>(out))
                                 && out) {
                                 if (out->m_7c->m_logic) {
                                     (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveDeathAnimation();
@@ -222,10 +224,10 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_curPlayer == i) {
                             g_gameReg->m_cmdGrid->LoadFinishLevelSprite(2);
                         }
-                        if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
+                        if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag && !lastSlot->m_clearedRound) {
                             CWwdGameObjectE* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup(reinterpret_cast<void*>(lastSlot->m_0c), reinterpret_cast<void*&>(out))
+                                    .Lookup(reinterpret_cast<void*>(lastSlot->m_00c), reinterpret_cast<void*&>(out))
                                 && out) {
                                 if (out->m_7c->m_logic) {
                                     (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveAnimation();
@@ -278,8 +280,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (i == g_curPlayer) {
                 continue;
             }
-            CFocusSlot* slot = &g_gameReg->m_focusSlots[i];
-            if (slot->m_28 && !slot->m_2c && !slot->m_24) {
+            GruntzPlayer* slot = &g_gameReg->m_options[i];
+            if (slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                 goto done;
             }
         }

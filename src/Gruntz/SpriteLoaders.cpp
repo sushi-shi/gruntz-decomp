@@ -1,5 +1,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -60,7 +62,7 @@
 // CTriggerMgr (<Gruntz/TriggerMgr.h>); the expiry path calls its ClearRowAndRefresh
 // (0x7a510). The former CLevelNotify::Notify view is gone (wave 3).
 
-// The per-player timer slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
+// The per-player timer slot is CFocusSlot, the g_gameReg->m_options[] element
 // (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
 // holds the level/entity key.
 
@@ -243,11 +245,11 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_cueTimerLo = g_frameTime;
         ls->m_cueTimerHi = 0;
         g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
-        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_curPlayer];
+        GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
         if (slot != 0) {
-            slot->m_24 = 1;
+            slot->m_clearedRound = 1;
         }
-        i32* key = reinterpret_cast<i32*>(g_gameReg->m_focusSlots[0].m_0c);
+        i32* key = reinterpret_cast<i32*>(g_gameReg->m_options[0].m_00c);
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
@@ -264,7 +266,7 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32* key = reinterpret_cast<i32*>(g_gameReg->m_focusSlots[0].m_0c);
+        i32* key = reinterpret_cast<i32*>(g_gameReg->m_options[0].m_00c);
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -

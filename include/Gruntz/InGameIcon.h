@@ -18,7 +18,7 @@
 #include <Mfc.h> // CObject/CArchive base + <windows.h>
 
 #include <Gruntz/UserLogic.h>        // CUserLogic : CUserBase, EngStr, CGameObject
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr) // *0x24556c canonical singleton
 
 // ---------------------------------------------------------------------------
 // CGameRegistry - the global game-manager singleton (the object at *0x64556c). Only

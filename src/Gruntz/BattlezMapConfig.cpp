@@ -42,7 +42,9 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - FindByField0C's real return type
@@ -574,8 +576,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 // ===========================================================================
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::Method_025c20() {
-    if (g_gameReg->m_focusSlots[m_curCell].m_14 == 0
-        && g_gameReg->m_focusSlots[m_curCell].m_20 != 0) {
+    if (g_gameReg->m_options[m_curCell].m_014 == 0
+        && g_gameReg->m_options[m_curCell].m_liveGate != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->Method_026470(0); // @0x26470 (the per-element refresh sibling)
         }

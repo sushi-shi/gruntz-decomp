@@ -38,6 +38,7 @@
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h>  // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
@@ -595,7 +596,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != 0) {
-        CGameRegistry* reg = g_gameReg;
+        CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
         CTileGrid* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
@@ -935,7 +936,7 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    CGameRegistry* mgr;
+    CGruntzMgr* mgr;
     if (m_tickHandled == 0) {
         CGameObject* o = m_object;
         mgr = g_gameReg;

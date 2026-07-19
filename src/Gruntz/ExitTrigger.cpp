@@ -9,7 +9,9 @@
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/Grunt.h> // complete CGrunt: the CUserLogic downcast is static
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Gruntz/TypeKeyColl.h>   // s_codeA/s_actKeyB registration keys
@@ -52,7 +54,7 @@
 // setup slot m_18 the ctor snapshots raw as the warlord id; m_124 the area/owner
 // index, m_188 the object id stored back into the focus slot.
 
-// The focused-warlord cue slot is CFocusSlot, the g_gameReg->m_focusSlots[]
+// The focused-warlord cue slot is CFocusSlot, the g_gameReg->m_options[]
 // element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
 // m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
 
@@ -102,13 +104,13 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
-    CFocusSlot* slot = &g_gameReg->m_focusSlots[m_object->m_124];
-    if (slot->m_20 == 0) {
+    GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
+    if (slot->m_liveGate == 0) {
         m_resolved = 0;
         return;
     }
-    slot->m_220 = m_object->m_screenX;
-    slot->m_224 = m_object->m_screenY;
+    slot->m_focusX = m_object->m_screenX;
+    slot->m_focusY = m_object->m_screenY;
     CGameObject* e =
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
@@ -122,9 +124,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             // grunt slot (CTmCell == CGrunt; the warlord logic is a grunt leaf)
             g_gameReg->m_cmdGrid->m_pendingFx = reinterpret_cast<CTmCell*>(m_warlordLogic);
         }
-        CFocusSlot* slot2 = &g_gameReg->m_focusSlots[m_object->m_124];
+        GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_124];
         if (slot2 != 0) {
-            slot2->m_0c = e->m_188;
+            slot2->m_00c = e->m_188;
         }
     }
     m_resolved = 1;

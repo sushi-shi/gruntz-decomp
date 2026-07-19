@@ -2913,7 +2913,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
-    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x14; // &m_options[0].m_14
+    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x14; // &m_options[0].m_014
     for (i32 d = 4; d != 0; d--) {
         char* slot = p - 0x14; // slot base
         if (slot && *reinterpret_cast<i32*>((p + 0xc)) != 0 && (anyState != 0 || *reinterpret_cast<i32*>(p) != 0)) {
@@ -3616,7 +3616,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
 // the `if (&elem)` guard fall out of the manual per-element loop).
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x24; // &m_options[0].m_24
+    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x24; // &m_options[0].m_clearedRound
     for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {

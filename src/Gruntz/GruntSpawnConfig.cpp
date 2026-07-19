@@ -9,6 +9,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/GruntSpawnConfig.h>
 // StreamVoice is the REAL <Dsndmgr/StreamVoice.h> class (reached transitively via
 // SoundCue.h -> SoundStream.h): the local 2-method twin that stood here declared the

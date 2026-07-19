@@ -4,6 +4,7 @@
 // the first neighbour tile whose grid flags request it (the inlined grid lookup =
 // the 0x75a40 archetype), notifies the argument (0x1640) and clears its latch.
 // Placeholder names; only OFFSETS + code bytes are load-bearing.
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Ints.h>
 #include <rva.h>
 // Grunt.h pulls <Mfc.h> (the afx umbrella) - it MUST precede ScanGrid.h's <Win32.h>
@@ -46,10 +47,10 @@ i32 CTileScan::Scan(CGrunt* arg) {
     i32 v = arg->m_2e8; // the grunt's focus-slot id (index into the registry's m_focusSlots[])
     i32 ok = 0;
     if (v != -1) {
-        CFocusSlot* fs = &m_4->m_focusSlots[v];
-        if (fs->m_24 != 0) {
+        GruntzPlayer* fs = &m_4->m_options[v];
+        if (fs->m_clearedRound != 0) {
             ok = 1;
-        } else if (fs->m_20 == 0) {
+        } else if (fs->m_liveGate == 0) {
             ok = 1;
         }
     }

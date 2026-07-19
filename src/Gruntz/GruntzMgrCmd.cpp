@@ -28,7 +28,8 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 #include <Gruntz/LeafCue.h>
@@ -447,12 +448,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
-                        CGameRegistry* _s =
-                            static_cast<CGameRegistry*>(g_gameReg); // dual-view bridge (same object)
-                        void* _key = reinterpret_cast<void*>(_s->m_focusSlots[0].m_0c); // death/monologo sprite key
+                        void* _key = reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c); // death/monologo sprite key
                         if (_key) {
                             CWwdGameObjectE* _dr = 0;
-                            if (_s->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
+                            if (g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
                                 && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
@@ -1180,8 +1179,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             Fwd114ec0(
                 m_settings,
                 this,
-                (static_cast<CGameRegistry*>(g_gameReg))->m_modeW,
-                (static_cast<CGameRegistry*>(g_gameReg))->m_modeH,
+                g_gameReg->m_modeW,
+                g_gameReg->m_modeH,
                 0,
                 0
             );

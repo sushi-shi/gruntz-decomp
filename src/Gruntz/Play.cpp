@@ -471,7 +471,7 @@ i32 CPlay::Render() {
         goto alt2;
     }
     {
-        CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
+        CGruntzMgr* reg = g_gameReg;
         if (reg->m_134 != 2 && m_overlayDrag != 0) {
             goto alt2;
         }
@@ -609,11 +609,11 @@ i32 CPlay::Render() {
                 GutsStepC(); // m_guts
                 m_snapshotActive = 0;
                 // walk the level tree (CMapPtrToPtr::Lookup):
-                if (reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[0].m_0c != 0) {
+                if (g_gameReg->m_options[0].m_00c != 0) {
                     void* out = 0;
                     MapLookup(
                         g_gameReg->m_world->m_childGroup,
-                        reinterpret_cast<void*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[0].m_0c),
+                        reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c),
                         out
                     );
                     if (out != 0) {
@@ -4047,11 +4047,11 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         return 1;
     }
     i32 area = g_curPlayer;
-    CFocusSlot* cfg = &reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[area];
+    GruntzPlayer* cfg = &g_gameReg->m_options[area];
     if (cfg == 0) {
         return 0;
     }
-    if (g_gameReg->m_cmdGrid->m_rowCount[area] >= cfg->m_228) {
+    if (g_gameReg->m_cmdGrid->m_rowCount[area] >= cfg->m_comboSel) {
         return 0;
     }
 
@@ -6355,12 +6355,12 @@ i32 CPlay::Vslot09(i32 mode) {
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
-    CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
-    CFocusSlot* slot = &reg->m_focusSlots[id];
+    CGruntzMgr* reg = g_gameReg;
+    GruntzPlayer* slot = &reg->m_options[id];
     if (slot == 0) {
         return 0;
     }
-    if (reg->m_cmdGrid->m_rowCount[id] >= slot->m_228) {
+    if (reg->m_cmdGrid->m_rowCount[id] >= slot->m_comboSel) {
         return 0;
     }
     for (i32 i = 0; i < markerCount(); i++) {
@@ -6432,18 +6432,18 @@ i32 CPlay::ResetPlayState() {
         m_ambientInitDone = 1;
     }
     if (m_4->m_134 == 1) {
-        CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
+        CGruntzMgr* reg = g_gameReg;
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
         if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0xc8) - 8)) == 0) {
             m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
-            reg = reinterpret_cast<CGameRegistry*>(g_gameReg);
+            reg = g_gameReg;
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
             if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0x44) + 0x124)) == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
-                    reg = reinterpret_cast<CGameRegistry*>(g_gameReg);
+                    reg = g_gameReg;
                 }
             }
             (static_cast<CSaveGame*>(reg->m_saveSink))->Save(0, 0x81a6);
@@ -6451,9 +6451,9 @@ i32 CPlay::ResetPlayState() {
         CGameLevel* g = m_4->m_world->m_level;
         ResetGoalGeom(g->m_header.startX, g->m_header.startY);
     } else {
-        CFocusSlot* slot = &(reinterpret_cast<CGameRegistry*>(g_gameReg))->m_focusSlots[g_curPlayer]; // roster-view keep (disp wall)
+        GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer]; // roster-view keep (disp wall)
         if (slot != 0) {
-            ResetGoalGeom(slot->m_220, slot->m_224);
+            ResetGoalGeom(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_4->m_world->m_level;
             ResetGoalGeom(g->m_header.startX, g->m_header.startY);

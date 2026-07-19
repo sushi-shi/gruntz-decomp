@@ -11,6 +11,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h>              // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
 #include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>

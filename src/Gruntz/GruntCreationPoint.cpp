@@ -9,7 +9,9 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
@@ -88,8 +90,8 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     i32 idx;
     if (g_gameReg->m_134 == 1) {
         idx = key;
-    } else if (g_gameReg->m_focusSlots[key].m_20 != 0) {
-        idx = g_gameReg->m_focusSlots[key].m_08;
+    } else if (g_gameReg->m_options[key].m_liveGate != 0) {
+        idx = g_gameReg->m_options[key].m_008;
     } else {
         m_38->m_flags |= 0x10000;
         idx = reinterpret_cast<i32>(obj);
@@ -137,8 +139,8 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
         i32 idx;
         if (g_gameReg->m_134 == 1) {
             idx = m_object->m_124;
-        } else if (g_gameReg->m_focusSlots[m_object->m_124].m_20 != 0) {
-            idx = g_gameReg->m_focusSlots[m_object->m_124].m_08;
+        } else if (g_gameReg->m_options[m_object->m_124].m_liveGate != 0) {
+            idx = g_gameReg->m_options[m_object->m_124].m_008;
         } else {
             idx = ChannelSlots_FindFree();
         }

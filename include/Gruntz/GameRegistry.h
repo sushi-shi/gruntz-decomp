@@ -129,44 +129,10 @@ class CLightFxMgr;
 // +0x0c, and the snapped focus position (+0x220/+0x224). The role of m_0c varies
 // by mode (sound id in battlez, entity id in the exit trigger, a key pointer in
 // the sprite loader) so it is a plain i32 the pointer-consumer reinterprets.
-struct CFocusSlot {
-    char m_pad0[0x8];
-    i32 m_08; // +0x08  per-owner sprite-selector config row (CWarlord ctor reads it,
-              //         clamps to [0,0x11), and feeds CSpriteRefTable::GetSel)
-    i32 m_0c; // +0x0c  per-mode id / sound id / key word
-    i32 m_10; // +0x10  multiplayer roster: combo index base (slot-kind selection;
-              //         UpdatePlayers seeds the kind combo with m_10+1)
-    i32 m_14; // +0x14  arrival/load gate (grunt step; not-yet-loaded test) / roster:
-              //         human-vs-computer flag
-    i32 m_18; // +0x18  roster: colour id (compared against CMulti::m_hostIndex)
-    i32 m_1c; // +0x1c  roster: ready flag (ToggleReady checkbox state)
-    i32 m_20; // +0x20  live/active gate / roster: slot-in-use flag
-    i32 m_24; // +0x24  "already cleared this round" mark / timer-expiry flag
-    i32 m_28; // +0x28  joined
-    i32 m_2c; // +0x2c  done
-    char m_pad30[0x164 - 0x30];
-    i32 m_164; // +0x164  roster: colour-pick gate (CMultiStartDlg::OnColorSlotN skips the
-               //          m_1c/m_18 check when the host set this)
-    i32 m_168; // +0x168  roster: colour owner index (compared against CMulti::m_hostIndex)
-    i32 m_16c; // +0x16c  roster: colour/lock value (UpdatePlayers reads the LOCAL
-               //          slot's m_16c as its per-refresh colour gate)
-    char m_pad170[0x220 - 0x170];
-    i32 m_220; // +0x220  snapped focus X
-    i32 m_224; // +0x224  snapped focus Y
-    i32 m_228; // +0x228  roster: combo/selection value (OnSlotSelectN caches sel+1;
-               //          UpdatePlayers relays it to SyncColour)
-    i32 m_22c; // +0x22c  roster: per-slot display value (Watchdog reads it into the "%d"
-               //          status readout when the slot is active+present)
-    char m_pad230[0x238 - 0x230];
-
-    // Format the player's display name (multiplayer roster; __thiscall @0x3e54 ILT
-    // thunk). Returns CString BY VALUE, declared via the elaborated-type-specifier
-    // (NO file-scope `class CString;` fwd-decl: this Win32-wide header's fwd-decl
-    // COUNT is /O2 type-table state - see header-fwd-decl-count-regalloc-butterfly);
-    // CString is complete only in the MFC caller TUs, which is legal for a
-    // declaration-only use.
-    // FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
-};
+// (CFocusSlot is FOLDED: the +0x150 array element IS GruntzPlayer - the 6-way
+// conflation's last open name (<Gruntz/GruntzPlayer.h>, MFC-side, holds the
+// CString the Win32 view never could). Consumers access the array at the REAL
+// type via g_gameReg (CGruntzMgr::m_options[4]).)
 
 // PHANTOM PURGE (this batch): BuildLevelRezPath / LogError / RunModalDialog / GetRect /
 // EnterModalUI are GONE from this view. Every one was a mangled name (?X@CGameRegistry@@..)
@@ -371,8 +337,7 @@ struct CGameRegistry {
     // The per-player focus/registry slot array (== CGruntzMgr m_options[4]): 4
     // records of 0x238 bytes -> 0xa30 total, making sizeof(CGameRegistry) exactly
     // the retail `new` size 0xa30 (CGruntzApp::InitializeGameManager push 0xa30).
-    // Consumers index it cast-free via m_focusSlots[k].
-    CFocusSlot m_focusSlots[4]; // +0x150  stride 0x238
+    char m_focusSlots[4][0x238]; // +0x150  the per-player GruntzPlayer m_options[4] (typed on CGruntzMgr; raw here - the Win32 view cannot hold its CString)
 };
 
 #endif // GRUNTZ_GRUNTZ_CGAMEREGISTRY_H

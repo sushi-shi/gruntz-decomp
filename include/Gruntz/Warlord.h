@@ -20,7 +20,7 @@
 #include <Gruntz/UserLogic.h> // CUserBase / CUserLogic / EngStr / CGameObject
 
 #include <rva.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 // ---------------------------------------------------------------------------
 // The geometry sub-player at +0x1a0 on the bound game object (reached as

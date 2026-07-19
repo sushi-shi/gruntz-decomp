@@ -318,6 +318,12 @@ public:
     // The two options-slider setters (the retail
     // callers are the options dialog sliders + Run's registry-load; see the
     // m_soundVolume/m_voiceVolume members below for the byte proof).
+    // Ported from the (dying) CGameRegistry view - same object, same RVAs, decl-only
+    // (reloc-masked). CuePrep @0x40cd00 + the Rand pair: KNOWN-UNDECIDABLE OWNER
+    // (bodies never touch `this`; member-vs-free is byte-identical; do not force).
+    void CuePrep();
+    i32 Rand();                    // game-mgr RNG
+    i32 RandRange(i32 lo, i32 hi); // game-mgr RNG range
     i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
     void SetSoundVolume(i32 v); // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24
                                 //  live global + push into the m_inputState sound set)

@@ -12,7 +12,8 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <EmptyString.h>       // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
@@ -61,7 +62,7 @@ char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
 // Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
-void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
+void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
 // The per-channel player-slot record (a proven +0x150-shifted view of CFocusSlot) lives
 // in <Gruntz/ChannelSlot.h>; the full CFocusSlot fold is deferred there (the +0x154
@@ -604,9 +605,9 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[0].m_164 != 0)
-        && ((reinterpret_cast<CFocusSlot*>(m_host))[0].m_16c != 0
-            || (reinterpret_cast<CFocusSlot*>(m_host))[0].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_12c != 0)
+        && ((reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_134 != 0
+            || (reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_130 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
@@ -622,9 +623,9 @@ void CMultiStartDlg::OnColorSlot0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnColorSlot1() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[1].m_164 != 0)
-        && ((reinterpret_cast<CFocusSlot*>(m_host))[1].m_16c != 0
-            || (reinterpret_cast<CFocusSlot*>(m_host))[1].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_12c != 0)
+        && ((reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_134 != 0
+            || (reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_130 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
@@ -640,9 +641,9 @@ void CMultiStartDlg::OnColorSlot1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnColorSlot2() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[2].m_164 != 0)
-        && ((reinterpret_cast<CFocusSlot*>(m_host))[2].m_16c != 0
-            || (reinterpret_cast<CFocusSlot*>(m_host))[2].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_12c != 0)
+        && ((reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_134 != 0
+            || (reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_130 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
@@ -658,9 +659,9 @@ void CMultiStartDlg::OnColorSlot2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnColorSlot3() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[3].m_164 != 0)
-        && ((reinterpret_cast<CFocusSlot*>(m_host))[3].m_16c != 0
-            || (reinterpret_cast<CFocusSlot*>(m_host))[3].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_12c != 0)
+        && ((reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_134 != 0
+            || (reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_130 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
@@ -814,64 +815,64 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 f18 = 0;
     i32 idx = 0;
     i32 t = this->LocalSlot2d4c();
-    i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<CFocusSlot*>(m_host))[t].m_16c : 1;
+    i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<GruntzPlayer*>(m_host))[t].m_038.m_134 : 1;
     i32 off = 0;
     do {
-        CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + off + 0x150));
+        GruntzPlayer* slot = &g_gameReg->m_options[idx];
         if (slot) {
-            if (slot->m_18 != g_multiState->m_hostIndex && slot->m_14 && slot->m_20) {
+            if (slot->m_slotKey != g_multiState->m_hostIndex && slot->m_014 && slot->m_liveGate) {
                 f18 = 1;
             }
             i32 enName;
-            if (g_multiState->m_isHost && slot->m_14 == 0) {
+            if (g_multiState->m_isHost && slot->m_014 == 0) {
                 enName = 1;
             } else {
-                enName = slot->m_18 == g_multiState->m_hostIndex ? 1 : 0;
+                enName = slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0;
             }
             this->NameEdit298c(idx)->EnableWindow(enName);
             this->KindCombo1929(idx)->EnableWindow(
                 g_multiState->m_isHost && localColour == 0
-                        && slot->m_18 != g_multiState->m_hostIndex
+                        && slot->m_slotKey != g_multiState->m_hostIndex
                     ? 1
                     : 0
             );
             CWnd* ready = this->ReadyCheck1159(idx);
-            ready->EnableWindow(slot->m_18 == g_multiState->m_hostIndex ? 1 : 0);
-            if (slot->m_1c) {
-                if (slot->m_20) {
+            ready->EnableWindow(slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0);
+            if (slot->m_readyFlag) {
+                if (slot->m_liveGate) {
                     ::SendMessageA(ready->m_hWnd, 0xf1, 1, 0);
                 } else {
                     ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
                 }
-            } else if (slot->m_20) {
+            } else if (slot->m_liveGate) {
                 ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
                 f1c = 0;
             } else {
                 ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
             }
             this->ColourBtn1753(idx)->EnableWindow(
-                g_multiState->m_isHost && slot->m_20 && localColour == 0 ? 1 : 0
+                g_multiState->m_isHost && slot->m_liveGate && localColour == 0 ? 1 : 0
             );
-            this->SyncColour3a5d(idx, slot->m_20 ? slot->m_228 : 0);
+            this->SyncColour3a5d(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
                 if (this->LocalSlot2d4c() == idx) {
                     goto next;
                 }
-                if (g_multiState->m_isHost && slot->m_14 == 0) {
+                if (g_multiState->m_isHost && slot->m_014 == 0) {
                     goto next;
                 }
             }
-            if (slot->m_20) {
+            if (slot->m_liveGate) {
                 {
                     CString name = (reinterpret_cast<GruntzPlayer*>(slot))->GetName();
                     LPCTSTR pch = static_cast<LPCTSTR>(name);
                     force = 0;
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
                 }
-                if (slot->m_14) {
+                if (slot->m_014) {
                     ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 4, 0);
                 } else {
-                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, slot->m_10 + 1, 0);
+                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
                 }
             } else {
                 this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
@@ -961,7 +962,7 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_watchBlinkB == 0) {
         for (i32 i = 0; i < 4; i++) {
-            CFocusSlot* slot = &g_gameReg->m_focusSlots[i];
+            GruntzPlayer* slot = &g_gameReg->m_options[i];
             CWnd* item1;
             CWnd* item2;
             switch (i) {
@@ -982,7 +983,7 @@ void CMultiStartDlg::Watchdog() {
                     item2 = GetDlgItem(0x538);
                     break;
             }
-            if (slot->m_20 != 0 && slot->m_14 != 0) {
+            if (slot->m_liveGate != 0 && slot->m_014 != 0) {
                 char buf[0x20];
                 wsprintfA(buf, "%d", slot->m_22c);
                 item1->SetWindowTextA(buf);
@@ -1106,28 +1107,28 @@ void CMultiStartDlg::VerifyCustomLevel() {
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = GetCtrlC(0)->m_hWnd;
-    g_gameReg->m_focusSlots[0].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[0].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnSlotSelect1() {
     HWND h = GetCtrlC(1)->m_hWnd;
-    g_gameReg->m_focusSlots[1].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[1].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnSlotSelect2() {
     HWND h = GetCtrlC(2)->m_hWnd;
-    g_gameReg->m_focusSlots[2].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[2].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnSlotSelect3() {
     HWND h = GetCtrlC(3)->m_hWnd;
-    g_gameReg->m_focusSlots[3].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_options[3].m_comboSel = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
@@ -1175,14 +1176,14 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         return;
     }
     i32 sel = ::SendMessageA(it->m_hWnd, 0xf0, 0, 0);
-    CFocusSlot* slot = reinterpret_cast<CFocusSlot*>((reinterpret_cast<char*>(g_gameReg) + idx * 0x238 + 0x150));
+    GruntzPlayer* slot = &g_gameReg->m_options[idx];
     if (!slot) {
         return;
     }
     if (sel) {
-        slot->m_1c = 1;
+        slot->m_readyFlag = 1;
     } else {
-        slot->m_1c = 0;
+        slot->m_readyFlag = 0;
     }
     if (g_multiState->m_isHost) {
         Func1d70(0);

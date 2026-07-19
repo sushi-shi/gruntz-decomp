@@ -12,6 +12,7 @@
 #include <Mfc.h>           // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
 #include <Gruntz/ActReg.h>
@@ -784,7 +785,7 @@ i32 CInGameIcon::PeekCycle() {
     CGameObject* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
-        CGameRegistry* reg = g_gameReg;
+        CGruntzMgr* reg = g_gameReg;
         i32 tileY = obj->m_screenY >> 5;
         CTileGrid* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> 5;
@@ -841,7 +842,7 @@ i32 CInGameIcon::PeekCycle() {
 // array of 0x1c-byte cells = 7 dwords), the cell for tileX sits at offset
 // (tileX*71)*4 ... matching retail's `eax=tileX*8-tileX` then `<<2` and the
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
-static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
+static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
     i32 tileY = owner->m_screenX >> 5;
@@ -874,7 +875,7 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
 // ebx/ebp/edi allocation across the two halves is not source-steerable. Deferred.
 RVA(0x000986b0, 0x30c)
 i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 == 1 && arg0 != g_curPlayer && m_object->m_124 != 0x55) {
         return 0;
     }
@@ -1000,7 +1001,7 @@ i32 CInGameIcon::Reposition() {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
 
-        CGameRegistry* reg = g_gameReg;
+        CGruntzMgr* reg = g_gameReg;
         CGameObject* obj = m_object;
         i32 tileX = obj->m_screenX >> 5;
         i32 tileY = obj->m_screenY >> 5;
