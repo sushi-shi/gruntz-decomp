@@ -9,7 +9,7 @@
 // members). Each reads owner->m_7c (the worker), then runs a /GX message pump
 // keyed on the worker's state tag worker->m_1c:
 //   state 0      -> `new <leaf>(owner)`; activate it (sub->vtbl[0x18]); stow
-//                   it at worker->m_18; advance the state tag to 0x3e8.
+//                   it at worker->m_logic; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
 //   state 0x50   -> sub->vtbl[0x38]()      state 0x53 -> sub->vtbl[0x3c]()
 //   state 0x52   -> sub->vtbl[0x30]()      state 0x51 -> sub->vtbl[0x34]()
@@ -45,76 +45,76 @@
 
 // ---------------------------------------------------------------------------
 RVA(0x00095750, 0xf4)
-i32 Handler095750(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler095750(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameIcon(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CInGameIcon(owner);
             sub->Activate(); // slot 6 (+0x18): activate
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x00095890, 0xf1)
-i32 Handler095890(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler095890(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameText(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CInGameText(owner);
             sub->Activate(); // slot 6 (+0x18): activate
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
@@ -122,38 +122,38 @@ i32 Handler095890(Owner* owner) {
 
 // new 0x68 (CToyPeek, ctor 0x98140)
 RVA(0x000959d0, 0xf1)
-i32 Handler0959d0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler0959d0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CToyPeek(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CToyPeek(owner);
             sub->Activate(); // slot 6 (+0x18): activate
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;

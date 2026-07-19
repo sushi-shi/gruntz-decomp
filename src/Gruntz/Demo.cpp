@@ -470,7 +470,7 @@ i32 Gap_03cdd0(void) {
 // owner->m_7c (the worker), then runs a message pump keyed on the worker's state
 // tag worker->m_1c:
 //   state 0      -> `new <leaf>(owner)`; activate it (sub->vtbl[0x18]); stow
-//                   it at worker->m_18; advance the state tag to 0x3e8.
+//                   it at worker->m_logic; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
 //   state 0x50   -> sub->vtbl[0x38]()      state 0x53 -> sub->vtbl[0x3c]()
 //   state 0x52   -> sub->vtbl[0x30]()      state 0x51 -> sub->vtbl[0x34]()
@@ -485,266 +485,266 @@ i32 Gap_03cdd0(void) {
 // in CursorSnapSprite.cpp, Handler046990 (CExplosion) in FortressFlag.cpp, the
 // grunt-HUD cluster in GruntIndicatorWorkerHandlers.cpp.
 RVA(0x0003d2b0, 0xf1)
-i32 Handler03d2b0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d2b0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntStartingPoint(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003d3f0, 0xf1)
-i32 Handler03d3f0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d3f0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CExitTrigger(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003d530, 0xf1)
-i32 Handler03d530(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d530(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntCreationPoint(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003d670, 0xf1)
-i32 Handler03d670(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d670(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CWormhole(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CWormhole(owner);
             sub->Activate(); // slot 6 (+0x18): activate
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
+            rec->m_logic->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
+            rec->m_logic->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
+            rec->m_logic->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
+            rec->m_logic->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
+            rec->m_logic->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
+            rec->m_logic->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003d7b0, 0xf1)
-i32 Handler03d7b0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d7b0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CGruntPuddle(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003d8f0, 0xf1)
-i32 Handler03d8f0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03d8f0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CTeleporter(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003da30, 0xf1)
-i32 Handler03da30(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03da30(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CSecretTeleporterTrigger(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
@@ -753,114 +753,114 @@ i32 Handler03da30(Owner* owner) {
 // CWarlord's ctor is the odd one out: it takes an int (??0CWarlord@@QAE@H@Z), so
 // the owner pointer is passed as (i32)owner (retail `push edi`); size 0xb0.
 RVA(0x0003db70, 0xf4)
-i32 Handler03db70(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03db70(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CWarlord(reinterpret_cast<i32>(owner));
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003dcb0, 0xf1)
-i32 Handler03dcb0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03dcb0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CFortressFlag(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;
 }
 
 RVA(0x0003ddf0, 0xf1)
-i32 Handler03ddf0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03ddf0(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CSecretLevelTrigger(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;

@@ -20,19 +20,14 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 
-// The worker held at owner->m_7c. Only the message-pump fields are modeled here.
-struct Worker {
-    char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char m_pad04[0x18 - 0x04]; // +0x04..0x17
-    CUserLogic* m_18;          // +0x18  the live sub-record (a CUserLogic game object)
-    u32 m_1c;                  // +0x1c  state tag (UNSIGNED switch key)
-};
-
-// The owner game object handed to each handler; its worker hangs at +0x7c.
-struct Owner {
-    char m_pad00[0x7c];
-    Worker* m_7c; // +0x7c
-};
+// (The `Worker` / `Owner` reduced shells are DISSOLVED, 2026-07-19: Worker's own
+// comment carried the proof - its "foreign vtable 0x5efb80" IS ??_7AnimWorkerObj -
+// and Owner's +0x7c worker is exactly CGameObject::m_7c (`AnimWorkerObj* m_7c`,
+// WwdGameObjectFamily.h). The handlers now take the REAL CGameObject* and the pump
+// walks the real AnimWorkerObj (m_18==m_logic; the +0x1c state tag is the
+// documented void* int|ptr role-union, cast at the int sites).)
+#include <Wwd/WwdGameObjectFamily.h> // the real CGameObject (m_7c worker slot)
+#include <DDrawMgr/AnimWorkerObj.h>  // the real worker (m_logic / m_1c role-union)
 
 // The engine default message pump run for any unhandled state IS the real shared
 // coordinate/type-registry resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z,
@@ -47,37 +42,37 @@ inline void Worker_DefaultPump(CUserLogic* sub) {
 // (u32 -> unsigned ja/jbe range-checks, matching retail; a signed key caps at ~97.86%, see
 // docs/patterns/switch-key-unsigned-ja-vs-jg.md).
 #define LOGIC_WORKER_PUMP(LEAF)                                                                    \
-    Worker* rec = owner->m_7c;                                                                     \
-    switch (rec->m_1c) {                                                                           \
+    AnimWorkerObj* rec = owner->m_7c;                                                              \
+    switch (reinterpret_cast<u32>(rec->m_1c)) {                                                    \
         case 0: {                                                                                  \
-            rec->m_1c = 0x3e8;                                                                     \
-            CUserLogic* sub = new LEAF(reinterpret_cast<CGameObject*>(owner));                                       \
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);                                            \
+            CUserLogic* sub = new LEAF(owner);                                                     \
             sub->Activate(); /* slot 6 (+0x18): activate */                                        \
-            rec->m_18 = sub;                                                                       \
+            rec->m_logic = sub;                                                                    \
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            rec->m_18->UserLogicVfunc9(); /* slot 11 (+0x2c) */                                    \
+            rec->m_logic->UserLogicVfunc9(); /* slot 11 (+0x2c) */                                    \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            rec->m_18->UserLogicVfunc8(); /* slot 10 (+0x28) */                                    \
+            rec->m_logic->UserLogicVfunc8(); /* slot 10 (+0x28) */                                    \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            rec->m_18->UserLogicVfuncC(); /* slot 14 (+0x38) */                                    \
+            rec->m_logic->UserLogicVfuncC(); /* slot 14 (+0x38) */                                    \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            rec->m_18->UserLogicVfuncD(); /* slot 15 (+0x3c) */                                    \
+            rec->m_logic->UserLogicVfuncD(); /* slot 15 (+0x3c) */                                    \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            rec->m_18->UserLogicVfuncA(); /* slot 12 (+0x30) */                                    \
+            rec->m_logic->UserLogicVfuncA(); /* slot 12 (+0x30) */                                    \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            rec->m_18->UserLogicVfuncB(); /* slot 13 (+0x34) */                                    \
+            rec->m_logic->UserLogicVfuncB(); /* slot 13 (+0x34) */                                    \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            Worker_DefaultPump(rec->m_18);                                                         \
+            Worker_DefaultPump(rec->m_logic);                                                         \
             break;                                                                                 \
     }                                                                                              \
     return 1;

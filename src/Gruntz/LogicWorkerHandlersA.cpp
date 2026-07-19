@@ -20,7 +20,7 @@
 // ecx is never touched). Each reads owner->m_7c (the worker), then runs a /GX
 // message pump keyed on the worker's UNSIGNED state tag worker->m_1c:
 //   state 0      -> `new <leaf>(owner)`; activate it (sub->vtbl[0x18]); stow it at
-//                   worker->m_18; advance the state tag to 0x3e8.
+//                   worker->m_logic; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
 //   state 0x50   -> sub->vtbl[0x38]()      state 0x53 -> sub->vtbl[0x3c]()
 //   state 0x52   -> sub->vtbl[0x30]()      state 0x51 -> sub->vtbl[0x34]()
@@ -64,13 +64,13 @@
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + LOGIC_WORKER_PUMP
 
 RVA(0x000a9a40, 0xf1)
-i32 HandlerA9A40(Owner* owner){LOGIC_WORKER_PUMP(CAniCycle)}
+i32 HandlerA9A40(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
 
 RVA(0x000a9b80, 0xf1)
-i32 HandlerA9B80(Owner* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
+i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 
 RVA(0x000a9cc0, 0xf1)
-i32 HandlerA9CC0(Owner* owner) {
+i32 HandlerA9CC0(CGameObject* owner) {
     LOGIC_WORKER_PUMP(CDoNothing)
 }
 
@@ -168,37 +168,37 @@ i32 HandlerA9E00(DnnOwner* owner) {
 }
 
 RVA(0x000a9f60, 0xf1)
-i32 HandlerA9F60(Owner* owner){LOGIC_WORKER_PUMP(CSimpleAnimation)}
+i32 HandlerA9F60(CGameObject* owner){LOGIC_WORKER_PUMP(CSimpleAnimation)}
 
 RVA(0x000aa0a0, 0xf1)
-i32 HandlerAA0A0(Owner* owner){LOGIC_WORKER_PUMP(CMenuSparkle)}
+i32 HandlerAA0A0(CGameObject* owner){LOGIC_WORKER_PUMP(CMenuSparkle)}
 
 RVA(0x000aa1e0, 0xf1)
-i32 HandlerAA1E0(Owner* owner){LOGIC_WORKER_PUMP(CFrontCandy)}
+i32 HandlerAA1E0(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandy)}
 
 RVA(0x000aa320, 0xf1)
-i32 HandlerAA320(Owner* owner){LOGIC_WORKER_PUMP(CBehindCandy)}
+i32 HandlerAA320(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandy)}
 
 RVA(0x000aa460, 0xf1)
-i32 HandlerAA460(Owner* owner){LOGIC_WORKER_PUMP(CFrontCandyAni)}
+i32 HandlerAA460(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandyAni)}
 
 RVA(0x000aa5a0, 0xf1)
-i32 HandlerAA5A0(Owner* owner){LOGIC_WORKER_PUMP(CBehindCandyAni)}
+i32 HandlerAA5A0(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandyAni)}
 
 RVA(0x000aa6e0, 0xf1)
-i32 Handler0aa6e0(Owner* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
+i32 Handler0aa6e0(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
 
 RVA(0x000aa820, 0xf1)
-i32 HandlerAA820(Owner* owner){LOGIC_WORKER_PUMP(CEyeCandyAni)}
+i32 HandlerAA820(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandyAni)}
 
 RVA(0x000aa960, 0xf1)
-i32 HandlerAA960(Owner* owner){LOGIC_WORKER_PUMP(CWayPoint)}
+i32 HandlerAA960(CGameObject* owner){LOGIC_WORKER_PUMP(CWayPoint)}
 
 RVA(0x000aaaa0, 0xf1)
-i32 HandlerAAAA0(Owner* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
+i32 HandlerAAAA0(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
 
 RVA(0x000aabe0, 0xf1)
-i32 HandlerAABE0(Owner* owner){LOGIC_WORKER_PUMP(CGuardPoint)}
+i32 HandlerAABE0(CGameObject* owner){LOGIC_WORKER_PUMP(CGuardPoint)}
 
 SIZE_UNKNOWN(CUserLogicOOL);
 SIZE_UNKNOWN(DnnRec);

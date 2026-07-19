@@ -47,38 +47,38 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // its own handler here, text-adjacent to the ctor below - dossier #16). __cdecl
 // FREE function; reads owner->m_7c (the worker) and pumps on the state tag.
 RVA(0x0003a200, 0xf1)
-i32 Handler03a200(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
+i32 Handler03a200(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_7c;
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CCursorSnapSprite(reinterpret_cast<CGameObject*>(owner));
+            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            CUserLogic* sub = new CCursorSnapSprite(owner);
             sub->Activate();
-            rec->m_18 = sub;
+            rec->m_logic = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9();
+            rec->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8();
+            rec->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC();
+            rec->m_logic->UserLogicVfuncC();
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD();
+            rec->m_logic->UserLogicVfuncD();
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA();
+            rec->m_logic->UserLogicVfuncA();
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB();
+            rec->m_logic->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
         default:
-            Worker_DefaultPump(rec->m_18);
+            Worker_DefaultPump(rec->m_logic);
             break;
     }
     return 1;

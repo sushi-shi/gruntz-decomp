@@ -20,22 +20,10 @@
 
 class CUserLogic; // fwd; deref'd in the pump TUs via <Gruntz/UserLogic.h>
 
-// The worker held at owner->m_7c (foreign vtable 0x5efb80). Only the message-pump
-// fields are modeled here.
-SIZE_UNKNOWN(Worker);
-struct Worker {
-    char _vft0[4];             // +0x00 foreign object vptr (reduced view; not dispatched)
-    char m_pad04[0x18 - 0x04]; // +0x04..0x17
-    CUserLogic* m_18;          // +0x18  the live sub-record
-    u32 m_1c;                  // +0x1c  state tag (UNSIGNED switch key)
-};
-
-// The owner game object handed to each handler; its worker hangs at +0x7c.
-SIZE_UNKNOWN(Owner);
-struct Owner {
-    char m_pad00[0x7c];
-    Worker* m_7c; // +0x7c
-};
+// (The `Worker` / `Owner` shells are DISSOLVED, 2026-07-19 - the "foreign vtable
+// 0x5efb80" was ??_7AnimWorkerObj all along; see WorkerHandler.h. The real classes:)
+#include <Wwd/WwdGameObjectFamily.h> // CGameObject (m_7c worker slot)
+#include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (m_logic / m_1c role-union)
 
 // The engine default message pump run for any unhandled state IS the real shared
 // coordinate/type-registry resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z,
