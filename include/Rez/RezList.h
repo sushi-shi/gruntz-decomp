@@ -42,7 +42,11 @@ SIZE_UNKNOWN(CRezListNode);
 #include <Bute/ObjListBase.h>
 struct CObjList : public CObjListBase {
     // V0 (slot 0) stays pure here - CObjList is only ever a base in the Rez model.
-    ~CObjList() {}
+    // NO DECLARED DESTRUCTOR (binary fact): the implicit dtor produces the same
+    // inlined chain (a compiler-generated dtor stamps no vptr - the CBattlezDlg
+    // rule), and cl then emits no ??_7CObjList anywhere, matching retail (whose
+    // dtor chains restamp only the CObjListBase table). The former user `~CObjList()
+    // {}` forced a phantom vtable that needed a RELOC_VTBL(0x1ef760) alias.
     CObjNode* m_head;            // +0x04
     CObjNode* m_tail;            // +0x08
     void Remove(CObjNode* node); // 0x1852e0
@@ -76,9 +80,5 @@ struct CRezList : public CObjList {
     void InsertBefore(CRezListNode* pos, CRezListNode* node); // 0x185290
 };
 SIZE(CRezList, 0xc); // {vptr,head,tail}
-
-// cl emits ??_7CObjList for the dtor-carrying list base; retail's stamps (CRezDir/CRezList
-// dtors, reloc-verified at exact offsets x2) target CObjListBase's bound table.
-RELOC_VTBL(CObjList, 0x001ef760);
 
 #endif // REZ_REZLIST_H
