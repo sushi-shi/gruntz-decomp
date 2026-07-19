@@ -1235,7 +1235,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_selectedSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1244,7 +1244,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_toySprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1253,7 +1253,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_healthSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1262,7 +1262,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_staminaSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1271,7 +1271,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_toyTimeSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1280,7 +1280,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_wingzTimeSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
@@ -1289,7 +1289,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CGameObject* sp = m_powerupSprite;
         if (sp) {
-            tmp = *(i32*)((char*)sp + 0x188);
+            tmp = sp->m_188;
         }
     }
     ar->Write(&tmp, 4);
