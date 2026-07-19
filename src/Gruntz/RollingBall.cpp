@@ -550,16 +550,16 @@ i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     // if/else) floats the Write arm past the Read arm, matching retail's branch
     // polarity (docs/patterns/inline-switch-serialize-record-unroll.md +
     // pointer-walk-increment-in-for-update.md).
-    char* p = (char*)this + 0x88;
+    i32* p = &m_explodeStartLo; // +0x88; the cursor walks the two i64 clock pairs (add 8)
     switch (tag) {
         case 4:
             ar->Write(p, 8);
-            p += 8;
+            p += 2;
             ar->Write(p, 8);
             break;
         case 7:
             ar->Read(p, 8);
-            p += 8;
+            p += 2;
             ar->Read(p, 8);
             break;
     }
