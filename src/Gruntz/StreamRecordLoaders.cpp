@@ -67,7 +67,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_8 = out;
+        m_8 = static_cast<CSprite*>(out);
     } else {
         m_8 = 0;
     }
@@ -82,7 +82,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = static_cast<CSprite*>(out);
-        void* r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
@@ -101,7 +101,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = static_cast<CSprite*>(out);
-        void* r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
@@ -120,7 +120,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = static_cast<CSprite*>(out);
-        void* r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
@@ -139,7 +139,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = static_cast<CSprite*>(out);
-        void* r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {
@@ -158,7 +158,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = static_cast<CSprite*>(out);
-        void* r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = reinterpret_cast<CImage*>(tt->m_items.GetAt(i));
         } else {

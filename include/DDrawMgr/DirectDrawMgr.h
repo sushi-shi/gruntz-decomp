@@ -272,10 +272,10 @@ struct DDModeInfo {
 // buffers (RemoveAt frees them, memmoves the tail down and drops the record).
 SIZE_UNKNOWN(CPageRec);
 struct CPageRec {
-    void* m_00; // +0x00  owned buffer
+    u8* m_00; // +0x00  owned heap buffer (RemoveAt frees)
     char m_pad04[0x10 - 4];
-    void* m_10; // +0x10  owned buffer
-    void* m_14; // +0x14  owned buffer
+    u8* m_10; // +0x10  owned heap buffer
+    u8* m_14; // +0x14  owned heap buffer
 };
 
 // CDDPageMgr IS CMoviePlayer (<Io/MoviePlayer.h>) - ONE retail class. Notably THIS

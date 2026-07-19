@@ -15,13 +15,13 @@ struct CEventLoadRec {
     i32 Load(CSerialArchive* s);
 
     i32 m_0, m_4; // +0x00,+0x04  raw
-    void* m_8;    // +0x08  name ref
-    i32 m_c;      // +0x0c  raw
-    void* m_10;   // +0x10  indexed type ref
-    void* m_14;   // +0x14  indexed type ref
-    void* m_18;   // +0x18  indexed type ref
-    void* m_1c;   // +0x1c  indexed type ref
-    void* m_20;   // +0x20  indexed type ref
+    class CDDrawWorker* m_8; // +0x08  the name-looked-up registry sprite (CSprite)
+    i32 m_c;            // +0x0c  raw
+    class CImage* m_10; // +0x10  indexed frame (items.GetAt bounds-checked)
+    class CImage* m_14; // +0x14  indexed frame
+    class CImage* m_18; // +0x18  indexed frame
+    class CImage* m_1c; // +0x1c  indexed frame
+    class CImage* m_20; // +0x20  indexed frame
     char m_pad24[0x48 - 0x24];
     i32 m_48, m_4c; // +0x48,+0x4c  raw
 };
