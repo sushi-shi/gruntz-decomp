@@ -507,7 +507,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = *reinterpret_cast<i32*>((*(char**)(view + 0x5c) + 0x30));
+        i32 w = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(view + 0x5c) + 0x30));
         if (x >= w) {
             x = w - 1;
         }
@@ -515,7 +515,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = *reinterpret_cast<i32*>((*(char**)(view + 0x5c) + 0x34));
+        i32 h = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(view + 0x5c) + 0x34));
         if (y >= h) {
             y = h - 1;
         }
@@ -523,13 +523,13 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     char* scroll = *reinterpret_cast<char**>((view + 0x5c));
     i32 sh = *reinterpret_cast<i32*>((scroll + 0x8c));
     i32 sw = *reinterpret_cast<i32*>((scroll + 0x90));
-    i32 cell = *(i32*)(*(char**)(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
-    i32 attr = *reinterpret_cast<i32*>((*(char**)(scroll + 0x20) + cell * 4));
+    i32 cell = *reinterpret_cast<i32*>(*reinterpret_cast<char**>(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
+    i32 attr = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(scroll + 0x20) + cell * 4));
     i32 kind;
     if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
         kind = 0;
     } else {
-        CUserLogic* logic = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*(char**)(view + 0x4c) + (attr & 0xffff) * 4)));
+        CUserLogic* logic = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(view + 0x4c) + (attr & 0xffff) * 4)));
         kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
     }
     i32 op = kind - 0x34;
@@ -538,7 +538,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     }
     i32 cx = x;
     i32 cy = y;
-    CUserLogic* obj = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*(char**)(plane + 0x2e4) + 0)));
+    CUserLogic* obj = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(plane + 0x2e4) + 0)));
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);

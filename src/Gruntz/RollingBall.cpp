@@ -378,7 +378,7 @@ i32 CRollingBall::Update() {
             if (ax < 0) {
                 ax = 0;
             } else {
-                i32 w = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x28));
+                i32 w = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x28));
                 if (ax >= w) {
                     ax = w - 1;
                 }
@@ -386,14 +386,14 @@ i32 CRollingBall::Update() {
             if (ay < 0) {
                 ay = 0;
             } else {
-                i32 h = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x2c));
+                i32 h = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x2c));
                 if (ay >= h) {
                     ay = h - 1;
                 }
             }
-            i32 col = *reinterpret_cast<i32*>((*(char**)(lvl + 0x5c) + 0x24));
-            i32 idx = *(i32*)(reinterpret_cast<char*>(col) + ay * 4) + ax;
-            i32 raw = *reinterpret_cast<i32*>((*(char**)(lvl + 0x20) + idx * 4));
+            i32 col = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x24));
+            i32 idx = *reinterpret_cast<i32*>(reinterpret_cast<char*>(col) + ay * 4) + ax;
+            i32 raw = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x20) + idx * 4));
             i32 obj = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
                 void* tbl = *reinterpret_cast<void**>((lvl + 0x4c));

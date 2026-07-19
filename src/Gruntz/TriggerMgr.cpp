@@ -336,7 +336,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = reinterpret_cast<u8*>(n->m_payload);
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
+        CTmCell* cell = m_grid[*reinterpret_cast<i32*>(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
@@ -369,7 +369,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = reinterpret_cast<u8*>(n->m_payload);
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
+        CTmCell* cell = m_grid[*reinterpret_cast<i32*>(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
@@ -1329,7 +1329,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
         if (obj == 0) {
             return 0;
         }
-        i32 oid = *reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(obj) + 0x10) + 0x188));
+        i32 oid = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(obj) + 0x10) + 0x188));
         Ar_WriteId(lvl->m_childGroup, oid, ar);
         ar->Write(&oid, 4);
     }

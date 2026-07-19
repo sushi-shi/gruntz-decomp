@@ -4190,8 +4190,8 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         i32 ly = lvl->m_screenY >> 5;
         if (u->m_2d8 == 4 && u->m_2e8 != -1) {
             char* rec = reinterpret_cast<char*>(m_ctx) + u->m_2e8 * 0x238;
-            i32 dx = *(i32*)(rec + 0x258) - lx;
-            i32 dy = *(i32*)(rec + 0x25c) - ly;
+            i32 dx = *reinterpret_cast<i32*>(rec + 0x258) - lx;
+            i32 dy = *reinterpret_cast<i32*>(rec + 0x25c) - ly;
             dx = abs(dx);
             dy = abs(dy);
             if (dx * dx + dy * dy > 0x19) {

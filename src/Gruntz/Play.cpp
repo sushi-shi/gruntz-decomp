@@ -505,7 +505,7 @@ i32 CPlay::Render() {
             if (elapsed >= static_cast<u32>(m_ambientInterval)) {
                 i32 id = GetAmbientId();
                 CString name;
-                (void)name; // [esp+0x10] CString temp (/GX)
+                static_cast<void>(name); // [esp+0x10] CString temp (/GX)
                 char buf[0x80];
                 wsprintfA(buf, "AMBIENT%d", id); // s_AMBIENT%d
                 if (g_gameReg->m_14 != 0) {
@@ -623,7 +623,7 @@ i32 CPlay::Render() {
             } else {
                 // not yet: build a CString temp, CopyRect the viewport, HudDraw.
                 CString tmp;
-                (void)tmp; // [esp+0x10] CString temp
+                static_cast<void>(tmp); // [esp+0x10] CString temp
                 tmp.Format("%s", "");
                 // m_30 is the shared CDDrawSurfaceMgr; this WIP path reads it
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
@@ -739,7 +739,7 @@ alt2:
                 if (elapsed >= static_cast<u32>(m_ambientInterval)) {
                     i32 id = GetAmbientId();
                     CString name;
-                    (void)name;
+                    static_cast<void>(name);
                     char buf[0x80];
                     wsprintfA(buf, "AMBIENT%d", id);
                     if (g_gameReg->m_14 != 0) {
@@ -4665,7 +4665,7 @@ drag_box: {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CTmCell* slot = 0;
         if (1 == cg->m_recList.GetCount()) { // exactly one record node
-            i32* sel = *reinterpret_cast<i32**>((*(char**)(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8));
+            i32* sel = *reinterpret_cast<i32**>((*reinterpret_cast<char**>(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8));
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
@@ -6435,11 +6435,11 @@ i32 CPlay::ResetPlayState() {
         CGameRegistry* reg = g_gameReg;
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
-        if (*reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(reg) + 0xc8) - 8)) == 0) {
+        if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0xc8) - 8)) == 0) {
             m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
-            if (*reinterpret_cast<i32*>((*(char**)(reinterpret_cast<char*>(reg) + 0x44) + 0x124)) == 0) {
+            if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0x44) + 0x124)) == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);

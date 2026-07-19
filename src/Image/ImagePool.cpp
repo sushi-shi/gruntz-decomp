@@ -818,9 +818,9 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
     i32 width = ih->biWidth;
-    void* src = (u8*)buf + 0x2c;
+    void* src = reinterpret_cast<u8*>(buf) + 0x2c;
     if (bitcount == 8) {
-        src = (u8*)buf + ih->biSize + 0x400;
+        src = reinterpret_cast<u8*>(buf) + ih->biSize + 0x400;
     }
     return DecodeBlit(src, a2, width, height, bitcount, a3);
 }
@@ -880,8 +880,8 @@ i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
     u8* hdr = static_cast<u8*>(buf);
-    i32 width = *(i16*)(hdr + 8) - *(i16*)(hdr + 4) + 1;
-    i32 height = *(i16*)(hdr + 0xa) - *(i16*)(hdr + 6) + 1;
+    i32 width = *reinterpret_cast<i16*>(hdr + 8) - *reinterpret_cast<i16*>(hdr + 4) + 1;
+    i32 height = *reinterpret_cast<i16*>(hdr + 0xa) - *reinterpret_cast<i16*>(hdr + 6) + 1;
     if (hdr[3] != 8) {
         return 0;
     }
@@ -1255,12 +1255,12 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     bih->biCompression = 0;
     bih->biSizeImage = 0;
 
-    u8* pal = (u8*)obj + 8;
+    u8* pal = reinterpret_cast<u8*>(obj) + 8;
     if (pal == 0) {
         return 0;
     }
     // De-interleave the source RGBQUADs into the colour table (BMP BGR order).
-    u8* ct = (u8*)info + 0x28;
+    u8* ct = reinterpret_cast<u8*>(info) + 0x28;
     for (i32 i = 0x100; i != 0; i--) {
         ct[0] = pal[0];
         *(ct - 1) = pal[1];
@@ -1606,7 +1606,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32
     if (size < 0x300) {
         return 0;
     }
-    u8* s = (u8*)buf + size - 0x300;
+    u8* s = reinterpret_cast<u8*>(buf) + size - 0x300;
     PALETTEENTRY* d = pal;
     for (i32 i = 0; i < 256; i++) {
         d->peRed = *s++;

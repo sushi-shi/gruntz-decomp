@@ -61,7 +61,7 @@
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
 
-// (The fake `g_pButeDefaults = (void*)0x1a4` global def @0x5f03e0 is GONE: that
+// (The fake `g_pButeDefaults = reinterpret_cast<void*>(0x1a4)` global def @0x5f03e0 is GONE: that
 // cell is the CRT's own ?openprot@filebuf@@2HB - filebuf::openprot == 0x1a4 (0644),
 // the DEFAULT third argument of the real `ifstream(const char*, int, int)` ctor.
 // Retail's load+push of [0x5f03e0] is the CALLER materializing the default arg;

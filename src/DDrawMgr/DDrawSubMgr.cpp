@@ -1450,15 +1450,15 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         return 0;
     }
     if (center <= 0) {
-        center = *reinterpret_cast<i32*>((*(char**)(*(char**)(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84));
+        center = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(*reinterpret_cast<char**>(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84));
     }
     if (range1 <= 0) {
         char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
-        range1 = *reinterpret_cast<i32*>((*(char**)(m4 + 0x10) + 0x10)) << 2;
+        range1 = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(m4 + 0x10) + 0x10)) << 2;
     }
     if (range2 <= 0) {
         char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
-        range2 = *reinterpret_cast<i32*>((*(char**)(m4 + 0x10) + 0x10)) / 3;
+        range2 = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(m4 + 0x10) + 0x10)) / 3;
     }
     i32 d = pos - center;
     i32 pan;

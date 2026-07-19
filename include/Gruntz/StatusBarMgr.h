@@ -356,7 +356,7 @@ public:
     // INLINES this whole body at both `new`-sites (CPlay::LoadGameAssetNamespaces 0xc7fea and
     // the CMulti slot-1 driver 0xb5931, both `push 0x630; call ??2`). Body is
     // below the class (it needs the complete type). This replaces the ~100 raw
-    // `*(i32*)(p + 0xNN) = ...` stores that BOTH call sites used to hand-roll through a
+    // `*reinterpret_cast<i32*>(p + 0xNN) = ...` stores that BOTH call sites used to hand-roll through a
     // local `Worker630` view - the last view in ModeObjInit.cpp - and the two
     // out-of-band stamps Multi.cpp had to bolt on after `new` (m_barFrameGate/m_544).
     CStatusBarMgr();

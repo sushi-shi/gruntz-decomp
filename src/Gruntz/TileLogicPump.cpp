@@ -112,7 +112,7 @@ CActReg g_tileActReg;
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
     switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                                      \
         case 0: {                                                                                  \
-            ctl->m_1c = (void*)0x3e8;                                                              \
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);                                                              \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
             ctl->m_logic = t;                                                                      \

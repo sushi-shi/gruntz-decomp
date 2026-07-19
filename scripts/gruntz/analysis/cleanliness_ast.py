@@ -100,6 +100,19 @@ def scan_tu(tu, board):
         rel = None
         if node.kind == cidx.CursorKind.CSTYLE_CAST_EXPR:
             rel = _rel(node)
+            # Raw-byte test: if the file byte at the cast's expansion offset is not '(',
+            # the cast is not SPELLED there - it lives inside a macro body. Our own macro
+            # defs are all named (textually verified), so what remains is vendor/SDK/CRT
+            # macro internals (DDERR_*, DSERR_*, mmioFOURCC, RT_*) - counted separately.
+            if rel:
+                try:
+                    raw = open(os.path.join(REPO, rel), 'rb').read()
+                except OSError:
+                    raw = b''
+                off0 = node.extent.start.offset
+                if raw[off0:off0 + 1] != b'(':
+                    board.add("vendor-macro casts", rel, off0)
+                    rel = None
             if rel:
                 off = node.extent.start.offset
                 board.add("c-style casts", rel, off)
@@ -167,7 +180,7 @@ def main():
         if (i + 1) % 40 == 0 or i + 1 == len(tus):
             sys.stderr.write("[%d/%d]\n" % (i + 1, len(tus)))
     print("=== cleanliness (AST, definitional) ===")
-    order = ["c-style casts", "  target numeric", "  target char*", "  target class*",
+    order = ["c-style casts", "vendor-macro casts", "  target numeric", "  target char*", "  target class*",
              "  target other-ptr", "  operand this", "offset-casts", "self-casts",
              "void* fields", "extern var decls (.cpp)"]
     for k in order:

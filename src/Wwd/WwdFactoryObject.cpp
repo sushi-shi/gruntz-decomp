@@ -192,10 +192,10 @@ RVA(0x0015b650, 0x4d)
 void CWwdGameObjectE::Notify_15b650(void* p) {
     char* o = reinterpret_cast<char*>(this);
     if (*reinterpret_cast<unsigned char*>((o + 0x8)) & 0x8) {
-        i32 d = *(i32*)(o + 0x128) - *reinterpret_cast<i32*>((reinterpret_cast<char*>(p) + 0x120));
+        i32 d = *reinterpret_cast<i32*>(o + 0x128) - *reinterpret_cast<i32*>((reinterpret_cast<char*>(p) + 0x120));
         *reinterpret_cast<i32*>((o + 0x128)) = d;
         if (d <= 0) {
-            *reinterpret_cast<i32*>((*(char**)(o + 0x7c) + 0x1c)) = 0x1c;
+            *reinterpret_cast<i32*>((*reinterpret_cast<char**>(o + 0x7c) + 0x1c)) = 0x1c;
         }
     } else {
         AnimWorkerObj* h = *reinterpret_cast<AnimWorkerObj**>((o + 0x80));

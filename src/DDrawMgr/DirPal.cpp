@@ -219,7 +219,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
         return 0;
     }
     u8 entries[0x400];
-    u8* src = (u8*)data + size - 0x300;
+    u8* src = reinterpret_cast<u8*>(data) + size - 0x300;
     // Per-byte src increment (`*src++`) + a running dst pointer reproduce retail's
     // `inc eax`x3 / `add edx,4` loop shape (vs the `src+=3` bulk-add form).
     u8* dst = entries;

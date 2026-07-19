@@ -397,10 +397,10 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // schedules each 16-byte block's four dword stores in {+0,+8,+4,+c} column order.
 #define GRUNT_ZERO_TIMER_BLOCK(p, b)                                                               \
     do {                                                                                           \
-        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x0) = 0;                                                       \
-        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x8) = 0;                                                       \
-        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x4) = 0;                                                       \
-        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0xc) = 0;                                                       \
+        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x0) = 0;                                                       \
+        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x8) = 0;                                                       \
+        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x4) = 0;                                                       \
+        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0xc) = 0;                                                       \
     } while (0)
 #define GRUNT_ZERO_TIMER_BAND(p)                                                                   \
     do {                                                                                           \

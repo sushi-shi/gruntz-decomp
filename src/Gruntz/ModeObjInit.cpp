@@ -51,7 +51,7 @@ namespace modeinit {
     // Rec78 the CTileTriggerContainer, Rec50 the CTimer.
     //
     // `Worker630` (and its Sub530) was the
-    // hand-inlined CStatusBarMgr ctor - ~100 raw `*(i32*)(p + 0xNN)` stores plus manual
+    // hand-inlined CStatusBarMgr ctor - ~100 raw `*reinterpret_cast<i32*>(p + 0xNN)` stores plus manual
     // EhVecCtor/VecCtor/CPtrArray-ctor calls. CStatusBarMgr now carries its REAL inline
     // ctor + dtor (<Gruntz/StatusBarMgr.h>), so this TU is view-free: `new
     // CStatusBarMgr` / `delete` emit the identical construction, and the compiler - not

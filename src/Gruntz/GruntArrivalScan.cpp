@@ -190,7 +190,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
                         char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
-                        i32* rect = reinterpret_cast<i32*>((*(char**)(sc + 0x5c) + 0x40));
+                        i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(sc + 0x5c) + 0x40));
                         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                             g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                         }
@@ -1772,7 +1772,7 @@ i32 CGrunt::StepArrivalDefense() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
-                i32* rect = reinterpret_cast<i32*>((*(char**)(m24 + 0x5c) + 0x40));
+                i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
                 if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
@@ -1888,7 +1888,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = 1;
                 CGameObject* h = m_10;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
-                i32* rect = reinterpret_cast<i32*>((*(char**)(m24 + 0x5c) + 0x40));
+                i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
                 if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
                     goto L_f318a;
                 }
@@ -2724,7 +2724,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
-            i32* rect = reinterpret_cast<i32*>((*(char**)(m24 + 0x5c) + 0x40));
+            i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
             if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
@@ -2744,7 +2744,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
-                i32* rect = reinterpret_cast<i32*>((*(char**)(m24 + 0x5c) + 0x40));
+                i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
                 if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }

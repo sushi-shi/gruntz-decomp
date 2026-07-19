@@ -863,7 +863,7 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     s->Read(&seq, 4);
 
     void* obj = 0;
-    CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>((*(char**)(reinterpret_cast<char*>(gm) + 8) + 0x48));
+    CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(gm) + 8) + 0x48));
     i32 m8 = 0;
     if (map->Lookup(reinterpret_cast<void*>(seq), obj)) {
         if (obj != 0) {

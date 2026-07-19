@@ -266,10 +266,10 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
             i32 d = 0;
             do {
                 d += 4;
-                m_palette[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
+                m_palette[d - 4] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x20];
                 i += 3;
-                m_palette[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
-                m_palette[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
+                m_palette[d - 3] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1e];
+                m_palette[d - 2] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1f];
             } while (i < 0x300);
         }
     }
@@ -364,11 +364,11 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     i32 cursor = 0;
     for (i32 y = 0; y < m_height;) {
         if (m_rleData[cursor] & 0x80) {
-            memset((u8*)dest + y * m_width + x, fill, m_rleData[cursor] - 0x80);
+            memset(reinterpret_cast<u8*>(dest) + y * m_width + x, fill, m_rleData[cursor] - 0x80);
             x += m_rleData[cursor] - 0x80;
             cursor += 1;
         } else {
-            memcpy((u8*)dest + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
+            memcpy(reinterpret_cast<u8*>(dest) + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
             x += m_rleData[cursor];
             cursor += m_rleData[cursor] + 1;
         }

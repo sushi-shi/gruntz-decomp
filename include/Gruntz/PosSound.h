@@ -45,7 +45,7 @@ struct PosSoundAux {
 // DEFERRED-FOLD (UserLogic.h is a hot/owned header - read-only this wave) + one offset
 // to reconcile: this view puts m_layer@+0x19c while CGameObject::m_layer is @+0x198
 // (CGameObject::m_19c is a separate "WwdFile stamp" word) - the layer read here is
-// `*(void**)(m_layer+0x10)`, so either this +0x19c is off-by-4 or CGameObject's +0x198
+// `*reinterpret_cast<void**>(m_layer+0x10)`, so either this +0x19c is off-by-4 or CGameObject's +0x198
 // vs +0x19c pair needs the owner's attention. Flagged for the CGameObject owner.
 struct PosSoundObj {
     char m_pad00[0x08];
