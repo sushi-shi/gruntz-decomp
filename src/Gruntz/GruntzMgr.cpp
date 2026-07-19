@@ -782,7 +782,7 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
 
 install:
     if (m_curState == 0) {
-        *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 0;
+        m_owner->m_running = 0;
         return 0;
     }
     RefreshGameClock();
@@ -799,7 +799,7 @@ install:
             return 0;
         }
         st->Vslot09(local10);
-        *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 1;
+        m_owner->m_running = 1;
         g_inputMgr->ReadAll();
         RefreshGameClock();
         return 1;
