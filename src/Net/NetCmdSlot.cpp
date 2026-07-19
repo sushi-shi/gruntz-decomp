@@ -75,12 +75,12 @@ extern CPtrList g_pool; // 0x64aca8
 
 // The three id-window helpers (NetCmdIdFind/Add/Clear) are now CNetCmdSlot __thiscall
 // methods (declared in <Net/NetMgr.h>); ProcessCmd / AdvanceSeq call them as this->...
-// CNetSession / CNetCmdSlot (+ the lobby-sync helper types GruntRec / CSyncObj /
+// CNetSession / CNetCmdSlot (+ the lobby-sync helper types GruntRec / the armed CGruntzCommand map /
 // CSessionMgr / LobbyMsg / SlotInfo, and RecycleCmd / Unmatched_bf530) are the real
 // classes in <Net/NetMgr.h>; the ex-unit local views (CLobbySync/CLobbyChannel/
 // CCluster0c/CNetSlotAux) are dissolved onto them.
 
-void NoopSync(CSyncObj* p); // 0xbfb20 (empty)
+void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 
 void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
 
@@ -332,11 +332,11 @@ i32 CNetSession::Tick() {
         char* payload = rec->m_payload;
         i32 next = seq + 1;
         for (i32 t = seq * m_period; t < next * m_period; t++) {
-            CSyncObj* obj = GetSlotPtr(t);
+            CGruntzCommand* obj = GetSlotPtr(t);
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
-                payload += obj->Serialize(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
+                payload += obj->Pack(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
             }
         }
         m_session->WriteTag("[end]\n");
@@ -687,7 +687,7 @@ void CNetSession::RaiseAllSlotsMax(i32 v) {
 // ---------------------------------------------------------------------------
 RVA(0x000c03f0, 0x29)
 void CNetSession::ArmSlot(void* node, i32 parity) {
-    m_idMap[(m_tick + (parity & 0xff)) % 128] = static_cast<CSyncObj*>(node);
+    m_idMap[(m_tick + (parity & 0xff)) % 128] = static_cast<CGruntzCommand*>(node);
 }
 
 // ---------------------------------------------------------------------------
@@ -695,7 +695,7 @@ void CNetSession::ArmSlot(void* node, i32 parity) {
 // sequence id (same signed-modulo idiom, unbiased).
 // ---------------------------------------------------------------------------
 RVA(0x000c0430, 0x1f)
-CSyncObj* CNetSession::GetSlotPtr(i32 v) {
+CGruntzCommand* CNetSession::GetSlotPtr(i32 v) {
     return m_idMap[(v & 0xff) % 128];
 }
 

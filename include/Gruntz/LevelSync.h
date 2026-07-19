@@ -16,8 +16,15 @@
 // The lazily-allocated CLevelSync +0x54c child + the vtable-slot-1 sub-object shape
 // (ex LevelSync.cpp).
 // An owned serializable sub-object: vtable slot 1 (+0x4) is its Serialize.
+// Slot 0 is the virtual dtor: BOTH identity candidates for the objects the sync
+// loop stores in these slots put their dtor at slot 0 - CGruntzCommand (whose
+// slot 1 is the byte-identical `Serialize(CSerialArchive*, i32, i32, i32)`
+// signature) and the CUserLogic leaf family - so the dtor naming holds whichever
+// way the identity chase resolves. @identity-TODO: the slot-1 signature match
+// makes CGruntzCommand the prime candidate (the m[] arrays would be the per-team
+// queued-command slots); prove via the storing sites' ctor stamps before folding.
 struct SyncSub {
-    virtual void v0() = 0;
+    virtual ~SyncSub() {} // slot 0
     virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
 };
 

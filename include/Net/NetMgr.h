@@ -448,41 +448,25 @@ struct GruntRec {
 };
 SIZE(GruntRec, 0x410);
 
-// The synced game object stored in the +0x1b0 id-map (GetSlotPtr -> CSyncObj*). A
-// genuine external polymorphic class (>=9 vtable slots; slot 8 @+0x20 is a 2-arg
-// network serializer Serialize(char*,i32)->i32, distinct from the MFC CObject one).
-// @identity-TODO (xref chase FAILED, evidence preserved so the next pass doesn't re-run it):
-//   * m_idMap is NEVER written in the reconstructed tree (only cleared in Reset/ResetSync);
-//     the register that would name the concrete type is an UNRECONSTRUCTED retail function.
-//   * "Not CGruntzCommand" is WITHDRAWN - the exclusion rested on two placeholder guesses,
-//     both of them OURS, and neither survives:
-//       - "a 0-arg Vfunc8 at slot 8" is FALSE. CGruntzCommand's slot 8 is __purecall in
-//         the base and its leaves' bodies (0x24050/0x240d0) end in `ret 8` = a 2-ARG
-//         __thiscall that reads the buffer from the first stack arg and returns the byte
-//         count. That IS "the 2-arg buffer serializer" this note used to rule it out; the
-//         slot is now declared `Pack(char*, i32)`. The 0-arg was a placeholder's guess.
-//       - "a 4-arg CSerialArchive Serialize at slot 1" cannot discriminate either: it is
-//         compared against CSyncObj's slot 1, which is `v1()` - one of the body-less
-//         v0()..v7() placeholders below, whose void/0-arg signatures are invented. A
-//         placeholder contradicts nothing.
-//     So CGruntzCommand is NOT excluded, and the one slot CSyncObj has real evidence for
-//     (slot 8 @+0x20, 2-arg buffer serializer) now MATCHES it. That is not proof of
-//     identity - it removes an exclusion. Re-run the chase; do not fold on this alone.
-//   * GetSlotPtr @0xc0430 / NoopSync @0xbfb20 return no caller edges in the xref DB.
-//   So the identity is genuinely unrecovered until the m_idMap-insert function lands; this
-//   is a flagged TODO, NOT a silent placeholder.
-struct CSyncObj {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual i32 Serialize(char* buf, i32 max); // slot 8 -> vtbl+0x20
-};
-SIZE_UNKNOWN(CSyncObj);
+// The synced game object stored in the +0x1b0 id-map IS the queued CGruntzCommand
+// (<Gruntz/GruntzCommand.h>). IDENTITY RESOLVED 2026-07-19 - the unlock this note
+// used to wait for ("the m_idMap-insert function") HAS landed, and the chain is
+// closed end to end:
+//   * the insert is CNetSession::ArmSlot (0xc03f0, NetCmdSlot.cpp; ex "GlyphTable"),
+//     and its ONE retail caller is CMulti::Render (0xb6890, Multi.cpp): the object
+//     it arms is popped from Mgr()->m_cmdSubMgr's queue - the COMMAND manager's
+//     list - and right before the call retail writes [obj+0x06]=parity-byte and
+//     [obj+0x0c]=1: exactly CGruntzCommand::m_6 (the type/key byte) and
+//     CGruntzCommand::m_submitted (the "submit-context latch: net").
+//   * the snapshot drain (SendSnapshot below) dispatches slot 8 @+0x20 with
+//     (char* buf, i32) and adds the returned byte count - CGruntzCommand::Pack,
+//     whose leaf bodies (0x24050/0x240d0) end in `ret 8` and return the count.
+//   * slot 1 is the 4-arg CSerialArchive Serialize - CGruntzCommand's slot 1.
+// (The ex `struct CSyncObj { v0()..v7(); Serialize; }` placeholder view and its
+// invented 0-arg slot signatures are DISSOLVED onto the real class. Multi.h's
+// padded CMultiLogicNode shell - m_6/m_c at the same offsets - is the SAME class
+// seen from CMulti::Render's side; folding that twin is the follow-up.)
+class CGruntzCommand;
 
 // CNetSession+0x04 IS the owning CMulti - the same +0x04 field the command view holds
 // as m_4 (Init's a2, the CMulti). Its "+0x564 net-busy flag" is CMulti::m_pollAbort.
@@ -524,8 +508,8 @@ struct CNetSession {
     i32 m_seq;              // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
     i32 m_period;           // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
     CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
-    CSyncObj*
-        m_idMap[0x80]; // +0x1b0  synced-object ptr table (GetSlotPtr) / 0x200-byte resync scratch
+    CGruntzCommand*
+        m_idMap[0x80]; // +0x1b0  armed-command ptr table (GetSlotPtr) / 0x200-byte resync scratch
     union {
         CNetResyncEntry m_entries[0x80]; // +0x3b0  command: resync entries (signed-indexed)
         GruntRec m_records[0x80];        //        sync:    grunt-record table
@@ -561,7 +545,7 @@ struct CNetSession {
     i32 SendOne(CNetCmdSlot* s, i32 v);      // bfeb0
     void Reconcile();                        // c00f0
     i32 Advance();                           // c01d0
-    CSyncObj* GetSlotPtr(i32 v);          // c0430  id-map fetch (ex "GlyphTable::Get")
+    CGruntzCommand* GetSlotPtr(i32 v);    // c0430  id-map fetch (ex "GlyphTable::Get")
     void ArmSlot(void* node, i32 parity); // c03f0  id-map store (ex "GlyphTable::Set")
     // Checksum @0xc0590: the game-state signature accumulator over the 4x15
     // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
