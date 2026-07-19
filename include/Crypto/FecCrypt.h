@@ -1,7 +1,7 @@
 // FecCrypt.h - CFecFile, the "FEC File" encrypted-resource archive reader/writer
 // (0x17b5f0 references the "Opened FEC File %s" diagnostics) AND the CMoviePlayer decode
 // store (it is CMoviePlayer's embedded m_540 sub-object). Formerly modeled under three
-// names - CFecFile (FecCrypt.cpp), CPageStore17b510 (BoundaryUpper2Views.h) and
+// names - CFecFile (FecCrypt.cpp), CPageStore17b510 (retired; the pen header is gone) and
 // CMovieDecodeStore (MoviePlayer.h) - all the SAME object (same +0x124 polymorphic
 // stream, +0x138 CDWordArray index). Unified here as the single-source shape.
 //

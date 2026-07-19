@@ -40,17 +40,10 @@ typedef enum TmGridDim {
     TM_GRID_ROWS = 4,  // rows (m_rowCount/m_rowStateB/m_rowStateC are per-row)
 } TmGridDim;
 
-// The (x,y) pair the +0x174/+0x178 origin accessor writes out.
-struct CTrigPoint {
-    i32 x; // +0x00
-    i32 y; // +0x04
-    // 0x75a10 - fill both coords, return this (the ex-CPairXY view's Set; body in
-    // TriggerMgrHitTest.cpp). Sole caller is this unit's unreconstructed gap fn
-    // (0x6f16f..0x6f2f0 band) - the {x,y} shape + the hit-test-unit interleaving
-    // (0x75a10 sits between GetOriginXY and the grid probe) pin it to this pair.
-    CTrigPoint* Set(i32 ax, i32 ay);
-};
-SIZE_UNKNOWN(CTrigPoint);
+// The (x,y) pair the +0x174/+0x178 origin accessor writes out IS the canonical
+// Coord (<Gruntz/CoordNode.h>, which owns the folded Set @0x75a10).
+#include <Gruntz/CoordNode.h>
+typedef Coord CTrigPoint;
 
 // The placed grid-cell game object. IDENTITY PROVEN: CTmCell IS ::CGrunt - its
 // ClearAllSprites() is ?ClearAllSprites@CGrunt@@QAEXXZ @0x0004b240 (already reconstructed

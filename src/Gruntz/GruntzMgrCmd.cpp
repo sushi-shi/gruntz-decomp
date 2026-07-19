@@ -152,10 +152,10 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
                                   m_cmdGrid->m_grid                                                \
                                       [reinterpret_cast<CTrigPoint*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \
-                                           ->y                                                     \
+                                           ->m_y                                                     \
                                        + reinterpret_cast<CTrigPoint*>(                            \
                                              m_cmdGrid->m_recList.GetHead())                       \
-                                                 ->x                                               \
+                                                 ->m_x                                               \
                                              * 15])                                                \
                             : 0;                                                                   \
         if (!_cell)                                                                                \
@@ -182,10 +182,10 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
                                   m_cmdGrid->m_grid                                                \
                                       [reinterpret_cast<CTrigPoint*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \
-                                           ->y                                                     \
+                                           ->m_y                                                     \
                                        + reinterpret_cast<CTrigPoint*>(                            \
                                              m_cmdGrid->m_recList.GetHead())                       \
-                                                 ->x                                               \
+                                                 ->m_x                                               \
                                              * 15])                                                \
                             : 0;                                                                   \
         if (!_cell)                                                                                \

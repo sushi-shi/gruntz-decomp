@@ -952,11 +952,11 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         this->RecallCell(cell, cell->m_lastTilePxX, cell->m_lastTilePxY);
     }
     CTrigPoint pt;
-    pt.x = cell->m_lastTilePxX;
-    pt.y = cell->m_lastTilePxY;
+    pt.m_x = cell->m_lastTilePxX;
+    pt.m_y = cell->m_lastTilePxY;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
-    i32 rowIdx = pt.y >> 5;
-    i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
+    i32 rowIdx = pt.m_y >> 5;
+    i32 colByte = (pt.m_x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
     (reinterpret_cast<char*>(tg->m_8[rowIdx]))[colByte + 0x3] &= 0xdf;
     *reinterpret_cast<i32*>((reinterpret_cast<char*>(tg->m_8[rowIdx]) + colByte + 0x4)) = -1;
     m_grid[idx] = 0;
@@ -2911,9 +2911,9 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (v == 0x13) {
         CTrigPoint pt;
-        pt.x = cell->m_lastTilePxX;
-        pt.y = cell->m_lastTilePxY;
-        g_gameReg->m_cmdGrid->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
+        pt.m_x = cell->m_lastTilePxX;
+        pt.m_y = cell->m_lastTilePxY;
+        g_gameReg->m_cmdGrid->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
     }

@@ -32,8 +32,8 @@
 // +0x174,+0x178) into the caller's out-slot and return it.
 RVA(0x000759e0, 0x18)
 CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
-    out->x = m_cellFlag[0x16];
-    out->y = m_cellFlag[0x17];
+    out->m_x = m_cellFlag[0x16];
+    out->m_y = m_cellFlag[0x17];
     return out;
 }
 
@@ -42,12 +42,12 @@ CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
 // are declared in <Gruntz/TriggerMgrViews.h> (included above) - their shapes belong in
 // the family scaffolding header; only the method bodies live here.
 
-// CPairXY::Set (0x75a10) - fill m_0/m_4 and return this. @identity-TODO: owner unrecovered
+// Coord::Set (0x75a10) - fill both coords and return this (the canonical pair's setter)
 // (called ONLY by this TU's megafn FUN_6f2f0).
 RVA(0x00075a10, 0x12)
-CPairXY* CPairXY::Set(i32 a, i32 b) {
-    m_0 = a;
-    m_4 = b;
+Coord* Coord::Set(i32 a, i32 b) {
+    m_x = a;
+    m_y = b;
     return this;
 }
 

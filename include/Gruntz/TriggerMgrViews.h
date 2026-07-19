@@ -199,12 +199,7 @@ struct CTmOverlaySrc {
 // TriggerMgrHitTest.cpp - their shapes belong in the family scaffolding header; the
 // method bodies stay in that .cpp. ---
 
-// 0x75a10: a 2-field setter (CPoint/CSize-style) that fills m_0/m_4 and returns this.
-struct CPairXY {
-    i32 m_0;
-    i32 m_4;
-    CPairXY* Set(i32 a, i32 b); // 0x75a10
-};
+// (CPairXY is FOLDED onto the canonical Coord - <Gruntz/CoordNode.h> owns Set @0x75a10.)
 
 // 0x75a40: a 2D grid lookup - bounds-check (x, y) against width/height, then return the
 // first dword of the (0x1c-byte-stride) cell at rows[y][x]; out of bounds returns 1. The
@@ -237,7 +232,6 @@ SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmOverlaySrc);
-SIZE_UNKNOWN(CPairXY);
 SIZE_UNKNOWN(CGridCell);
 SIZE_UNKNOWN(CGridLookup);
 
