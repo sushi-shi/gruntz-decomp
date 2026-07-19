@@ -221,12 +221,12 @@ void CCheatMgr::LoadCheatConfig() {
             if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
                 if (g_buteMgr.Exists(static_cast<const char*>(group), "Text")) {
                     if (g_buteMgr.GetIntDef(static_cast<const char*>(group), "NonCheat", 0) == 1) {
-                        const char* code = (const char*)*g_buteMgr
-                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr);
+                        const char* code = static_cast<const char*>(*g_buteMgr
+                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr));
                         AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 1);
                     } else {
-                        const char* code = (const char*)*g_buteMgr
-                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr);
+                        const char* code = static_cast<const char*>(*g_buteMgr
+                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr));
                         AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 0);
                     }
                 }

@@ -422,7 +422,7 @@ i32 CKitchenSlime::Tick() {
 // (m_stepMag,m_stepMagHi) int pairs, so they are addressed by offset (codegen-neutral here).
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
-    char* B = (char*)this;
+    char* B = reinterpret_cast<char*>(this);
     CSerialArchive* s = stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;

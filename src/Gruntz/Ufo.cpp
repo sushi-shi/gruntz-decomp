@@ -167,7 +167,7 @@ static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
 RVA(0x000b4d30, 0x287)
 i32 CPathHazard::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     CSerialArchive* s = stream;
-    char* B = (char*)this;
+    char* B = reinterpret_cast<char*>(this);
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }

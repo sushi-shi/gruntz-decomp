@@ -102,7 +102,7 @@ i32 AnimWorkerObj::Save(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    char* p = (char*)this;
+    char* p = reinterpret_cast<char*>(this);
     ar->Write(p + 0x1c, 4);
     ar->Write(p + 0x20, 4);
     ar->Write(p + 0x24, 4);
@@ -187,7 +187,7 @@ i32 AnimWorkerObj::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    char* p = (char*)this;
+    char* p = reinterpret_cast<char*>(this);
     ar->Read(p + 0x1c, 4);
     ar->Read(p + 0x20, 4);
     ar->Read(p + 0x24, 4);

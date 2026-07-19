@@ -268,7 +268,7 @@ void CGrunt::FinalizeStep(i32 arg) {
         i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
         i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
         i32 base = 3 * col + row;
-        char* cell = (char*)&m_cells[base];
+        char* cell = reinterpret_cast<char*>(&m_cells[base]);
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
@@ -300,7 +300,7 @@ void CGrunt::FinalizeStep(i32 arg) {
         }
         GruntEntranceCell c = m_entranceCell;
         i32 base = 3 * c.col + c.row;
-        char* cell = (char*)&m_cells[base];
+        char* cell = reinterpret_cast<char*>(&m_cells[base]);
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
@@ -354,7 +354,7 @@ i32 CGrunt::ResetGeometry() {
     i32 col = m_entranceCell.col;
     i32 row = m_entranceCell.row;
     i32 index = 3 * col + row;
-    const char* name = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
+    const char* name = reinterpret_cast<const char*>(((zDArray*)&m_cells[index])->IndexToPtr(0));
     m_38->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
@@ -1284,7 +1284,7 @@ latch:
         }
     }
 
-    CString key = (const char*)&m_cells[3 * col + row].m_idle;
+    CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].m_idle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;

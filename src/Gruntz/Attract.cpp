@@ -690,7 +690,7 @@ i32 CMgrPersistObj::Init() {
     while (ShowCursor(0) >= 0)
         ;
     g_playActive = 0;
-    char* path = (char*)m_rezLocator->ResolvePath("GAME_IMAGEZ");
+    char* path = static_cast<char*>(m_rezLocator->ResolvePath("GAME_IMAGEZ"));
     if (path == 0) {
         return 0;
     }

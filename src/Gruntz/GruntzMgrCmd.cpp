@@ -909,7 +909,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
                 while (::ShowCursor(1) < 0) {
                 }
-                LaunchWebBrowser((char*)"http://www.gruntzgoo.com/");
+                LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
             }
             return 1;
         case kCmdMultiJoin:

@@ -224,7 +224,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_entry.m_index = m_134;
     m_entry.m_nameLen = static_cast<u16>(base.GetLength());
 
-    char* enc = (char*)operator new(base.GetLength() + 1);
+    char* enc = static_cast<char*>(operator new(base.GetLength() + 1));
     FecEncode(base, enc);
     memcpy(m_entry.m_name, enc, base.GetLength());
     operator delete(enc);
@@ -246,7 +246,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_stream.Seek(0, 2);
     m_stream.Write(&m_entry, 0x10c);
 
-    char* pad = (char*)operator new(m_entry.m_scramble - 0x2b8);
+    char* pad = static_cast<char*>(operator new(m_entry.m_scramble - 0x2b8));
     for (i32 i = 0; i < m_entry.m_scramble - 0x2b8; i++) {
         pad[i] = static_cast<char>((rand() % 0xff));
     }

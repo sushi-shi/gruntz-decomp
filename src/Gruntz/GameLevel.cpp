@@ -194,7 +194,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // to hdr at the top makes its live range begin at the hdr load, which is why the
     // retail compiler pins `block` in the callee-saved register and reloads `hdr`'s
     // own fields through a spilled pointer for the rest of the function.
-    char* block = (char*)hdr;
+    char* block = reinterpret_cast<char*>(hdr);
     Bytef* ehAlloc = 0; // inflate buffer freed on every exit path
 
     // The flags field is read twice (the COMPRESS test and the m_flags store); the
@@ -210,7 +210,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             return 0;
         }
 
-        block = (char*)WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20);
+        block = reinterpret_cast<char*>(WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20));
         if (block == 0) {
             operator delete(buf);
             return 0;
@@ -660,7 +660,7 @@ RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, (char*)a7) == 0) {
+    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7)) == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
@@ -2075,7 +2075,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    strcpy((char*)headerOut, header); // inline strlen + rep movs
+    strcpy(static_cast<char*>(headerOut), header); // inline strlen + rep movs
     return 1;
 }
 

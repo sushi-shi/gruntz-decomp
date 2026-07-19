@@ -868,7 +868,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_cmdHead[6], (char*)rec, size);
+        return m_owner->DispatchRecvMsg(m_cmdHead[6], static_cast<char*>(rec), size);
     }
     if (odd == 0) {
         if (m_resetGuard != 0) {

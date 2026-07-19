@@ -325,7 +325,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     CFileMem S;
     S.Reset();
 
-    if (S.SetName((const char*)(void*)cb, 0, 0) == 0) {
+    if (S.SetName(static_cast<const char*>((void*)cb), 0, 0) == 0) {
         return 0;
     }
     if (S.Open() == 0) {

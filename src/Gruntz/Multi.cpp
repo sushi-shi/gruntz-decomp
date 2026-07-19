@@ -1581,11 +1581,11 @@ i32 CMulti::SetupServices() {
                 store->SetValueDword("Service", g_serviceId);
                 {
                     CString name = GetString5a0();
-                    store->SetValueString("Player_Name", (char*)(const char*)(name));
+                    store->SetValueString("Player_Name", const_cast<char*>(static_cast<const char*>((name))));
                 }
                 {
                     CString gameName = GetGameName();
-                    store->SetValueString("Game_Name", (char*)(const char*)(gameName));
+                    store->SetValueString("Game_Name", const_cast<char*>(static_cast<const char*>((gameName))));
                 }
             }
         }
@@ -1597,7 +1597,7 @@ i32 CMulti::SetupServices() {
                     store->SetValueDword("Service", g_serviceId);
                 }
                 CString name = GetString5a0();
-                store->SetValueString("Player_Name", (char*)(const char*)(name));
+                store->SetValueString("Player_Name", const_cast<char*>(static_cast<const char*>((name))));
             }
         }
     }
@@ -1653,7 +1653,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             i32 cap = 0xa;
             ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
                 ->GetValueString(
-                    (char*)(const char*)("Player_Name"),
+                    const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                     nameBuf,
                     (u32*)&cap,
                     "Player"
@@ -1661,7 +1661,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             cap = 0x40;
             ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
                 ->GetValueString(
-                    (char*)(const char*)("Game_Name"),
+                    const_cast<char*>(static_cast<const char*>(("Game_Name"))),
                     gameBuf,
                     (u32*)&cap,
                     "Multiplayer_Gruntz"
@@ -1954,8 +1954,8 @@ i32 CMulti::DetectConnectionConfig() {
     CString kDelay = m_598 + "_CmdDelay";
     CString kResend = m_598 + "_Resend";
     CString kDyn = m_598 + "_DynCmdDelay";
-    i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
-    i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
+    i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
+    i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
     if (cd != -1 && rs != -1) {
         m_5a4 = cd;
         m_drainReload = rs;
@@ -1991,8 +1991,8 @@ void CMulti::ApplyCmdDelayDefaults() {
     CString resendName = m_598 + "_Resend";
     CString dynCmdName = m_598 + "_DynCmdDelay";
 
-    reg->SetValueDword((char*)static_cast<const char*>(cmdDelayName), m_5a4);
-    reg->SetValueDword((char*)static_cast<const char*>(resendName), m_drainReload);
+    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(cmdDelayName)), m_5a4);
+    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(resendName)), m_drainReload);
 }
 
 // ~CMultiStartDlg @0x0b8960 - the COMPILER-GENERATED dtor (destroy CStringList
@@ -2991,7 +2991,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     ChannelSlots_Set(slot->m_008, 1);
 
     CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";
-    ((CFontConfig*)NetGameMgr()->m_5c)->AddItem((char*)static_cast<const char*>(line), 0x20, 0x11);
+    ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
 
     if (blob != 0) {
         Peer()->RemovePlayerObj(blob);
@@ -3283,7 +3283,7 @@ RVA(0x000bac40, 0x38)
 i32 CMulti::RegisterChannelRec(void* rec) {
     u8* r = (u8*)rec;
     if (r[8] != 0) {
-        RegisterChannel((const char*)(r + 0x14), r[9], r[0xa], r[0xb], r[0xc], *(i32*)(r + 0x10));
+        RegisterChannel(reinterpret_cast<const char*>((r + 0x14)), r[9], r[0xa], r[0xb], r[0xc], *(i32*)(r + 0x10));
     }
     return 1;
 }
@@ -3454,7 +3454,7 @@ i32 CMulti::ParseOneChannel(void* rec) {
         return 0;
     }
 
-    ch->m_name = (char*)(r + 0x18);
+    ch->m_name = reinterpret_cast<char*>((r + 0x18));
     ch->m_slotId = r[0xd];
     ch->m_10 = r[0xf];
     if (r[0x12] != 0) {
@@ -4257,8 +4257,8 @@ i32 CMulti::SetupTcpIpConfig() {
     CString kDelay = m_598 + "_CmdDelay";
     CString kResend = m_598 + "_Resend";
     CString kDyn = m_598 + "_DynCmdDelay";
-    i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
-    i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
+    i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
+    i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
     if (cd != -1 && rs != -1) {
         m_5a4 = cd;
         m_drainReload = rs;
@@ -4360,7 +4360,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     m_drainReload = a4;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_5bc = Peer()->CreatePlayer((void*)(const char*)GetString5a0(), (i32)g_emptyString, 0);
+    m_5bc = Peer()->CreatePlayer((void*)static_cast<const char*>(GetString5a0()), (i32)g_emptyString, 0);
     if (m_5bc == 0) {
         ReportNetError(m_5bc);
         return 0;
@@ -4541,10 +4541,10 @@ i32 CMulti::LoadConfig(void* cfg) {
         return 0;
     }
 
-    char* c = (char*)cfg;
+    char* c = static_cast<char*>(cfg);
     m_5b0 = *(i32*)(c + 8);
-    m_5b4 = (const char*)(c + 0xc);
-    m_5b8 = (const char*)(c + 0x8c);
+    m_5b4 = static_cast<const char*>((c + 0xc));
+    m_5b8 = static_cast<const char*>((c + 0x8c));
     m_5a4 = *(i32*)(c + 0x10c);
     m_drainReload = *(i32*)(c + 0x110);
     m_600 = *(i32*)(c + 0x114);

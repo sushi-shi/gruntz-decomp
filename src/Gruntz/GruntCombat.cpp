@@ -1620,7 +1620,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Rebuild the active-anim-set type-name registry free list.
     char** typeRec = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(this->m_14->m_1c));
     if (g_typeColl.m_grown != 0) {
-        char* p = (char*)g_typeColl.m_alloc;
+        char* p = reinterpret_cast<char*>(g_typeColl.m_alloc);
         i32 n = g_typeColl.m_grown;
         do {
             if (p != 0) {

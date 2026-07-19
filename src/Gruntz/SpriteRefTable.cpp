@@ -184,13 +184,13 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     }
 
     CObject* found = 0;
-    m_spriteMgrHolder->m_workerMap->m_map1.Lookup((char*)name, found);
+    m_spriteMgrHolder->m_workerMap->m_map1.Lookup(reinterpret_cast<char*>(name), found);
     if (found) {
         return 1;
     }
 
     char buf[0x40];
-    sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
+    sprintf(buf, "GRUNTZ_PALETTEZ_%s", reinterpret_cast<char*>(name));
     void* pal = (void*)((CSymParser*)src)->ResolveQualified(buf, (void*)0x50414c);
     if (!pal) {
         return 0;

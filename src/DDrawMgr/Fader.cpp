@@ -281,7 +281,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
     }
     if (m_58.m_nSize > 0) {
         float ff = static_cast<float>(frame);
-        char* pData = (char*)m_58.m_pData;
+        char* pData = reinterpret_cast<char*>(m_58.m_pData);
         for (i32 i = 0; i < m_58.m_nSize; i++) {
             i32* rec = (i32*)(pData + i * 0x28);
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];

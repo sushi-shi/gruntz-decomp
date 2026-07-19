@@ -174,7 +174,7 @@ i32 CPreviewState::Refade_0de2c0() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle((char*)static_cast<const char*>(m_1bc), 0, 0, 0, 0, 1);
+    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -188,7 +188,7 @@ i32 CPreviewState::RefadeVirtual_0de340() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle((char*)static_cast<const char*>(m_1bc), 0, 0, 0, 0, 1);
+    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -221,7 +221,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_1bc));
     SymTab2c()->ResolveQualified(buf, &g_screenTag);
     i32 failed = 0;
-    if (FadeInTitle((char*)static_cast<const char*>(m_1bc), 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
         CSndHost* h = m_c->m_soundRegistry;

@@ -295,7 +295,7 @@ RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
-        char* o = (char*)m_object;
+        char* o = reinterpret_cast<char*>(m_object);
         CGrunt* tgt =
             (CGrunt*)Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {

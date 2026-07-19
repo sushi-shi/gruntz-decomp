@@ -190,7 +190,7 @@ CWwdGameObjectE::~CWwdGameObjectE() {
 // Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
 void CWwdGameObjectE::Notify_15b650(void* p) {
-    char* o = (char*)this;
+    char* o = reinterpret_cast<char*>(this);
     if (*(unsigned char*)(o + 0x8) & 0x8) {
         i32 d = *(i32*)(o + 0x128) - *(i32*)((char*)p + 0x120);
         *(i32*)(o + 0x128) = d;
@@ -331,7 +331,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 // CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *(char*)&m_dotColor = static_cast<char>(flag);
+    *reinterpret_cast<char*>(&m_dotColor) = static_cast<char>(flag);
     return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 

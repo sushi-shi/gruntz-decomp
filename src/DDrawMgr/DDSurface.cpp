@@ -283,15 +283,15 @@ RVA(0x0013e5d0, 0xb1)
 i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
     char* ext = strrchr(name, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        if (!LoadBmp((char*)arg1, name)) {
+        if (!LoadBmp(static_cast<char*>(arg1), name)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        if (!LoadPcx((char*)arg1, name)) {
+        if (!LoadPcx(static_cast<char*>(arg1), name)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PID") == 0) {
-        if (!LoadPid((char*)arg1, name, arg3)) {
+        if (!LoadPid(static_cast<char*>(arg1), name, arg3)) {
             return 0;
         }
     }
@@ -349,7 +349,7 @@ i32 CDDSurface::Fill(u32 color) {
     fx[0x14] = static_cast<i32>(color); // dwFillColor @ +0x50
     i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
+        CDirectDrawMgr::GetErrorString(const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"), 0x22c, hr);
     }
     return hr == 0;
 }

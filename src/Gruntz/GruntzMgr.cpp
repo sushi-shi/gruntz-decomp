@@ -1487,7 +1487,7 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
     // First try the working directory ("<cwd>\<name>").
     if (GetCurrentDirectoryA(0xff, szDir)) {
         Format(&path, "%s\\%s", szDir, static_cast<const char*>(name));
-        if (!FileExists((char*)static_cast<const char*>(path))) {
+        if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
             path.Empty();
         }
     }
@@ -1500,7 +1500,7 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
         }
     }
 
-    if (!FileExists((char*)static_cast<const char*>(path))) {
+    if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
         path.Empty();
     }
 
@@ -1719,7 +1719,7 @@ void CGruntzMgr::ClearStateStack() {
 // resolved movie path (m_strMoviePath) exists on disk.
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return FileExists((char*)static_cast<const char*>(m_strMoviePath));
+    return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)));
 }
 
 // -------------------------------------------------------------------------
@@ -1728,7 +1728,7 @@ i32 CGruntzMgr::CheckMovieFileExists() {
 // 0/1 canonicalizer (the result is consumed as a boolean here).
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
-    return FileExists((char*)static_cast<const char*>(m_strMoviePath)) != 0;
+    return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath))) != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2024,10 +2024,10 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     i32 st = fmt->m_drawType;
                     if (st != 2) {
                         set->SetAllTypes(2);
-                        AppendChatMessage((char*)"You're scaring me...");
+                        AppendChatMessage(const_cast<char*>("You're scaring me..."));
                     } else {
                         set->SetAllTypes(1);
-                        AppendChatMessage((char*)"Back from the dead?");
+                        AppendChatMessage(const_cast<char*>("Back from the dead?"));
                     }
                     CSndHost* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
@@ -2084,10 +2084,10 @@ void CGruntzMgr::CheatEclipseToggle() {
                     if (st != 3) {
                         set->SetAllTypes(3);
                         set->SetAllField18(rand() % 256);
-                        AppendChatMessage((char*)"Me and my...");
+                        AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
                         set->SetAllTypes(1);
-                        AppendChatMessage((char*)"Where did the sun go?");
+                        AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
                     CSndHost* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
@@ -3296,7 +3296,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     if (dst == 0) {
         return 0;
     }
-    char* src = (char*)PickPlayOrPausedState();
+    char* src = reinterpret_cast<char*>(PickPlayOrPausedState());
     if (src == 0) {
         return 0;
     }
@@ -3314,7 +3314,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     m_saveSink->CopySlot((SaveSlot*)dst, (const SaveSlot*)(src + 0x1d0));
     m_saveInfoRec = dst;
     if (snapshot) {
-        strncpy((char*)dst->m_snapshot, (char*)snapshot, 0x20);
+        strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
     }
     return 1;
 }

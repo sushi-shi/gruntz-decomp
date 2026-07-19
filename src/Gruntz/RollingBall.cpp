@@ -372,7 +372,7 @@ i32 CRollingBall::Update() {
             // +0x20 attr array / +0x4c object table below stay raw-offset: this is
             // the same murky level-graph the sibling ApplySwitch/WireTileSwitchLogic
             // walk with raw casts (its interior classes are unmodeled).
-            char* lvl = (char*)g_gameReg->m_world->m_level;
+            char* lvl = reinterpret_cast<char*>(g_gameReg->m_world->m_level);
             i32 ax = m_targetY >> 5;
             i32 ay = m_targetX >> 5;
             if (ax < 0) {

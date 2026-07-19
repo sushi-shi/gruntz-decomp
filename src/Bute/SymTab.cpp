@@ -114,9 +114,9 @@ void CSymLeafBuilder::Build(
     m_sourceStream = stream;
     m_ownerScope = owner;
     if (name == 0) {
-        m_name = (char*)name;
+        m_name = const_cast<char*>(name);
     } else {
-        m_name = (char*)::operator new(strlen(name) + 1);
+        m_name = static_cast<char*>(::operator new(strlen(name) + 1));
         if (m_name) {
             strcpy(m_name, name);
         }
@@ -303,13 +303,13 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (want != 0) {
         ParseMappedSource* sd = m_mapped;
         if (sd->m_mapping) {
-            const char* base = (const char*)(m_base - sd->m_baseOffset + sd->m_mapping + pos);
+            const char* base = reinterpret_cast<const char*>((m_base - sd->m_baseOffset + sd->m_mapping + pos));
             memcpy(dst, base, want);
             m_cursor += want;
             return want;
         }
         if (m_buffer) {
-            const char* base = (const char*)(m_buffer + pos);
+            const char* base = reinterpret_cast<const char*>((m_buffer + pos));
             memcpy(dst, base, want);
             m_cursor += want;
             return want;
@@ -402,7 +402,7 @@ CSymTab::CSymTab(
     i32 symN
 )
     : m_subTabs(subN), m_symbols(symN) {
-    m_name = (char*)::operator new(strlen(name) + 1);
+    m_name = static_cast<char*>(::operator new(strlen(name) + 1));
     if (m_name) {
         strcpy(m_name, name);
     }
@@ -720,7 +720,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
         return 0;
     }
     rec->m_valTable.Insert(&slot->m_node);
-    u32 len = strlen((char*)name);
+    u32 len = strlen(static_cast<char*>(name));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
@@ -744,7 +744,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     }
     slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
     ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
-    u32 len = strlen((char*)a1);
+    u32 len = strlen(static_cast<char*>(a1));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
@@ -829,7 +829,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
     m_0c = -1;
     i32 maxVal = 0;
-    char* buf = (char*)::operator new(static_cast<u32>(a2));
+    char* buf = static_cast<char*>(::operator new(static_cast<u32>(a2)));
     if (!buf) {
         return 0;
     }
@@ -1139,10 +1139,10 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (m_cachedSourceBuffer) {
         ::operator delete(m_cachedSourceBuffer);
     }
-    char* src = (char*)::operator new(strlen((char*)buf) + 1);
+    char* src = static_cast<char*>(::operator new(strlen(static_cast<char*>(buf)) + 1));
     m_cachedSourceBuffer = src;
-    strcpy(src, (char*)buf);
-    i32 tag = Classify((char*)buf);
+    strcpy(src, static_cast<char*>(buf));
+    i32 tag = Classify(static_cast<char*>(buf));
     if (tag != 0) {
         // text / structured stream
         if (m_40 == 0) {
@@ -1157,7 +1157,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_activeNode = reader;
         m_list.Link(reader);
         m_list.m_count++;
-        if (reader->Open((char*)buf, a, b) == 0) {
+        if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
             return 0;
         }
         m_parseArmed = 1;
@@ -1185,7 +1185,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_activeNode = reader;
     m_list.Link(reader);
     m_list.m_count++;
-    if (reader->Open((char*)buf, a, b) == 0) {
+    if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
         return 0;
     }
     m_parseArmed = 1;
@@ -1275,7 +1275,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     if (m_cachedSourceBuffer) {
         ::operator delete(m_cachedSourceBuffer);
     }
-    char* buf = (char*)::operator new(strlen(name) + 1);
+    char* buf = static_cast<char*>(::operator new(strlen(name) + 1));
     m_cachedSourceBuffer = buf;
     strcpy(buf, name);
 
@@ -1596,7 +1596,7 @@ void CSymParser::SetDelims(char* s) {
     if (m_delims != 0) {
         ::operator delete(m_delims);
     }
-    m_delims = (char*)::operator new(strlen(s) + 1);
+    m_delims = static_cast<char*>(::operator new(strlen(s) + 1));
     strcpy(m_delims, s);
 }
 

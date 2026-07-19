@@ -73,7 +73,7 @@ i32 zDArray::IndexToPtr(i32 i) {
         m_errSink->Set((void*)this, sentinel, 0xc);
         r = m_spare;
     }
-    char* slot = (char*)m_alloc;
+    char* slot = reinterpret_cast<char*>(m_alloc);
     i32 n = m_grown;
     while (n-- != 0) {
         if (slot) {

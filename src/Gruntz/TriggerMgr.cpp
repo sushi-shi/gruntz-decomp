@@ -748,7 +748,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         return 0;
     }
     i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
-    char* cellp = (char*)m_grid[rec[1] + rec[0] * TM_GRID_COLS];
+    char* cellp = reinterpret_cast<char*>(m_grid[rec[1] + rec[0] * TM_GRID_COLS]);
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_curPlayer) {
         return 0;
     }
@@ -807,10 +807,10 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (g_gameReg->m_134 != 1) {
         return 0;
     }
-    char* lvl = (char*)g_gameReg->m_curState;
+    char* lvl = reinterpret_cast<char*>(g_gameReg->m_curState);
     CString name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
-    i32 color = g_buteMgr.GetIntDef((char*)static_cast<const char*>(name), "WarpStone", 0);
+    i32 color = g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
     if (hy >= g_gameReg->m_viewOriginR || hy < g_gameReg->m_viewOriginL
@@ -956,7 +956,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
-    ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
+    (reinterpret_cast<char*>(tg->m_8[rowIdx]))[colByte + 0x3] &= 0xdf;
     *(i32*)((char*)tg->m_8[rowIdx] + colByte + 0x4) = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
@@ -1201,7 +1201,7 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
     CTmOverlaySrc* src = (CTmOverlaySrc*)obj;
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
     // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
-    char* blk0 = (char*)&m_timerBase;
+    char* blk0 = reinterpret_cast<char*>(&m_timerBase);
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk0, 8);
@@ -1211,7 +1211,7 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         src->GetB(blk0, 8);
         src->GetB(blk0 + 8, 8);
     }
-    char* blk1 = (char*)&m_gooTimerBase;
+    char* blk1 = reinterpret_cast<char*>(&m_gooTimerBase);
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk1, 8);
@@ -1221,7 +1221,7 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         src->GetB(blk1, 8);
         src->GetB(blk1 + 8, 8);
     }
-    char* blk2 = (char*)&m_resourceTimerBase;
+    char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBase);
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk2, 8);
@@ -1443,7 +1443,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&count, 4);
     CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
-        char* fl = (char*)g_coordPool.m_freeHead;
+        char* fl = static_cast<char*>(g_coordPool.m_freeHead);
         void* node = 0;
         if (*(void**)fl != 0) {
             node = fl + 4;
@@ -1459,7 +1459,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     do {
         ar->Read(&count, 4);
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
-            char* fl = (char*)g_coordPool.m_freeHead;
+            char* fl = static_cast<char*>(g_coordPool.m_freeHead);
             void* node = 0;
             if (*(void**)fl != 0) {
                 node = fl + 4;
@@ -2993,7 +2993,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             CTmNode* cur = n;
             n = n->m_next;
             i32* p = cur->m_payload;
-            x = *(char*)p;
+            x = *reinterpret_cast<char*>(p);
             CTmCell* cell = m_grid[p[0] * TM_GRID_COLS + p[1]];
             if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
                 buf[count] = ((u8*)p)[4];

@@ -168,7 +168,7 @@ void CDDrawChildGroup::DestroyChildren() {
 RVA(0x00159250, 0x185)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
-    char* obj = (char*)RezAlloc(0x190);
+    char* obj = static_cast<char*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
         int root = (int)m_parent;
@@ -192,7 +192,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
         *(int*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(char*)(obj + 0x18c) = 0;
+        *static_cast<char*>((obj + 0x18c)) = 0;
         result = (CWwdGameObjectC*)obj;
     } else {
         result = 0;
@@ -240,7 +240,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 // ===========================================================================
 RVA(0x00159440, 0x170)
 CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, int a4) {
-    char* obj = (char*)RezAlloc(0x18c);
+    char* obj = static_cast<char*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
         int root = (int)m_parent;
@@ -310,7 +310,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 RVA(0x00159600, 0x1ab)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags) {
-    char* obj = (char*)RezAlloc(0x1dc);
+    char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
         i32 root = (i32)m_parent;
@@ -438,7 +438,7 @@ i32 CDDrawChildGroup::AttachSprite(
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6) {
-    char* obj = (char*)RezAlloc(0x1fc);
+    char* obj = static_cast<char*>(RezAlloc(0x1fc));
     CWwdGameObjectB* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = (int)m_parent;
@@ -739,12 +739,12 @@ RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (outer != 0) {
-        char* oi = (char*)outer->m_obj;
+        char* oi = reinterpret_cast<char*>(outer->m_obj);
         CDDrawGroupNode* nextOuter = outer->m_next;
         if (!(*(i32*)(oi + 8) & 1)) {
             CDDrawGroupNode* inner = nextOuter;
             for (; inner != 0; inner = inner->m_next) {
-                char* oj = (char*)inner->m_obj;
+                char* oj = reinterpret_cast<char*>(inner->m_obj);
                 i32 fj = *(i32*)(oj + 8);
                 if (fj & 1) {
                     continue;
@@ -912,7 +912,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
         return;
     }
     do {
-        char* obj = (char*)node->m_obj;
+        char* obj = reinterpret_cast<char*>(node->m_obj);
         node = node->m_next;
         i32 ox = *(i32*)(obj + 0x5c);
         i32 oy = *(i32*)(obj + 0x60);
@@ -1096,11 +1096,11 @@ RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
     CObject* found = 0;
     m_parent->m_workerCache->m_10.Lookup(key, found);
-    char* node = (char*)m_list.GetHeadPosition();
+    char* node = reinterpret_cast<char*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
     }
-    char* fp = (char*)found;
+    char* fp = reinterpret_cast<char*>(found);
     do {
         char* obj = *(char**)(node + 8);
         node = *(char**)node;
@@ -1374,7 +1374,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
         switch (desc.m_08) {
             case 5: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup((const char*)desc.m_14, val);
+                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
                     createdObj = CreateObject_159600(
                         desc.m_00,
@@ -1389,13 +1389,13 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
             }
             case 0x16: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup((const char*)desc.m_14, val);
+                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 createdObj = CreateObject_159440(desc.m_00, desc.m_9c, (i32)val, 0);
                 break;
             }
             case 0x1b: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup((const char*)desc.m_14, val);
+                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
                     createdObj = CreateObject_1598d0(
                         desc.m_00,

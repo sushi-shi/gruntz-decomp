@@ -456,7 +456,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     if (m_shadow != 0) {
         m_shadow->m_7c->m_notify(m_shadow);
         ((CLightFx*)m_shadow->m_7c->m_logic)
-            ->Activate((i32)(const char*)(key + "_SHADOW"), (i32)(const char*)(key + "1"), 5, 1);
+            ->Activate((i32)static_cast<const char*>((key + "_SHADOW")), (i32)static_cast<const char*>((key + "1")), 5, 1);
     }
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
@@ -1102,15 +1102,15 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeColl.m_spare;
+    return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
 // The logic handler bound into the registry slot (the ILT to CTimeBomb's
@@ -1232,7 +1232,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 cy = m_object->m_screenY >> 5;
     CTileGrid* g = g_gameReg->m_tileGrid;
     if (cx < g->m_c && cy < g->m_10) {
-        char* row = (char*)g->m_8[cy];
+        char* row = reinterpret_cast<char*>(g->m_8[cy]);
         *(i32*)(row + cx * 0x1c) |= 0x1000000;
     }
     m_object->m_124 = -1;
@@ -1253,7 +1253,7 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-        char* row = (char*)g->m_8[cy];
+        char* row = reinterpret_cast<char*>(g->m_8[cy]);
         return *(i32*)(row + cx * 0x1c);
     }
     return 1;
@@ -1264,7 +1264,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-        char* row = (char*)g->m_8[cy];
+        char* row = reinterpret_cast<char*>(g->m_8[cy]);
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
     }
 }

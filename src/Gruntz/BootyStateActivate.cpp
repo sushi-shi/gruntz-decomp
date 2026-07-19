@@ -713,7 +713,7 @@ i32 CMultiBootyState::FrameSlot28(i32) {
 // coin-flip; the natural for-loop form is kept).
 RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
-    char* base = (char*)g_gameReg;
+    char* base = reinterpret_cast<char*>(g_gameReg);
     i32 i = 0;
     char* rec = base + 0x174;
     for (; i < 4; i++) {
@@ -933,7 +933,7 @@ void CMultiBootyState::DrawBattleStats() {
                     break;
             }
             CString cn;
-            s.Format("%s", (const char*)*GetColorName(&cn));
+            s.Format("%s", static_cast<const char*>(*GetColorName(&cn)));
             copyRect(&rc, &g_colorRects[i]);
             DrawStatText(
                 m_c,

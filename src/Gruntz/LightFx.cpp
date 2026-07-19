@@ -153,7 +153,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         i32 key = en->m_minIndex;
         // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
         // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
-        m_38->m_194 = (char*)found;
+        m_38->m_194 = reinterpret_cast<char*>(found);
         i32 val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;

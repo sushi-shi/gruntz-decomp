@@ -268,7 +268,7 @@ i32 CPlay::PlaceStartGruntz() {
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10
                     );
-                    g_gameReg->EnterModalUI((const char*)(LPCSTR)s); // 0x8ef10
+                    g_gameReg->EnterModalUI(static_cast<const char*>((LPCSTR)s)); // 0x8ef10
                     return 0;
                 }
                 obj->m_flags |= 0x10000;

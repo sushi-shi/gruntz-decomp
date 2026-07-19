@@ -819,7 +819,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     } else {
         // 16-bit signed -> 8-bit unsigned downconversion, per region.
         if (n1 > 0) {
-            char* d = (char*)p1;
+            char* d = static_cast<char*>(p1);
             i16* s = (i16*)src;
             char* end = (char*)p1 + n1;
             while (d < end) {
@@ -829,7 +829,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             }
         }
         if (n2 > 0) {
-            char* d = (char*)p2;
+            char* d = static_cast<char*>(p2);
             i16* s = (i16*)((char*)src + n1);
             char* end = (char*)p2 + n2;
             while (d < end) {
@@ -1671,7 +1671,7 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
     }
     out->m_fmt = 0;
     *dataOut = 0;
-    while ((char*)p < end) {
+    while (reinterpret_cast<char*>(p) < end) {
         u32 id = p[0];
         u32 size = p[1];
         p += 2;

@@ -631,7 +631,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_18c = 0;
     m_418 = 0;
 
-    m_timePerTile = g_buteMgr.GetDwordDef((char*)static_cast<const char*>(m_animSetName), s_TimePerTile, 1000);
+    m_timePerTile = g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<const char*>(m_animSetName)), s_TimePerTile, 1000);
 
     if (m_gruntKind == 0x37) {
         m_timePerTile >>= 1;
@@ -922,7 +922,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
-            const char* nm = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
+            const char* nm = reinterpret_cast<const char*>(((zDArray*)&m_cells[index])->IndexToPtr(0));
             m_38->ApplyLookupSprite(nm, frame);
         }
         goto store;
@@ -959,7 +959,7 @@ idle:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = (const char*)((zDArray*)&m_cells[index].m_idle)->IndexToPtr(0);
+        const char* nm = reinterpret_cast<const char*>(((zDArray*)&m_cells[index].m_idle)->IndexToPtr(0));
         m_38->ApplyLookupSprite(nm, frame);
     }
     goto store;
@@ -973,7 +973,7 @@ walk:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = (const char*)((zDArray*)&m_cells[index].m_walk)->IndexToPtr(0);
+        const char* nm = reinterpret_cast<const char*>(((zDArray*)&m_cells[index].m_walk)->IndexToPtr(0));
         m_38->ApplyName(nm);
     }
 

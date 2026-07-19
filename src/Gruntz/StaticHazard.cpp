@@ -115,15 +115,15 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeColl.m_spare;
+    return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.

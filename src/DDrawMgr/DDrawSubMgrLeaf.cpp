@@ -218,7 +218,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* ent
 RVA(0x00152ad0, 0x17f)
 i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
-    char* buf = (char*)operator new(0x100);
+    char* buf = static_cast<char*>(operator new(0x100));
     if (buf == 0) {
         return 0;
     }

@@ -232,7 +232,7 @@ extern "C" {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
             && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
-            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
     }
@@ -245,7 +245,7 @@ extern "C" {
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
             && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
             DebugSetCursorXY(x, y);
-            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
     }
@@ -257,7 +257,7 @@ extern "C" {
         char buf[256];
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
             && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
-            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
     }
@@ -270,7 +270,7 @@ extern "C" {
         if (g_debugPrintMode != 1 && g_debugPrintMode != 0
             && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
             DebugSetCursorXY(x, y);
-            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
             DebugSink_184df0(buf);
         }
     }

@@ -851,7 +851,7 @@ void CFileMem::Reset() {
 // 0 : 1), tag the global cue, and report success. __thiscall, 1 arg (ret 0x4).
 RVA(0x00157a80, 0x51)
 i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
-    char* mgr = (char*)m_0c; // the +0x0c owner (cue-role: the sub-manager)
+    char* mgr = reinterpret_cast<char*>(m_0c); // the +0x0c owner (cue-role: the sub-manager)
     if (mgr == 0) {
         return 0;
     }
@@ -1068,7 +1068,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
         return 0;
     }
     i32 count = 0;
-    char* buf = (char*)operator new(0x100);
+    char* buf = static_cast<char*>(operator new(0x100));
     if (buf == 0) {
         return 0;
     }
@@ -1371,7 +1371,7 @@ i32 LeafCue::LoadSoundB(void* src) {
     if (!dev) {
         return 0;
     }
-    m_10 = dev->AcquireFile((char*)src, 0x100ea, 0);
+    m_10 = dev->AcquireFile(static_cast<char*>(src), 0x100ea, 0);
     return m_10 != 0;
 }
 

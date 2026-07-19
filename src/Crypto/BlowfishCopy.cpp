@@ -32,7 +32,7 @@ void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst) {
         unsigned int rec[2];
         rec[0] = 0;
         rec[1] = 0;
-        src->read((char*)rec, 8);
+        src->read(reinterpret_cast<char*>(rec), 8);
         last = src->gcount();
         Blowfish_encipher(&rec[0], &rec[1]);
         dst->write(reinterpret_cast<const char*>(rec), 8);

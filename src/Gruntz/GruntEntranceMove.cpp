@@ -499,12 +499,12 @@ void CGrunt::LoadEntranceConfig() {
 
         if (oldX != -1 && m_lastTilePxY != -1) {
             CTileGrid* og = (CTileGrid*)g_gameReg->m_tileGrid;
-            ((char*)&og->m_8[oldTileY][oldTileX * 7])[3] &= ~0x20;
+            (reinterpret_cast<char*>(&og->m_8[oldTileY][oldTileX * 7]))[3] &= ~0x20;
             og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
             CTileGrid* ng = (CTileGrid*)g_gameReg->m_tileGrid;
-            ((char*)&ng->m_8[newTileY][newTileX * 7])[3] |= 0x20;
+            (reinterpret_cast<char*>(&ng->m_8[newTileY][newTileX * 7]))[3] |= 0x20;
             ng->m_8[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
         m_lastTilePxX = newPxX;
@@ -585,7 +585,7 @@ void CGrunt::RearmEntranceDrop() {
         // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
         // into idx*0x68 + 0x478 and diverge.
         const char* name =
-            (const char*)((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0);
+            reinterpret_cast<const char*>(((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0));
         m_38->ApplyLookupSprite(name, frame);
     }
 

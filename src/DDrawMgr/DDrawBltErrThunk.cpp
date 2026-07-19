@@ -28,7 +28,7 @@ RVA(0x0008dd80, 0x31)
 i32 CDDrawPtrCollections::GetCapsChecked() {
     i32 hr = m_surf0->GetCaps((LPDDCAPS)m_driverCaps, (LPDDCAPS)m_helCaps);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString((char*)"c:\\proj\\incs\\ddrawmgr.h", 0x135, hr);
+        CDirectDrawMgr::GetErrorString(const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"), 0x135, hr);
     }
     return hr;
 }

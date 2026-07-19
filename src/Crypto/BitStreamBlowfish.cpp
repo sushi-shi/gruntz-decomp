@@ -19,13 +19,13 @@ void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
     unsigned int blk[4];
     bool first = true;
     while (!in->eof()) {
-        in->read((char*)&blk[0], 8);
+        in->read(reinterpret_cast<char*>(&blk[0]), 8);
         int sample = in->gcount();
         if (sample == 1) {
             sample = *(signed char*)&blk[0];
         }
         if (!first) {
-            out->write((const char*)&blk[3], sample);
+            out->write(reinterpret_cast<const char*>(&blk[3]), sample);
         } else {
             first = false;
         }

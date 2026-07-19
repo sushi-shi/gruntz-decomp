@@ -92,7 +92,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     if (nn != 0) {
         nn->m_8 = critbit;
         nn->m_10 = value;
-        char* kb = (char*)RezAlloc((m_24 >> 3) + 1);
+        char* kb = static_cast<char*>(RezAlloc((m_24 >> 3) + 1));
         nn->m_c = kb;
         if (kb != 0) {
             memcpy(kb, key, strlen(key) + 1);

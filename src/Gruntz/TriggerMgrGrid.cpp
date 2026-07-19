@@ -500,7 +500,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     (void)g;
-    char* plane = (char*)g_gameReg->m_curState;
+    char* plane = reinterpret_cast<char*>(g_gameReg->m_curState);
     char* view = *(char**)((char*)m_world + 0x24);
     i32 x = sx;
     i32 y = sy;

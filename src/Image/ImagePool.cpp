@@ -381,7 +381,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->LoadFromRez((char*)name, (void*)hdc, (void*)ctrl) == 0) {
+    if (node->LoadFromRez(reinterpret_cast<char*>(name), (void*)hdc, (void*)ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -665,7 +665,7 @@ i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcou
         memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * bitcount)) >> 3);
         return 1;
     }
-    char* s = (char*)src;
+    char* s = static_cast<char*>(src);
     for (i32 row = 0; row < m_height; row++) {
         memcpy(m_pixels + m_rowOffsets[row], s, m_width);
         s += m_width;
@@ -1270,7 +1270,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     }
 
     // Copy the 14-byte file-header template, then patch bfSize / bfOffBits.
-    char* fh = (char*)&fileHdr;
+    char* fh = reinterpret_cast<char*>(&fileHdr);
     for (i32 b = 0; b < 0xe; b++) {
         fh[b] = g_bmpHeaderTemplate[b];
     }

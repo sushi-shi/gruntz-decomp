@@ -149,7 +149,7 @@ void* operator new(u32 n); // 0x1b9b46
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
-    char* p = (char*)this;
+    char* p = reinterpret_cast<char*>(this);
     if (ar == 0) {
         return 0;
     }
@@ -343,7 +343,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     i32 count;
     ar->Read(&count, 4);
     for (i32 a = 0; a < count; ++a) {
-        char* slot = (char*)g_coordPool.m_freeHead;
+        char* slot = static_cast<char*>(g_coordPool.m_freeHead);
         void* nf = *(void**)slot;
         char* item = 0;
         if (nf != 0) {

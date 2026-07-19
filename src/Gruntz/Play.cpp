@@ -985,7 +985,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 goto fail0;
             }
             i32 ins =
-                ((CSymTab*)set)->Insert((const char*)self->m_4->GetWorldFileName(), g_emptyString);
+                ((CSymTab*)set)->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
@@ -1013,7 +1013,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 goto fail0;
             }
             i32 ins =
-                ((CSymTab*)set)->Insert((const char*)self->m_4->GetWorldFileName(), g_emptyString);
+                ((CSymTab*)set)->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
@@ -1036,7 +1036,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
-            level = ValidateMainBlock((void*)(const char*)self->m_4->GetWorldFileName());
+            level = ValidateMainBlock((void*)static_cast<const char*>(self->m_4->GetWorldFileName()));
             self->m_1bc = 0;
             self->m_4->m_130 = 0;
         }
@@ -1310,8 +1310,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CString warp; // [esp+0x14]
         i32 same = 0;
         if (warp.LoadString(0x81ab)) {
-            char* a = (char*)(const char*)gameReg->GetWorldFileName();
-            char* b = (char*)static_cast<const char*>(warp);
+            char* a = const_cast<char*>(static_cast<const char*>(gameReg->GetWorldFileName()));
+            char* b = const_cast<char*>(static_cast<const char*>(warp));
             i32 eq = 1;
             while (*b == *a) {
                 if (*b == 0) {
@@ -1824,7 +1824,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         s->Write(markerData()[i0], 8);
     }
 
-    char* p = (char*)m_anchors; // the four 8-byte fx-anchor pairs at +0x384 (raw block)
+    char* p = reinterpret_cast<char*>(m_anchors); // the four 8-byte fx-anchor pairs at +0x384 (raw block)
     for (i32 k0 = 4; k0 != 0; k0--) {
         s->Write(p, 8);
         p += 8;
@@ -2007,7 +2007,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
 
     {
         // the four 8-byte fx-anchor pairs at +0x384 (raw block, as the Write twin).
-        char* q = (char*)m_anchors;
+        char* q = reinterpret_cast<char*>(m_anchors);
         for (i32 k = 4; k != 0; k--) {
             ar->Read(q, 8);
             q += 8;
@@ -4506,7 +4506,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             RECT* wr = (RECT*)&geom->m_planeCtx;
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
-                    char tok = *(char*)&g_curPlayer;
+                    char tok = *reinterpret_cast<char*>(&g_curPlayer);
                     w->m_cmdSubMgr
                         ->EnqueueSingle(1, tok, 0, 0, static_cast<i16>(x), static_cast<i16>(y), 0, 0); // 0x2095 -> @0x23c30
                     placed = 1;
@@ -4535,7 +4535,7 @@ mode_36c:
     {
         RECT* gr = (RECT*)&m_guts->m_10; // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
-            if (m_guts->SetFallRect(xr, y, *(char*)&m_cursorFrame)) {
+            if (m_guts->SetFallRect(xr, y, *reinterpret_cast<char*>(&m_cursorFrame))) {
                 m_dragInhibit2 = 0;
                 SetCursorFrame(0);
                 return 1;
@@ -4553,7 +4553,7 @@ mode_36c:
         CLevelPlane* cam = ds->m_mainPlane;
         i32 wx = cam->m_originX - ds->m_planeCtx.minX + xr;
         i32 wy = cam->m_originY - ds->m_planeCtx.minY + y;
-        i32 tok = *(char*)&m_cursorFrame;
+        i32 tok = *reinterpret_cast<char*>(&m_cursorFrame);
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
             w->m_cmdSubMgr->EnqueueSingle(1, static_cast<char>(a), static_cast<char>(y), 8, 0, 0, static_cast<char>(tok), 0);
             m_4f0 = 1;
@@ -4577,7 +4577,7 @@ mode_36c:
 
 waypoint_cancel:
     m_dragInhibit2 = 0;
-    m_guts->EnterHlRow(0, *(char*)&m_cursorFrame);
+    m_guts->EnterHlRow(0, *reinterpret_cast<char*>(&m_cursorFrame));
     SetCursorFrame(0);
     return 1;
 
@@ -7006,7 +7006,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         return 1;
     }
     // (retail tests the list-head SUB-OBJECT address, group+0x10 - kept as-is)
-    char* head = (char*)&this->m_c->m_childGroup->m_list;
+    char* head = reinterpret_cast<char*>(&this->m_c->m_childGroup->m_list);
     if (!head) {
         return 0;
     }

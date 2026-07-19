@@ -103,7 +103,7 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_b0 * x;
-            *(char*)(base + row + col) = *(char*)&m_dotColor;
+            *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_dotColor);
             void* n = surf->m_8;
             (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
@@ -141,7 +141,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         i32 y = m_bc;
         char pixel;
         CDDSurface* sb = b->m_surface;
-        char* base = (char*)sb->Lock(0);
+        char* base = reinterpret_cast<char*>(sb->Lock(0));
         if (base != 0) {
             pixel = base[sb->m_b0 * x + sb->m_pitch * y];
             sb->m_8->Unlock(0);
@@ -149,7 +149,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             pixel = 0;
         }
         CDDSurface* sa = a->m_surface;
-        char* base2 = (char*)sa->Lock(0);
+        char* base2 = reinterpret_cast<char*>(sa->Lock(0));
         if (base2 != 0) {
             base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
             sa->m_8->Unlock(0);
@@ -290,7 +290,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x00166640, 0x13b)
 CWwdGameObject*
 CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
-    char* obj = (char*)RezAlloc(0x1dc);
+    char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
         int root = m_0c; // the CLoadable owner int handle (== this->m_0c, the CDDrawSurfaceMgr)

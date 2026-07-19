@@ -972,7 +972,7 @@ i32 CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect() {
 // ---------------------------------------------------------------------------
 RVA(0x00029a30, 0x10)
 void* __stdcall ListNodeAdvance(void** it) {
-    char* cur = (char*)*it;
+    char* cur = static_cast<char*>(*it);
     *it = *(void**)cur;
     return cur + 8;
 }
@@ -2062,7 +2062,7 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
             }
             break;
     }
-    char* scratch = (char*)&m_scratch78;
+    char* scratch = reinterpret_cast<char*>(&m_scratch78);
     switch (kind) {
         case 4:
             obj->Write(scratch, 8);
@@ -4315,9 +4315,9 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     BrickzCell* tile = &((BrickzCell*)(m_board)->m_rows[row])[col];
     char* cell;
     if (*(i32*)((char*)tile + 0x10) == 0x67) {
-        cell = (char*)m_ctx->m_dims; // ctx+0x70 IS the board (== this->m_board)
+        cell = reinterpret_cast<char*>(m_ctx->m_dims); // ctx+0x70 IS the board (== this->m_board)
     } else {
-        cell = (char*)((CTileTriggerContainer*)m_ctx)->FindInLists12((col << 8) + row, 0);
+        cell = reinterpret_cast<char*>(((CTileTriggerContainer*)m_ctx)->FindInLists12((col << 8) + row, 0));
     }
     i32 bestX = col;
     i32 bestY = col;

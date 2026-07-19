@@ -89,7 +89,7 @@ i32 CHelpState::Vslot09(i32 arg) {
         && m_c->m_drawTarget->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
-    if (FadeInTitle((const char*)&g_titleBuf, 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle(reinterpret_cast<const char*>(&g_titleBuf), 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
@@ -158,7 +158,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq((char*)&g_titleBuf, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    i32 r = RunTitleSeq(reinterpret_cast<char*>(&g_titleBuf), 0, 0, 1, 0); // 0xfa350 (CState base method)
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -173,7 +173,7 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((char*)&g_titleBuf, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(reinterpret_cast<char*>(&g_titleBuf), 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a

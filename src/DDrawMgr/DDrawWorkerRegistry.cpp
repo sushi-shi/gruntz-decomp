@@ -205,7 +205,7 @@ i32 CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = (CSymTab*)tree;
-    char* buf = (char*)operator new(0x100);
+    char* buf = static_cast<char*>(operator new(0x100));
     i32 count = 0;
     if (buf == 0) {
         return count;
@@ -250,7 +250,7 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
 RVA(0x00155160, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = (CSymTab*)tree;
-    char* buf = (char*)operator new(0x100);
+    char* buf = static_cast<char*>(operator new(0x100));
     i32 count = 0;
     CSymTab* e = (CSymTab*)dir->FirstSub();
     while (e != 0) {

@@ -226,7 +226,7 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
     if (m_readBuf != 0) {
         ::operator delete(m_readBuf);
     }
-    m_readBuf = (char*)::operator new(strlen(filename) + 1);
+    m_readBuf = static_cast<char*>(::operator new(strlen(filename) + 1));
     if (m_readBuf != 0) {
         strcpy(m_readBuf, filename);
     }
@@ -430,7 +430,7 @@ CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(pare
     m_dir = dir;
     m_handle = 0;
     // operator new returns void*; char* needed for strcpy (language-forced).
-    char* buf = (char*)::operator new(strlen(nameSrc) + 1);
+    char* buf = static_cast<char*>(::operator new(strlen(nameSrc) + 1));
     m_name = buf;
     strcpy(buf, nameSrc);
     // Enroll into the dir's closed list (new files start closed). The node param

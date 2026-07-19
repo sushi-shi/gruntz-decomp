@@ -701,7 +701,7 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->LoadByExt(this, (char*)a, b, c)) {
+    if (item->LoadByExt(this, reinterpret_cast<char*>(a), b, c)) {
         AddItemA(item);
         return item;
     }
@@ -978,7 +978,7 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
 RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    if (!item->LoadFromFile(m_surf0, (char*)a, b)) {
+    if (!item->LoadFromFile(m_surf0, reinterpret_cast<char*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1422,7 +1422,7 @@ IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
     IDirectDrawSurface* surf = 0;
     i32 hr = m_device->GetGDISurface(&surf);
     if (hr != 0) {
-        DDrawLogLine((char*)"CDirectDrawMgr::GetGDISurface()");
+        DDrawLogLine(const_cast<char*>("CDirectDrawMgr::GetGDISurface()"));
         return 0;
     }
     return surf;

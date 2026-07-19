@@ -390,7 +390,7 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
         sprintf(m_name, "MIDI%i", g_midiSeqCounter);
     }
     if (m_loadBuffer == 0) {
-        m_loadBuffer = (char*)operator new(len);
+        m_loadBuffer = static_cast<char*>(operator new(len));
         if (m_loadBuffer == 0) {
             return 0;
         }

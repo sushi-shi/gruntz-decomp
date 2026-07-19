@@ -352,7 +352,7 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     if (*(u8*)&m_5 >= 8) {
         m_11 = *buf++;
     }
-    return buf - (char*)data;
+    return buf - static_cast<char*>(data);
 }
 
 // ---------------------------------------------------------------------------
@@ -376,7 +376,7 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     buf += 2;
     *(i16*)&m_10 = *(i16*)buf;
     buf += 2;
-    return buf - (char*)data;
+    return buf - static_cast<char*>(data);
 }
 
 // ---------------------------------------------------------------------------

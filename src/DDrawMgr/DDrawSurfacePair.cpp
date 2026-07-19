@@ -360,7 +360,7 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (bottom < 0 || bottom >= m_height) {
         return;
     }
-    char* base = (char*)m_surface->Lock(0);
+    char* base = reinterpret_cast<char*>(m_surface->Lock(0));
     if (base == 0) {
         return;
     }
@@ -439,7 +439,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (y + 4 >= m_height) {
         return;
     }
-    char* base = (char*)m_surface->Lock(0);
+    char* base = reinterpret_cast<char*>(m_surface->Lock(0));
     if (base == 0) {
         return;
     }
@@ -941,7 +941,7 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
 
     const char* cursor = src->m_data;
     if (src->m_namelen != 0) {
-        m_name = (char*)operator new(src->m_namelen + 2);
+        m_name = static_cast<char*>(operator new(src->m_namelen + 2));
         i32 n;
         for (n = 0; n < src->m_namelen; n++) {
             m_name[n] = *cursor++;
@@ -1362,7 +1362,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         char c = m_78b;
         CDDSurface* s = b->m_surface;
         i32 y = m_60;
-        char* base = (char*)s->Lock(0);
+        char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_b0 * x + s->m_pitch * y] = c;
             s->m_8->Unlock(0);
@@ -1373,7 +1373,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         i32 y = m_60;
         i32 x = m_5c;
         CDDSurface* s = a->m_surface;
-        char* base = (char*)s->Lock(0);
+        char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_b0 * x + y * s->m_pitch] = c;
             s->m_8->Unlock(0);

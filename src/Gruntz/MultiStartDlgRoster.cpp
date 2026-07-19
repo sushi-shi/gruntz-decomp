@@ -755,10 +755,10 @@ void CMultiStartDlg::OnChatSend() {
     input->GetWindowTextA(b); // b = the typed message
     if (b.GetLength() != 0) {
         a += b;
-        AppendChatLine((char*)static_cast<const char*>(a));
+        AppendChatLine(const_cast<char*>(static_cast<const char*>(a)));
         input->SetWindowTextA(g_emptyString);
         g_multiState->BroadcastChatLine(
-            (char*)static_cast<const char*>(a),
+            const_cast<char*>(static_cast<const char*>(a)),
             0,
             0,
             0

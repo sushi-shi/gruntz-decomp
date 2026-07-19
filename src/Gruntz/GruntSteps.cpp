@@ -115,7 +115,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         return 1;
     }
     char* cur = board->m_8[ty] + tx * 7 * 4;
-    char* tg = (char*)tgt;
+    char* tg = reinterpret_cast<char*>(tgt);
     i32 stride = board->m_c * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
@@ -694,7 +694,7 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        i32 toyCount = g_buteMgr.GetIntDef((char*)(LPCTSTR)str, s_ToyTiles, 1);
+        i32 toyCount = g_buteMgr.GetIntDef(const_cast<char*>((LPCTSTR)str), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.reason - 1) {
                 case 0:
@@ -1185,14 +1185,14 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             break;
     }
     ((CTriRecord*)(&m_entranceCell))->Serialize((CSerialArchive*)ar, mode, a3, a4);
-    SerRecord(ar, mode, (char*)&m_toyClockLo);
-    SerRecord(ar, mode, (char*)&m_idleAnchorLo);
-    SerRecord(ar, mode, (char*)&m_idleTimerLo);
-    SerRecord(ar, mode, (char*)&m_entranceClockLo);
-    SerRecord(ar, mode, (char*)&m_850);
-    SerRecord(ar, mode, (char*)&m_860);
-    SerRecord(ar, mode, (char*)&m_combatClockLo);
-    SerRecord(ar, mode, (char*)&m_880);
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClockLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchorLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimerLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_entranceClockLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_850));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
     ((CPairRecord*)(&m_wingzClockLo))->Serialize((CSerialArchive*)ar, mode, a3, a4);
     ((CPairRecord*)(&m_8a0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
     ((CPairRecord*)(&m_8b0))->Serialize((CSerialArchive*)ar, mode, a3, a4);

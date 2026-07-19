@@ -441,7 +441,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
     if (a1 == 0) {
         return 0;
     }
-    if (*(char*)a1 == 0) {
+    if (*static_cast<char*>(a1) == 0) {
         return 0;
     }
     if (this->m_bitDepth != 0x10) {
@@ -460,7 +460,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
     bih.biClrUsed = 0;
     bih.biClrImportant = 0;
 
-    strcpy((char*)&bfh, "BM");
+    strcpy(reinterpret_cast<char*>(&bfh), "BM");
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
 
@@ -488,9 +488,9 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
     CFile file;
     i32 ok;
     if (a3 != 0) {
-        ok = file.Open((char*)a2, 0x2001, 0);
+        ok = file.Open(static_cast<char*>(a2), 0x2001, 0);
     } else {
-        ok = file.Open((char*)a2, 0x1001, 0);
+        ok = file.Open(static_cast<char*>(a2), 0x1001, 0);
     }
     if (ok == 0) {
         this->m_8->Unlock(0);

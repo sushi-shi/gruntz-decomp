@@ -102,11 +102,11 @@ i32 CNetPlayerListNode::Init(CNetSessionDesc* src) {
     m_desc.m_lpszName = 0;
     m_desc.m_lpszPassword = 0;
     if (src->m_lpszName && strlen(src->m_lpszName)) {
-        m_desc.m_lpszName = (char*)::operator new(strlen(src->m_lpszName) + 8);
+        m_desc.m_lpszName = static_cast<char*>(::operator new(strlen(src->m_lpszName) + 8));
         strcpy(m_desc.m_lpszName, src->m_lpszName);
     }
     if (src->m_lpszPassword && strlen(src->m_lpszPassword)) {
-        m_desc.m_lpszPassword = (char*)::operator new(strlen(src->m_lpszPassword) + 8);
+        m_desc.m_lpszPassword = static_cast<char*>(::operator new(strlen(src->m_lpszPassword) + 8));
         strcpy(m_desc.m_lpszPassword, src->m_lpszPassword);
     }
     return 1;

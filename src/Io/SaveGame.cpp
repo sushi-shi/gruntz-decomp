@@ -212,7 +212,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, (INT_PTR)g_slotState);
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, (char*)g_slotState);
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, reinterpret_cast<char*>(g_slotState));
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -242,7 +242,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 EndDialog(hDlg, (INT_PTR)g_slotState);
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, (char*)g_slotState);
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, reinterpret_cast<char*>(g_slotState));
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -563,7 +563,7 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
             title,
             "Questz: Stage %d of %s",
             (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
-            (n > 0x24 && n < 0x29) ? (const char*)CString("Training") : g_areaNames[(n - 1) / 4]
+            (n > 0x24 && n < 0x29) ? static_cast<const char*>(CString("Training")) : g_areaNames[(n - 1) / 4]
         );
     } else if (lev->m_isCustom == 0) {
         // Battlez level (named).

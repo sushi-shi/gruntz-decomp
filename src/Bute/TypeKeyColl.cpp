@@ -613,7 +613,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         m_grown = shift;
         m_alloc = (i32)p;
         memcpy((char*)p + shift * m_stride, p, oldbytes);
-        memset((char*)m_alloc, 0, m_grown * m_stride);
+        memset(reinterpret_cast<char*>(m_alloc), 0, m_grown * m_stride);
         m_lo = idx - at;
         m_base = (i32)p;
         return p;
@@ -683,7 +683,7 @@ void* CButeTree::Insert(const char* key, void* value) {
     if (node != 0) {
         node->m_value = value;
         node->m_bit = critbit;
-        char* keybuf = (char*)::operator new((m_keyBitLength >> 3) + 1);
+        char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         node->m_key = keybuf;
         if (keybuf != 0) {
             strcpy(keybuf, key);
@@ -1159,15 +1159,15 @@ i32 FirstDiffBit(const char* a, const char* b) {
 static inline char* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return (char*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
-        return (char*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
+        return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeColl.m_spare;
+    return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
 // Free the stale node array (g_typeColl.m_grown slots, walking g_typeColl.m_alloc).

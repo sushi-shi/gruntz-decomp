@@ -850,9 +850,9 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
+        char* cell0 = reinterpret_cast<char*>(*(i32**)((char*)grid->m_8 + rowByte));
         *(i32*)(cell0 + cellOff + 8) = 0;
-        char* cell1 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
+        char* cell1 = reinterpret_cast<char*>(*(i32**)((char*)grid->m_8 + rowByte));
         *(i32*)(cell1 + cellOff) &= ~0x40000;
     }
 }

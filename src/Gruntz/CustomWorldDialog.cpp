@@ -366,7 +366,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
     g_pathStr += ".WWD";
-    if (!FileExists((char*)static_cast<const char*>(g_pathStr))) {
+    if (!FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))) {
         g_pathStr.Empty();
         return 0;
     }
@@ -399,7 +399,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader((const char*)((WwdWorldHolder*)g_gameReg->m_world)->m_24, header)
+    if (WwdFile_CheckHeader(reinterpret_cast<const char*>(((WwdWorldHolder*)g_gameReg->m_world)->m_24), header)
         == 0) {
         return -1;
     }
@@ -428,7 +428,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0 && FileExists((char*)static_cast<const char*>(g_pathStr))
+            if (g_dat62c268 != 0 && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
                 && ((WwdWorldHolder*)g_dat62c268)
                        ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
@@ -489,7 +489,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     g_pathStr += "\\Custom\\";
     g_pathStr += szLevel;
     g_pathStr += ".WWD";
-    if (!FileExists((char*)static_cast<const char*>(g_pathStr))) {
+    if (!FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))) {
         g_pathStr.Empty();
         return 0;
     }

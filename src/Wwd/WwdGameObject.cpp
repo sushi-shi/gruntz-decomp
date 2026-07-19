@@ -568,7 +568,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     // a4 is a foreign notify-source object (heterogeneous, no recovered concrete class):
     // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
     // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
-    char* src = (char*)a4;
+    char* src = reinterpret_cast<char*>(a4);
     if (w->Init((GameObjNotifyFn) * (i32*)(src + 0x10), *(i32*)(src + 0x08)) == 0) {
         return 0;
     }

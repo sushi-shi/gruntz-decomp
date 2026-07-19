@@ -46,7 +46,7 @@ i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
         if (length < 4) {
             return 0;
         }
-        m_loadBuffer = (char*)operator new(length);
+        m_loadBuffer = static_cast<char*>(operator new(length));
         if (m_loadBuffer == 0) {
             return 0;
         }

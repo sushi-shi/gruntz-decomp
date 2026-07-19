@@ -516,12 +516,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             return 0;
         }
     }
-    if (!m_symParser->LoadEntry((char*)"GRUNTZ.VRZ", 0)) { // 0x13b0c0 (canonical arg order)
+    if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) { // 0x13b0c0 (canonical arg order)
         ReportError(0x8149, 0x460);
         return 0;
     }
-    m_symParser->LoadEntry((char*)"GRUNTZ.ZZZ", 1);
-    m_symParser->LoadEntry((char*)"GRUNTZ.XXX", 1);
+    m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.ZZZ"), 1);
+    m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.XXX"), 1);
     SetColorDepth(m_colorDepth);
 
     // --- Phase 8: input device manager (m_faderMgr slot) ------------------
@@ -685,9 +685,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_10e = 1;
             i32 esz = stream->BeginParse();
             void* src = *(void**)((char*)stream + 0xc);
-            istrstream* rdr = new istrstream((char*)src, esz); // ??0istrstream (0x169700)
+            istrstream* rdr = new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
             Blowfish_InitKey((unsigned char*)"1212C");
-            ostrstream* snk = new ostrstream((char*)src, esz, 2); // ??0ostrstream (0x1698c0)
+            ostrstream* snk = new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
             BitStreamBlowfishDecode(snk, rdr);
             // carcass gap: retail allocs a third 0x60 stream object here with no
             // visible ctor call in the recovered bytes; kept as the bare allocation.
@@ -775,7 +775,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified((const char*)*(void**)&title, &g_lab504358)) {
+        while (attract->ResolveQualified(static_cast<const char*>(*(void**)&title), &g_lab504358)) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

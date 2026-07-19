@@ -574,7 +574,7 @@ i32 CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
     *(void**)(buf + 0x28) = a;
     *(void**)(buf + 0x30) = b;
     *(i32*)(buf + 0x40) = c;
-    if (d != 0 && *(char*)d != 0) {
+    if (d != 0 && *reinterpret_cast<char*>(d) != 0) {
         *(i32*)(buf + 0x34) = d;
     }
 

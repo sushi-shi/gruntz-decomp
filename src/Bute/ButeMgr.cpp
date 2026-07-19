@@ -1329,16 +1329,16 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             if (rec->type == kButeString) {
-                return (char*)rec->pValue;
+                return static_cast<char*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, key, tag);
-            return (char*)&s_empty;
+            return reinterpret_cast<char*>(&s_empty);
         }
         ReportError(s_fmtNotFound, key, tag);
-        return (char*)&s_empty;
+        return reinterpret_cast<char*>(&s_empty);
     }
     ReportError(s_fmtInvalidTag, tag);
-    return (char*)&s_empty;
+    return reinterpret_cast<char*>(&s_empty);
 }
 
 // ---------------------------------------------------------------------------

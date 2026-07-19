@@ -279,7 +279,7 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     if (!hg) {
         return 0;
     }
-    char* src = (char*)LockResource(hg);
+    char* src = static_cast<char*>(LockResource(hg));
     if (!src) {
         return 0;
     }
