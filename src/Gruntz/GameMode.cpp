@@ -422,11 +422,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_icons[i]->m_stateFlags &= ~1;
             m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
             m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
-            ::CopyRect(&box, &g_levelMsgRectsA[i]);
+            CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            ::CopyRect(&box, &g_levelMsgRectsB[i]);
+            CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -470,7 +470,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             && (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2 <= gx) {
             RECT box;
             m_templateFlags[s] = 1;
-            ::CopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -495,7 +495,7 @@ i32 CBootyState::LevelMsgHudDriver() {
         if (m_bomb[i]->m_screenX <= m_gokart[i]->m_screenX) {
             RECT box;
             CString text;
-            ::CopyRect(&box, &g_levelMsgRectsB[i]);
+            CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);

@@ -960,17 +960,17 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             pt48.top = 0;
             pt48.right = dx;
             pt48.bottom = dy;
-            ::OffsetRect(&pt48, row, col);
+            OffsetRect(&pt48, row, col);
             i32 ox = static_cast<i32>((cellR * normX));
             i32 oy = static_cast<i32>((cellR * normY));
-            ::OffsetRect(&pt48, oy, ox);
+            OffsetRect(&pt48, oy, ox);
 
             RECT pt64;
             pt64.left = 0;
             pt64.top = 0;
             pt64.right = d2;
             pt64.bottom = dy;
-            ::OffsetRect(&pt64, row, col);
+            OffsetRect(&pt64, row, col);
 
             i32 pt[10]; // the 40-byte mesh record (a RezElem40 slot)
             if (m_recOrderFlag) {
