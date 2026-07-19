@@ -140,7 +140,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_descSize = 0x6c;
     m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_srcSurf)
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
-    if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_primaryDesc, &m_primaryRaw, 0) != 0) {
+    if (m_dd2->CreateSurface(reinterpret_cast<LPDDSURFACEDESC>(m_primaryDesc), &m_primaryRaw, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -156,7 +156,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     Snapshot((HWND)window);
 
     if (mode->bpp == 8) {
-        if (m_dd2->CreatePalette(4, (LPPALETTEENTRY)m_palEntries, &m_palette, 0) != 0) {
+        if (m_dd2->CreatePalette(4, reinterpret_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0) != 0) {
             HandleError();
             return 0;
         }

@@ -473,8 +473,8 @@ i32 CDirectDrawMgr::CreateDevice(
     // lean header; sizeof(DDCAPS)==0x17c is exactly 0x5f*4). Access them through the
     // real SDK type so the dwSize/dwCaps fields are named, not magic indices.
     (reinterpret_cast<LPDDCAPS>(m_caps))->dwSize = sizeof(DDCAPS);
-    ((LPDDCAPS)m_helCaps)->dwSize = sizeof(DDCAPS);
-    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_caps), (LPDDCAPS)m_helCaps);
+    (reinterpret_cast<LPDDCAPS>(m_helCaps))->dwSize = sizeof(DDCAPS);
+    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_caps), reinterpret_cast<LPDDCAPS>(m_helCaps));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }

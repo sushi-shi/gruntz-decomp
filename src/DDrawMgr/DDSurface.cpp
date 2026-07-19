@@ -146,7 +146,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
         *d++ = 0;
     }
     m_descSize = 0x6c;
-    i32 hr = m_8->GetSurfaceDesc((LPDDSURFACEDESC)m_desc);
+    i32 hr = m_8->GetSurfaceDesc(reinterpret_cast<LPDDSURFACEDESC>(m_desc));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
@@ -313,7 +313,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 // on SURFACELOST restore-and-retry, else report. Returns m_lockBits on hard fail.
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
-    i32 hr = m_8->Lock((LPRECT)rect, (LPDDSURFACEDESC)m_desc, 1, 0);
+    i32 hr = m_8->Lock((LPRECT)rect, reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
     if (hr == 0) {
         return m_lockBits;
     }
@@ -321,7 +321,7 @@ i32 CDDSurface::Lock(void* rect) {
         if (RestoreLost() == 0) {
             return 0;
         }
-        hr = m_8->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+        hr = m_8->Lock(0, reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
         if (hr == 0) {
             return m_lockBits;
         }
@@ -1564,7 +1564,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         *p++ = 0;
     }
     m_descSize = 0x6c;
-    LPDDSURFACEDESC desc = (LPDDSURFACEDESC)m_desc;
+    LPDDSURFACEDESC desc = reinterpret_cast<LPDDSURFACEDESC>(m_desc);
     m_8->GetSurfaceDesc(desc);
     if (desc == 0) {
         return;

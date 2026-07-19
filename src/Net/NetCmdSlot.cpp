@@ -229,7 +229,7 @@ i32 CNetSession::Poll(i32 delta) {
         avail = 0;
     } else {
         i32 got;
-        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
+        IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
         i32 r = ep->GetMessageCount(m_localDesc->m_playerId, (LPDWORD)&got);
         avail = (r == 0) ? got : 0;
     }
@@ -239,7 +239,7 @@ i32 CNetSession::Poll(i32 delta) {
     while (avail > 0 && m_session->m_pollAbort == 0) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
-        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
+        IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
         i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_lobbyRecvBuf, (LPDWORD)&len);
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
