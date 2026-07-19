@@ -25,16 +25,19 @@
 // dummy-virtual view (cl can't reason about its dynamic type) keeps the retail
 // virtual dispatch. Kept for CFileMem. (docs/patterns/dummy-virtual-slots.md.)
 struct CFileIODispatch {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
+    // Slots 0-9 are MFC's own (CObject's five + CFile's early getters; the slot-10
+    // Open @+0x28 pins the alignment). Never dispatched through this view - the
+    // names document the real table, the void() signatures stay dispatch-only.
+    virtual void GetRuntimeClass(); // [0] CObject
+    virtual void Dtor();            // [1] scalar-deleting ~CFile
+    virtual void Serialize();       // [2] CObject
+    virtual void AssertValid();     // [3] CObject
+    virtual void Dump();            // [4] CObject
+    virtual void GetPosition();     // [5] CFile::GetPosition
+    virtual void GetFileName();     // [6] CFile::GetFileName
+    virtual void GetFileTitle();    // [7] CFile::GetFileTitle
+    virtual void GetFilePath();     // [8] CFile::GetFilePath
+    virtual void SetFilePath();     // [9] CFile::SetFilePath
     virtual i32 Open(const char* name, u32 flags, void* err); // +0x28 slot 10
     virtual void Duplicate();                                 // slot 11 (CFile::Duplicate)
     virtual LONG Seek(LONG off, i32 from);                    // +0x30 slot 12

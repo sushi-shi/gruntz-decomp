@@ -67,7 +67,7 @@ public:
     virtual i32 IsReady();        // [5] 0x1577a0 (G obj)
     virtual i32 Slot06_152640();  // [6] 0x152640 (S2 obj)
     virtual void Cleanup();       // [7] 0x152650 (S2 obj; tail-calls FreeAll)
-    virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
+    virtual void GetTypeId(); // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
     // (ClearContext @0x157ae0 belongs to the sibling CDDrawSubMgrLeafScan - it is that

@@ -84,7 +84,7 @@ public:
     virtual void IsValidImage(); // [6] 0x001c08 (shared thunk, declared-only)
     virtual void
     ClearContext(); // [7] 0x157ae0 (defined in DDrawSubMgr.cpp - this class's own slot)
-    virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
+    virtual void GetTypeId(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafCue* CreateEntry_157d70(const char* key, void* arg2);
