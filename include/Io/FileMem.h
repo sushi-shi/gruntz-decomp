@@ -41,16 +41,16 @@ public:
     CFileMemBase();
     virtual ~CFileMemBase();                             // slot 0  (0x157960 ??_G)
     virtual i32 SetName(const char* name, i32 a, i32 b); // slot 1  0x00165e30
-    virtual void Slot02_157910();                        // slot 2
+    virtual void Close();                        // slot 2  0x157910: tail-jmp slot 3 (Reset)
     // OUT-OF-LINE (body in DDrawSubMgr.cpp @0x157a40): retail is a real function called
     // directly - an inline body here would let cl inline it at every known-type call site
     // (e.g. CFileMem S; S.Reset()) where retail emits `call 0x157a40/0x157a50`.
     virtual void Reset();                          // slot 3  0x00157a40
     virtual CString GetName();                     // slot 4  0x157920 (return m_name copy)
-    virtual void Slot05_157a00() = 0;              // slot 5  __purecall (CFileMem body rva)
-    virtual void Slot06_157a10() = 0;              // slot 6  __purecall (CFileMem body rva)
+    virtual void GetLength() = 0;              // slot 5  __purecall (CFileMem: return m_length)
+    virtual void GetOffset() = 0;              // slot 6  __purecall (CFileMem: return m_offset)
     virtual i32 WantRead();                        // slot 7  (0x157940) read-vs-create gate
-    virtual void Slot08_157950();                  // slot 8
+    virtual void WantCreate();                  // slot 8  0x157950: return m_8 == 0 (mode 0 = create)
     virtual i32 Open() = 0;                        // slot 9  __purecall
     virtual i32 Ready() = 0;                       // slot 10 __purecall
     virtual i32 Read(void* buf, i32 n) = 0;        // slot 11 __purecall
@@ -72,10 +72,10 @@ VTBL(CFileMemBase, 0x001efe68);
 class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE;                // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
-    virtual void Slot02_157910() OVERRIDE;       // slot 2  (0x157a70)
+    virtual void Close() OVERRIDE;       // slot 2  (0x157a70)
     virtual void Reset() OVERRIDE;               // slot 3  0x00157a50 (out-of-line; see base Reset)
-    virtual void Slot05_157a00() OVERRIDE;       // slot 5
-    virtual void Slot06_157a10() OVERRIDE;       // slot 6
+    virtual void GetLength() OVERRIDE;       // slot 5
+    virtual void GetOffset() OVERRIDE;       // slot 6
     virtual i32 Open() OVERRIDE;                 // slot 9  0x00165e60
     virtual i32 Ready() OVERRIDE;                // slot 10 0x00165ef0
     virtual i32 Read(void* buf, i32 n) OVERRIDE; // slot 11 0x00165f00
