@@ -1,0 +1,223 @@
+vtable_rva	class	col_offset	base_chain
+0x001e7004	CActionArea	0x0	CActionArea <- CUserLogic <- CUserBase <- CWapX
+0x001e705c	CUserLogic	0x0	CUserLogic <- CUserBase
+0x001e70b4	CUserBase	0x0	CUserBase
+0x001e70fc	?$zDArray@P8CUserLogic@@AEHXZ	0x0	?$zDArray@P8CUserLogic@@AEHXZ <- _zdvec <- _zvec <- zErrHandling
+0x001e710c	CAmbientSound	0x0	CAmbientSound <- CUserBase
+0x001e7124	CAmbientPosSound	0x0	CAmbientPosSound <- CAmbientSound <- CUserBase
+0x001e713c	CRandomAmbientSound	0x0	CRandomAmbientSound <- CAmbientSound <- CUserBase
+0x001e7154	CGuardPoint	0x0	CGuardPoint <- CUserLogic <- CUserBase <- CWapX
+0x001e71ac	CWarpStonePad	0x0	CWarpStonePad <- CUserLogic <- CUserBase <- CWapX
+0x001e7204	CToyPeek	0x0	CToyPeek <- CUserLogic <- CUserBase <- CWapX
+0x001e725c	CFortressFlag	0x0	CFortressFlag <- CUserLogic <- CUserBase <- CWapX
+0x001e72b4	CUFO	0x0	CUFO <- CPathHazard <- CUserLogic <- CUserBase <- CWapX
+0x001e7324	CRainCloud	0x0	CRainCloud <- CPathHazard <- CUserLogic <- CUserBase <- CWapX
+0x001e7394	CPathHazard	0x0	CPathHazard <- CUserLogic <- CUserBase <- CWapX
+0x001e7404	CWarlord	0x0	CWarlord <- CUserLogic <- CUserBase <- CWapX
+0x001e745c	CSingleAnimation	0x0	CSingleAnimation <- CUserLogic <- CUserBase <- CWapX
+0x001e74b4	CWayPoint	0x0	CWayPoint <- CUserLogic <- CUserBase <- CWapX
+0x001e750c	CKitchenSlime	0x0	CKitchenSlime <- CUserLogic <- CUserBase <- CWapX
+0x001e7564	CSecretTeleporterTrigger	0x0	CSecretTeleporterTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e75bc	CSpotLight	0x0	CSpotLight <- CUserLogic <- CUserBase <- CWapX
+0x001e7614	CParticlez	0x0	CParticlez <- CUserLogic <- CUserBase <- CWapX
+0x001e766c	CExplosion	0x0	CExplosion <- CUserLogic <- CUserBase <- CWapX
+0x001e76c4	CGruntPowerupSprite	0x0	CGruntPowerupSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e771c	CTimeBomb	0x0	CTimeBomb <- CUserLogic <- CUserBase <- CWapX
+0x001e7774	CToobSpikez	0x0	CToobSpikez <- CUserLogic <- CUserBase <- CWapX
+0x001e77cc	CGruntWingzTimeSprite	0x0	CGruntWingzTimeSprite <- CGruntHealthSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7824	CStaticHazard	0x0	CStaticHazard <- CUserLogic <- CUserBase <- CWapX
+0x001e787c	CDroppedObjectShadow	0x0	CDroppedObjectShadow <- CUserLogic <- CUserBase <- CWapX
+0x001e78d4	CDroppedObject	0x0	CDroppedObject <- CUserLogic <- CUserBase <- CWapX
+0x001e792c	CBoomerang	0x0	CBoomerang <- CProjectile <- CMovingLogic <- CUserLogic <- CUserBase <- CWapX
+0x001e798c	CProjectile	0x0	CProjectile <- CMovingLogic <- CUserLogic <- CUserBase <- CWapX
+0x001e79ec	CGruntToyTimeSprite	0x0	CGruntToyTimeSprite <- CGruntHealthSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7a44	CGruntStaminaSprite	0x0	CGruntStaminaSprite <- CGruntHealthSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7a9c	CObjectDropper	0x0	CObjectDropper <- CUserLogic <- CUserBase <- CWapX
+0x001e7af4	CLightFx	0x0	CLightFx <- CUserLogic <- CUserBase <- CWapX
+0x001e7b4c	CGruntToySprite	0x0	CGruntToySprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7ba4	CGruntHealthSprite	0x0	CGruntHealthSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7bfc	CGruntSelectedSprite	0x0	CGruntSelectedSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e7c54	CBrickz	0x0	CBrickz <- CUserLogic <- CUserBase <- CWapX
+0x001e7cac	CInGameText	0x0	CInGameText <- CUserLogic <- CUserBase <- CWapX
+0x001e7d04	CInGameIcon	0x0	CInGameIcon <- CUserLogic <- CUserBase <- CWapX
+0x001e7d5c	CGiantRock	0x0	CGiantRock <- CTileTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e7db4	CTileTriggerTransition	0x0	CTileTriggerTransition <- CUserLogic <- CUserBase <- CWapX
+0x001e7e0c	CCoveredPowerup	0x0	CCoveredPowerup <- CTileTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e7e64	CTileSecretTrigger	0x0	CTileSecretTrigger <- CTileTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e7ebc	CCheckpointTrigger	0x0	CCheckpointTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e7f14	CTileTrigger	0x0	CTileTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e7f6c	CTileTriggerSwitch	0x0	CTileTriggerSwitch <- CUserLogic <- CUserBase <- CWapX
+0x001e7fc4	CStatusBarSprite	0x0	CStatusBarSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e801c	CLevelTime	0x0	CLevelTime <- CUserLogic <- CUserBase <- CWapX
+0x001e8074	CCursorSnapSprite	0x0	CCursorSnapSprite <- CUserLogic <- CUserBase <- CWapX
+0x001e80cc	CTeleporter	0x0	CTeleporter <- CUserLogic <- CUserBase <- CWapX
+0x001e8124	CGruntPuddle	0x0	CGruntPuddle <- CUserLogic <- CUserBase <- CWapX
+0x001e817c	CWormhole	0x0	CWormhole <- CUserLogic <- CUserBase <- CWapX
+0x001e81d4	CGruntCreationPoint	0x0	CGruntCreationPoint <- CUserLogic <- CUserBase <- CWapX
+0x001e822c	CExitTrigger	0x0	CExitTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e8284	CGruntStartingPoint	0x0	CGruntStartingPoint <- CUserLogic <- CUserBase <- CWapX
+0x001e82dc	CMenuSparkle	0x0	CMenuSparkle <- CUserLogic <- CUserBase <- CWapX
+0x001e8334	CEyeCandyAni	0x0	CEyeCandyAni <- CUserLogic <- CUserBase <- CWapX
+0x001e838c	CBehindCandyAni	0x0	CBehindCandyAni <- CUserLogic <- CUserBase <- CWapX
+0x001e83e4	CFrontCandyAni	0x0	CFrontCandyAni <- CUserLogic <- CUserBase <- CWapX
+0x001e843c	CEyeCandy	0x0	CEyeCandy <- CUserLogic <- CUserBase <- CWapX
+0x001e8494	CBehindCandy	0x0	CBehindCandy <- CUserLogic <- CUserBase <- CWapX
+0x001e84ec	CFrontCandy	0x0	CFrontCandy <- CUserLogic <- CUserBase <- CWapX
+0x001e8544	CSimpleAnimation	0x0	CSimpleAnimation <- CUserLogic <- CUserBase <- CWapX
+0x001e859c	CDoNothingNormal	0x0	CDoNothingNormal <- CUserLogic <- CUserBase <- CWapX
+0x001e85f4	CDoNothing	0x0	CDoNothing <- CUserLogic <- CUserBase <- CWapX
+0x001e864c	CSingleFrameMessage	0x0	CSingleFrameMessage <- CUserLogic <- CUserBase <- CWapX
+0x001e86a4	CAniCycle	0x0	CAniCycle <- CUserLogic <- CUserBase <- CWapX
+0x001e86fc	CRollingBall	0x0	CRollingBall <- CUserLogic <- CUserBase <- CWapX
+0x001e8754	CGrunt	0x0	CGrunt <- CMovingLogic <- CUserLogic <- CUserBase <- CWapX
+0x001e87ac	CMovingLogic	0x0	CMovingLogic <- CUserLogic <- CUserBase
+0x001e8804	CSecretLevelTrigger	0x0	CSecretLevelTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e885c	CVoiceTrigger	0x0	CVoiceTrigger <- CUserLogic <- CUserBase <- CWapX
+0x001e8bac	CBattlezDlg	0x0	CBattlezDlg <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001e8cb4	CObject	0x0	CObject
+0x001e8cd4	CGdiObject	0x0	CGdiObject <- CObject
+0x001e8cf4	CBrush	0x0	CBrush <- CGdiObject <- CObject
+0x001e8d94	CBattlezDlgColors	0x0	CBattlezDlgColors <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001e8ee4	CBattlezDlgCustom	0x0	CBattlezDlgCustom <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001e949c	zPTree	0x8	zPTree <- zErrHandling <- zPtrColl
+0x001e94ac	zPTree	0x0	zPTree <- zErrHandling <- zPtrColl
+0x001e9504	CCheckpointDlg	0x0	CCheckpointDlg <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001e9634	CGruntzSingleCommand	0x0	CGruntzSingleCommand <- CGruntzCommand
+0x001e9674	CGruntzCommand	0x0	CGruntzCommand
+0x001e96b4	CGruntzMultiCommand	0x0	CGruntzMultiCommand <- CGruntzCommand
+0x001e971c	?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@	0x0	?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@ <- CObject
+0x001e9ab4	CGruntzApp	0x0	CGruntzApp <- CGameApp
+0x001e9b0c	CGameApp	0x0	CGameApp
+0x001e9b64	CGruntzMgr	0x0	CGruntzMgr <- CGameMgr
+0x001e9b8c	CGameMgr	0x0	CGameMgr
+0x001e9bb4	CGruntzMapMgr	0x0	CGruntzMapMgr <- CMapMgr
+0x001e9bdc	CMultiBootyState	0x0	CMultiBootyState <- CState
+0x001e9c64	CCreditsState	0x0	CCreditsState <- CState
+0x001e9cec	CBootyState	0x0	CBootyState <- CState
+0x001e9d74	CSplashState	0x0	CSplashState <- CState
+0x001e9dfc	CHelpState	0x0	CHelpState <- CState
+0x001e9e84	CMenuState	0x0	CMenuState <- CState
+0x001e9f0c	CDemo	0x0	CDemo <- CPlay <- CState
+0x001e9fe4	CMulti	0x0	CMulti <- CPlay <- CState
+0x001ea0bc	CPlay	0x0	CPlay <- CState
+0x001ea194	CAttract	0x0	CAttract <- CState
+0x001ea21c	CState	0x0	CState
+0x001ea2a4	CRgn	0x0	CRgn <- CGdiObject <- CObject
+0x001ea2d4	CGruntzWnd	0x0	CGruntzWnd <- CGameWnd
+0x001ea344	CGameWnd	0x0	CGameWnd
+0x001ea3b4	CMapMgr	0x0	CMapMgr
+0x001ea42c	CNetMgr	0x0	CNetMgr <- CObject
+0x001ea474	CMultiHelpDlg	0x0	CMultiHelpDlg <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001ea8ec	CMultiStartDlg	0x0	CMultiStartDlg <- CDialog <- CWnd <- CCmdTarget <- CObject
+0x001eaa2c	CImage	0x0	CImage <- CWapObj <- CObject
+0x001eab4c	CSBI_MenuItem	0x0	CSBI_MenuItem <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eab8c	CSBI_RectOnly	0x0	CSBI_RectOnly <- CStatusBarItem
+0x001eabcc	CStatusBarItem	0x0	CStatusBarItem
+0x001eac0c	CSBI_Image	0x0	CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eac4c	CSBI_ImageSet	0x0	CSBI_ImageSet <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eac94	CSBI_StatzTabArrow	0x0	CSBI_StatzTabArrow <- CSBI_ImageSetAni <- CSBI_ImageSet <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eace4	CSBI_StatzTabGruntBar	0x0	CSBI_StatzTabGruntBar <- CStatusBarItem
+0x001ead24	CSBI_WarlordHead	0x0	CSBI_WarlordHead <- CSBI_ImageSet <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001ead6c	CSBI_ImageSetAni	0x0	CSBI_ImageSetAni <- CSBI_ImageSet <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eadbc	CSBI_GruntMachine	0x0	CSBI_GruntMachine <- CStatusBarItem
+0x001eadfc	CSBI_WellGoo	0x0	CSBI_WellGoo <- CSBI_Image <- CSBI_RectOnly <- CStatusBarItem
+0x001eae3c	CSBI_SideTab	0x0	CSBI_SideTab <- CStatusBarItem
+0x001eae8c	CTileTriggerSwitchLogic	0x0	CTileTriggerSwitchLogic
+0x001eaea4	CTileTriggerLogic	0x0	CTileTriggerLogic
+0x001eaeb4	CTileMultiTriggerSwitchLogic	0x0	CTileMultiTriggerSwitchLogic <- CTileTriggerSwitchLogic
+0x001eaecc	CTileExclusiveTriggerSwitchLogic	0x0	CTileExclusiveTriggerSwitchLogic <- CTileTriggerSwitchLogic
+0x001eaee4	CGiantRockLogic	0x0	CGiantRockLogic <- CTileTriggerLogic
+0x001eaef4	CCoveredPowerupLogic	0x0	CCoveredPowerupLogic <- CTileTriggerLogic
+0x001eaf04	CTileTimeTriggerLogic	0x0	CTileTimeTriggerLogic <- CTileTriggerLogic
+0x001eaf14	CTileSecretTriggerLogic	0x0	CTileSecretTriggerLogic <- CTileTriggerLogic
+0x001eaf24	CTileSecretTriggerSwitchLogic	0x0	CTileSecretTriggerSwitchLogic <- CTileTriggerSwitchLogic
+0x001eaf3c	CTileTimeTriggerSwitchLogic	0x0	CTileTimeTriggerSwitchLogic <- CTileTriggerSwitchLogic
+0x001eaf54	CCheckpointTriggerSwitchLogic	0x0	CCheckpointTriggerSwitchLogic <- CTileTriggerSwitchLogic
+0x001eaf6c	CGruntVoice	0x0	CGruntVoice <- CUserLogic <- CUserBase <- CWapX
+0x001eafd4	CMapStringToOb	0x0	CMapStringToOb <- CObject
+0x001eb014	CMapStringToPtr	0x0	CMapStringToPtr <- CObject
+0x001eb054	CPtrList	0x0	CPtrList <- CObject
+0x001eb174	CDialog	0x0	CDialog <- CWnd <- CCmdTarget <- CObject
+0x001eb5c4	CWnd	0x0	CWnd <- CCmdTarget <- CObject
+0x001eb6ac	CTestCmdUI	0x0	CTestCmdUI <- CCmdUI
+0x001eb6c4	_AFX_CTL3D_STATE	0x0	_AFX_CTL3D_STATE <- CNoTrackObject
+0x001eb7d4	CCmdTarget	0x0	CCmdTarget <- CObject
+0x001eb834	CCmdUI	0x0	CCmdUI
+0x001eba34	CDC	0x0	CDC <- CObject
+0x001ebab4	CClientDC	0x0	CClientDC <- CDC <- CObject
+0x001ebb34	CWindowDC	0x0	CWindowDC <- CDC <- CObject
+0x001ebbb4	CPaintDC	0x0	CPaintDC <- CDC <- CObject
+0x001ebc34	CPen	0x0	CPen <- CGdiObject <- CObject
+0x001ebc4c	CResourceException	0x0	CResourceException <- CSimpleException <- CException <- CObject
+0x001ebc6c	CUserException	0x0	CUserException <- CSimpleException <- CException <- CObject
+0x001ebd64	CStatic	0x0	CStatic <- CWnd <- CCmdTarget <- CObject
+0x001ebe34	CButton	0x0	CButton <- CWnd <- CCmdTarget <- CObject
+0x001ebf04	CListBox	0x0	CListBox <- CWnd <- CCmdTarget <- CObject
+0x001ebfec	CComboBox	0x0	CComboBox <- CWnd <- CCmdTarget <- CObject
+0x001ec0cc	CEdit	0x0	CEdit <- CWnd <- CCmdTarget <- CObject
+0x001ec19c	CScrollBar	0x0	CScrollBar <- CWnd <- CCmdTarget <- CObject
+0x001ec264	_AFX_THREAD_STATE	0x0	_AFX_THREAD_STATE <- CNoTrackObject
+0x001ec26c	CNoTrackObject	0x0	CNoTrackObject
+0x001ec274	AFX_MODULE_STATE	0x0	AFX_MODULE_STATE <- CNoTrackObject
+0x001ec27c	AFX_MODULE_THREAD_STATE	0x0	AFX_MODULE_THREAD_STATE <- CNoTrackObject
+0x001ec284	_AFX_BASE_MODULE_STATE	0x0	_AFX_BASE_MODULE_STATE <- AFX_MODULE_STATE <- CNoTrackObject
+0x001ec29c	CDWordArray	0x0	CDWordArray <- CObject
+0x001ec2dc	CPtrArray	0x0	CPtrArray <- CObject
+0x001ec5ec	CDragListBox	0x0	CDragListBox <- CListBox <- CWnd <- CCmdTarget <- CObject
+0x001ec6ec	CToolBarCtrl	0x0	CToolBarCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ec7c4	CStatusBarCtrl	0x0	CStatusBarCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ec89c	CListCtrl	0x0	CListCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ec974	CTreeCtrl	0x0	CTreeCtrl <- CWnd <- CCmdTarget <- CObject
+0x001eca4c	CSpinButtonCtrl	0x0	CSpinButtonCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ecb24	CSliderCtrl	0x0	CSliderCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ecbfc	CProgressCtrl	0x0	CProgressCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ecccc	CHeaderCtrl	0x0	CHeaderCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ecda4	CHotKeyCtrl	0x0	CHotKeyCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ece7c	CTabCtrl	0x0	CTabCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ecf54	CAnimateCtrl	0x0	CAnimateCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ed01c	CRichEditCtrl	0x0	CRichEditCtrl <- CWnd <- CCmdTarget <- CObject
+0x001ed0e4	CImageList	0x0	CImageList <- CObject
+0x001ed15c	CFile	0x0	CFile <- CObject
+0x001ed1bc	CFileException	0x0	CFileException <- CException <- CObject
+0x001ed264	CMapPtrToPtr	0x0	CMapPtrToPtr <- CObject
+0x001ed28c	CByteArray	0x0	CByteArray <- CObject
+0x001ed36c	_AFX_WIN_STATE	0x0	_AFX_WIN_STATE <- CNoTrackObject
+0x001ed374	CWinApp	0x0	CWinApp <- CWinThread <- CCmdTarget <- CObject
+0x001ed41c	CCommandLineInfo	0x0	CCommandLineInfo <- CObject
+0x001ed494	CObArray	0x0	CObArray <- CObject
+0x001ed4b4	CObList	0x0	CObList <- CObject
+0x001ed4dc	CStringList	0x0	CStringList <- CObject
+0x001ed584	CException	0x0	CException <- CObject
+0x001ed5a4	CMemoryException	0x0	CMemoryException <- CSimpleException <- CException <- CObject
+0x001ed5c4	CNotSupportedException	0x0	CNotSupportedException <- CSimpleException <- CException <- CObject
+0x001ed61c	CWinThread	0x0	CWinThread <- CCmdTarget <- CObject
+0x001ed6a4	_AFX_CTL3D_THREAD	0x0	_AFX_CTL3D_THREAD <- CNoTrackObject
+0x001ed6ec	CThreadData	0x0	CThreadData <- CNoTrackObject
+0x001ed724	CMenu	0x0	CMenu <- CObject
+0x001ed854	CScrollView	0x0	CScrollView <- CView <- CWnd <- CCmdTarget <- CObject
+0x001ed98c	CArchiveStream	0x0	CArchiveStream <- IStream <- ISequentialStream <- IUnknown
+0x001eda24	CArchiveException	0x0	CArchiveException <- CException <- CObject
+0x001eda54	CRecentFileList	0x0	CRecentFileList
+0x001edf0c	CFrameWnd	0x0	CFrameWnd <- CWnd <- CCmdTarget <- CObject
+0x001ee1c4	CView	0x0	CView <- CWnd <- CCmdTarget <- CObject
+0x001ee2dc	CCtrlView	0x0	CCtrlView <- CView <- CWnd <- CCmdTarget <- CObject
+0x001ee484	CDocument	0x0	CDocument <- CCmdTarget <- CObject
+0x001ee54c	CMirrorFile	0x0	CMirrorFile <- CFile <- CObject
+0x001ee5ac	type_info	0x0	type_info
+0x001f0344	strstreambuf	0x0	strstreambuf <- streambuf
+0x001f0374	istrstream	0xc	istrstream <- istream <- ios
+0x001f0384	ostrstream	0x8	ostrstream <- ostream <- ios
+0x001f0394	strstream	0x14	strstream <- iostream <- istream <- ios <- ostream <- ios
+0x001f03bc	ios	0x0	ios
+0x001f03c4	ifstream	0xc	ifstream <- istream <- ios
+0x001f03d4	ofstream	0x8	ofstream <- ostream <- ios
+0x001f03fc	filebuf	0x0	filebuf <- streambuf
+0x001f042c	streambuf	0x0	streambuf
+0x001f045c	istream	0xc	istream <- ios
+0x001f046c	istream_withassign	0xc	istream_withassign <- istream <- ios
+0x001f047c	ostream	0x8	ostream <- ios
+0x001f048c	ostream_withassign	0x8	ostream_withassign <- ostream <- ios
+0x001f049c	iostream	0x14	iostream <- istream <- ios <- ostream <- ios
+0x001f0964	CMemFile	0x0	CMemFile <- CFile <- CObject
+0x001f09ec	CStringArray	0x0	CStringArray <- CObject
+0x001f0ad4	fstream	0x14	fstream <- iostream <- istream <- ios <- ostream <- ios
