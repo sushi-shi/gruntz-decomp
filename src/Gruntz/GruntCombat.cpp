@@ -254,7 +254,7 @@ enum SpellzEffect {
 //  (the CSndHost, defined below in this very TU), then __thiscalls the looked-up
 //  LeafCue's PlayIfElapsed. The "__cdecl lookup" was a latent-ecx flat alias.)
 
-// The active-anim-set type-name registry: (reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(node) -> record whose
+// The active-anim-set type-name registry: g_typeColl.IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
 // The bute-config manager (canonical CButeMgr, g_buteMgr from <Bute/ButeMgr.h>):
 // GetDwordDef (0x1721e0) is reloc-masked __thiscall.

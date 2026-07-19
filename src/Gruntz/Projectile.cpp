@@ -1046,7 +1046,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     if (coord >= g_tbombLo && coord <= g_tbombHi) {
         return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
     }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_tbombColl))->GrowTo(coord, 0))) {
+    if (g_tbombColl.GrowTo(coord, 0)) {
         return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
     }
     void* item = g_projActCache;

@@ -149,7 +149,7 @@ extern "C" void Act_F(); // 0x402725
             id_ = g_typeCounter;                                                                   \
             CString* slot_ =                                                                       \
                 reinterpret_cast<CString*>(                                                         \
-                    (reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(id_));                     \
+                    g_typeColl.IndexToPtr(id_));                     \
             CString* p_ = reinterpret_cast<CString*>(g_typeColl.m_alloc);                          \
             for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                        \
                 ::new (static_cast<void*>(p_)) CString;                                            \

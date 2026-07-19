@@ -148,7 +148,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     if (coord >= g_haznLo && coord <= g_haznHi) {
         return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
     }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_haznColl))->GrowTo(coord, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
+    if (g_haznColl.GrowTo(coord, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
         return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
     }
     void* item = g_projActCache;

@@ -44,7 +44,7 @@ public:
 
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
-        return reinterpret_cast<CGruntzMgr*>(m_owner->m_gameMgr);
+        return reinterpret_cast<CGruntzMgr*>(m_owner->m_gameMgr); // downcast; CGruntzMgr incomplete here (header order) - static once complete
     }
 };
 SIZE(CGruntzWnd, 0x10); // recovered from the operator-new site (gruntz.analysis.news)

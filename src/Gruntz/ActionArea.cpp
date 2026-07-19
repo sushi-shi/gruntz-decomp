@@ -69,7 +69,7 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
         return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
     }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_projReg))->GrowTo(coord, 0))) {
+    if (g_projReg.GrowTo(coord, 0)) {
         return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
     }
     void* item = g_projActCache;
