@@ -98,11 +98,11 @@ void* operator new(u32 n); // 0x1b9b46
         obj = 0;                                                                                   \
         void* r;                                                                                   \
         if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0 && obj != 0) {                  \
-            r = (((CWwdGameObjectE*)obj)->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
+            r = ((reinterpret_cast<CWwdGameObjectE*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
-        *(void**)(p + (off)) = r;                                                                  \
+        *reinterpret_cast<void**>(p + (off)) = r;                                                                  \
         if (r == 0 && id != 0) {                                                                   \
             return 0;                                                                              \
         }                                                                                          \
@@ -112,7 +112,7 @@ void* operator new(u32 n); // 0x1b9b46
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
-        *(CString*)(p + (off)) = buf;                                                              \
+        *reinterpret_cast<CString*>(p + (off)) = buf;                                                              \
     } while (0)
 //   NAMEREF: read a 0x80 name, look it up by name (if non-empty), store.
 #define NAMEREF(off)                                                                               \
@@ -122,9 +122,9 @@ void* operator new(u32 n); // 0x1b9b46
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
             dir->m_animRegistry->m_10.Lookup(buf, obj);                                            \
-            *(void**)(p + (off)) = obj;                                                            \
+            *reinterpret_cast<void**>(p + (off)) = obj;                                                            \
         } else {                                                                                   \
-            *(void**)(p + (off)) = 0;                                                              \
+            *reinterpret_cast<void**>(p + (off)) = 0;                                                              \
         }                                                                                          \
     } while (0)
 

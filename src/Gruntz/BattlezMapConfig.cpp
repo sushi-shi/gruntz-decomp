@@ -4533,7 +4533,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push((void*)(cur->m_coord));                                           \
+                g_coordPool.Push(static_cast<void*>(cur->m_coord));                                           \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll();                                                                    \

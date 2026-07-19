@@ -615,7 +615,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
     }
 
 #define SER(idx)                                                                                   \
-    if (SyncSub* _o = (SyncSub*)m[idx]) {                                                          \
+    if (SyncSub* _o = reinterpret_cast<SyncSub*>(m[idx])) {                                                          \
         if (_o->Serialize(s, op, p4, p5) == 0)                                                     \
             return 0;                                                                              \
     }

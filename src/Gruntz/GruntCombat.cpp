@@ -413,14 +413,14 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        ((CScanRectInit*)&ra)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                   \
-        RECT* pb = ((CScanRectInit*)&rb)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);        \
+        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                   \
+        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);        \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                 \
-            *(RECT*)&(grid)->m_originX = ra;                                                       \
+        if (!IntersectRect(reinterpret_cast<RECT*>(&(grid)->m_originX), &ra, &rb)) {                                 \
+            *reinterpret_cast<RECT*>(&(grid)->m_originX) = ra;                                                       \
         }                                                                                          \
         (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
         (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \
@@ -463,21 +463,22 @@ SIZE_UNKNOWN(CombatTypeNode);
     {                                                                                              \
         i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                                        \
         if (id == 0) {                                                                             \
-            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
+            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                                          \
             id = g_typeCounter;                                                                    \
             char* slot = reinterpret_cast<char*>(((_zvec*)&g_typeColl)->IndexToPtr(id));                             \
             i32 n = g_typeColl.m_grown;                                                            \
-            void** list = (void**)g_typeColl.m_alloc;                                              \
+            void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                                              \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    ((CString*)list)->CString::~CString();                                         \
+                    (reinterpret_cast<CString*>(list))->CString::~CString();                                         \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \
-            ((CString*)slot)->operator=(key);                                                      \
+            (reinterpret_cast<CString*>(slot))->operator=(key);                                                      \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        ((CGruntActEntry*)g_reg_644af0.Resolve(id))->m_fn = (GruntActHandler)(handler);            \
+        (reinterpret_cast<CGruntActEntry*>(g_reg_644af0.Resolve(id)))->m_fn\
+            = reinterpret_cast<GruntActHandler>(handler);            \
     }
 
 // @early-stop
