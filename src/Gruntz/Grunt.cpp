@@ -430,7 +430,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     // (bound in MovingLogic.cpp); CGrunt rides the lean CGruntMovingBase, so the base
     // slot is reached through the shared canonical CMovingLogic view (same object at
     // offset 0) to reloc-mask against 0x16ea90.
-    ((CMovingLogic*)this)->MovingSlot16();
+    (reinterpret_cast<CMovingLogic*>(this))->MovingSlot16();
     CGameObject* obj = (CGameObject*)owner; // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_34 = obj;
     m_38 = obj; // the owner object doubles as the entrance player

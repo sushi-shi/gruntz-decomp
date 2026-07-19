@@ -46,7 +46,7 @@ extern "C" double pow(double, double);
 // (it runs the same bucket-array teardown on the same offsets).
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {
-    ((CWwdGrid*)this)->FreeBuckets();
+    (reinterpret_cast<CWwdGrid*>(this))->FreeBuckets();
 }
 
 // 0x168c10 - the REAL CWwdGrid::~CWwdGrid: stamp ??_7CWwdGrid (0x5f0328), free the bucket

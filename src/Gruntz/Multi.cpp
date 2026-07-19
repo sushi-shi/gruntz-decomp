@@ -770,7 +770,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (wr == 0) {
         return 0;
     }
-    if (((CPlay*)this)->LoadCursorSprites(0, 0) == 0) {
+    if ((static_cast<CPlay*>(this))->LoadCursorSprites(0, 0) == 0) {
         return 0;
     }
     PollSession();

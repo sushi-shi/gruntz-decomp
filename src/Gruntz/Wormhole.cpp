@@ -808,7 +808,7 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
             ar->Read(&m_tickHandled, 4);
             break;
         case 8:
-            ((CWormhole*)this)->LoadColors();
+            (reinterpret_cast<CWormhole*>(this))->LoadColors();
             break;
     }
     return 1;

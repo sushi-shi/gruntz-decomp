@@ -3692,7 +3692,7 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
+            if (!tick->LoadConfig(reinterpret_cast<CLevelInfo*>(this), idx, cfg)) {
                 return 0;
             }
             tick->Clear_02ade0();
@@ -3705,7 +3705,7 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
+            if (!tick->LoadConfig(reinterpret_cast<CLevelInfo*>(this), idx, cfg)) {
                 return 0;
             }
         } else {
@@ -3714,7 +3714,7 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
+            if (!tick->LoadConfig(reinterpret_cast<CLevelInfo*>(this), idx, cfg)) {
                 return 0;
             }
         }

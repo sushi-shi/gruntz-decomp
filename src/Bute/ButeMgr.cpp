@@ -2265,7 +2265,7 @@ void CButeMgr::ScanState(i16 state, char c) {
 // nested success-deepest, and continue forms all leave the order fixed.
 RVA(0x00171160, 0x45)
 bool CButeMgr::SkipToTag() {
-    while (((ButeMgr*)this)->ParseAttributeFile()) {
+    while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
         if (!Parse()) {
             break;
         }

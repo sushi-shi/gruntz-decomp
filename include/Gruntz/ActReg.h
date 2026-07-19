@@ -53,7 +53,7 @@ struct CActReg : public CActColl {
         if (id >= m_lo && id <= m_hi) {
             return m_base + (id - m_lo) * m_stride;
         }
-        if (reinterpret_cast<i32>(((_zvec*)this)->GrowTo(id, 0))) {
+        if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(this))->GrowTo(id, 0))) {
             return m_base + (id - m_lo) * m_stride;
         }
         void* item = g_projActCache;

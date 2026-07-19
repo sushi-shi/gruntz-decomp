@@ -550,7 +550,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        idx = ((CKeyFinder*)this)->Find(reinterpret_cast<i32>(key));
+        idx = (reinterpret_cast<CKeyFinder*>(this))->Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
     }

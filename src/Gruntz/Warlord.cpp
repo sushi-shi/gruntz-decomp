@@ -359,7 +359,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg), CWapX((CGameObject*
     m_timer2StampHi = 0;
     m_timer2WindowHi = 0;
     m_a8 = 0;
-    ((CGrunt*)this)->ResolveMovingAnimation();
+    (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
 }
 #undef WARLORD_ANIM_LOOKUP
 
@@ -477,7 +477,7 @@ i32 CWarlord::RearmMoving() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        ((CGrunt*)this)->ResolveMovingAnimation();
+        (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     }
     return 0;
 }
@@ -510,10 +510,10 @@ i32 CWarlord::LoadAttributes() {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
         >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
-            ((CGrunt*)this)->ResolveIdleAnimation();
+            (reinterpret_cast<CGrunt*>(this))->ResolveIdleAnimation();
             return 0;
         }
-        ((CGrunt*)this)->ResolveBattlecryAnimation();
+        (reinterpret_cast<CGrunt*>(this))->ResolveBattlecryAnimation();
     }
     return 0;
 }
@@ -551,7 +551,7 @@ i32 CWarlord::LoadAttributes2() {
         }
     } else {
         if (((CWarlordMission*)reg->m_curState)->m_objective->m_4c == 0) {
-            ((CGrunt*)this)->ResolveMovingAnimation();
+            (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
             return 0;
         }
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
@@ -599,7 +599,7 @@ i32 CWarlord::AdvanceMovingAnim() {
         h2->m_window = 0x3e8;
         h2->m_stamp = static_cast<u32>(g_frameTime);
     }
-    ((CGrunt*)this)->ResolveMovingAnimation();
+    (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     return 0;
 }
 
@@ -615,7 +615,7 @@ i32 CWarlord::RearmMoving2() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        ((CGrunt*)this)->ResolveMovingAnimation();
+        (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     }
     return 0;
 }

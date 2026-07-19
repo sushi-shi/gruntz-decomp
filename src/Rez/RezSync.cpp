@@ -729,7 +729,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     g_localVersion = static_cast<i32>(g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion)));
     m_timer = new CGruntSpawnConfig;
-    if (!m_timer->Init((CSpawnOwner*)this)) {
+    if (!m_timer->Init(reinterpret_cast<CSpawnOwner*>(this))) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
@@ -833,5 +833,5 @@ RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
     // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call
     // binds the reloc directly to ?Close@CGameMgr@WAP32@@UAEXXZ (this@+0 == the base).
-    ((CGameMgrBase*)this)->CGameMgrBase::Close();
+    (reinterpret_cast<CGameMgrBase*>(this))->CGameMgrBase::Close();
 }

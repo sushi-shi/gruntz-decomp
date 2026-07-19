@@ -714,7 +714,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
                 ReportError(0x8005, 0x421);
             }
-            if (!ParseSerial((CGameRegistry*)this, si->m_serial)) {
+            if (!ParseSerial(reinterpret_cast<CGameRegistry*>(this), si->m_serial)) {
                 ReportError(0x8005, 0x465);
             }
             CheckSavedMode();

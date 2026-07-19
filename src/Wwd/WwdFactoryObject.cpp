@@ -616,7 +616,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    ((CAniBlitTrigger*)this)->TriggerBlit_1587f0(cue, 0, 0, 0);
+                    (reinterpret_cast<CAniBlitTrigger*>(this))->TriggerBlit_1587f0(cue, 0, 0, 0);
                 }
             } else {
                 i32* tbl;

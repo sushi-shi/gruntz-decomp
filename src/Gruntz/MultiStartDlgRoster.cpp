@@ -611,7 +611,7 @@ void CMultiStartDlg::OnColorSlot0() {
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (((CNetSessHost*)this)->SelectColor(0, dlg.m_pickedColor)) {
+        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(0, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x501)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -629,7 +629,7 @@ void CMultiStartDlg::OnColorSlot1() {
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (((CNetSessHost*)this)->SelectColor(1, dlg.m_pickedColor)) {
+        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(1, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x503)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -647,7 +647,7 @@ void CMultiStartDlg::OnColorSlot2() {
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (((CNetSessHost*)this)->SelectColor(2, dlg.m_pickedColor)) {
+        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(2, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x505)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -665,7 +665,7 @@ void CMultiStartDlg::OnColorSlot3() {
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (((CNetSessHost*)this)->SelectColor(3, dlg.m_pickedColor)) {
+        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(3, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x507)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
