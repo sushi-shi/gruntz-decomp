@@ -1031,6 +1031,15 @@ inline CStatusBarMgr::CStatusBarMgr() {
 
 // BuildStatusBarTabs' record ctor stamps 0x1eab8c == CSBI_RectOnly's bound table;
 // the sub-record's cl-emitted ??_7 reloc-masks it.
+// DISSOLUTION ATTEMPTED AND REFUTED (2026-07-19): inlining the real CSBI_RectOnly
+// ctor (to let the three widget `new` sites inline it and kill this alias) makes cl
+// inline it at depth-2 inside BuildTabzDialog's imageset ctor TOO - where retail
+// CALLS the out-of-line 0x101fa0 - and NO obj then emits the COMDAT for a pin
+// (measured: 0x101fa0 unbound, net -2 exact + tree-wide type-table butterflies).
+// Retail's two ctor flavors (3 inline sites + 1 called site + the 0x101fa0 body)
+// cannot come from one plain inline definition under our cl; until that mechanism
+// is found, the CSbiRectSub view IS the inline flavor and this alias is the
+// measured-necessary record of its vtable identity.
 RELOC_VTBL(CSbiRectSub, 0x001eab8c);
 
 #endif // GRUNTZ_SBI_RECTONLY_H
