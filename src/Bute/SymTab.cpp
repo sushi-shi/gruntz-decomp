@@ -521,7 +521,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     if (m_size > 0) {
-        m_buf = RezAlloc(m_size);
+        m_buf = static_cast<u8*>(RezAlloc(m_size));
         if (m_buf != 0) {
             m_src->m_stream->ReadAt(m_off, 0, m_size, m_buf);
         }

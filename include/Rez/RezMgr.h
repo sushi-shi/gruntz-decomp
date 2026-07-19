@@ -294,17 +294,16 @@ class CRezDirNode {
 public:
     i32 Load(i32 childFlag);
 
-    void* m_0;      // +0x00 (vtable / base, not touched by Load)
-    void* m_4;      // +0x04
-    void* m_8;      // +0x08
+    char _vft0[4];  // +0x00 engine vptr (reduced view; not dispatched by Load)
+    char m_pad04[0x0c - 0x04]; // +0x04..+0x0b (untouched by Load; roles unrecovered)
     i32 m_off;      // +0x0c  (payload offset)
     u32 m_size;     // +0x10  (payload size)
-    void* m_subdir; // +0x14  (unused by Load on `this`)
+    CRezDirNode* m_subdir; // +0x14  child sub-dir (the recursion target; unused on `this`)
     RezSrc* m_src;  // +0x18  (archive source object)
     char m_pad1c[0x38 - 0x1c];
     CHashBase m_kids; // +0x38..+0x3f  (8-byte engine child collection)
     char m_pad40[8];  // +0x40..+0x47
-    void* m_buf;      // +0x48  (payload buffer / loaded gate)
+    u8* m_buf;        // +0x48  payload buffer / loaded gate
 };
 
 // The child chain node walked by Load carries the recursion target (the sub-dir
