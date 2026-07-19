@@ -132,7 +132,7 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
 // g_savedMultiWndProc.
 DATA(0x00229d10)
-i32 g_savedDlgWndProc;
+WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
 
 // WndProc_15a10 (0x15a10) - the subclass window-proc installed on a read-only combo
 // edit child (twin of WndProc_c1a10): swallow an empty WM_SETTEXT (keeps the shown
@@ -144,7 +144,7 @@ extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
             return 0;
         }
     }
-    return CallWindowProcA(reinterpret_cast<WNDPROC>(g_savedDlgWndProc), hWnd, msg, wParam, lParam);
+    return CallWindowProcA(g_savedDlgWndProc, hWnd, msg, wParam, lParam);
 }
 
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;

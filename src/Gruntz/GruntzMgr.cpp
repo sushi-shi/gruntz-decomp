@@ -2117,7 +2117,6 @@ void CGruntzMgr::CheatEclipseToggle() {
 }
 
 // The live game objects are dispatched to a __cdecl callback (obj, user).
-typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ScanObjectsInRadius (0x092180; __thiscall; ret 0x18). Walks the live
@@ -2127,7 +2126,7 @@ typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
 // passed to cb(obj, user); the walk stops early if cb returns 0. Returns the hit
 // count. A null cb returns 0.
 RVA(0x00092180, 0x98)
-i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, i32 user) {
+i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user) {
     if (cb == 0) {
         return 0;
     }
@@ -2143,7 +2142,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
             i32 ady = abs(obj->m_screenY - y);
             if (adx * adx + ady + ady < r2) {
                 count++;
-                if ((reinterpret_cast<ScanCb>(cb))(obj, user) == 0) {
+                if (cb(obj, user) == 0) {
                     return count;
                 }
             }
@@ -2166,7 +2165,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
 // [mem]`) instead of a register - so no frame is reserved. No source spelling flips
 // MSVC's dead-arg-slot reuse back to a fresh frame (regalloc family).
 RVA(0x00092250, 0xba)
-i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb, i32 user) {
+i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb cb, i32 user) {
     if (cb == 0) {
         return 0;
     }
@@ -2190,7 +2189,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
                 i32 oy = obj->m_screenY;
                 if (oy >= loY && oy <= hiY) {
                     count++;
-                    if ((reinterpret_cast<ScanCb>(cb))(obj, user) == 0) {
+                    if (cb(obj, user) == 0) {
                         return count;
                     }
                 }

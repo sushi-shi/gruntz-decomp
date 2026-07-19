@@ -497,7 +497,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         g_customWorldInst,
         "CUSTOM_WORLDINFO",
         g_customWorldParent,
-        reinterpret_cast<DLGPROC>(CustomWorldInfoDlgProcThunk), // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
+        CustomWorldInfoDlgProcThunk, // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
         0
     );
     return 1;

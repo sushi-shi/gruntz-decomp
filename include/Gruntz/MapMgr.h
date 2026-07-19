@@ -145,7 +145,7 @@ public:
     // defined through the `CBrickzGrid` typedef as CMapMgr::, so no body moved.
     void Clip(const tagRECT* r);                        // 0x02b340 board dirty-rect clip
     void ComputeCellFlags(i32 x, i32 y, i32 id3);       // 0x077790 terrain cell-flag compute
-    i32 AllocGrid(i32 width, i32 height, i32 callback); // 0x09ea60 grid allocator/initializer
+    i32 AllocGrid(i32 width, i32 height, void (*callback)()); // 0x09ea60 grid allocator/initializer
     i32 SearchEdge(
         i32 xA,
         i32 yA,

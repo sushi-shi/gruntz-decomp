@@ -224,7 +224,7 @@ CMapMgr::~CMapMgr() {
 // IntersectRect rect build + the m_gridW/m_gridH size compute), but the count*0x1c temp
 // + the rect stack slots spill against retail's slot schedule. Parked for sweep.
 RVA(0x0009ea60, 0x168)
-i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
+i32 CBrickzGrid::AllocGrid(i32 width, i32 height, void (*callback)()) {
     i32 count = height * width;
     m_width = width;
     m_height = height;
@@ -250,7 +250,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     if (m_colB.Allocate(count * 5) == 0) {
         return 0;
     }
-    m_stepCb = reinterpret_cast<void (*)()>(callback);
+    m_stepCb = callback;
     // Build the grid bounding rect: intersect the {0,0,width,height} box with
     // itself into m_originX (the {left,top,right,bottom} at +0x60); on an empty result
     // fall back to the box. m_gridW/m_gridH = the resulting width/height.

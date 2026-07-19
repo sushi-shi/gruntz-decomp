@@ -213,7 +213,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
             g_hInstance,
             "CONFIG_ADVANCED",
             0,
-            reinterpret_cast<DLGPROC>(&AdvancedOptionsDialogProc),
+            &AdvancedOptionsDialogProc,
             0
         );
         if (nDlgResult == 0) {

@@ -297,8 +297,10 @@ public:
     // callback(obj, user) for each object matching `mask` whose screen position falls
     // inside a radius / rect; return the hit count. The cb/rect pointers are passed
     // as i32 (the consumers cast) to keep this widely-included header dependency-free.
-    i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, i32 user);   // @0x092180
-    i32 ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb, i32 user); // @0x092250
+    // per-object scan callback (early-out on 0); the walks pass every masked hit.
+    typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
+    i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);   // @0x092180
+    i32 ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb cb, i32 user); // @0x092250
     i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_surfaceColorKey color by depth)
     i32 LoadWorldMode(i32 mode);     // @0x091a40 (switch the world video/color mode + reload)
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
