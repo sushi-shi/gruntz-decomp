@@ -1425,11 +1425,11 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     box.top = cy - 6;
     box.right = (cx + 6) + 1;
     box.bottom = (cy + 6) + 1;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &box, &bounds)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = box;
+    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+        board->m_bounds = box;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     GruntCoord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
@@ -1517,11 +1517,11 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                 rc.top = p2->top;
                 rc.right = p2->right;
                 rc.bottom = p2->bottom;
-                if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &rc, &b1)) {
-                    *reinterpret_cast<RECT*>(&board->m_originX) = rc;
+                if (!IntersectRect(&board->m_bounds, &rc, &b1)) {
+                    board->m_bounds = rc;
                 }
-                board->m_gridW = board->m_boundRight - board->m_originX;
-                board->m_gridH = board->m_boundBottom - board->m_originY;
+                board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+                board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
                 GruntCoord* nt = (unit->CoordTail())->m_coord;
                 unit->m_entrancePxX = (nt->m_x << 5) + 0x10;
                 unit->m_entrancePxY = (nt->m_y << 5) + 0x10;
@@ -1542,11 +1542,11 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     fc.top = pf->top;
     fc.right = pf->right;
     fc.bottom = pf->bottom;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &fc, &f1)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = fc;
+    if (!IntersectRect(&board->m_bounds, &fc, &f1)) {
+        board->m_bounds = fc;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     return 0;
 }
 
@@ -1778,11 +1778,11 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     bounds.top = 0;
     bounds.right = board->m_width;
     bounds.bottom = board->m_height;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &box, &bounds)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = box;
+    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+        board->m_bounds = box;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     Method_0300c0(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
     board->Clip(static_cast<const RECT*>(0));
     return 1;
@@ -2174,11 +2174,11 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     clamp.top = box.top;
     clamp.right = box.right + 1;
     clamp.bottom = box.bottom + 1;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &clamp, &bounds)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = clamp;
+    if (!IntersectRect(&board->m_bounds, &clamp, &bounds)) {
+        board->m_bounds = clamp;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // Iterate the scene collection for kind-matching units inside the box.
     CQueueDrainHost* coll = m_ctx->m_objList->m_coll;
     coll->m_scan = coll->m_head;
@@ -2225,11 +2225,11 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         bx.top = p->top;
                         bx.right = p->right;
                         bx.bottom = p->bottom;
-                        if (!IntersectRect(reinterpret_cast<RECT*>(&bd->m_originX), &bx, &mb)) {
-                            *reinterpret_cast<RECT*>(&bd->m_originX) = bx;
+                        if (!IntersectRect(&bd->m_bounds, &bx, &mb)) {
+                            bd->m_bounds = bx;
                         }
-                        bd->m_gridW = bd->m_boundRight - bd->m_originX;
-                        bd->m_gridH = bd->m_boundBottom - bd->m_originY;
+                        bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
+                        bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
                         return 1;
                     }
                 } else {
@@ -2249,11 +2249,11 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                             rc.top = p2r->top;
                             rc.right = p2r->right;
                             rc.bottom = p2r->bottom;
-                            if (!IntersectRect(reinterpret_cast<RECT*>(&bd->m_originX), &rc, &r1)) {
-                                *reinterpret_cast<RECT*>(&bd->m_originX) = rc;
+                            if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
+                                bd->m_bounds = rc;
                             }
-                            bd->m_gridW = bd->m_boundRight - bd->m_originX;
-                            bd->m_gridH = bd->m_boundBottom - bd->m_originY;
+                            bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
+                            bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
                             return 1;
                         }
                     }
@@ -2421,8 +2421,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
             GruntTilePos da;
             g->GetTilePos(&da);
-            for (i32 drow = m_board->m_originY; drow < m_board->m_boundBottom; drow++) {
-                for (i32 dcol = m_board->m_originX; dcol < m_board->m_boundRight; dcol++) {
+            for (i32 drow = m_board->m_bounds.top; drow < m_board->m_bounds.bottom; drow++) {
+                for (i32 dcol = m_board->m_bounds.left; dcol < m_board->m_bounds.right; dcol++) {
                     CPtrList cs(0xa); // a real MFC CPtrList (the stack instance forces /GX)
                     if (!(m_board->m_rows[drow][dcol].m_0 & 0x20000000)) {
                         void* h = cs.RemoveHead();
@@ -2443,11 +2443,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         tmp.top = corners.top;
         tmp.right = corners.right;
         tmp.bottom = corners.bottom;
-        if (!IntersectRect(reinterpret_cast<RECT*>(&m_board->m_originX), static_cast<RECT*>(&tmp), static_cast<RECT*>(&corners))) {
-            *reinterpret_cast<RECT*>(&m_board->m_originX) = tmp;
+        if (!IntersectRect(&m_board->m_bounds, static_cast<RECT*>(&tmp), static_cast<RECT*>(&corners))) {
+            m_board->m_bounds = tmp;
         }
-        m_board->m_gridW = m_board->m_boundRight - m_board->m_originX;
-        m_board->m_gridH = m_board->m_boundBottom - m_board->m_originY;
+        m_board->m_gridW = m_board->m_bounds.right - m_board->m_bounds.left;
+        m_board->m_gridH = m_board->m_bounds.bottom - m_board->m_bounds.top;
     }
 
     // ---- door body flag (dest.flags & 4) ----
@@ -2941,11 +2941,11 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     box.top = top;
     box.right = right + 1;
     box.bottom = bottom + 1;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &box, &bounds)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = box;
+    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+        board->m_bounds = box;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     Method_02d800(unitArg, a1, a2, a3);
     if (g_stepRun == 0) {
         i32 savedX = unit->m_entrancePxX;
@@ -2982,10 +2982,10 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         }
     }
     // Clear bit 0x2 across the board dirty region.
-    i32 dl = board->m_originX;
-    i32 dt = board->m_originY;
-    i32 dr = board->m_boundRight;
-    i32 db = board->m_boundBottom;
+    i32 dl = board->m_bounds.left;
+    i32 dt = board->m_bounds.top;
+    i32 dr = board->m_bounds.right;
+    i32 db = board->m_bounds.bottom;
     if (dl < dr) {
         i32 colOff = (dl * 7) << 2;
         for (i32 w = dr - dl; w != 0; w--) {
@@ -3006,11 +3006,11 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     fb.top = 0;
     fb.right = board->m_width;
     fb.bottom = board->m_height;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &fa, &fb)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = fa;
+    if (!IntersectRect(&board->m_bounds, &fa, &fb)) {
+        board->m_bounds = fa;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     return 1;
 }
 
@@ -3160,11 +3160,11 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         rc.right = p0->right;
         rc.bottom = p0->bottom;
     }
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &rc, &bounds)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = rc;
+    if (!IntersectRect(&board->m_bounds, &rc, &bounds)) {
+        board->m_bounds = rc;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // FindPath flag word from the unit's 0x12 / 0x16 / 0xe anim modes.
     i32 flags = 0;
     i32 prim = unit->m_entranceReason;
@@ -3204,11 +3204,11 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         frc.top = fp->top;
         frc.right = fp->right;
         frc.bottom = fp->bottom;
-        if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &frc, &fb)) {
-            *reinterpret_cast<RECT*>(&board->m_originX) = frc;
+        if (!IntersectRect(&board->m_bounds, &frc, &fb)) {
+            board->m_bounds = frc;
         }
-        board->m_gridW = board->m_boundRight - board->m_originX;
-        board->m_gridH = board->m_boundBottom - board->m_originY;
+        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
         unit->m_dwell = 0;
         return 0;
     }
@@ -3246,11 +3246,11 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     grc.top = gp->top;
     grc.right = gp->right;
     grc.bottom = gp->bottom;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &grc, &gb)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = grc;
+    if (!IntersectRect(&board->m_bounds, &grc, &gb)) {
+        board->m_bounds = grc;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     unit->m_dwell = 0;
     return 1;
 }
@@ -4782,11 +4782,11 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             rc.top = p2->top;
             rc.right = p2->right;
             rc.bottom = p2->bottom;
-            if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &rc, &r1)) {
-                *reinterpret_cast<RECT*>(&board->m_originX) = rc;
+            if (!IntersectRect(&board->m_bounds, &rc, &r1)) {
+                board->m_bounds = rc;
             }
-            board->m_gridW = board->m_boundRight - board->m_originX;
-            board->m_gridH = board->m_boundBottom - board->m_originY;
+            board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+            board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
             if (static_cast<u32>(unit->m_dwell) > 0x1f4 && unit->CoordCount() == 0) {
                 i32 flags = unit->m_250;
                 unit->m_254 = 0x4268;
@@ -5107,11 +5107,11 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     rc.top = bp->top;
     rc.right = bp->right;
     rc.bottom = bp->bottom;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&board->m_originX), &rc, &box2)) {
-        *reinterpret_cast<RECT*>(&board->m_originX) = rc;
+    if (!IntersectRect(&board->m_bounds, &rc, &box2)) {
+        board->m_bounds = rc;
     }
-    board->m_gridW = board->m_boundRight - board->m_originX;
-    board->m_gridH = board->m_boundBottom - board->m_originY;
+    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     i32 prim = unit->m_entranceReason;
     i32 flags = unit->m_254;
     i32 t = prim;

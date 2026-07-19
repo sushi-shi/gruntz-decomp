@@ -50,6 +50,7 @@
 // (CBrickzGrid methods compiled in 3 different objs). This file keeps ONLY the main
 // pathfinding obj (SearchEdge/UpdateDiagonals/LineIsClear/IsCellClear @0x081e10..) +
 // the pooled Serialize @0x09356c.
+#include <Win32.h> // RECT - CMapMgr::m_bounds is a real RECT member now
 #include <rva.h>
 #include <Gruntz/BattlezData.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)

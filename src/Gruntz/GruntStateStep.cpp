@@ -94,11 +94,11 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(reinterpret_cast<RECT*>(&(grid)->m_originX), &ra, &rb)) {                                 \
-            *reinterpret_cast<RECT*>(&(grid)->m_originX) = ra;                                                       \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                 \
+            (grid)->m_bounds = ra;                                                       \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
-        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                                \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                               \
     }
 
 static i32 iabs(i32 v) {
@@ -154,11 +154,11 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 box.bottom = (b3.m_y >> 5) + 5;
                 RECT gb;
                 static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
-                if (!IntersectRect(reinterpret_cast<RECT*>(&grid->m_originX), &box, &gb)) {
-                    *reinterpret_cast<RECT*>(&grid->m_originX) = box;
+                if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+                    grid->m_bounds = box;
                 }
-                grid->m_gridW = grid->m_boundRight - grid->m_originX;
-                grid->m_gridH = grid->m_boundBottom - grid->m_originY;
+                grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+                grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
             }
             GruntTilePos p;
             nb->GetScreenPos(&p);
@@ -255,11 +255,11 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             box.bottom = (d3.m_y >> 5) + 5;
             RECT gb;
             static_cast<RECT*>(new (&gb) CRect(0, 0, grid->m_width, grid->m_height));
-            if (!IntersectRect(reinterpret_cast<RECT*>(&grid->m_originX), &box, &gb)) {
-                *reinterpret_cast<RECT*>(&grid->m_originX) = box;
+            if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+                grid->m_bounds = box;
             }
-            grid->m_gridW = grid->m_boundRight - grid->m_originX;
-            grid->m_gridH = grid->m_boundBottom - grid->m_originY;
+            grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+            grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
         }
         GruntTilePos cp;
         cur->GetScreenPos(&cp);

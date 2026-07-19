@@ -419,11 +419,11 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(reinterpret_cast<RECT*>(&(grid)->m_originX), &ra, &rb)) {                                 \
-            *reinterpret_cast<RECT*>(&(grid)->m_originX) = ra;                                                       \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                 \
+            (grid)->m_bounds = ra;                                                       \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
-        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                                \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                               \
     }
 
 #define FREELIST_PUSH(elem)                                                                        \
@@ -999,11 +999,11 @@ i32 CGrunt::PathScan57db0() {
     gb.top = 0;
     gb.right = grid->m_width;
     gb.bottom = grid->m_height;
-    if (!IntersectRect(reinterpret_cast<RECT*>(&grid->m_originX), &box, &gb)) {
-        *reinterpret_cast<RECT*>(&grid->m_originX) = box;
+    if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+        grid->m_bounds = box;
     }
-    grid->m_gridW = grid->m_boundRight - grid->m_originX;
-    grid->m_gridH = grid->m_boundBottom - grid->m_originY;
+    grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+    grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
 
     i32 tcol = CoordTail()->m_coord->m_x;
     i32 trow = CoordTail()->m_coord->m_y;

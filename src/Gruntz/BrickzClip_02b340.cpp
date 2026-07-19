@@ -3,8 +3,8 @@
 // .text obj. (Was the placeholder ClipHost_02b340 view; this->m_board is a
 // CBrickzGrid, so Clip is a real CBrickzGrid method.)
 #include <rva.h>
+#include <Win32.h> // RECT + IntersectRect (Clip) - windows-first: CMapMgr::m_bounds is a RECT
 #include <Gruntz/Brickz.h>
-#include <Win32.h> // RECT + IntersectRect (Clip)
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::Clip (0x02b340) - board dirty-rect clip finaliser. Clip the
@@ -36,9 +36,9 @@ void CBrickzGrid::Clip(const RECT* src) {
         a.right = m_width;
         a.bottom = m_height;
     }
-    if (!IntersectRect(reinterpret_cast<RECT*>(&m_originX), &a, &b)) {
-        *reinterpret_cast<RECT*>(&m_originX) = a;
+    if (!IntersectRect(reinterpret_cast<RECT*>(&m_bounds.left), &a, &b)) {
+        *reinterpret_cast<RECT*>(&m_bounds.left) = a;
     }
-    m_gridW = m_boundRight - m_originX;
-    m_gridH = m_boundBottom - m_originY;
+    m_gridW = m_bounds.right - m_bounds.left;
+    m_gridH = m_bounds.bottom - m_bounds.top;
 }

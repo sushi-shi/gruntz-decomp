@@ -264,7 +264,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     b.top = 0;
     b.right = width;
     b.bottom = height;
-    RECT* out = reinterpret_cast<RECT*>(&m_originX);
+    RECT* out = reinterpret_cast<RECT*>(&m_bounds.left);
     if (!IntersectRect(out, &a, &b)) {
         *out = a;
     }
@@ -319,11 +319,11 @@ i32 CBrickzGrid::Search(
     i32 maskB,
     i32 maskC
 ) {
-    i32 ox = m_originX;
+    i32 ox = m_bounds.left;
     if (static_cast<u32>((x1 - ox)) >= static_cast<u32>(m_gridW)) {
         return 0;
     }
-    i32 oy = m_originY;
+    i32 oy = m_bounds.top;
     i32 hgt = m_gridH;
     if (static_cast<u32>((y1 - oy)) >= static_cast<u32>(hgt)) {
         return 0;
@@ -455,10 +455,10 @@ i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ncol = node->m_0 + dx;
     i32 nrow = node->m_4 + dy;
     BrickzNode* found0 = 0;
-    if (static_cast<u32>((ncol - m_originX)) >= static_cast<u32>(m_gridW)) {
+    if (static_cast<u32>((ncol - m_bounds.left)) >= static_cast<u32>(m_gridW)) {
         return 1;
     }
-    if (static_cast<u32>((nrow - m_originY)) >= static_cast<u32>(m_gridH)) {
+    if (static_cast<u32>((nrow - m_bounds.top)) >= static_cast<u32>(m_gridH)) {
         return 1;
     }
     i32* ncell = reinterpret_cast<i32*>(&m_rows[nrow][ncol]);
@@ -885,7 +885,7 @@ i32 CMapMgr::Save(CSerialArchive* ar) {
     ar->Write(&m_maskC, 4);
     ar->Write(&m_maskB, 4);
     ar->Write(&m_dirty, 4);
-    ar->Write(&m_originX, 0x10);
+    ar->Write(&m_bounds.left, 0x10);
     ar->Write(&m_gridW, 4);
     ar->Write(&m_gridH, 4);
     for (u32 i = 0; i < m_c; i++) {
@@ -917,7 +917,7 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     ar->Read(&m_maskC, 4);
     ar->Read(&m_maskB, 4);
     ar->Read(&m_dirty, 4);
-    ar->Read(&m_originX, 0x10);
+    ar->Read(&m_bounds.left, 0x10);
     ar->Read(&m_gridW, 4);
     ar->Read(&m_gridH, 4);
     for (u32 i = 0; i < m_c; i++) {
