@@ -75,7 +75,7 @@ private:
     void* m_00;      // +0x00  engine vptr (opaque)
     HANDLE m_handle; // +0x04  Win32 HANDLE (-1 when closed); never dereferenced here
     i32 m_open;      // +0x08  open/refcount flag
-    void* m_name;    // +0x0C  CString filename buffer
+    char* m_name;    // +0x0C  CString filename buffer (the CString body pointer)
 };
 
 // ---------------------------------------------------------------------------

@@ -47,7 +47,7 @@ public:
         return reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(payload) - m_linkOffset);
     }
 
-    void* m_block;    // +0x00  owned backing block (RezAlloc'd; freed by ClearCoordPool)
+    CoordPoolNode* m_block; // +0x00  owned backing block (RezAlloc'd; freed by ClearCoordPool)
     CoordPoolNode* m_freeHead; // +0x04  free-list head
     i32 m_count;      // +0x08  element count of m_block
     i32 m_linkOffset; // +0x0c  payload offset inside a node (Push subtracts it)
