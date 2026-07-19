@@ -117,10 +117,10 @@ void CUserLogic::FinalizeStep(i32 /*unused*/) {
         return;
     }
     if (m_08 != 0 && reinterpret_cast<i32>(m_14->m_1c) == m_28) {
-        (this->*(UserLogicCallback&)m_08)();
+        (this->*reinterpret_cast<UserLogicCallback&>(m_08))();
         m_08 = 0;
     }
-    (this->*(UserLogicCallback&)m_04)();
+    (this->*reinterpret_cast<UserLogicCallback&>(m_04))();
     m_04 = 0;
     m_28 = 0x3e9;
 }

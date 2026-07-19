@@ -100,7 +100,7 @@ static const i32 TILE_CLEAR = -1;
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = kTilePassable;                                                              \
         } else {                                                                                   \
-            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
+            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);                     \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)

@@ -475,7 +475,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_surface);                                         \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = ((CPlaneFrame**)m_frameSets.GetData())[h_ >> 16];                   \
+            CPlaneFrame* fr_ = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[h_ >> 16];                   \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                                         \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \

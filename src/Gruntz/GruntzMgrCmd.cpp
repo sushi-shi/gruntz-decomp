@@ -108,7 +108,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c =                                                                              \
-            (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)->Lookup_05b7e0(TAG);       \
+            reinterpret_cast<LeafCue*>(((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)->Lookup_05b7e0(TAG));       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -147,16 +147,23 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
-                                  [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                \
-                                   + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]        \
+                            ? reinterpret_cast<CGrunt*>(                                           \
+                                  m_cmdGrid->m_grid                                                \
+                                      [reinterpret_cast<CTrigPoint*>(                              \
+                                           m_cmdGrid->m_recList.GetHead())                         \
+                                           ->y                                                     \
+                                       + reinterpret_cast<CTrigPoint*>(                            \
+                                             m_cmdGrid->m_recList.GetHead())                       \
+                                                 ->x                                               \
+                                             * 15])                                                \
                             : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
         CGrunt* _c2 =                                                                              \
-            (CGrunt*)m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];          \
+            reinterpret_cast<CGrunt*>(                                                             \
+                m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15]);              \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -170,9 +177,15 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
-                                  [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                \
-                                   + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]        \
+                            ? reinterpret_cast<CGrunt*>(                                           \
+                                  m_cmdGrid->m_grid                                                \
+                                      [reinterpret_cast<CTrigPoint*>(                              \
+                                           m_cmdGrid->m_recList.GetHead())                         \
+                                           ->y                                                     \
+                                       + reinterpret_cast<CTrigPoint*>(                            \
+                                             m_cmdGrid->m_recList.GetHead())                       \
+                                                 ->x                                               \
+                                             * 15])                                                \
                             : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \

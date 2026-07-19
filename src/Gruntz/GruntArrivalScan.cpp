@@ -139,7 +139,7 @@ extern "C" {
 // Drain the pending-coord list (recycle each node's link, then RemoveAll).
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        GruntCoordNode* n = (GruntCoordNode*)m_31c.GetHeadPosition();                                \
+        GruntCoordNode* n = reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());                                \
         while (n != 0) {                                                                           \
             GruntCoordNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
