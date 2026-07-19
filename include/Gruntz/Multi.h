@@ -94,24 +94,12 @@ struct CNetSession;    // the +0x520 command-session facet (Session() accessor)
 // is exactly the CBattlezMapConfig interface every other consumer already cast to. See
 // the 6-way conflation proof in GruntzPlayer.h.)
 
-// The +0x6c list head's element type (CPtrList node, removed via RemoveHead).
-class CMultiLogicNode {
-public:
-    char m_pad00_06[0x6];
-    u8 m_6; // +0x06  parity byte
-    char m_pad07_0c[0xc - 0x7];
-    i32 m_c; // +0x0c  armed flag
-};
-
-// The +0x6c sub-object: a list-bearing manager (head at +0x1c, count latch at +0x28).
-class CMultiLogicList {
-public:
-    char m_pad00_1c[0x1c];
-    char m_head[0x28 - 0x1c];      // +0x1c  CPtrList head (RemoveHead via 0x5b4a03)
-    i32 m_28;                      // +0x28  emptiness/count gate
-    CMultiLogicNode* RemoveHead(); // 0x005b4a03 (MFC CPtrList::RemoveHead)
-    void Step20b3(i32 v);          // per-frame poke (PumpA, thiscall)
-};
+// (CMultiLogicList / CMultiLogicNode are DISSOLVED, 2026-07-19: the +0x6c object
+// is the REAL CGruntzCmdMgr (m_cmdSubMgr's own declared type) - the view's +0x1c
+// head / +0x28 count were its m_1c GzObList(==CPtrList) queue's head/m_nCount, and
+// the popped element is the queued CGruntzCommand (m_6 parity == m_6 type/key,
+// m_c armed == m_submitted; the same identity chain as the CNetSession id-map,
+// proven at the ArmSlot site). Step20b3 moved onto CGruntzCmdMgr.)
 
 // The DirectPlay launch connection-settings buffer CGruntzMgr::m_connSettings (+0xc4)
 // points at (flags at +0x4, player/host name at +0x8) - the multiplayer facet of that

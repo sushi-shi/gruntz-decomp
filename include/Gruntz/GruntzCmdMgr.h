@@ -139,6 +139,9 @@ public:
     void BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5); // 0x023d90
     // 0x085bd0 - the /GX destructor.
     ~CGruntzCmdMgr();
+    // Per-frame poke CMulti::PumpA drives with (m_curSlotId % 128); role unrecovered
+    // (reloc-masked external; ex CMultiLogicList::Step20b3 - that view is dissolved).
+    void Step20b3(i32 v);
 
     GzObList m_base;  // +0x00  primary target queue
     GzObList m_1c;    // +0x1c  nested subset queue

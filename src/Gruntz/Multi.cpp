@@ -1081,15 +1081,15 @@ i32 CMulti::Render() {
     i32 newId = m_session->m_tick;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
-        CMultiLogicList* lst = reinterpret_cast<CMultiLogicList*>(Mgr()->m_cmdSubMgr);
-        CMultiLogicNode* node;
-        if (lst->m_28 == 0) {
+        CGruntzCmdMgr* mgr = Mgr()->m_cmdSubMgr;
+        CGruntzCommand* node;
+        if (mgr->m_1c.GetCount() == 0) {
             node = 0;
         } else {
-            node = lst->RemoveHead();
+            node = static_cast<CGruntzCommand*>(mgr->m_1c.RemoveHead());
         }
         if (node) {
-            node->m_c = 1;
+            node->m_submitted = 1;
             i32 v = m_curSlotId + static_cast<i32>(m_5a4) * 2;
             i32 s = v < 0 ? -v : v;
             s &= 0x7f;
@@ -1221,7 +1221,7 @@ i32 CMulti::PumpA() {
             m_ambientInitDone = 1;
         }
     }
-    (reinterpret_cast<CMultiLogicList*>(Mgr()->m_cmdSubMgr))->Step20b3(m_curSlotId % 128);
+    Mgr()->m_cmdSubMgr->Step20b3(m_curSlotId % 128);
     m_session->Step2437();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
@@ -1782,8 +1782,6 @@ SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLogicDesc);
 SIZE_UNKNOWN(CMultiMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
-SIZE_UNKNOWN(CMultiLogicList);
-SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(PBListSink);
