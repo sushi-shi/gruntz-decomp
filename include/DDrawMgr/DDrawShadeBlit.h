@@ -22,12 +22,9 @@ class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDS
 // The clip rectangle the blit path hands in (3rd arg of Blit): left/top/right/
 // bottom-ish (only +0x0/+0x4/+0x8/+0xc are read in the bounds check).
 SIZE_UNKNOWN(ShadeRect);
-struct ShadeRect {
-    i32 left;   // +0x00
-    i32 top;    // +0x04
-    i32 right;  // +0x08
-    i32 bottom; // +0x0c
-};
+// (a REAL RECT - identical fields; the ShadeRect->BlitRect->tagRECT casts were
+// pure twin friction. Unified 2026-07-19.)
+typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
 
 // The render-source / destination surface (2nd arg of Blit) IS the DirectDraw
 // surface wrapper CDDSurface (<DDrawMgr/DDSurface.h>): the blit loops Lock() it

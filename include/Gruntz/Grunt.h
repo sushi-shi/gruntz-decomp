@@ -58,12 +58,8 @@ class DirectSoundMgr;
 // (g->m_30->m_24->m_5c + 0x40): {left, top, right, bottom}. The viewport's m_5c is
 // a base address (modeled i32 in CGameRegistry.h), so the +0x40 view is a cast.
 SIZE_UNKNOWN(CCueRect);
-struct CCueRect {
-    i32 left;   // +0x00
-    i32 top;    // +0x04
-    i32 right;  // +0x08
-    i32 bottom; // +0x0c
-};
+// (a REAL RECT - identical fields. Unified 2026-07-19.)
+typedef struct tagRECT CCueRect;
 
 // ---------------------------------------------------------------------------
 // this->m_10 (a HUD/level geometry source). The factory's two geometry args are

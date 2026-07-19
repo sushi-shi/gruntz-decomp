@@ -22,7 +22,8 @@
 #include <string.h> // inline strcmp of the grunt type name
 #include <stdlib.h> // abs (branchless cdq/xor/sub)
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/ScanRectInit.h>
+#include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
+#include <new>   // placement CRect ctor
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/CoordNode.h>
@@ -69,8 +70,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -103,8 +104,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \

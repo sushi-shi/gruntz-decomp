@@ -46,7 +46,8 @@
 #include <Bute/ButeTree.h>
 #include <Globals.h>
 #include <Gruntz/WorkerHandler.h> // Owner/Worker + Worker_DefaultPump (GruntSpawnPump)
-#include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
+#include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
+#include <new>   // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
 // WERE the fake g_animScratch / g_animScratchCount
@@ -413,8 +414,8 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                   \
-        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);        \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                   \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));        \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
