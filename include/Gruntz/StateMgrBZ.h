@@ -47,7 +47,7 @@ struct SbzControllerArray {
 // element@+8.
 SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
-    void* m_00;               // +0x00
+    char _vft0[4];            // +0x00 foreign node vptr (reduced view; not dispatched)
     i32 m_count;              // +0x04
     CInputDevice* m_elems[1]; // +0x08.. controller pointers
 };

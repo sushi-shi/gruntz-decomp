@@ -108,7 +108,9 @@ struct CGMOwner {
         i32 m_244;
     }* m_8; // +0x08 -> +0x244 latch
     char p0c[0x14 - 0x0c];
-    void* m_14; // +0x14 view gate (0 -> skip FX)
+    i32 m_musicEnabled; // +0x14 the base CGameMgr::m_musicEnabled (this facet IS the
+                        //       CGameMgr region: +0x4 gameWnd, +0x8 app->m_running latch;
+                        //       the credits FX gate on music-on). Full dissolve queued.
     char p18[0x48 - 0x18];
     CGMSound* m_48; // +0x48 sound manager
 };

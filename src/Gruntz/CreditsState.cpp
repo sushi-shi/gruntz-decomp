@@ -257,7 +257,7 @@ i32 CCreditsState::Render() {
         v4->m_overlayPair
     ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
 
-    if (!m_1b4 && Owner(this)->m_14) {
+    if (!m_1b4 && Owner(this)->m_musicEnabled) {
         Owner(this)->m_48->Play("CREDITZ", 1);
         m_1b4 = 1;
     }

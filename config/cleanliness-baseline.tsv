@@ -16,7 +16,7 @@ m_vtbl/m_vptr members	0
 (const char*) casts	0
 reinterpret_cast<class*>(m_)	1
 C-style numeric casts	0
-void* m_ members	63
+void* m_ members	61
 offset-cast macros	0
 cpp extern decls	449
 caller-callee FAKE-VIEW	0
