@@ -202,7 +202,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     CTriggerMgr* board = m_cmdGrid;
     for (u32 y = 0; y < grid->m_height; y++) {
         for (u32 x = 0; x < grid->m_width; x++) {
-            u16* dst = (u16*)((char*)base + y * m_surface->m_pitch + x * m_surface->m_b0);
+            u16* dst = (u16*)(reinterpret_cast<char*>(base) + y * m_surface->m_pitch + x * m_surface->m_b0);
             i32 tile;
             if (x < grid->m_width && y < grid->m_height) {
                 tile = grid->m_rows[y][x].m_4;
@@ -364,19 +364,19 @@ RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
-    u16* tp = (u16*)((char*)base + r->top * m_surface->m_pitch + r->left * m_surface->m_b0);
+    u16* tp = (u16*)(reinterpret_cast<char*>(base) + r->top * m_surface->m_pitch + r->left * m_surface->m_b0);
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    u16* bp = (u16*)((char*)base + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
+    u16* bp = (u16*)(reinterpret_cast<char*>(base) + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
     // Left / right edges (column step = m_pitch per row).
     i32 h = r->bottom - r->top + 1;
-    char* lp = (char*)base + r->left * m_surface->m_b0 + r->top * m_surface->m_pitch;
-    char* rp = (char*)base + r->right * m_surface->m_b0 + r->top * m_surface->m_pitch;
+    char* lp = reinterpret_cast<char*>(base) + r->left * m_surface->m_b0 + r->top * m_surface->m_pitch;
+    char* rp = reinterpret_cast<char*>(base) + r->right * m_surface->m_b0 + r->top * m_surface->m_pitch;
     for (i32 v = 0; v < h; v++) {
         *(u16*)lp = static_cast<u16>(color);
         *(u16*)rp = static_cast<u16>(color);
@@ -407,19 +407,19 @@ void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
     }
     i32 w = r->right - r->left + 1;
     // Top edge.
-    u16* tp = (u16*)((char*)base + r->top * surf->m_pitch + r->left * surf->m_b0);
+    u16* tp = (u16*)(reinterpret_cast<char*>(base) + r->top * surf->m_pitch + r->left * surf->m_b0);
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    u16* bp = (u16*)((char*)base + r->bottom * surf->m_pitch + r->left * surf->m_b0);
+    u16* bp = (u16*)(reinterpret_cast<char*>(base) + r->bottom * surf->m_pitch + r->left * surf->m_b0);
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
     // Left / right edges (column step = m_20 per row).
     i32 h = r->bottom - r->top + 1;
-    char* lp = (char*)base + r->left * surf->m_b0 + r->top * surf->m_pitch;
-    char* rp = (char*)base + r->right * surf->m_b0 + r->top * surf->m_pitch;
+    char* lp = reinterpret_cast<char*>(base) + r->left * surf->m_b0 + r->top * surf->m_pitch;
+    char* rp = reinterpret_cast<char*>(base) + r->right * surf->m_b0 + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
         *(u16*)lp = static_cast<u16>(color);
         *(u16*)rp = static_cast<u16>(color);

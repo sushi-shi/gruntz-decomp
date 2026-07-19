@@ -231,7 +231,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
                 if (rec[6] != 0 && rec[0] == i) { // occupied slot already using color i
                     avail = 0;
                 }
-                rec = (i32*)((char*)rec + 0x238);
+                rec = (i32*)(reinterpret_cast<char*>(rec) + 0x238);
             }
             if (avail) {
                 long idx = pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING

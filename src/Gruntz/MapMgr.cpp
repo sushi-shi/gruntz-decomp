@@ -241,7 +241,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     i32 stride = width * 0x1c;
     i32 off = 0;
     for (i32 i = 0; i < height; i++) {
-        m_rows[i] = (BrickzCell*)((char*)m_cellPool + off);
+        m_rows[i] = (BrickzCell*)(reinterpret_cast<char*>(m_cellPool) + off);
         off += stride;
     }
     if (((CMapArrayA*)&m_colA.m_block)->Allocate(count * 5) == 0) {
@@ -346,7 +346,7 @@ i32 CBrickzGrid::Search(
         u32 i = 0;
         i32 off = 0;
         do {
-            *(i32*)((char*)m_cellPool + off + 0x14) = 0;
+            *(i32*)(reinterpret_cast<char*>(m_cellPool) + off + 0x14) = 0;
             i++;
             off += 0x1c;
         } while (i < m_cellCount);

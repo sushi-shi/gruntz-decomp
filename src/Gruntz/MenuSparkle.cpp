@@ -184,7 +184,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         if (anim != 0) {
             anim->Recompute_15c320(1);
         }
-        *(i32*)((char*)m_3c + 0x20) = rand() % 0xfa1 + 0x3e8;
+        *(i32*)(reinterpret_cast<char*>(m_3c) + 0x20) = rand() % 0xfa1 + 0x3e8;
     }
     return 0;
 }

@@ -168,7 +168,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             }
             g_previewMgr = new CImagePool;
             if (g_previewMgr->SetHandles(
-                    reinterpret_cast<i32>(* (HINSTANCE*)((char*)g_gameReg->m_owner + 0xc)),
+                    reinterpret_cast<i32>(* (HINSTANCE*)(reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc)),
                     reinterpret_cast<i32>(g_previewMgr),
                     0
                 )
@@ -779,10 +779,10 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_levelId = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
+    dst->m_levelId = *(i32*)(reinterpret_cast<char*>(*(void**)(reinterpret_cast<char*>(src) + 0x2c)) + 0x1c);
     dst->m_count = 0;
     dst->m_active = 1;
-    if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
+    if (*(i32*)(reinterpret_cast<char*>(*(void**)(reinterpret_cast<char*>(src) + 0x44)) + 0x124) != 0) {
         dst->m_type = 3;
     }
     strncpy(dst->m_name, name, 0x20);
@@ -822,7 +822,7 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
     dst->m_type = 1;
     dst->m_levelId = name;
     dst->m_count = 0;
-    if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
+    if (*(i32*)(reinterpret_cast<char*>(*(void**)(reinterpret_cast<char*>(src) + 0x44)) + 0x124) != 0) {
         dst->m_type = 3;
     }
     dst->m_checksum = Register(dst);

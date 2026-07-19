@@ -134,7 +134,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                                 hits++;
                             }
                         }
-                        cell = (CScanCell*)((char*)cell + 0x1c);
+                        cell = (CScanCell*)(reinterpret_cast<char*>(cell) + 0x1c);
                     }
                 }
             }

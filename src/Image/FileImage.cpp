@@ -165,7 +165,7 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 RVA(0x00143fc0, 0x142)
 void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     CDDrawPtrCollections* pal = (CDDrawPtrCollections*)surf;
-    BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
+    BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)(reinterpret_cast<char*>(buf) + 0xe);
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
@@ -207,7 +207,7 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
         palette = pal->m_palette;
     }
 
-    void* pixels = (char*)buf + ((BITMAPFILEHEADER*)buf)->bfOffBits;
+    void* pixels = reinterpret_cast<char*>(buf) + ((BITMAPFILEHEADER*)buf)->bfOffBits;
     if (remap) {
         return Blit(pixels, bitcount, palette, 2) ? (void*)1 : (void*)0;
     }
@@ -284,7 +284,7 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     if (!Init1((CDDrawPtrCollections*)saved, 0)) {
         return 0;
     }
-    BlitDirect((char*)p + p->m_0 + 0x400, 2);
+    BlitDirect(reinterpret_cast<char*>(p) + p->m_0 + 0x400, 2);
     return 1;
 }
 

@@ -205,7 +205,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_curPlayer == i) {
                             LoadFinishLevelSprite(5);
                         }
-                        CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
+                        CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x150 + off);
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
                             CWwdGameObjectE* out = 0;

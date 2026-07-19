@@ -522,9 +522,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 row = m_object->m_screenY >> 5;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_c)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
-        char* cell = (char*)grid->m_8[row] + col * 0x1c;
+        char* cell = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
         *(i32*)(cell + 8) = mv;
-        char* cell0 = (char*)grid->m_8[row] + col * 0x1c;
+        char* cell0 = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
         if (mv != 0) {
             *(i32*)cell0 |= 0x40000;
         } else {
@@ -566,7 +566,7 @@ i32 CInGameIcon::HandleInput() {
             return 0;
         }
         i32 slot = key * 71;
-        i32 icon = ((i32*)((char*)g_gameReg + 0x158))[slot * 2];
+        i32 icon = ((i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[slot * 2];
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
@@ -850,9 +850,9 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = reinterpret_cast<char*>(*(i32**)((char*)grid->m_8 + rowByte));
+        char* cell0 = reinterpret_cast<char*>(*(i32**)(reinterpret_cast<char*>(grid->m_8) + rowByte));
         *(i32*)(cell0 + cellOff + 8) = 0;
-        char* cell1 = reinterpret_cast<char*>(*(i32**)((char*)grid->m_8 + rowByte));
+        char* cell1 = reinterpret_cast<char*>(*(i32**)(reinterpret_cast<char*>(grid->m_8) + rowByte));
         *(i32*)(cell1 + cellOff) &= ~0x40000;
     }
 }
@@ -891,7 +891,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
-        CIconRecord* cell = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
+        CIconRecord* cell = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
         i32 ok;
         if (cell == 0 || cell->m_1fc == 0) {
             ok = 0;
@@ -922,7 +922,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
-    CIconRecord* cell = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
+    CIconRecord* cell = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
     i32 ok;
     if (cell == 0 || cell->m_1fc == 0) {
         ok = 0;
@@ -934,7 +934,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         return 0;
     }
     if (cmd == 0x14) {
-        CIconRecord* placed = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
+        CIconRecord* placed = ((CIconRecord**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[idx];
         if (placed != 0) {
             placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;
@@ -1015,7 +1015,7 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if (((CMapPtrToPtr*)((char*)reg->m_world->m_childGroup + 0x48))
+            if (((CMapPtrToPtr*)(reinterpret_cast<char*>(reg->m_world->m_childGroup) + 0x48))
                     ->Lookup((void*)cellVal, found)
                 && found != 0) {
                 ((CGameObject*)found)->m_flags |= 0x10000;

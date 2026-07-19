@@ -260,7 +260,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
-    i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_object->m_124 * 71].m_idx;
+    i32 idx = ((WwdRefSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[m_object->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
     CGameObject* spr = m_object;
     spr->m_drawActive = 1;
@@ -347,7 +347,7 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     }
     if (tag == 8) {
         CGameObject* spr = m_object;
-        i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[spr->m_124 * 71].m_idx;
+        i32 idx = ((WwdRefSlot*)(reinterpret_cast<char*>(g_gameReg) + 0x158))[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_74->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;

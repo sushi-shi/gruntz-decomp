@@ -815,7 +815,7 @@ public:
     CGruntMovingBase(CGameObject* owner);
     virtual void MovingSlot16(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
     CMotionState* Motion() {
-        return (CMotionState*)((char*)this + 0x38);
+        return (CMotionState*)(reinterpret_cast<char*>(this) + 0x38);
     }
 };
 

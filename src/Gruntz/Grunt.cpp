@@ -397,10 +397,10 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // schedules each 16-byte block's four dword stores in {+0,+8,+4,+c} column order.
 #define GRUNT_ZERO_TIMER_BLOCK(p, b)                                                               \
     do {                                                                                           \
-        *(i32*)((char*)(p) + (b) + 0x0) = 0;                                                       \
-        *(i32*)((char*)(p) + (b) + 0x8) = 0;                                                       \
-        *(i32*)((char*)(p) + (b) + 0x4) = 0;                                                       \
-        *(i32*)((char*)(p) + (b) + 0xc) = 0;                                                       \
+        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x0) = 0;                                                       \
+        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x8) = 0;                                                       \
+        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0x4) = 0;                                                       \
+        *(i32*)(reinterpret_cast<char*>(p) + (b) + 0xc) = 0;                                                       \
     } while (0)
 #define GRUNT_ZERO_TIMER_BAND(p)                                                                   \
     do {                                                                                           \
@@ -831,7 +831,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
     RECT r;
-    CopyRect(&r, (LPRECT)((char*)tgt->m_38 + 0x144));
+    CopyRect(&r, (LPRECT)(reinterpret_cast<char*>(tgt->m_38) + 0x144));
     CGameObject* th = tgt->m_10;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
@@ -1159,7 +1159,7 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
     if (m_arrivalState == 0x11) {
-        char* slot = (char*)g_gameReg + m_tileOwnerHi * 0x238 + 0x188;
+        char* slot = reinterpret_cast<char*>(g_gameReg) + m_tileOwnerHi * 0x238 + 0x188;
         if (slot != 0 && GruntDropReady029b40(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
@@ -1496,58 +1496,58 @@ label_4c92b: {
     }
     i32 rowB = xbound * 28;
     if (dx > 0 && dy > 0) {
-        if (*(i32*)((char*)lastT + 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) + 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)lastT + rowB) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) + rowB) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(tgtT) - 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) {
+        if (!(*(i32*)(reinterpret_cast<char*>(tgtT) - rowB) & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy > 0) {
-        if (*(i32*)((char*)lastT - 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) - 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)lastT + rowB) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) + rowB) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(tgtT) + 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) {
+        if (!(*(i32*)(reinterpret_cast<char*>(tgtT) - rowB) & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx > 0 && dy < 0) {
-        if (*(i32*)((char*)lastT + 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) + 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)lastT - rowB) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) - rowB) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(tgtT) - 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) {
+        if (!(*(i32*)(reinterpret_cast<char*>(tgtT) + rowB) & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy < 0) {
-        if (*(i32*)((char*)lastT - 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) - 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)lastT - rowB) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(lastT) - rowB) & 0x2000) {
             goto label_4cb2a;
         }
-        if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) {
+        if (*(i32*)(reinterpret_cast<char*>(tgtT) + 0x1c) & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) {
+        if (!(*(i32*)(reinterpret_cast<char*>(tgtT) + rowB) & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;

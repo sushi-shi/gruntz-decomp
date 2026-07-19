@@ -303,9 +303,9 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_178 != 0
-            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_17c == 0
-            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_174 == 0) {
+        if (((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_178 != 0
+            && ((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_17c == 0
+            && ((TabzPlayer*)(reinterpret_cast<char*>(g_gameReg) + 0x174))[i].m_174 == 0) {
             count++;
         }
     }

@@ -294,7 +294,7 @@ extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
+    if (reg->m_isEasyMode == 0 || *(i32*)(reinterpret_cast<char*>(reg) + 0x134) != 1) {
         char* o = reinterpret_cast<char*>(m_object);
         CGrunt* tgt =
             (CGrunt*)Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
@@ -302,7 +302,7 @@ i32 CSpotLight::Tick_0b1af0() {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("B");
             // CGrunt's +0x10 bound geometry source (undeclared base padding; by offset).
-            char* t = *(char**)((char*)tgt + 0x10);
+            char* t = *(char**)(reinterpret_cast<char*>(tgt) + 0x10);
             *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);
             *(i32*)(o + 0x60) = *(i32*)(t + 0x60);
             if (*(i32*)(o + 0x114) == 1) {

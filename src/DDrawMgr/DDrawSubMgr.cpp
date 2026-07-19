@@ -1164,7 +1164,7 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
 // A dead function still belongs to a class; here its own neighbours name it.
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
-    char* p24 = *(char**)((char*)m_0c + 0x24);
+    char* p24 = *(char**)(reinterpret_cast<char*>(m_0c) + 0x24);
     if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_30 == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
@@ -1450,14 +1450,14 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         return 0;
     }
     if (center <= 0) {
-        center = *(i32*)(*(char**)(*(char**)((char*)m_ctx + 0x24) + 0x5c) + 0x84);
+        center = *(i32*)(*(char**)(*(char**)(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84);
     }
     if (range1 <= 0) {
-        char* m4 = *(char**)((char*)m_ctx + 0x4);
+        char* m4 = *(char**)(reinterpret_cast<char*>(m_ctx) + 0x4);
         range1 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) << 2;
     }
     if (range2 <= 0) {
-        char* m4 = *(char**)((char*)m_ctx + 0x4);
+        char* m4 = *(char**)(reinterpret_cast<char*>(m_ctx) + 0x4);
         range2 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) / 3;
     }
     i32 d = pos - center;

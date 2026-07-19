@@ -102,7 +102,7 @@ i32 Gap_0d5c10(void) {
 // [ecx+0x10]; xor eax,eax; test edx,edx; setg al; ret`.
 RVA(0x000d5dc0, 0xb)
 i32 CWapObj::IsLoaded() {
-    return *(i32*)((char*)this + 0x10) > 0;
+    return *(i32*)(reinterpret_cast<char*>(this) + 0x10) > 0;
 }
 
 // ---------------------------------------------------------------------------

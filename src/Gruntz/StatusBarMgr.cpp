@@ -161,7 +161,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[2].AddTail(it);
                     *aptr = reinterpret_cast<i32>(it);
                     i32 sel = g_gameReg->m_spriteFactory->GetSel(
-                        *(i32*)((char*)g_gameReg + 0x158 + g_curPlayer * 0x238),
+                        *(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158 + g_curPlayer * 0x238),
                         0
                     );
                     if (sel == 0) {
@@ -770,10 +770,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 off = 0;
                 do {
                     i32 sel;
-                    if (*(i32*)((char*)g_gameReg + off + 0x178) != 0
-                        && *(i32*)((char*)g_gameReg + off + 0x17c) == 0) {
+                    if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + off + 0x178) != 0
+                        && *(i32*)(reinterpret_cast<char*>(g_gameReg) + off + 0x17c) == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(
-                            *(i32*)((char*)g_gameReg + off + 0x158),
+                            *(i32*)(reinterpret_cast<char*>(g_gameReg) + off + 0x158),
                             0
                         );
                         if (pi == m_tabCycle) {

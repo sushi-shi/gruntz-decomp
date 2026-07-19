@@ -1064,9 +1064,9 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && *(i32*)((char*)obj + 0x4) == type) {
-            void* worker = *(void**)((char*)obj + 0x7c);
-            if (*(i32*)((char*)worker + 0x10) == *(i32*)((char*)key + 0x10)) {
+        if (obj->GetTypeId() == 5 && *(i32*)(reinterpret_cast<char*>(obj) + 0x4) == type) {
+            void* worker = *(void**)(reinterpret_cast<char*>(obj) + 0x7c);
+            if (*(i32*)(reinterpret_cast<char*>(worker) + 0x10) == *(i32*)(reinterpret_cast<char*>(key) + 0x10)) {
                 return obj;
             }
         }
@@ -1127,8 +1127,8 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && *(i32*)((char*)obj + 0x4) == type
-            && *(void**)((char*)obj + 0xe8) == key) {
+        if (obj->GetTypeId() == 5 && *(i32*)(reinterpret_cast<char*>(obj) + 0x4) == type
+            && *(void**)(reinterpret_cast<char*>(obj) + 0xe8) == key) {
             return obj;
         }
     } while (node != 0);
@@ -1416,7 +1416,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
                 if (rec == 0) {
                     return 0;
                 }
-                *(i32*)((char*)rec + 4) = desc.m_00;
+                *(i32*)(reinterpret_cast<char*>(rec) + 4) = desc.m_00;
                 // 0x159830 == CDDrawChildGroup::AttachSprite (the manager IS the factory)
                 if (AttachSprite(
                         (CWwdGameObject*)rec,
@@ -1517,7 +1517,7 @@ i32 CDDrawChildGroup::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag
         if (obj == 0) {
             return 0;
         }
-        if (*(i32*)((char*)obj + 0x7c) == 0) {
+        if (*(i32*)(reinterpret_cast<char*>(obj) + 0x7c) == 0) {
             return 0;
         }
         if (obj->Slot3C(reinterpret_cast<i32>(ar), 7, flag, obj) == 0) {

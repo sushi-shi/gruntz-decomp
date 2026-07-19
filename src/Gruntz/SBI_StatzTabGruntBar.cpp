@@ -162,7 +162,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
     CStatzSelHost* table = g_gameReg->m_unitTable;
     CStatzGruntRec* unit =
-        *(CStatzGruntRec**)((char*)table + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c);
+        *(CStatzGruntRec**)(reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c);
 
     i32 statusVal;
     i32 abilityVal; // ebx

@@ -140,12 +140,12 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     i32 v = id;
     if (id == 0) {
         // m_gameWnd (CGameWnd*, CGameMgr+0x4) -> +0x4 window handle (raw offset read).
-        v = *(i32*)((char*)g_gameReg->m_gameWnd + 4);
+        v = *(i32*)(reinterpret_cast<char*>(g_gameReg->m_gameWnd) + 4);
     }
     g_customWorldParent = (HWND)v;
     g_dat62c268 = reinterpret_cast<i32>(g_gameReg->m_world);
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
-    g_customWorldInst = (HINSTANCE) * (i32*)((char*)g_gameReg->m_owner + 0xc);
+    g_customWorldInst = (HINSTANCE) * (i32*)(reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc);
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }

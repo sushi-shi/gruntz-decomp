@@ -326,7 +326,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
                 void* next = *(void**)node;
-                char* buf = *(char**)((char*)node + 8);
+                char* buf = *(char**)(reinterpret_cast<char*>(node) + 8);
                 if (buf != 0) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
@@ -355,7 +355,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     }
 
     // Drain + free the m_338 list.
-    while (*(void**)(p + 0x344) != 0 && *(i32*)((char*)*(void**)(p + 0x33c) + 8) != 0) {
+    while (*(void**)(p + 0x344) != 0 && *(i32*)(reinterpret_cast<char*>(*(void**)(p + 0x33c)) + 8) != 0) {
         void* rem = ((CPtrList*)(p + 0x338))->RemoveHead();
         RezFree(rem);
     }

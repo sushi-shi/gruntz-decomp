@@ -144,7 +144,7 @@ public:
     // Recover the containing element from a chain link (container_of, -4). Genuine
     // intrusive-list back-cast: the chain stores &element->m_link.
     static CHashElement* FromLink(DSoundLink* link) {
-        return link ? (CHashElement*)((char*)link - 4) : 0;
+        return link ? (CHashElement*)(reinterpret_cast<char*>(link) - 4) : 0;
     }
 
     u32 m_count;          // +0x00

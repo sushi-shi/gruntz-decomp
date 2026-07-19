@@ -216,7 +216,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         CMiMusicHost* mh = (CMiMusicHost*)g_gameReg->m_world->m_soundRegistry;
         if (mh->m_30 == 0) {
             CMiCue* found = 0;
-            ((CMapStringToOb*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
+            ((CMapStringToOb*)(reinterpret_cast<char*>(mh) + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;

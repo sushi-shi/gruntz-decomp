@@ -59,7 +59,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_cacheA + i) = *(i32*)((char*)entries + i);
+        *(i32*)(m_cacheA + i) = *(i32*)(reinterpret_cast<char*>(entries) + i);
     }
     m_cacheB = (u8*)::operator new(0x400);
     i32 hr = dd->CreatePalette(flags, (LPPALETTEENTRY)entries, &m_palette, 0);

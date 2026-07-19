@@ -21,7 +21,7 @@ CImageSet1::~CImageSet1() {}
 // documented entropy-tail wall (docs/patterns/header-fields-through-cursor-not-index.md).
 RVA(0x00166d40, 0x24)
 i32 CImageSet1::Parse(void* record) {
-    i32* p = (i32*)((char*)record + 8);
+    i32* p = (i32*)(reinterpret_cast<char*>(record) + 8);
     m_04 = *p++;
     m_08 = *p++;
     m_0c = *p++;

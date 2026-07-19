@@ -1022,7 +1022,7 @@ i32 CTeleporter::Update() {
         i32* pair = (i32*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetHead();
         i32 row = pair[0];
         i32 col = pair[1];
-        current = ((CGrunt**)((char*)(CTriggerMgr*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];
+        current = ((CGrunt**)(reinterpret_cast<char*>((CTriggerMgr*)mgr->m_cmdGrid) + 0x1c))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_object;

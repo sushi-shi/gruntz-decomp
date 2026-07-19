@@ -59,7 +59,7 @@ static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor
 // scheduling/addressing choice); §2a scoring-tail. Final sweep.
 RVA(0x001780b0, 0xbb)
 i32 CNetMgr::InitFromProvider(void* a, GUID appGuid) {
-    void* guid = *(void**)((char*)a + 4);
+    void* guid = *(void**)(reinterpret_cast<char*>(a) + 4);
     if (guid == 0) {
         return 0;
     }
@@ -79,7 +79,7 @@ i32 CNetMgr::InitFromProvider(void* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    i32* base = (i32*)((char*)this + 4);
+    i32* base = (i32*)(reinterpret_cast<char*>(this) + 4);
     const i32* g = (const i32*)&appGuid; // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
     m_groupSel = reinterpret_cast<i32>(a);
@@ -126,7 +126,7 @@ i32 CNetMgr::Init(void* a, i32 c, i32 d, i32 e, i32 f) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    i32* base = (i32*)((char*)this + 4);
+    i32* base = (i32*)(reinterpret_cast<char*>(this) + 4);
     base[0] = c;
     m_groupSel = 0;
     m_playerSel = 0;
@@ -386,7 +386,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
 
     char desc[0x50];
     memset(desc, 0, 0x50);
-    i32* guid = (i32*)((char*)this + 4);
+    i32* guid = (i32*)(reinterpret_cast<char*>(this) + 4);
     *(i32*)(desc + 0x00) = 0x50;
     *(i32*)(desc + 0x18) = guid[0];
     *(i32*)(desc + 0x1c) = guid[1];
@@ -564,7 +564,7 @@ RVA(0x001788a0, 0x13c)
 i32 CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
     char buf[0x50];
     memset(buf, 0, 0x50);
-    i32* guid = (i32*)((char*)this + 4);
+    i32* guid = (i32*)(reinterpret_cast<char*>(this) + 4);
     *(i32*)(buf + 0x00) = 0x50;
     *(i32*)(buf + 0x04) = 0xa044;
     *(i32*)(buf + 0x18) = guid[0];
@@ -620,7 +620,7 @@ i32 CNetMgr::EnumPlayersCb(void* a, i32 b, i32 c, i32 d) {
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroups((char*)a + 4, 1);
+    i32 hr = iface->EnumGroups(reinterpret_cast<char*>(a) + 4, 1);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
         return 0;
@@ -661,7 +661,7 @@ RVA(0x00178a80, 0x73)
 i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     ClearSessionList();
 
-    i32* r = (i32*)((char*)rec + 0xc);
+    i32* r = (i32*)(reinterpret_cast<char*>(rec) + 0xc);
     i32 desc[4];
     desc[0] = r[0];
     desc[1] = r[1];

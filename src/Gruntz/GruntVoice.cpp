@@ -450,7 +450,7 @@ i32 CVoiceTrigger::Tick() {
     if (hit && outA == g_curPlayer) {
         // hit is a CGrunt; its bound object sits at +0x10 (CUserLogic::m_object),
         // reached by offset since CGrunt is only forward-declared in this TU.
-        CGameObject* hs = *(CGameObject**)((char*)hit + 0x10);
+        CGameObject* hs = *(CGameObject**)(reinterpret_cast<char*>(hit) + 0x10);
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
@@ -552,7 +552,7 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)((char*)g_gameReg->m_world->m_childGroup + 0x48))
+        i32 resolved = ((CMapPtrToPtr*)(reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48))
                            ->Lookup((void*)src, (void*&)out);
         if (resolved != 0) {
             if (out == 0) {
@@ -576,7 +576,7 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)((char*)g_gameReg->m_world->m_childGroup + 0x48))
+        i32 resolved = ((CMapPtrToPtr*)(reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48))
                            ->Lookup((void*)src, (void*&)out);
         if (resolved != 0) {
             if (out == 0) {

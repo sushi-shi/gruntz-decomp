@@ -336,11 +336,11 @@ i32 CNetSession::Tick() {
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
-                payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
+                payload += obj->Serialize(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
             }
         }
         m_session->WriteTag("[end]\n");
-        rec->m_payloadLen = static_cast<i32>((payload - (char*)rec - 0x10));
+        rec->m_payloadLen = static_cast<i32>((payload - reinterpret_cast<char*>(rec) - 0x10));
         m_snapshotDone = 1;
     }
     return SendBatch() + SendAll();
@@ -863,7 +863,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     u8 opcode = *(u8*)rec;
     i32 odd = opcode & 1;
-    char* p = (char*)rec + 1;
+    char* p = reinterpret_cast<char*>(rec) + 1;
     if (m_state != 3) {
         return 1;
     }

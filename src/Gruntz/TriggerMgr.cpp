@@ -141,7 +141,7 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
             CTmCell* g = m_grid[j];
             if (g) {
                 // the grunt's display object (CUserBase +0x10; member modeling TODO)
-                CGameObject* pos = *(CGameObject**)((char*)g + 0x10);
+                CGameObject* pos = *(CGameObject**)(reinterpret_cast<char*>(g) + 0x10);
                 i32 cx = pos->m_screenX;
                 i32 cy = pos->m_screenY;
                 RECT box;
@@ -494,7 +494,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
-    i32 count = *(*(i32**)((char*)g_gameReg->m_curState + 0x2dc));
+    i32 count = *(*(i32**)(reinterpret_cast<char*>(g_gameReg->m_curState) + 0x2dc));
 
     i32 ax, cx;
     if (count == 0) {
@@ -824,7 +824,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 outR = col;
     i32 outC = row;
     plane->m_mainPlane->WrapCoord(&outR, &outC);
-    CStatusBarMgr* sbi = (CStatusBarMgr*)*(char**)((char*)lvl + 0x2dc);
+    CStatusBarMgr* sbi = (CStatusBarMgr*)*(char**)(reinterpret_cast<char*>(lvl) + 0x2dc);
     if (sbi->m_hlBusy == 0) {
         if (*(i32*)sbi == 2) {
             sbi->Reset();
@@ -958,7 +958,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
     (reinterpret_cast<char*>(tg->m_8[rowIdx]))[colByte + 0x3] &= 0xdf;
-    *(i32*)((char*)tg->m_8[rowIdx] + colByte + 0x4) = -1;
+    *(i32*)(reinterpret_cast<char*>(tg->m_8[rowIdx]) + colByte + 0x4) = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
     if (z != 0) {
@@ -1309,7 +1309,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     void* goal = m_goal;
     i32 goalId = 0;
     if (goal != 0) {
-        goalId = *(i32*)((char*)goal + 0x188);
+        goalId = *(i32*)(reinterpret_cast<char*>(goal) + 0x188);
     }
     ar->Write(&goalId, 4);
     CTmCell* ov = m_pendingFx; // the pending-fx grunt; its HUD carries the archive id
@@ -1329,7 +1329,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
         if (obj == 0) {
             return 0;
         }
-        i32 oid = *(i32*)(*(char**)((char*)obj + 0x10) + 0x188);
+        i32 oid = *(i32*)(*(char**)(reinterpret_cast<char*>(obj) + 0x10) + 0x188);
         Ar_WriteId(lvl->m_childGroup, oid, ar);
         ar->Write(&oid, 4);
     }
@@ -2836,7 +2836,7 @@ void CTriggerMgr::DestroyAllAnims() {
         CTmCell* obj = (CTmCell*)node->m_gameObj;
         node = node->m_next;
         if (obj != 0) {
-            char* desc = *(char**)((char*)obj + 0x7c);
+            char* desc = *(char**)(reinterpret_cast<char*>(obj) + 0x7c);
             void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;
             if (*(void**)(desc + 0x10) == *(void**)&tag) {
                 char* tgt = *(char**)(desc + 0x18);
@@ -2857,7 +2857,7 @@ void CTriggerMgr::DestroyAllAnims() {
     }
     void* state = g_gameReg->PickPausedThenPlayState();
     if (state != 0) {
-        char* sub = *(char**)((char*)state + 0x2dc);
+        char* sub = *(char**)(reinterpret_cast<char*>(state) + 0x2dc);
         if (sub != 0) {
             DirectSoundMgr* ch2 = *(DirectSoundMgr**)(sub + 0x618);
             if (ch2 != 0) {

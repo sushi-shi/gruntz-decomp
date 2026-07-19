@@ -811,7 +811,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         row++;
     }
-    char* rec = (char*)m_ctx + m_curCell * 0x238;
+    char* rec = reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238;
     if (occupied >= *(i32*)(rec + 0x378)) {
         return 1;
     }
@@ -895,7 +895,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         r2++;
     }
-    i32 budget = static_cast<i32>((static_cast<double>(*(i32*)((char*)m_ctx + m_curCell * 0x238 + 0x378))
+    i32 budget = static_cast<i32>((static_cast<double>(*(i32*)(reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238 + 0x378))
                        * static_cast<double>(m_budgetMul) * g_diffScale));
     if (slot38 >= m_spawnPct || freeCount >= budget) {
         unit->m_2d8 = 4;
@@ -1005,8 +1005,8 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
 RVA(0x00029a80, 0x29)
 i32 CUserLogic::IsAtSavedScreenPos() {
     CGameObject* o = m_object;
-    i32 sx = *(i32*)((char*)this + 0x17c);
-    if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
+    i32 sx = *(i32*)(reinterpret_cast<char*>(this) + 0x17c);
+    if (o->m_screenX == sx && o->m_screenY == *(i32*)(reinterpret_cast<char*>(this) + 0x180)) {
         return 1;
     }
     return 0;
@@ -2698,7 +2698,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
     }
     for (;;) {
         i32 tileOff = ((col * 7) << 2);
-        i32 word = *(i32*)((char*)m_board->m_rows[row] + tileOff);
+        i32 word = *(i32*)(reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff);
         if (word & 0x8000) {
             CPtrList list(10);
             CGameObject* lvl = ((CGrunt*)a4)->m_object;
@@ -2736,7 +2736,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 if (cell == 0) {
                     break;
                 }
-                if (*(i32*)((char*)cell + m_curCell * 4 + 0x18) != 0) {
+                if (*(i32*)(reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18) != 0) {
                     break;
                 }
                 CPtrList list2(10);
@@ -2774,7 +2774,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
             i32 id = *(i32*)cell;
             i32 special = 0;
-            i32 occ = *(i32*)((char*)cell + m_curCell * 4 + 0x18);
+            i32 occ = *(i32*)(reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18);
             if (occ == 0) {
                 special = 1;
             } else if (id == 0x132 || id == 0x134 || id == 0x137 || id == 0x144 || id == 0x146
@@ -2817,7 +2817,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         // Mark this tile visited, then recurse into the 8 neighbours. Each block:
         // in bounds + not visited (0x20000) + passable (0xc0000 set or anim 0x9a).
-        *(i32*)((char*)m_board->m_rows[row] + tileOff) |= 0x20000;
+        *(i32*)(reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff) |= 0x20000;
         i32 cm = col - 1;
         i32 cp = col + 1;
         i32 rm = row - 1;
@@ -2828,7 +2828,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-            nt = (i32*)((char*)b->m_rows[row] + ((cm * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[row]) + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cm, row, a5);
@@ -2836,7 +2836,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-            nt = (i32*)((char*)b->m_rows[row] + ((cp * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[row]) + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cp, row, a5);
@@ -2844,7 +2844,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-            nt = (i32*)((char*)b->m_rows[rm] + ((col * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rm]) + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, col, rm, a5);
@@ -2852,7 +2852,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-            nt = (i32*)((char*)b->m_rows[rp] + ((col * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rp]) + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, col, rp, a5);
@@ -2860,7 +2860,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-            nt = (i32*)((char*)b->m_rows[rm] + ((cp * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rm]) + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cp, rm, a5);
@@ -2868,7 +2868,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nt = (i32*)((char*)b->m_rows[rp] + ((cp * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rp]) + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cp, rp, a5);
@@ -2876,7 +2876,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nt = (i32*)((char*)b->m_rows[rp] + ((cm * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rp]) + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cm, rp, a5);
@@ -2884,7 +2884,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-            nt = (i32*)((char*)b->m_rows[rm] + ((cm * 7) << 2));
+            nt = (i32*)(reinterpret_cast<char*>(b->m_rows[rm]) + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cm, rm, a5);
@@ -3376,7 +3376,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 bool eq;
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                         (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                     + 0x1c)))),
                          "I"
                      )
@@ -3384,7 +3384,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "G"
                          )
@@ -3393,7 +3393,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "L"
                          )
@@ -3402,7 +3402,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "P"
                          )
@@ -3411,7 +3411,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "J"
                          )
@@ -3420,7 +3420,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "C"
                          )
@@ -3429,7 +3429,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)(reinterpret_cast<char*>(cand->m_objAux)
                                                                         + 0x1c)))),
                              "R"
                          )
@@ -4189,7 +4189,7 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         i32 lx = lvl->m_screenX >> 5;
         i32 ly = lvl->m_screenY >> 5;
         if (u->m_2d8 == 4 && u->m_2e8 != -1) {
-            char* rec = (char*)m_ctx + u->m_2e8 * 0x238;
+            char* rec = reinterpret_cast<char*>(m_ctx) + u->m_2e8 * 0x238;
             i32 dx = *(i32*)(rec + 0x258) - lx;
             i32 dy = *(i32*)(rec + 0x25c) - ly;
             dx = abs(dx);
@@ -4239,7 +4239,7 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
         }
         row++;
     }
-    char* rec = (char*)m_ctx + m_curCell * 0x238;
+    char* rec = reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238;
     if (occupied >= *(i32*)(rec + 0x378)) {
         return 0;
     }
@@ -4311,7 +4311,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     // 0x67, else resolved through QueryA on the packed coordinate.
     BrickzCell* tile = &((BrickzCell*)(m_board)->m_rows[row])[col];
     char* cell;
-    if (*(i32*)((char*)tile + 0x10) == 0x67) {
+    if (*(i32*)(reinterpret_cast<char*>(tile) + 0x10) == 0x67) {
         cell = reinterpret_cast<char*>(m_ctx->m_dims); // ctx+0x70 IS the board (== this->m_board)
     } else {
         cell = reinterpret_cast<char*>((reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0));
@@ -4322,13 +4322,13 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (cell != 0) {
         // First pass: any sub-cell that already collides with `unit` aborts.
         char** scan = (char**)(cell + 0x3c);
-        while (static_cast<i32>((((char*)scan - cell - 0x3c) & ~3)) < 0x60) {
+        while (static_cast<i32>(((reinterpret_cast<char*>(scan) - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan;
             if (node != 0) {
                 void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
                 if (rec != 0) {
-                    i32 cx = *(i32*)((char*)rec + 0x8);
-                    i32 cy = *(i32*)((char*)rec + 0xc);
+                    i32 cx = *(i32*)(reinterpret_cast<char*>(rec) + 0x8);
+                    i32 cy = *(i32*)(reinterpret_cast<char*>(rec) + 0xc);
                     if (Method_0305b0(unitArg, cx, cy) != 0) {
                         return 1;
                     }
@@ -4338,13 +4338,13 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         }
         // Second pass: keep the nearest non-colliding sub-cell.
         char** scan2 = (char**)(cell + 0x3c);
-        while (static_cast<i32>((((char*)scan2 - cell - 0x3c) & ~3)) < 0x60) {
+        while (static_cast<i32>(((reinterpret_cast<char*>(scan2) - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
                 void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
                 if (rec != 0) {
-                    i32 cx = *(i32*)((char*)rec + 0x8);
-                    i32 cy = *(i32*)((char*)rec + 0xc);
+                    i32 cx = *(i32*)(reinterpret_cast<char*>(rec) + 0x8);
+                    i32 cy = *(i32*)(reinterpret_cast<char*>(rec) + 0xc);
                     i32 dx = cx - goalX;
                     i32 dy = cy - goalY;
                     dx = abs(dx);
@@ -4465,7 +4465,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
         o->m_y = lvl->m_screenY >> 5;
         return o;
     }
-    char* rec = (char*)m_ctx + kind * 0x238 + 0x278;
+    char* rec = reinterpret_cast<char*>(m_ctx) + kind * 0x238 + 0x278;
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> 5;
     i32 ry = lvl->m_screenY >> 5;
@@ -4884,7 +4884,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             band++;
         }
         band = band % 4;
-        char* rec = (char*)m_ctx + band * 0x238;
+        char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
         if (*(i32*)(rec + 0x174) != 0) {
             return 1;
         }
@@ -4895,7 +4895,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         unit->m_defenderX = -1;
         unit->m_defenderY = -1;
     } else {
-        char* rec = (char*)m_ctx + band * 0x238;
+        char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
         if (*(i32*)(rec + 0x174) != 0 || *(i32*)(rec + 0x170) == 0) {
             // Invalid record: recycle the unit's coords onto g_coordPool, reset state.
             if (unit->CoordCount() != 0) {
@@ -4922,7 +4922,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         }
     }
     band = unit->m_2e8;
-    char* rec = (char*)m_ctx + band * 0x238;
+    char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
     i32 rx = *(i32*)(rec + 0x258);
     i32 ry = *(i32*)(rec + 0x25c);
     char* edge = rec + 0x188;
@@ -5535,7 +5535,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     char* recB0 = 0;
     i32 cell = unit->m_arrivalCol;
     if (cell >= 0 && cell < 4) {
-        char* rec = (char*)m_ctx + cell * 0x238;
+        char* rec = reinterpret_cast<char*>(m_ctx) + cell * 0x238;
         recA = rec + 0x150;
         recB0 = rec + 0x188;
     }
@@ -5549,7 +5549,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
                 r++;
             }
             i32 band = r % 4;
-            char* recB = (char*)m_ctx + band * 0x238 + 0x188;
+            char* recB = reinterpret_cast<char*>(m_ctx) + band * 0x238 + 0x188;
             i32 cnt = *(i32*)(recB + 0xf8);
             i32 x = *(i32*)(recB + 0xd0);
             i32 y = *(i32*)(recB + 0xd4);
@@ -5567,7 +5567,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             unit->m_dwell = 0;
             return 1;
         }
-        char* recB = (char*)m_ctx + cell * 0x238 + 0x188;
+        char* recB = reinterpret_cast<char*>(m_ctx) + cell * 0x238 + 0x188;
         if (recB == 0) {
             return 1;
         }

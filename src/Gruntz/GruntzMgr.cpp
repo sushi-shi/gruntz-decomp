@@ -2281,7 +2281,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in = m_inputState;
     if (in) {
         in->Deactivate();
-        ((CPtrList*)((char*)in + 8))->CPtrList::~CPtrList();
+        ((CPtrList*)(reinterpret_cast<char*>(in) + 8))->CPtrList::~CPtrList();
         RezFree(in);
     }
     m_inputState = 0;
@@ -2776,7 +2776,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_saveInfoRec == 0 || !(m_saveInfoRec->m_flags & 1)) {
         return LoadSaveMessageSprite();
     }
-    if ((char*)m_curState + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
+    if (reinterpret_cast<char*>(m_curState) + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
         return 0;
     }
     if (m_timer) {
@@ -2865,7 +2865,7 @@ i32 CGruntzMgr::LoadOptionsSlotName(
         // field displacements (+0x170 = m_20, +0x154 = m_name), so cl emits the
         // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
         // and drops the match (verified -3%). Kept raw.
-        char* s = (char*)this + slot * 0x238;
+        char* s = reinterpret_cast<char*>(this) + slot * 0x238;
         if (*(i32*)(s + 0x170) == 0) {    // slot.m_020  (options base +0x150 +0x20)
             *(CString*)(s + 0x154) = val; // slot.m_name (options base +0x150 +0x04)
         }
@@ -2902,7 +2902,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
         if (s != 0) {
             s->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
         }
-        s = (GruntzPlayer*)((char*)s + 0x238);
+        s = (GruntzPlayer*)(reinterpret_cast<char*>(s) + 0x238);
     }
 }
 
@@ -2913,7 +2913,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
-    char* p = (char*)&m_options[0] + 0x14; // &m_options[0].m_14
+    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x14; // &m_options[0].m_14
     for (i32 d = 4; d != 0; d--) {
         char* slot = p - 0x14; // slot base
         if (slot && *(i32*)(p + 0xc) != 0 && (anyState != 0 || *(i32*)p != 0)) {
@@ -2943,7 +2943,7 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
             return slot;
         }
         i++;
-        slot = (GruntzPlayer*)((char*)slot + 0x238);
+        slot = (GruntzPlayer*)(reinterpret_cast<char*>(slot) + 0x238);
     } while (i < 4);
     return 0;
 }
@@ -3100,7 +3100,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         if (slot == 0 || ((CTriggerMgr*)slot)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
             return 0;
         }
-        slot = (GruntzPlayer*)((char*)slot + 0x238);
+        slot = (GruntzPlayer*)(reinterpret_cast<char*>(slot) + 0x238);
     }
 
     if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
@@ -3340,7 +3340,7 @@ RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == 0x11) {
         PlayStatusSlot* base = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
-        char* p = (char*)base + 0x20;
+        char* p = reinterpret_cast<char*>(base) + 0x20;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
             if (p && *(i32*)p == 3) {
@@ -3616,7 +3616,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
 // the `if (&elem)` guard fall out of the manual per-element loop).
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    char* p = (char*)&m_options[0] + 0x24; // &m_options[0].m_24
+    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x24; // &m_options[0].m_24
     for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {
@@ -3696,10 +3696,10 @@ i32 CGruntzMgr::SyncOptionsState() {
                 return 0;
             }
             tick->Clear_02ade0();
-            arm = (i32*)((char*)arm + 0x238);
-            cfgp = (i32*)((char*)cfgp + 0x238);
+            arm = (i32*)(reinterpret_cast<char*>(arm) + 0x238);
+            cfgp = (i32*)(reinterpret_cast<char*>(cfgp) + 0x238);
             idx++;
-            tick = (CBattlezMapConfig*)((char*)tick + 0x238);
+            tick = (CBattlezMapConfig*)(reinterpret_cast<char*>(tick) + 0x238);
             *arm = 0;
             cfg = *cfgp;
             if (matched) {
@@ -3719,9 +3719,9 @@ i32 CGruntzMgr::SyncOptionsState() {
             }
         }
         idx++;
-        arm = (i32*)((char*)arm + 0x238);
-        cfgp = (i32*)((char*)cfgp + 0x238);
-        tick = (CBattlezMapConfig*)((char*)tick + 0x238);
+        arm = (i32*)(reinterpret_cast<char*>(arm) + 0x238);
+        cfgp = (i32*)(reinterpret_cast<char*>(cfgp) + 0x238);
+        tick = (CBattlezMapConfig*)(reinterpret_cast<char*>(tick) + 0x238);
     }
     return 1;
 }
@@ -4322,7 +4322,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = *(RECT*)((char*)m_world->m_level + 0x10);
+    local = *(RECT*)(reinterpret_cast<char*>(m_world->m_level) + 0x10);
     *out = local;
     return out;
 }

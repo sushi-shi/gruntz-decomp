@@ -403,8 +403,8 @@ i32 CMenuPage::Layout(i32 ctx) {
     i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
-        i32 idx = *(i32*)((char*)sub + 0x64);
-        CMenuItem** tab = *(CMenuItem***)((char*)sub + 0x14);
+        i32 idx = *(i32*)(reinterpret_cast<char*>(sub) + 0x64);
+        CMenuItem** tab = *(CMenuItem***)(reinterpret_cast<char*>(sub) + 0x14);
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;
@@ -492,8 +492,8 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
-        i32 idx = *(i32*)((char*)sub + 0x64);
-        CMenuItem** tab = *(CMenuItem***)((char*)sub + 0x14);
+        i32 idx = *(i32*)(reinterpret_cast<char*>(sub) + 0x64);
+        CMenuItem** tab = *(CMenuItem***)(reinterpret_cast<char*>(sub) + 0x14);
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;

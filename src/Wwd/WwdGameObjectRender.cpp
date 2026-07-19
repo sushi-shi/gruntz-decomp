@@ -105,7 +105,7 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
             i32 col = surf->m_b0 * x;
             *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_18c);
             void* n = surf->m_8;
-            (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
+            (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)n) + 0x80))(n, 0);
         }
     }
     m_lastX = m_screenX;

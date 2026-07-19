@@ -789,11 +789,11 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
         m_pendingBytes += n1 - got1;
         // language-forced: p1 is a void* DirectSound-locked region; the +got1
         // pointer arithmetic requires a byte-pointer view. Inlines to rep stos.
-        memset((char*)p1 + got1, m_silenceByte, n1 - got1);
+        memset(reinterpret_cast<char*>(p1) + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
         m_pendingBytes += n2 - got2;
-        memset((char*)p2 + got2, m_silenceByte, n2 - got2);
+        memset(reinterpret_cast<char*>(p2) + got2, m_silenceByte, n2 - got2);
     }
     if (m_pendingBytes >= m_bufferLength) {
         Pause();

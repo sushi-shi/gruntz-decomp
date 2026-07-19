@@ -596,7 +596,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         i32* z = reinterpret_cast<i32*>(m_logicPump);
         z[1] = z[2] = z[3] = z[4] = 0;
         for (i32 k = 0; k < 10; ++k) {
-            *(i32*)((char*)m_logicPump + 0x14 + k * 4) = 0;
+            *(i32*)(reinterpret_cast<char*>(m_logicPump) + 0x14 + k * 4) = 0;
         }
     }
     if (!m_logicPump->Init(0, static_cast<void*>(this))) {
@@ -615,7 +615,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_scoreHud = new CBattlezData;
-    m_scoreHud->InitWithRecords((char*)m_saveSink + 0x24);
+    m_scoreHud->InitWithRecords(reinterpret_cast<char*>(m_saveSink) + 0x24);
 
     // --- Phase 12: the grunt spawn-config singleton (g_spawnConfig) -------
     g_spawnConfig = (CGruntSpawnConfig*)RezAlloc(0x28);
@@ -651,10 +651,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (m_spriteFactory) {
         i32* z = reinterpret_cast<i32*>(m_spriteFactory);
         z[0] = z[1] = 0;
-        *(i32*)((char*)m_spriteFactory + 0x90) = 0;
+        *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 0x90) = 0;
         for (i32 k = 0; k < 0x11; ++k) {
-            *(i32*)((char*)m_spriteFactory + 8 + k * 4) = 0;
-            *(i32*)((char*)m_spriteFactory + 0x4c + k * 4) = 0;
+            *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 8 + k * 4) = 0;
+            *(i32*)(reinterpret_cast<char*>(m_spriteFactory) + 0x4c + k * 4) = 0;
         }
     }
     if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
@@ -684,7 +684,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             CParseSource* stream = (CParseSource*)node;
             g_buteMgr.m_10e = 1;
             i32 esz = stream->BeginParse();
-            void* src = *(void**)((char*)stream + 0xc);
+            void* src = *(void**)(reinterpret_cast<char*>(stream) + 0xc);
             istrstream* rdr = new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
             Blowfish_InitKey((unsigned char*)"1212C");
             ostrstream* snk = new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
@@ -733,7 +733,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
-    *(i32*)((char*)m_timer + 0x2c) = vScroll;
+    *(i32*)(reinterpret_cast<char*>(m_timer) + 0x2c) = vScroll;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;

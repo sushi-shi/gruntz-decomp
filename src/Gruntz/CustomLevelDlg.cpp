@@ -126,6 +126,6 @@ void CBattlezDlgCustom::PickIfSelected() {
 // load-bearing.
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    CCmdTarget* thread = *(CCmdTarget**)((char*)AfxGetModuleState() + 4);
+    CCmdTarget* thread = *(CCmdTarget**)(reinterpret_cast<char*>(AfxGetModuleState()) + 4);
     thread->EndWaitCursor();
 }

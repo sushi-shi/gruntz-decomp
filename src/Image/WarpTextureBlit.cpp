@@ -117,7 +117,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    ClipVtx* prev = (ClipVtx*)((char*)va + (7 * n) * 4 - 0x1c); // last vertex
+    ClipVtx* prev = (ClipVtx*)(reinterpret_cast<char*>(va) + (7 * n) * 4 - 0x1c); // last vertex
     if (n > 0) {
         ClipVtx* cur = va;
         i32 count = n;
@@ -145,7 +145,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 botYi = warpFtol(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
                 i32 h = botYi - topYi;
 
-                i32* rec = (i32*)((char*)table + topYi * 0x1c + 0x10);
+                i32* rec = (i32*)(reinterpret_cast<char*>(table) + topYi * 0x1c + 0x10);
                 i32 dx = (-topX - warpFtol(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
                 i32 du = (-topU - warpFtol(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
                 i32 dv = (-topV - warpFtol(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
@@ -160,7 +160,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     x += dx;
                     u += du;
                     vv += dv;
-                    rec = (i32*)((char*)rec + 0x1c);
+                    rec = (i32*)(reinterpret_cast<char*>(rec) + 0x1c);
                 }
             }
             i32 vy = warpFtol(prev->y); // [ebp+8] (the current prev vertex) y
@@ -171,7 +171,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 maxY = vy;
             }
             prev = cur;
-            cur = (ClipVtx*)((char*)cur + 0x1c);
+            cur = (ClipVtx*)(reinterpret_cast<char*>(cur) + 0x1c);
         } while (--count);
     }
 
@@ -184,8 +184,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     i32 rows = maxY - minY;
     if (mode == 0) {
         // ---- copy-all ----
-        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeL) + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeR) + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -211,14 +211,14 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     *d++ = tex[idx];
                 }
             }
-            lp = (i32*)((char*)lp + 0x1c);
-            rp = (i32*)((char*)rp + 0x1c);
+            lp = (i32*)(reinterpret_cast<char*>(lp) + 0x1c);
+            rp = (i32*)(reinterpret_cast<char*>(rp) + 0x1c);
             g_rasterDestRow += dst->m_pitch;
         }
     } else if (g_warpColorkey == 0) {
         // ---- skip-zero ----
-        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeL) + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeR) + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -248,14 +248,14 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     d++;
                 }
             }
-            lp = (i32*)((char*)lp + 0x1c);
-            rp = (i32*)((char*)rp + 0x1c);
+            lp = (i32*)(reinterpret_cast<char*>(lp) + 0x1c);
+            rp = (i32*)(reinterpret_cast<char*>(rp) + 0x1c);
             g_rasterDestRow += dst->m_pitch;
         }
     } else {
         // ---- skip-colorkey ----
-        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeL) + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)(reinterpret_cast<char*>(g_rasterEdgeR) + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -285,8 +285,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     d++;
                 }
             }
-            lp = (i32*)((char*)lp + 0x1c);
-            rp = (i32*)((char*)rp + 0x1c);
+            lp = (i32*)(reinterpret_cast<char*>(lp) + 0x1c);
+            rp = (i32*)(reinterpret_cast<char*>(rp) + 0x1c);
             g_rasterDestRow += dst->m_pitch;
         }
     }

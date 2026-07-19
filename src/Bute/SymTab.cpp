@@ -600,7 +600,7 @@ void* CSymTab::FirstSub() {
 // NextSub (0x13a280): next child-scope record after `rec` (node @ rec+0x20).
 RVA(0x0013a280, 0x19)
 void* CSymTab::NextSub(void* rec) {
-    CHashElement* n = ((CHashElement*)((char*)rec + 0x20))->Next();
+    CHashElement* n = ((CHashElement*)(reinterpret_cast<char*>(rec) + 0x20))->Next();
     if (!n) {
         return n;
     }
@@ -620,7 +620,7 @@ void* CSymTab::FirstSym() {
 // NextSym (0x13a2d0): next leaf-symbol record after `rec` (node @ rec+0x04).
 RVA(0x0013a2d0, 0x19)
 void* CSymTab::NextSym(void* rec) {
-    CHashElement* n = ((CHashElement*)((char*)rec + 0x4))->Next();
+    CHashElement* n = ((CHashElement*)(reinterpret_cast<char*>(rec) + 0x4))->Next();
     if (!n) {
         return n;
     }
@@ -632,7 +632,7 @@ void* CSymTab::NextSym(void* rec) {
 // calls CHashBase::First (0x184ae0), not CHashElement::Next. reloc_fidelity fix R8.
 RVA(0x0013a2f0, 0x19)
 void* CSymTab::NextSym2(void* rec) {
-    CHashElement* n = ((CHashBase*)((char*)rec + 0x24))->First();
+    CHashElement* n = ((CHashBase*)(reinterpret_cast<char*>(rec) + 0x24))->First();
     if (!n) {
         return n;
     }
@@ -642,7 +642,7 @@ void* CSymTab::NextSym2(void* rec) {
 // NextSym3 (0x13a310): next record after `rec` (node @ rec+0x1c).
 RVA(0x0013a310, 0x19)
 void* CSymTab::NextSym3(void* rec) {
-    CHashElement* n = ((CHashElement*)((char*)rec + 0x1c))->Next();
+    CHashElement* n = ((CHashElement*)(reinterpret_cast<char*>(rec) + 0x1c))->Next();
     if (!n) {
         return n;
     }
@@ -762,8 +762,8 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
 // found), ret 8; matches the SymTab.h declaration (both params void*, as ApplyRange passes).
 RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
-    m_10 -= *(i32*)((char*)found + 0xc);
-    ((CSymRec*)rec)->m_valTable.Remove((CHashElement*)((char*)found + 0x1c));
+    m_10 -= *(i32*)(reinterpret_cast<char*>(found) + 0xc);
+    ((CSymRec*)rec)->m_valTable.Remove((CHashElement*)(reinterpret_cast<char*>(found) + 0x1c));
     ((CSymLeafBuilder*)found)->Teardown();
     m_owner->AddNode(found);
     m_owner->m_08 = 0;
@@ -903,10 +903,10 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = ::operator new(static_cast<u32>((reinterpret_cast<i32>(f6) * 4)));
                 for (i32 i = reinterpret_cast<i32>(f6); i != 0; i--) {
                     *(void**)arr = *(void**)p;
-                    arr = (char*)arr + 4;
+                    arr = reinterpret_cast<char*>(arr) + 4;
                     p += 4;
                 }
-                arr = (char*)arr - reinterpret_cast<i32>(f6) * 4;
+                arr = reinterpret_cast<char*>(arr) - reinterpret_cast<i32>(f6) * 4;
             } else {
                 arr = 0;
             }

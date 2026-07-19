@@ -382,7 +382,7 @@ i32 CWwdGameObject::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
-        RECT* r = (RECT*)((char*)m_0c->m_level->m_mainPlane + 0x40);
+        RECT* r = (RECT*)(reinterpret_cast<char*>(m_0c->m_level->m_mainPlane) + 0x40);
         if (right < r->left) {
             return 0;
         }

@@ -704,8 +704,8 @@ i32 CPlay::ValidateLevelTiles() {
                     if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
                         continue;
                     }
-                    i32* cellRow = (i32*)((char*)gg->m_8[0] + ofs);
-                    *(i32*)((char*)cellRow + ebp) |= bit;
+                    i32* cellRow = (i32*)(reinterpret_cast<char*>(gg->m_8[0]) + ofs);
+                    *(i32*)(reinterpret_cast<char*>(cellRow) + ebp) |= bit;
                 }
             }
         } else if (who == (void*)0x40182a) {

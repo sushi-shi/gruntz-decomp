@@ -192,7 +192,7 @@ RVA(0x0015b650, 0x4d)
 void CWwdGameObjectE::Notify_15b650(void* p) {
     char* o = reinterpret_cast<char*>(this);
     if (*(unsigned char*)(o + 0x8) & 0x8) {
-        i32 d = *(i32*)(o + 0x128) - *(i32*)((char*)p + 0x120);
+        i32 d = *(i32*)(o + 0x128) - *(i32*)(reinterpret_cast<char*>(p) + 0x120);
         *(i32*)(o + 0x128) = d;
         if (d <= 0) {
             *(i32*)(*(char**)(o + 0x7c) + 0x1c) = 0x1c;
@@ -349,7 +349,7 @@ void CAniAdvanceCursor::Construct(void* srcv) {
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *(i32*)((char*)src->m_records.m_pData + 0x34) & 0x40;
+    m_2c = *(i32*)(reinterpret_cast<char*>(src->m_records.m_pData) + 0x34) & 0x40;
 }
 
 // CAniAdvanceCursor::Unload (0x15c2c0, vtable slot 7; the ex Reset_15c2c0):

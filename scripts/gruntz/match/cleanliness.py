@@ -147,8 +147,11 @@ METRICS = (
     # --- casts ---
     (")this casts", re.compile(r"\)this\b"), False),
     (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
-    ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
-    ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
+    # The declarator lookbehind (same as the numeric metric, audited 2026-07-19): a cast's
+    # `(char*)` is preceded by an operand/operator, never an identifier/`>`/`)` - those are
+    # fn-param lists `StrUpr(char*)` / fn-ptr types `)(const char*)`, not casts.
+    ("(char*) casts", re.compile(r"(?<![\w>)])\(char ?\*\)"), False),
+    ("(const char*) casts", re.compile(r"(?<![\w>)])\(const char ?\*\)"), False),
     # reinterpret_cast<CFoo*>(m_x) where the operand IS the member (bare) -> a LAUNDER-SUSPECT: the
     # doctrine fix is to RETYPE the member (cast vanishes + void* m_ drops), not wrap it. The operand
     # must be exactly `m_x)` - a derived operand `m_list.GetNext(pos)` / `m_arr.GetData()[i]` is a

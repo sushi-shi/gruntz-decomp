@@ -368,7 +368,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             // The focused object IS a grunt (the identity test below is against
             // `this`, a CGrunt) - typed so; ex a CEntranceAnimPlayer* + downcast.
             CGrunt* focus = 0;
-            i32* cell = (i32*)((char*)g + 0x68);
+            i32* cell = (i32*)(reinterpret_cast<char*>(g) + 0x68);
             CGrunt** slot = (CGrunt**)(*cell);
             if (((i32*)slot)[0x24c / 4] == 1) {
                 i32* idxObj = ((i32**)slot)[0x244 / 4];
@@ -690,7 +690,7 @@ i32 CGrunt::StartBombGruntRun() {
         CGameObject* h = m_10;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
+        char* sc = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
         i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -1217,7 +1217,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             CGameObject* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
-            char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
+            char* sc = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
             i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
             if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                 g_gameReg->m_cueSink->CueA(this, 0x35c, -1, 0, -1, -1);
@@ -1295,7 +1295,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_400 = 16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
 
     WwdGameReg* g = g_gameReg;
-    void* sub2c = *(void**)((char*)g + 0x2c);
+    void* sub2c = *(void**)(reinterpret_cast<char*>(g) + 0x2c);
     GruntBoard* b = g->m_tileGrid;
     CGameObject* h = m_10;
     i32 xbound = b->m_c;
@@ -1308,7 +1308,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
         dir = ((i32*)b->m_8[tileY])[tileX * 7 + 3];
     }
 
-    i32 sel = *(i32*)((char*)sub2c + 0x20);
+    i32 sel = *(i32*)(reinterpret_cast<char*>(sub2c) + 0x20);
 
 // Latch the compass velocity triple into m_entranceCell[0..2] + step the last-tile
 // pixel position. Case groups are laid out so cl emits the distinct (tail-merged)

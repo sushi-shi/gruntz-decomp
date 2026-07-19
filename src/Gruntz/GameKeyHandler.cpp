@@ -439,7 +439,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
         CoordPoolNode* node =
-            (CoordPoolNode*)((char*)self->m_488.GetAt(cur) - g_coordPool.m_linkOffset);
+            (CoordPoolNode*)(reinterpret_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset);
         ((CDWordArray*)&self->m_488)->RemoveAt(cur, 1);
         node->m_next = (CoordPoolNode*)g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;

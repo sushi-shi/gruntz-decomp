@@ -635,7 +635,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     i32* clat = m_channelLatency;
     for (i32 k = 0; k < 0x8e0; k += 0x238) {
         *clat++ = 0;
-        i32* slot = (i32*)((char*)g_gameReg + k + 0x37c);
+        i32* slot = (i32*)(reinterpret_cast<char*>(g_gameReg) + k + 0x37c);
         slot[0] = 0;
         slot[1] = 0;
     }
@@ -698,10 +698,10 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // --- custom-level path ---
     if (m_5b0 != 0) {
         NetGameMgr()->m_12c = 0;
-        *(CString*)((char*)NetGameMgr() + 0xc8) = "custom\\" + GetConfigNameB();
+        *(CString*)(reinterpret_cast<char*>(NetGameMgr()) + 0xc8) = "custom\\" + GetConfigNameB();
     } else {
         NetGameMgr()->m_12c = 1;
-        *(CString*)((char*)NetGameMgr() + 0xc8) = GetConfigNameA();
+        *(CString*)(reinterpret_cast<char*>(NetGameMgr()) + 0xc8) = GetConfigNameA();
     }
     if (Mgr()->GetWorldFileName().GetLength() == 0) {
         return 0;
@@ -1453,8 +1453,8 @@ i32 CMulti::StartTitle() {
     // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
     // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
     m_c->m_drawTarget->Method_158dc0();
-    void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
-    (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
+    void* vobj = *(void**)(*(void**)(reinterpret_cast<char*>(m_c) + 0x1c));
+    (*(void(__stdcall**)(void*))(reinterpret_cast<char*>(*(void**)vobj) + 0x28))(vobj); // vfn +0x28(vobj)
     m_2c = saved;
     while (::ShowCursor(1) < 0) {
     }
@@ -1651,7 +1651,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             char nameBuf[0xa];
             char gameBuf[0x40];
             i32 cap = 0xa;
-            ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
+            ((Utils::RegistryHelper*)*(void**)(reinterpret_cast<char*>(g_gameReg) + 0x38))
                 ->GetValueString(
                     const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                     nameBuf,
@@ -1659,7 +1659,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                     "Player"
                 );
             cap = 0x40;
-            ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
+            ((Utils::RegistryHelper*)*(void**)(reinterpret_cast<char*>(g_gameReg) + 0x38))
                 ->GetValueString(
                     const_cast<char*>(static_cast<const char*>(("Game_Name"))),
                     gameBuf,
@@ -2154,7 +2154,7 @@ i32 CMulti::JoinAndRegisterChannel() {
         return 0;
     }
 
-    m_hostIndex = *(i32*)((char*)lp + 4);
+    m_hostIndex = *(i32*)(reinterpret_cast<char*>(lp) + 4);
     CNetChannel* ch0 = NetGameMgr()->m_channels;
     i32 chField = ch0->m_slotId;
     CString name = ((GruntzPlayer*)ch0)->GetName();
@@ -2198,7 +2198,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    const char* cfgStr = *(const char**)((char*)sel + 0x34);
+    const char* cfgStr = *(const char**)(reinterpret_cast<char*>(sel) + 0x34);
     char buf[0x28];
     if (Cfg_GetKey(buf, cfgStr, "CMDDELAY")) {
         m_5a4 = atoi(buf);
@@ -2211,7 +2211,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     }
     m_syncGate = 0;
     ResyncLParam() = 1;
-    m_hostIndex = *(i32*)((char*)lp + 4);
+    m_hostIndex = *(i32*)(reinterpret_cast<char*>(lp) + 4);
     if (Cfg_GetKey(buf, cfgStr, "LEVEL")) {
         ResyncLParam() = atoi(buf);
     }
@@ -3181,7 +3181,7 @@ i32 CMulti::ParseChannelTable(void* packet) {
         ResetNetSlots();
     }
 
-    char* rec = (char*)packet + 9;
+    char* rec = reinterpret_cast<char*>(packet) + 9;
     for (i32 i = 0; i < 4; i++) {
         CNetChannel* ch = &NetGameMgr()->m_channels[i];
         if (ch != 0) {
@@ -4200,7 +4200,7 @@ void CMulti::DropTimeout() {
     if (slot == 0) {
         return;
     }
-    g_dropPlayerId = *(i32*)((char*)slot->m_desc + 0x18);
+    g_dropPlayerId = *(i32*)(reinterpret_cast<char*>(slot->m_desc) + 0x18);
     CString nm;
     g_sessionName = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_sessionName = nm
     SendNetStat(0x40c, g_dropPlayerId, 1);
@@ -4282,7 +4282,7 @@ i32 CMulti::SetupTcpIpConfig() {
         return 0;
     }
 
-    m_hostIndex = *(i32*)((char*)lp + 4);
+    m_hostIndex = *(i32*)(reinterpret_cast<char*>(lp) + 4);
     i32 chField = ch0->m_slotId;
     CString cn2 = ((GruntzPlayer*)ch0)->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_hostIndex);
@@ -4628,7 +4628,7 @@ u32 CMulti::GetMaxAckLatency() {
                     max = slot->m_37c;
                 }
             }
-            slot = (CNetPlayerSlot*)((char*)slot + 0x238);
+            slot = (CNetPlayerSlot*)(reinterpret_cast<char*>(slot) + 0x238);
         }
     }
     return max;

@@ -178,7 +178,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))
+                ((CMapStringToPtr*)(reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10))
                     ->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_fgFrame = set->m_frames[idx];
@@ -193,7 +193,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))
+                ((CMapStringToPtr*)(reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10))
                     ->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_baseFrame = set->m_frames[idx];
@@ -211,7 +211,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = *(i32*)((char*)g_gameReg + 0x158 + (g_curPlayer * 71) * 8);
+            i32 sel = *(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158 + (g_curPlayer * 71) * 8);
             i32 node = g_gameReg->m_refTable->GetSel(sel, 0);
             if (node == 0) {
                 node = g_gameReg->m_refTable->GetSel(1, 0);

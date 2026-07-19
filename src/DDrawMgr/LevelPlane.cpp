@@ -778,13 +778,13 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     CWwdSpatialMgr* nw = (CWwdSpatialMgr*)::operator new(0xb8);
     if (nw) {
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(i32*)((char*)nw + 0x74) = 0;
-        *(i32*)((char*)nw + 0x78) = 0;
-        *(i32*)((char*)nw + 0x00) = 0;
-        *(i32*)((char*)nw + 0x04) = 0;
-        *(i32*)((char*)nw + 0x08) = 0;
-        *(i32*)((char*)nw + 0x0c) = 0;
-        *(i32*)((char*)nw + 0xb4) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x74) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x78) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x00) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x04) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x08) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0x0c) = 0;
+        *(i32*)(reinterpret_cast<char*>(nw) + 0xb4) = 0;
     }
     worker = nw;
     if (nw->Init(src, &rc, p0, p1, p2, p3, p4, p5) == 0) {
@@ -949,7 +949,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     // Apply imageSet -> the +0xdc CString slot (CGameObject pads it; raw-offset assign).
     if (imageSet.GetLength() != 0) {
-        ((CString*)((char*)obj + 0xdc))->operator=(static_cast<const char*>(imageSet));
+        ((CString*)(reinterpret_cast<char*>(obj) + 0xdc))->operator=(static_cast<const char*>(imageSet));
     }
 
     // Scatter the trailing record fields. `p` advances through the record from

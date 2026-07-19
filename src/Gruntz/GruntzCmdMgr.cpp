@@ -105,7 +105,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
+        GzTargetObj* obj = *(GzTargetObj**)(reinterpret_cast<char*>(pos) + 8);
         i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
@@ -116,7 +116,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
             }
         }
         if (isPlay) {
-            table[*(u8*)((char*)obj + 4)] = obj;
+            table[*(u8*)(reinterpret_cast<char*>(obj) + 4)] = obj;
         } else {
             obj->Select(sp);
             obj->Deselect();
@@ -147,7 +147,7 @@ RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
+        GzTargetObj* obj = *(GzTargetObj**)(reinterpret_cast<char*>(pos) + 8);
         if (obj->m_6 == static_cast<u8>(typeByte) && obj->m_4 == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
             obj->Deselect();
@@ -338,7 +338,7 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
 // ---------------------------------------------------------------------------
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = (char*)data + 1; // skip the tag byte
+    char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
     m_4 = *buf++;
     m_5 = *buf++;
     m_6 = *buf++;
@@ -366,7 +366,7 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
 // ---------------------------------------------------------------------------
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = (char*)data + 1; // skip the tag byte
+    char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
     m_4 = *buf++;
     m_5 = *buf++;
     m_6 = *buf++;

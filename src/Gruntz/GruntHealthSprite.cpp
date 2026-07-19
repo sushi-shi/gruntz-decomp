@@ -168,7 +168,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
     CGameRegistry* reg = g_gameReg;
-    CGrunt* e = ((CGrunt**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }

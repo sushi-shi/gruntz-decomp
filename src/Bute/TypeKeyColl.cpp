@@ -612,7 +612,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         i32 shift = m_lo - (idx - at);
         m_grown = shift;
         m_alloc = reinterpret_cast<i32>(p);
-        memcpy((char*)p + shift * m_stride, p, oldbytes);
+        memcpy(reinterpret_cast<char*>(p) + shift * m_stride, p, oldbytes);
         memset(reinterpret_cast<char*>(m_alloc), 0, m_grown * m_stride);
         m_lo = idx - at;
         m_base = reinterpret_cast<i32>(p);
@@ -626,7 +626,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-    char* fill = (char*)p + oldbytes;
+    char* fill = reinterpret_cast<char*>(p) + oldbytes;
     m_grown = hinew - m_hi;
     m_alloc = reinterpret_cast<i32>(fill);
     memset(fill, 0, m_grown * m_stride);

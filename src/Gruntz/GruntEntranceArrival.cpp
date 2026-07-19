@@ -482,7 +482,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         CGameRegistry* g = g_gameReg;
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
-        i32* rect = (i32*)(*(i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c) + 0x40);
+        i32* rect = (i32*)(*(i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c) + 0x40);
         if (xx < rect[2] && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 1, -1, -1, -1);
         }
@@ -864,7 +864,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             i32 m380 = m_moveVariant;
             if (m380 != 0) {
                 i32 tier = cueTier + m380 - 1;
-                i32 anchor = *(i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c) + 0x40;
+                i32 anchor = *(i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c) + 0x40;
                 if (GruntPointVisible(m_10->m_screenY, m_10->m_screenX, anchor) != 0) {
                     g->m_cueSink->CueA(this, tier, 0, -1, -1, -1);
                 }
@@ -874,7 +874,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                     m_moveKind = rand() % md + 1;
                 }
                 i32 tier = cueTier + m_moveKind - 1;
-                i32 anchor = *(i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c) + 0x40;
+                i32 anchor = *(i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c) + 0x40;
                 if (GruntPointVisible(m_10->m_screenY, m_10->m_screenX, anchor) != 0) {
                     g->m_cueSink->CueA(this, tier, 0, -1, -1, -1);
                 }
@@ -932,8 +932,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
     // Pick the active toy pose by comparing the two toy-pose timers (m_3c4/m_3c8 ->+0x24)
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
-    i32 t0 = *(i32*)((char*)m_poseToy1 + 0x24);
-    i32 t1 = *(i32*)((char*)m_poseToy2 + 0x24);
+    i32 t0 = *(i32*)(reinterpret_cast<char*>(m_poseToy1) + 0x24);
+    i32 t1 = *(i32*)(reinterpret_cast<char*>(m_poseToy2) + 0x24);
     i64 elapsed = *(i64*)&m_toyClockLo - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
@@ -969,9 +969,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     CGameRegistry* g = g_gameReg;
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
-    i32* rectBase = (i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c);
+    i32* rectBase = (i32*)(*(char**)(reinterpret_cast<char*>(g->m_world) + 0x24) + 0x5c);
     i32 lim = rectBase[0x48 / 4];
-    i32* rect = (i32*)((char*)rectBase + 0x40);
+    i32* rect = (i32*)(reinterpret_cast<char*>(rectBase) + 0x40);
     if (sel != 0) {
         if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xb, -1, -1, -1);
@@ -2080,7 +2080,7 @@ tail:
         CGameObject* h = m_10;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
+        char* sc = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
         i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
             g_gameReg->m_cueSink->CueSpawn(this, 7, -1, -1, -1);

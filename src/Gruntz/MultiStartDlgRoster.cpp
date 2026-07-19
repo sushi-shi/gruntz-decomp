@@ -155,7 +155,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* c2 = GetCtrlD(ch);         // 0x30da -> 0xc2840
     ColourBtn1753(ch);               // 0x1753 (side effect only)
     ReadyCheck1159(ch);              // 0x1159 (side effect only)
-    ChannelSlot* s = (ChannelSlot*)((char*)m_host + ch * 0x238 + 0x150);
+    ChannelSlot* s = (ChannelSlot*)(reinterpret_cast<char*>(m_host) + ch * 0x238 + 0x150);
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
@@ -817,7 +817,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<CFocusSlot*>(m_host))[t].m_16c : 1;
     i32 off = 0;
     do {
-        CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + off + 0x150);
+        CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + off + 0x150);
         if (slot) {
             if (slot->m_18 != g_multiState->m_hostIndex && slot->m_14 && slot->m_20) {
                 f18 = 1;
@@ -1175,7 +1175,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         return;
     }
     i32 sel = ::SendMessageA(it->m_hWnd, 0xf0, 0, 0);
-    CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + idx * 0x238 + 0x150);
+    CFocusSlot* slot = (CFocusSlot*)(reinterpret_cast<char*>(g_gameReg) + idx * 0x238 + 0x150);
     if (!slot) {
         return;
     }

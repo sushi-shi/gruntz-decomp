@@ -814,14 +814,14 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             memcpy(p1, src, n1);
         }
         if (n2 > 0) {
-            memcpy(p2, (char*)src + n1, n2);
+            memcpy(p2, reinterpret_cast<char*>(src) + n1, n2);
         }
     } else {
         // 16-bit signed -> 8-bit unsigned downconversion, per region.
         if (n1 > 0) {
             char* d = static_cast<char*>(p1);
             i16* s = (i16*)src;
-            char* end = (char*)p1 + n1;
+            char* end = reinterpret_cast<char*>(p1) + n1;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
@@ -830,8 +830,8 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
         if (n2 > 0) {
             char* d = static_cast<char*>(p2);
-            i16* s = (i16*)((char*)src + n1);
-            char* end = (char*)p2 + n2;
+            i16* s = (i16*)(reinterpret_cast<char*>(src) + n1);
+            char* end = reinterpret_cast<char*>(p2) + n2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
@@ -1657,12 +1657,12 @@ i32 DSoundVoice::Stop() {
 RVA(0x00137110, 0x8d)
 SYMBOL(_ParseWaveChunks)
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
-    u32* p = (u32*)((char*)riff + 4);
+    u32* p = (u32*)(reinterpret_cast<char*>(riff) + 4);
     u32 riffSize = *p;
     p++;
     u32 waveTag = *p;
     p++;
-    char* end = (char*)p + riffSize - 4;
+    char* end = reinterpret_cast<char*>(p) + riffSize - 4;
     if (*(u32*)riff != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
@@ -1682,7 +1682,7 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
             *sizeOut = size;
             return out->m_fmt != 0;
         }
-        p = (u32*)((char*)p + ((size + 1) & ~1));
+        p = (u32*)(reinterpret_cast<char*>(p) + ((size + 1) & ~1));
     }
     return 0;
 }

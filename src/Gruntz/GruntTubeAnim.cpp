@@ -74,7 +74,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         if (p != 0) {
             ((CString*)p)->CString::CString(); // 0x1b9b93 re-init the freed registry slot
         }
-        p = (char*)p + 4;
+        p = reinterpret_cast<char*>(p) + 4;
     }
 
     if (strcmp(node->m_name, "D") == 0) {

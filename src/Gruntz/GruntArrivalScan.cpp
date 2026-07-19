@@ -189,7 +189,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                         CGameObject* h = m_10;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
-                        char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
+                        char* sc = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
                         i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
                         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                             g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -449,7 +449,7 @@ L_ed153:
                     bestRow = row;
                 }
             }
-            cell = (CScanCell*)((char*)cell + 0x1c);
+            cell = (CScanCell*)(reinterpret_cast<char*>(cell) + 0x1c);
         }
     }
     if (best != 0x7fffffff) {
@@ -550,7 +550,7 @@ i32 CGrunt::WanderStep() {
                             do {
                                 void* cur = node;
                                 node = *(void**)node;
-                                i32 data = *(i32*)((char*)cur + 8);
+                                i32 data = *(i32*)(reinterpret_cast<char*>(cur) + 8);
                                 if (data != 0) {
                                     g_coordPool.Push((void*)(data));
                                 }
@@ -632,7 +632,7 @@ i32 CGrunt::WanderStep() {
                     do {
                         void* cur = node;
                         node = *(void**)node;
-                        i32 data = *(i32*)((char*)cur + 8);
+                        i32 data = *(i32*)(reinterpret_cast<char*>(cur) + 8);
                         if (data != 0) {
                             g_coordPool.Push((void*)(data));
                         }
@@ -686,7 +686,7 @@ i32 CGrunt::WanderStep() {
                     do {
                         void* cur = node;
                         node = *(void**)node;
-                        i32 data = *(i32*)((char*)cur + 8);
+                        i32 data = *(i32*)(reinterpret_cast<char*>(cur) + 8);
                         if (data != 0) {
                             CoordPoolNode* fslot = g_coordPool.NodeOf(reinterpret_cast<void*>(data));
                             fslot->m_next = reinterpret_cast<CoordPoolNode*>(prev);
@@ -1771,7 +1771,7 @@ i32 CGrunt::StepArrivalDefense() {
                 CGameObject* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
-                char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
+                char* m24 = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
                 i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
                 if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -1887,7 +1887,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalRow = occ->m_tileOwnerLo;
                 m_defenderState = 1;
                 CGameObject* h = m_10;
-                char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
+                char* m24 = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
                 i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
                 if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
                     goto L_f318a;
@@ -2133,7 +2133,7 @@ L_tailc:
                         bestRow = row;
                     }
                 }
-                cell = (CScanCell*)((char*)cell + 0x1c);
+                cell = (CScanCell*)(reinterpret_cast<char*>(cell) + 0x1c);
             }
         }
         if (best != 0x7fffffff) {
@@ -2723,7 +2723,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             CGameObject* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
-            char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
+            char* m24 = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
             i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
             if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -2743,7 +2743,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 CGameObject* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
-                char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
+                char* m24 = *(char**)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24);
                 i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
                 if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);

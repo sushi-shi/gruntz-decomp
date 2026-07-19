@@ -991,7 +991,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                 PosSoundPlaced* placed;
                 if (obj->m_extentT > 0) {
                     placed = WorldSoundCreateFull(
-                        *(void**)((char*)layer + 0x10),
+                        *(void**)(reinterpret_cast<char*>(layer) + 0x10),
                         0x64,
                         &rc,
                         obj->m_120,
@@ -1003,7 +1003,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                     );
                 } else {
                     placed = WorldSoundCreateSimple(
-                        *(void**)((char*)layer + 0x10),
+                        *(void**)(reinterpret_cast<char*>(layer) + 0x10),
                         0x64,
                         &rc,
                         obj->m_120,
@@ -1055,7 +1055,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        CPtrList* arr = (CPtrList*)((char*)g_gameReg->m_inputState + 8);
+        CPtrList* arr = (CPtrList*)(reinterpret_cast<char*>(g_gameReg->m_inputState) + 8);
         if (sound->m_voice != 0) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;
@@ -1077,7 +1077,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         i32 pt[2];
         pt[0] = obj->m_x;
         pt[1] = obj->m_y;
-        void* v = PosSoundSpawn(*(void**)((char*)layer + 0x10), 0x64, &pt, obj->m_120, 0);
+        void* v = PosSoundSpawn(*(void**)(reinterpret_cast<char*>(layer) + 0x10), 0x64, &pt, obj->m_120, 0);
         if (v != 0) {
             aux->m_voice = (CAmbientPosSound*)v;
         }

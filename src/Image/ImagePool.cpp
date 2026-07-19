@@ -967,10 +967,10 @@ i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
 // gates the transparency flag at this+0x450 (cleared when not set).
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
-    i32* hdr = (i32*)((char*)buf + 8);
+    i32* hdr = (i32*)(reinterpret_cast<char*>(buf) + 8);
     i32 width = hdr[0];
     i32 height = hdr[1];
-    i32 ok = DecodeBlit((char*)buf + 0x20, a2, width, height, 8, a3);
+    i32 ok = DecodeBlit(reinterpret_cast<char*>(buf) + 0x20, a2, width, height, 8, a3);
     if (!(reinterpret_cast<i32>(a3) & 1)) {
         m_transparent = 0;
     }

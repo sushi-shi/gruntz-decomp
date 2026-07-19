@@ -2029,7 +2029,7 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
     ((iostream*)static_cast<void*>(this))->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
-    ((ios*)(void*)((char*)this + 0x14))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
+    ((ios*)(void*)(reinterpret_cast<char*>(this) + 0x14))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
 }
 
 // ===========================================================================

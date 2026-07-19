@@ -109,7 +109,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 // -0x20) into the bound renderable. Returns 0.
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = ((CGrunt**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }

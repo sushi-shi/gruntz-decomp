@@ -222,8 +222,8 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     }
     i32 idx = m_state;
     CMenuItemPlacer* row;
-    if (idx >= *(i32*)((char*)page + 0x64) && idx <= *(i32*)((char*)page + 0x68)) {
-        row = ((CMenuItemPlacer**)(*(void**)((char*)page + 0x14)))[idx];
+    if (idx >= *(i32*)(reinterpret_cast<char*>(page) + 0x64) && idx <= *(i32*)(reinterpret_cast<char*>(page) + 0x68)) {
+        row = ((CMenuItemPlacer**)(*(void**)(reinterpret_cast<char*>(page) + 0x14)))[idx];
     } else {
         row = 0;
     }
@@ -231,10 +231,10 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
         return 0;
     }
     ((CImage*)row)->RenderFrame((void*)ctx, (void*)py, (void*)px, (void*)0);
-    m_hitLeft = py - *(i32*)((char*)row + 0x18);
-    m_hitRight = py + *(i32*)((char*)row + 0x18);
-    m_hitTop = px - *(i32*)((char*)row + 0x1c);
-    m_hitBottom = px + *(i32*)((char*)row + 0x1c);
+    m_hitLeft = py - *(i32*)(reinterpret_cast<char*>(row) + 0x18);
+    m_hitRight = py + *(i32*)(reinterpret_cast<char*>(row) + 0x18);
+    m_hitTop = px - *(i32*)(reinterpret_cast<char*>(row) + 0x1c);
+    m_hitBottom = px + *(i32*)(reinterpret_cast<char*>(row) + 0x1c);
     return 1;
 }
 // slot 10 (0x185690): scroll the host row when notified, then run the slot-6 hook.

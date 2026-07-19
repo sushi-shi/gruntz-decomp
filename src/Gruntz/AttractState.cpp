@@ -192,7 +192,7 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    CMapStringToOb* map = (CMapStringToOb*)((char*)menuRoot()->m_28 + 0x10);
+    CMapStringToOb* map = (CMapStringToOb*)(reinterpret_cast<char*>(menuRoot()->m_28) + 0x10);
     CObject* found = 0;
     map->Lookup(buf, found);
     m_host = (CAttractHost*)found;

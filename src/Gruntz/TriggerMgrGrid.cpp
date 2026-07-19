@@ -250,7 +250,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
                 col++;
                 cell++;
             } while (col < 15);
-            *(i32*)((char*)perRow - 0x100) = 0;
+            *(i32*)(reinterpret_cast<char*>(perRow) - 0x100) = 0;
             perRow[0] = 0;
             perRow[4] = 0;
             perRow++;
@@ -501,7 +501,7 @@ RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     (void)g;
     char* plane = reinterpret_cast<char*>(g_gameReg->m_curState);
-    char* view = *(char**)((char*)m_world + 0x24);
+    char* view = *(char**)(reinterpret_cast<char*>(m_world) + 0x24);
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {

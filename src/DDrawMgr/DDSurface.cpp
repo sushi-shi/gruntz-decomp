@@ -943,9 +943,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 5;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = static_cast<u16>((*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
-                                      | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
-                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2)));
+                    *srcPix++ = static_cast<u16>((*(u16*)(reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                                      | *(u16*)(reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                                      | *(u16*)(reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)));
                 }
                 srcPix += stride;
             }
@@ -959,9 +959,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 6;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = static_cast<u16>((*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
-                                      | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
-                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2)));
+                    *srcPix++ = static_cast<u16>((*(u16*)(reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                                      | *(u16*)(reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                                      | *(u16*)(reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)));
                 }
                 srcPix += stride;
             }

@@ -791,7 +791,7 @@ RECT g_labelRects[7] = {
 // one type: the `extern "C" CGruntzMgr* g_gameReg` above.
 
 static __inline i32 sumRun(CBattlezData* base, i32 off, i32 n) {
-    i32* p = (i32*)((char*)base + off);
+    i32* p = (i32*)(reinterpret_cast<char*>(base) + off);
     i32 s = 0;
     i32 k;
     for (k = 0; k < n; k++) {
@@ -819,7 +819,7 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
-        if (*(i32*)((char*)g_gameReg + 0x178 + i * 0x238) != 0) {
+        if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238) != 0) {
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -836,7 +836,7 @@ void CMultiBootyState::DrawBattleStats() {
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", *(i32*)((char*)g_gameReg->m_scoreHud + 0x48 + i * 4));
+            s.Format("%d", *(i32*)(reinterpret_cast<char*>(g_gameReg->m_scoreHud) + 0x48 + i * 4));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
@@ -877,9 +877,9 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Colour loop: team-colour name per active player, drawn in that colour.
     for (i = 0; i < 4; i++) {
-        if (*(i32*)((char*)g_gameReg + 0x178 + i * 0x238) != 0) {
+        if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238) != 0) {
             i32 color;
-            switch (*(i32*)((char*)g_gameReg + 0x158 + i * 0x238)) {
+            switch (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x158 + i * 0x238)) {
                 case 0:
                     color = 0x80ff;
                     break;

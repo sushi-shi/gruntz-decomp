@@ -465,7 +465,7 @@ SIZE_UNKNOWN(CombatTypeNode);
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \
-            char* slot = (char*)((_zvec*)&g_typeColl)->IndexToPtr(id);                             \
+            char* slot = reinterpret_cast<char*>(((_zvec*)&g_typeColl)->IndexToPtr(id));                             \
             i32 n = g_typeColl.m_grown;                                                            \
             void** list = (void**)g_typeColl.m_alloc;                                              \
             while (n-- != 0) {                                                                     \
@@ -805,7 +805,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (sample != 0) {
         return;
     }
-    if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
+    if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x10) == 0) {
         return;
     }
     void* entry_ob = 0;
@@ -898,7 +898,7 @@ void CGrunt::ClearSubB() {
 // together once the CMovingLogic/CGrunt field duplication is reconciled.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyVoiceParams() {
-    if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
+    if (*(i32*)(reinterpret_cast<char*>(g_gameReg) + 0x10) == 0) {
         return;
     }
     DirectSoundMgr* a = m_424;
@@ -980,7 +980,7 @@ CLookupColl g_reg_644af0;
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
-    CBrickzGrid* grid = *(CBrickzGrid**)((char*)g_gameReg + 0x70);
+    CBrickzGrid* grid = *(CBrickzGrid**)(reinterpret_cast<char*>(g_gameReg) + 0x70);
     if (CoordCount() == 0) {
         return 1;
     }
@@ -1737,33 +1737,33 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 i32 rb = grid->m_width * 7 * 4;
                 if (dxt > 0) {
                     if (dyt > 0) {
-                        if ((*(i32*)((char*)ocell + 0x1c) & 0x2000)
-                            || (*(i32*)((char*)ocell + rb) & 0x2000)
-                            || (*(i32*)((char*)cell - 0x1c) & 0x2000)
-                            || (*(i32*)((char*)cell - rb) & 0x2000)) {
+                        if ((*(i32*)(reinterpret_cast<char*>(ocell) + 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(ocell) + rb) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) - 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) - rb) & 0x2000)) {
                             return 1;
                         }
                     } else {
-                        if ((*(i32*)((char*)ocell + 0x1c) & 0x2000)
-                            || (*(i32*)((char*)ocell - rb) & 0x2000)
-                            || (*(i32*)((char*)cell - 0x1c) & 0x2000)
-                            || (*(i32*)((char*)cell + rb) & 0x2000)) {
+                        if ((*(i32*)(reinterpret_cast<char*>(ocell) + 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(ocell) - rb) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) - 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) + rb) & 0x2000)) {
                             return 1;
                         }
                     }
                 } else {
                     if (dyt > 0) {
-                        if ((*(i32*)((char*)ocell - 0x1c) & 0x2000)
-                            || (*(i32*)((char*)ocell + rb) & 0x2000)
-                            || (*(i32*)((char*)cell + 0x1c) & 0x2000)
-                            || (*(i32*)((char*)cell - rb) & 0x2000)) {
+                        if ((*(i32*)(reinterpret_cast<char*>(ocell) - 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(ocell) + rb) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) + 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) - rb) & 0x2000)) {
                             return 1;
                         }
                     } else {
-                        if ((*(i32*)((char*)ocell - 0x1c) & 0x2000)
-                            || (*(i32*)((char*)ocell - rb) & 0x2000)
-                            || (*(i32*)((char*)cell + 0x1c) & 0x2000)
-                            || (*(i32*)((char*)cell + rb) & 0x2000)) {
+                        if ((*(i32*)(reinterpret_cast<char*>(ocell) - 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(ocell) - rb) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) + 0x1c) & 0x2000)
+                            || (*(i32*)(reinterpret_cast<char*>(cell) + rb) & 0x2000)) {
                             return 1;
                         }
                     }
@@ -2169,7 +2169,7 @@ void RegisterActs_644af0() {
 RVA(0x0005caa0, 0x5e4)
 i32 CGrunt::Activate() {
     double diag = sqrt(g_dirConst2);              // sqrt(2.0)
-    double* tbl = (double*)((char*)this + 0x4b0); // 0x78-stride records (15 doubles each)
+    double* tbl = (double*)(reinterpret_cast<char*>(this) + 0x4b0); // 0x78-stride records (15 doubles each)
     const i32 W = 0x78 / 8;                       // 15 doubles per record
 
     double s = g_dirConst1 / diag; // 1 / sqrt2

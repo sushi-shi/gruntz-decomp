@@ -863,7 +863,7 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     s->Read(&seq, 4);
 
     void* obj = 0;
-    CMapPtrToPtr* map = (CMapPtrToPtr*)(*(char**)((char*)gm + 8) + 0x48);
+    CMapPtrToPtr* map = (CMapPtrToPtr*)(*(char**)(reinterpret_cast<char*>(gm) + 8) + 0x48);
     i32 m8 = 0;
     if (map->Lookup((void*)seq, obj)) {
         if (obj != 0) {
@@ -3757,7 +3757,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         Deactivate();
     }
     sp->m_state = 1;
-    CSbiSlot* g = (CSbiSlot*)this + (idx + 0x17);
+    CSbiSlot* g = reinterpret_cast<CSbiSlot*>(this) + (idx + 0x17);
     g->m_8 = 0x7fffffff;
     g->m_c = 0;
     g->m_state = g_frameTime;

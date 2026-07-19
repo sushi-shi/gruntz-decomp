@@ -166,6 +166,53 @@ def cmd_collect(cache):
         sum(len(v) for v in sink.values()), sum(len(v) for v in skipped.values())))
 
 
+def cmd_apply_skipped(cache, root):
+    """Convert the offset-cast-SKIPPED sites to the named reinterpret_cast spelling,
+    keeping the pointer arithmetic exactly as written. For sites that survived the
+    member-modeling passes (proven walls / buffers / blocked identities): the named
+    cast is the terminal honest form; the arithmetic is the documented raw shape."""
+    skipped = json.load(open(cache + '.skipped.json'))
+    root = root.rstrip('/')
+    nf = ns = 0
+    for rel in sorted(skipped):
+        if not (rel == root or rel.startswith(root + '/')):
+            continue
+        path = os.path.join(REPO, rel)
+        data = open(path, 'rb').read()
+        edits = []
+        for s, info in skipped[rel].items():
+            if info.get('reason') != 'offset-cast':
+                continue
+            start = int(s)
+            if data[start:start + 1] != b'(':
+                continue
+            try:
+                tclose = _matching_paren_close(data, start)
+            except ValueError:
+                continue
+            ttext = data[start + 1:tclose].decode('latin-1').strip()
+            if ttext not in ('char *', 'char*', 'const char *', 'const char*'):
+                continue
+            sub = _skip_ws(data, tclose + 1)
+            src = info['src']
+            end = start + len(src.encode('latin-1'))
+            if data[start:end].decode('latin-1') != src:
+                continue  # stale offset
+            tt = 'const char*' if ttext.startswith('const') else 'char*'
+            edits.append((start, sub - start,
+                          ('reinterpret_cast<%s>(' % tt).encode('latin-1')))
+            edits.append((end, 0, b')'))
+        if not edits:
+            continue
+        edits.sort(key=lambda e: (e[0], e[1]), reverse=True)
+        for pos, dl, ins in edits:
+            data = data[:pos] + ins + data[pos + dl:]
+        open(path, 'wb').write(data)
+        nf += 1
+        ns += len(edits) // 2
+    print('apply-skipped %s: %d sites in %d files' % (root, ns, nf))
+
+
 def cmd_apply(cache, root):
     sink = json.load(open(cache))
     root = root.rstrip('/')
@@ -203,5 +250,7 @@ if __name__ == '__main__':
         cmd_collect(sys.argv[2])
     elif sys.argv[1] == 'apply':
         cmd_apply(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == 'apply-skipped':
+        cmd_apply_skipped(sys.argv[2], sys.argv[3])
     else:
         print('unknown cmd')

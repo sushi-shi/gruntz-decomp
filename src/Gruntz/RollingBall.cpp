@@ -105,7 +105,7 @@ void RbClearCell(void* obj, i32 a, i32 b, i32 z);                               
 // Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[ent]; call [edx+0x20].
 static i32 VtblResolve(void* ent) {
     void* vtbl = *(void**)ent;
-    return (*(i32(**)(void*, i32, i32))((char*)vtbl + 0x20))(ent, 0, 0);
+    return (*(i32(**)(void*, i32, i32))(reinterpret_cast<char*>(vtbl) + 0x20))(ent, 0, 0);
 }
 
 // ===========================================================================
@@ -328,7 +328,7 @@ i32 CRollingBall::Update() {
         i32 cy = logic->m_screenY;
         if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
             && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
-            *(i32*)((char*)g_gameReg->m_cmdGrid + 0x3f8) = 1;
+            *(i32*)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x3f8) = 1;
         }
         CGameObject* logic2 = m_object;
         i32 outA, outB;
@@ -392,12 +392,12 @@ i32 CRollingBall::Update() {
                 }
             }
             i32 col = *(i32*)(*(char**)(lvl + 0x5c) + 0x24);
-            i32 idx = *(i32*)((char*)col + ay * 4) + ax;
+            i32 idx = *(i32*)(reinterpret_cast<char*>(col) + ay * 4) + ax;
             i32 raw = *(i32*)(*(char**)(lvl + 0x20) + idx * 4);
             i32 obj = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
                 void* tbl = *(void**)(lvl + 0x4c);
-                void* ent = *(void**)((char*)tbl + (raw & 0xffff) * 4);
+                void* ent = *(void**)(reinterpret_cast<char*>(tbl) + (raw & 0xffff) * 4);
                 obj = VtblResolve(ent);
             }
 

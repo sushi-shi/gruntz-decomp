@@ -627,7 +627,7 @@ i32 CPlay::Render() {
                 tmp.Format("%s", "");
                 // m_30 is the shared CDDrawSurfaceMgr; this WIP path reads it
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
-                CopyRect(&m_hudRect, (const RECT*)((char*)g_gameReg->m_world + 0x24));
+                CopyRect(&m_hudRect, (const RECT*)(reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
                 Eng_HudDraw(g_gameReg->m_world, &m_hudRect, 1);
             }
             // (CString temp dtor runs here under the EH frame)
@@ -919,7 +919,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // clear the 4 score/team slots at +0x384 (-4 .. +28, two dwords each)
     {
-        i32* p = (i32*)((char*)self + 0x388);
+        i32* p = (i32*)(reinterpret_cast<char*>(self) + 0x388);
         i32 n = 4;
         do {
             p[-1] = -1;
@@ -937,7 +937,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CGruntzMgr* hostBase = self->m_4;
         gameReg = (CGruntzMgr*)g_gameReg;
         GruntzPlayer* team =
-            (GruntzPlayer*)((char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150); // [edx+ecx*8+0x150]
+            (GruntzPlayer*)(reinterpret_cast<char*>(hostBase) + t * 0x48 * 8 - t * 8 + 0x150); // [edx+ecx*8+0x150]
         if (gameReg->m_134 == 1) {
             team->SeedForSlot(0);
             if (t == 0) {
@@ -969,7 +969,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     gameReg->m_scoreHud->Init();
-    ((CPtrList*)((char*)gameReg->m_cmdSubMgr + 0x1c))->RemoveAll();
+    ((CPtrList*)(reinterpret_cast<char*>(gameReg->m_cmdSubMgr) + 0x1c))->RemoveAll();
     gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
     self->m_1bc = 0;
@@ -993,7 +993,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == 0) {
                 goto fail0;
             }
-            char* p = (char*)desc + 0x10;
+            char* p = reinterpret_cast<char*>(desc) + 0x10;
             char c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
@@ -1021,7 +1021,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == 0) {
                 goto fail0;
             }
-            char* p = (char*)desc + 0x10;
+            char* p = reinterpret_cast<char*>(desc) + 0x10;
             char c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
@@ -1122,7 +1122,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
     self->m_2c = 0;
     {
-        i32* z = (i32*)((char*)nameBuf + 0x20);
+        i32* z = (i32*)(reinterpret_cast<char*>(nameBuf) + 0x20);
         i32 n = 0x25;
         while (n--) {
             *z++ = 0;
@@ -1359,7 +1359,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_scrollSink = (CGameObject*)set;
     if (set != 0) {
         void* host8 = self->m_c->m_childGroup;
-        (*(void (**)(void*, i32))((char*)*(void**)host8 + 0x24))(host8, 0); // host8 vtable +0x24
+        (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)host8) + 0x24))(host8, 0); // host8 vtable +0x24
         if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
             CStatusBarMgr* tiles = self->m_guts;
@@ -1374,11 +1374,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */
+            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), (i32*)(reinterpret_cast<char*>(nameBuf) + 0x20)) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 void* host8b = self->m_c->m_childGroup;
-                (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
+                (*(void (**)(void*, i32))(reinterpret_cast<char*>(*(void**)host8b) + 0x24))(host8b, 0);
                 self->m_guts->winapi_107d00_SetRect();
                 ((DirectInputMgr2*)g_inputMgr)->ReadAll();
                 while (ShowCursor(0) >= 0)
@@ -1436,7 +1436,7 @@ okContinue:
             EngStr_DrawText(
                 (EngStrRenderObj*)self->m_c,
                 reinterpret_cast<i32>(rect),
-                reinterpret_cast<i32>(((char*)nameBuf + 0x4)),
+                reinterpret_cast<i32>((reinterpret_cast<char*>(nameBuf) + 0x4)),
                 0x78,
                 1,
                 0xff,
@@ -3338,7 +3338,7 @@ i32 CPlay::ClearPlacedObjects() {
                 g_coordPool.m_freeHead = node;
                 return -1;
             }
-            if (*(i32*)((char*)result + 0x124) != 0x14) {
+            if (*(i32*)(reinterpret_cast<char*>(result) + 0x124) != 0x14) {
                 restart = 1;
             }
             ++i;
@@ -4593,13 +4593,13 @@ drag_path: {
             // the guts +0x08 slot holds the dragged widget's display object
             // (screen pos at +0x5c/+0x60 - the CGameObject shape); snap origin =
             // widget pos - click pos.
-            CGameObject* g8 = *(CGameObject**)((char*)m_guts + 8);
+            CGameObject* g8 = *(CGameObject**)(reinterpret_cast<char*>(m_guts) + 8);
             i32 dx = 0;
             if (g8 != 0) {
                 dx = g8->m_screenX - xr;
             }
             m_snapOriginX = dx;
-            CGameObject* g8b = *(CGameObject**)((char*)m_guts + 8);
+            CGameObject* g8b = *(CGameObject**)(reinterpret_cast<char*>(m_guts) + 8);
             if (g8b == 0) {
                 m_snapOriginY = 0;
                 return 1;
@@ -4665,7 +4665,7 @@ drag_box: {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CTmCell* slot = 0;
         if (1 == cg->m_recList.GetCount()) { // exactly one record node
-            i32* sel = *(i32**)(*(char**)((char*)&cg->m_recList + 4) + 8);
+            i32* sel = *(i32**)(*(char**)(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8);
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
@@ -6435,11 +6435,11 @@ i32 CPlay::ResetPlayState() {
         CGameRegistry* reg = g_gameReg;
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
-        if (*(i32*)(*(char**)((char*)reg + 0xc8) - 8) == 0) {
+        if (*(i32*)(*(char**)(reinterpret_cast<char*>(reg) + 0xc8) - 8) == 0) {
             m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
-            if (*(i32*)(*(char**)((char*)reg + 0x44) + 0x124) == 0) {
+            if (*(i32*)(*(char**)(reinterpret_cast<char*>(reg) + 0x44) + 0x124) == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     ((CSaveGame*)reg->m_saveSink)->SetMaxLevel(id);
@@ -6467,7 +6467,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CBattlezMapConfig*)((char*)g_gameReg + 0x188 + off))->Method_025c20();
+        ((CBattlezMapConfig*)(reinterpret_cast<char*>(g_gameReg) + 0x188 + off))->Method_025c20();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
@@ -6603,8 +6603,8 @@ void CPlay::FreeListTeardown() {
     }
     m_488.SetSize(0, -1); // CPtrArray::SetSize @0x1b52e8
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CBattlezMapConfig*)((char*)m_4 + 0x188 + off))->FreeArrays();
-        ((CBattlezMapConfig*)((char*)m_4 + 0x188 + off))->Clear_02ade0();
+        ((CBattlezMapConfig*)(reinterpret_cast<char*>(m_4) + 0x188 + off))->FreeArrays();
+        ((CBattlezMapConfig*)(reinterpret_cast<char*>(m_4) + 0x188 + off))->Clear_02ade0();
     }
     m_49c = -1;
 }
@@ -6642,7 +6642,7 @@ void CPlay::ReleaseResources() {
     i32 off = 0;
     do {
         off += 0x238;
-        *(i32*)((char*)g_gameReg + off - 0xc8) = 0;
+        *(i32*)(reinterpret_cast<char*>(g_gameReg) + off - 0xc8) = 0;
     } while (off < 0x8e0);
     if (m_4 && m_4->m_chatLog) {
         m_4->m_chatLog->FreeNodes();

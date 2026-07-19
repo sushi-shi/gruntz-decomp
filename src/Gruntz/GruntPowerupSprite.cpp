@@ -137,7 +137,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGrunt* e = ((CGrunt**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = ((CGrunt**)(reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;

@@ -141,7 +141,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 sel =
         ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)
             ->GetSel(
-                ((StatusBarTabBuilders::CSbWorldSlot*)((char*)StatusBarTabBuilders::g_gameReg
+                ((StatusBarTabBuilders::CSbWorldSlot*)(reinterpret_cast<char*>(StatusBarTabBuilders::g_gameReg)
                                                        + 0x138))[StatusBarTabBuilders::g_curPlayer]
                     .m_toolId,
                 0
