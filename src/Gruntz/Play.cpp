@@ -66,7 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h> // g_lastNow / g_frameTicks (frame-clock band)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
@@ -461,7 +461,7 @@ i32 CPlay::Render() {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));             // 0x3710  CTimer::Tick
         m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta));          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_c->m_drawTarget->m_backPair));           // 0x1519
         return 1;                                                             // -> draw tail
     }
@@ -471,7 +471,7 @@ i32 CPlay::Render() {
         goto alt2;
     }
     {
-        CGameRegistry* reg = g_gameReg;
+        CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
         if (reg->m_134 != 2 && m_overlayDrag != 0) {
             goto alt2;
         }
@@ -488,7 +488,7 @@ i32 CPlay::Render() {
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - static_cast<u32>(m_bootyTimerLo);
             if (elapsed >= static_cast<u32>(m_bootyInterval)) {
-                RegCue(g_gameReg->m_cueSink, 0x33e); // reg->m_cueSink cue
+                RegCue(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */, 0x33e); // reg->m_cueSink cue
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
                 m_bootyTimerLo = static_cast<i32>(g_frameTime);
@@ -508,7 +508,7 @@ i32 CPlay::Render() {
                 static_cast<void>(name); // [esp+0x10] CString temp (/GX)
                 char buf[0x80];
                 wsprintfA(buf, "AMBIENT%d", id); // s_AMBIENT%d
-                if (g_gameReg->m_14 != 0) {
+                if (g_gameReg->m_musicEnabled != 0) { // +0x14 (the WAP32 base field; the registry view called it m_14)
                     w->m_sound->PlayByName(buf, 1);
                 } else {
                     CGruntzSoundInnerZ* out = 0;
@@ -609,11 +609,11 @@ i32 CPlay::Render() {
                 GutsStepC(); // m_guts
                 m_snapshotActive = 0;
                 // walk the level tree (CMapPtrToPtr::Lookup):
-                if (g_gameReg->m_focusSlots[0].m_0c != 0) {
+                if (reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[0].m_0c != 0) {
                     void* out = 0;
                     MapLookup(
                         g_gameReg->m_world->m_childGroup,
-                        reinterpret_cast<void*>(g_gameReg->m_focusSlots[0].m_0c),
+                        reinterpret_cast<void*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[0].m_0c),
                         out
                     );
                     if (out != 0) {
@@ -742,7 +742,7 @@ alt2:
                     static_cast<void>(name);
                     char buf[0x80];
                     wsprintfA(buf, "AMBIENT%d", id);
-                    if (g_gameReg->m_14 != 0) {
+                    if (g_gameReg->m_musicEnabled != 0) { // +0x14 (the WAP32 base field; the registry view called it m_14)
                         m_4->m_sound->PlayByName(buf, 1);
                     } else {
                         CGruntzSoundInnerZ* out = 0;
@@ -907,7 +907,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_4->m_timer->ClearSprites();
     self->m_4->RestoreVideoMode(0);
 
-    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+    gameReg = g_gameReg;
     if (gameReg->m_134 != 2) {
         g_curPlayer = 0;
         if (gameReg->m_frameGate != 0) {
@@ -935,7 +935,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // team 0 ready, multi-mode zeroes the round counters.
     for (i32 t = 0; t < 4; ++t) {
         CGruntzMgr* hostBase = self->m_4;
-        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+        gameReg = g_gameReg;
         GruntzPlayer* team =
             reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(hostBase) + t * 0x48 * 8 - t * 8 + 0x150)); // [edx+ecx*8+0x150]
         if (gameReg->m_134 == 1) {
@@ -961,7 +961,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_levelType = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
     }
 
-    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+    gameReg = g_gameReg;
     g_frameTime = 0;
     if (gameReg->m_134 == 3) {
         srand(timeGetTime());
@@ -1174,7 +1174,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && (reinterpret_cast<CGruntzMgr*>(g_gameReg))->m_134 == 1) {
+    if (modeFlag != 0 && (g_gameReg)->m_134 == 1) {
         BuildWarlordNameTable(reinterpret_cast<i32>(savedThis));
     }
     BuildHelpReveal(0);
@@ -1305,7 +1305,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // ---- the WarpStone bute scan (single-mode only) ----
-    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+    gameReg = g_gameReg;
     if (gameReg->m_134 != 1) {
         CString warp; // [esp+0x14]
         i32 same = 0;
@@ -1337,7 +1337,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_4->m_saveSink->FillSlot2(reinterpret_cast<SaveSlot*>(&self->m_1d0), self->m_levelIndex, 0);
     {
         CString key; // [esp+0x18]
-        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+        gameReg = g_gameReg;
         gameReg->m_cmdGrid->m_pendingFx = 0;
         i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4); // round-down-to-4 idiom
@@ -1415,11 +1415,11 @@ okContinue:
         (static_cast<CMulti*>(savedThis))->AckJoinFailure();
     }
 
-    gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+    gameReg = g_gameReg;
     if (gameReg->m_114 == 0) {
         CDDSurface* mapHost = self->m_c->m_drawTarget->m_frontPair->m_surface;
         mapHost->ShadeRect(0x32, 0);
-        gameReg = reinterpret_cast<CGruntzMgr*>(g_gameReg);
+        gameReg = g_gameReg;
     }
 
     // ---- loading-screen blit (mode != 2 && m_114 == 0) ----
@@ -1471,7 +1471,7 @@ okContinue:
     self->m_renderDisabled = 1;
     g_playActive = 0;
     ResetViewport(); // 0x3d55 -> 0xd8c60
-    if ((reinterpret_cast<CGruntzMgr*>(g_gameReg))->m_134 == 2) {
+    if ((g_gameReg)->m_134 == 2) {
         g_playActive = 1;
         self->m_renderDisabled = 0;
         self->m_4->CheckSavedMode();
@@ -1726,7 +1726,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             }
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-            if (g_gameReg->m_14) {
+            if (g_gameReg->m_musicEnabled) {
                 m_4->m_sound->PlayByName(buf, 1);
             }
             m_ambientInitDone = 1;
@@ -2351,7 +2351,7 @@ void CPlay::RegionEnter() {
         m_savedZonedSound = w->m_sound->m_pCurrent;
         w->m_sound->StopAll();
     }
-    if (g_gameReg->m_14 != 0) {
+    if (g_gameReg->m_musicEnabled != 0) { // +0x14 (the WAP32 base field; the registry view called it m_14)
         m_4->m_sound->PlayByName("CURSE", 0);
     }
 }
@@ -2365,7 +2365,7 @@ void CPlay::RegionLeave() {
         && m_savedZonedSound != 0) {
         m_4->m_sound->IsPlaying();
         m_4->m_sound->m_pCurrent = m_savedZonedSound;
-        if (g_gameReg->m_14 != 0) {
+        if (g_gameReg->m_musicEnabled != 0) { // +0x14 (the WAP32 base field; the registry view called it m_14)
             m_4->m_sound->Restart(1);
         }
         m_savedZonedSound = 0;
@@ -2718,7 +2718,7 @@ void CPlay::DrawWorldFrame() {
     ); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
         // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33).
-        (reinterpret_cast<CGruntzMgr*>(g_gameReg))->AdvanceOptionsCycle();
+        (g_gameReg)->AdvanceOptionsCycle();
     }
     m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta)); // guts step @0xffb20
 }
@@ -2769,7 +2769,7 @@ i32 CPlay::DrawWorldFrames() {
             m_c->m_childGroup->TickKillCues_159a70(0);
             m_4->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_134 == 3) {
-                (reinterpret_cast<CGruntzMgr*>(g_gameReg))->AdvanceOptionsCycle(); // 0x933e0
+                (g_gameReg)->AdvanceOptionsCycle(); // 0x933e0
             }
             m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
             i++;
@@ -2940,7 +2940,7 @@ i32 CPlay::ProfileInputFrame() {
         m_c->m_level->m_mainPlane->CenterScrollB();
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
-    UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
+    UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
     return 1;
 }
 
@@ -3245,9 +3245,9 @@ i32 CPlay::DrawLevelInfoText() {
         s1.Format(g_emptyString);
     }
 
-    if ((reinterpret_cast<CGruntzMgr*>(g_gameReg))->GetWorldFileName().GetLength() != 0) {
+    if ((g_gameReg)->GetWorldFileName().GetLength() != 0) {
         char buf[128];
-        wsprintfA(buf, (reinterpret_cast<CGruntzMgr*>(g_gameReg))->GetWorldFileName());
+        wsprintfA(buf, (g_gameReg)->GetWorldFileName());
         if (strchr(buf, '.')) {
             *strchr(buf, '.') = 0;
         }
@@ -4047,7 +4047,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         return 1;
     }
     i32 area = g_curPlayer;
-    CFocusSlot* cfg = &g_gameReg->m_focusSlots[area];
+    CFocusSlot* cfg = &reinterpret_cast<CGameRegistry*>(g_gameReg)->m_focusSlots[area];
     if (cfg == 0) {
         return 0;
     }
@@ -4514,7 +4514,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             }
         }
         if (placed == 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
+            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))
                 ->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
         }
         m_dragInhibit1 = 0;
@@ -4669,7 +4669,7 @@ drag_box: {
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
+            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))
                 ->SpawnVoiceDriver(reinterpret_cast<i32>(slot), 0x324, -1, 0, -1, -1);
         }
     }
@@ -5159,7 +5159,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_dragClampMaxY = 0;
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
-        (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
+        (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
         this->m_bootyInterval = BOOTY_INTERVAL_MS;
         this->m_bootyIntervalHi = 0;
         this->m_bootyTimerLo = g_frameTime;
@@ -6038,7 +6038,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) == 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))->DtorBody();
+            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))->DtorBody();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
@@ -6355,7 +6355,7 @@ i32 CPlay::Vslot09(i32 mode) {
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
-    CGameRegistry* reg = g_gameReg;
+    CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
     CFocusSlot* slot = &reg->m_focusSlots[id];
     if (slot == 0) {
         return 0;
@@ -6407,7 +6407,7 @@ i32 CPlay::ResetPlayState() {
         m_ambientTimerLo = g_frameTime;
         m_ambientTimerHi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
-        if (g_gameReg->m_14 != 0) {
+        if (g_gameReg->m_musicEnabled != 0) { // +0x14 (the WAP32 base field; the registry view called it m_14)
             m_4->m_sound->PlayByName(buf, 0);
         }
         m_ambientInitDone = 0;
@@ -6421,8 +6421,8 @@ i32 CPlay::ResetPlayState() {
         if (m_4->m_sound->m_pCurrent != 0) {
             m_4->m_sound->m_pCurrent->SetLoop(1);
         }
-        CGameRegistry* reg = g_gameReg;
-        if (reg->m_14 != 0 && reg->m_134 == 3) {
+        CGruntzMgr* reg = g_gameReg;
+        if (reg->m_musicEnabled != 0 && reg->m_134 == 3) {
             m_4->m_sound->PlayByName(buf, 1);
         }
         m_ambientTimerLo = 0;
@@ -6432,18 +6432,18 @@ i32 CPlay::ResetPlayState() {
         m_ambientInitDone = 1;
     }
     if (m_4->m_134 == 1) {
-        CGameRegistry* reg = g_gameReg;
+        CGameRegistry* reg = reinterpret_cast<CGameRegistry*>(g_gameReg); // the 0x238-slot roster view (disp-wall keep; see GruntzMgr.h m_options)
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
         if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0xc8) - 8)) == 0) {
             m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
-            reg = g_gameReg;
+            reg = reinterpret_cast<CGameRegistry*>(g_gameReg);
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
             if (*reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0x44) + 0x124)) == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
-                    reg = g_gameReg;
+                    reg = reinterpret_cast<CGameRegistry*>(g_gameReg);
                 }
             }
             (static_cast<CSaveGame*>(reg->m_saveSink))->Save(0, 0x81a6);
@@ -6451,7 +6451,7 @@ i32 CPlay::ResetPlayState() {
         CGameLevel* g = m_4->m_world->m_level;
         ResetGoalGeom(g->m_header.startX, g->m_header.startY);
     } else {
-        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_curPlayer];
+        CFocusSlot* slot = &(reinterpret_cast<CGameRegistry*>(g_gameReg))->m_focusSlots[g_curPlayer]; // roster-view keep (disp wall)
         if (slot != 0) {
             ResetGoalGeom(slot->m_220, slot->m_224);
         } else {
@@ -6718,7 +6718,7 @@ void CPlay::ReleaseResources() {
 // leaves) keeps it reloc-fuzzy; codegen plateau, not source-steerable.
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
-    (reinterpret_cast<CGruntzMgr*>(g_gameReg))->CheckSavedMode();
+    (g_gameReg)->CheckSavedMode();
     m_guts->Deactivate();
     m_guts->LoadDestructButtonSprite(0);
     m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
@@ -6726,7 +6726,7 @@ i32 CPlay::EnterMode(i32 mode) {
     if (m_1c4 != 0) {
         m_1c4 = 0;
         m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-        UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
@@ -6859,7 +6859,7 @@ i32 CPlay::AddLevelGruntz() {
             // `mov ecx,[0x64556c]; push msg; call 0x417e` (read off the retail site):
             // a __thiscall on the singleton - CGruntzMgr::EnterModalUI @0x8ef10 (ILT
             // 0x417e).
-            (reinterpret_cast<CGruntzMgr*>(g_gameReg))->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
+            (g_gameReg)->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
             return 0;
         }
         g->m_flags |= 0x10000;
