@@ -1098,7 +1098,7 @@ i32 CGrunt::PathScan57db0() {
                 i32 cf = 1;
                 if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height)
                     && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
-                    cf = (reinterpret_cast<i32*>(grid->m_8[rr]))[cc];
+                    cf = ((grid->m_8[rr]))[cc];
                 }
                 if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
                     continue;

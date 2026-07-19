@@ -4052,7 +4052,7 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
     if (node == 0) {
         return 0;
     }
-    BrickzCell** rows = reinterpret_cast<BrickzCell**>((m_board)->m_rows);
+    BrickzCell** rows = ((m_board)->m_rows);
     while (node != 0) {
         GruntCoordNode* cur = node;
         node = node->m_next;

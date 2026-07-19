@@ -493,7 +493,7 @@ i32 CKitchenSlime::LoadSprites() {
         if (static_cast<u32>(gx) >= static_cast<u32>(map->m_c) || static_cast<u32>(gy) >= static_cast<u32>(map->m_10)) {
             tileFlags = 1;
         } else {
-            tileFlags = (reinterpret_cast<i32*>(map->m_8[gy]))[gx * 7];
+            tileFlags = ((map->m_8[gy]))[gx * 7];
         }
 
         if (tileY >= lvl->m_extentT && tileX <= lvl->m_extentR && tileY <= lvl->m_extentB
@@ -527,7 +527,7 @@ i32 CKitchenSlime::LoadSprites() {
     i32 changed = (Level()->m_124 != savedDir);
     switch (Level()->m_124 - 1) {
         case 0: // north
-            m_posY = -static_cast<double>(*reinterpret_cast<i32*>(&m_stepMag));
+            m_posY = -static_cast<double>(*(&m_stepMag));
             m_dirX = 0;
             m_dirY = 0;
             *reinterpret_cast<i32*>(&m_dirY) = 0;
@@ -539,7 +539,7 @@ i32 CKitchenSlime::LoadSprites() {
             break;
         case 1: // east
             *reinterpret_cast<i32*>(&m_posX) = m_stepMag;
-            *(reinterpret_cast<i32*>(&m_posX) + 1) = *(reinterpret_cast<i32*>(&m_stepMag) + 1);
+            *(reinterpret_cast<i32*>(&m_posX) + 1) = *((&m_stepMag) + 1);
             m_dirX = 0;
             m_dirY = 0;
             *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0x3ff00000;
@@ -550,7 +550,7 @@ i32 CKitchenSlime::LoadSprites() {
             break;
         case 2: // south
             *reinterpret_cast<i32*>(&m_posY) = m_stepMag;
-            *(reinterpret_cast<i32*>(&m_posY) + 1) = *(reinterpret_cast<i32*>(&m_stepMag) + 1);
+            *(reinterpret_cast<i32*>(&m_posY) + 1) = *((&m_stepMag) + 1);
             m_dirX = 0;
             m_dirY = 0;
             *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0x3ff00000;
@@ -560,7 +560,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
             break;
         case 3: // west
-            m_posX = -static_cast<double>(*reinterpret_cast<i32*>(&m_stepMag));
+            m_posX = -static_cast<double>(*(&m_stepMag));
             m_dirX = 0;
             m_dirY = 0;
             *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0xbff00000;

@@ -282,7 +282,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_FALL: { // FALL / QUICKFALL by tile attribute
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            i32 attr = (reinterpret_cast<i32*>(grid->m_8[m_10->m_screenY >> 5]))[(m_10->m_screenX >> 5) * 7 + 4];
+            i32 attr = ((grid->m_8[m_10->m_screenY >> 5]))[(m_10->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(
@@ -310,7 +310,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_FALL2: { // FALL2 / QUICKFALL2 by tile attribute
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            i32 attr = (reinterpret_cast<i32*>(grid->m_8[m_10->m_screenY >> 5]))[(m_10->m_screenX >> 5) * 7 + 4];
+            i32 attr = ((grid->m_8[m_10->m_screenY >> 5]))[(m_10->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = static_cast<CAniElement*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(

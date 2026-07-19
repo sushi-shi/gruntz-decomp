@@ -603,7 +603,7 @@ i32 CGruntPuddle::Remove() {
         i32 flags;
         if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c)
             && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_8[ty]))[tx * 7];
         } else {
             flags = 1;
         }

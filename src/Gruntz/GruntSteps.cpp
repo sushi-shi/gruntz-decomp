@@ -336,7 +336,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
 
     (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code = (reinterpret_cast<i32*>((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+    i32 code = (((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
                     ->m_tileGrid->m_8[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
@@ -485,8 +485,8 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 px = x >> 5;
     i32 py = y >> 5;
 
-    i32* ra = reinterpret_cast<i32*>((&m_reachRectLeft));
-    i32* rb = reinterpret_cast<i32*>((&m_2a0));
+    i32* ra = ((&m_reachRectLeft));
+    i32* rb = ((&m_2a0));
 
     RECT r1;
     r1.left = ra[0] + dx;
@@ -535,8 +535,8 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 dx = m_lastTilePxX >> 5;
     i32 dy = m_lastTilePxY >> 5;
 
-    i32* ra = reinterpret_cast<i32*>((&m_2b0));
-    i32* rb = reinterpret_cast<i32*>((&m_2c0));
+    i32* ra = ((&m_2b0));
+    i32* rb = ((&m_2c0));
 
     RECT r1;
     r1.left = ra[0] + dx;

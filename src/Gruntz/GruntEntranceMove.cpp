@@ -376,7 +376,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 i32 a = vec[0];
                 i32 b = vec[1];
                 i32 off = a * 15 + b;
-                focus = (reinterpret_cast<CGrunt**>(slot))[off + 0x1c / 4];
+                focus = ((slot))[off + 0x1c / 4];
             }
             if (this == focus && m_tileOwnerHi == g_curPlayer) {
                 onScreen = 1;
@@ -469,7 +469,7 @@ void CGrunt::LoadEntranceConfig() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_8[ty]))[tx * 7];
         }
 
         if (flags & 0x20000000) {
@@ -477,7 +477,7 @@ void CGrunt::LoadEntranceConfig() {
             if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
                 owner = -1;
             } else {
-                owner = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7 + 1];
+                owner = ((grid->m_8[ty]))[tx * 7 + 1];
             }
             i32 b = (owner >> 8) & 0xff;
             i32 a = owner & 0xff;

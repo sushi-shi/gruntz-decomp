@@ -125,7 +125,7 @@ static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+    return ((b->m_8[ty]))[tx * 7];
 }
 
 // ===========================================================================
@@ -1022,7 +1022,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_8[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -1322,7 +1322,7 @@ void CGrunt::ResolveEntranceArrival() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_8[ty]))[tx * 7];
         }
         if (!(flags & 0x80)) {
             m_entranceActive = 0;
@@ -1451,7 +1451,7 @@ i32 CGrunt::StepEntranceReinit() {
     if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_c) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_10)) {
         flag = 1;
     } else {
-        flag = (reinterpret_cast<i32*>(b->m_8[co->m_y]))[co->m_x * 7];
+        flag = ((b->m_8[co->m_y]))[co->m_x * 7];
     }
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_14->m_1c;
@@ -1466,7 +1466,7 @@ i32 CGrunt::StepEntranceReinit() {
         if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
             flag2 = 1;
         } else {
-            flag2 = (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+            flag2 = ((b->m_8[ty]))[tx * 7];
         }
         if (!(flag2 & 0x80)) {
             return 0;
@@ -1649,7 +1649,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_8[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -2118,7 +2118,7 @@ i32 CGrunt::StepArrivalCommitA() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+        flags = ((grid->m_8[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
@@ -2169,7 +2169,7 @@ i32 CGrunt::StepArrivalCommitB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+        flags = ((grid->m_8[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         return 0;
@@ -2391,7 +2391,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         f1 = 1;
     } else {
-        f1 = (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7];
+        f1 = ((grid->m_8[ty]))[tx * 7];
     }
     if (f1 & 0x2000000) {
         BuildGruntLoseItemAnimation();
@@ -2402,7 +2402,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         cellObj = 0;
     } else {
-        cellObj = reinterpret_cast<void*>((reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7 + 2]);
+        cellObj = reinterpret_cast<void*>(((grid->m_8[ty]))[tx * 7 + 2]);
     }
     if (cellObj == 0) {
         return 0;
@@ -2422,8 +2422,8 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     grid = g_gameReg->m_tileGrid;
     if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-        (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7 + 2] = 0;
-        (reinterpret_cast<i32*>(grid->m_8[ty]))[tx * 7] &= ~0x40000;
+        ((grid->m_8[ty]))[tx * 7 + 2] = 0;
+        ((grid->m_8[ty]))[tx * 7] &= ~0x40000;
     }
     return 0;
 }
