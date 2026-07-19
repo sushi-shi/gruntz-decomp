@@ -593,7 +593,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect srcClip = m_parent->m_24->m_10;
         RECT destClip;
-        CopyRect(&destClip, reinterpret_cast<const RECT*>(&srcClip));
+        CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
             dleft += destClip.left - x;
         }
@@ -777,7 +777,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     if (info->m_flags & 0x40000) {
         BlitRect clipA = m_parent->m_24->m_10;
         RECT clip;
-        CopyRect(&clip, reinterpret_cast<const RECT*>(&clipA));
+        CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
             d.left += clip.left - x;
         }
@@ -836,7 +836,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -930,7 +930,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1020,7 +1020,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.bottom -= 1;
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1112,7 +1112,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1204,7 +1204,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1294,7 +1294,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;
@@ -1383,7 +1383,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
-    info->m_outRect = *reinterpret_cast<BlitRect*>(&d);
+    info->m_outRect = *(&d);
     info->m_outWidth = w;
     info->m_outHeight = h;
     info->m_result = 0;

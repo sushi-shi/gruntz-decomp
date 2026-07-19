@@ -1657,7 +1657,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 // CFontConfig draw sink.)
 RVA(0x000d00a0, 0x5a)
 void CPlay::PostSetup(void* dc) {
-    RECT src = *reinterpret_cast<RECT*>(&m_c->m_level->m_planeCtx);
+    RECT src = *(&m_c->m_level->m_planeCtx);
     RECT dst;
     CopyRect(&dst, &src);
     m_4->m_chatLog->DrawTextLines(8, static_cast<HDC>(dc), &dst, 0x10);
@@ -2201,7 +2201,7 @@ i32 CPlay::ResetViewport() {
         r.bottom = r.bottom + (0x60 - halfH);
     }
     m_viewMode = VIEW_MODE_IDLE;
-    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
+    m_c->m_level->BuildAllPlanes((&r)); // 0x15da80
     m_4->RecomputeViewScale();
     return 1;
 }
@@ -2264,7 +2264,7 @@ i32 CPlay::ClampViewport(i32 inset) {
         return 0;
     }
 
-    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
+    m_c->m_level->BuildAllPlanes((&r)); // 0x15da80
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_guts->Deactivate(); // 0x125d -> CStatusBarMgr::Deactivate @0x100cb0
     m_4->RecomputeViewScale();
@@ -2333,7 +2333,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
         return 0;
     }
 
-    m_c->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(&r)); // 0x15da80
+    m_c->m_level->BuildAllPlanes((&r)); // 0x15da80
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_guts->Deactivate();
     m_4->RecomputeViewScale();
@@ -4027,7 +4027,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         return 1;
     }
 
-    RECT* rc = reinterpret_cast<RECT*>(&m_c->m_level->m_planeCtx);
+    RECT* rc = (&m_c->m_level->m_planeCtx);
     i32 rl = rc->left;
     i32 rt = rc->top;
     i32 rr = rc->right;
@@ -4503,7 +4503,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
             // inside the guts HUD rect -> finalize with placed == 0
         } else {
-            RECT* wr = reinterpret_cast<RECT*>(&geom->m_planeCtx);
+            RECT* wr = (&geom->m_planeCtx);
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
                     char tok = *reinterpret_cast<char*>(&g_curPlayer);
@@ -4544,7 +4544,7 @@ mode_36c:
         }
         CGruntzMgr* w = m_4;
         CGameLevel* geom = w->m_world->m_level;
-        RECT* wr = reinterpret_cast<RECT*>(&geom->m_planeCtx);
+        RECT* wr = (&geom->m_planeCtx);
         if (!(xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top)) {
             goto waypoint_cancel;
         }
@@ -4625,7 +4625,7 @@ drag_box: {
         goto ret1;
     }
     CGruntzMgr* w = m_4;
-    RECT* wr = reinterpret_cast<RECT*>(&w->m_world->m_level->m_planeCtx);
+    RECT* wr = (&w->m_world->m_level->m_planeCtx);
     if (!(x < wr->right && x >= wr->left && y < wr->bottom)) {
         goto ret1;
     }
@@ -6043,7 +6043,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
-                RECT r = *reinterpret_cast<RECT*>(&g_gameReg->m_world->m_level->m_planeCtx);
+                RECT r = *(&g_gameReg->m_world->m_level->m_planeCtx);
                 RECT r2;
                 CopyRect(&r2, &r);
                 EngStr_DrawText(

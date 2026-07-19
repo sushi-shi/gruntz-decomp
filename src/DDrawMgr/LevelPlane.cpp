@@ -198,7 +198,7 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     }
     if (bounds->left != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
-        CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(bounds));
+        CopyRect((&local), (bounds));
         m_bounds50 = local;
         i32 pw2 = m_bounds50.right - m_bounds50.left + 1;
         i32 ph2 = m_bounds50.bottom - m_bounds50.top + 1;
@@ -379,7 +379,7 @@ RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
     if (coords->left != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
-        CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(coords));
+        CopyRect((&local), (coords));
         m_bounds50 = local;
         i32 width = m_bounds50.right - m_bounds50.left + 1;
         i32 height = m_bounds50.bottom - m_bounds50.top + 1;
