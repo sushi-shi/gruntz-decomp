@@ -1113,26 +1113,27 @@ i32 CGrunt::UpdateArrival() {
     if (this->CoordCount() != 0) {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
-        i32* cell = (i32*)this->CoordHead()->m_coord;
-        u8* flags = (u8*)(((GruntBoard*)g_gameReg->m_tileGrid)->m_8[cell[1]] + cell[0] * 0x1c);
+        GruntCoord* cell = this->CoordHead()->m_coord;
+        u8* flags = (u8*)(((GruntBoard*)g_gameReg->m_tileGrid)->m_8[cell->m_y] + cell->m_x * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                void* p = (void*)this->CoordHead();
+                GruntCoordNode* p = this->CoordHead();
                 void* prev = g_coordPool.m_freeHead;
                 while (p != 0) {
-                    void* next = *(void**)p;
-                    i32* link = (i32*)((char*)p + 8);
+                    GruntCoordNode* next = p->m_next;
+                    GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
-                        g_coordPool.m_freeHead = (void*)(*link - g_coordPool.m_linkOffset);
+                        g_coordPool.m_freeHead
+                            = (void*)(reinterpret_cast<i32>(*link) - g_coordPool.m_linkOffset);
                         *(void**)g_coordPool.m_freeHead = prev;
                         prev = g_coordPool.m_freeHead;
                     }
                 }
                 m_31c.RemoveAll();
             }
-            SetEntrancePos(cell[0] * 0x20 + 0x10, cell[1] * 0x20 + 0x10);
+            SetEntrancePos(cell->m_x * 0x20 + 0x10, cell->m_y * 0x20 + 0x10);
         }
     }
     return 1;
@@ -2408,13 +2409,13 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderY = this->m_lastTilePxY;
     if (this->CoordCount() != 0
         && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol] == 0) {
-        void* p = (void*)this->CoordHead();
+        GruntCoordNode* p = this->CoordHead();
         while (p != 0) {
-            void* next = *(void**)p;
-            i32* link = (i32*)((char*)p + 8);
+            GruntCoordNode* next = p->m_next;
+            GruntCoord** link = &p->m_coord;
             p = next;
             if (*link != 0) {
-                g_coordPool.Push((void*)(*link));
+                g_coordPool.Push(*link);
             }
         }
         m_31c.RemoveAll();
@@ -2429,13 +2430,13 @@ i32 CGrunt::SeekTarget() {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
-                void* p = (void*)this->CoordHead();
+                GruntCoordNode* p = this->CoordHead();
                 while (p != 0) {
-                    void* next = *(void**)p;
-                    i32* link = (i32*)((char*)p + 8);
+                    GruntCoordNode* next = p->m_next;
+                    GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
-                        g_coordPool.Push((void*)(*link));
+                        g_coordPool.Push(*link);
                     }
                 }
                 m_31c.RemoveAll();
@@ -2468,13 +2469,13 @@ i32 CGrunt::SeekTarget() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                void* p = (void*)this->CoordHead();
+                GruntCoordNode* p = this->CoordHead();
                 while (p != 0) {
-                    void* next = *(void**)p;
-                    i32* link = (i32*)((char*)p + 8);
+                    GruntCoordNode* next = p->m_next;
+                    GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
-                        g_coordPool.Push((void*)(*link));
+                        g_coordPool.Push(*link);
                     }
                 }
                 m_31c.RemoveAll();
