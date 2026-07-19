@@ -108,7 +108,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c =                                                                              \
-            reinterpret_cast<LeafCue*>(((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)->Lookup_05b7e0(TAG));       \
+            reinterpret_cast<LeafCue*>(m_world->m_soundRegistry->Lookup_05b7e0(TAG));       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
