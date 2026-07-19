@@ -42,6 +42,16 @@ _VOID_KEEPS = {
     # setter TU unmatched - typing would be a guess (Font.h doc block; unblocks when
     # the setter TU is reconstructed).
     ("FontRenderer", "m_surface"), ("FontRenderer", "m_clip"),
+    # the bute-tree VALUE domain is a PROVEN variant container: g_buteTree stores int
+    # ids, but ButeMgr's instances store CButeTree* sub-trees and heap CButeValue*
+    # records (Find->Find chains, m_teardown + operator delete on m_value) - the i32
+    # retype was TESTED 2026-07-19 and refuted by those instances. void* is the
+    # container's true value type; members holding its values inherit it.
+    ("CButeTreeNode", "m_value"), ("AnimWorkerObj", "m_1c"),
+    ("CAnimLookupNode", "m_1c"), ("CUserLogic", "m_prevAnimSetNode"),
+    ("CButeValue", "pValue"), ("TypeKeyRec", "m_4"),
+    ("CHashElement", "m_record"),  # the generic hash payload (typed per-table at use)
+    ("CObjNode", "m_base"),        # the intrusive-list element view slot (vptr-or-data)
 }
 
 _NUMERIC = {cidx.TypeKind.INT, cidx.TypeKind.UINT, cidx.TypeKind.LONG, cidx.TypeKind.ULONG,
