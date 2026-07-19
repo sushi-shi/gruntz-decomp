@@ -52,7 +52,8 @@ struct CGameObject;  // fwd (the worker's collide callback takes the object)
 struct LeafCue;          // the +0x19c resolved leaf-scan cue (<Gruntz/LeafCue.h>)
 class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class CUserLogic; // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
-struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h>)
+struct Coord;
+typedef Coord GruntTilePos; // the {m_x,m_y} out-point == the one engine Coord (<Gruntz/CoordNode.h>)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
 // 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable

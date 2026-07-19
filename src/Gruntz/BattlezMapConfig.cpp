@@ -1036,9 +1036,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
     Coord pt;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
     i32 gx = pt.m_x >> 5;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
     i32 gy = pt.m_y >> 5;
     if (abs(ux - gx) >= 2) {
         goto recycleBail;
@@ -1076,7 +1076,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         //     EH frame; the flag dispatch reads the scratch. ---
         i32 cx = c0->m_x;
         i32 cy = c0->m_y;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         BrickzCell scratchA;
         const BrickzCell* srcA;
         if (static_cast<u32>(cx) < static_cast<u32>(board->m_width) && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
@@ -1096,9 +1096,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         // --- scratchB: the tile record under the unit's LIVE screen cell (secondary
         //     gate). Retail reads the y from the first probe and the x from the second. ---
         Coord pt2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt2));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
         i32 sgy = pt2.m_y >> 5;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         i32 sgx = pt.m_x >> 5;
         BrickzCell scratchB;
         const BrickzCell* srcB;
@@ -1113,9 +1113,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         //     If the live cell resolves to a kind-2 cell record, drop the unit's path
         //     and latch it into mode 0xb. ---
         if ((scratchB.m_0 & 0x4) && unit->m_2d8 != 0xb) {
-            (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt));
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
             i32 rx = pt.m_x >> 5;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&pt2));
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
             i32 ry = pt2.m_y >> 5;
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, 0);
             if (rec->m_04 == 2) {
@@ -1414,7 +1414,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     }
     void* pos = unit->CoordHead();
     Coord center;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&center));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
     CBrickzGrid* board = m_board;
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
@@ -2155,16 +2155,16 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     // Build an 8x8 box around the unit (four GetCoord corner reads).
     RECT box;
     Coord c1;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c1));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
     box.bottom = (c1.m_y >> 5) + 4;
     Coord c2;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c2));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
     box.right = (c2.m_x >> 5) + 4;
     Coord c3;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c3));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c3));
     box.top = (c3.m_y >> 5) - 3;
     Coord c4;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c4));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c4));
     box.left = (c4.m_x >> 5) - 3;
     CBrickzGrid* board = m_board;
     RECT bounds;
@@ -2925,13 +2925,13 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     CGameObject* lvl = unit->m_object;
     i32 bottom = (lvl->m_screenY >> 5) + 8;
     Coord g0;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&g0));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g0));
     i32 right = (g0.m_x >> 5) + 8;
     Coord g1;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&g1));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g1));
     i32 top = (g1.m_y >> 5) - 8;
     Coord g2;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&g2));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g2));
     i32 left = (g2.m_x >> 5) - 8;
     CBrickzGrid* board = m_board;
     RECT bounds;
@@ -3044,22 +3044,22 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     // Four GetCoord corners -> a 15x15 box (half-extent 7) around the unit.
     RECT box;
     Coord cA;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cA));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cA));
     cA.m_x >>= 5;
     cA.m_y >>= 5;
     box.bottom = cA.m_y + 7;
     Coord cB;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cB));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cB));
     cB.m_x >>= 5;
     cB.m_y >>= 5;
     box.right = cB.m_x + 7;
     Coord cC;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cC));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cC));
     cC.m_x >>= 5;
     cC.m_y >>= 5;
     box.top = cC.m_y - 7;
     Coord cD;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cD));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cD));
     box.left = (cD.m_x >> 5) - 7;
 
     CGrunt* best = 0;
@@ -3110,7 +3110,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             Coord c;
-            (static_cast<CUserLogic*>(u))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c));
+            (static_cast<CUserLogic*>(u))->GetScreenPos((&c));
             POINT wpt;
             wpt.x = c.m_x >> 5;
             wpt.y = c.m_y >> 5;
@@ -3118,14 +3118,14 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             Coord a1;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&a1));
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&a1));
             Coord b1;
-            (static_cast<CUserLogic*>(u))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&b1));
+            (static_cast<CUserLogic*>(u))->GetScreenPos((&b1));
             i32 dx = abs((a1.m_x >> 5) - (b1.m_x >> 5));
             Coord a2;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&a2));
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&a2));
             Coord b2;
-            (static_cast<CUserLogic*>(u))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&b2));
+            (static_cast<CUserLogic*>(u))->GetScreenPos((&b2));
             i32 dy = abs((a2.m_y >> 5) - (b2.m_y >> 5));
             i32 dist = dx * dx + dy * dy;
             if (dist >= bestDist) {
@@ -3189,7 +3189,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         flags = 0x1000;
     }
     Coord bc;
-    (static_cast<CUserLogic*>(best))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&bc));
+    (static_cast<CUserLogic*>(best))->GetScreenPos((&bc));
     if (Method_0300c0(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
@@ -3462,7 +3462,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                         }
                         CPtrList list(10);
                         Coord oc;
-                        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&oc));
+                        (static_cast<CUserLogic*>(unit))->GetScreenPos((&oc));
                         CGameObject* dl = cand->m_object;
                         if ((m_board)->SearchEdge(
                                 oc.m_x >> 5,
@@ -3967,10 +3967,10 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     CPtrList list(10);
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     Coord cur;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cur));
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur));
     if ((cur.m_x >> 5) == gx) {
         Coord cur2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&cur2));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur2));
         if ((cur2.m_y >> 5) == gy) {
             return 0;
         }
@@ -4568,13 +4568,13 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         i32 W = m_board->m_width;
         i32 H = m_board->m_height;
         Coord c0;
-        g->GetScreenPos(reinterpret_cast<GruntTilePos*>(&c0));
+        g->GetScreenPos((&c0));
         c0.m_x >>= 5;
         c0.m_y >>= 5;
         CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
         if (nb != 0) {
             Coord c1;
-            nb->GetScreenPos(reinterpret_cast<GruntTilePos*>(&c1));
+            nb->GetScreenPos((&c1));
             c1.m_x >>= 5;
             c1.m_y >>= 5;
             if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
@@ -4590,7 +4590,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         // nb == 0: replan / drain
         if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0b8)) {
             Coord here;
-            g->GetScreenPos(reinterpret_cast<GruntTilePos*>(&here));
+            g->GetScreenPos((&here));
             Plan293c(g, here.m_x >> 5, here.m_y >> 5, m_ac, m_b0, -1);
             if (g->CoordCount() > m_98 + m_94 && g->CoordCount() != 0) {
                 GruntCoordNode* nd = g->CoordHead();
@@ -4621,7 +4621,7 @@ inflight: {
     i32 W = m_board->m_width;
     i32 H = m_board->m_height;
     Coord c0;
-    g->GetScreenPos(reinterpret_cast<GruntTilePos*>(&c0));
+    g->GetScreenPos((&c0));
     c0.m_x >>= 5;
     c0.m_y >>= 5;
     CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
@@ -4666,11 +4666,11 @@ inflight: {
     }
     {
         Coord here;
-        g->GetScreenPos(reinterpret_cast<GruntTilePos*>(&here));
+        g->GetScreenPos((&here));
         i32 x5 = here.m_x >> 5;
         i32 y5 = here.m_y >> 5;
         Coord nbpos;
-        cur->GetTilePos(reinterpret_cast<GruntTilePos*>(&nbpos));
+        cur->GetTilePos((&nbpos));
         i32 dx = nbpos.m_x - x5;
         i32 dy = nbpos.m_y - y5;
         i32 adx = dx < 0 ? -dx : dx;
@@ -4996,10 +4996,10 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         }
         i32 gy = unit->m_defenderY;
         Coord c1;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c1));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
         i32 dxA = abs(rx - (c1.m_x >> 5));
         Coord c2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos(reinterpret_cast<CUserLogic::ScreenPoint*>(&c2));
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
         i32 dyA = abs(ry - (c2.m_y >> 5));
         i32 distA = dxA * dxA + dyA * dyA;
         i32 dxB = abs(rx - gx);

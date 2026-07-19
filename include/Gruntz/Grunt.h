@@ -661,11 +661,11 @@ struct CGruntVoiceRec {
 
 // The {x, y} tile-coordinate pair GetTilePos (@0x31c70) writes its result into
 // (the grunt's HUD pixel pos >> 5). Returned by pointer (the out arg).
-SIZE_UNKNOWN(GruntTilePos);
-struct GruntTilePos {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-};
+// UNIFIED 2026-07-19: this was a layout twin of the engine's one coordinate pair
+// (Coord, <Gruntz/CoordNode.h> - the g_coordPool element payload); the 36
+// Coord*->GruntTilePos* casts between the two names were pure view friction.
+// (the `struct Coord; typedef Coord GruntTilePos;` decl lives in UserLogic.h,
+// which this header includes - one owner, no duplicate typedef for MSVC5.)
 
 // ---------------------------------------------------------------------------
 // CGrunt::StepCompassMove (@0x51c00) builds a small intrusive byte bag of the 8
@@ -1491,7 +1491,7 @@ public:
     void DestroyAnims();       // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
-    struct GruntTilePos* GetTilePos(struct GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)
+    GruntTilePos* GetTilePos(GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
