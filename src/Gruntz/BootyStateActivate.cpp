@@ -819,7 +819,7 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238)) != 0) {
+        if (g_gameReg->m_options[i].m_joined != 0) {
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -877,9 +877,9 @@ void CMultiBootyState::DrawBattleStats() {
 
     // Colour loop: team-colour name per active player, drawn in that colour.
     for (i = 0; i < 4; i++) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x178 + i * 0x238)) != 0) {
+        if (g_gameReg->m_options[i].m_joined != 0) {
             i32 color;
-            switch (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158 + i * 0x238))) {
+            switch (g_gameReg->m_options[i].m_008) {
                 case 0:
                     color = 0x80ff;
                     break;

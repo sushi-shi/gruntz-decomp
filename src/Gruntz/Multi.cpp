@@ -1651,7 +1651,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             char nameBuf[0xa];
             char gameBuf[0x40];
             i32 cap = 0xa;
-            (static_cast<Utils::RegistryHelper*>(*reinterpret_cast<void**>((reinterpret_cast<char*>(g_gameReg) + 0x38))))
+            g_gameReg->m_settings
                 ->GetValueString(
                     const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                     nameBuf,
@@ -1659,7 +1659,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                     "Player"
                 );
             cap = 0x40;
-            (static_cast<Utils::RegistryHelper*>(*reinterpret_cast<void**>((reinterpret_cast<char*>(g_gameReg) + 0x38))))
+            g_gameReg->m_settings
                 ->GetValueString(
                     const_cast<char*>(static_cast<const char*>(("Game_Name"))),
                     gameBuf,

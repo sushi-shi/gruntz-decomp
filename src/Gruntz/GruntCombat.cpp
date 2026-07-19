@@ -983,7 +983,7 @@ extern CLookupColl g_reg_644af0;
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
-    CBrickzGrid* grid = *reinterpret_cast<CBrickzGrid**>((reinterpret_cast<char*>(g_gameReg) + 0x70));
+    CBrickzGrid* grid = reinterpret_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // CBrickzGrid facet of the CGruntzMapMgr board
     if (CoordCount() == 0) {
         return 1;
     }
