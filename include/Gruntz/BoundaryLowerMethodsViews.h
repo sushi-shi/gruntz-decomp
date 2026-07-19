@@ -114,26 +114,8 @@ SIZE_UNKNOWN(Cdb2f0);
 // 0x0db750 is rehomed as CPlay::LoadLevelAnims (Play.cpp) on the canonical
 // CDDrawSubMgrLeaf/CSymTab.
 
-// 0x0ea170 - 2-bit selector over a +0x38 virtual.
-struct Cea170 {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e); // slot +0x38
-    void M(i32 a1, i32 a2);
-};
-SIZE_UNKNOWN(Cea170);
+// 0x0ea170 RE-HOMED: it IS CSbConfigItem::SetDirectionAlt (<Gruntz/SBI_ImageSetAni.h>,
+// body in StatusBarTabBuilders.cpp) - the old Cea170 dispatch view is dissolved.
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
 // the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>).
