@@ -2,6 +2,7 @@
 // the Ghidra `EngStr` text routine (C:\Proj\incs). The container classes it touches
 // (CContainerErr, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
 #include <Ints.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the real render "object" (world mgr; m_drawTarget)
 #include <rva.h>
 // EngStrRenderCfg/Sub/Obj (the opaque per-caller text-render object) + the lean
 // EngStr_DrawText/EngStr_RenderText decls now live in the shared header, so every
@@ -19,7 +20,7 @@
 // source ordering (if(!cfg)return / ==0 / else) splits the bare void ret here.
 RVA(0x00115440, 0x45)
 void EngStr_DrawText(
-    EngStrRenderObj* obj,
+    CDDrawSurfaceMgr* obj,
     i32 a1,
     i32 a2,
     i32 a3,
@@ -29,7 +30,7 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    EngStrRenderCfg* cfg = obj->m_sub->m_cfg;
+    EngStrRenderCfg* cfg = (reinterpret_cast<EngStrRenderSub*>(obj->m_drawTarget))->m_cfg; // the pages' EngStr facet (next fold layer)
     if (cfg == 0) {
         return;
     }
@@ -43,6 +44,5 @@ void EngStr_DrawText(
 // SIZE records do not reschedule this TU's /O2 codegen).
 SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
 SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
-SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)
 
 // --- vtable catalog ---

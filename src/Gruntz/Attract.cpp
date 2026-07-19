@@ -676,7 +676,7 @@ i32 CMgrPersistObj::Init() {
         sp.m_10 = 0;
         sp.m_14 = 0;
         EngStr_DrawText(
-            reinterpret_cast<EngStrRenderObj*>(m_levelData),
+            m_levelData,
             reinterpret_cast<i32>(&sp),
             reinterpret_cast<i32>(&sp.m_04),
             0x78,

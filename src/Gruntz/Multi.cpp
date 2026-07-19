@@ -3758,7 +3758,7 @@ i32 CMulti::WaitForOtherPlayers() {
     rc.right = g->m_modeW;
     rc.bottom = g->m_modeH;
     EngStr_DrawText(
-        reinterpret_cast<EngStrRenderObj*>(g->m_world),
+        g->m_world,
         reinterpret_cast<i32>(&waitStr),
         reinterpret_cast<i32>(&rc),
         0x82,

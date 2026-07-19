@@ -34,10 +34,11 @@ struct EngStrRenderSub {
     char m_pad00[0x10];     // +0x00
     EngStrRenderCfg* m_cfg; // +0x10
 };
-struct EngStrRenderObj {
-    virtual void VSlot0();  // +0x00  the foreign object's vptr (layout only; not dispatched)
-    EngStrRenderSub* m_sub; // +0x04
-};
+// (EngStrRenderObj is DISSOLVED, 2026-07-19: the "render object" IS the world
+// manager CDDrawSurfaceMgr - every caller passed m_c/m_world/m_levelData, all the
+// same holder - and its +0x04 "m_sub" is m_drawTarget (the pages). The Sub/Cfg
+// facets below stay one layer deeper pending the pages/+0x10 pair-offset proof.)
+class CDDrawSurfaceMgr;
 
 // The font text-render worker the forwarder tail-calls (reloc-masked rel32 __cdecl;
 // canonical body/return in src/Wap32/EngStrRenderText.cpp). 0x115930.
@@ -57,7 +58,7 @@ extern "C" i32 EngStr_RenderText(
 // THE canonical lean EngStr text-draw forwarder (__cdecl, 0x115440). All callers should
 // declare it through THIS header and cast their args to (EngStrRenderObj*, i32 x8).
 void EngStr_DrawText(
-    EngStrRenderObj* obj,
+    CDDrawSurfaceMgr* obj,
     i32 a1,
     i32 a2,
     i32 a3,

@@ -1434,7 +1434,7 @@ okContinue:
         rect[3] = 0x1e0;
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
-                reinterpret_cast<EngStrRenderObj*>(self->m_c),
+                self->m_c,
                 reinterpret_cast<i32>(rect),
                 reinterpret_cast<i32>((reinterpret_cast<char*>(nameBuf) + 0x4)),
                 0x78,
@@ -2640,7 +2640,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
-    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rect), 0x78, 1, 0xff, 0xff, 0, 1);
+    EngStr_DrawText(m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rect), 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -2690,7 +2690,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     if (a3 != 0) {
         ShowHudMessageAlt(m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     } else {
-        EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
+        EngStr_DrawText(m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -3270,10 +3270,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, 0x280, 0x59);
     SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
     SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
-    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s0), reinterpret_cast<i32>(&r1), 0x78, 0, 0, 0, 0, 1);
-    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s1), reinterpret_cast<i32>(&r2), 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s2), reinterpret_cast<i32>(&r3), 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s3), reinterpret_cast<i32>(&r4), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_c, reinterpret_cast<i32>(&s0), reinterpret_cast<i32>(&r1), 0x78, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_c, reinterpret_cast<i32>(&s1), reinterpret_cast<i32>(&r2), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_c, reinterpret_cast<i32>(&s2), reinterpret_cast<i32>(&r3), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_c, reinterpret_cast<i32>(&s3), reinterpret_cast<i32>(&r4), 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 
@@ -6047,7 +6047,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 RECT r2;
                 CopyRect(&r2, &r);
                 EngStr_DrawText(
-                    reinterpret_cast<EngStrRenderObj*>(g_gameReg->m_world),
+                    g_gameReg->m_world,
                     reinterpret_cast<i32>(&cs),
                     reinterpret_cast<i32>(&r2),
                     0x82,
