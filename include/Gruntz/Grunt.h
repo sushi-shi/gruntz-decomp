@@ -1831,8 +1831,14 @@ extern char s_codeN[]; // "N" (0x0060dc04)
 extern char s_codeO[]; // "O" (0x0060dc0c)
 extern char s_codeQ[]; // "Q" (0x0060dc08)
 
-// The intermediate base never re-stamps its own table (cl elides for the derived
-// ctor chain); its cl-emitted ??_7 reloc-masks CGrunt's bound 0x1e8754.
+// The intermediate base never re-stamps its own table in the straight-line ctor
+// chain (cl elides it), BUT one live DIR32 reference survives in ??0CGrunt's EH
+// FUNCLET section (.text$x - the partial-unwind path of a mid-construction throw
+// re-stamps the in-flight CGruntMovingBase state; measured 2026-07-19, exactly one
+// reloc in grunt.obj). The alias is therefore doing real reloc-pairing work, not
+// just naming a dead datum - dissolving it needs a funclet-level byte comparison
+// against retail's unwind path (what table retail's funclet stamps, and whether
+// retail's linker kept a discarded-??_7 twin). Deferred to that focused audit.
 RELOC_VTBL(CGruntMovingBase, 0x001e8754);
 
 #endif // SRC_GRUNTZ_GRUNT_H
