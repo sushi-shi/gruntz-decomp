@@ -1558,9 +1558,10 @@ i32 CSymParser::V0(i32 a) {
 RVA(0x0013ba00, 0x3)
 void CSymParser::V1(i32 a) {}
 
-// V2 (0x13ba10): xor eax,eax; ret - no args, returns 0.
+// Retry (0x13ba10, slot 2): xor eax,eax; ret - the rez-node retry gate's inert
+// base default (0 = give up; see SymParser.h).
 RVA(0x0013ba10, 0x3)
-i32 CSymParser::V2() {
+i32 CSymParser::Retry() {
     return 0;
 }
 

@@ -99,7 +99,7 @@ extern "C" i32 RezStricmp(const char* a, const char* b);
 // ---------------------------------------------------------------------------
 // The owning node reached at CRezItmBase+0xc: CRezItm's stream methods poll its
 // slot-2 Retry gate on a short read / seek failure.
-#include <Rez/RezItmOwner.h>
+class CSymParser; // the real owner/Retry-gate (ex the CRezItmOwner interface view)
 
 class CRezItmBase {
 public:
@@ -125,7 +125,7 @@ public:
     // typed as the node base rather than left as raw void*.
     CRezItmBase* m_next;    // +0x04
     CRezItmBase* m_prev;    // +0x08
-    CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
+    CSymParser* m_parent; // +0x0c  the owning parser CRezItm polls via Retry() (slot 2)
 };
 
 // ---------------------------------------------------------------------------

@@ -19,6 +19,7 @@
 // a child COUNT and +0x10 as a list-append target, conflicting with both the 0x38
 // CRezDir ctor's vtable stores and CRezDirNode's +0x10 size / +0x18 source - so the
 // three "CRezDir"-labeled functions are actually three different classes).
+#include <Bute/SymParser.h> // CSymParser - the proven m_parent owner (Retry, slot 2)
 #include <Rez/RezMgr.h>
 #include <Rez/RezFile.h> // CRezFile (this TU's own class; shared decls)
 #include <Rez/RezList.h> // CRezList AddHead (0x1851e0) - owner child-list enroll
@@ -62,9 +63,9 @@ RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
     // Language-forced cast: the ctor's parameter is `void*` in the retail ABI
     // (mangled ??0CRezItmBase@@QAE@PAX@Z = PAX), while the stored member is the
-    // typed Retry-gate CRezItmOwner*. Storing the void* param into the typed
+    // typed CSymParser* (the proven parent; ex CRezItmOwner view). Storing the void* param into the typed
     // member requires the reinterpret.
-    m_parent = static_cast<CRezItmOwner*>(parent);
+    m_parent = static_cast<CSymParser*>(parent);
 }
 
 // ---------------------------------------------------------------------------
@@ -644,7 +645,6 @@ void CRezFile::Noop() {}
 SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
 VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
 SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
-SIZE_UNKNOWN(CRezItmOwner);    // abstract Retry-gate interface (no storage/vtable here)
 SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
 VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
 SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`

@@ -138,7 +138,12 @@ public:
     // Defined out-of-line in SymTab.cpp - they sit in that TU's 0x13b9e2..0x13ba20 gap.
     virtual i32 V0(i32 a);  // slot 0 (0x13b9f0)
     virtual void V1(i32 a); // slot 1 (0x13ba00)
-    virtual i32 V2();       // slot 2 (0x13ba10)
+    // slot 2 (0x13ba10) - the rez-node RETRY gate (role proven 2026-07-19): every
+    // CRezItmBase/CRezFileMgr m_parent IS this parser (`new CRezDir(this, ..)` /
+    // `new CRezItm(this)` in ParseBuffer), and on an I/O failure the nodes poll
+    // `m_parent->Retry()` through slot 2 - the inert base body's `return 0` is the
+    // default "give up". (Killed the CRezItmOwner interface view.)
+    virtual i32 Retry();
 
     // The default ctor (0x13aa10, defined in SymParser.cpp) seeds the parse-config
     // defaults; the 3-arg buf-ctor's discarded temp `CSymParser tmp;` lowers to a
