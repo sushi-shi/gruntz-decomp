@@ -641,7 +641,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
 RVA(0x00135bb0, 0x63)
 DSoundCloneInst::~DSoundCloneInst() {
     while (m_cloneList.m_head != 0) {
-        RemoveClone(m_cloneList.m_head->m_inst);
+        RemoveClone(static_cast<CloneNode*>(m_cloneList.m_head)->m_inst);
     }
 }
 
@@ -707,13 +707,13 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
     if (!m_owner->m_initialized) {
         return 0;
     }
-    CloneNode* node = m_cloneList.m_head;
+    CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head);
     if (node) {
         while (1) {
             if (node->m_inst->m_playKey && node->m_inst->IsPlaying() == 0) {
                 break;
             }
-            node = node->m_next;
+            node = static_cast<CloneNode*>(node->m_next);
             if (!node) {
                 break;
             }
@@ -888,7 +888,7 @@ void DSoundCloneInst::StopAllClones() {
     if (m_owner->m_initialized == 0) {
         return;
     }
-    for (CloneNode* node = m_cloneList.m_head; node != 0; node = node->m_next) {
+    for (CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head); node != 0; node = static_cast<CloneNode*>(node->m_next)) {
         node->m_inst->StopAndRewind();
     }
 }

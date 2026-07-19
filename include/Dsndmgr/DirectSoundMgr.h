@@ -39,12 +39,12 @@ class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
 // at the buffer that owns it. Each buffer embeds one (m_cloneNode) by which it hangs in
 // its parent's clone list; the list threads through these nodes directly, so
 // iteration reads node->m_inst with no container-of arithmetic.
-struct CloneNode {
-    CloneNode* m_next;      // +0x00
-    CloneNode* m_prev;      // +0x04
+// The clone-chain node IS a DSoundLink-headed record (the CloneNode->DSoundLink
+// casts at the list ops were the proof; layout identical). 2026-07-19.
+struct CloneNode : public DSoundLink {
     DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
 };
-SIZE(CloneNode, 0xc); // {next, prev, inst}
+SIZE(CloneNode, 0xc); // {link.next, link.prev, inst}
 
 // ---------------------------------------------------------------------------
 // IDirectSound (DSOUND) - the device interface DirectSoundCreate returns. Only
@@ -164,11 +164,9 @@ VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base su
 // concrete leaf DSoundCloneInst that its buffer list actually threads.
 
 // Clone list {head,tail}; InsertHead/Unlink are shared engine helpers (0x1390e0/0x1391e0).
-struct CloneList {
-    CloneNode* m_head; // +0x00
-    CloneNode* m_tail; // +0x04
-};
-SIZE(CloneList, 0x8); // {head, tail}
+// The clone list IS the one DSoundList (identical {head,tail}; the CloneList->
+// DSoundList casts at the Insert/Remove calls were the proof). 2026-07-19.
+typedef DSoundList CloneList;
 
 // DSoundBaseSub - clone/duplicate wrapper Clone() news (vtable 0x5ef6c0, 0x58B, no new
 // fields). dtor 0x136260 resets the vptr + chains ~DirectSoundMgr.
