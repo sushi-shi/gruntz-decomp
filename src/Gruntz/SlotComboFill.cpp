@@ -6,8 +6,10 @@
 //
 // The container is the canonical CLatencyList (<Net/LatencyList.h>) - the former
 // per-TU CMultiSlotList/SlotNode/SlotRec views here folded onto it (wave 3). The
-// node walk uses the real MFC CPtrList node list (CPtrList::CNode, protected, reached
-// through the CLatencyList base). GetDlgItem/SendMessageA are Win32 imports; GetName
+// node walk is the inline MFC POSITION API on the m_list member (GetHeadPosition/
+// GetNext lower to the same head/pNext/data loads the old raw CNode walk spelled;
+// CKeyedList no longer derives CPtrList - see KeyedList.h). GetDlgItem/SendMessageA
+// are Win32 imports; GetName
 // (0x38120 via the 0x256d ILT thunk) and ~CString are reloc-masked. Only offsets +
 // code bytes are load-bearing.
 #include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CPtrList/CString/windows.h)
@@ -34,7 +36,7 @@
 // cascades into the next-spill; no source lever under /O2.
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
-    if (m_nCount <= 0) {
+    if (m_list.GetCount() <= 0) {
         return 0;
     }
     HWND combo = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), ctrlId);
@@ -42,10 +44,9 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         return 0;
     }
     ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
-    CPtrList::CNode* node = m_pNodeHead;
-    while (node != 0) {
-        CPtrList::CNode* next = node->pNext;
-        CLatencyItem* rec = static_cast<CLatencyItem*>(node->data);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CLatencyItem* rec = static_cast<CLatencyItem*>(m_list.GetNext(pos));
         i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
         i32 idx;
         {
@@ -55,9 +56,8 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         if (idx != -1) {
             ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
         }
-        node = next;
     }
-    return m_nCount;
+    return m_list.GetCount();
 }
 
 // 0x38120 (re-homed from src/Stub/BoundaryTail.cpp): CLatencyItem::GetName - return

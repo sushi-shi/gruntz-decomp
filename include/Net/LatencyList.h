@@ -69,7 +69,9 @@ public:
     i32 SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi);
 };
 
-// VTBL-coverage note (2026-07-19): same unresolved stampless-emitter case as CKeyedList
-// (KeyedList.h) - BuildSlotList constructs it, retail shows no vptr stamp.
+// VTBL-coverage note (RESOLVED 2026-07-19): the stampless BuildSlotList ctor was the
+// proof that this family is NON-polymorphic - CKeyedList now HOLDS its CPtrList as the
+// m_list member (KeyedList.h), so no ??_7CKeyedList/??_7CLatencyList exists on either
+// side and the ctor/dtor stamp only CPtrList's own 0x5eb054.
 
 #endif // GRUNTZ_NET_LATENCYLIST_H

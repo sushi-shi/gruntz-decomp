@@ -1,7 +1,8 @@
 // KeyedList.cpp - the real keyed-list container (COMDATs @0x379a0 / 0x379f0 /
-// 0x37a70). CKeyedList : CPtrList (the object is allocated via the CPtrList ctor
-// 0x1b4867 and carries CPtrList's vtable 0x5eb054); Clear walks the CPtrList node list
-// freeing each node's owned payload, then RemoveAll's the base and zeros the mode.
+// 0x37a70). CKeyedList HOLDS a CPtrList member (the +0x00 subobject is built by the
+// CPtrList ctor 0x1b4867 and carries CPtrList's vtable 0x5eb054; see KeyedList.h for
+// the no-stamp proof that rules out derivation); Clear walks the member's node list
+// freeing each node's owned payload, then RemoveAll's it and zeros the mode.
 // The shared class def lives in <Net/KeyedList.h> so the fake `CLatencyList : CPtrList`
 // view folds onto it (CLatencyList : CKeyedList). Placeholder names; only OFFSETS +
 // code bytes are load-bearing.
@@ -22,16 +23,14 @@ CKeyedNode::~CKeyedNode() {
 // the backing CPtrList and zero the mode.
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
-    CPtrList::CNode* node = m_pNodeHead;
-    if (node != 0) {
-        do {
-            CPtrList::CNode* cur = node;
-            node = node->pNext;
-            CKeyedNode* sub = static_cast<CKeyedNode*>(cur->data);
-            delete sub; // ~CKeyedNode non-virtual -> direct dtor + ??3
-        } while (node != 0);
+    // The inline POSITION walk (GetHeadPosition/GetNext) lowers to the same
+    // head-load + pNext/data loop as the raw node walk did.
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CKeyedNode* sub = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+        delete sub; // ~CKeyedNode non-virtual -> direct dtor + ??3
     }
-    RemoveAll();
+    m_list.RemoveAll();
     m_mode = 0;
 }
 
@@ -52,6 +51,6 @@ CKeyedNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
     node->m_key = key;
     node->m_4 = a2;
     node->m_8 = a3;
-    AddTail(node); // CPtrList::AddTail (0x1b4991) - stores void*, no CObject cast
+    m_list.AddTail(node); // CPtrList::AddTail (0x1b4991) - stores void*, no CObject cast
     return node;
 }

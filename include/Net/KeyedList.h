@@ -23,16 +23,23 @@ struct CKeyedNode {
 SIZE_UNKNOWN(CKeyedNode);
 
 // The keyed-list container: an MFC CPtrList of CNode rows + the latched mode int at
-// +0x1c. Allocated with block size 0xa; no own vtable (uses CPtrList's 0x5eb054).
+// +0x1c. Allocated with block size 0xa. NOT CPtrList-DERIVED - the list is a MEMBER
+// (binary proof, 2026-07-19): retail's user-written dtor 0xc5280 (EH frame + Clear +
+// ~CPtrList) carries NO vptr re-stamp, and the ctor inlined into BuildSlotList
+// (0xc1e60) stamps only CPtrList's own 0x5eb054 - a CPtrList-DERIVED class would be
+// polymorphic and MSVC5 stamps ??_7CKeyedList in BOTH (the CBattlezDlg-measured rule;
+// the derived model sat at 91.6%/88.2% on exactly those extra stamps and emitted a
+// ??_7CKeyedList retail does not have). A user dtor of a NON-polymorphic class
+// destroying a polymorphic member reproduces every byte.
 SIZE(CKeyedList, 0x20);
-class CKeyedList : public CPtrList {
+class CKeyedList {
 public:
-    // Chain the MFC CPtrList(nBlockSize) ctor (0x1b4867), then zero the mode.
-    CKeyedList(i32 nBlockSize) : CPtrList(nBlockSize) {
+    // Run the MFC CPtrList(nBlockSize) ctor (0x1b4867) on the member, zero the mode.
+    CKeyedList(i32 nBlockSize) : m_list(nBlockSize) {
         m_mode = 0;
     }
 
-    // 0xc5280: Clear() + the ~CPtrList base chain (this IS the former CNetThing dtor).
+    // 0xc5280: Clear() + the implicit member ~CPtrList (this IS the former CNetThing dtor).
     ~CKeyedList();
 
     // 0x37a70: new a {key,a2,a3} CKeyedNode, assign it, AddTail it; returns the node.
@@ -42,12 +49,8 @@ public:
     // backing CPtrList, zero the mode.
     void Clear();
 
-    i32 m_mode; // +0x1c  latched mode
+    CPtrList m_list; // +0x00  the backing MFC list (vtable 0x5eb054 stamped by ITS ctor)
+    i32 m_mode;      // +0x1c  latched mode
 };
-
-// VTBL-coverage note (2026-07-19): our virtual-dtor model emits ??_7CKeyedList in the
-// base obj, but retail's ~ body (0xc5280, 0x49B) carries NO vptr stamp anywhere - either
-// retail's class is non-polymorphic (contradicting the CPtrList-derived dtor rules) or
-// 0xc5280 is mis-attributed. UNRESOLVED - the last uncatalogued emitter with CLatencyList.
 
 #endif // GRUNTZ_NET_KEYEDLIST_H
