@@ -66,7 +66,7 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
         }
         if (m_value != 0) {
             CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue_152d30(m_value);
-            strcpy(name, (const char*)nm);
+            strcpy(name, static_cast<const char*>(nm));
         }
         arc->Write(name, 0x80);
         arc->Write(m_blob, 0x10);

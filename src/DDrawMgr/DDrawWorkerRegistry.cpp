@@ -64,7 +64,7 @@ void operator delete(void*);
 // precedent, <Bute/SymTab.h>.)
 
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
-    return *(const i32*)((const char*)p + 0x1c);
+    return *(const i32*)(reinterpret_cast<const char*>(p) + 0x1c);
 }
 
 static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {

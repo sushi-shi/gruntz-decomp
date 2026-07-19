@@ -502,7 +502,7 @@ CString CSpawnEntry::GetTail() {
         return tmp;
     }
     if (len > 8) {
-        tmp = (const char*)m_name + 8;
+        tmp = static_cast<const char*>(m_name) + 8;
     }
     return tmp;
 }

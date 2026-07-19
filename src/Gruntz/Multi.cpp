@@ -105,7 +105,7 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 //     the CNetConnectThis shell and the CNetConnectSlotView PMF vtable-slot view are
 //     DISSOLVED - the four connect-driver dispatches are the real CState/CPlay-chain
 //     virtuals, see LoadGameAssetNamespaces, the slot-1 driver.)
-//   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
+//   * (char*)static_cast<const char*>(aCString): MFC CString -> LPCTSTR (operator) -> char* to feed a
 //     char*-taking engine API; both casts are required.
 //   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
 //     INetReleasable slot; DirectX interfaces are foreign SDK types.
@@ -1991,8 +1991,8 @@ void CMulti::ApplyCmdDelayDefaults() {
     CString resendName = m_598 + "_Resend";
     CString dynCmdName = m_598 + "_DynCmdDelay";
 
-    reg->SetValueDword((char*)(const char*)cmdDelayName, m_5a4);
-    reg->SetValueDword((char*)(const char*)resendName, m_drainReload);
+    reg->SetValueDword((char*)static_cast<const char*>(cmdDelayName), m_5a4);
+    reg->SetValueDword((char*)static_cast<const char*>(resendName), m_drainReload);
 }
 
 // ~CMultiStartDlg @0x0b8960 - the COMPILER-GENERATED dtor (destroy CStringList
@@ -2190,7 +2190,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     void* lp;
     {
         CString name = GetString5a0();
-        lp = (void*)Peer()->EnumPlayersCb(sel, (i32)(const char*)name, (i32)g_emptyString, 0);
+        lp = (void*)Peer()->EnumPlayersCb(sel, (i32)static_cast<const char*>(name), (i32)g_emptyString, 0);
     }
     m_5bc = (i32)(CNetPlayerEntry*)lp;
     if (lp == 0) {
@@ -2880,7 +2880,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             CString result;
             if (pd != 0) {
                 CString name = ((CNetMgr*)pd)->GetName();
-                result.Format("*** %s has a different version of the game.", (const char*)name);
+                result.Format("*** %s has a different version of the game.", static_cast<const char*>(name));
             } else {
                 result.Format("*** A player had a different version of the game.");
             }
@@ -2991,7 +2991,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     ChannelSlots_Set(slot->m_008, 1);
 
     CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";
-    ((CFontConfig*)NetGameMgr()->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
+    ((CFontConfig*)NetGameMgr()->m_5c)->AddItem((char*)static_cast<const char*>(line), 0x20, 0x11);
 
     if (blob != 0) {
         Peer()->RemovePlayerObj(blob);
@@ -3149,7 +3149,7 @@ i32 CMulti::BroadcastChannelTable(CNetPlayerEntry* recipient) {
             rec[4] = static_cast<char>(ch->m_228);
             *(i32*)(rec + 7) = ch->m_playerId;
             CString name = ((GruntzPlayer*)ch)->GetName();
-            strcpy(rec + 0xb, (const char*)name);
+            strcpy(rec + 0xb, static_cast<const char*>(name));
         }
         rec += 0x20;
     }
@@ -3427,7 +3427,7 @@ i32 CMulti::BroadcastOneChannel(i32 chan) {
         i32 id = ch->m_playerId;
         CString name = ((GruntzPlayer*)ch)->GetName();
         *(i32*)(packet + 0x18) = id;
-        strcpy(packet + 0x18, (const char*)name);
+        strcpy(packet + 0x18, static_cast<const char*>(name));
     }
 
     return SendStatFrom((CNetStatPacket*)packet, 0x2c, 1);
@@ -3539,7 +3539,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (toChat != 0) {
         GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(LocalPlayer()->m_4);
         CString name = player->GetName();
-        sprintf(line, "%s: %s", (const char*)name, text);
+        sprintf(line, "%s: %s", static_cast<const char*>(name), text);
     } else {
         strcpy(line, text);
     }
@@ -4274,7 +4274,7 @@ i32 CMulti::SetupTcpIpConfig() {
     void* lp;
     {
         CString cn = ((GruntzPlayer*)ch0)->GetName();
-        lp = (void*)Peer()->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
+        lp = (void*)Peer()->CreatePlayer((void*)static_cast<const char*>(cn), (i32)g_emptyString, 0);
     }
     m_5bc = (i32)(CNetPlayerEntry*)lp;
     if (lp == 0) {
@@ -4308,7 +4308,7 @@ i32 CMulti::CreateLocalPlayer() {
     {
         CString name = GetString5a0();
         m_5bc = (i32)(CNetPlayerEntry*)Peer()
-                    ->CreatePlayer((void*)(const char*)name, (i32)g_emptyString, 0);
+                    ->CreatePlayer((void*)static_cast<const char*>(name), (i32)g_emptyString, 0);
     }
     if (LocalPlayer() == 0) {
         ReportConnectFailed(0);
@@ -4334,7 +4334,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_10 = m_hostIndex;
     {
         CString name = GetString5a0();
-        strcpy(pkt.m_14, (const char*)name);
+        strcpy(pkt.m_14, static_cast<const char*>(name));
     }
     SendStatFrom((CNetStatPacket*)&pkt, 0x28, 1);
     return 1;
@@ -4366,7 +4366,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         return 0;
     }
     m_hostIndex = ((i32*)m_5bc)[1];
-    return RegisterChannelFrom((const char*)a1, a2, -1, m_hostIndex) != 0;
+    return RegisterChannelFrom(reinterpret_cast<const char*>(a1), a2, -1, m_hostIndex) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -4512,11 +4512,11 @@ i32 CMulti::SaveConfig(CNetPlayerEntry* recipient) {
     blob.m_8 = m_5b0;
     {
         CString a = GetConfigNameA();
-        wsprintfA(blob.m_nameA, (const char*)a);
+        wsprintfA(blob.m_nameA, static_cast<const char*>(a));
     }
     {
         CString b = GetConfigNameB();
-        wsprintfA(blob.m_nameB, (const char*)b);
+        wsprintfA(blob.m_nameB, static_cast<const char*>(b));
     }
     blob.m_10c = m_5a4;
     blob.m_110 = m_drainReload;

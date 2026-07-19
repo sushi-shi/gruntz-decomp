@@ -244,7 +244,7 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
     }
 
     node->m_4 = (i32)guid;
-    node->m_name = (const char*)name;
+    node->m_name = static_cast<const char*>(name);
     node->m_c = (i32)m_groups.AddTail((::CObject*)node);
     return (i32)node;
 }
@@ -783,7 +783,7 @@ i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(out, (const char*)a, (const char*)b, 0);
+    return AddSessionNode(out, reinterpret_cast<const char*>(a), reinterpret_cast<const char*>(b), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -820,7 +820,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     while (payload != 0) {
         CString name = ((CNetMgr*)payload)->GetName();
-        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name));
+        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)static_cast<const char*>(name)));
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }

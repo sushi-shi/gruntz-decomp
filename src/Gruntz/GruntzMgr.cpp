@@ -1487,21 +1487,21 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
 
     // First try the working directory ("<cwd>\<name>").
     if (GetCurrentDirectoryA(0xff, szDir)) {
-        Format(&path, "%s\\%s", szDir, (const char*)name);
-        if (!FileExists((char*)(const char*)path)) {
+        Format(&path, "%s\\%s", szDir, static_cast<const char*>(name));
+        if (!FileExists((char*)static_cast<const char*>(path))) {
             path.Empty();
         }
     }
 
     // Fall back to the Movies\ folder on the Gruntz CD.
     if (path.GetLength() == 0) {
-        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), (const char*)name);
+        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), static_cast<const char*>(name));
         if (path.GetLength() == 0) {
             return path;
         }
     }
 
-    if (!FileExists((char*)(const char*)path)) {
+    if (!FileExists((char*)static_cast<const char*>(path))) {
         path.Empty();
     }
 
@@ -1720,7 +1720,7 @@ void CGruntzMgr::ClearStateStack() {
 // resolved movie path (m_strMoviePath) exists on disk.
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return FileExists((char*)(const char*)m_strMoviePath);
+    return FileExists((char*)static_cast<const char*>(m_strMoviePath));
 }
 
 // -------------------------------------------------------------------------
@@ -1729,7 +1729,7 @@ i32 CGruntzMgr::CheckMovieFileExists() {
 // 0/1 canonicalizer (the result is consumed as a boolean here).
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
-    return FileExists((char*)(const char*)m_strMoviePath) != 0;
+    return FileExists((char*)static_cast<const char*>(m_strMoviePath)) != 0;
 }
 
 // -------------------------------------------------------------------------

@@ -417,7 +417,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     CFileMem S;
     S.Reset();
 
-    if (S.SetName((const char*)name, 1, 0) == 0) {
+    if (S.SetName(static_cast<const char*>(name), 1, 0) == 0) {
         return 0;
     }
     if (S.Open() == 0) {

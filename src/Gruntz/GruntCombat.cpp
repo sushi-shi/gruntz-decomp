@@ -108,7 +108,7 @@ static const char s_keyF[] = "F";
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
 //     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
 //   * grunt freelist recycle - (void**)((char*)node - g_coordPool.m_linkOffset / g_coordPool.m_linkOffset).
-//   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
+//   * MFC CString -> char* - (char*)static_cast<const char*>(m_animSetName) for char*-taking bute APIs.
 //   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
 //     external __thiscall engine methods.
 //   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the

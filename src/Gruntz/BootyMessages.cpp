@@ -216,7 +216,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         CString s2(g_secretMsgA);
         CString s3(g_secretMsgB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
-            s2.SetAt(k, static_cast<char>((((const char*)s2)[k] - 0x3d)));
+            s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
         ShowHudMessage(m_c, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
         ShowHudMessage(m_c, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
@@ -265,7 +265,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         CString s5(g_secretMsgRows[idx].strA);
         CString s6(g_secretMsgRows[idx].strB);
         for (i32 k = 0; k < s5.GetLength(); k++) {
-            s5.SetAt(k, static_cast<char>((((const char*)s5)[k] - 0x3d)));
+            s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
         }
         ShowHudMessage(m_c, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
         ShowHudMessage(m_c, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);

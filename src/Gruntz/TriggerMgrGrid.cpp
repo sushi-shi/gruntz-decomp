@@ -448,7 +448,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     if (sw == 0) {
         CString msg; // [esp+0x30] diagnostic temp
         msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-        g_gameReg->EnterModalUI((const char*)msg);
+        g_gameReg->EnterModalUI(static_cast<const char*>(msg));
         g_gameReg->ReportError(0x80dd, 0x3eb);
         return 0;
     }
@@ -476,7 +476,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     if (anyHit == 0) {
         CString msg;
         msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-        g_gameReg->EnterModalUI((const char*)msg);
+        g_gameReg->EnterModalUI(static_cast<const char*>(msg));
         g_gameReg->ReportError(0x80de, 0x3ec);
         return 0;
     }

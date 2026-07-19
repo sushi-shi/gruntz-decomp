@@ -367,7 +367,7 @@ i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
         m_inputActive = 1;
         m_scrollOffset = 0;
         m_inputScrollTotal = 0;
-        m_inputText = (const char*)g_emptyString;
+        m_inputText = static_cast<const char*>(g_emptyString);
     }
     if (m_inputActive == 0) {
         return 0;

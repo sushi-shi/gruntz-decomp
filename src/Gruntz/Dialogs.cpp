@@ -140,7 +140,7 @@ i32 g_savedDlgWndProc;
 RVA(0x00015a10, 0x70)
 extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
-        if (strcmp(g_emptyString, (const char*)lParam) == 0) {
+        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
             return 0;
         }
     }

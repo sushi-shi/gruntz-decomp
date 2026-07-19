@@ -1311,7 +1311,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         i32 same = 0;
         if (warp.LoadString(0x81ab)) {
             char* a = (char*)(const char*)gameReg->GetWorldFileName();
-            char* b = (char*)(const char*)warp;
+            char* b = (char*)static_cast<const char*>(warp);
             i32 eq = 1;
             while (*b == *a) {
                 if (*b == 0) {
@@ -1345,7 +1345,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             // key.Format("Level%i", i) -> wsprintf-into-CString (0x1b2cf5)
             key.Format("Level%i", i);
             CTriggerMgr* bm = gameReg->m_cmdGrid;
-            i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
+            i32 v = g_buteMgr.GetInt(static_cast<const char*>(key), "WarpStone");
             bm->m_byteArr.SetAtGrow(
                 bm->m_byteArr.GetSize(),
                 static_cast<u8>(v)
@@ -1844,7 +1844,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, (const char*)m_cueText);
+        strcpy(buf, static_cast<const char*>(m_cueText));
         s->Write(buf, 0x200);
     }
 
@@ -2067,7 +2067,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     } else {
         CImageSet* set = 0;
         ((CMapStringToPtr*)&res->m_imageRegistry->m_10map)
-            ->Lookup((const char*)buf80a, (void*&)set);
+            ->Lookup(static_cast<const char*>(buf80a), (void*&)set);
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
             m_gridCurFrame = 0;
         } else {
@@ -3653,7 +3653,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
         CString s = GetColorName(i, 0);
-        pSend(cb, 0x143, 0, (i32)(const char*)s);
+        pSend(cb, 0x143, 0, (i32)static_cast<const char*>(s));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3677,7 +3677,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
         CString s = GetDifficultyName(i, 0);
-        pSend(cb, 0x143, 0, (i32)(const char*)s);
+        pSend(cb, 0x143, 0, (i32)static_cast<const char*>(s));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3733,7 +3733,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_clearedRound, 4);
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
-        strcpy(tmp, (const char*)m_name);
+        strcpy(tmp, static_cast<const char*>(m_name));
         ar->Write(tmp, 0x80);
         ar->Write(&m_focusX, 4);
         ar->Write(&m_focusY, 4);

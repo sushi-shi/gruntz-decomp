@@ -851,7 +851,7 @@ void CDDrawWorkerRegistry::DestroyAll() {
 // map under `key` and return it; on failure run its scalar-deleting dtor and
 // return 0. (Vfunc24 dispatched BEFORE the null check, matching the target asm.)
 static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
-    return *(const i32*)((const char*)p + 0x1c);
+    return *(const i32*)(reinterpret_cast<const char*>(p) + 0x1c);
 }
 static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     AnimWorkerObj* w = new AnimWorkerObj;
@@ -1048,7 +1048,7 @@ SIZE_UNKNOWN(CAniSource);
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
     CFile fr;
-    if (fr.Open((const char*)filename, 0, 0) == 0) {
+    if (fr.Open(static_cast<const char*>(filename), 0, 0) == 0) {
         return 0;
     }
     u32 size = fr.GetLength();
@@ -1389,7 +1389,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     CObject* obj = 0;
-    ((CDDrawWorkerCtx*)m_0c)->m_10->m_10.Lookup((const char*)key, obj);
+    ((CDDrawWorkerCtx*)m_0c)->m_10->m_10.Lookup(reinterpret_cast<const char*>(key), obj);
     CDDrawWorkerObj* p = (CDDrawWorkerObj*)obj;
     i32 v;
     if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {

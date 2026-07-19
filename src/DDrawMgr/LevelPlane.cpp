@@ -859,7 +859,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     // Copy the four trailing length-prefixed strings into stack CStrings. They
     // begin right after the fixed 0x11C record.
-    const char* strCursor = (const char*)src + 0x11c;
+    const char* strCursor = reinterpret_cast<const char*>(src) + 0x11c;
     char buf[0x400];
 
     i32 n;
@@ -899,7 +899,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
         obj->Delete(1);
-        return static_cast<i32>((strCursor - (const char*)src));
+        return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
     // If an image set is named, require it to be present in the level map.
@@ -907,13 +907,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (imageSet.GetLength() != 0) {
         void* found = 0;
         CObject* foundOb = 0;
-        loaded = m_mapData->m_workerCache->m_10.Lookup((const char*)imageSet, foundOb);
+        loaded = m_mapData->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
         found = foundOb;
     }
 
     if (!loaded) {
         obj->Delete(1);
-        return static_cast<i32>((strCursor - (const char*)src));
+        return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
@@ -935,21 +935,21 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
     if (logic.GetLength() != 0) {
         if (z != -1) {
-            obj->ApplyLookupSprite((const char*)logic, z);
+            obj->ApplyLookupSprite(static_cast<const char*>(logic), z);
         } else {
-            obj->ApplyName((const char*)logic);
+            obj->ApplyName(static_cast<const char*>(logic));
         }
     }
 
     // Apply sound -> anim geometry + logic.
     if (sound.GetLength() != 0) {
-        obj->ApplyLookupGeometry((const char*)sound, 0);
-        obj->LookupAnimSprite((const char*)sound);
+        obj->ApplyLookupGeometry(static_cast<const char*>(sound), 0);
+        obj->LookupAnimSprite(static_cast<const char*>(sound));
     }
 
     // Apply imageSet -> the +0xdc CString slot (CGameObject pads it; raw-offset assign).
     if (imageSet.GetLength() != 0) {
-        ((CString*)((char*)obj + 0xdc))->operator=((const char*)imageSet);
+        ((CString*)((char*)obj + 0xdc))->operator=(static_cast<const char*>(imageSet));
     }
 
     // Scatter the trailing record fields. `p` advances through the record from
@@ -1054,7 +1054,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
     m_scroll->RemoveObject((CWwdGameObject*)obj);
 
-    return static_cast<i32>((strCursor - (const char*)src));
+    return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
 }
 
 // ---------------------------------------------------------------------------

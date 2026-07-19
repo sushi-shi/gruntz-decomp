@@ -810,7 +810,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     char* lvl = (char*)g_gameReg->m_curState;
     CString name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
-    i32 color = g_buteMgr.GetIntDef((char*)(const char*)name, "WarpStone", 0);
+    i32 color = g_buteMgr.GetIntDef((char*)static_cast<const char*>(name), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
@@ -2363,7 +2363,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
                 lvl.Format("Level%i", g_gameReg->m_curState->m_levelIndex);
                 name.Format(
                     "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
-                    g_buteMgr.GetInt("WarpStone", (const char*)lvl)
+                    g_buteMgr.GetInt("WarpStone", static_cast<const char*>(lvl))
                 );
             } else {
                 name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);

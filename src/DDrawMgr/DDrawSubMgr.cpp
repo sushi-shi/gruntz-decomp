@@ -168,7 +168,7 @@ void operator delete(void* p);
 // its m_nCount). A separate inline so its read schedules before the handle read,
 // matching the factory's register assignment.
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
-    return *(const i32*)((const char*)p + 0x1c);
+    return *(const i32*)(reinterpret_cast<const char*>(p) + 0x1c);
 }
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
@@ -315,7 +315,7 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 RVA(0x00156e80, 0x38)
 i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
     CSymTab* obj = arg1->Get_13b900();
-    void* result = obj->FindSub((const char*)arg2);
+    void* result = obj->FindSub(reinterpret_cast<const char*>(arg2));
     if (result == 0) {
         return 0;
     }

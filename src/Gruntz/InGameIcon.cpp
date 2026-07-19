@@ -1237,7 +1237,7 @@ void CInGameIcon::SetField54(i32 v) {
     void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
     if (v != 0) {
         found = 0;
-        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup((const char*)v, found);
+        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
     }
     m_cmapId = (i32)found;
 }

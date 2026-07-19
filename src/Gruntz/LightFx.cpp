@@ -143,7 +143,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    m_3c->m_0c->m_imageRegistry->m_10map.Lookup((const char*)spec, (CObject*&)node);
+    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), (CObject*&)node);
     i32 found = node;
     g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
     if (found != 0) {
@@ -169,10 +169,10 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    m_38->m_0c->m_animRegistry->m_10.Lookup((const char*)effect, (void*&)node);
+    m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), (void*&)node);
     if (node != 0) {
         node = 0;
-        m_38->m_0c->m_animRegistry->m_10.Lookup((const char*)effect, (void*&)node);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), (void*&)node);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0((CAniElement*)node);
         RebindNode();

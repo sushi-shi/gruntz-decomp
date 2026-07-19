@@ -311,7 +311,7 @@ i32 CChatBox::AttachNode(void* n) {
 // find a node by key and make it active.
 RVA(0x00182dd0, 0x19)
 i32 CChatBox::ReplaceNode(void* n) {
-    return AttachNode((void*)Find((const char*)n));
+    return AttachNode((void*)Find(static_cast<const char*>(n)));
 }
 
 // @early-stop
@@ -328,7 +328,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_10map.Lookup((const char*)key, a_ob);
+    m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
     CImageSet* a = (CImageSet*)a_ob;
     m_row0Anim = a;
     if (!a) {
@@ -353,7 +353,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_10map.Lookup((const char*)key, a_ob);
+    m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
     CImageSet* a = (CImageSet*)a_ob;
     m_row1Anim = a;
     if (!a) {
@@ -465,7 +465,7 @@ i32 CChatBox::ScrollRow0() {
         return 0;
     }
     void* t_ob = 0;
-    roster->m_10.Lookup((const char*)m_row0Key, t_ob);
+    roster->m_10.Lookup(static_cast<const char*>(m_row0Key), t_ob);
     LeafCue* t = (LeafCue*)t_ob;
     if (!t) {
         return 0;
@@ -498,7 +498,7 @@ i32 CChatBox::ScrollRow1() {
         return 0;
     }
     void* t_ob = 0;
-    roster->m_10.Lookup((const char*)m_row1Key, t_ob);
+    roster->m_10.Lookup(static_cast<const char*>(m_row1Key), t_ob);
     LeafCue* t = (LeafCue*)t_ob;
     if (!t) {
         return 0;

@@ -699,13 +699,13 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 RVA(0x0013a400, 0xa9)
 i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
-    if (rec->m_valTable.Walk((const char*)name, m_owner->m_68 == 0) != 0) {
+    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_68 == 0) != 0) {
         return 0;
     }
     CSymLeafBuilder* slot = m_owner->PopParseSlot();
     slot->Build(
         this,
-        (const char*)name,
+        static_cast<const char*>(name),
         &rec->m_valTable,
         rec,
         0,
@@ -742,7 +742,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     if (slot == 0) {
         return (i32)slot;
     }
-    slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
+    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
     ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
     u32 len = strlen((char*)a1);
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {

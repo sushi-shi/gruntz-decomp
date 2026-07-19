@@ -344,7 +344,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         flags = 0;
     }
     flags |= 0xfe000;
-    m_smackHandle = SmackOpen((const char*)src, flags, -1);
+    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(src), flags, -1);
     if (!m_smackHandle) {
         return 0;
     }
@@ -382,7 +382,7 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         flags = 0;
     }
     flags |= 0xff000;
-    m_smackHandle = SmackOpen((const char*)src, flags, -1);
+    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(src), flags, -1);
     if (!m_smackHandle) {
         return 0;
     }
@@ -423,7 +423,7 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (!m_540.Init()) {
         return 0;
     }
-    if (!m_540.ReadArchive((const char*)a1)) {
+    if (!m_540.ReadArchive(reinterpret_cast<const char*>(a1))) {
         m_540.Close();
         return 0;
     }

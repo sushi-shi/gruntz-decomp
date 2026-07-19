@@ -158,7 +158,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     m_count = 0;
     g_aniParsedNameLen = 0;
     if (m_flags & 0x2) {
-        const char* name = (const char*)p;
+        const char* name = reinterpret_cast<const char*>(p);
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
         ResolveIndices((CAniMapOwner*)ctx, name);
     }

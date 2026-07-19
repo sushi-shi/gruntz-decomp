@@ -179,7 +179,7 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
@@ -191,7 +191,7 @@ i32 CSplashState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CSplashState::Vslot0c (0xf9b40, slot 12) - key handler: on ESC/SPACE/ENTER post a

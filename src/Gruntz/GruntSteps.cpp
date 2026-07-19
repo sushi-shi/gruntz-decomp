@@ -1295,7 +1295,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&tmp, 4);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, (const char*)m_animSetName);
+    strcpy(buf, static_cast<const char*>(m_animSetName));
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);

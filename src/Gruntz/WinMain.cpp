@@ -146,7 +146,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
         UINT uLen;
         VerQueryValueA(pInfo, (LPSTR) "\\StringFileInfo\\040904B0\\FileVersion", &pValue, &uLen);
         VersionScan(
-            (const char*)pValue,
+            static_cast<const char*>(pValue),
             "%d, %d, %d, %d",
             &g_version0,
             &g_version1,

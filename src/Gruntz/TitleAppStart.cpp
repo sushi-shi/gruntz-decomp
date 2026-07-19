@@ -29,7 +29,7 @@ int CTitleApp::OnStart(int) {
     int(WINAPI * sc)(BOOL) = ::ShowCursor;
     while (sc(0) >= 0) {
     }
-    RunTitleSeq((const char*)g_assetRoot, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
+    RunTitleSeq(static_cast<const char*>(g_assetRoot), 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
     m_1b8 = 0xea60;
     return 1;
 }

@@ -954,7 +954,7 @@ RVA(0x000e54e0, 0x25)
 i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     // retail forwards to FillSlot (0xe5130, the const char* name-string variant), not
     // FillSlot2 (0xe5240); `name` flows in as a char* (see DrawSaveGameMenu's caller).
-    return FillSlot(GetSlot(idx), (const char*)name, src);
+    return FillSlot(GetSlot(idx), reinterpret_cast<const char*>(name), src);
 }
 
 // CSaveGame::StoreSlot  (0x000e5520) - copy `src` into the slot at index `idx`.

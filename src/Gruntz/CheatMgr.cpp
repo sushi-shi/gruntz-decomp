@@ -206,7 +206,7 @@ void CCheatMgr::RegisterCheats() {
 // WORD reads (retail `mov dword + and 0xffff` vs cl's movzx). Not source-steerable.
 RVA(0x00022e60, 0x1be)
 void CCheatMgr::LoadCheatConfig() {
-    CString defStr((const char*)g_emptyString);
+    CString defStr(static_cast<const char*>(g_emptyString));
     CString group;
     SYSTEMTIME now;
     GetLocalTime(&now);
@@ -215,19 +215,19 @@ void CCheatMgr::LoadCheatConfig() {
     if (g_buteMgr.GetIntDef("Cheatz", "NumCheatz", 0) >= 1) {
         do {
             group.Format("Cheat%i", i);
-            const char* grp = (const char*)group;
+            const char* grp = static_cast<const char*>(group);
             i32 expMonth = g_buteMgr.GetIntDef(grp, "ExpMonth", 0);
-            i32 expYear = g_buteMgr.GetIntDef((const char*)group, "ExpYear", 0);
+            i32 expYear = g_buteMgr.GetIntDef(static_cast<const char*>(group), "ExpYear", 0);
             if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
-                if (g_buteMgr.Exists((const char*)group, "Text")) {
-                    if (g_buteMgr.GetIntDef((const char*)group, "NonCheat", 0) == 1) {
+                if (g_buteMgr.Exists(static_cast<const char*>(group), "Text")) {
+                    if (g_buteMgr.GetIntDef(static_cast<const char*>(group), "NonCheat", 0) == 1) {
                         const char* code = (const char*)*g_buteMgr
-                                               .GetStringDef((const char*)group, "Text", &defStr);
-                        AddCheat(code, g_buteMgr.GetIntDef((const char*)group, "Value", 0x807b), 1);
+                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr);
+                        AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 1);
                     } else {
                         const char* code = (const char*)*g_buteMgr
-                                               .GetStringDef((const char*)group, "Text", &defStr);
-                        AddCheat(code, g_buteMgr.GetIntDef((const char*)group, "Value", 0x807b), 0);
+                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr);
+                        AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 0);
                     }
                 }
             }
@@ -251,12 +251,12 @@ RVA(0x00023090, 0xfc)
 BOOL CCheatMgr::CheckCode(CString code) {
     code.MakeUpper();
     for (i32 i = 0; i < code.GetLength(); i++) {
-        code.SetAt(i, static_cast<char>((((const char*)code)[i] + 0x3d)));
+        code.SetAt(i, static_cast<char>(((static_cast<const char*>(code))[i] + 0x3d)));
     }
 
     void* value = 0;
     CheatEntry* found =
-        (CheatEntry*)((m_map.Lookup((const char*)code, value) ? -1 : 0) & (i32)value);
+        (CheatEntry*)((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & (i32)value);
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA((HWND)m_count, 0x111, found->commandId, 0);

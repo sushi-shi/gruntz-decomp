@@ -376,7 +376,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
     CDeviceConfigC* dev = new CDeviceConfigC;
     if (dev->CreateDevJoystick(
             mgr->m_directInput,
-            (const char*)instance + 4,
+            static_cast<const char*>(instance) + 4,
             mgr->m_owner,
             mgr->m_flags
         )

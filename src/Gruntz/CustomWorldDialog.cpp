@@ -320,13 +320,13 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
-    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
+    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
         }
         sprintf(num, "%d", atoi(p));
-        setText(hDlg, 0x408, (const char*)g_str62c264);
+        setText(hDlg, 0x408, static_cast<const char*>(g_str62c264));
         setText(hDlg, 0x428, info.levelName + 0x40);
         setText(hDlg, 0x40c, num);
         setText(hDlg, 0x429, info.levelName + 0x80);
@@ -366,7 +366,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
     g_pathStr += ".WWD";
-    if (!FileExists((char*)(const char*)g_pathStr)) {
+    if (!FileExists((char*)static_cast<const char*>(g_pathStr))) {
         g_pathStr.Empty();
         return 0;
     }
@@ -428,10 +428,10 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0 && FileExists((char*)(const char*)g_pathStr)
+            if (g_dat62c268 != 0 && FileExists((char*)static_cast<const char*>(g_pathStr))
                 && ((WwdWorldHolder*)g_dat62c268)
-                       ->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
-                SetDlgItemTextA(hDlg, 0x408, (const char*)g_levelStr);
+                       ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+                SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
                 char* p = info.levelName;
                 while (*p && (*p < '0' || *p > '9')) {
@@ -489,7 +489,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     g_pathStr += "\\Custom\\";
     g_pathStr += szLevel;
     g_pathStr += ".WWD";
-    if (!FileExists((char*)(const char*)g_pathStr)) {
+    if (!FileExists((char*)static_cast<const char*>(g_pathStr))) {
         g_pathStr.Empty();
         return 0;
     }

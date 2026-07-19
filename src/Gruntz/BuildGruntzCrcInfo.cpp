@@ -168,5 +168,5 @@ void CNetSession::BuildGruntzCrcInfo() {
             info += szLine;
         }
     }
-    m_session->ReportVersionMsg((char*)(const char*)info, 0);
+    m_session->ReportVersionMsg((char*)static_cast<const char*>(info), 0);
 }
