@@ -17,7 +17,7 @@
 RVA(0x00008710, 0x2b)
 CZDArrayDerived* CZDArrayDerived::Construct(i32 lo, i32 hi) {
     BaseConstruct(4, lo, hi, (void*)1);
-    *(volatile i32*)&hi = (i32)m_1c; // write-back to the hi param slot (retail keeps it)
+    *(volatile i32*)&hi = reinterpret_cast<i32>(m_1c); // write-back to the hi param slot (retail keeps it)
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     return this;
 }

@@ -99,7 +99,7 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
-        i32 sentinel = (i32)g_projActCache;
+        i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set((void*)v, sentinel, 0xc);
         r = v->m_spare;
@@ -125,7 +125,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     if (v->GrowTo(idx, 0)) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
-    i32 sentinel = (i32)g_projActCache;
+    i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set((void*)v, sentinel, 0xc);
     return v->m_spare;

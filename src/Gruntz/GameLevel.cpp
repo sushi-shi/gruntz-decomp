@@ -2126,7 +2126,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
         return 0;
     }
 
-    return outLen == src->mainBlockLength ? (i32)dest : 0;
+    return outLen == src->mainBlockLength ? reinterpret_cast<i32>(dest) : 0;
 }
 
 // ===========================================================================

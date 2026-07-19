@@ -383,7 +383,7 @@ i32 CRainCloud::Tick() {
         } else {
             m_strikeArmed = 0;
         }
-        i32 frame = (i32)g_gameReg->m_logicPump->m_tables[idx];
+        i32 frame = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[idx]);
         CGameObject* spr = m_object;
         spr->m_drawActive = 1;
         spr->m_drawFillArg = frame;
@@ -422,7 +422,7 @@ i32 CPathHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
+        o->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[sel]); // [m_78 + sel*4 + 0x14]
     }
 
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -461,7 +461,7 @@ i32 CPathHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
+        o->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]); // [m_78 + 0x28]
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");

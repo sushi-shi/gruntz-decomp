@@ -117,12 +117,12 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
@@ -149,12 +149,12 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     if (coord >= g_haznLo && coord <= g_haznHi) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
-    if ((i32)((_zvec*)&g_haznColl)->GrowTo(coord, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
+    if (reinterpret_cast<i32>(((_zvec*)&g_haznColl)->GrowTo(coord, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_haznColl2->Set(&g_haznColl, (i32)item, 0xc);
+    g_haznColl2->Set(&g_haznColl, reinterpret_cast<i32>(item), 0xc);
     return g_haznCur;
 }
 
@@ -515,7 +515,7 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain(arc, mode, a3, (CGameObject*)a4) != 0;

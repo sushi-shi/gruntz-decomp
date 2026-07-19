@@ -749,7 +749,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     }
     if (mode == 4) {
         // write
-        if (!IsActive((i32)stream)) {
+        if (!IsActive(reinterpret_cast<i32>(stream))) {
             return 0;
         }
         i32 count = m_base.GetCount();

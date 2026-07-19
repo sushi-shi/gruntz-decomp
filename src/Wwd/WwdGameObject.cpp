@@ -226,7 +226,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    m_1a0.Setup_15c2d0((CAniElement*)(i32)spr);
+    m_1a0.Setup_15c2d0((CAniElement*)reinterpret_cast<i32>(spr));
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }
@@ -246,7 +246,7 @@ i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
     m_0c->m_soundRegistry->m_10.Lookup(name, (void*&)spr);
     if (spr != 0) {
-        m_19c = (i32)spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
+        m_19c = reinterpret_cast<i32>(spr); // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
     }
     return 0;
@@ -1471,7 +1471,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
                     p++;
                 }
                 i32 fi = atoi(p);
-                if (0 == Slot40_1523b0((i32)val, fi, 1)) {
+                if (0 == Slot40_1523b0(reinterpret_cast<i32>(val), fi, 1)) {
                     return -1;
                 }
                 matched++;

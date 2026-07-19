@@ -95,9 +95,9 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = (i32)owner;
+    m_2c = reinterpret_cast<i32>(owner);
     m_10 = p4;
-    m_24 = (i32)h;
+    m_24 = reinterpret_cast<i32>(h);
     m_28 = 0;
     m_4 = 1;
     m_rect14.m_0 = g.left;
@@ -198,7 +198,7 @@ i32 CSBI_GruntMachine::Render() {
     idx = m_40;
     m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
 
-    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
     CImage* f = m_44;
     if (f) {
@@ -438,9 +438,9 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (host == 0 || parent == 0) {
         return 0;
     }
-    m_24 = (i32)host;
+    m_24 = reinterpret_cast<i32>(host);
     m_10 = p4;
-    m_2c = (i32)parent;
+    m_2c = reinterpret_cast<i32>(parent);
     m_rect14.m_0 = p5;
     m_28 = 0;
     m_rect14.m_4 = p6;
@@ -580,7 +580,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (gm == 0 || val < gm->m_minIndex || val > gm->m_maxIndex) {
         glyph = 0;
     } else {
-        glyph = (i32)(CImage*)gm->m_items.GetAt(val);
+        glyph = reinterpret_cast<i32>((CImage*)gm->m_items.GetAt(val));
     }
     m_sampledValue = val;
     m_bottomFrame = (CImage*)glyph;
@@ -598,7 +598,7 @@ i32 CSBI_SideTab::BuildHandle() {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_58) {
-        i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+        i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
         m_topFrame->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
         m_bottomFrame->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
     }
@@ -799,9 +799,9 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = (i32)owner;
+    m_2c = reinterpret_cast<i32>(owner);
     m_10 = p4;
-    m_24 = (i32)h;
+    m_24 = reinterpret_cast<i32>(h);
     m_28 = 0;
     m_4 = 1;
     m_rect14.m_0 = g.left;

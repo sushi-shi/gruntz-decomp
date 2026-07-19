@@ -462,7 +462,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     // --- Phase 6: surface manager + game level -----------------------
-    g_appHInstance = (i32)m_owner->m_hInstance;
+    g_appHInstance = reinterpret_cast<i32>(m_owner->m_hInstance);
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
     ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1); // 0x1d3eff (NAFXCW)
@@ -531,7 +531,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_cheatMgr = new CCheatMgr;
-    if (!m_cheatMgr->Init((i32)m_gameWnd->m_hwnd)) {
+    if (!m_cheatMgr->Init(reinterpret_cast<i32>(m_gameWnd->m_hwnd))) {
         ReportError(0x800a, 0x40b);
         return 0;
     }
@@ -546,7 +546,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 9: audio host (m_sound) ---------------------------------
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
-    if (!m_sound->Init((i32)m_owner->m_hInstance, (i32)m_gameWnd->m_hwnd, 0)) {
+    if (!m_sound->Init(reinterpret_cast<i32>(m_owner->m_hInstance), reinterpret_cast<i32>(m_gameWnd->m_hwnd), 0)) {
         ReportError(0x800a, 0x40c);
         return 0;
     }

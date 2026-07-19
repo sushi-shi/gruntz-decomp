@@ -271,13 +271,13 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
         return 0;
     }
     CDDrawSubMgrPages* w = (CDDrawSubMgrPages*)menuRoot()->m_04;
-    if (w->Method_158b40((i32)page, e != 0 ? 2 : 1) != 0) {
+    if (w->Method_158b40(reinterpret_cast<i32>(page), e != 0 ? 2 : 1) != 0) {
         return 1;
     }
     if (e == 0) {
         return 1;
     }
-    if (w->Method_158b40((i32)page, 1) != 0) {
+    if (w->Method_158b40(reinterpret_cast<i32>(page), 1) != 0) {
         return 1;
     }
     return 0;
@@ -324,7 +324,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (FadeInTitle(name, a, b, c, d, 0) == 0) {
         return 0;
     }
-    return RunTitle((i32)name, a, b, c, d) != 0;
+    return RunTitle(reinterpret_cast<i32>(name), a, b, c, d) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,7 +355,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = 1;
     t.m_18 = a1;
     t.m_1c = a2;
-    t.m_04 = (i32)chan;
+    t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
     CFader* f = mgr->Add(1, (CFader*)&t);
     if (f == 0) {
@@ -402,8 +402,8 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_1c = a2;
     t.m_10 = 0;
     t.m_18 = a1;
-    t.m_04 = (i32)chanA;
-    t.m_08 = (i32)chanB;
+    t.m_04 = reinterpret_cast<i32>(chanA);
+    t.m_08 = reinterpret_cast<i32>(chanB);
     CFader* f = mgr->Add(1, (CFader*)&t);
     if (f == 0) {
         return 0;
@@ -479,8 +479,8 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     CFxModeT3 t;
     t.m_0c = 0;
     t.m_10 = a1;
-    t.m_04 = (i32)chanA;
-    t.m_08 = (i32)chanB;
+    t.m_04 = reinterpret_cast<i32>(chanA);
+    t.m_08 = reinterpret_cast<i32>(chanB);
     CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
@@ -536,8 +536,8 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFxModeT3 t;
     t.m_0c = 0;
     t.m_10 = a1;
-    t.m_04 = (i32)chanA;
-    t.m_08 = (i32)chanB;
+    t.m_04 = reinterpret_cast<i32>(chanA);
+    t.m_08 = reinterpret_cast<i32>(chanB);
     CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
@@ -571,7 +571,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     CFxModeT3 t;
     t.m_0c = 1;
     t.m_10 = a1;
-    t.m_04 = (i32)chan;
+    t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
     CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
@@ -677,8 +677,8 @@ i32 CMgrPersistObj::Init() {
         sp.m_14 = 0;
         EngStr_DrawText(
             (EngStrRenderObj*)m_levelData,
-            (i32)&sp,
-            (i32)&sp.m_04,
+            reinterpret_cast<i32>(&sp),
+            reinterpret_cast<i32>(&sp.m_04),
             0x78,
             1,
             0xff,

@@ -163,7 +163,7 @@ typedef void (CMovingLogic::*MovingCallback)();
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(i32) {
     if (m_04 != 0) {
-        if (m_08 != 0 && (i32)m_objAux->m_1c == m_28) {
+        if (m_08 != 0 && reinterpret_cast<i32>(m_objAux->m_1c) == m_28) {
             (this->*reinterpret_cast<MovingCallback&>(m_08))();
             m_08 = 0;
         }
@@ -456,7 +456,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     if (m_shadow != 0) {
         m_shadow->m_7c->m_notify(m_shadow);
         ((CLightFx*)m_shadow->m_7c->m_logic)
-            ->Activate((i32)static_cast<const char*>((key + "_SHADOW")), (i32)static_cast<const char*>((key + "1")), 5, 1);
+            ->Activate(reinterpret_cast<i32>(static_cast<const char*>((key + "_SHADOW"))), reinterpret_cast<i32>(static_cast<const char*>((key + "1"))), 5, 1);
     }
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
@@ -525,12 +525,12 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     if (coord >= g_projActLo && coord <= g_projActHi) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
-    if ((i32)((_zvec*)&g_projActColl)->GrowTo(coord, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_projActColl)->GrowTo(coord, 0))) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projActColl2->Set(&g_projActColl, (i32)item, 0xc);
+    g_projActColl2->Set(&g_projActColl, reinterpret_cast<i32>(item), 0xc);
     return g_projActCur;
 }
 
@@ -540,12 +540,12 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
@@ -1071,12 +1071,12 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     if (coord >= g_tbombLo && coord <= g_tbombHi) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
-    if ((i32)((_zvec*)&g_tbombColl)->GrowTo(coord, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_tbombColl)->GrowTo(coord, 0))) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_tbombColl2->Set(&g_tbombColl, (i32)item, 0xc);
+    g_tbombColl2->Set(&g_tbombColl, reinterpret_cast<i32>(item), 0xc);
     return g_tbombCur;
 }
 
@@ -1104,12 +1104,12 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
@@ -1349,7 +1349,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         sa->Read(&m_fastPhase, 4);
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;

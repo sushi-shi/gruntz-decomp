@@ -315,7 +315,7 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // `arg`; when it runs out, reload it from m_70 and advance one animation frame.
 RVA(0x001858a0, 0x2b)
 i32 CMenuItem2::Notify(void* arg) {
-    u32 a = (u32)arg;
+    u32 a = reinterpret_cast<u32>(arg);
     if (a >= static_cast<u32>(m_6c)) {
         m_6c = m_70;
         NextFrame();

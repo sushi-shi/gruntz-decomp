@@ -82,7 +82,7 @@ i32 CNetMgr::InitFromProvider(void* a, GUID appGuid) {
     i32* base = (i32*)((char*)this + 4);
     const i32* g = (const i32*)&appGuid; // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
-    m_groupSel = (i32)a;
+    m_groupSel = reinterpret_cast<i32>(a);
     m_playerSel = 0;
     base[1] = g[1];
     m_sessionSel = 0;
@@ -243,10 +243,10 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
         return 0;
     }
 
-    node->m_4 = (i32)guid;
+    node->m_4 = reinterpret_cast<i32>(guid);
     node->m_name = static_cast<const char*>(name);
-    node->m_c = (i32)m_groups.AddTail((::CObject*)node);
-    return (i32)node;
+    node->m_c = reinterpret_cast<i32>(m_groups.AddTail((::CObject*)node));
+    return reinterpret_cast<i32>(node);
 }
 
 // ---------------------------------------------------------------------------
@@ -314,10 +314,10 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             i32 idx;
             {
                 CString name = obj->GetName();
-                idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name));
+                idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>((LPCTSTR)name)));
             }
             if (idx != -1) {
-                SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)obj);
+                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
             }
             CGroupNode* cur = m_groupSelId;
             if (cur != 0) {
@@ -445,7 +445,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
     }
 
     node->m_54 = (__POSITION*)m_players.AddTail((::CObject*)node);
-    return (i32)node;
+    return reinterpret_cast<i32>(node);
 }
 
 // ---------------------------------------------------------------------------
@@ -498,9 +498,9 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     }
 
     while (payload != 0) {
-        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_profile));
+        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(payload->m_profile)));
         if (r != -1) {
-            SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
+            SendMessageA((HWND)hList, LB_SETITEMDATA, r, reinterpret_cast<LPARAM>(payload));
         }
         CNetListNode* cur = m_playerSelId;
         if (cur != 0) {
@@ -728,10 +728,10 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
         if (pos == 0) {
             delete node;
         } else {
-            node->m_listPosition = (i32)pos;
+            node->m_listPosition = reinterpret_cast<i32>(pos);
         }
     }
-    return (i32)node;
+    return reinterpret_cast<i32>(node);
 }
 
 // ---------------------------------------------------------------------------
@@ -774,7 +774,7 @@ i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
     i32 desc[4];
     desc[0] = 0x10;
     desc[1] = 0;
-    desc[2] = (i32)a;
+    desc[2] = reinterpret_cast<i32>(a);
     desc[3] = b;
 
     IDirectPlay4Z* iface = m_directPlay;
@@ -820,9 +820,9 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     while (payload != 0) {
         CString name = ((CNetMgr*)payload)->GetName();
-        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)static_cast<const char*>(name)));
+        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(name))));
         if (r != -1) {
-            SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
+            SendMessageA((HWND)hList, LB_SETITEMDATA, r, reinterpret_cast<LPARAM>(payload));
         }
         CNetListNode* cur = m_sessionSelId;
         if (cur != 0) {
@@ -993,7 +993,7 @@ i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
     if (node == 0) {
         return 0;
     }
-    if (m_playerSel == (i32)node) {
+    if (m_playerSel == reinterpret_cast<i32>(node)) {
         m_playerSel = 0;
     }
     m_directPlay->v04();

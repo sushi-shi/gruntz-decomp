@@ -361,7 +361,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
     r.bottom = m_4->m_modeH;
     r.left = 0;
     r.top = 0;
-    ShowHudMessage(m_c, (i32)&s, (i32)&r, 0x78, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&r), 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     if (m_4 && m_4->m_cmdGrid) {
         m_4->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
@@ -462,7 +462,7 @@ i32 CPlay::Render() {
         m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta));          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
-        winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_backPair);           // 0x1519
+        winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_c->m_drawTarget->m_backPair));           // 0x1519
         return 1;                                                             // -> draw tail
     }
 
@@ -1175,7 +1175,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RegisterInputBindings();
     if (modeFlag != 0 && ((CGruntzMgr*)g_gameReg)->m_134 == 1) {
-        BuildWarlordNameTable((i32)savedThis);
+        BuildWarlordNameTable(reinterpret_cast<i32>(savedThis));
     }
     BuildHelpReveal(0);
     RegisterInputBindings();
@@ -1276,7 +1276,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             goto fail0;
         }
     }
-    if (!((CBrickzGrid*)self->m_4->m_tileGrid)->UpdateDiagonals((i32)self->m_4)) {
+    if (!((CBrickzGrid*)self->m_4->m_tileGrid)->UpdateDiagonals(reinterpret_cast<i32>(self->m_4))) {
         goto fail0;
     }
 
@@ -1374,7 +1374,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites((i32)savedThis, (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */
+            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 void* host8b = self->m_c->m_childGroup;
@@ -1435,8 +1435,8 @@ okContinue:
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
                 (EngStrRenderObj*)self->m_c,
-                (i32)rect,
-                (i32)((char*)nameBuf + 0x4),
+                reinterpret_cast<i32>(rect),
+                reinterpret_cast<i32>(((char*)nameBuf + 0x4)),
                 0x78,
                 1,
                 0xff,
@@ -1719,10 +1719,10 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                 i32 id = g_curPlayer;
                 void* spr = (void*)w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
                 if (spr == 0) {
-                    spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, (i32)spr);
+                    spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, reinterpret_cast<i32>(spr));
                 }
                 m_grid->SetAllTypes(0xa);
-                m_grid->SetAllFormats((i32)spr);
+                m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
             }
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
@@ -2640,7 +2640,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
-    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s, (i32)&rect, 0x78, 1, 0xff, 0xff, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rect), 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -2688,9 +2688,9 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (a3 != 0) {
-        ShowHudMessageAlt(m_c, (i32)&m_cueText, (i32)&rect, a2, 1, a4, a5, a6, a7);
+        ShowHudMessageAlt(m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     } else {
-        EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&m_cueText, (i32)&rect, a2, 1, a4, a5, a6, a7);
+        EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -3270,10 +3270,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, 0x280, 0x59);
     SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
     SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
-    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s0, (i32)&r1, 0x78, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s1, (i32)&r2, 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s2, (i32)&r3, 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s3, (i32)&r4, 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s0), reinterpret_cast<i32>(&r1), 0x78, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s1), reinterpret_cast<i32>(&r2), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s2), reinterpret_cast<i32>(&r3), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s3), reinterpret_cast<i32>(&r4), 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 
@@ -3653,7 +3653,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
         CString s = GetColorName(i, 0);
-        pSend(cb, 0x143, 0, (i32)static_cast<const char*>(s));
+        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(s)));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3677,7 +3677,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
         CString s = GetDifficultyName(i, 0);
-        pSend(cb, 0x143, 0, (i32)static_cast<const char*>(s));
+        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(s)));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3739,7 +3739,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
-    return ((CBattlezMapConfig*)&m_038)->Method_02bfc0((i32)ar, (void*)kind, a3, a4) != 0;
+    return ((CBattlezMapConfig*)&m_038)->Method_02bfc0(reinterpret_cast<i32>(ar), (void*)kind, a3, a4) != 0;
 }
 
 // ===========================================================================
@@ -4113,7 +4113,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
             spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
         }
         m_grid->SetAllTypes(0xa);
-        m_grid->SetAllFormats((i32)spr);
+        m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
     }
     CImageSet* g = m_grid;
     CImage* frame;
@@ -4670,7 +4670,7 @@ drag_box: {
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
             ((CGruntSpawnConfig*)g_gameReg->m_cueSink)
-                ->SpawnVoiceDriver((i32)slot, 0x324, -1, 0, -1, -1);
+                ->SpawnVoiceDriver(reinterpret_cast<i32>(slot), 0x324, -1, 0, -1, -1);
         }
     }
     LoadCursorSprites(0, 0);
@@ -6048,8 +6048,8 @@ i32 CState::BuildAssetNamespacePrefixes(
                 CopyRect(&r2, &r);
                 EngStr_DrawText(
                     (EngStrRenderObj*)g_gameReg->m_world,
-                    (i32)&cs,
-                    (i32)&r2,
+                    reinterpret_cast<i32>(&cs),
+                    reinterpret_cast<i32>(&r2),
                     0x82,
                     1,
                     0xff,
@@ -6851,7 +6851,7 @@ i32 CPlay::AddLevelGruntz() {
             g->m_12c,
             g->m_7c->m_2c,
             g->m_7c->m_30,
-            (i32)&g->m_extentL
+            reinterpret_cast<i32>(&g->m_extentL)
         );
         if (r == -1) {
             CString msg;

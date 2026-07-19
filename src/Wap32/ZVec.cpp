@@ -68,7 +68,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     } else if (GrowTo(i, 0)) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
-        i32 sentinel = (i32)g_projActCache;
+        i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
         m_errSink->Set((void*)this, sentinel, 0xc);
         r = m_spare;
@@ -109,7 +109,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
         idx *= m_stride;
         return idx + base;
     }
-    i32 sentinel = (i32)g_projActCache;
+    i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set((void*)this, sentinel, 0xc);
     return m_spare;

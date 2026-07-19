@@ -946,7 +946,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
-        return (i32)reinterpret_cast<CImage*>(m_items.GetAt(n));
+        return reinterpret_cast<i32>(reinterpret_cast<CImage*>(m_items.GetAt(n)));
     }
     return 0;
 }
@@ -968,7 +968,7 @@ void CAniRenderCtx::ClampFirst_15cc50() {
     i32 n = seq->m_minIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = (i32)(CImage*)seq->m_items.GetAt(n);
+        m_curFrame = reinterpret_cast<i32>((CImage*)seq->m_items.GetAt(n));
     } else {
         m_curFrame = 0;
     }
@@ -985,7 +985,7 @@ void CAniRenderCtx::ClampLast_15cc90() {
     i32 n = seq->m_maxIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = (i32)(CImage*)seq->m_items.GetAt(n);
+        m_curFrame = reinterpret_cast<i32>((CImage*)seq->m_items.GetAt(n));
     } else {
         m_curFrame = 0;
     }

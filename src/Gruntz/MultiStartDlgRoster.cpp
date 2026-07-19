@@ -236,7 +236,7 @@ void CMultiStartDlg::AppendChatLine(char* str) {
         strcat(buf, "\r\n");
     }
     strcat(buf, str);
-    ::SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
+    ::SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
     ::SendMessageA(edit, 0xb6, 0, 0x270f);
 }
 
@@ -777,7 +777,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = (i32)((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
+        i32 transformedPlayerId = reinterpret_cast<i32>(((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex));
         g_multiState->BroadcastOneChannel(transformedPlayerId);
     }
 }

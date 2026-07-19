@@ -110,7 +110,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     } else {
         m_90 = 0;
     }
-    i32 looked = (i32)g_gameReg->m_logicPump->m_tables[m_object->m_11c];
+    i32 looked = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[m_object->m_11c]);
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
@@ -171,7 +171,7 @@ void CSpotLight::FireActivation(i32 id) {
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
-    if (CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, c, d) == 0) {
+    if (CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, c, d) == 0) {
         return 0;
     }
     if (Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {
@@ -220,7 +220,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                     if (out == 0) {
                         resolved = 0;
                     } else {
-                        resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? (i32)out : 0;
+                        resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
                     }
                 }
                 m_focus = (CGameObject*)resolved;
@@ -234,7 +234,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             break;
         case 8: { // re-apply the level draw-fill color
             CGameObject* o = m_object;
-            i32 fill = (i32)reg->m_logicPump->m_tables[o->m_11c];
+            i32 fill = reinterpret_cast<i32>(reg->m_logicPump->m_tables[o->m_11c]);
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = 7;
@@ -322,7 +322,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 if (obj->m_emitGate == 0) {
                     void* out = 0;
                     if (obj->m_10.Lookup(name, out) && out != 0 && g_sndEnabled != 0) {
-                        SoundPlay_1360d0((i32)out, 0, 0, g_sndCueTag);
+                        SoundPlay_1360d0(reinterpret_cast<i32>(out), 0, 0, g_sndCueTag);
                     }
                 }
             } else {

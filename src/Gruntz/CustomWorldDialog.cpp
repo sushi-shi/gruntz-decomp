@@ -143,7 +143,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
         v = *(i32*)((char*)g_gameReg->m_gameWnd + 4);
     }
     g_customWorldParent = (HWND)v;
-    g_dat62c268 = (i32)g_gameReg->m_world;
+    g_dat62c268 = reinterpret_cast<i32>(g_gameReg->m_world);
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
     g_customWorldInst = (HINSTANCE) * (i32*)((char*)g_gameReg->m_owner + 0xc);
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
@@ -190,7 +190,7 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
                 EndDialog(hDlg, 1);
                 return 1;
             }
-            if (g_customLevelList != 0 && lParam == (LPARAM)g_customLevelList) {
+            if (g_customLevelList != 0 && lParam == reinterpret_cast<LPARAM>(g_customLevelList)) {
                 if (HIWORD(wParam) == 1) {
                     FillLevelInfoDialog(hDlg);
                     return 1;
@@ -279,7 +279,7 @@ namespace m4 {
                     if (len > 4) {
                         disp[len - 4] = 0;
                     }
-                    ::SendMessageA(lb, 0x180, 0, (LPARAM)disp); // LB_ADDSTRING
+                    ::SendMessageA(lb, 0x180, 0, reinterpret_cast<LPARAM>(disp)); // LB_ADDSTRING
                 }
             } while (_findnext(h, &fd) != -1);
         }
@@ -356,7 +356,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     if (sel == -1) {
         return 0;
     }
-    if (SendMessageA(lb, 0x189, sel, (LPARAM)itemText) == -1) {
+    if (SendMessageA(lb, 0x189, sel, reinterpret_cast<LPARAM>(itemText)) == -1) {
         return 0;
     }
     if (!_getcwd(dirBuf, 0xfe)) {
@@ -478,7 +478,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (sel == -1) {
         return 0;
     }
-    if (static_cast<i32>(SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, (LPARAM)szLevel)) == -1) {
+    if (static_cast<i32>(SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, reinterpret_cast<LPARAM>(szLevel))) == -1) {
         return 0;
     }
     g_levelStr = szLevel;

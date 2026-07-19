@@ -243,7 +243,7 @@ void* CButeTree::Find(const char* key) {
     if (key == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32)name, 0x16);
+        m_errSink->Set(this, reinterpret_cast<i32>(name), 0x16);
         return 0;
     }
     CButeTreeNode* root = m_root;
@@ -310,7 +310,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
                 if (!m_words) {
                     void* cache = g_projActCache;
                     g_retAddrBreadcrumb = GetCallerRetAddr();
-                    m_errSink->Set(this, (i32)cache, 0xc);
+                    m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
                     m_capacity = 0x20;
                     return *this;
                 }
@@ -345,7 +345,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
     if (tokens == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32)name, 0x16);
+        m_errSink->Set(this, reinterpret_cast<i32>(name), 0x16);
         return;
     }
     if (minSize == 0) {
@@ -456,13 +456,13 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
 oom: {
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, (i32)cache, 0xc);
+    m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     return;
 }
 badchar: {
     void* name = g_projActName2;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, (i32)name, 0x16);
+    m_errSink->Set(this, reinterpret_cast<i32>(name), 0x16);
     return;
 }
 }
@@ -476,7 +476,7 @@ inline zBitVec::zBitVec() : CContainerErr(g_containerName) {
     if (!SetSize(g_defaultProjActSize)) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32)cache, 0xc);
+        m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     }
 }
 
@@ -518,7 +518,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
     if (!SetSize(static_cast<i32>(n))) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32)cache, 0xc);
+        m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     } else {
         u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
         u32* slot = base + (static_cast<u32>(idx) >> 5);
@@ -550,7 +550,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        idx = ((CKeyFinder*)this)->Find((i32)key);
+        idx = ((CKeyFinder*)this)->Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
     }
@@ -605,33 +605,33 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_errSink->Set((void*)this, (u32)s_out_of_memory, 0x22);
+            m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
         i32 shift = m_lo - (idx - at);
         m_grown = shift;
-        m_alloc = (i32)p;
+        m_alloc = reinterpret_cast<i32>(p);
         memcpy((char*)p + shift * m_stride, p, oldbytes);
         memset(reinterpret_cast<char*>(m_alloc), 0, m_grown * m_stride);
         m_lo = idx - at;
-        m_base = (i32)p;
+        m_base = reinterpret_cast<i32>(p);
         return p;
     }
     i32 hinew = idx + at;
     p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set((void*)this, (u32)s_out_of_memory, 0x22);
+        m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
     char* fill = (char*)p + oldbytes;
     m_grown = hinew - m_hi;
-    m_alloc = (i32)fill;
+    m_alloc = reinterpret_cast<i32>(fill);
     memset(fill, 0, m_grown * m_stride);
     m_hi = hinew;
-    m_base = (i32)p;
+    m_base = reinterpret_cast<i32>(p);
     return p;
 }
 
@@ -659,7 +659,7 @@ RVA(0x0016db90, 0x206)
 void* CButeTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32) "No prior lookup", 0x16);
+        m_errSink->Set(this, reinterpret_cast<i32>("No prior lookup"), 0x16);
         return 0;
     }
     i32 newbit = m_keyBitLength - 7;
@@ -668,7 +668,7 @@ void* CButeTree::Insert(const char* key, void* value) {
     if (key == 0 || value == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, (i32)name, 0x16);
+        m_errSink->Set(this, reinterpret_cast<i32>(name), 0x16);
         return 0;
     }
 
@@ -751,7 +751,7 @@ void* CButeTree::Insert(const char* key, void* value) {
 
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, (i32)cache, 0xc);
+    m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     return 0;
 }
 
@@ -792,31 +792,31 @@ CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
 RVA(0x0016de30, 0xe7)
 zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     : _zvec(&g_zArrayTag) { // -> the CContainerErr base ctor @0x16d9c0
-    m_spare = (i32)scratch; // +0x14  scratch element (was the m_buf2 view)
+    m_spare = reinterpret_cast<i32>(scratch); // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
     m_base = 0; // +0x10  element band (was the m_buf view)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set((void*)this, (i32) "Inconsistent bounds", 0x16);
+        m_errSink->Set((void*)this, reinterpret_cast<i32>("Inconsistent bounds"), 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
     void* buf = malloc(total);
-    m_base = (i32)buf;
+    m_base = reinterpret_cast<i32>(buf);
     if (buf != 0) {
         memset(buf, 0, total);
         if (m_spare != 0) {
             return;
         }
-        m_spare = (i32)malloc(m_stride);
+        m_spare = reinterpret_cast<i32>(malloc(m_stride));
         if (m_spare != 0) {
             return;
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set((void*)this, (i32) "out of memory", 0xc);
+    m_errSink->Set((void*)this, reinterpret_cast<i32>("out of memory"), 0xc);
 }
 
 // ===========================================================================
@@ -1042,7 +1042,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
-    u32 v = 0xffff & (u32)g_retAddrBreadcrumb;
+    u32 v = 0xffff & reinterpret_cast<u32>(g_retAddrBreadcrumb);
     char* hp = &tmp[15];
     *hp = 0;
     i32 i;
@@ -1085,7 +1085,7 @@ void* CKeyFinder::Add(void* key, void* val) {
     }
     int idx;
     if (count != 0) {
-        idx = Find((i32)key);
+        idx = Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
     }
@@ -1114,7 +1114,7 @@ void* CKeyFinder::Add(void* key, void* val) {
         );
     }
     g_recs23[m_index].m_4 = val;
-    g_recs23[m_index].m_key = (i32)key;
+    g_recs23[m_index].m_key = reinterpret_cast<i32>(key);
     g_recCount23 = g_recCount23 + 1;
     g_recs23[m_index].m_8 = 0;
     return 0;
@@ -1161,12 +1161,12 @@ static inline char* TypeResolve(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 

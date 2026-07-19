@@ -126,7 +126,7 @@ i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     imgSet->SetAllTypes(slot);
     // The engine hands the resolved shade table straight to SetAllFormats as the
     // frames' format word (a pointer-as-value the frame stores verbatim at +0x1c).
-    imgSet->SetAllFormats((i32)table);
+    imgSet->SetAllFormats(reinterpret_cast<i32>(table));
     return 1;
 }
 

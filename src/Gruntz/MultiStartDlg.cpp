@@ -133,7 +133,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
-        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
+        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>((LPCTSTR)name));
         item = (MpSymItem*)st->NextSym3(item);
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
@@ -145,7 +145,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
-    SetWindowLongA(h, GWL_WNDPROC, (i32)WndProc_c1a10);
+    SetWindowLongA(h, GWL_WNDPROC, reinterpret_cast<i32>(WndProc_c1a10));
     Sub_c3e30();
     return 1;
 }
@@ -352,15 +352,15 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             HWND kc;
             kc = KindCombo1929(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "None");
+            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
             kc = KindCombo1929(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (easy)");
+            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
             kc = KindCombo1929(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (normal)");
+            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
             kc = KindCombo1929(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (difficult)");
+            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (difficult)"));
             kc = KindCombo1929(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Human");
+            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
         }
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = NameEdit298c(i);
@@ -405,7 +405,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         {
             CWnd* w = GetDlgItem(0x511);
-            g_sharedFlag = (w == 0) ? 0 : (i32)w->m_hWnd;
+            g_sharedFlag = (w == 0) ? 0 : reinterpret_cast<i32>(w->m_hWnd);
         }
         g_multiState->m_netGate->m_78 = 0;
         g_multiState->PollSession();

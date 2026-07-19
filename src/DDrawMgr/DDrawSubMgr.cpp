@@ -518,7 +518,7 @@ RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
     i32 frame;
     if (a4 >= src->m_minIndex && a4 <= src->m_maxIndex) {
-        frame = (i32)src->m_items[a4]; // CObArray operator[] inline = m_pData[a4]
+        frame = reinterpret_cast<i32>(src->m_items[a4]); // CObArray operator[] inline = m_pData[a4]
     } else {
         frame = 0;
     }
@@ -869,7 +869,7 @@ i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
     } else {
         m_pendingDraw = 0;
     }
-    m_2c = (i32)cue;
+    m_2c = reinterpret_cast<i32>(cue);
     g_sndCueTag = 0x64;
     return 1;
 }
@@ -1280,7 +1280,7 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst_1584a0(i32 arg) {
 RVA(0x001584f0, 0x80)
 i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafCue* arg1, i32 arg2) {
     if (arg1 == 0) {
-        return (i32)arg1;
+        return reinterpret_cast<i32>(arg1);
     }
     if (m_2c == 0) {
         return 0;
@@ -1420,7 +1420,7 @@ i32 LeafCue::Configure_158760(CParseSource* src) {
 // Logic byte-faithful otherwise.
 RVA(0x001587c0, 0x23)
 i32 LeafCue::Unload() {
-    i32 r = (i32)m_10;
+    i32 r = reinterpret_cast<i32>(m_10);
     if (r != 0) {
         SoundDevice* dev = ((CDDrawSurfaceMgr*)m_0c)->m_soundStream;
         if (dev != 0) {
@@ -1500,12 +1500,12 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
-    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA((i32)m_0c, 0, 0);
+    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(reinterpret_cast<i32>(m_0c), 0, 0);
     m_frontPair = (CDDrawSurfacePair*)a;
 
     CDDrawSurfacePair* b = (CDDrawSurfacePair*)operator new(0x34);
     if (b != 0) {
-        new (b) CDDrawSurfacePair((i32)m_0c, 1, 0);
+        new (b) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 1, 0);
         b->m_width = 0;
         b->m_surface = 0;
         b->m_ownsSurface = 1;
@@ -1514,7 +1514,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     CDDrawSurfacePair* c = (CDDrawSurfacePair*)operator new(0x34);
     if (c != 0) {
-        new (c) CDDrawSurfacePair((i32)m_0c, 2, 0);
+        new (c) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 2, 0);
         c->m_width = 0;
         c->m_surface = 0;
         c->m_ownsSurface = 1;
@@ -1613,7 +1613,7 @@ void CDDrawSubMgrPages::Method_158b90() {
     CDDrawSurfaceMgr* n = m_0c;
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
-    c->WalkDispatch30((i32)s->m_backPair, (i32)s->m_overlayPair);
+    c->WalkDispatch30(reinterpret_cast<i32>(s->m_backPair), reinterpret_cast<i32>(s->m_overlayPair));
 }
 
 // 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair

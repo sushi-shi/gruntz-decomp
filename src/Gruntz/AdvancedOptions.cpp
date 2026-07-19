@@ -140,7 +140,7 @@ INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wPara
             {
                 HICON hIcon = LoadIconA(g_hInstance, "GRUNTZ");
                 if (hIcon) {
-                    SendMessageA(hWnd, WM_SETICON, 1, (LPARAM)hIcon);
+                    SendMessageA(hWnd, WM_SETICON, 1, reinterpret_cast<LPARAM>(hIcon));
                 }
             }
             if (IsIconic(hWnd)) {

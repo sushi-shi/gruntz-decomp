@@ -50,9 +50,9 @@ i32 CSBI_ImageSetAni::Init(
     i32 b4
 ) {
     if (host != 0 && owner != 0) {
-        m_2c = (i32)owner;
+        m_2c = reinterpret_cast<i32>(owner);
         m_10 = a3;
-        m_24 = (i32)host;
+        m_24 = reinterpret_cast<i32>(host);
         m_28 = 0;
         m_4 = 1;
         m_rect14.m_0 = rc.left;
@@ -106,7 +106,7 @@ i32 CSBI_ImageSetAni::Tick() {
         }
         m_30 = cel;
         if (cel != 0) {
-            i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+            i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
             cel->RenderFrame(
                 (void*)surfaceCtx,
                 (void*)(cel->m_anchorX + m_rect14.m_0),

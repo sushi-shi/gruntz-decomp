@@ -680,7 +680,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 i32 r2 = rand() % 15;
                 CGrunt* u2 = m_triggerMgr->m_grid[m_curCell * 15 + r2];
                 if (u2 != 0) {
-                    Method_02f620((i32)u2);
+                    Method_02f620(reinterpret_cast<i32>(u2));
                 }
             }
         }
@@ -715,7 +715,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 if (unit->m_poweredUp != 0) {
                     continue;
                 }
-                i32 idx = (i32)unit->m_objAux->m_1c;
+                i32 idx = reinterpret_cast<i32>(unit->m_objAux->m_1c);
                 i32 eq;
                 eq = (strcmp((*g_typeColl.GetNameRecord((void*)(idx))), "I") == 0);
                 if (eq) {
@@ -753,7 +753,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 }
                 // Eligible: transition + (mode 0x12/0x16) recycle its coord nodes.
                 i32 mode = unit->m_2e4;
-                if (Method_030530((i32)unit) != 0) {
+                if (Method_030530(reinterpret_cast<i32>(unit)) != 0) {
                     unit->m_defenderState = 5;
                 } else {
                     unit->m_defenderState = 0;
@@ -1203,7 +1203,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 }
                 return 0;
             }
-            if (Method_030530((i32)unit) == 0 && unit->m_defenderState == 7) {
+            if (Method_030530(reinterpret_cast<i32>(unit)) == 0 && unit->m_defenderState == 7) {
                 GruntCoordNode* head = unit->CoordHead();
                 if (head != 0) {
                     GruntCoordNode* n = head->m_next;
@@ -1262,7 +1262,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     return 1;
                 }
             }
-            if (Method_030b20((i32)unit, cx, cy) != 0) {
+            if (Method_030b20(reinterpret_cast<i32>(unit), cx, cy) != 0) {
                 return 1;
             }
             i32 sB = scratchB.m_0;
@@ -1271,13 +1271,13 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
             if (hi && unit->m_defenderState != 3) {
                 i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
-                Method_02c0a0((i32)unit, pick);
+                Method_02c0a0(reinterpret_cast<i32>(unit), pick);
             }
             if (lo2) {
                 if (unit->m_defenderState == 3) {
                     return 0;
                 }
-                Method_02c0a0((i32)unit, 0x16);
+                Method_02c0a0(reinterpret_cast<i32>(unit), 0x16);
             }
             return 0;
         }
@@ -1286,7 +1286,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             if (unit->m_defenderState == 3) {
                 return 0;
             }
-            Method_02c0a0((i32)unit, 5);
+            Method_02c0a0(reinterpret_cast<i32>(unit), 5);
             return 0;
         }
         if (sA & 0x40) {
@@ -1301,7 +1301,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 if (unit->m_defenderState == 3) {
                     return 0;
                 }
-                Method_02c0a0((i32)unit, 0xd);
+                Method_02c0a0(reinterpret_cast<i32>(unit), 0xd);
                 return 0;
             }
         }
@@ -1315,7 +1315,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
         }
         if (sA & 0x20000000) {
-            winapi_02a570_IntersectRect((i32)unit);
+            winapi_02a570_IntersectRect(reinterpret_cast<i32>(unit));
             return 0;
         }
         i32 pk = unit->m_entranceReason;
@@ -1617,7 +1617,7 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
             bestDist = dist;
         }
     }
-    return (i32)best;
+    return reinterpret_cast<i32>(best);
 }
 
 // CBattlezMapConfig::Clear_02ade0 (0x0002ade0) is now an inline member in the header.
@@ -2049,7 +2049,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     CSerialArchive* obj = (CSerialArchive*)objArg;
-    i32 kind = static_cast<i32>((i32)kindArg);
+    i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {
         case 4:
             if (this->Serialize_02b420(obj) == 0) { // kind-4 validator @0x2b420
@@ -3192,7 +3192,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     Coord bc;
     ((CUserLogic*)best)->GetScreenPos((CUserLogic::ScreenPoint*)&bc);
-    if (Method_0300c0((i32)unit, bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
+    if (Method_0300c0(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
         fb.left = 0;
@@ -3229,7 +3229,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 ((CGruntSpawnConfig*)(void*)g_gameReg->m_cueSink)
-                    ->SpawnVoiceDriver((i32)unit, 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(reinterpret_cast<i32>(unit), 0x366, -1, 0, -1, -1);
             }
             *(__int64*)&m_scratch78 = 0;
             m_scratch80 = 0x1388;
@@ -4328,7 +4328,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while (static_cast<i32>((((char*)scan - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan;
             if (node != 0) {
-                void* rec = m_cellQuery->FindChild((i32)node, 0);
+                void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4344,7 +4344,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while (static_cast<i32>((((char*)scan2 - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
-                void* rec = m_cellQuery->FindChild((i32)node, 0);
+                void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4770,7 +4770,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                 }
                 unit->m_arrivalCol = -1;
                 unit->m_arrivalRow = -1;
-                winapi_02ae00_IntersectRect(unitArg, (i32)target);
+                winapi_02ae00_IntersectRect(unitArg, reinterpret_cast<i32>(target));
                 return 1;
             }
             // Clamp the board dirty-rect to (0,0,w,h): the CRect / IntersectRect
@@ -4985,7 +4985,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             i32 x, y;
             if (*(i32*)(edge + 0xf8) != 0) {
                 Coord out;
-                Coord* r = (Coord*)Method_030f20(&out, (i32)unit, band);
+                Coord* r = (Coord*)Method_030f20(&out, reinterpret_cast<i32>(unit), band);
                 x = r->m_x;
                 y = r->m_y;
             } else {
@@ -5294,7 +5294,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     // Map the candidate index, or Probe/Reserve a fresh slot.
-    i32 ci = (i32)unit->m_objAux->m_1c;
+    i32 ci = reinterpret_cast<i32>(unit->m_objAux->m_1c);
     i32 sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
@@ -5565,7 +5565,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_arrivalCol = band;
                 unit->m_arrivalRow = 0;
-                Method_02c080((i32)unit);
+                Method_02c080(reinterpret_cast<i32>(unit));
             }
             unit->m_dwell = 0;
             return 1;

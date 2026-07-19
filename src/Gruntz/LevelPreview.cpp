@@ -76,7 +76,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
     // CState::LoadGameAssetNamespaces is the slot-1 virtual now, and retail calls
     // the default body direct here).
-    if (CState::LoadGameAssetNamespaces((i32)mgr, a1, a2) == 0) {
+    if (CState::LoadGameAssetNamespaces(reinterpret_cast<i32>(mgr), a1, a2) == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

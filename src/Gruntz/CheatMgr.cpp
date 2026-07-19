@@ -150,7 +150,7 @@ void CCheatMgr::Empty() {
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     void* existing = 0;
-    i32 found = (m_map.Lookup(code, existing) ? -1 : 0) & (i32)existing;
+    i32 found = (m_map.Lookup(code, existing) ? -1 : 0) & reinterpret_cast<i32>(existing);
     if (found != 0) {
         return FALSE;
     }
@@ -256,7 +256,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
 
     void* value = 0;
     CheatEntry* found =
-        (CheatEntry*)((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & (i32)value);
+        (CheatEntry*)((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value));
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA((HWND)m_count, 0x111, found->commandId, 0);

@@ -421,7 +421,7 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, (i32)item, x, y);
+                m_host->Draw(ctx, reinterpret_cast<i32>(item), x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -513,7 +513,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, (i32)item, col, y);
+                m_host->Draw(ctx, reinterpret_cast<i32>(item), col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -795,7 +795,7 @@ CMenuPage::AddItem(const char* label, const char* spriteKey, i32 cmdId, const ch
     CMenuItem* item = new CMenuItem();
     // Init keeps its mangling-pinned i32 slots (virtual); the string args cast at
     // the forward (same 4-byte pushes).
-    if (item->Init((i32)this, (i32)label, (i32)spriteKey, cmdId, (i32)key, flags) == 0) {
+    if (item->Init(reinterpret_cast<i32>(this), reinterpret_cast<i32>(label), reinterpret_cast<i32>(spriteKey), cmdId, reinterpret_cast<i32>(key), flags) == 0) {
         if (item) {
             delete item;
         }
@@ -817,7 +817,7 @@ CMenuItem* CMenuPage::AddSubItem(
     i32 flags
 ) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init((i32)this, (i32)label, (i32)spriteKey, cmdId, (i32)key, flags) == 0) {
+    if (item->Init(reinterpret_cast<i32>(this), reinterpret_cast<i32>(label), reinterpret_cast<i32>(spriteKey), cmdId, reinterpret_cast<i32>(key), flags) == 0) {
         if (item) {
             delete item;
         }
@@ -838,7 +838,7 @@ CMenuItem* CMenuPage::AddSubItem(
 RVA(0x001836f0, 0x160)
 CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(a4, a3, a2, a1, a0, (i32)this) == 0) {
+    if (item->Init(a4, a3, a2, a1, a0, reinterpret_cast<i32>(this)) == 0) {
         if (item) {
             delete item;
         }
@@ -856,7 +856,7 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(a6, a4, a2, a1, a0, (i32)this) == 0) {
+    if (item->Init(a6, a4, a2, a1, a0, reinterpret_cast<i32>(this)) == 0) {
         if (item) {
             delete item;
         }

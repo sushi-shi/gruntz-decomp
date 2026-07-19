@@ -154,7 +154,7 @@ CActReg g_tileActReg;
 // helper on `this`, then (only on success) the +0x34 CSerialObjRef sub-object.
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -171,7 +171,7 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // CTileTriggerSwitch::SerializeMove @0x11050, vtable slot 1.
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -197,7 +197,7 @@ CTileTrigger::CTileTrigger() {}
 // (inherited) by CGiantRock/CCoveredPowerup/CTileSecretTrigger (no leaf override).
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -270,7 +270,7 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -319,7 +319,7 @@ i32 StepController(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransiti
 RVA(0x0010d290, 0xf4)
 i32 CheckpointTriggerStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch ((u32)ctl->m_1c) {
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
             ctl->m_1c = (void*)0x3e8;
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);
@@ -760,7 +760,7 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(arc)), mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;

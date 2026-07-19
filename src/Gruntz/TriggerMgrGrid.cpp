@@ -674,7 +674,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    char* name = *g_nameReg.Lookup((i32)cell->m_14->m_1c);
+    char* name = *g_nameReg.Lookup(reinterpret_cast<i32>(cell->m_14->m_1c));
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTileX;
         i32 py = cell->m_moveTileY;
@@ -705,7 +705,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (cell == 0 || outCol != g_curPlayer) {
         return;
     }
-    char* name = *g_nameReg.Lookup((i32)cell->m_14->m_1c);
+    char* name = *g_nameReg.Lookup(reinterpret_cast<i32>(cell->m_14->m_1c));
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;

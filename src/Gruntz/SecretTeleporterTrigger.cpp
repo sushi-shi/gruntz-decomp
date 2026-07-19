@@ -81,12 +81,12 @@ static inline CActEntry* ActLookup(i32 coord) {
     if (coord >= g_actLo && coord <= g_actHi) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
-    if ((i32)((_zvec*)&g_actColl)->GrowTo(coord, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_actColl)->GrowTo(coord, 0))) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_actColl2->Set(&g_actColl, (i32)item, 0xc);
+    g_actColl2->Set(&g_actColl, reinterpret_cast<i32>(item), 0xc);
     return g_actCur;
 }
 
@@ -384,7 +384,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
                 && ey >= rc->m_originY) {
                 ((CGruntSpawnConfig*)g->m_cueSink)
-                    ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
             }
         }
         m_38->m_flags |= 0x10000;

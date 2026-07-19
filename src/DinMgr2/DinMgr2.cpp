@@ -506,7 +506,7 @@ void* DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, 
     buf[3] = a4;
     buf[4] = a5;
     buf[5] = a6;
-    return AddController((i32)buf, 6, a7);
+    return AddController(reinterpret_cast<i32>(buf), 6, a7);
 }
 
 // CInputDevRoot::IsValid (0x001332b0) is now an inline member in the header.

@@ -1898,7 +1898,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 done = 1;
                                 spr->m_7c->m_notify(spr);
                                 ((CLightFx*)spr->m_7c->m_logic)
-                                    ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 3, 1);
+                                    ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 3, 1);
                             }
                         } while (done == 0);
                         break;
@@ -1919,7 +1919,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
-                            ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 2, 1);
+                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 2, 1);
                         break;
                     }
                     case 5: { // toyz
@@ -1936,7 +1936,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
-                            ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 7, 1);
+                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 7, 1);
                         break;
                     }
                     case 4: { // freeze
@@ -1955,7 +1955,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         );
                         spr->m_7c->m_notify(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
-                            ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 9, 1);
+                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 9, 1);
                         break;
                     }
                 }
@@ -2065,7 +2065,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                                    ->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 8, 1);
         }
     }
     return 1;

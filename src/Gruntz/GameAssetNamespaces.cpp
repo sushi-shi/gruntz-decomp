@@ -101,7 +101,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).
     // Retail re-reads both through this->m_4 (spilled `this`, not the cached arg).
-    if (m_4->m_spriteFactory->BuildToolToyColorTable((i32)m_4->m_symParser) == 0) {
+    if (m_4->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_4->m_symParser)) == 0) {
         return 0;
     }
     if (m_160 == 0 && m_164 == 0) {

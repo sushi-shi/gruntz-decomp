@@ -71,7 +71,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                             item->m_hWnd,
                             0x180,
                             0,
-                            (LPARAM)static_cast<const char*>((s_custom + fd.name))
+                            reinterpret_cast<LPARAM>(static_cast<const char*>((s_custom + fd.name)))
                         );
                     }
                 } while (_findnext(h, &fd) != -1);

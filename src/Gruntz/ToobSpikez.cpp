@@ -55,7 +55,7 @@
 RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
-    switch ((u32)rec->m_1c) {
+    switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
             rec->m_1c = (void*)0x3e8;
             CToobSpikez* inst = new CToobSpikez(obj);

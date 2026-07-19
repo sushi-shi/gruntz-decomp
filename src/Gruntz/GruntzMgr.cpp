@@ -789,7 +789,7 @@ install:
     {
         CState* st = m_curState;
         // slot 1 (+0x4) virtual dispatch - the state's asset/state loader.
-        i32 ok = st->LoadGameAssetNamespaces((i32)this, a2, local10);
+        i32 ok = st->LoadGameAssetNamespaces(reinterpret_cast<i32>(this), a2, local10);
         st = m_curState;
         if (ok == 0) {
             if (st != 0) {
@@ -1350,7 +1350,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;
     }
-    CString name = RunCustomWorldDialog((i32)m_gameWnd->m_hwnd, 0);
+    CString name = RunCustomWorldDialog(reinterpret_cast<i32>(m_gameWnd->m_hwnd), 0);
     if (name.GetLength() == 0) {
         return 0;
     }
@@ -1858,7 +1858,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     CPlaneRender* found = (CPlaneRender*)m_world->m_level->FindPlaneByName("MONOLITH");
     if (found == 0) {
         CPlaneRender* spr =
-            m_world->m_level->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, (i32) "MONOLITH");
+            m_world->m_level->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, reinterpret_cast<i32>("MONOLITH"));
         if (spr == 0) {
             return 0;
         }
@@ -2783,7 +2783,7 @@ i32 CGruntzMgr::Quicksave() {
         m_timer->Stop();
     }
     FillSaveInfo(m_saveInfoRec, 0);
-    if (g_gameReg->m_saveSink->Save((i32)m_saveInfoRec->m_serial, 0x81a7)) {
+    if (g_gameReg->m_saveSink->Save(reinterpret_cast<i32>(m_saveInfoRec->m_serial), 0x81a7)) {
         m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -3424,7 +3424,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_timer->Stop();
     }
     if (m_world) {
-        RedrawMapIndex((i32)m_world->m_drawTarget->m_backPair);
+        RedrawMapIndex(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair));
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
@@ -4137,7 +4137,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
 // (with its CString member) is the compound /GX frame's two destructibles.
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
-    CBattlezDlg dlg((i32)this, 0); // ctor 0x14b30 (a0 = this, pParent = null)
+    CBattlezDlg dlg(reinterpret_cast<i32>(this), 0); // ctor 0x14b30 (a0 = this, pParent = null)
     i32 st = m_curState->Update();
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;

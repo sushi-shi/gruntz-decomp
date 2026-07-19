@@ -70,12 +70,12 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
         return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
-    if ((i32)((_zvec*)&g_projReg)->GrowTo(coord, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_projReg)->GrowTo(coord, 0))) {
         return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projRegColl2->Set(&g_projReg, (i32)item, 0xc);
+    g_projRegColl2->Set(&g_projReg, reinterpret_cast<i32>(item), 0xc);
     return g_projRegCur;
 }
 
@@ -95,12 +95,12 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    ((CVariantSlot*)g_typeColl.m_errSink)->Set(&g_typeColl, (i32)item, 0xc);
+    ((CVariantSlot*)g_typeColl.m_errSink)->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
@@ -310,7 +310,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), tag, c, d)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), tag, c, d)) {
         return 0;
     }
     if (!Chain(ar, tag, c, (CGameObject*)d)) {

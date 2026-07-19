@@ -1266,7 +1266,7 @@ i32 CMulti::PumpA() {
     }
     m_beginMarker->FilterList2((void*)g_frameDelta);
     ((CBrickzGrid*)Mgr()->m_tileGrid)
-        ->UpdateDiagonals((i32)Mgr()); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
+        ->UpdateDiagonals(reinterpret_cast<i32>(Mgr())); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
         PumpAReset();
     }
@@ -1333,7 +1333,7 @@ void CMulti::PumpB() {
             return;
         }
         StepGridWalk(g_frameDelta);
-        winapi_0d0b30_CopyRect((i32)h);
+        winapi_0d0b30_CopyRect(reinterpret_cast<i32>(h));
         ((CDDrawSurfacePair*)mgr->m_drawTarget->m_frontPair)->m_surface->Flip(0);
         return;
     }
@@ -1389,11 +1389,11 @@ void CMulti::PumpB() {
     if (h == 0) {
         return;
     }
-    m_hitTest->LoadChatBoxSprite((i32)h);
+    m_hitTest->LoadChatBoxSprite(reinterpret_cast<i32>(h));
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_frameDelta);
-    winapi_0d0b30_CopyRect((i32)h);
+    winapi_0d0b30_CopyRect(reinterpret_cast<i32>(h));
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
@@ -2009,7 +2009,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 // @rva-symbol: ??1CMultiStartDlg@@UAE@XZ 0x000b8960 0x59
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
-    CMultiStartDlg dlg((i32)m_4, 0);
+    CMultiStartDlg dlg(reinterpret_cast<i32>(m_4), 0);
     i32 r = m_4->ExitModalUI(&dlg, 0);
     g_sharedFlag = 0;
     if (r != 1) {
@@ -2103,9 +2103,9 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         } else {
             str = player->m_profile;
         }
-        i32 idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)str));
+        i32 idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(str)));
         if (idx != -1) {
-            ::SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)player);
+            ::SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(player));
         }
         CNetListNode* pos = sess->m_playerSelId;
         if (pos) {
@@ -2141,14 +2141,14 @@ i32 CMulti::JoinAndRegisterChannel() {
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
-    i32 enumResult = g_groupEnumMgr->EnumGroupsInto((void*)4, buf, 0, (i32)g_emptyString);
+    i32 enumResult = g_groupEnumMgr->EnumGroupsInto((void*)4, buf, 0, reinterpret_cast<i32>(g_emptyString));
     if (enumResult == 0) {
         g_connectRptMgr->ReportConnectFailed(0);
         return 0;
     }
 
-    void* lp = (void*)Peer()->CreatePlayer((void*)"Player", (i32)g_emptyString, 0);
-    m_5bc = (i32)(CNetPlayerEntry*)lp;
+    void* lp = (void*)Peer()->CreatePlayer((void*)"Player", reinterpret_cast<i32>(g_emptyString), 0);
+    m_5bc = reinterpret_cast<i32>((CNetPlayerEntry*)lp);
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -2190,9 +2190,9 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     void* lp;
     {
         CString name = GetString5a0();
-        lp = (void*)Peer()->EnumPlayersCb(sel, (i32)static_cast<const char*>(name), (i32)g_emptyString, 0);
+        lp = (void*)Peer()->EnumPlayersCb(sel, reinterpret_cast<i32>(static_cast<const char*>(name)), reinterpret_cast<i32>(g_emptyString), 0);
     }
-    m_5bc = (i32)(CNetPlayerEntry*)lp;
+    m_5bc = reinterpret_cast<i32>((CNetPlayerEntry*)lp);
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -2322,7 +2322,7 @@ i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
 RVA(0x000b91f0, 0x31)
 i32 CMulti::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
     pkt->m_0 |= 0x80;
-    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, (i32)pkt, 0x10);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, reinterpret_cast<i32>(pkt), 0x10);
     return hr == 0;
 }
 
@@ -2361,7 +2361,7 @@ i32 CMulti::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), c, (i32)pkt, b);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), c, reinterpret_cast<i32>(pkt), b);
     return hr == 0;
 }
 
@@ -2375,7 +2375,7 @@ i32 CMulti::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c)
         return 0;
     }
     pkt->m_0 |= 0x80;
-    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, (i32)pkt, 0x10);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, reinterpret_cast<i32>(pkt), 0x10);
     return hr == 0;
 }
 
@@ -2407,7 +2407,7 @@ i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_4 = value;
     pkt.m_8 = LocalPlayer()->m_4;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, (i32)&pkt, 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
 
@@ -2440,7 +2440,7 @@ i32 CMulti::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, (i32)pkt, size);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, reinterpret_cast<i32>(pkt), size);
     return hr == 0;
 }
 
@@ -2454,7 +2454,7 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_4 = statId;
     pkt.m_8 = value;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, (i32)&pkt, 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
 
@@ -2609,7 +2609,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_534 != 0) {
                 break;
             }
-            RecordDropPlayer2((i32)pd, sender);
+            RecordDropPlayer2(reinterpret_cast<i32>(pd), sender);
             break;
 
         case 0x422: {
@@ -3063,7 +3063,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     }
     void* node = Peer()->GetPlayerData(ev->m_id);
     if (node == 0) {
-        node = (void*)Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, (i32)node);
+        node = (void*)Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, reinterpret_cast<i32>(node));
         if (node == 0) {
             return 0;
         }
@@ -3075,7 +3075,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 return 0;
             }
             if (m_isHost != 0) {
-                AnnounceVersion((i32)node);
+                AnnounceVersion(reinterpret_cast<i32>(node));
             }
         }
         CSndHost* host = m_c->m_soundRegistry;
@@ -3111,7 +3111,7 @@ i32 CMulti::ResolveLocalPlayer() {
     if (Peer() == 0) {
         return 0;
     }
-    m_5bc = (i32)Peer()->FindPlayerById(m_hostIndex);
+    m_5bc = reinterpret_cast<i32>(Peer()->FindPlayerById(m_hostIndex));
     return LocalPlayer() != 0;
 }
 
@@ -3478,7 +3478,7 @@ i32 CMulti::SendChannelStat422() {
     g_chanStat422_id = 0x422;
     g_chanStat422_flag |= 0x80;
     g_chanStat422_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chanStat422_flag, 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, reinterpret_cast<i32>(&g_chanStat422_flag), 0xc);
     return 1;
 }
 
@@ -3490,7 +3490,7 @@ i32 CMulti::SendChannelStat423() {
     g_chanStat423_id = 0x423;
     g_chanStat423_flag |= 0x80;
     g_chanStat423_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chanStat423_flag, 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, reinterpret_cast<i32>(&g_chanStat423_flag), 0xc);
     return 1;
 }
 
@@ -3559,7 +3559,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chatPacket_flag, strlen(line) + 0xd);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, reinterpret_cast<i32>(&g_chatPacket_flag), strlen(line) + 0xd);
     return 1;
 }
 
@@ -3583,7 +3583,7 @@ namespace NetLobby {
             strcat(buf, "\r\n");
         }
         strcat(buf, str);
-        ::SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
+        ::SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
         ::SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 } // namespace NetLobby
@@ -3761,8 +3761,8 @@ i32 CMulti::WaitForOtherPlayers() {
     rc.bottom = g->m_modeH;
     EngStr_DrawText(
         (EngStrRenderObj*)g->m_world,
-        (i32)&waitStr,
-        (i32)&rc,
+        reinterpret_cast<i32>(&waitStr),
+        reinterpret_cast<i32>(&rc),
         0x82,
         1,
         0xff,
@@ -4274,9 +4274,9 @@ i32 CMulti::SetupTcpIpConfig() {
     void* lp;
     {
         CString cn = ((GruntzPlayer*)ch0)->GetName();
-        lp = (void*)Peer()->CreatePlayer((void*)static_cast<const char*>(cn), (i32)g_emptyString, 0);
+        lp = (void*)Peer()->CreatePlayer((void*)static_cast<const char*>(cn), reinterpret_cast<i32>(g_emptyString), 0);
     }
-    m_5bc = (i32)(CNetPlayerEntry*)lp;
+    m_5bc = reinterpret_cast<i32>((CNetPlayerEntry*)lp);
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -4307,8 +4307,8 @@ RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
         CString name = GetString5a0();
-        m_5bc = (i32)(CNetPlayerEntry*)Peer()
-                    ->CreatePlayer((void*)static_cast<const char*>(name), (i32)g_emptyString, 0);
+        m_5bc = reinterpret_cast<i32>((CNetPlayerEntry*)Peer()
+                    ->CreatePlayer((void*)static_cast<const char*>(name), reinterpret_cast<i32>(g_emptyString), 0));
     }
     if (LocalPlayer() == 0) {
         ReportConnectFailed(0);
@@ -4360,7 +4360,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     m_drainReload = a4;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_5bc = Peer()->CreatePlayer((void*)static_cast<const char*>(GetString5a0()), (i32)g_emptyString, 0);
+    m_5bc = Peer()->CreatePlayer((void*)static_cast<const char*>(GetString5a0()), reinterpret_cast<i32>(g_emptyString), 0);
     if (m_5bc == 0) {
         ReportNetError(m_5bc);
         return 0;

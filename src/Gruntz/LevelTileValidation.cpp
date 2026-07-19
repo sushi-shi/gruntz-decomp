@@ -258,7 +258,7 @@ i32 CPlay::PlaceStartGruntz() {
                     obj->m_12c,
                     aux->m_2c,
                     aux->m_30,
-                    (i32)&obj->m_extentL
+                    reinterpret_cast<i32>(&obj->m_extentL)
                 );
                 if (idx == -1) {
                     CString s;

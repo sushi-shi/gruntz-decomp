@@ -296,7 +296,7 @@ SoundStream::~SoundStream() {}
 i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
 RVA(0x00137720, 0x14)
 i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
-    return PlaySound3_136550((i32)hWnd, flag, 0);
+    return PlaySound3_136550(reinterpret_cast<i32>(hWnd), flag, 0);
 }
 
 // ---------------------------------------------------------------------------

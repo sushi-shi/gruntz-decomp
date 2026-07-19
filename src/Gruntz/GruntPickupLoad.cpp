@@ -68,11 +68,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (m_entranceActive != 0) {
             return 0;
         }
-        if (strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), "A")
+        if (strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c)), "A")
                 != 0
-            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeD)
+            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c)), s_codeD)
                    != 0
-            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), "E")
+            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c)), "E")
                    != 0) {
             return 0;
         }

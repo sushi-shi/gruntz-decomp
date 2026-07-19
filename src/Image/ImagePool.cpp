@@ -971,7 +971,7 @@ i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
     i32 width = hdr[0];
     i32 height = hdr[1];
     i32 ok = DecodeBlit((char*)buf + 0x20, a2, width, height, 8, a3);
-    if (!((i32)a3 & 1)) {
+    if (!(reinterpret_cast<i32>(a3) & 1)) {
         m_transparent = 0;
     }
     return ok;
@@ -1025,7 +1025,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
     if (!DecodeBmpHeader(a2, width, height, 8, a3)) {
         return 0;
     }
-    if (!((i32)a3 & 1)) {
+    if (!(reinterpret_cast<i32>(a3) & 1)) {
         m_transparent = 0;
     }
 

@@ -61,21 +61,21 @@ void __stdcall BuildLogicTypeTable(CGameObject* obj) {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicHitFactory), "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicAttackFactory), "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicBumpFactory), "LogicBump", 2);
         }
     }
 }
@@ -116,7 +116,7 @@ void CUserLogic::FinalizeStep(i32 /*unused*/) {
     if (m_04 == 0) {
         return;
     }
-    if (m_08 != 0 && (i32)m_14->m_1c == m_28) {
+    if (m_08 != 0 && reinterpret_cast<i32>(m_14->m_1c) == m_28) {
         (this->*(UserLogicCallback&)m_08)();
         m_08 = 0;
     }

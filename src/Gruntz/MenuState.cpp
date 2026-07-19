@@ -263,7 +263,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
     // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
     // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
-    if (!m_1b4->InitRegion(m_c, (i32)m_4->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_1b4->InitRegion(m_c, reinterpret_cast<i32>(m_4->m_gameWnd->m_hwnd), &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
@@ -579,5 +579,5 @@ void CMenuState::BuildVersionString(CGMVerRect r) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage((HudMsgSink*)m_c, (i32)&str, (i32)&r, 0x64, 1, 0xff, 0xff, 0, 0);
+    ShowHudMessage((HudMsgSink*)m_c, reinterpret_cast<i32>(&str), reinterpret_cast<i32>(&r), 0x64, 1, 0xff, 0xff, 0, 0);
 }

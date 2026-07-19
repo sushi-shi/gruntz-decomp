@@ -326,7 +326,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
-    result->m_posCache = (i32)node;
+    result->m_posCache = reinterpret_cast<i32>(node);
     if (result->m_08 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify((CGameObject*)result);
@@ -351,7 +351,7 @@ CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* 
     if (val == 0) {
         return 0;
     }
-    return CreateObject_166640(a1, a2, a3, a4, (int)val, a6);
+    return CreateObject_166640(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
 }
 
 // ---------------------------------------------------------------------------
@@ -367,7 +367,7 @@ i32 CWwdGameObjectB::AddChild_1667e0(CWwdGameObjectE* child) {
     if (pos == 0) {
         return 0;
     }
-    child->m_posCache = (i32)pos;
+    child->m_posCache = reinterpret_cast<i32>(pos);
     return 1;
 }
 

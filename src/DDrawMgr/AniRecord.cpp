@@ -213,7 +213,7 @@ void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
             CString t = ((CAniStrArray*)&tokens)->GetAt(i);
             void* v = 0;
             owner->m_map.Lookup(t, v);
-            m_indices[i] = (i32)v;
+            m_indices[i] = reinterpret_cast<i32>(v);
         }
     }
 }
@@ -251,7 +251,7 @@ CString CAniStrArray::GetAt(int index) {
 RVA(0x00168ea0, 0x40)
 void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB2(size, 0x44);
-    m_buf = (i32)buf;
+    m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
     }
@@ -268,7 +268,7 @@ void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB((void*)size, 0x44);
-    m_buf = (i32)buf;
+    m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return (void*)0;
     }
@@ -284,7 +284,7 @@ void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
 RVA(0x00168f20, 0x40)
 void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->Create(handle, 0x44);
-    m_buf = (i32)buf;
+    m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return (void*)0;
     }
@@ -300,7 +300,7 @@ void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
 RVA(0x00168f60, 0x45)
 void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB3(a, size, 0x44);
-    m_buf = (i32)buf;
+    m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return (void*)0;
     }

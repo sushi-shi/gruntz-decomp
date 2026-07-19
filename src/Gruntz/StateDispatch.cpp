@@ -43,7 +43,7 @@ i32 StateDispatch(CGameObject* obj) {
     // - the same proven-heterogeneous aux slot other sprite classes use as a
     // lookup-node pointer; kept generically typed in the canonical (documented
     // variant), read/written through the int view at this site.
-    switch ((u32)aux->m_1c) {
+    switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
             aux->m_1c = (void*)0x3e8;
             CLevelTime* h = new CLevelTime(obj);

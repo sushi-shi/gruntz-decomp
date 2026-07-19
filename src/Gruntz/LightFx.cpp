@@ -158,7 +158,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
-            val = (i32)(CImage*)en->m_items.GetAt(key);
+            val = reinterpret_cast<i32>((CImage*)en->m_items.GetAt(key));
         }
         m_38->m_layer = (CImage*)val;
         m_38->m_190 = key;
@@ -188,7 +188,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
 // ===========================================================================
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4) == 0) {
         return 0;
     }
     if (Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {

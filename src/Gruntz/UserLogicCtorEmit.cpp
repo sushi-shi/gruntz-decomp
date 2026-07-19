@@ -72,21 +72,21 @@ inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicHitFactory), "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicAttackFactory), "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicBumpFactory), "LogicBump", 2);
         }
     }
 }

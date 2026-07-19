@@ -844,7 +844,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     new ((void*)&obj->m_1a0)
-        CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
+        CLoadable(reinterpret_cast<i32>(m_mapData), id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_1a0.m_10 = 0;
     obj->m_1a0.m_14 = 0;
@@ -917,7 +917,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
-    if (obj->Load(static_cast<i32>(logicLen), id, (i32)strCursor, id) == 0) {
+    if (obj->Load(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
         obj->Delete(1);
         return 0;
     }

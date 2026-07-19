@@ -159,7 +159,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[2].AddTail(it);
-                    *aptr = (i32)it;
+                    *aptr = reinterpret_cast<i32>(it);
                     i32 sel = g_gameReg->m_spriteFactory->GetSel(
                         *(i32*)((char*)g_gameReg + 0x158 + g_curPlayer * 0x238),
                         0
@@ -476,7 +476,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[3].AddTail(it);
-                    cachep[-4] = (i32)it;
+                    cachep[-4] = reinterpret_cast<i32>(it);
                     it = new CSBI_ImageSet;
                     r.left = bx + 0x45;
                     r.top = y - 0x17;
@@ -498,7 +498,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[3].AddTail(it);
-                    cachep[0] = (i32)it;
+                    cachep[0] = reinterpret_cast<i32>(it);
                     it = new CSBI_ImageSet;
                     r.left = bx + 0x6d;
                     r.top = y - 0x17;
@@ -520,7 +520,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[3].AddTail(it);
-                    cachep[4] = (i32)it;
+                    cachep[4] = reinterpret_cast<i32>(it);
                     cfgp += 6;
                     cachep += 1;
                     y += 0x20;
@@ -695,7 +695,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[0] = (i32)it;
+            m_61c[0] = reinterpret_cast<i32>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x112;
@@ -717,7 +717,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[1] = (i32)it;
+            m_61c[1] = reinterpret_cast<i32>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x155;
@@ -739,7 +739,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[2] = (i32)it;
+            m_61c[2] = reinterpret_cast<i32>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x197;
@@ -761,7 +761,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[3] = (i32)it;
+            m_61c[3] = reinterpret_cast<i32>(it);
             // HEAD loop: for each active player slot (g_gameReg per-player block, stride
             // 0x238) set the head sprite (GetSel) + SetState/ShowFrames on the cached slot.
             {
@@ -893,7 +893,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[1].AddTail(arrow);
-                    p[0x1e] = (i32)arrow;
+                    p[0x1e] = reinterpret_cast<i32>(arrow);
                     if (p[0] != 0) {
                         arrow->SetArrowMode(m_position, 0);
                     } else {

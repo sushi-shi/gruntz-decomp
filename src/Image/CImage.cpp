@@ -165,7 +165,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->Createa58_3((i32)desc, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->Createa58_3(reinterpret_cast<i32>(desc), capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -268,7 +268,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, static_cast<i32>(mode), (i32)a, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateA(reinterpret_cast<i32>(desc), static_cast<i32>(mode), reinterpret_cast<i32>(a), capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -301,7 +301,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateB(reinterpret_cast<i32>(desc), mode, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -349,7 +349,7 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     if (owned == 0) {
         return 0;
     }
-    if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_parent->m_04->m_10[0x18 / 4])) {
+    if (!owned->Build((CImageBuildDesc*)desc, reinterpret_cast<i32>(a), m_parent->m_04->m_10[0x18 / 4])) {
         return 0;
     }
     i32 w = m_owned->m_width;
@@ -694,7 +694,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Init((i32)m_parent, 0, (i32)b, (i32)c, (i32)d, 0)) {
+    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
         this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
     }
 }
@@ -728,7 +728,7 @@ i32 g_surfaceColorKey = 0; // 0x2bf380
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Init((i32)m_parent, 0, (i32)b, (i32)c, (i32)d, 0)) {
+    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
         if (rect != 0) {
             g_imageClipRect[0] = ((i32*)rect)[0];
             g_imageClipRect[1] = ((i32*)rect)[1];

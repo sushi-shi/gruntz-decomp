@@ -22,7 +22,7 @@ extern "C" u32 g_engineFrameDelta;
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
     AnimWorkerObj* w = obj->m_7c;
-    i32 state = (i32)w->m_1c;
+    i32 state = reinterpret_cast<i32>(w->m_1c);
     if (state != 0) {
         if (state == 5) {
             CAniAdvanceCursor* a = &obj->m_1a0;

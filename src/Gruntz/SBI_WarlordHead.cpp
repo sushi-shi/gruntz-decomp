@@ -134,7 +134,7 @@ i32 CSBI_WarlordHead::Render() {
         return 1;
     }
     m_28--;
-    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
     CImageSet* cfg = m_34;
     CImage* f;

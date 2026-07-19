@@ -87,7 +87,7 @@ i32 CMapArrayA::Allocate(u32 count) {
     MapElemA* block = (MapElemA*)::operator new(count * sizeof(MapElemA));
     m_0 = block;
     if (!block) {
-        return (i32)block;
+        return reinterpret_cast<i32>(block);
     }
 
     // @fold-TODO: MapElemA IS BrickzNode (0x24 B, links @+0x14/+0x18) - the pool's block
@@ -451,7 +451,7 @@ reached:
 // neither flips with a local-pin here. Parked for the final sweep.
 RVA(0x0009f010, 0x2a1)
 i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
-    i32 ng = (i32)node->m_8 + cost;
+    i32 ng = reinterpret_cast<i32>(node->m_8) + cost;
     i32 ncol = node->m_0 + dx;
     i32 nrow = node->m_4 + dy;
     BrickzNode* found0 = 0;
@@ -498,7 +498,7 @@ relax:
         closed = (BrickzNode*)head->m_0;
     }
     if (closed != 0) {
-        if (ng >= (i32)closed->m_8) {
+        if (ng >= reinterpret_cast<i32>(closed->m_8)) {
             return 1;
         }
     }
@@ -509,7 +509,7 @@ relax:
         open = found0;
     }
     if (open != 0) {
-        i32 og = (i32)open->m_8;
+        i32 og = reinterpret_cast<i32>(open->m_8);
         if (ng >= og) {
             return 1;
         }
@@ -519,16 +519,16 @@ relax:
             }
             Unlink(open);
             open->m_10 = ng + open->m_c;
-            open->m_1c = (i32)node;
+            open->m_1c = reinterpret_cast<i32>(node);
             open->m_8 = (BrickzNode*)ng;
             Insert(open);
             return 1;
         }
     }
     if (closed != 0) {
-        if (ng < (i32)closed->m_8) {
+        if (ng < reinterpret_cast<i32>(closed->m_8)) {
             CellPop(closed, 0);
-            closed->m_1c = (i32)node;
+            closed->m_1c = reinterpret_cast<i32>(node);
             closed->m_8 = (BrickzNode*)ng;
             closed->m_10 = closed->m_c + ng;
             Insert(closed);
@@ -557,7 +557,7 @@ relax:
     i32 hy = abs(m_goalY - nrow);
     i32 hx = abs(m_goalX - ncol);
     i32 h = (hy + hx) * 2;
-    rec->m_1c = (i32)node;
+    rec->m_1c = reinterpret_cast<i32>(node);
     rec->m_c = h;
     rec->m_10 = ng + h;
     rec->m_14 = 0;
@@ -653,10 +653,10 @@ void CBrickzGrid::CellPush(BrickzNode* node) {
         *head = slot;
         slot->m_4 = 0;
         slot->m_8 = 0;
-        slot->m_0 = (i32)node;
+        slot->m_0 = reinterpret_cast<i32>(node);
         node->m_20 = slot;
     } else {
-        slot->m_4 = (i32)old;
+        slot->m_4 = reinterpret_cast<i32>(old);
         slot->m_8 = (*head)->m_8;
         *head = slot;
         node->m_20 = slot;
@@ -745,7 +745,7 @@ void CBrickzGrid::ResetCells() {
             m_colA.m_block = child;
             node->m_4 = 0;
             *link = m_colB.m_block;
-            m_colB.m_block->m_4 = (i32)node;
+            m_colB.m_block->m_4 = reinterpret_cast<i32>(node);
             m_colB.m_block = node;
             node = next;
         }
@@ -820,7 +820,7 @@ void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
     node->m_20 = 0;
     slot->m_8 = m_colB.m_block;
     slot->m_4 = 0;
-    m_colB.m_block->m_4 = (i32)slot;
+    m_colB.m_block->m_4 = reinterpret_cast<i32>(slot);
     m_colB.m_block = slot;
     if (flag != 0) {
         node->m_18 = 0;

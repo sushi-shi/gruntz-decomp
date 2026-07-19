@@ -122,7 +122,7 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
             return 0;
         }
         doFill = 0;
-    } else if (this->Load((i32)info, path, flags) == 0) {
+    } else if (this->Load(reinterpret_cast<i32>(info), path, flags) == 0) {
         return 0;
     }
     if (key != -1 && doFill != 0) {
@@ -151,7 +151,7 @@ i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     desc[0x11] = 1;
     desc[0] = 0x6c;
     desc[1] = 7;
-    return CDDSurface::Init1(info, (i32)desc) != 0;
+    return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -298,7 +298,7 @@ i32 CPoolItemAE8::Blit47(
     desc[2] = a3;
     desc[0] = 0x6c;
     desc[1] = 0x47;
-    return CDDSurface::Init1(info, (i32)desc) != 0;
+    return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
 }
 
 // ---------------------------------------------------------------------------

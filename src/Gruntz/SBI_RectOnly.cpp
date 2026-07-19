@@ -503,7 +503,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
             s->Read(&tmp, 4);
             if (tmp != 0) {
                 CLevelSyncChild* c = new CLevelSyncChild();
-                m[0x153] = (i32)c;
+                m[0x153] = reinterpret_cast<i32>(c);
                 c->m_3c = this;
             }
         }
@@ -866,7 +866,7 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     i32 m8 = 0;
     if (map->Lookup((void*)seq, obj)) {
         if (obj != 0) {
-            m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? (i32)obj : 0;
+            m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? reinterpret_cast<i32>(obj) : 0;
         }
     }
     m_8 = m8;
@@ -1179,7 +1179,7 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, i32 c) {
     CWarpStoneFly* o = new CWarpStoneFly();
     m_retabNotify = o;
     if (o == 0) {
-        return (i32)o; // retail returns the null pointer already in eax (no re-xor)
+        return reinterpret_cast<i32>(o); // retail returns the null pointer already in eax (no re-xor)
     }
     return o->Init(this, a, b, c);
 }
@@ -1395,7 +1395,7 @@ i32 CStatusBarMgr::Activate() {
     if (m_28 > d - 9) {
         m_28 = d - 0x22;
     }
-    m_8 = (i32)(m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
+    m_8 = reinterpret_cast<i32>((m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1));
     return m_8 != 0;
 }
 
@@ -2790,8 +2790,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            (i32)this,
-            (i32)code,
+            reinterpret_cast<i32>(this),
+            reinterpret_cast<i32>(code),
             0x259,
             0,
             SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
@@ -2808,8 +2808,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            (i32)this,
-            (i32)code,
+            reinterpret_cast<i32>(this),
+            reinterpret_cast<i32>(code),
             0x25a,
             0,
             SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7),
@@ -2826,8 +2826,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            (i32)this,
-            (i32)code,
+            reinterpret_cast<i32>(this),
+            reinterpret_cast<i32>(code),
             0x25b,
             0,
             SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
@@ -3707,7 +3707,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
         SetTabState(5, 3);
     }
     if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame((i32) "GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
+        m_tabSprite5->ResolveFrame(reinterpret_cast<i32>("GAME_STATUSBAR_TABZ_GAMETAB_RESUME"), 1);
         Deactivate();
         m_tabSprite5->SetSubtype(); // slot 10
     }
@@ -3719,7 +3719,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
 RVA(0x00102200, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame((i32) "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
+        m_tabSprite5->ResolveFrame(reinterpret_cast<i32>("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE"), 1);
         Deactivate();
         m_tabSprite5->SetSubtype(); // slot 10
     }

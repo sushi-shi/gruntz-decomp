@@ -571,7 +571,7 @@ i32 CGrunt::WanderStep() {
                             m_arrivalRow = g->m_tileOwnerLo;
                             m_defenderState = 1;
                             if (GruntPointVisible(
-                                    (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
+                                    reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
                                     m_10->m_screenX,
                                     m_10->m_screenY
                                 )
@@ -682,7 +682,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 void* node = m_31c.GetHeadPosition();
                 if (node != 0) {
-                    i32 prev = (i32)g_coordPool.m_freeHead;
+                    i32 prev = reinterpret_cast<i32>(g_coordPool.m_freeHead);
                     do {
                         void* cur = node;
                         node = *(void**)node;
@@ -690,7 +690,7 @@ i32 CGrunt::WanderStep() {
                         if (data != 0) {
                             i32* fslot = (i32*)(data - g_coordPool.m_linkOffset);
                             *fslot = prev;
-                            prev = (i32)fslot;
+                            prev = reinterpret_cast<i32>(fslot);
                             g_coordPool.m_freeHead = fslot;
                         }
                     } while (node != 0);
@@ -1007,7 +1007,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
-                                (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
+                                reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
                                 this->m_10->m_screenX,
                                 this->m_10->m_screenY
                             );
@@ -1255,7 +1255,7 @@ L_ed006b:
                 i32 x = m_10->m_screenX;
                 i32 y = m_10->m_screenY;
                 if (GruntPointVisible(
-                        (i32)((CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
+                        reinterpret_cast<i32>(((CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX)),
                         x,
                         y
                     )
@@ -1888,7 +1888,7 @@ i32 CGrunt::StepArrivalDefense() {
                 CGameObject* h = m_10;
                 char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
                 i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
-                if (CueVisible((i32)rect, h->m_screenX, h->m_screenY) == 0) {
+                if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
                     goto L_f318a;
                 }
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -2327,7 +2327,7 @@ state0: {
         goto common;
     }
     if (GruntPointVisible(
-            (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
+            reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
             m_10->m_screenX,
             m_10->m_screenY
         )
@@ -2559,7 +2559,7 @@ i32 CGrunt::SeekTarget() {
         if (g != 0) {
             i32 x = g->m_10->m_screenX;
             if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-                && g->RectContains(x, (i32)g->m_10) != 0) {
+                && g->RectContains(x, reinterpret_cast<i32>(g->m_10)) != 0) {
                 atTarget = true;
             }
         }
@@ -2613,7 +2613,7 @@ i32 CGrunt::SeekTarget() {
         if (this->m_poweredUp == 0 && this->m_stamina > 99) {
             i32 x = g->m_10->m_screenX;
             if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-                && g->RectContains(x, (i32)g->m_10) != 0) {
+                && g->RectContains(x, reinterpret_cast<i32>(g->m_10)) != 0) {
                 CommitNeighbor(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
@@ -2638,7 +2638,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
-                (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
+                reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
                 this->m_10->m_screenX,
                 this->m_10->m_screenY
             );

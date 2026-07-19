@@ -196,7 +196,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     void* index = GetButeSlot((CSpawnButeConfig*)param_1, (CSpawnButeTarget*)param_2);
     CString local_10;
     CString local_14;
-    local_14.Format("SG%i", (int)index);
+    local_14.Format("SG%i", reinterpret_cast<int>(index));
     local_10.Format("G%i", param_2);
     if (param_5 == -1) {
         param_5 = g_buteMgr.GetIntDef((LPCTSTR)local_14, "Per", -1);
@@ -219,7 +219,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             return 0;
         }
     }
-    i32 src = PickWeighted((i32)index, param_3);
+    i32 src = PickWeighted(reinterpret_cast<i32>(index), param_3);
     if (src == 0 || m_configTree->m_20 == 0) {
         return 0;
     }

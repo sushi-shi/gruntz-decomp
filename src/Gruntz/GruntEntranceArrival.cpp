@@ -409,7 +409,7 @@ i32 CGrunt::UpdateGruntStatus() {
     CGameRegistry* g = g_gameReg;
     i32 x = m_10->m_screenX;
     i32 y = m_10->m_screenY;
-    i32* vr = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+    i32* vr = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
         g->m_cueSink->CueSpawn(this, 2, -1, -1, -1);
     }
@@ -1058,7 +1058,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        CCueRect* r = (CCueRect*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+        CCueRect* r = (CCueRect*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
         }
@@ -1215,28 +1215,28 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CueVisible(
-                        (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                        reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                         m_10->m_screenX,
                         m_10->m_screenY
                     )) {
-                    g->m_cueSink->Cue((i32)this, 4, -1, -1, -1);
+                    g->m_cueSink->Cue(reinterpret_cast<i32>(this), 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
                     if (CueVisible(
-                            (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                            reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                             m_10->m_screenX,
                             m_10->m_screenY
                         )) {
-                        g->m_cueSink->Cue((i32)this, 5, -1, -1, -1);
+                        g->m_cueSink->Cue(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
                     if (CueVisible(
-                            (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                            reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                             m_10->m_screenX,
                             m_10->m_screenY
                         )) {
-                        g->m_cueSink->Cue((i32)this, 6, -1, -1, -1);
+                        g->m_cueSink->Cue(reinterpret_cast<i32>(this), 6, -1, -1, -1);
                     }
                 }
             }
@@ -1560,7 +1560,7 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     CGameRegistry* g = g_gameReg;
-    CCueRect* r = (CCueRect*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+    CCueRect* r = (CCueRect*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
@@ -1682,7 +1682,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CGameRegistry* g = g_gameReg;
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
-            i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+            i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                 g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
                 ClearSubA();
@@ -1699,7 +1699,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xd, -1, -1, -1);
         }
@@ -1797,7 +1797,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
@@ -1807,7 +1807,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
@@ -1817,7 +1817,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
+                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
@@ -1825,7 +1825,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    ((CEffect6b*)(&m_34))->Apply((i32)found, 0);
+    ((CEffect6b*)(&m_34))->Apply(reinterpret_cast<i32>(found), 0);
     i32* elem = (i32*)m_38->m_1a0.m_14->AtChecked_06b270(0);
     i32 frame = elem[0x14 / 4];
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
@@ -2226,8 +2226,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
-        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
-        if (GruntPointVisible((i32)rect, h->m_screenX, h->m_screenY)) {
+        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
+        if (GruntPointVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY)) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
     }
@@ -2278,7 +2278,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
+        i32* rect = (i32*)(reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX));
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
         }

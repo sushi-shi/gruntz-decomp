@@ -1193,7 +1193,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
     }
     const char* keyHandle = a1->m_0c;
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
-    if (w->AllocBufMakeB3(data, (i32)a1, a3) == 0) {
+    if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1393,7 +1393,7 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     CDDrawWorkerObj* p = (CDDrawWorkerObj*)obj;
     i32 v;
     if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {
-        v = (i32)p->m_14[idx];
+        v = reinterpret_cast<i32>(p->m_14[idx]);
     } else {
         v = 0;
     }

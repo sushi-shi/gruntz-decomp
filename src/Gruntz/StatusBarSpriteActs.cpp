@@ -42,7 +42,7 @@ CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e
 RVA(0x0010c0f0, 0xf1)
 i32 StatusBarSpriteStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch ((u32)ctl->m_1c) {
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
             ctl->m_1c = (void*)0x3e8;
             CStatusBarSprite* t = new CStatusBarSprite(obj);
@@ -156,7 +156,7 @@ void CStatusBarSprite::RegisterActs() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011ae0, 0x47)
 i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, a3, a4)) {
         return 0;
     }
     return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;

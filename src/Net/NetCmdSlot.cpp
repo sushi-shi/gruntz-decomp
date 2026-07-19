@@ -300,8 +300,8 @@ i32 CNetSession::DispatchMsg(LobbyMsg* m, i32 arg2) {
         case 5:
             if (m->m_04 == 1) {
                 void* p = (void*)m->m_08;
-                m_session->OnPlayerLeft((i32)p);
-                m_session->ResetPlayerCommands((i32)p);
+                m_session->OnPlayerLeft(reinterpret_cast<i32>(p));
+                m_session->ResetPlayerCommands(reinterpret_cast<i32>(p));
                 return 1;
             }
             return 1;
@@ -399,7 +399,7 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
     return ((CNetMgr*)m_latchedSeq)
-               ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
+               ->SetData(m_desc->m_playerId, gruntId, 0, reinterpret_cast<i32>(&gA_flag), rec->m_payloadLen + 0xf)
            == 0;
 }
 
@@ -477,7 +477,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
                m_localDesc->m_playerId,
                slot->m_desc->m_netId,
                0,
-               (i32)&gB_flag,
+               reinterpret_cast<i32>(&gB_flag),
                entry->m_payloadLen + 0xe
            )
            == 0;
@@ -497,7 +497,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     ((CNetCmdSlot*)slot)->ResetAll();
-    return slot->Init((i32)m_session, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
+    return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
 // ---------------------------------------------------------------------------

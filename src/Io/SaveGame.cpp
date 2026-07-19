@@ -168,8 +168,8 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             }
             g_previewMgr = new CImagePool;
             if (g_previewMgr->SetHandles(
-                    (i32) * (HINSTANCE*)((char*)g_gameReg->m_owner + 0xc),
-                    (i32)g_previewMgr,
+                    reinterpret_cast<i32>(* (HINSTANCE*)((char*)g_gameReg->m_owner + 0xc)),
+                    reinterpret_cast<i32>(g_previewMgr),
                     0
                 )
                 == 0) {
@@ -177,7 +177,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             }
             BuildLevelTitleString(
                 (HWND)g_previewMgr,
-                (i32)g_gameReg->m_saveSink,
+                reinterpret_cast<i32>(g_gameReg->m_saveSink),
                 (CLevelInfo*)g_slotState
             );
             return 1;
@@ -395,7 +395,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             break;
     }
     if (info != -1) {
-        g_slotState = (i32)obj->GetSlot(info);
+        g_slotState = reinterpret_cast<i32>(obj->GetSlot(info));
         if (g_slotState == 0) {
             return 0;
         }
@@ -443,7 +443,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             break;
     }
     if (del != -1) {
-        g_slotState = (i32)obj->GetSlot(del);
+        g_slotState = reinterpret_cast<i32>(obj->GetSlot(del));
         if (g_slotState == 0) {
             return 0;
         }
@@ -501,7 +501,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
     if (TempFileExists_e5700(obj->GetSlot(slot))) {
-        g_slotState = (i32)obj->GetSlot(slot);
+        g_slotState = reinterpret_cast<i32>(obj->GetSlot(slot));
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
             i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
@@ -511,10 +511,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             }
         }
     }
-    obj->FillSlotByIndex(slot, (i32)name, g_gameReg);
-    g_gameReg->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
+    obj->FillSlotByIndex(slot, reinterpret_cast<i32>(name), g_gameReg);
+    g_gameReg->FillSaveInfo((SaveInfo*)reinterpret_cast<i32>(obj->GetSlot(slot)), (void*)name);
     EndDialog(hDlg, 1);
-    if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
+    if (!obj->Save(reinterpret_cast<i32>(obj->GetSlot(slot)) + 0x35, 0x81a6)) {
         g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
     }
     return 1;

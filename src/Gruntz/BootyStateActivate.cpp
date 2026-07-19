@@ -993,7 +993,7 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt((HudMsgSink*)m_c, (i32)&s, (i32)&rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessageAlt((HudMsgSink*)m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_c->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);

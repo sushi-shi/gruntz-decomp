@@ -47,7 +47,7 @@ i32 DrawGlyphString(
         i32 c = (signed char)str[i];
         i32 glyph;
         if (c >= font->m_minIndex && c <= font->m_maxIndex) {
-            glyph = (i32)(CImage*)font->m_items.GetAt(c); // the CImage* frame, as an opaque worker-factory handle
+            glyph = reinterpret_cast<i32>((CImage*)font->m_items.GetAt(c)); // the CImage* frame, as an opaque worker-factory handle
         } else {
             glyph = 0;
         }

@@ -93,7 +93,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
         idx = g_gameReg->m_focusSlots[key].m_08;
     } else {
         m_38->m_flags |= 0x10000;
-        idx = (i32)obj;
+        idx = reinterpret_cast<i32>(obj);
     }
     i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 

@@ -94,8 +94,8 @@ i32 CSBI_MenuItem::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = (i32)owner; // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = (i32)host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
+    m_2c = reinterpret_cast<i32>(owner); // owning tab host (CMiTabHost view at the deref sites)
+    m_24 = reinterpret_cast<i32>(host);  // config host (CDDrawSurfaceMgr, cast at the deref sites)
     m_10 = a4;
     m_8 = 2;
     m_30 = 0;
@@ -107,7 +107,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_c = cmd;
     m_34 = 1;
     m_4 = 1;
-    return ResolveFrame((i32)key, frame) != 0;
+    return ResolveFrame(reinterpret_cast<i32>(key), frame) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CImageSet* rec = (CImageSet*)rec_v;
     m_38 = rec;
     if (rec == 0) {
-        return (i32)rec;
+        return reinterpret_cast<i32>(rec);
     }
     CImageSet* r = rec;
     if (a == -1) {

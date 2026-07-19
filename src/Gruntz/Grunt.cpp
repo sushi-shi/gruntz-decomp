@@ -608,7 +608,7 @@ i32 CGrunt::UserLogicVfunc9() {
 
     while (1) {
         i32 n = PayloadCount();
-        i32 count = n ? (i32)m_338.GetHead() : 0;
+        i32 count = n ? reinterpret_cast<i32>(m_338.GetHead()) : 0;
         if (count == 0) {
             return 0;
         }

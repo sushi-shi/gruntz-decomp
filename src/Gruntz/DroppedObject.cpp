@@ -125,12 +125,12 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
@@ -255,7 +255,7 @@ typedef enum DropperDir {
 RVA(0x000c5630, 0xf4)
 i32 ObjectDropperPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch ((u32)aux->m_1c) {
+    switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
             aux->m_1c = (void*)0x3e8;
             CObjectDropper* h = new CObjectDropper(obj);
@@ -293,7 +293,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
 RVA(0x000c5770, 0xf1)
 i32 DroppedObjectPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch ((u32)aux->m_1c) {
+    switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
             aux->m_1c = (void*)0x3e8;
             CDroppedObject* h = new CDroppedObject(obj);
@@ -331,7 +331,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
 RVA(0x000c58b0, 0xf1)
 i32 DroppedObjectShadowPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch ((u32)aux->m_1c) {
+    switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
             aux->m_1c = (void*)0x3e8;
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
@@ -435,7 +435,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
-    i32 sel = (i32)g_gameReg->m_logicPump->m_tables[5];
+    i32 sel = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
     o->m_drawActive = 1;
     o->m_drawFillCmd = 7;
     o->m_drawFillArg = sel;
@@ -649,7 +649,7 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
             ar->Read(&m_scrollMode, 4);
             break;
         case 8: {
-            i32 fill = (i32)g_gameReg->m_logicPump->m_tables[5];
+            i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
             CGameObject* o = m_object;
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
@@ -934,7 +934,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
-    m_object->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5];
+    m_object->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     if (m_object->m_latchedAnimId != 0xcf84f) {
@@ -1024,14 +1024,14 @@ i32 CDroppedObjectShadow::Advance() {
 // mode-8 archetype.
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, c, d)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)(reinterpret_cast<i32>(ar)), mode, c, d)) {
         return 0;
     }
     if (!Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {
         return 0;
     }
     if (mode == 8) {
-        i32 fill = (i32)g_gameReg->m_logicPump->m_tables[5];
+        i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;

@@ -113,7 +113,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
                 (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_deviceList =
-                (SbzDeviceList*)src->AddControllerArr((i32)m_keyboard, (i32)d, 0, 0, 0, 0, 0);
+                (SbzDeviceList*)src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), 0, 0, 0, 0, 0);
             break;
         }
         case 8: {
@@ -124,7 +124,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_joystick2 = (CInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
-                    src->AddControllerArr((i32)m_keyboard, (i32)d, (i32)m_joystick2, 0, 0, 0, 0);
+                    src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(d), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0);
             break;
         }
         case 7:
@@ -132,7 +132,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_joystick2 = (CInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
-                    src->AddControllerArr((i32)m_keyboard, (i32)m_joystick2, 0, 0, 0, 0, 0);
+                    src->AddControllerArr(reinterpret_cast<i32>(m_keyboard), reinterpret_cast<i32>(m_joystick2), 0, 0, 0, 0, 0);
             break;
         case 0:
             m_keyboard = 0;

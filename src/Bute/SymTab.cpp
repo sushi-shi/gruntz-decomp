@@ -122,8 +122,8 @@ void CSymLeafBuilder::Build(
         }
     }
     m_record = rec;
-    m_0c = (i32)f3;
-    m_14 = (i32)f1;
+    m_0c = reinterpret_cast<i32>(f3);
+    m_14 = reinterpret_cast<i32>(f1);
     m_08 = f2;
     m_38 = 0;
     m_18 = 0;
@@ -224,7 +224,7 @@ i32 CParseSource::BeginParse() {
     if (m_length == 0) {
         return 0;
     }
-    m_buffer = (i32)RezAlloc(m_length);
+    m_buffer = reinterpret_cast<i32>(RezAlloc(m_length));
     if (m_buffer == 0) {
         return 0;
     }
@@ -470,11 +470,11 @@ CSymTab::~CSymTab() {
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
-    CSymRec* rec = (CSymRec*)m_symbols.FindInt((u32)arg);
+    CSymRec* rec = (CSymRec*)m_symbols.FindInt(reinterpret_cast<u32>(arg));
     if (!rec) {
-        return (i32)rec;
+        return reinterpret_cast<i32>(rec);
     }
-    return (i32)rec->m_valTable.Walk(key, m_owner->m_68 == 0);
+    return reinterpret_cast<i32>(rec->m_valTable.Walk(key, m_owner->m_68 == 0));
 }
 
 // Find (0x13a040): split `path` into its components, derive the leaf record's value
@@ -724,7 +724,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
-    return (i32)slot;
+    return reinterpret_cast<i32>(slot);
 }
 
 // AddNodeEntry (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
@@ -740,7 +740,7 @@ RVA(0x0013a4b0, 0x75)
 i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     CSymLeafBuilder* slot = m_owner->PopParseSlot();
     if (slot == 0) {
-        return (i32)slot;
+        return reinterpret_cast<i32>(slot);
     }
     slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
     ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
@@ -748,7 +748,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
-    return (i32)slot;
+    return reinterpret_cast<i32>(slot);
 }
 
 // The removed value-entry's teardown (0x1397a0 = CSymLeafBuilder::Teardown, defined in
@@ -883,7 +883,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             p += 4;
             char* name1 = p;
             p += strlen(name1) + 1;
-            CSymRec* rec = FindOrAddSym((i32)f5);
+            CSymRec* rec = FindOrAddSym(reinterpret_cast<i32>(f5));
             i32 skip = 0;
             void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
@@ -900,13 +900,13 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             p += strlen(p) + 1;
             void* arr;
             if (f6 != 0) {
-                arr = ::operator new(static_cast<u32>(((i32)f6 * 4)));
-                for (i32 i = (i32)f6; i != 0; i--) {
+                arr = ::operator new(static_cast<u32>((reinterpret_cast<i32>(f6) * 4)));
+                for (i32 i = reinterpret_cast<i32>(f6); i != 0; i--) {
                     *(void**)arr = *(void**)p;
                     arr = (char*)arr + 4;
                     p += 4;
                 }
-                arr = (char*)arr - (i32)f6 * 4;
+                arr = (char*)arr - reinterpret_cast<i32>(f6) * 4;
             } else {
                 arr = 0;
             }
@@ -1233,7 +1233,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_symbolBucketCount
     );
     m_root = node;
-    node->ApplyRecursive((i32)reader, m_30, m_34, 0);
+    node->ApplyRecursive(reinterpret_cast<i32>(reader), m_30, m_34, 0);
     return 1;
 }
 
@@ -1327,7 +1327,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     if (v > static_cast<u32>(m_60)) {
         m_60 = v;
     }
-    m_root->ApplyRecursive((i32)node, *(i32*)(hdr + 0x83), *(i32*)(hdr + 0x87), flag);
+    m_root->ApplyRecursive(reinterpret_cast<i32>(node), *(i32*)(hdr + 0x83), *(i32*)(hdr + 0x87), flag);
     return 1;
 }
 

@@ -388,7 +388,7 @@ i32 CTileTriggerLogic::Tick() {
                 return 0; // the pre-CString early exit (0x111140)
             }
             trig->m_7c->m_notify(trig);
-            transId = (i32)trig->m_7c->m_logic;
+            transId = reinterpret_cast<i32>(trig->m_7c->m_logic);
         }
     }
 

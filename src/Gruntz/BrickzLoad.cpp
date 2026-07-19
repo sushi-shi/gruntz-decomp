@@ -378,7 +378,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         // The footprint kind is the object whose worker's post-create notify hook is
         // &CreateExitTrigger (@0x40192e); m_notify is a raw fn-ptr, reinterpreted to int
         // exactly as retail's `cmp [worker+0x10], 0x40192e`.
-        if ((i32)obj->m_7c->m_notify == 0x40192e) {
+        if (reinterpret_cast<i32>(obj->m_7c->m_notify) == 0x40192e) {
             i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
             i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & 0x1f)) >> 5;
             for (i32 xo = -1; xo < 2; xo++) {

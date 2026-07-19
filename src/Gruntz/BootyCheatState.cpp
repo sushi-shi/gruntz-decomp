@@ -102,7 +102,7 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         CString text;
         CString desc;
         i32 i = 0;
-        for (char* p = g_cheatTable; (i32)p < (i32)g_cheatTableEnd; p += 0xa0) {
+        for (char* p = g_cheatTable; reinterpret_cast<i32>(p) < reinterpret_cast<i32>(g_cheatTableEnd); p += 0xa0) {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);

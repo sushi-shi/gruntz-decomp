@@ -183,7 +183,7 @@ i32 CChatBox::Find(const char* s) {
         if (payload) {
             CString key = payload->GetKey();
             if (strcmp(key, s) == 0) {
-                return (i32)payload;
+                return reinterpret_cast<i32>(payload);
             }
         }
     }
@@ -216,7 +216,7 @@ i32 CChatBox::Pre() {
     if (!m_activeNode) {
         return 0;
     }
-    i32 ctx = (i32)m_page->m_drawTarget->m_backPair;
+    i32 ctx = reinterpret_cast<i32>(m_page->m_drawTarget->m_backPair);
     if (!ctx) {
         return ctx;
     }

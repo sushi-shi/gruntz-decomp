@@ -401,11 +401,11 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             slot[0] = v0;
             slot[1] = v1;
             if (self->m_49c != self->arr488Count() - 1) {
-                ((CDWordArray*)&self->m_488)->InsertAt(self->m_49c + 1, (DWORD)slot, 1);
+                ((CDWordArray*)&self->m_488)->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
                 self->m_49c = self->m_49c + 1;
                 return 1;
             }
-            ((CDWordArray*)&self->m_488)->SetAtGrow(self->arr488Count(), (DWORD)slot);
+            ((CDWordArray*)&self->m_488)->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
             self->m_49c = self->m_49c + 1;
             return 1;
         }
@@ -668,7 +668,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 outA = 0;
         i32 outB = 0;
         i32 r =
-            (i32)host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
+            reinterpret_cast<i32>(host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5));
         if (r == 0) {
             return 1;
         }

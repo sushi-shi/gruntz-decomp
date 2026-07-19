@@ -100,7 +100,7 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     }
     m_30 = cel;
     if (cel != 0) {
-        i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+        i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
         cel->RenderFrame(
             (void*)surfaceCtx,
             (void*)(cel->m_anchorX + m_rect14.m_0),

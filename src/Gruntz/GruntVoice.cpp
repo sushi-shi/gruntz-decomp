@@ -94,12 +94,12 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
         return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
@@ -188,7 +188,7 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA(0x00119620, 0xf1)
 i32 GruntVoiceStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch ((u32)ctl->m_1c) {
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
             ctl->m_1c = (void*)0x3e8;
             CGruntVoice* t = new CGruntVoice(obj);
@@ -231,7 +231,7 @@ i32 GruntVoiceStep(CGameObject* obj) {
 RVA(0x00119760, 0xf1)
 i32 VoiceTriggerStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch ((u32)ctl->m_1c) {
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
             ctl->m_1c = (void*)0x3e8;
             CVoiceTrigger* t = new CVoiceTrigger(obj);
@@ -457,7 +457,7 @@ i32 CVoiceTrigger::Tick() {
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
             if (((CGruntSpawnConfig*)g_gameReg->m_cueSink)
                     ->SpawnVoiceDriver(
-                        (i32)hit,
+                        reinterpret_cast<i32>(hit),
                         m_object->m_124,
                         m_object->m_placeMode,
                         0,
@@ -498,7 +498,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     }
     m_source = a0;
     m_owner = a3;
-    m_sample = (i32)sample;
+    m_sample = reinterpret_cast<i32>(sample);
     m_durationMs = ((StreamVoice*)sample)->ComputeRatio();
     m_64 = 0;
     m_icon = g_frameTime;
@@ -558,7 +558,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetTypeId() == 5) ? (i32)out : 0;
+                resolved = (out->GetTypeId() == 5) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {
@@ -582,7 +582,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetTypeId() == 5) ? (i32)out : 0;
+                resolved = (out->GetTypeId() == 5) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {

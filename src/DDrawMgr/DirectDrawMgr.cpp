@@ -748,7 +748,7 @@ i32 CDDrawPtrCollections::CreateRange(
             }
             strcat(buf, suffix);
         }
-        CDDSurface* item = Createa58_3((i32)buf, a6, a7);
+        CDDSurface* item = Createa58_3(reinterpret_cast<i32>(buf), a6, a7);
         if (item == 0) {
             break;
         }

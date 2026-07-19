@@ -160,7 +160,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bda50(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 
@@ -210,7 +210,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bdbe0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 
@@ -262,7 +262,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bddb0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 
@@ -330,7 +330,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_2522(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 
@@ -415,7 +415,7 @@ namespace NetLobby {
             }
             Init_be3e0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 
@@ -525,7 +525,7 @@ namespace NetLobby {
             }
             Init_2ed7(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = reinterpret_cast<i32>(GetDlgItem(hWnd, 0x4b6));
         }
     }
 

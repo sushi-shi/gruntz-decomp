@@ -74,14 +74,14 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
         return 0;
     }
     SendMessageA(ctrl, 0x14b, 0, 0);                   // CB_RESETCONTENT
-    SendMessageA(ctrl, 0x143, 0, (LPARAM) "None");     // CB_ADDSTRING
-    SendMessageA(ctrl, 0x143, 0, (LPARAM) "Keyboard"); // CB_ADDSTRING
+    SendMessageA(ctrl, 0x143, 0, reinterpret_cast<LPARAM>("None"));     // CB_ADDSTRING
+    SendMessageA(ctrl, 0x143, 0, reinterpret_cast<LPARAM>("Keyboard")); // CB_ADDSTRING
     i32 i = 0;
     while (i < g_inputMgr->m_devices.GetSize()) {
         CString s;
         i++;
         s.Format("Joystick %i", i);
-        SendMessageA(ctrl, 0x143, 0, (LPARAM)(LPCTSTR)s);
+        SendMessageA(ctrl, 0x143, 0, reinterpret_cast<LPARAM>((LPCTSTR)s));
     }
     if (selIndex >= 0) {
         SendMessageA(ctrl, 0x14e, selIndex, 0); // CB_SETCURSEL

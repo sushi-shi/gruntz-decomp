@@ -109,12 +109,12 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(key, 0))) {
         return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 

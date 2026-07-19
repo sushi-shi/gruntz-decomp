@@ -69,7 +69,7 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove((CGruntArchive*)a, mode, (i32)c, (i32)d) == 0) {
+        if (m_logic->SerializeMove((CGruntArchive*)a, mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
             return 0;
         }
     }

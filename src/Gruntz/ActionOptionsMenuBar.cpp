@@ -237,21 +237,21 @@ i32 CActionOptionsMenuBar::Refresh() {
                 CSprite* s = m_normChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)(CImage*)s->m_items.GetAt(*p);
+                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)(CImage*)s->m_items.GetAt(*p);
+                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)(CImage*)s->m_items.GetAt(*p);
+                            : reinterpret_cast<i32>((CImage*)s->m_items.GetAt(*p));
                 break;
             }
             default:
@@ -283,7 +283,7 @@ i32 CActionOptionsMenuBar::Render() {
 
     i32 r[4];
     i32* src = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
-    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
+    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];

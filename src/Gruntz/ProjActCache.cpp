@@ -44,7 +44,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     if (key == 0 || value == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_4->Set(this, (i32)name, 0x16);
+        m_4->Set(this, reinterpret_cast<i32>(name), 0x16);
         return 0;
     }
 
@@ -142,7 +142,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
 
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_4->Set(this, (i32)cache, 0xc);
+    m_4->Set(this, reinterpret_cast<i32>(cache), 0xc);
     return 0;
 }
 
@@ -201,6 +201,6 @@ i32 zBitVec::EnsureSize(i32 nbits) {
 fail:
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, (i32)cache, 0xc);
+    m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     return 0;
 }

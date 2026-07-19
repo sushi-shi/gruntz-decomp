@@ -50,7 +50,7 @@ DATA(0x002451a8)
 CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    ((CZDArrayDerived*)&g_actRegCaption)->Construct((i32)(void*)"Gruntz", 0);
+    ((CZDArrayDerived*)&g_actRegCaption)->Construct(reinterpret_cast<i32>((void*)"Gruntz"), 0);
 }
 
 // ---------------------------------------------------------------------------

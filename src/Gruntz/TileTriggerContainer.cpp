@@ -673,7 +673,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
             TtcNode* cur = node;
             node = node->m_next;
             CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
-            i32 r = elem->Classify((i32)arg);
+            i32 r = elem->Classify(reinterpret_cast<i32>(arg));
             if (r == 0) {
                 m_list2.RemoveAt((POSITION)cur);
                 delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3

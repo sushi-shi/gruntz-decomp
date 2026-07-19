@@ -117,7 +117,7 @@ i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = (i32)x;
+        o->m_drawFillArg = reinterpret_cast<i32>(x);
     }
     return 1;
 }

@@ -24,6 +24,15 @@ from cast_to_static import (REPO, CDB_PATH, _cl_args_for, _matching_paren_close,
 _CHARPTR_STATIC_POINTEE = {cidx.TypeKind.CHAR_S, cidx.TypeKind.CHAR_U, cidx.TypeKind.SCHAR,
                            cidx.TypeKind.UCHAR, cidx.TypeKind.VOID}
 
+# Pointer-sized numeric-cast targets: `(i32)ptr` etc. is a genuine pointer<->int reinterpret
+# (int handle / pointer-as-int storage) -> reinterpret_cast (the goal's directive). Only these
+# widths (a `(char)ptr`/`(short)ptr` would be a truncating reinterpret - skip, needs review).
+_NUM_PTR_TARGETS = {'i32', 'u32', 'i64', 'u64', 'int', 'unsigned', 'long', 'unsigned int',
+                    'unsigned long', 'DWORD', 'LPARAM', 'WPARAM', 'LRESULT', 'INT_PTR'}
+_POINTERISH = {cidx.TypeKind.POINTER, cidx.TypeKind.CONSTANTARRAY,
+               cidx.TypeKind.INCOMPLETEARRAY, cidx.TypeKind.FUNCTIONPROTO,
+               cidx.TypeKind.FUNCTIONNOPROTO, cidx.TypeKind.MEMBERPOINTER}
+
 
 def _classify(node, tgt_is_const):
     """Return ('static'|'reinterpret'|'const', None) or ('skip', reason)."""
@@ -113,6 +122,25 @@ def collect_from_tu(tu_file, args, index, sink, skipped):
                                                     'kind': kind, 'ttype': tt,
                                                     'type_close': tclose, 'subexpr_start': sub,
                                                     'end': end}
+                                elif ttext in _NUM_PTR_TARGETS:
+                                    # pointer<->int reinterpret: convert ONLY when the operand is
+                                    # a pointer/array/fn VALUE. A numeric operand is a value cast
+                                    # (cast_to_static -> static_cast); leave those to that tool.
+                                    end = _cast_end_offset(node)
+                                    sub = _skip_ws(data, tclose + 1)
+                                    if end > sub:
+                                        kids = list(node.get_children())
+                                        opk = None
+                                        if kids:
+                                            try:
+                                                opk = kids[-1].type.get_canonical().kind
+                                            except Exception:  # noqa
+                                                opk = None
+                                        if opk in _POINTERISH:
+                                            sink.setdefault(rel, {})[str(start)] = {
+                                                'kind': 'reinterpret', 'ttype': ttext,
+                                                'type_close': tclose, 'subexpr_start': sub,
+                                                'end': end}
         for ch in node.get_children():
             visit(ch)
     visit(tu.cursor)

@@ -64,9 +64,9 @@ i32 CSBI_Image::SetupImage(
     if (owner == 0) {
         return 0;
     }
-    m_2c = (i32)owner;
+    m_2c = reinterpret_cast<i32>(owner);
     m_10 = a4;
-    m_24 = (i32)host;
+    m_24 = reinterpret_cast<i32>(host);
     m_28 = 0;
     m_4 = 0;
     m_rect14.m_0 = rc.left;
@@ -117,7 +117,7 @@ i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
         CImage* cel = m_30;
         if (cel != 0) {
             cel->RenderFrame(
-                (void*)(i32)g_gameReg->m_world->m_drawTarget->m_backPair,
+                (void*)reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair),
                 (void*)(m_rect14.m_0 + cel->m_anchorX),
                 (void*)(m_rect14.m_4 + cel->m_anchorY),
                 (void*)0

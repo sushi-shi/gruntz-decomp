@@ -140,7 +140,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (found->GetTypeId() == 5) ? (i32)found : 0;
+                r = (found->GetTypeId() == 5) ? reinterpret_cast<i32>(found) : 0;
             }
             m_1fc = (CGameObject*)r;
             if (m_1fc == 0 && key != 0) {

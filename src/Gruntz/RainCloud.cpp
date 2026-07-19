@@ -21,7 +21,7 @@
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CGameObject* o = m_object;
-    i32 n = (i32)g_gameReg->m_logicPump->m_tables[5]; // reg->+0x78->+0x28
+    i32 n = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]); // reg->+0x78->+0x28
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;

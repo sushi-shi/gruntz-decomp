@@ -298,11 +298,11 @@ RVA(0x00144350, 0x5f)
 i32 CDDSurface::SaveDispatch(char* a1, void* a2, void* a3) {
     switch (m_bitDepth) {
         case 0x18:
-            return SaveTga(a1, a2, (i32)a3); // 24bpp -> 0x144900
+            return SaveTga(a1, a2, reinterpret_cast<i32>(a3)); // 24bpp -> 0x144900
         case 0x10:
             return SaveRle16(a1, a2, a3);
         case 8:
-            return SaveBmp(a1, a2, (i32)a3); // 8bpp -> 0x1443b0
+            return SaveBmp(a1, a2, reinterpret_cast<i32>(a3)); // 8bpp -> 0x1443b0
         default:
             return 0;
     }
@@ -1212,7 +1212,7 @@ i32 CDDSurface::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    i32 result = DecodePcxData(surf, buf, len, (i32)a3, (i32)a4);
+    i32 result = DecodePcxData(surf, buf, len, reinterpret_cast<i32>(a3), reinterpret_cast<i32>(a4));
     operator delete(buf);
     return result;
 }
@@ -1307,7 +1307,7 @@ void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
         operator delete(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette((u32)surf2);
+        FillPalette(reinterpret_cast<u32>(surf2));
     }
     return (void*)1;
 }

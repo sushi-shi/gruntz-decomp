@@ -234,7 +234,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
                 rec = (i32*)((char*)rec + 0x238);
             }
             if (avail) {
-                long idx = pSend(lb->m_hWnd, 0x180, 0, (long)"Color"); // LB_ADDSTRING
+                long idx = pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
                 pSend(lb->m_hWnd, 0x19a, idx, i);                      // LB_SETITEMDATA
             }
         }

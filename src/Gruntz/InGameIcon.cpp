@@ -120,7 +120,7 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
-        i32 sentinel = (i32)g_projActCache;
+        i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set((void*)v, sentinel, 0xc);
         r = v->m_spare;
@@ -146,7 +146,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     if (v->GrowTo(idx, 0)) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
-    i32 sentinel = (i32)g_projActCache;
+    i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set((void*)v, sentinel, 0xc);
     return v->m_spare;
@@ -1239,7 +1239,7 @@ void CInGameIcon::SetField54(i32 v) {
         found = 0;
         ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
     }
-    m_cmapId = (i32)found;
+    m_cmapId = reinterpret_cast<i32>(found);
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

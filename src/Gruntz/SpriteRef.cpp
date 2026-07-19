@@ -34,7 +34,7 @@
 RVA(0x000e2df0, 0x39f)
 i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
     m_cache = cache;
-    m_alphaKey = (i32)shade;
+    m_alphaKey = reinterpret_cast<i32>(shade);
     u8 r1, g1, b1; // color 1 (192/255 shade) -> m_teamColor1
     u8 r2, g2, b2; // color 2 (full intensity) -> m_teamColor2
     u8 r3, g3, b3; // color 3 (128/255 shade)  -> m_teamColor3
@@ -276,7 +276,7 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
         default:
             return 0;
         case 0x110: {
-            i32 v = (i32)g_gameReg->m_saveSink;
+            i32 v = reinterpret_cast<i32>(g_gameReg->m_saveSink);
             g_savedMenuCmd = -1;
             g_dlg64c86c = v;
             FillSaveDialog(hDlg, (CSaveGame*)v);

@@ -523,7 +523,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 9, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -538,7 +538,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 2, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -553,7 +553,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 8, 1);
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -566,7 +566,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 7, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -581,7 +581,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
-                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 3, 1);
+                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -1303,7 +1303,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         return 1;
     }
     {
-        i32 coord = (i32)m_14->m_1c;
+        i32 coord = reinterpret_cast<i32>(m_14->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
@@ -1324,7 +1324,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         return 1;
     }
     {
-        i32 coord = (i32)m_14->m_1c;
+        i32 coord = reinterpret_cast<i32>(m_14->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
@@ -1618,7 +1618,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(this->m_14->m_1c));
+    char** typeRec = (char**)((_zvec*)&g_typeColl)->IndexToPtr(reinterpret_cast<i32>((this->m_14->m_1c)));
     if (g_typeColl.m_grown != 0) {
         char* p = reinterpret_cast<char*>(g_typeColl.m_alloc);
         i32 n = g_typeColl.m_grown;
