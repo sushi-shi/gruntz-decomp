@@ -2383,7 +2383,7 @@ RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSbiRect* r = m_hitRects[idx];
     if (r != 0) {
-        *(i32*)((char*)r + 0x44) = 0;
+        r->m_toggleValue = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             ((CStatusBarMgr*)m_statObj[idx])->ResetGroupA();
@@ -2433,7 +2433,7 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (r->m_cmd != 0xce && r->m_cmd != 0xd0) {
         return 0;
     }
-    i32* rc = (i32*)((char*)r + 0x14); // &m_xLo
+    i32* rc = &r->m_xLo; // rect cursor {xLo,yLo,xHi,yHi}
     i32 cx = x;
     i32 lo = rc[0] + 0x1b;
     i32 xHi = rc[2];
