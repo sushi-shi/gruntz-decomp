@@ -46,9 +46,8 @@ SIZE_UNKNOWN(CAniRenderCtx);
 // the 7-way frame-step switch; +0x0c loop-mode word keys the 10-way next-descriptor
 // switch (range-checked against the 9 sentinel); +0x2c/+0x30 drive a random
 // per-frame trigger.
-class CAniDesc {
+class CAniDesc : public CObject { // the CObArray-stored frame record (vptr from CObject)
 public:
-    char m_pad00[0x04];
     unsigned char
         m_flags; // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
     char m_pad05[0x08 - 0x05]; // +0x05..0x07

@@ -27,16 +27,13 @@
 #include <Gruntz/AniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
 #include <rva.h>                  // OVERRIDE
 
-// The per-element frame-record array (engine CObArray @+0x08, vtbl 0x5ed494).
-// Derives CObArray purely to reach the protected m_pData / m_nSize that retail
-// accesses directly (SetAtGrow takes the current size as the append index; the
-// bounds-checked accessor reads both). Its member subobject teardown in
-// ~CAniElement is the shared MFC ~CObArray (0x1b561c) folded in with a /GX cleanup.
-class CAniRecordArray : public CObArray {
-public:
-    using CObArray::m_nSize;
-    using CObArray::m_pData;
-};
+// The per-element frame-record array IS the plain engine CObArray (@+0x08, vtbl
+// 0x5ed494). The old CAniRecordArray derived it purely to reach the protected
+// m_pData/m_nSize; the PUBLIC inline API (GetSize/GetAt) lowers to the identical
+// loads (the KeyedList lesson), so the derived shell - and the phantom
+// ??_7CAniRecordArray its ctor stamped, which needed a RELOC_VTBL alias - is
+// dissolved (2026-07-19).
+typedef CObArray CAniRecordArray;
 
 // arg2 of the builder: a parsed-source descriptor. m_flags @+0x08, m_count @+0x0c,
 // m_namelen @+0x10, then the name bytes + record stream start at +0x20.

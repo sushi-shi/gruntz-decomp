@@ -191,7 +191,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+        CAniRecordView* e = d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     // snap the bound object's screen position to tile center.
@@ -336,7 +336,7 @@ i32 CStaticHazard::LoadAttributes2() {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+        CAniRecordView* e = d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -374,7 +374,7 @@ i32 CStaticHazard::LoadAttributes() {
             {
                 CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
-                    d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+                    d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_latchedAnimId != 0) {
@@ -394,7 +394,7 @@ i32 CStaticHazard::LoadAttributes() {
         {
             CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
-                d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+                d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -417,7 +417,7 @@ i32 CStaticHazard::LoadAttributes() {
         {
             CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
-                d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+                d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -461,7 +461,7 @@ dispatch:
             {
                 CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
-                    d->m_records.m_nSize > 0 ? static_cast<CAniRecordView*>(*d->m_records.m_pData) : 0;
+                    d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;

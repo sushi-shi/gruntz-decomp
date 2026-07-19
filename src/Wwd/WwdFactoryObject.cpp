@@ -350,7 +350,7 @@ void CAniAdvanceCursor::Construct(void* srcv) {
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>(src->m_records.m_pData) + 0x34)) & 0x40;
+    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34)) & 0x40;
 }
 
 // CAniAdvanceCursor::Unload (0x15c2c0, vtable slot 7; the ex Reset_15c2c0):
@@ -373,7 +373,7 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
         return;
     }
     m_index = 0;
-    if (src->m_records.m_nSize > 0) {
+    if (src->m_records.GetSize() > 0) {
         e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
@@ -401,7 +401,7 @@ void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
     }
     m_index = 0;
     CAniDesc* e;
-    if (src->m_records.m_nSize > 0) {
+    if (src->m_records.GetSize() > 0) {
         e = reinterpret_cast<CAniDesc*>(src->m_records.GetAt(0));
     } else {
         e = 0;
@@ -732,7 +732,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     arr = m_14;
                     i = m_index + 1;
                     m_index = i;
-                    if (i >= 0 && i < arr->m_records.m_nSize) {
+                    if (i >= 0 && i < arr->m_records.GetSize()) {
                         nd = reinterpret_cast<CAniDesc*>(arr->m_records.GetAt(i));
                     } else {
                         nd = 0;
@@ -757,7 +757,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         i32 j = m_index + 1;
                         m_index = j;
                         CAniDesc* p;
-                        if (j >= 0 && j < a->m_records.m_nSize) {
+                        if (j >= 0 && j < a->m_records.GetSize()) {
                             p = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(j));
                         } else {
                             p = 0;
@@ -765,7 +765,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         m_element = p;
                         if (p == 0) {
                             m_index = 0;
-                            i32 cnt = a->m_records.m_nSize;
+                            i32 cnt = a->m_records.GetSize();
                             CAniDesc* first;
                             if (cnt > 0) {
                                 first = reinterpret_cast<CAniDesc*>(a->m_records.GetAt(0));
@@ -916,7 +916,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     CAniElement* w = m_14;
     if (w != 0) {
         CAniDesc* e;
-        if (m_index >= 0 && m_index < w->m_records.m_nSize) {
+        if (m_index >= 0 && m_index < w->m_records.GetSize()) {
             e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(m_index));
         } else {
             e = 0;
@@ -924,7 +924,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
         m_element = e;
         if (e == 0) {
             m_index = 0;
-            if (w->m_records.m_nSize > 0) {
+            if (w->m_records.GetSize() > 0) {
                 e = reinterpret_cast<CAniDesc*>(w->m_records.GetAt(0));
             } else {
                 e = 0;

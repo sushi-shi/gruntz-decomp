@@ -91,8 +91,8 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 // to carve (no separate CAniElement TU) - own-obj interleaver, kept + flagged.
 RVA(0x0006b270, 0x1b)
 ::CObject* CAniElement::AtChecked_06b270(i32 i) const {
-    if (i >= 0 && i < m_records.m_nSize) {
-        return m_records.m_pData[i];
+    if (i >= 0 && i < m_records.GetSize()) {
+        return m_records.GetAt(i);
     }
     return 0;
 }
@@ -958,7 +958,7 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
         if (rec->Parse(ctx, reinterpret_cast<const i16*>(cursor)) == 0) {
             goto fail;
         }
-        m_records.SetAtGrow(m_records.m_nSize, static_cast<::CObject*>(rec));
+        m_records.SetAtGrow(m_records.GetSize(), static_cast<::CObject*>(rec));
         cursor += g_aniParsedNameLen + 0x14;
         m_total += rec->GetSize();
     }
@@ -968,8 +968,8 @@ fail:
     if (rec != 0) {
         delete rec;
     }
-    for (i = 0; i < m_records.m_nSize; i++) {
-        ::CObject* p = m_records.m_pData[i];
+    for (i = 0; i < m_records.GetSize(); i++) {
+        ::CObject* p = m_records.GetAt(i);
         if (p != 0) {
             delete (static_cast<CAniRecordView*>(p));
         }
@@ -1070,8 +1070,8 @@ i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
 // ===========================================================================
 RVA(0x00165730, 0x4c)
 void CAniElement::DeleteAll() {
-    for (i32 i = 0; i < m_records.m_nSize; i++) {
-        CAniRecordView* el = static_cast<CAniRecordView*>(m_records.m_pData[i]);
+    for (i32 i = 0; i < m_records.GetSize(); i++) {
+        CAniRecordView* el = static_cast<CAniRecordView*>(m_records.GetAt(i));
         if (el != 0) {
             delete el;
         }

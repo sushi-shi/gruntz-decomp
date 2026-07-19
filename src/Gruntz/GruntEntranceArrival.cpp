@@ -348,7 +348,7 @@ i32 CGrunt::ResetGeometry() {
     m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+    i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem[0x14 / 4];
 
     i32 col = m_entranceCell.col;
@@ -502,7 +502,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     p->m_1a0.Setup_15c2d0((&m_poseAttack1)[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+    i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = m_entranceCell;
@@ -537,7 +537,7 @@ i32 CGrunt::RearmAttackAnim2() {
     p->m_1a0.Setup_15c2d0(m_poseAttack2);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+    i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = m_entranceCell;
@@ -854,7 +854,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_38->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+            i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
             i32 frame = el[0x14 / 4];
             char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, frame);
@@ -957,7 +957,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(want);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* el = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = el[0x14 / 4];
         char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
@@ -1047,7 +1047,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseToyBreak);
         CAniElement* desc = m_38->m_1a0.m_14;
-        CAniDesc* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<CAniDesc*>(*desc->m_records.m_pData) : 0;
+        CAniDesc* elem = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
         char* nm = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
         m_38->ApplyLookupSprite(nm, frame);
@@ -1285,7 +1285,7 @@ latch:
     CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].m_idle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+    i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
 
@@ -1672,7 +1672,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             m_38->ApplyGeometryDirect(m_poseToyBreak, 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+            i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
             char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, elem[0x14 / 4]);
 
@@ -2062,8 +2062,8 @@ tail:
     {
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem;
-        if (desc->m_records.m_nSize > 0) {
-            elem = reinterpret_cast<i32*>(desc->m_records.m_pData[0]);
+        if (desc->m_records.GetSize() > 0) {
+            elem = reinterpret_cast<i32*>(desc->m_records.GetAt(0));
         } else {
             elem = 0;
         }

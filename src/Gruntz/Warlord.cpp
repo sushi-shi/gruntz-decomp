@@ -818,7 +818,7 @@ i32 CGrunt::ResolveIdleAnimation() {
     m_animPlayer->m_1a0.Setup_15c2d0(m_idleGeoSrc[idx]);
 
     CAniElement* desc = m_animPlayer->m_1a0.m_14;
-    CAniDesc* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<CAniDesc*>(*desc->m_records.m_pData) : 0;
+    CAniDesc* elem = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
     m_animPlayer->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);

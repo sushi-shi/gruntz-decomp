@@ -424,7 +424,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(found));
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         EntranceApplyFrame(key, elem[0x14 / 4]);
     }
 }
@@ -576,7 +576,7 @@ void CGrunt::RearmEntranceDrop() {
         m_38->m_1a0.Setup_15c2d0(m_poseItem2);
 
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
 
         i32 col = m_entranceCell.col;
@@ -827,7 +827,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
@@ -841,7 +841,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
@@ -884,7 +884,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         m_38->m_1a0.Setup_15c2d0(m_poseToyBreak);
 
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
 
         char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
@@ -1159,7 +1159,7 @@ finalize:
     m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.m_nSize > 0 ? reinterpret_cast<i32*>(*desc->m_records.m_pData) : 0;
+        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         m_38->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
