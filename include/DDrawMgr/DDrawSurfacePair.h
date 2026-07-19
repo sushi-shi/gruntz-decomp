@@ -100,7 +100,7 @@ public:
 
     // --- own vtable slots 7..14 (declared-only where the body lives elsewhere) ---
     virtual void TeardownSurface();                        // slot 7  (@0x1c) 0x163e20
-    virtual void Slot08_1590c0();                          // slot 8  (@0x20) 0x1590c0
+    virtual void GetClassId();                          // slot 8  (@0x20) 0x1590c0
     virtual i32 SetGeometry_158fd0(i32 w, i32 h, i32 bpp); // slot 9 (@0x24) 0x158fd0
     virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp);     // slot 10 (@0x28) 0x164250
     virtual i32 InitFromSurface_163db0(CDDSurface* src);   // slot 11 (@0x2c) 0x163db0

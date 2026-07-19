@@ -59,10 +59,10 @@ struct AnimWorkerObj : public CObject {
     // slot 1 deleting dtor ??_G @0x151d80; body @0x151da0 (was ~CLogicRecord):
     // free the m_14 payload, `delete` the bound logic leaf, zero the live fields.
     virtual ~AnimWorkerObj() OVERRIDE; // 0x151da0 (/GX; slots 0/2/3/4 CObject)
-    virtual void Slot05_151d60();      // slot 5  0x151d60
+    virtual void IsLoaded();      // slot 5  0x151d60
     virtual void IsValidImage();       // slot 6  0x001c08
     virtual void Clear();              // slot 7  0x151e70 (reset/reuse hook)
-    virtual void Slot08_151d70();      // slot 8  0x151d70
+    virtual void GetClassId();      // slot 8  0x151d70
     // slot 9 - bind the fire callback + frame stamp, zero the working fields
     // (was BOTH "Vfunc24(i32,i32)" and "CLogicRecord::Init" - one body 0x151e20).
     virtual i32 Init(GameObjNotifyFn callback, i32 frame); // slot 9  0x151e20

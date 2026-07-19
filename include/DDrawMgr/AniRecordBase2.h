@@ -41,10 +41,10 @@ struct CAniRecordBase2 : public CObject {
     }
 
     virtual ~CAniRecordBase2() OVERRIDE; // [1] 0x165dd0 (AniRecord.cpp); ??_G 0x165db0
-    virtual void Slot05_165d90();        // [5] 0x165d90
+    virtual void IsLoaded();        // [5] 0x165d90
     virtual void IsValidImage();         // [6] 0x001c08 (CWapObj-family marker slot)
     virtual void FreeBuf();              // [7] 0x168fb0 (bound as CAniRecordView::FreeBuf)
-    virtual void Slot08_165da0();        // [8] 0x165da0
+    virtual void GetClassId();        // [8] 0x165da0
     virtual void AllocBufCreate();       // [9] 0x168f20 (bound as CAniRecordView::AllocBufCreate)
     // Slots 10/11/12: the buffer (de)allocation virtuals; bodies are the
     // CAniRecordView non-virtual leaves bound at these RVAs (declared-only here,
