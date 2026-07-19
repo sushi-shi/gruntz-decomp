@@ -49,34 +49,9 @@
 // view's ctor body, and the shapes were already identical (: CSBI_Image + m_34 + m_38,
 // size 0x3c). The view's sole unique knowledge - that inline ctor - has been migrated
 // onto the canonical, which was missing it.
+// (TabzPlayer is FOLDED: the +0x174-based per-player walk IS g_gameReg->m_options[]
+// (GruntzPlayer m_clearedRound/m_joined/m_doneFlag); SBI_TabzDialogEh reads it typed.)
 
-// The g_gameReg singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
-// this builder reads are modeled: the mission-complete selector (m_68->m_288), the
-// reason code (m_68->m_3ec), the test-mode gate (m_134) and the 4-player active
-// table at +0x174 (stride 0x238).
-//
-// SPLIT VERDICT (conflation check vs the g_gameReg->m_world resource manager, CDDrawSurfaceMgr):
-// TabzGmFactory is reached through TabzGameReg::m_68 (+0x68), NOT +0x30, and reads
-// FAR-out fields (+0x288 mission-complete selector, +0x3ec reason code) well beyond
-// CDDrawSurfaceMgr's ~0x30 span. It is the g_gameReg->m_68 ACTIVE-LEVEL / mission object (the
-// same +0x68 object SBI_RectOnly models as CSbiActiveObj, m_288 == its MISSIONSTATUS
-// selector), a genuinely DIFFERENT class from the m_30 resource manager. It is
-// therefore kept DISTINCT (NOT folded into CDDrawSurfaceMgr) - the name "TabzGmFactory" is a
-// placeholder for that +0x68 active-level object, not a resource/game-manager factory.
-struct TabzGmFactory {
-    char _00[0x288];
-    i32 m_288; // +0x288  mission-complete selector
-    char _28c[0x3ec - 0x28c];
-    i32 m_3ec; // +0x3ec  reason code
-};
-SIZE_UNKNOWN(TabzGmFactory);
-struct TabzPlayer {
-    i32 m_174; // rel +0x00 (abs +0x174)
-    i32 m_178; // rel +0x04
-    i32 m_17c; // rel +0x08
-    char _pad[0x238 - 0xc];
-};
-SIZE_UNKNOWN(TabzPlayer);
 
 // DISSOLVED (2026-07-17): the CTabzBuilder / TabzSub / TabzRectHolder views are gone -
 // all three were fake views of classes we already model, and the builder's own casts
