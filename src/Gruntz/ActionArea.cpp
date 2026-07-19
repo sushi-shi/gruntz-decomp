@@ -41,20 +41,9 @@
 DATA(0x00229388)
 extern CCoordColl g_projReg;
 
-// The R3 per-coordinate activation table's field globals (the registry object IS
-// the collection; the lo/hi/base/cur/stride/scratch fields are separate BSS
-// globals reached by direct ds: loads). Same archetype as the kitchen-slime /
-// projectile activation tables. Owned by (referenced only from) this TU, so the
-// real definitions live here (DATA-pinned); the single extern is in <Globals.h>.
-DATA(0x0022938c)
-CVariantSlot* g_projRegColl2;      // 0x62938c (Insert dispatcher)
-i32 g_projRegLo;                   // 0x629390
-i32 g_projRegHi;                   // 0x629394
-char* g_projRegBase;               // 0x629398
-CActionAreaActEntry* g_projRegCur; // 0x62939c
-i32 g_projRegStride;               // 0x6293a0
-i32 g_projRegScratch;              // 0x6293a8
-
+// (The R3 registry's lo/hi/base/cur/stride/scratch per-field scalars are
+// reunified into the g_projReg object above - the registry object IS the whole
+// 0x24-byte collection.)
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 
 // The dispatch object FireActivation runs on IS CActionArea (vtable_hierarchy:
@@ -65,17 +54,7 @@ i32 g_projRegScratch;              // 0x6293a8
 // The inlined coordinate->CActionAreaActEntry* lookup (fast-range / slow-Find /
 // rebuild), folded in twice by FireActivation and once by RegisterType.
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
-    g_projRegScratch = 0;
-    if (coord >= g_projRegLo && coord <= g_projRegHi) {
-        return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
-    }
-    if (g_projReg.GrowTo(coord, 0)) {
-        return reinterpret_cast<CActionAreaActEntry*>((g_projRegBase + (coord - g_projRegLo) * g_projRegStride));
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_projRegColl2->Set(&g_projReg, reinterpret_cast<i32>(item), 0xc);
-    return g_projRegCur;
+    return reinterpret_cast<CActionAreaActEntry*>(g_projReg.ResolveEntry(coord));
 }
 
 // The shared game-object type-name registry (R1, @0x6bf650) RegisterType funnels

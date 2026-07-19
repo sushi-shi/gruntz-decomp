@@ -122,13 +122,6 @@ extern "C" i16 g_charClass[];
 // address of this table's [0][0][1] cell, i.e. the tokType word, not a separate
 // object. PeekState2 now indexes the owning table directly.)
 extern "C" i16 g_transTable[97][49][3];
-extern struct CVariantSlot* g_projRegColl2;
-extern i32 g_projRegLo;
-extern i32 g_projRegHi;
-extern char* g_projRegBase;
-extern struct CActionAreaActEntry* g_projRegCur;
-extern i32 g_projRegStride;
-extern i32 g_projRegScratch;
 extern i32 g_posSoundReq;
 extern char g_cheatTable[];
 extern char g_secretMsgA[0x20];
@@ -180,13 +173,6 @@ extern i32 g_savedMultiWndProc;
 //  and private to it; 0x64bedc..0x64bef8 are its interior fields, not globals.)
 extern CDDrawWorkerHost* g_backView; // 0x64c27c the "BACK" scroll plane (CLevelPlane)
 extern "C" i32 g_soundChannelInUse[17];
-extern CVariantSlot* g_tbombColl2;
-extern i32 g_tbombLo;
-extern i32 g_tbombHi;
-extern char* g_tbombBase;
-extern CTBombEntry* g_tbombCur;
-extern i32 g_tbombStride;
-extern i32 g_tbombScratch;
 // (the auto-scroll state block moved to its owner header, <Gruntz/ScrollState.h>,
 //  included above - g_scrollLimit / g_scrollTimer / g_lastScrollX / g_lastScrollY
 //  live there next to g_scrollAccum / g_scrollClock, which already did.)
@@ -215,13 +201,6 @@ extern SFMANL101API* g_sfDevice;
 extern void* g_sfReady;
 extern u8 g_ratings_64e0c0[];
 extern i32 g_suppress_64e360;
-extern CVariantSlot* g_haznColl2;
-extern i32 g_haznLo;
-extern i32 g_haznHi;
-extern char* g_haznBase;
-extern CHaznEntry* g_haznCur;
-extern i32 g_haznStride;
-extern i32 g_haznScratch;
 // CActReg whose fields ARE those seven addresses; see src/Gruntz/ToobSpikez.cpp)
 extern i32 g_loadedFlag;
 extern CVariantSlot* g_vtrigColl2;

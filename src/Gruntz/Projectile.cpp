@@ -1012,20 +1012,6 @@ extern CCoordColl g_tbombColl;
 
 // The timebomb activation-registry field globals (referenced only from this TU):
 // real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
-DATA(0x0024c784)
-CVariantSlot* g_tbombColl2;
-DATA(0x0024c788)
-i32 g_tbombLo;
-DATA(0x0024c78c)
-i32 g_tbombHi;
-DATA(0x0024c790)
-char* g_tbombBase;
-DATA(0x0024c794)
-CTBombEntry* g_tbombCur;
-DATA(0x0024c798)
-i32 g_tbombStride;
-DATA(0x0024c7a0)
-i32 g_tbombScratch;
 
 // ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
@@ -1042,17 +1028,7 @@ void ConstructTBombRange() {
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
 static inline CTBombEntry* TBombLookup(i32 coord) {
-    g_tbombScratch = 0;
-    if (coord >= g_tbombLo && coord <= g_tbombHi) {
-        return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
-    }
-    if (g_tbombColl.GrowTo(coord, 0)) {
-        return reinterpret_cast<CTBombEntry*>((g_tbombBase + (coord - g_tbombLo) * g_tbombStride));
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_tbombColl2->Set(&g_tbombColl, reinterpret_cast<i32>(item), 0xc);
-    return g_tbombCur;
+    return reinterpret_cast<CTBombEntry*>(g_tbombColl.ResolveEntry(coord));
 }
 
 // ---------------------------------------------------------------------------

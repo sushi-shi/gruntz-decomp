@@ -125,36 +125,11 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
-// g_hazn* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x0024e3d4)
-CVariantSlot* g_haznColl2;
-DATA(0x0024e3d8)
-i32 g_haznLo;
-DATA(0x0024e3dc)
-i32 g_haznHi;
-DATA(0x0024e3e0)
-char* g_haznBase;
-DATA(0x0024e3e4)
-CHaznEntry* g_haznCur;
-DATA(0x0024e3e8)
-i32 g_haznStride;
-DATA(0x0024e3f0)
-i32 g_haznScratch;
-
+// The inlined coordinate->Entry* lookup FireActivation folds in twice: the
+// registry-archetype ResolveEntry over g_haznColl (per-field scalars reunified
+// into the one object @0x64e3d0).
 static inline CHaznEntry* HaznLookup(i32 coord) {
-    g_haznScratch = 0;
-    if (coord >= g_haznLo && coord <= g_haznHi) {
-        return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
-    }
-    if (g_haznColl.GrowTo(coord, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
-        return reinterpret_cast<CHaznEntry*>((g_haznBase + (coord - g_haznLo) * g_haznStride));
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_haznColl2->Set(&g_haznColl, reinterpret_cast<i32>(item), 0xc);
-    return g_haznCur;
+    return reinterpret_cast<CHaznEntry*>(g_haznColl.ResolveEntry(coord));
 }
 
 // CStaticHazard::GetTypeTag (0x00012ae0) is now an inline member in the class header.
