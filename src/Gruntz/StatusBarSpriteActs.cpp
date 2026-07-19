@@ -17,7 +17,6 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // CStatusBarSprite comes from <Gruntz/StatusBarSprite.h> (folded; ctor 0x10c230 below).
 #include <Gruntz/StatusBarSprite.h>
@@ -32,7 +31,7 @@
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
 DATA(0x0024e670)
-CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
+extern CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 
 // StatusBarSpriteStep @0x10c0f0 - the CStatusBarSprite worker-pump (free __cdecl,
 // /GX): the controller lives at obj->m_7c; dispatch on its state id, building the
@@ -102,7 +101,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0010c430, 0x15)
 void CStatusBarSprite::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_statusBarSpriteActReg))->Construct(2000, 2010);
+    g_statusBarSpriteActReg.Construct(2000, 2010);
 }
 
 // CStatusBarSprite::FireActivation @0x10c4b0 - look the activation coordinate up in

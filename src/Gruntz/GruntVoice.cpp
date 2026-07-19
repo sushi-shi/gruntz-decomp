@@ -27,7 +27,6 @@
 #include <Bute/ButeTree.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Globals.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
@@ -79,7 +78,7 @@ extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 // One object, one definition. The registry the voice trigger registers into is the CActReg
 // at 0x651500; nothing else was ever there.
 DATA(0x00251500)
-CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
+extern CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 
 // The shared activation-NAME registry (the first block interns "A"). g_buteTree
 // (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
@@ -360,7 +359,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
 RVA(0x00119dc0, 0x15)
 void CGruntVoice::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actReg_6514d8))->Construct(2000, 2010);
+    g_actReg_6514d8.Construct(2000, 2010);
 }
 
 // ===========================================================================
@@ -385,7 +384,7 @@ void CGruntVoice::FireActivation(i32 coord) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_vtrigActReg))->Construct(2000, 2010);
+    g_vtrigActReg.Construct(2000, 2010);
 }
 
 // CVoiceTrigger::FireActivation @0x11a3a0 - vtable slot 4. Look the activation

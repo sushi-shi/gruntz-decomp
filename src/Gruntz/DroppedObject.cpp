@@ -33,7 +33,6 @@
 #include <Gruntz/DroppedObject.h> // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CLevelPlane (its m_mainPlane wrap extent)
 #include <Gruntz/TypeKeyColl.h>
@@ -90,10 +89,10 @@ double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
 //   g_shadowActReg  @0x64bf00 (ex "g_64bf00")
 // ---------------------------------------------------------------------------
 DATA(0x0024be90)
-CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
+extern CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
                                 // fields 0x24be94..0x24beb0 are this object's members)
 DATA(0x0024bed8)
-CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fields
+extern CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fields
                            // 0x24bedc..0x24bef8 are this object's members - it used to
                            // be shredded into seven separate scalar globals, unlike its
                            // two siblings above/below. Zero-init .bss, no ctor: the CRT
@@ -101,7 +100,7 @@ CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fiel
                            // for it and the address is past .data's raw extent; Construct
                            // (0x408710) ctors it in place at runtime.)
 DATA(0x0024bf00)
-CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
+extern CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
                                // fields 0x24bf04..0x24bf20 are this object's members)
 
 // The registered-handler entries (first dword = the handler PMF, single inheritance
@@ -454,7 +453,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // thunk; reloc-masked.
 RVA(0x000c5f00, 0x15)
 void CObjectDropper::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_dropperActReg))->Construct(0x7d0, 0x7da);
+    g_dropperActReg.Construct(0x7d0, 0x7da);
 }
 
 // CObjectDropper::FireAct (0xc5f80): the runtime side of the registry - resolve the
@@ -710,7 +709,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // atexit thunk 0xc6b80); same archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000c6b50, 0x15)
 void CDroppedObject::RegisterRange() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_dropColl))->Construct(0x7d0, 0x7da);
+    g_dropColl.Construct(0x7d0, 0x7da);
 }
 
 // CDroppedObject::FireActivation @0x0c6bd0 - look the activation coordinate up
@@ -950,7 +949,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
 // @0xc76b0, atexit thunk 0xc7700). Free init thunk; reloc-masked.
 RVA(0x000c76d0, 0x15)
 void CDroppedObjectShadow::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_shadowActReg))->Construct(0x7d0, 0x7da);
+    g_shadowActReg.Construct(0x7d0, 0x7da);
 }
 
 // CDroppedObjectShadow::FireActivation (0xc7750): runtime dispatch for the

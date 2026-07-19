@@ -16,7 +16,6 @@
 #include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
@@ -83,14 +82,14 @@ extern "C" u32 g_engineFrameDelta;
 struct CHaznEntry; // an entry: first dword is the registered handler
 
 DATA(0x0024e3d0)
-CCoordColl g_haznColl;
+extern CCoordColl g_haznColl;
 
 // ConstructHaznRange @0x0fbb70 - the static initializer that builds g_haznColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
 // src/Stub/BoundaryLowerThunks.cpp (was RegRangefbb70).
 RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_haznColl))->Construct(0x7d0, 0x7da);
+    g_haznColl.Construct(0x7d0, 0x7da);
 }
 
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
@@ -477,7 +476,6 @@ dispatch:
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CHaznEntry);
 SIZE_UNKNOWN(CHaznEntry2);
 SIZE_UNKNOWN(CStaticHazard);

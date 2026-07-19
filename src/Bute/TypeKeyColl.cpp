@@ -50,7 +50,6 @@
 #include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Globals.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).

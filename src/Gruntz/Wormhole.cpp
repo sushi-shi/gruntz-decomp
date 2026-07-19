@@ -38,7 +38,6 @@
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h>  // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
@@ -135,14 +134,14 @@ extern LogicFnTable g_wormholeDispatch;
 // InitLogicDispatch_6445e8 below. Modeled through the CActReg lookup path
 // (ResolveEntry).
 DATA(0x002445e8)
-CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
+extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
                                        // extent covers the interior fields
                                        // 0x2445ec..0x244608 (bind as g_obj+offset)
 
 // CTeleporter's activation-coordinate registry singleton (@0x6446b0), built over
 // the fixed [2000, 2010] range by the shared registry ctor (0x408710).
 DATA(0x002446b0)
-CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte
+extern CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte
                                       // CActReg extent covers interior fields
                                       // 0x2446b4..0x2446d0, bind as g_obj+offset)
 
@@ -339,7 +338,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ===========================================================================
 RVA(0x0003ffd0, 0x15)
 void InitWormholeDispatch() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_wormholeDispatch))->Construct(0x7d0, 0x7da);
+    g_wormholeDispatch.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -478,7 +477,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // ===========================================================================
 RVA(0x000406d0, 0x15)
 void InitLogicDispatch_6445e8() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_logicDispatch_6445e8))->Construct(0x7d0, 0x7da);
+    g_logicDispatch_6445e8.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -819,7 +818,7 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000414a0, 0x15)
 void CTeleporter::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_teleporterActReg))->Construct(2000, 2010);
+    g_teleporterActReg.Construct(2000, 2010);
 }
 
 // CTeleporter::FireActivation @0x041520 - look the activation coordinate up in

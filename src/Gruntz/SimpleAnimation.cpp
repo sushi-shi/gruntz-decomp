@@ -12,7 +12,6 @@
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 
 #include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
@@ -159,7 +158,7 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 // ===========================================================================
 RVA(0x000abb90, 0x15)
 void InitSimpleAnimDispatch() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_simpleAnimDispatch))->Construct(0x7d0, 0x7da);
+    g_simpleAnimDispatch.Construct(0x7d0, 0x7da);
 }
 
 // The stored handler is a CUserLogic member-fn-ptr (the same shape the whole
@@ -222,5 +221,4 @@ i32 CSimpleAnimation::AdvanceAnim() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

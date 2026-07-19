@@ -140,13 +140,6 @@ extern i32 g_stepCol;
 extern i32 g_stepRow;
 extern i32 g_diffTier;
 extern i32 g_dat62c268;
-extern CVariantSlot* g_actColl2;
-extern i32 g_actLo;
-extern i32 g_actHi;
-extern char* g_actBase;
-extern CActEntry* g_actCur;
-extern i32 g_actStride;
-extern i32 g_actScratch;
 class CVariantSlot; // Bute/ButeTree.h (Set @0x16d850)
 // (g_actReg4 @0x6446d8 is ONE 0x24 CActReg object, DEFINED in
 //  src/Gruntz/GruntStartingPoint.cpp and private to it; 0x6446dc..0x6446f8 are its
@@ -187,13 +180,6 @@ extern i32 g_savedMultiWndProc;
 //  and private to it; 0x64bedc..0x64bef8 are its interior fields, not globals.)
 extern CDDrawWorkerHost* g_backView; // 0x64c27c the "BACK" scroll plane (CLevelPlane)
 extern "C" i32 g_soundChannelInUse[17];
-extern CVariantSlot* g_projActColl2;
-extern i32 g_projActLo;
-extern i32 g_projActHi;
-extern char* g_projActBase;
-extern CProjActEntry* g_projActCur;
-extern i32 g_projActStride;
-extern i32 g_projActScratch;
 extern CVariantSlot* g_tbombColl2;
 extern i32 g_tbombLo;
 extern i32 g_tbombHi;

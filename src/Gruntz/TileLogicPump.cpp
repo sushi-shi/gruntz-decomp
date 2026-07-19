@@ -30,7 +30,6 @@
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h>                // CActReg archetype
 #include <Gruntz/TileTrigger.h>           // CTileTrigger + the 3 leaves (new-sites)
 #include <Gruntz/TileTriggerSwitch.h>     // CTileTriggerSwitch (new-site)
@@ -65,22 +64,22 @@
 // to give this global a distinct type name. The variable name already makes the mangled
 // symbol unique, and DATA() rebinds it - so the archetype IS the type.)
 DATA(0x0024e6a0)
-CActReg g_warpStonePadActReg; // 0x64e6a0
+extern CActReg g_warpStonePadActReg; // 0x64e6a0
 
 // CTileTriggerSwitch's registry (@0x64e798); ActEntry in <Gruntz/TileTriggerSwitch.h>.
 DATA(0x0024e798)
-CActReg g_tileTriggerSwitchActReg; // 0x64e798
+extern CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
 // CCheckpointTrigger's registry (@0x64e7c0; entry record in <Gruntz/CheckpointTrigger.h>).
 DATA(0x0024e7c0)
-CActReg g_brickzActReg; // 0x64e7c0 (ex "g_checkpointActReg" - the act clusters here
+extern CActReg g_brickzActReg; // 0x64e7c0 (ex "g_checkpointActReg" - the act clusters here
                         // were shifted one class down; see the note at 0x10ea00)
 
 // CTileTrigger / CTileSecretTrigger's registries (@0x64e810 / @0x64e7e8).
 DATA(0x0024e810)
-CActReg g_tileTriggerActReg; // 0x64e810
+extern CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
-CActReg g_checkpointActReg; // 0x64e7e8 (ex "g_tileSecretTriggerActReg" - the shift)
+extern CActReg g_checkpointActReg; // 0x64e7e8 (ex "g_tileSecretTriggerActReg" - the shift)
 // (TileTrigger/TileSecretTrigger ActEntry records live in <Gruntz/TileTrigger.h>.)
 
 // --- CTileTriggerTransition (the tiletriggertransition stray, folded waveM-strays) -----------
@@ -93,7 +92,7 @@ extern "C" u32 g_engineFrameDelta;
 // TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype; it keeps its own placeholder
 // name so the DATA-pinned global symbol is unchanged.
 DATA(0x0024e720)
-CActReg g_tileActReg;
+extern CActReg g_tileActReg;
 
 // CTileTriggerTransition (the CUserLogic leaf the state machine builds), its
 // vtable slot map, and its TileActEntry PMF holder now live in the shared header
@@ -381,7 +380,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CWarpStonePad::InitActReg @0x10d840 - construct g_warpStonePadActReg over [2000,2010].
 RVA(0x0010d840, 0x15)
 void CWarpStonePad::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_warpStonePadActReg))->Construct(2000, 2010);
+    g_warpStonePadActReg.Construct(2000, 2010);
 }
 
 // CWarpStonePad::FireWarp @0x10d8c0, vtable slot 4 - resolve the coordinate; if the
@@ -437,7 +436,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
 // CTileTriggerSwitch::InitActReg @0x10de20 - construct g_tileTriggerSwitchActReg.
 RVA(0x0010de20, 0x15)
 void CTileTriggerSwitch::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_tileTriggerSwitchActReg))->Construct(2000, 2010);
+    g_tileTriggerSwitchActReg.Construct(2000, 2010);
 }
 
 // CTileTriggerSwitch::FireActivation @0x10dea0, vtable slot 4.
@@ -495,7 +494,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CTileTrigger::InitActReg (0x10e420) - construct g_tileTriggerActReg over [2000,2010].
 RVA(0x0010e420, 0x15)
 void CTileTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_tileTriggerActReg))->Construct(2000, 2010);
+    g_tileTriggerActReg.Construct(2000, 2010);
 }
 
 // CTileTrigger::FireActivation (0x10e4a0), vtable slot 4.
@@ -571,7 +570,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CBrickz::InitActReg @0x10ea00 - construct g_brickzActReg over [2000,2010].
 RVA(0x0010ea00, 0x15)
 void CBrickz::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_brickzActReg))->Construct(2000, 2010);
+    g_brickzActReg.Construct(2000, 2010);
 }
 
 // CBrickz::FireActivation (0x10ea80), vtable slot 4 - the double-ResolveEntry
@@ -670,7 +669,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
 // CCheckpointTrigger::InitActReg (0x10f160) - construct g_checkpointActReg.
 RVA(0x0010f160, 0x15)
 void CCheckpointTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_checkpointActReg))->Construct(2000, 2010);
+    g_checkpointActReg.Construct(2000, 2010);
 }
 
 // CCheckpointTrigger::FireActivation (0x10f1e0), vtable slot 4 (RTTI: its slot 4 is
@@ -801,7 +800,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 // in the global tile-trigger activation registry (ecx/this unused).
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_tileActReg))->Construct(0x7d0, 0x7da);
+    g_tileActReg.Construct(0x7d0, 0x7da);
 }
 
 // FireActivation (0x10fd10), vtable slot 4 - look the activation coordinate up in the class

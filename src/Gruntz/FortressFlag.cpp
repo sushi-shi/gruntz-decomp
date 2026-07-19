@@ -35,7 +35,6 @@
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FortressFlag.h>
@@ -63,7 +62,7 @@
 // fixed [2000,2010] range by the shared registry ctor (0x408710). It is the shared
 // <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
 DATA(0x00244638)
-CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
+extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
                               // interior fields 0x24463c..0x244658 are members)
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
@@ -110,7 +109,7 @@ extern "C" u32 g_engineFrameDelta;
 // in retail itself. Declaring it `CTypeKeyColl` instead would be unbuildable (no default
 // ctor) and would fabricate a 31st CRT initializer the binary does not have.
 DATA(0x00244870)
-CActReg g_partColl;
+extern CActReg g_partColl;
 
 // The CParticlez entry records (PartHandler/CPartEntry, PartHandlerI32/CPartEntryI32,
 // the PMF slot) are defined in <Gruntz/Particlez.h> after the complete class.
@@ -124,7 +123,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
 // The CExplosion class dispatch table (@0x6447f8), constructed by
 // InitLogicDispatch_6447f8 below and bound by RegisterXLogic_6447f8.
 DATA(0x002447f8)
-CLogicActTable g_logicActReg_6447f8; // 0x6447f8 (owner TU: the merged CExplosion
+extern CLogicActTable g_logicActReg_6447f8; // 0x6447f8 (owner TU: the merged CExplosion
                                      // dispatch table; interior 0x2447fc..0x244818 are members)
 
 // The explosion activation handler (ILT thunk; referenced by address so the
@@ -273,7 +272,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x00046000, 0x15)
 void CFortressFlag::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_fortressFlagActReg))->Construct(2000, 2010);
+    g_fortressFlagActReg.Construct(2000, 2010);
 }
 
 // CFortressFlag::FireActivation @0x046080 - look the activation coordinate up in the
@@ -373,7 +372,7 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // not steerable.
 RVA(0x000464e0, 0x74)
 char* CActReg::Resolve(i32 id) {
-    m_scratch = 0;
+    m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
         return m_base + (id - m_lo) * m_stride;
     }
@@ -382,8 +381,8 @@ char* CActReg::Resolve(i32 id) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_coll2->Set(this, reinterpret_cast<i32>(item), 0xc);
-    return m_cur;
+    m_errSink->Set(this, reinterpret_cast<i32>(item), 0xc);
+    return m_spare;
 }
 
 // ---------------------------------------------------------------------------
@@ -489,7 +488,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // thunk (no `this`); reloc-masked.
 RVA(0x00046cb0, 0x15)
 void CParticlez::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_partColl))->Construct(2000, 2010);
+    g_partColl.Construct(2000, 2010);
 }
 
 // CParticlez::FireActivation @0x046d30 - look the activation coordinate up in
@@ -580,7 +579,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // FireActivation.)
 RVA(0x000472d0, 0x15)
 void InitLogicDispatch_6447f8() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_6447f8))->Construct(0x7d0, 0x7da);
+    g_logicActReg_6447f8.Construct(0x7d0, 0x7da);
 }
 
 // CExplosion::FireActivation @0x047350 - slot-4 (UserLogicVfunc2) override: resolve

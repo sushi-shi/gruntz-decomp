@@ -19,7 +19,6 @@
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
@@ -200,7 +199,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // global registry.
 RVA(0x00008060, 0x15)
 void ProjActRegisterDefaults() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_projReg))->Construct(0x7d0, 0x7da);
+    g_projReg.Construct(0x7d0, 0x7da);
 }
 
 // 0x80e0: CActionArea::FireActivation - look the activation coordinate up in the

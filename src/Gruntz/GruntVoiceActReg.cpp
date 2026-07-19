@@ -15,7 +15,6 @@
 // callee external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
-#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
@@ -25,7 +24,7 @@
 
 // CGruntVoice's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x002514d8)
-CActReg g_actReg_6514d8; // 0x6514d8
+extern CActReg g_actReg_6514d8; // 0x6514d8
 
 // The per-frame handler entries (ILT thunks) this registrar binds.
 extern "C" void Handler_4037bf(); // 0x4037bf

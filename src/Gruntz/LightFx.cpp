@@ -17,7 +17,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // The per-frame draw-delta mirror (_g_6bf3bc @0x6bf3bc) AdvanceAnim hands the anim sink.
 extern "C" u32 g_engineFrameDelta;
@@ -68,14 +67,14 @@ extern "C" u32 g_engineFrameDelta;
 // the mangled symbol unique and DATA() rebinds it, so the archetype IS the type
 // (same fold TileLogicPump's ActReg globals use).
 DATA(0x00245ad0)
-CActReg g_lightFxActReg; // 0x645ad0
+extern CActReg g_lightFxActReg; // 0x645ad0
 
 // CLightFx::InitActReg @0x9d140 - construct the class's activation-coordinate
 // registry singleton (g_lightFxActReg @0x645ad0) over the fixed range
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0009d140, 0x15)
 void CLightFx::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_lightFxActReg))->Construct(2000, 2010);
+    g_lightFxActReg.Construct(2000, 2010);
 }
 
 // CLightFx::RunAct @0x9d1c0 - the slot-4 (UserLogicVfunc2) impl: resolve the class

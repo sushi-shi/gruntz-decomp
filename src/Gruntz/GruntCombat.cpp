@@ -930,7 +930,7 @@ void CGrunt::DestroyAnims() {
 // CString/bute decls). All reloc-masked.
 // (g_typeColl.m_grown @0x6bf670 / g_typeColl.m_alloc @0x6bf66c declared canonically above)
 DATA(0x00244af0)
-CLookupColl g_reg_644af0;
+extern CLookupColl g_reg_644af0;
 
 // The 19 action-key strings (s_codeA/B above; the rest are .rdata string
 // constants named by address, declared in <Globals.h> or here).
@@ -2115,7 +2115,7 @@ extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation reg
 // The static initializer that builds registry 0x644af0's fast [0x7d0, 0x7da] id range.
 RVA(0x0005bc50, 0x15)
 void ConstructActRange_644af0() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_reg_644af0))->Construct(0x7d0, 0x7da);
+    g_reg_644af0.Construct(0x7d0, 0x7da);
 }
 
 RVA(0x0005bcd0, 0x102)

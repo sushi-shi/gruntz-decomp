@@ -14,14 +14,13 @@
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
 // DATA() only in TU source, not headers).
 DATA(0x00244d58)
-CIndicatorActReg g_toyActReg; // 0x644d58
+extern CIndicatorActReg g_toyActReg; // 0x644d58
 
 // ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
@@ -50,7 +49,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 // the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007f540, 0x15)
 void CGruntToySprite::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_toyActReg))->Construct(2000, 2010);
+    g_toyActReg.Construct(2000, 2010);
 }
 
 // CGruntToySprite::RunAct @0x07f5c0 - resolve the coordinate-registry entry for `id`

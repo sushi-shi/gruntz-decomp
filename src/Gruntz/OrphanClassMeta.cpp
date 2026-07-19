@@ -13,7 +13,6 @@
 #include <Gruntz/LogicTypeTableInline.h>
 
 // ActNameRegistry.h
-SIZE_UNKNOWN(CActColl);
 SIZE_UNKNOWN(CActName);
 // CGameRegistry.h
 SIZE_UNKNOWN(CGameRegistry);

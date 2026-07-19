@@ -9,7 +9,6 @@
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleAnimation.h>
@@ -21,7 +20,7 @@
 // concrete per-registry instances); keeps its placeholder name so the DATA-pinned
 // global symbol is unchanged.
 DATA(0x00245f70)
-CSingleAnimActReg g_singleAnimActReg; // 0x645f70
+extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
 // The per-frame draw-delta mirror (_g_6bf3bc) the advance hands the sink; declared
 // extern "C" so the value-load reloc-masks against the already-matched symbol.
@@ -64,7 +63,7 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ae9a0, 0x15)
 void CSingleAnimation::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_singleAnimActReg))->Construct(2000, 2010);
+    g_singleAnimActReg.Construct(2000, 2010);
 }
 
 // CSingleAnimation::RunAct @0x0aea20 - resolve the registry entry for id; if a
@@ -128,7 +127,6 @@ i32 CSingleAnimation::AdvanceAnim() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CSingleAnimActEntry);
 SIZE_UNKNOWN(CSingleAnimActReg);

@@ -92,7 +92,6 @@ static const char s_keyF[] = "F";
 #include <new>      // placement new (the inlined ConstructElements grow loop)
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
@@ -421,7 +420,7 @@ i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // fixed [2000, 2010] range via Construct (0x408710); CActReg::Resolve (0x464e0,
 // the standalone ResolveEntry copy) resolves a per-type slot (RegisterWarlordActions).
 DATA(0x00244610)
-CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
+extern CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
                        // covers interior fields 0x244614..0x244630, bind as g_obj+offset)
 
 // ===========================================================================
@@ -432,7 +431,7 @@ CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg e
 // Free init thunk; the SAME archetype as the eyecandy classes' InitActReg.
 RVA(0x000445c0, 0x15)
 void CWarlord::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actionTable))->Construct(2000, 2010);
+    g_actionTable.Construct(2000, 2010);
 }
 
 // ===========================================================================

@@ -5,7 +5,6 @@
 // CAniCycle : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
@@ -18,7 +17,7 @@
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
 DATA(0x00246088)
-CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
+extern CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
 
 // CAniCycle::GetTypeTag (0x0000f450) is now an inline member in the class header.
 
@@ -61,7 +60,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000aaf00, 0x15)
 void CAniCycle::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_aniCycleActReg))->Construct(2000, 2010);
+    g_aniCycleActReg.Construct(2000, 2010);
 }
 
 // CAniCycle::RunAct @0x0aaf80 - resolve the registry entry for id; if a handler is
@@ -108,7 +107,6 @@ void CAniCycle::RegisterActs() {
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CAniCycleActEntry);
 SIZE_UNKNOWN(CAniCycleActReg);

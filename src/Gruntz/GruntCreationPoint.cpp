@@ -16,7 +16,6 @@
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/AnimSink.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // The per-class registry slot holds the per-frame handler PMF (AdvanceAnim, a 4-byte
 // code ptr on this single-inheritance class); read straight off the ResolveEntry slot
@@ -28,7 +27,7 @@ typedef i32 (CUserLogic::*CreationPointHandler)();
 // <Gruntz/ActReg.h> CActReg archetype directly (single-TU global; the empty placeholder
 // subclass added nothing) - same pattern as g_lightFxActReg / g_kslimeColl.
 DATA(0x00244700)
-CActReg g_creationPointActReg; // 0x644700
+extern CActReg g_creationPointActReg; // 0x644700
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
@@ -160,7 +159,7 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // import thunk). Free init thunk.
 RVA(0x0003e8e0, 0x15)
 void CGruntCreationPoint::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_creationPointActReg))->Construct(2000, 2010);
+    g_creationPointActReg.Construct(2000, 2010);
 }
 
 // CGruntCreationPoint::FireActivation @0x03e960 - look the activation coordinate

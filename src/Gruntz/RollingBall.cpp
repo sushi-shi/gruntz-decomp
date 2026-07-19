@@ -48,7 +48,6 @@
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Globals.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // The handler entry record (RollingBallHandler/CRollingBallActEntry, the PMF slot)
 // is defined in <Gruntz/RollingBall.h> after the complete class.
@@ -57,7 +56,7 @@
 // [2000,2010] range built by the shared registry ctor (0x408710). It is the shared
 // <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
 DATA(0x002461b0)
-CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
+extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
                              // CActReg extent covers the interior fields
                              // 0x2461b4..0x2461d0, bound as g_obj+offset)
 
@@ -232,7 +231,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000afd60, 0x15)
 void CRollingBall::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_rollingBallActReg))->Construct(2000, 2010);
+    g_rollingBallActReg.Construct(2000, 2010);
 }
 
 // CRollingBall::RunAct @0x0afde0 - resolve the registry entry for id; if a handler

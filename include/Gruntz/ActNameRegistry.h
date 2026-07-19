@@ -34,7 +34,7 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
-#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
+#include <Gruntz/ActReg.h>
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. g_buteTree is declared

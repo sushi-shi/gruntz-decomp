@@ -15,14 +15,13 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
 // DATA() only in TU source, not headers).
 DATA(0x00244da8)
-CIndicatorActReg g_selectedActReg; // 0x644da8
+extern CIndicatorActReg g_selectedActReg; // 0x644da8
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -56,7 +55,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007e5e0, 0x15)
 void CGruntSelectedSprite::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_selectedActReg))->Construct(2000, 2010);
+    g_selectedActReg.Construct(2000, 2010);
 }
 
 // CGruntSelectedSprite::RunAct @0x07e660 - resolve the coordinate-registry entry for

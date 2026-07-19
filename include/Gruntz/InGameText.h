@@ -67,6 +67,7 @@ VTBL(CInGameText, 0x1e7cac);
 // member function on `this`. The accessor inlines the bounds-check + grow.
 // ---------------------------------------------------------------------------
 // The DATA binding lives in InGameIcon.cpp (a header DATA() is not scanned).
-extern zDArray g_textDispatch; // 0x245950
+struct CActReg;
+extern CActReg g_textDispatch; // 0x245950 (registry archetype; zDArray<T> instantiation)
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

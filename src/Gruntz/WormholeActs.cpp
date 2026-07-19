@@ -27,7 +27,6 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // CWormholeActEntry (the handler entry the per-class registry yields; its first dword
 // receives the per-frame handler PMF) is the shared <Gruntz/Wormhole.h> shape.
@@ -38,14 +37,14 @@
 // g_actReg_646188) - the old CWormholeActReg empty subclass was a view; the global's
 // name is our choice (DATA-reloc-masked), so CActReg is used directly.
 DATA(0x002445c0)
-CActReg g_exitTriggerActReg; // 0x6445c0 (ex "g_wormholeActReg" - an RVA-proximity guess)
+extern CActReg g_exitTriggerActReg; // 0x6445c0 (ex "g_wormholeActReg" - an RVA-proximity guess)
 
 // CWormhole::InitActReg @0x03f210 - construct the class's activation-coordinate
 // registry singleton (g_exitTriggerActReg @0x6445c0) over the fixed range
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0003f210, 0x15)
 void CExitTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_exitTriggerActReg))->Construct(2000, 2010);
+    g_exitTriggerActReg.Construct(2000, 2010);
 }
 
 // CWormhole::FireAct @0x03f290 [@identity-TODO: retail says this is CExitTrigger's

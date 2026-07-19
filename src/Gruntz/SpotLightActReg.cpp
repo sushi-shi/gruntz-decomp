@@ -14,7 +14,6 @@
 // callee external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
-#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
@@ -24,7 +23,7 @@
 
 // CSpotLight's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x00246188)
-CActReg g_actReg_646188; // 0x646188
+extern CActReg g_actReg_646188; // 0x646188
 
 // The per-frame handler entries (ILT thunks) this registrar binds.
 extern "C" void Handler_4025db(); // 0x4025db
@@ -45,7 +44,7 @@ static inline void FreeNameSlotNodes() {
 // The static initializer that builds registry 646188's fast [0x7d0, 0x7da] id range.
 RVA(0x000b15b0, 0x15)
 void ConstructActRange_646188() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actReg_646188))->Construct(0x7d0, 0x7da);
+    g_actReg_646188.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================

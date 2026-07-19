@@ -16,14 +16,13 @@
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
 // DATA() only in TU source, not headers).
 DATA(0x00244d30)
-CIndicatorActReg g_powerupActReg; // 0x644d30
+extern CIndicatorActReg g_powerupActReg; // 0x644d30
 
 // The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
 // @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
@@ -58,7 +57,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007ffa0, 0x15)
 void CGruntPowerupSprite::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_powerupActReg))->Construct(2000, 2010);
+    g_powerupActReg.Construct(2000, 2010);
 }
 
 // CGruntPowerupSprite::RunAct @0x080020 - resolve the coordinate-registry entry for `id`

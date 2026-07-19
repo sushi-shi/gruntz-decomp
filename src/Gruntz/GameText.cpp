@@ -5,7 +5,6 @@
 // .rdata consts (reloc-masked); only the per-fn code bytes are load-bearing.
 #include <Gruntz/GameText.h>
 #include <rva.h>
-#include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
 #include <Globals.h>          // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
 #include <Bute/ButeMgr.h> // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
 #include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
@@ -47,10 +46,10 @@ static CString g_worldName[8] = {
 // g_worldName initializer @0x82990. (Ex the empty `CMgr6451a8` placeholder shell.)
 #include <Gruntz/ActReg.h> // CActReg - the shared registry-cell archetype
 DATA(0x002451a8)
-CActReg g_actRegCaption;
+extern CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actRegCaption))->Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);
+    g_actRegCaption.Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);
 }
 
 // ---------------------------------------------------------------------------

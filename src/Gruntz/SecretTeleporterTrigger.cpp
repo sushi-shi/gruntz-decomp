@@ -13,7 +13,6 @@
 #include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
 #include <Gruntz/GameRegPtr.h>
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
-#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
@@ -22,7 +21,7 @@
                                       // m_cueSink/m_scoreHud typed; CDDrawSurfaceMgr)
 #include <Gruntz/BattlezData.h>       // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/ActColl.h>           // CActColl/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
+#include <Gruntz/ActReg.h>
 #include <Gruntz/ActNameRegistry.h>   // the SHARED activation-name registry (g_buteTree/
                                       // g_typeCounter/s_codeA/g_typeColl*/ActNameLookup)
 #include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
@@ -53,41 +52,16 @@
 // is a PMF of the trigger class; a nonzero entry's handler is called __thiscall
 // on `this`. g_actColl (0x644688) is the teleporter's own collection singleton.
 DATA(0x00244688)
-CActColl g_actColl;
+extern CActReg g_actColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 
 // The entry record (ActHandler/CActEntry, the PMF slot) is defined in
 // <Gruntz/SecretTeleporterTrigger.h> after the complete class.
 
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
-// g_act* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x0024468c)
-CVariantSlot* g_actColl2;
-DATA(0x00244690)
-i32 g_actLo;
-DATA(0x00244694)
-i32 g_actHi;
-DATA(0x00244698)
-char* g_actBase;
-DATA(0x0024469c)
-CActEntry* g_actCur;
-DATA(0x002446a0)
-i32 g_actStride;
-DATA(0x002446a8)
-i32 g_actScratch;
-
+// The inlined coordinate->Entry* lookup FireActivation folds in twice (the
+// registry-archetype ResolveEntry over g_actColl; per-field scalars reunified
+// into the one CActReg object @0x644688).
 static inline CActEntry* ActLookup(i32 coord) {
-    g_actScratch = 0;
-    if (coord >= g_actLo && coord <= g_actHi) {
-        return reinterpret_cast<CActEntry*>((g_actBase + (coord - g_actLo) * g_actStride));
-    }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_actColl))->GrowTo(coord, 0))) {
-        return reinterpret_cast<CActEntry*>((g_actBase + (coord - g_actLo) * g_actStride));
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_actColl2->Set(&g_actColl, reinterpret_cast<i32>(item), 0xc);
-    return g_actCur;
+    return reinterpret_cast<CActEntry*>(g_actColl.ResolveEntry(coord));
 }
 
 // The SpawnTeleporter entry (SpawnHandler/CTelActEntry) is defined in
@@ -99,7 +73,7 @@ static inline CActEntry* ActLookup(i32 coord) {
 // the fixed [2000,2010] range built by the shared registry ctor (0x408710). It is
 // the shared <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
 DATA(0x00244598)
-CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
+extern CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
                         // fields 0x24459c..0x2445b8 are this object's members)
 
 // The probed trigger object is the shared <Gruntz/Trigger.h> class: its
@@ -190,7 +164,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
 // (0x408710). Free init thunk; reloc-masked.
 RVA(0x000420d0, 0x15)
 void CSecretTeleporterTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actColl))->Construct(2000, 2010);
+    g_actColl.Construct(2000, 2010);
 }
 
 // --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---
@@ -264,7 +238,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
 // reloc-masked.
 RVA(0x000426e0, 0x15)
 void CSecretLevelTrigger::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_secretActReg))->Construct(2000, 2010);
+    g_secretActReg.Construct(2000, 2010);
 }
 
 // CSecretLevelTrigger::FireActivation @0x042760 - look the activation coordinate up

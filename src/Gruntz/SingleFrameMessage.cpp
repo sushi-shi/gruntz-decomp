@@ -7,7 +7,6 @@
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
 #include <Gruntz/WwdGameReg.h>   // g_gameReg->GetMessageBounds (on-screen message bounds)
@@ -63,14 +62,14 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
 DATA(0x00245ef0)
-CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
+extern CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 
 // CSingleFrameMessage::InitActReg @0x0ab530 - construct the class's activation-
 // coordinate registry singleton (g_singleFrameActReg @0x645ef0) over the fixed
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ab530, 0x15)
 void CSingleFrameMessage::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_singleFrameActReg))->Construct(2000, 2010);
+    g_singleFrameActReg.Construct(2000, 2010);
 }
 
 // CSingleFrameMessage::RunAct @0x0ab5b0 - resolve the registry entry for id; if a
@@ -120,7 +119,6 @@ void CSingleFrameMessage::RegisterActs() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CSingleFrameActEntry);
 SIZE_UNKNOWN(CSingleFrameActReg);

@@ -1,11 +1,11 @@
-// ZDArrayDerived.cpp - a zDArray-derived collection ctor (orphan COMDAT @0x8710).
+// ZDArrayDerived.cpp - the shared registry build helper (orphan COMDAT @0x8710).
 //
-// Construct(lo, hi) forwards to the shared CTypeKeyColl 2D-array ctor (0x16dda0)
+// CTypeKeyColl::Construct(lo, hi) forwards to the shared 2D-array ctor (0x16dda0)
 // with stride 4 / scratch 1, then stamps the derived vtable (g_zDArrayVtbl,
 // 0x5e70fc) and returns this. Placeholder class name; only OFFSETS + code bytes
 // are load-bearing.
 #include <Ints.h>
-#include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <rva.h>
 
 // KEEP (faithful, not a hack): the vptr store lives in the non-ctor two-phase
@@ -15,9 +15,9 @@
 // (0x5e70fc) is the shared CTypeKeyColl-family derived table. 100% matched.
 
 RVA(0x00008710, 0x2b)
-CZDArrayDerived* CZDArrayDerived::Construct(i32 lo, i32 hi) {
+CTypeKeyColl* CTypeKeyColl::Construct(i32 lo, i32 hi) {
     BaseConstruct(4, lo, hi, reinterpret_cast<void*>(1));
-    *reinterpret_cast<volatile i32*>(&hi) = reinterpret_cast<i32>(m_1c); // write-back to the hi param slot (retail keeps it)
+    *reinterpret_cast<volatile i32*>(&hi) = reinterpret_cast<i32>(m_alloc); // write-back to the hi param slot (retail keeps it)
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     return this;
 }

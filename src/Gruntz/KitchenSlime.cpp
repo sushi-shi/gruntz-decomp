@@ -20,7 +20,6 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Wap32/ZDArrayDerived.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -108,7 +107,7 @@ extern "C" u32 g_engineFrameDelta;
 // address is past .data's raw extent, so the loader zero-fills it. Construct (0x408710)
 // ctors it in place at runtime; hence the (_zvec*) cast at the engine call sites.
 DATA(0x00246228)
-CActReg g_kslimeColl;
+extern CActReg g_kslimeColl;
 
 // The entry record (KSlimeHandler/CKSlimeEntry, the PMF slot) is defined in
 // <Gruntz/KitchenSlime.h> after the complete class.
@@ -293,7 +292,7 @@ void CKitchenSlime::RegisterType() {
 // archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000b28c0, 0x15)
 void CKitchenSlime::RegisterRange() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_kslimeColl))->Construct(0x7d0, 0x7da);
+    g_kslimeColl.Construct(0x7d0, 0x7da);
 }
 
 // CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in

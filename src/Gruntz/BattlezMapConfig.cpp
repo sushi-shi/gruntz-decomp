@@ -63,7 +63,7 @@
 #include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
 #include <Gruntz/QueueDrainHost.h> // the level's game-object collection + its cells
 #include <Wap32/zBitVec.h>         // CContainerErr (the zvec error-report target)
-#include <Gruntz/ActColl.h>        // GetRetAddr + g_retAddrBreadcrumb (the report breadcrumb)
+#include <Gruntz/ActReg.h>
 #include <Gruntz/LevelInfo.h>      // the canonical CLevelInfo (LoadConfig arg1)
 #include <Bute/ButeMgr.h>          // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>

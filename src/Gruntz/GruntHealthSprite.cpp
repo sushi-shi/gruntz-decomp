@@ -17,14 +17,13 @@
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton here (in the main_file .cpp): labels.py
 // only scans DATA() macros in the TU source, not in included headers, so the
 // binding must live in a .cpp that references the global.
 DATA(0x00244d80)
-CIndicatorActReg g_healthActReg; // 0x644d80
+extern CIndicatorActReg g_healthActReg; // 0x644d80
 
 // CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
@@ -64,7 +63,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
 // (no `this`); the ctor is reloc-masked.
 RVA(0x0007ecf0, 0x15)
 void CGruntHealthSprite::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_healthActReg))->Construct(2000, 2010);
+    g_healthActReg.Construct(2000, 2010);
 }
 
 // CGruntHealthSprite::RunAct @0x07ed70 - resolve the coordinate-registry entry for `id`

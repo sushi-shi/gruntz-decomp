@@ -21,7 +21,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
 #include <Gruntz/StringNode.h>        // the shared type-name teardown slot (CStringNode::Free)
-#include <Gruntz/ActColl.h> // shared registry collection (CActColl/CVariantSlot Find/Insert/
+#include <Gruntz/ActReg.h>
                             // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
 #include <Bute/ButeMgr.h>   // CButeTree (the type-registry funnel)
 #include <math.h>           // sin / cos (StepMotion's parabola)
@@ -29,7 +29,6 @@
 #include <rva.h>
 #include <Globals.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 // CTimeBomb's TU folds in below (ex TimeBomb.cpp).
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
@@ -493,25 +492,10 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 // R2 - the projectile's per-coordinate activation table (@0x64c758). CProjActEntry
 // (the per-class handler entry) is the canonical struct in <Gruntz/Projectile.h>.
 DATA(0x0024c758)
-CActColl g_projActColl;
+extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 
 // The projectile activation-registry field globals (referenced only from this TU):
 // real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
-DATA(0x0024c75c)
-CVariantSlot* g_projActColl2;
-DATA(0x0024c760)
-i32 g_projActLo;
-DATA(0x0024c764)
-i32 g_projActHi;
-DATA(0x0024c768)
-char* g_projActBase;
-DATA(0x0024c76c)
-CProjActEntry* g_projActCur;
-DATA(0x0024c770)
-i32 g_projActStride;
-DATA(0x0024c778)
-i32 g_projActScratch;
-
 // The per-slot CString teardown node the type-name table walks is the shared
 // CStringNode (<Gruntz/StringNode.h>: m_0 slot + Free 0x1b9b93 __thiscall); name
 // assign into the resolved record is the real CString::operator= (0x1b9e74).
@@ -519,19 +503,10 @@ i32 g_projActScratch;
 // The projectile's activation handler (LAB_00403896, an ILT thunk).
 extern "C" void ProjActivationHandler(); // 0x403896
 
-// R2 lookup (projectile activation table).
+// R2 lookup (projectile activation table): the registry-archetype ResolveEntry
+// over g_projActColl (per-field scalars reunified into the one object @0x64c758).
 static inline CProjActEntry* ProjActLookup(i32 coord) {
-    g_projActScratch = 0;
-    if (coord >= g_projActLo && coord <= g_projActHi) {
-        return reinterpret_cast<CProjActEntry*>((g_projActBase + (coord - g_projActLo) * g_projActStride));
-    }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(&g_projActColl))->GrowTo(coord, 0))) {
-        return reinterpret_cast<CProjActEntry*>((g_projActBase + (coord - g_projActLo) * g_projActStride));
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_projActColl2->Set(&g_projActColl, reinterpret_cast<i32>(item), 0xc);
-    return g_projActCur;
+    return reinterpret_cast<CProjActEntry*>(g_projActColl.ResolveEntry(coord));
 }
 
 // R1 lookup (shared type-name table).
@@ -553,7 +528,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
 // fast-range bounds (RegisterRange(0x7d0, 0x7da)). A static initializer.
 RVA(0x000df920, 0x15)
 void CProjectile::RegisterRange() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_projActColl))->Construct(0x7d0, 0x7da);
+    g_projActColl.Construct(0x7d0, 0x7da);
 }
 
 // (CProjActEntry - the __thiscall handler entry, a 4-byte single-inheritance PMF of
@@ -1033,7 +1008,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // canonical struct in <Gruntz/TimeBomb.h>.)
 
 DATA(0x0024c780)
-CCoordColl g_tbombColl;
+extern CCoordColl g_tbombColl;
 
 // The timebomb activation-registry field globals (referenced only from this TU):
 // real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
@@ -1057,7 +1032,7 @@ i32 g_tbombScratch;
 // src/Stub/BoundaryLowerThunks.cpp.
 RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_tbombColl))->Construct(0x7d0, 0x7da);
+    g_tbombColl.Construct(0x7d0, 0x7da);
 }
 // g_projActCache (0x2bf464) + g_retAddrBreadcrumb come from <Gruntz/ActColl.h>.
 

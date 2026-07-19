@@ -31,7 +31,6 @@
 #include <Bute/ButeTree.h>           // CButeTree (the "A" animset key store)
 #include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
-#include <Wap32/ZDArrayDerived.h>    // CZDArrayDerived::Construct ([lo,hi] static init)
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
 // The global bute store the ctor interns "A" in (?g_buteTree@@3VCButeTree@@A @0x6bf620).
@@ -73,7 +72,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 // This leaf's per-class activation dispatch table (.data, DATA-pinned).
 DATA(0x00246010)
-CLogicActTable g_logicActReg_646010; // 0x646010
+extern CLogicActTable g_logicActReg_646010; // 0x646010
 
 // The class activation handler (ILT thunk 0x403c10 -> 0xad2a0).
 extern "C" void LogicHandler_0ad2a0();
@@ -110,7 +109,7 @@ static inline i32 RegisterActionName() {
 // static-init at 0xadd58, immediately after this TU's ctor.
 RVA(0x000adde0, 0x15)
 void ConstructLogicActRange_646010() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_646010))->Construct(0x7d0, 0x7da);
+    g_logicActReg_646010.Construct(0x7d0, 0x7da);
 }
 
 // CMenuSparkle::Dispatch @0x0ade60 - per-coordinate activation dispatch over this

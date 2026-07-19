@@ -49,8 +49,11 @@ public:
     virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     // (the grow-on-miss the lookups drive is _zvec::GrowTo @0x16da80, reached via a
     //  (_zvec*)&coll cast at the call sites - the former CTypeKeyColl::Find fake is gone.)
-    void Construct(i32 lo, i32 hi);          // 0x408710 (reloc-masked; build registry)
-    void RegisterRange(i32 lo, i32 hi);      // 0x408710 (same slot, alt view name)
+    CTypeKeyColl* Construct(i32 lo, i32 hi); // 0x8710 (def in ZDArrayDerived.cpp: the
+    // non-ctor two-phase registry build - stride 4 / scratch 1 over `this`)
+    CTypeKeyColl* BaseConstruct(i32 stride, i32 lo, i32 hi, void* scratch); // alias view
+    // of the ctor (0x16dda0) - Construct's call spelling; a real ctor call would
+    // relocate the base-ctor + derived stamp (vtable-realization boundary keep)
     void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)
 
     // ---- grunt anim-name registry views (folded from Grunt.h's CAnimNameResolver,

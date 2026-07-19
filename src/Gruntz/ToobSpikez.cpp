@@ -10,7 +10,6 @@
 // recovered engine identities.
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
@@ -112,7 +111,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
 // object, one definition; the fast-range + slow Find/GetRetAddr/Insert rebuild lookup is
 // CActReg::ResolveEntry now. (Construct @0x8710 == CZDArrayDerived::Construct; cast at call.)
 DATA(0x0024e978)
-CActReg g_toobColl;
+extern CActReg g_toobColl;
 
 // The registry slot stores a pointer-to-member-function of CToobSpikez (single
 // inheritance -> 4-byte code pointer); FireActivation invokes it on `this`, emitting
@@ -158,7 +157,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
 RVA(0x001147e0, 0x15)
 void CToobSpikez::Register_1147e0() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_toobColl))->Construct(0x7d0, 0x7da);
+    g_toobColl.Construct(0x7d0, 0x7da);
 }
 
 // CToobSpikez::GetTypeTag (0x00012ba0) is now an inline member in the class header.
@@ -233,5 +232,4 @@ void CToobSpikez::RegisterActs() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

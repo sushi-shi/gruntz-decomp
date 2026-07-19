@@ -12,7 +12,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/BehindCandyAni.h>
@@ -25,7 +24,7 @@
 // concrete per-registry instances); it keeps its own placeholder name so the
 // DATA-pinned global symbol is unchanged.
 DATA(0x00245f98)
-CBehindCandyActReg g_behindCandyActReg; // 0x645f98
+extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Declared extern "C" here so the value-load reloc-masks against the
@@ -92,7 +91,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad7d0, 0x15)
 void CBehindCandyAni::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_behindCandyActReg))->Construct(2000, 2010);
+    g_behindCandyActReg.Construct(2000, 2010);
 }
 
 // CBehindCandyAni::RunAct @0x0ad850 - resolve the registry entry for id; if a
@@ -150,7 +149,6 @@ i32 CBehindCandyAni::AdvanceAnim() {
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CBehindCandyActEntry);
 SIZE_UNKNOWN(CBehindCandyActReg);

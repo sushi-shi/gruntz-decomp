@@ -11,7 +11,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>       // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LogicFnTable.h> // g_eyeCandyDispatch's canonical LogicFnTable type
@@ -242,14 +241,14 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // CActReg (<Gruntz/ActReg.h>); the ex empty CFrontCandyActReg : CActReg subclass was a
 // naming-only alias (the variable name makes the mangled symbol unique + DATA() rebinds
 DATA(0x002460b0)
-CActReg g_frontCandyActReg; // 0x6460b0
+extern CActReg g_frontCandyActReg; // 0x6460b0
 
 // CFrontCandyAni::InitActReg @0x0ad130 - construct the class's activation-
 // coordinate registry singleton (g_frontCandyActReg @0x6460b0) over the fixed
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad130, 0x15)
 void CFrontCandyAni::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_frontCandyActReg))->Construct(2000, 2010);
+    g_frontCandyActReg.Construct(2000, 2010);
 }
 
 // CFrontCandyAni::FireActivation @0x0ad1b0 - look the activation coordinate up in
@@ -308,6 +307,5 @@ i32 CFrontCandyAni::AdvanceAnim() {
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CFrontCandyAni);

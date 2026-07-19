@@ -21,7 +21,6 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Wap32/zBitVec.h> // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (canonical owner)
 
 #include <Mfc.h> // CObject base + <windows.h>

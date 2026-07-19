@@ -20,7 +20,6 @@
 #include <Gruntz/TypeColl.h>      // the shared type-name registry collection
 #include <Gruntz/TypeColl2.h>     // its Insert facet
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
-#include <Wap32/ZDArrayDerived.h> // Construct(lo, hi) - the default-range registrar entry
 #include <Wap32/ZVec.h>
 #include <rva.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_actReg4)
@@ -82,14 +81,14 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
 // the dynamic-init table (30 entries @0x2096e4) has none for 0x6446d8, and the address
 // sits past .data's raw extent, so the loader zero-fills it.
 DATA(0x002446d8)
-CActReg g_actReg4;
+extern CActReg g_actReg4;
 
 // 0x3e120: register the default activation-id range [0x7d0, 0x7da] on the class
 // registry via the shared SetActiveRange ILT thunk (0x3742). (Ex OrphanLeaves;
 // the file's registry-init static, frag slot i550.)
 RVA(0x0003e120, 0x15)
 void Register6446d8Range() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_actReg4))->Construct(0x7d0, 0x7da);
+    g_actReg4.Construct(0x7d0, 0x7da);
 }
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.

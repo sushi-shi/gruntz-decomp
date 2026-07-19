@@ -16,11 +16,10 @@
 // external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
-#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 
 // CCursorSnapSprite's per-logic-class activation dispatch table (.data, DATA-pinned).
 DATA(0x0022bfa0)
-CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
+extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
 
 // The class activation handler (ILT thunk 0x401717 -> 0x39910).
 extern "C" void LogicHandler_039910();
@@ -56,7 +55,7 @@ static inline i32 RegisterActionName() {
 // dispatch table 0x62bfa0's fast [0x7d0, 0x7da] id range (CZDArrayDerived::Construct).
 RVA(0x0003a530, 0x15)
 void ConstructLogicActRange_62bfa0() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_logicActReg_62bfa0))->Construct(0x7d0, 0x7da);
+    g_logicActReg_62bfa0.Construct(0x7d0, 0x7da);
 }
 
 // RegisterXLogic @0x03a710 - bind CCursorSnapSprite's logic to its activation handler

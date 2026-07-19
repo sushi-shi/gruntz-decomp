@@ -14,6 +14,7 @@
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
+#include <Gruntz/ActReg.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
@@ -38,7 +39,6 @@ extern "C" {}
 #include <Gruntz/LogicFnTable.h>      // the shared LogicFnTable dispatch-table shape
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Globals.h>
-#include <Wap32/ZDArrayDerived.h>
 
 // The cmd-grid cells are CGrunts; LoadPickupSprites @0x3c6a / LoadGruntTypeTable @0x3bd9
 // are CGrunt methods.
@@ -86,10 +86,9 @@ extern LogicFnTable g_iconStateTable;
 // DATA binding lives here in the .cpp (a header DATA() is not scanned by labels.py);
 // the sub-field DIR32s (base+0x4.. +0x20) reloc-mask via the base symbol + addend.
 DATA(0x00245950)
-// @undefined-data: needs storage here, but zDArray has no default ctor (retail's
-// static-init thunk calls the 4-arg 0x16de30 ctor on the .bss object). Blocked on
-// settling zDArray's default-ctor form - same wall as the LogicFnTable globals.
-extern zDArray g_textDispatch;
+// (g_textDispatch extern comes from <Gruntz/InGameText.h> - the CActReg registry
+// archetype; its storage/ctor form is the pending dynamic-init remodel: the 0x15
+// Init thunks ARE ??__E thunks of `CActReg g_x(lo, hi)` definitions.)
 
 // g_iconRegCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
 // so nothing ever defined it. Unified onto the canonical.
@@ -635,7 +634,7 @@ void CInGameIcon::FireActivation(i32 id) {
 // index band [0x7d0, 0x7da].
 RVA(0x00097800, 0x15)
 void InitIconActionTable() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_iconActionTable))->Construct(0x7d0, 0x7da);
+    g_iconActionTable.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -682,7 +681,7 @@ void RegisterIconActions() {
 // index band [0x7d0, 0x7da].
 RVA(0x00097d60, 0x15)
 void InitIconStateTable() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_iconStateTable))->Construct(0x7d0, 0x7da);
+    g_iconStateTable.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -1147,7 +1146,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
 RVA(0x000993e0, 0x15)
 void CInGameText::InitActReg() {
-    (reinterpret_cast<CZDArrayDerived*>(&g_textDispatch))->Construct(2000, 2010);
+    g_textDispatch.Construct(2000, 2010);
 }
 
 // ===========================================================================

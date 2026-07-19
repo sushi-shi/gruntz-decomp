@@ -17,6 +17,8 @@
 
 #include <rva.h>
 
-struct CCoordColl {};
+#include <Gruntz/ActReg.h>
+
+struct CCoordColl : public CActReg {};
 
 #endif // GRUNTZ_GRUNTZ_CHAZNCOLL_H
