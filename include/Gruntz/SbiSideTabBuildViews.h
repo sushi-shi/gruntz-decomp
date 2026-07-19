@@ -21,7 +21,7 @@
 // owner passed as the StatzTab arg2.
 struct CSbBuildSettings {
     char m_pad00[0x30];
-    void* m_world; // +0x30
+    class CDDrawSurfaceMgr* m_world; // +0x30  the loaded world (the singleton's m_world slot)
 };
 SIZE_UNKNOWN(CSbBuildSettings);
 

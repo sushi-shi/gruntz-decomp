@@ -1074,7 +1074,7 @@ public:
     // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
     // down only the six members below, NOT +0x54); viewed as a CString via
     // TypeName() at its five concat sites (codegen-neutral: same CString lvalue).
-    void* m_typeName; // +0x54  (grunt-type CString body; not owned by ~CGrunt)
+    char* m_typeName; // +0x54  grunt-type CString body ptr (not owned by ~CGrunt)
     CString& TypeName() {
         return *reinterpret_cast<CString*>(&m_typeName);
     }
