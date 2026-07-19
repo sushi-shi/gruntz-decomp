@@ -870,17 +870,11 @@ SIZE_UNKNOWN(CTabList);
 
 // The main-bar setup chain hung off the game-manager: m_30->m_4->m_14->m_2c drives a
 // 2-arg rect setter; m_30->m_4->m_14 is also handed to the frame-draw helper.
-struct CSbiMainSetup {};
-SIZE_UNKNOWN(CSbiMainSetup);
-struct CSbiMainL2 {
-    char m_pad0[0x2c];
-    CSbiMainSetup* m_mainSetup; // +0x2c
-};
-SIZE_UNKNOWN(CSbiMainL2);
-struct CSbiMainL1 {
-    char m_pad0[0x14];
-    CSbiMainL2* m_14; // +0x14
-};
+// (CSbiMainL1/CSbiMainL2/CSbiMainSetup are DISSOLVED, 2026-07-19 - offset-proven
+// against the real DDraw chain: L1 == CDDrawSubMgrPages (+0x14 = m_backPair),
+// L2 == CDDrawSurfacePair (+0x2c = m_surface), and the "setup" IS the CDDSurface
+// (the old (CDDSurface*)tgt Restore cast was the confession). The main-bar chain
+// in real terms: world->m_drawTarget->m_backPair->m_surface.)
 SIZE_UNKNOWN(CSbiMainL1);
 // The resolved GAME_STATUSBAR_MAINBAR cfg record: a frame-entry table at +0x14 indexed
 // by +0x64; each entry carries an origin pair at +0x18/+0x1c.
@@ -899,7 +893,10 @@ struct CSbiMainBarCfg {
 SIZE_UNKNOWN(CSbiMainBarCfg);
 // The frame-draw helper (__stdcall, callee-cleans 0x10): the chain object plus the two
 // composed origins.
-void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x153790
+class CDDrawSurfacePair; // the real main-bar draw receiver (ex the CSbiMainL2 facet)
+void __stdcall MainBarDrawFrame(CDDrawSurfacePair* obj, i32 x, i32 y, i32 flag); // 0x153790 (NOTE:
+// 0x153790 is also bound as CImage::RenderFrame - the pair receiver here is that call's
+// object-with-frames facet; arbitration pending)
 
 // The hit-tested tab-highlight widget resolved by HiResolve: polymorphic (Update
 // at vtable slot 6 = +0x18); the command id at +0xc and the widget kind at +0x10

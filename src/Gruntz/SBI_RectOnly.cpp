@@ -15,6 +15,8 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>  // the real main-bar chain (m_backPair)
+#include <DDrawMgr/DDrawSurfacePair.h>  // the pair (m_surface)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_c->m_imageRegistry->m_10map (LoadMainStatusBarSprite)
 #include <Gruntz/SBI_GruntMachine.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -3264,7 +3266,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
-                CSbiMainSetup* tgt = (reinterpret_cast<CSbiMainL1*>(g_gameReg->m_world->m_drawTarget))->m_14->m_mainSetup;
+                CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
                 struct {
                     i32 a, b, c, d;
                 } rc;
@@ -3272,7 +3274,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 rc.d = v;
                 rc.b = m_rect14.m_8;
                 rc.c = m_rect14.m_4;
-                (reinterpret_cast<CDDSurface*>(tgt))->Restore(&rc, 0);
+                tgt->Restore(&rc, 0);
             }
             CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
             CObject* found = 0;
@@ -3282,8 +3284,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 CSbiMainBarCfg* cfg = reinterpret_cast<CSbiMainBarCfg*>(found); // the cfg-record view of the stored element (next fold layer)
                 CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
                 if (entry) {
-                    CSbiMainL1* l1 = reinterpret_cast<CSbiMainL1*>(g_gameReg->m_world->m_drawTarget); // L1 = the pages' SBI facet (next fold layer)
-                    MainBarDrawFrame(l1->m_14, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
+                    CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget; // the real pages (ex the CSbiMainL1 facet)
+                    MainBarDrawFrame(l1->m_backPair, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
                 }
             }
         }
