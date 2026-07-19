@@ -49,7 +49,7 @@ extern "C" i32 EngStr_RenderText(
     void* self,
     i32 a1,
     i32 a2,
-    void* drawFn,
+    CDDSurface* drawSurface,
     i32 fontSel,
     i32 shadow,
     i32 r,
@@ -66,7 +66,7 @@ extern "C" i32 EngStr_RenderText(
     if (a2 == 0) {
         return 0;
     }
-    if (drawFn == 0) {
+    if (drawSurface == 0) {
         return 0;
     }
     switch (fontSel) {
@@ -93,11 +93,11 @@ extern "C" i32 EngStr_RenderText(
         // the shadow pass reinterprets the local RECT as a CRect lvalue so the trivial
         // copy ctor inlines (4-mov copy of sh); the main pass below CALLs the 0x115b30
         // operator= to build its rect.
-        g_textObj.DrawWrapped(*str, static_cast<CDDSurface*>(drawFn), *static_cast<CRect*>(&sh), 1, flag, 0);
+        g_textObj.DrawWrapped(*str, drawSurface, *static_cast<CRect*>(&sh), 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
     CRect rect;
     rect = *rc; // 0x115b30 CRect::operator=(const tagRECT&) (the "Copy" reloc)
-    g_textObj.DrawWrapped(*str, static_cast<CDDSurface*>(drawFn), rect, 1, flag, 0);
+    g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     return 1;
 }

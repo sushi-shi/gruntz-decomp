@@ -9,7 +9,7 @@
 // 0x115440` shows ~10 diverse UI callers (CMulti / CPlay / CGruntzMgr / CStatusBarMgr)
 // each passing their OWN register-sourced object - no single concrete class fits, and no
 // method is ever dispatched on it (it is read purely by offset:
-// obj->m_sub->m_cfg->m_drawFn). So the honest type is this opaque interface, NOT
+// obj->m_sub->m_cfg->m_drawSurface). So the honest type is this opaque interface, NOT
 // CDDrawSurfaceMgr (that was one caller's guess that its m_levelData's declared type
 // IS the parameter type). Layout is the only load-bearing fact; field names are
 // placeholders.
@@ -28,7 +28,7 @@
 // draw-method pointer injected as the render worker's 4th arg (forwarded opaquely).
 struct EngStrRenderCfg {
     char m_pad00[0x2c]; // +0x00
-    void* m_drawFn;     // +0x2c
+    class CDDSurface* m_drawSurface;     // +0x2c
 };
 struct EngStrRenderSub {
     char m_pad00[0x10];     // +0x00
@@ -45,7 +45,7 @@ extern "C" i32 EngStr_RenderText(
     void* self,
     i32 a1,
     i32 a2,
-    void* drawFn,
+    class CDDSurface* drawSurface,
     i32 fontSel,
     i32 shadow,
     i32 r,

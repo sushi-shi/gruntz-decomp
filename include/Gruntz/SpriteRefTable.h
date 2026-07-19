@@ -51,7 +51,7 @@ class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at
 // from the sprite LOADER side (it is NOT CAniRecordBase2). Kept minimal until then.
 struct CLookupSprite {
     char m_pad00[0xc];
-    void* m_frameData; // +0x0c
+    u8* m_frameData;   // +0x0c  the frame's raw RLE/pixel payload
 };
 struct CLookupResult {
     char m_pad00[0x10];

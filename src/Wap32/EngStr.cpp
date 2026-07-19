@@ -33,7 +33,7 @@ void EngStr_DrawText(
     if (cfg == 0) {
         return;
     }
-    EngStr_RenderText(obj, a1, a2, cfg->m_drawFn, a3, a4, a5, a6, a7, a8);
+    EngStr_RenderText(obj, a1, a2, cfg->m_drawSurface, a3, a4, a5, a6, a7, a8);
 }
 
 // (~CContainerErr @0x16da60 and zBitVec::SetSize @0x16e100 live in their retail
