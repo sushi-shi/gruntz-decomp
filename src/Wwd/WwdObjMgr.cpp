@@ -425,7 +425,7 @@ i32 CDDrawChildGroup::AttachSprite(
     this->InsertSorted_159e40(obj, 1);
     if (flags & 0x200000) {
         // the worker fire callback - the same slot TickKillCues fires
-        obj->m_worker->m_notify((CGameObject*)obj);
+        obj->m_7c->m_notify((CGameObject*)obj);
     }
     return 1;
 }
@@ -525,7 +525,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        AnimWorkerObj* rec = obj->m_worker;
+        AnimWorkerObj* rec = obj->m_7c;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &rec->m_24;
             if (*refc != 0) {
@@ -546,7 +546,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdGameObject* obj = (CWwdGameObject*)killQueue.GetData()[i];
         if (obj->m_flags & 0x80000) {
-            AnimWorkerObj* rec = obj->m_worker;
+            AnimWorkerObj* rec = obj->m_7c;
             rec->m_1c = (void*)0x1d;
             rec->m_notify((CGameObject*)obj);
         }
@@ -687,12 +687,12 @@ void CDDrawChildGroup::InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps) {
         m_map48[WwdKey(obj)] = obj;
     }
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    i32 key = obj->m_sortKey;
+    i32 key = obj->m_latchedAnimId;
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         CWwdGameObject* data = cur->m_wwd;
         node = node->m_next;
-        if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
+        if (data->m_latchedAnimId > key && !(data->m_flags & 0x20000)) {
             obj->m_posCache = reinterpret_cast<i32>(m_list.InsertBefore((POSITION)cur, (CObject*)obj));
             return;
         }
@@ -990,7 +990,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
     if (anchor == 0) {
         return 1;
     }
-    i32 key = anchor->m_sortKey;
+    i32 key = anchor->m_latchedAnimId;
     if (node == 0) {
         return 1;
     }
@@ -999,7 +999,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
         if ((obj->m_flags & 0x20000) == 0) {
-            i32 curKey = obj->m_sortKey;
+            i32 curKey = obj->m_latchedAnimId;
             if (key > curKey) {
                 anchor->GetTypeId();
                 obj->GetTypeId();
@@ -1230,7 +1230,7 @@ void CDDrawChildGroup::PruneList_15aa90() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15aaf0: accumulate SUM over the list of index*(obj->m_posX + m_74 + m_60 + m_04).
+// 0x15aaf0: accumulate SUM over the list of index*(obj->m_screenX + m_74 + m_60 + m_04).
 // @early-stop
 // 99.15% - logic/CFG/offsets byte-exact. Residual: cl reassociates the 4-term
 // commutative sum to load m_74 into the accumulator first, where retail loads m_5c
@@ -1244,7 +1244,7 @@ i32 CDDrawChildGroup::SumWeighted_15aaf0() {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        sum += i * (obj->m_posX + obj->m_sortKey + obj->m_posY + obj->m_04);
+        sum += i * (obj->m_screenX + obj->m_latchedAnimId + obj->m_screenY + obj->m_04);
         ++i;
     }
     return sum;
@@ -1440,7 +1440,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
         if (createdObj == 0) {
             return 0;
         }
-        if (createdObj->m_worker == 0) {
+        if (createdObj->m_7c == 0) {
             return 0;
         }
         if (desc.m_10 != 0) {
@@ -1452,7 +1452,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
                 return 0;
             }
             // the worker's owned bound-logic slot (AnimWorkerObj::m_logic)
-            createdObj->m_worker->m_logic = (CUserLogic*)child;
+            createdObj->m_7c->m_logic = (CUserLogic*)child;
         }
     }
     return 1;

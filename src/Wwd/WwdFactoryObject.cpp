@@ -201,7 +201,7 @@ void CWwdGameObjectE::Notify_15b650(void* p) {
         AnimWorkerObj* h = *(AnimWorkerObj**)(o + 0x80);
         if (h != 0) {
             *(void**)(o + 0x84) = p;
-            h->m_notify((CGameObject*)this);
+            h->m_notify(reinterpret_cast<CGameObject*>(this));
         }
     }
 }
@@ -262,7 +262,7 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
-    m_cmdMap.Construct(this);
+    m_1a0.Construct(this);
     return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 
@@ -331,7 +331,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 // CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *reinterpret_cast<char*>(&m_dotColor) = static_cast<char>(flag);
+    *reinterpret_cast<char*>(&m_18c) = static_cast<char>(flag);
     return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 

@@ -64,14 +64,14 @@ inline void* operator new(u32, void* p) {
 // ---------------------------------------------------------------------------
 RVA(0x001660f0, 0xd1)
 void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
-    i32 x = m_posX;
-    i32 m64 = m_clipLeft;
+    i32 x = m_screenX;
+    i32 m64 = m_64;
     i32 y;
     if (m64 == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             goto reject;
         }
-        y = m_posY;
+        y = m_screenY;
         if (y < 0) {
             goto reject;
         }
@@ -85,14 +85,14 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
         if (x < m64) {
             goto reject;
         }
-        y = m_posY;
-        if (y < m_clipTop) {
+        y = m_screenY;
+        if (y < m_68) {
             goto reject;
         }
-        if (x > m_clipRight) {
+        if (x > m_6c) {
             goto reject;
         }
-        if (y > m_clipBottom) {
+        if (y > m_70) {
             goto reject;
         }
     }
@@ -103,19 +103,19 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_b0 * x;
-            *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_dotColor);
+            *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_18c);
             void* n = surf->m_8;
             (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
     }
-    m_lastX = m_posX;
-    m_lastY = m_posY;
+    m_lastX = m_screenX;
+    m_lastY = m_screenY;
     m_30 = 1;
     m_34 = 1;
-    m_clipResult = 0;
+    m_38 = 0;
     return;
 reject:
-    m_clipResult = -1;
+    m_38 = -1;
 }
 
 // ---------------------------------------------------------------------------

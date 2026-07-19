@@ -39,6 +39,7 @@
 // The REAL +0x1a0 tail member: the wide game object embeds the 0x3c-byte
 // CAniAdvanceCursor at +0x1a0 (vptr @+0x1a0, ends at +0x1dc == SIZE(CGameObject)).
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/WwdGridIter.h> // WwdGridNode - the embedded +0x9c region node
 
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
@@ -48,6 +49,8 @@
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
 struct CGameObject;  // fwd (the worker's collide callback takes the object)
+struct LeafCue;          // the +0x19c resolved leaf-scan cue (<Gruntz/LeafCue.h>)
+class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class CUserLogic; // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h>)
 
@@ -126,9 +129,7 @@ struct CGameObject {
     // (<Wwd/WwdGameObjectFamily.h>), NOT derived: this view keeps its own slot 1
     // `Delete(i32)` spelling because retail's ReadPlaneObjects delete-sites carry NO
     // null guard (`push 1; call [edx+4]` bare), which plain `delete` under MSVC5
-    // would add (RemoveAndDelete_159db0 shows the guarded form). [10] Load = the
-    // record-load virtual (ReadPlaneObjects pushes 4 args + checks the int return);
-    // [11] Draw: CGameLevel::VisitVisible dispatches it (+0x2c) per object.
+    // would add (RemoveAndDelete_159db0 shows the guarded form).
     virtual void GetRuntimeClass();               // [0]  +0x00  CObject slot (0x1bef01)
     virtual void* Delete(i32 flag);               // [1]  +0x04  scalar-deleting dtor
     virtual void Serialize();                     // [2]  +0x08  CObject slot (0x0028ec)
@@ -140,8 +141,20 @@ struct CGameObject {
     virtual i32 GetTypeId();                      // [8]  +0x20  (per-kind type tag;
                                                   //       CTriggerMgr::Load checks ==5)
     virtual i32 SetPosition(i32 x, i32 y);        // [9]  +0x24  0x164790 (pos + draw reseed)
-    virtual i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load virtual
-    virtual void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
+    // [10] the record-load/build virtual (ReadPlaneObjects pushes 4 args + checks the
+    // int return); the body definition is CWwdGameObject::Setup @0x150d60.
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4); // [10] +0x28
+    // [11] the per-object render hook (CGameLevel::VisitVisible dispatches it; F's
+    // override is `ret 4`, C's is RenderDot; __purecall @0x11fec0 in the base table).
+    virtual void Render(CDDrawSurfacePair* ctx); // [11] +0x2c
+    // [12]-[16] the 0x5f0020 table tail: the dirty-rect blit ops (__purecall here,
+    // the A/C/F kinds override - <Wwd/WwdGameObjectFamily.h>), the manager's walk
+    // dispatch, and the const-getter WriteSnapshot reads.
+    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b);               // [12] +0x30
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c);      // [13] +0x34
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // [14] +0x38
+    virtual i32 Slot3C(i32 ar, i32 mode, i32 a3, void* self); // [15] +0x3c  0x151150 == Play
+    virtual i32 Vfunc40(); // [16] +0x40  0x1bef01 const-getter (== slot 0)
 
     i32 m_04;    // +0x04
     i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;
@@ -156,13 +169,22 @@ struct CGameObject {
     // object; the retail map-Lookup bands corroborate per-slot (0x1504d0 ->
     // 0x1b8008 via +0x10, 0x150610/0x1505b0 -> 0x1b8438 via +0x28/+0x2c).
     class CDDrawSurfaceMgr* m_0c;
-    i32 m_10; // +0x10  (worker getters pass src->m_10 through slot 9)
-    char m_pad14[0x38 - 0x14];
-    i32 m_38; // +0x38
+    i32 m_10;    // +0x10  (worker getters pass src->m_10 through slot 9)
+    i32 m_14;    // +0x14
+    i32 m_lastX; // +0x18  last-drawn column (cached by RenderDot)
+    i32 m_lastY; // +0x1c  last-drawn row
+    i32 m_20;    // +0x20
+    i32 m_24;    // +0x24
+    i32 m_28;    // +0x28
+    i32 m_2c;    // +0x2c
+    i32 m_30;    // +0x30  set 1 on a successful plot
+    i32 m_34;    // +0x34  set 1 on a successful plot
+    i32 m_38;    // +0x38  clip result (0 plotted / -1 rejected)
     char m_pad3c[0x40 - 0x3c];
     i32 m_stateFlags; // +0x40  bit0 = visible/active (set by the icon/glitter/booty
                       //        creators; cleared to hide - IconLoaders/GameMode/BzState)
-    char m_pad44[0x4c - 0x44];
+    i32 m_44;         // +0x44
+    i32 m_48;         // +0x48  (SetPosition reseeds 0x32)
     i32 m_drawFillArg;   // +0x4c
     i32 m_drawFillCmd;   // +0x50  draw-fill command type (0xb = decay fill-bar)
     i32 m_fillFraction;  // +0x54  fill fraction (0..256)
@@ -173,14 +195,17 @@ struct CGameObject {
     i32 m_68;            // +0x68
     i32 m_6c;            // +0x6c
     i32 m_70;            // +0x70  (WwdFile record clipRect bottom)
-    i32 m_latchedAnimId; // +0x74
-    char m_pad78[0x7c - 0x78];
+    i32 m_latchedAnimId; // +0x74  (also the manager's z-order sort key: Setup stores
+                         //        its a3; CDDrawChildGroup::InsertSorted orders by it)
+    i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the
+                         //        node; TickKillCues/RemoveAndDelete unlink through it)
     AnimWorkerObj* m_7c; // +0x7c  the owned 0x17c worker/logic record (its m_notify
                          //        is the post-create init driver the creators run)
-    AnimWorkerObj* m_80; // +0x80  lazily-built worker (EnsureWorker80)
-    char m_pad84[0x88 - 0x84];
-    AnimWorkerObj* m_88; // +0x88  lazily-built worker (EnsureWorker88)
-    char m_pad8c[0x90 - 0x8c];
+    AnimWorkerObj* m_80; // +0x80  lazily-built worker (EnsureWorker80; Hit handler,
+                         //        serialized by name)
+    i32 m_84;            // +0x84
+    AnimWorkerObj* m_88; // +0x88  lazily-built worker (EnsureWorker88; Attack handler)
+    i32 m_8c;            // +0x8c
     AnimWorkerObj* m_collideWorker; // +0x90  lazily-built worker (EnsureWorker90); its
                                     //        m_collideNotify is fired by BroadPhase
     CGameObject* m_hitOther;        // +0x94  the other party of the pending collision
@@ -188,8 +213,18 @@ struct CGameObject {
     CGameObject* m_carrier;         // +0x98  latched carrier (a category-0x80 platform
                                     //        object; StepAxisAlt stores it + sets flags
                                     //        bit4; CMovingLogic::Update then advances
-                                    //        m_screenX/Y by the carrier's m_deltaX/Y)
-    char m_pad9c[0xe4 - 0x9c];
+                                    //        m_screenX/Y by the carrier's m_deltaX/Y).
+                                    //        Also the serialized linked object (Play
+                                    //        case 3 reads its m_188; Sub151b90 caches
+                                    //        it from the key m_184).
+    // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
+    // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its m_object
+    // (+0xb4) the self back-pointer. The factories' +0x9c record ctors
+    // (0x15b2a0/0x15b2b0) initialize exactly it.
+    WwdGridNode m_region; // +0x9c..+0xb7
+    char m_b8[0x24];      // +0xb8  serialized state block
+    char* m_name;         // +0xdc  CString name (handle = buffer pointer)
+    i32 m_e0;             // +0xe0
     // +0xe4  movement-resolution mode (CGameLevel::DispatchMove kinds 1..8):
     // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,
     // 3 -> B, 4 -> C, 8 -> B/C by direction, 6 -> D (two-probe recovery); the
@@ -202,7 +237,11 @@ struct CGameObject {
     u32 m_collMask;     // +0xf4  which categories this object collides with
     i32 m_strideX;      // +0xf8  tile-probe stride X (the move steppers' scan step)
     i32 m_strideY;      // +0xfc  tile-probe stride Y
-    char m_pad100[0x114 - 0x100];
+    i32 m_100; // +0x100
+    i32 m_104; // +0x104
+    i32 m_108; // +0x108
+    i32 m_10c; // +0x10c
+    i32 m_110; // +0x110
     i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
     i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
     i32 m_11c;       // +0x11c  CSpotLight ctor: settings-table index
@@ -233,16 +272,20 @@ struct CGameObject {
     i32 m_160;   // +0x160
     i32 m_164;   // +0x164
     i32 m_168;   // +0x168
-    char m_pad16c[0x174 - 0x16c];
+    i32 m_16c; // +0x16c
+    i32 m_170; // +0x170
     // +0x174/+0x178  per-frame movement deltas. CMovingLogic::Update advances a
     // riding object by its carrier's deltas; AltStepValidate widens the stand-
     // acceptance ceiling by a NEGATIVE (upward) m_deltaY so a rising platform
     // still catches its rider.
     i32 m_deltaX; // +0x174
     i32 m_deltaY; // +0x178
-    char m_pad17c[0x188 - 0x17c];
-    i32 m_188;     // +0x188  object id (warlord battle-event id / game-object archive-cue id)
-    i32 m_18c;     // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
+    i32 m_17c;     // +0x17c
+    i32 m_180;     // +0x180
+    i32 m_184;     // +0x184  serialized linked-object key (Sub151b90 resolves it -> m_carrier)
+    i32 m_188;     // +0x188  object id (warlord battle-event id / game-object archive-cue id;
+                   //         the manager's CMapPtrToPtr key - g_wwdObjIdCounter stamp)
+    i32 m_18c;     // +0x18c  (WwdFile stamp: -1; low byte = dot color / setup flag)
     // +0x190  the cached frame NUMBER (WwdFile stamp: -1). The ex m_resolvedLayer
     // "grunt-indicator role" was the same meaning: the frame index the glyph
     // resolved from.
@@ -262,7 +305,14 @@ struct CGameObject {
     // The ex m_mappedLayer "grunt-indicator role" was the same store: the resolved
     // glyph frame.
     CImage* m_layer;
-    i32 m_19c; // +0x19c  (WwdFile stamp: 0)
+    union {              // +0x19c  role-union (mirrors +0x194): the resolved sound-cue
+                         //         value (ReadState hands it straight to
+                         //         CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue*))
+                         //         vs the cached anim sprite (LookupAnimSprite);
+                         //         WwdFile stamps 0.
+        LeafCue* m_19c;
+        CSprite* m_19cSprite;
+    };
     // +0x1a0..+0x1db: the embedded CAniAdvanceCursor (one real 0x3c member; vptr
     // @+0x1a0, end +0x1dc == SIZE(CGameObject)). The former per-leaf sink views
     // (WwdAnimSub / CAnimSink / CTeleAnimSink / CWarlordAnimSub / CGruntPuddleSink /

@@ -1085,7 +1085,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                     node = node->m_next;
                     CGameObject* pl = cur->m_gameObj;
                     if (pl->m_latchedAnimId < zBound) { // z-key vs the plane's z bound
-                        pl->Draw(visitor);
+                        pl->Render(static_cast<CDDrawSurfacePair*>(visitor));
                     } else {
                         node = cur;
                         blocked = 1;
@@ -1099,7 +1099,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
         while (node != 0) {
             CDDrawGroupNode* cur = node;
             node = node->m_next;
-            cur->m_gameObj->Draw(visitor);
+            cur->m_gameObj->Render(static_cast<CDDrawSurfacePair*>(visitor));
         }
         return;
     }

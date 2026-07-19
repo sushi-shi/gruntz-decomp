@@ -2518,7 +2518,7 @@ i32 CPlay::NotifyVisibleEntities() {
             || id == (void*)VisFn_40fe90 || id == (void*)VisFn_49b410
             || id == (void*)VisFn_IntersectRect || id == (void*)VisFn_49b310
             || id == (void*)VisFn_CBattlezDlg || id == (void*)VisFn_4fce80) {
-            o->Draw(held); // slot 11 (+0x2c) - CGameObject's real per-object draw hook
+            o->Render(held); // slot 11 (+0x2c) - CGameObject's real per-object render hook
         }
         node = node->m_next;
     }

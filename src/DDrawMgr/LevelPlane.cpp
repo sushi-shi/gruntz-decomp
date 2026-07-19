@@ -917,7 +917,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
-    if (obj->Load(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
+    if (obj->Setup(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
         obj->Delete(1);
         return 0;
     }

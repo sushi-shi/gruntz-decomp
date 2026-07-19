@@ -27,9 +27,9 @@
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // m_mgr->m_drawTarget->m_frontPair (Test cull extent)
-#include <DDrawMgr/DDrawWorkerCache.h>    // m_mgr->m_workerCache (FindKeyOfValue_165360 / m_10)
-#include <Gruntz/GameLevel.h>             // m_mgr->m_level->m_mainPlane (Test camera cull)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_0c->m_drawTarget->m_frontPair (Test cull extent)
+#include <DDrawMgr/DDrawWorkerCache.h>    // m_0c->m_workerCache (FindKeyOfValue_165360 / m_10)
+#include <Gruntz/GameLevel.h>             // m_0c->m_level->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
@@ -78,7 +78,7 @@
 // The "spatial grid" was never a grid: it is the draw surface, and Test()'s non-camera
 // branch culls against the surface's width/height.
 //
-// the canonical CDDrawSurfaceMgr (m_mgr, typed in <Gruntz/WwdGameObject.h>) and CGameLevel:
+// the canonical CDDrawSurfaceMgr (m_0c, typed in <Gruntz/WwdGameObject.h>) and CGameLevel:
 //   WwdMgr member      -> CDDrawSurfaceMgr member (same offset)
 //   -----------------     -------------------------------------
 //   m_drawTarget +0x04    m_drawTarget         (CDDrawSubMgrPages*, ->m_frontPair = cull extent)
@@ -246,7 +246,7 @@ i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
     m_0c->m_soundRegistry->m_10.Lookup(name, (void*&)spr);
     if (spr != 0) {
-        m_19c = reinterpret_cast<i32>(spr); // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
+        m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
     }
     return 0;
@@ -361,11 +361,11 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 
 // ---------------------------------------------------------------------------
 // CWwdGameObject::Test (0x1509c0): on-screen visibility cull. Derive the object's
-// four edges from its centre (m_posX/m_posY) and the sprite half-extents (m_198),
+// four edges from its centre (m_screenX/m_screenY) and the sprite half-extents (m_198),
 // then bounds-check against either the camera rect (when the 0x40000 flag is set)
 // or the plane grid limits. __thiscall, 0 args.
 // @early-stop
-// regalloc wall (~73%): the four derived edges + m_198/m_mgr/m_flags want 4 callee-saved
+// regalloc wall (~73%): the four derived edges + m_198/m_0c/m_flags want 4 callee-saved
 // regs where retail packs them into 3 (ebx/esi/edi, m_198 kept in edi, m_flags tested from
 // memory). No source spelling reproduces retail's exact edge-register assignment; both the
 // camera-rect and grid-extent bounds checks are byte-faithful.
@@ -375,14 +375,14 @@ i32 CWwdGameObject::Test() {
     if (!e) {
         return 0;
     }
-    i32 right = m_posX + e->m_anchorX;
-    i32 left = m_posX - e->m_anchorX;
-    i32 top = m_posY - e->m_anchorY;
-    i32 bottom = m_posY + e->m_anchorY;
+    i32 right = m_screenX + e->m_anchorX;
+    i32 left = m_screenX - e->m_anchorX;
+    i32 top = m_screenY - e->m_anchorY;
+    i32 bottom = m_screenY + e->m_anchorY;
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
-        RECT* r = (RECT*)((char*)m_mgr->m_level->m_mainPlane + 0x40);
+        RECT* r = (RECT*)((char*)m_0c->m_level->m_mainPlane + 0x40);
         if (right < r->left) {
             return 0;
         }
@@ -396,7 +396,7 @@ i32 CWwdGameObject::Test() {
     } else {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
-        CDDrawSurfacePair* g = m_mgr->m_drawTarget->m_frontPair;
+        CDDrawSurfacePair* g = m_0c->m_drawTarget->m_frontPair;
         if (right < 0) {
             return 0;
         }
@@ -419,7 +419,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_cmdMap.Find((CSerialArchive*)a1, type, a3, a4) == 0) {
+    if (m_1a0.Find((CSerialArchive*)a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -453,7 +453,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
     if (ar == 0) {
         return 0;
     }
-    ar->Write(&m_dotColor, 4);
+    ar->Write(&m_18c, 4);
     ar->Write(&m_190, 4);
     i32 flag = 0;
     if (m_layer != 0) {
@@ -470,7 +470,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = m_mgr->m_soundRegistry->FindKeyOfValue_158570(m_19c);
+        CString str = m_0c->m_soundRegistry->FindKeyOfValue_158570(m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -491,7 +491,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     if (ar == 0) {
         return 0;
     }
-    ar->Read(&m_dotColor, 4);
+    ar->Read(&m_18c, 4);
     ar->Read(&m_190, 4);
     i32 flag;
     ar->Read(&flag, 4);
@@ -504,7 +504,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // number against the sprite's valid range, then index its frame array. The former
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
-        CDDrawSurfaceMgr* mgr = m_mgr;
+        CDDrawSurfaceMgr* mgr = m_0c;
         mgr->m_imageRegistry->m_10map.Lookup(name, (CObject*&)found);
         m_sprite = found;
         if (found != 0 && flag == 1) {
@@ -525,7 +525,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // m_28's map is a CMapStringToPtr - a genuinely void*-valued container, so the
         // element cast is authentic (it is the map's own interface, not a missing type).
         void* found = 0;
-        CDDrawSurfaceMgr* mgr = m_mgr;
+        CDDrawSurfaceMgr* mgr = m_0c;
         mgr->m_soundRegistry->m_10.Lookup(name, found);
         m_19c = (LeafCue*)found;
     }
@@ -544,18 +544,18 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
 RVA(0x00150d60, 0x14d)
 i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     Helper164790(a1, a2);
-    m_posX = a1;
-    m_posY = a2;
-    m_sortKey = a3;
+    m_screenX = a1;
+    m_screenY = a2;
+    m_latchedAnimId = a3;
     m_104 = a1;
-    AnimWorkerObj* w = m_worker;
+    AnimWorkerObj* w = m_7c;
     m_108 = a2;
     m_10c = a3;
-    m_f8 = 10;
-    m_fc = 10;
+    m_strideX = 10;
+    m_strideY = 10;
     m_118 = 0;
     m_114 = 0;
-    m_128 = 0;
+    m_placeMode = 0;
     m_124 = 0;
     m_11c = 0;
     m_120 = 0;
@@ -574,21 +574,21 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
     m_80 = 0;
     m_88 = 0;
-    m_90 = 0;
+    m_collideWorker = 0;
     m_84 = 0;
     m_8c = 0;
-    m_94 = 0;
-    m_e8 = 0;
+    m_hitOther = 0;
+    m_collCategory = 0;
     m_ec = 0;
     m_f0 = 0;
-    m_f4 = 0;
-    m_134 = static_cast<i32>(0x80000000);
-    m_144 = static_cast<i32>(0x80000000);
+    m_collMask = 0;
+    m_extentL = static_cast<i32>(0x80000000);
+    m_areaL = static_cast<i32>(0x80000000);
     m_154 = static_cast<i32>(0x80000000);
     m_region.m_object = this;
-    m_region.m_x = m_posX;
-    m_region.m_y = m_posY;
-    i32 wf = m_worker->m_08;
+    m_region.m_x = m_screenX;
+    m_region.m_y = m_screenY;
+    i32 wf = m_7c->m_08;
     if (wf & 1) {
         m_flags |= 0x800000;
         return 1;
@@ -771,17 +771,17 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     switch (type) {
         case 3: {
             m_184 = 0;
-            if (m_linkedObject != 0) {
-                m_184 = m_linkedObject->m_188; // the linked object's +0x188 id
+            if (m_carrier != 0) {
+                m_184 = m_carrier->m_188; // the linked object's +0x188 id
             }
-            w = m_worker;
+            w = m_7c;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = (void*)0x50;
-            w->m_notify((CGameObject*)this);
-            w = m_worker;
+            w->m_notify(this);
+            w = m_7c;
             if (w->m_1c == (void*)0x50) {
                 w->m_1c = saved;
             }
@@ -791,14 +791,14 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             if (Serialize(a1) == 0) {
                 return 0;
             }
-            w = m_worker;
+            w = m_7c;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = (void*)0x51;
-            w->m_notify((CGameObject*)this);
-            w = m_worker;
+            w->m_notify(this);
+            w = m_7c;
             if (w->m_1c == (void*)0x51) {
                 w->m_1c = saved;
             }
@@ -808,14 +808,14 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             if (Sub151780(a1) == 0) {
                 return 0;
             }
-            w = m_worker;
+            w = m_7c;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = (void*)0x52;
-            w->m_notify((CGameObject*)this);
-            w = m_worker;
+            w->m_notify(this);
+            w = m_7c;
             if (w->m_1c == (void*)0x52) {
                 w->m_1c = saved;
             }
@@ -825,30 +825,30 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (m_mgr->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
-                    m_linkedObject = 0;
+                if (m_0c->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
+                    m_carrier = 0;
                 } else {
-                    m_linkedObject =
+                    m_carrier =
                         (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
-                m_linkedObject = 0;
+                m_carrier = 0;
             }
-            w = m_worker;
+            w = m_7c;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = (void*)0x53;
-            w->m_notify((CGameObject*)this);
-            w = m_worker;
+            w->m_notify(this);
+            w = m_7c;
             if (w->m_1c == (void*)0x53) {
                 w->m_1c = saved;
             }
             break;
         }
     }
-    return m_worker->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
+    return m_7c->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -868,13 +868,13 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     strcpy(tmp, m_name);
     ar->Write(tmp, 0x80);
 
-    ar->Write(&m_e4, 4);
-    ar->Write(&m_e8, 4);
+    ar->Write(&m_moveMode, 4);
+    ar->Write(&m_collCategory, 4);
     ar->Write(&m_ec, 4);
     ar->Write(&m_f0, 4);
-    ar->Write(&m_f4, 4);
-    ar->Write(&m_f8, 4);
-    ar->Write(&m_fc, 4);
+    ar->Write(&m_collMask, 4);
+    ar->Write(&m_strideX, 4);
+    ar->Write(&m_strideY, 4);
     ar->Write(&m_100, 4);
     ar->Write(&m_104, 4);
     ar->Write(&m_108, 4);
@@ -885,51 +885,51 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     ar->Write(&m_11c, 4);
     ar->Write(&m_120, 4);
     ar->Write(&m_124, 4);
-    ar->Write(&m_128, 4);
+    ar->Write(&m_placeMode, 4);
     ar->Write(&m_12c, 4);
     ar->Write(&m_130, 4);
-    ar->Write(&m_134, 0x10);
-    ar->Write(&m_144, 0x10);
+    ar->Write(&m_extentL, 0x10);
+    ar->Write(&m_areaL, 0x10);
     ar->Write(&m_154, 0x10);
     ar->Write(&m_164, 4);
     ar->Write(&m_168, 4);
     ar->Write(&m_16c, 4);
     ar->Write(&m_170, 4);
-    ar->Write(&m_174, 4);
-    ar->Write(&m_178, 4);
+    ar->Write(&m_deltaX, 4);
+    ar->Write(&m_deltaY, 4);
     ar->Write(&m_17c, 4);
     ar->Write(&m_180, 4);
     ar->Write(&m_10, 4);
     ar->Write(&m_14, 4);
     ar->Write(&m_lastX, 0x24); // +0x18 render-state block
-    ar->Write(&m_40, 4);
+    ar->Write(&m_stateFlags, 4);
     ar->Write(&m_44, 4);
     ar->Write(&m_48, 4);
-    ar->Write(&m_50, 4);
-    ar->Write(&m_54, 4);
-    ar->Write(&m_58, 4);
-    ar->Write(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Write(&m_drawFillCmd, 4);
+    ar->Write(&m_fillFraction, 4);
+    ar->Write(&m_drawActive, 4);
+    ar->Write(&m_64, 0x10); // +0x64 clip rect
     ar->Write(&m_04, 4);
     ar->Write(&m_flags, 4);
     ar->Write(&m_184, 4);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
+        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
+        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_90 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_90));
+    if (m_collideWorker != 0) {
+        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_collideWorker));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -956,13 +956,13 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     *(CString*)&m_name = name;
 
-    ar->Read(&m_e4, 4);
-    ar->Read(&m_e8, 4);
+    ar->Read(&m_moveMode, 4);
+    ar->Read(&m_collCategory, 4);
     ar->Read(&m_ec, 4);
     ar->Read(&m_f0, 4);
-    ar->Read(&m_f4, 4);
-    ar->Read(&m_f8, 4);
-    ar->Read(&m_fc, 4);
+    ar->Read(&m_collMask, 4);
+    ar->Read(&m_strideX, 4);
+    ar->Read(&m_strideY, 4);
     ar->Read(&m_100, 4);
     ar->Read(&m_104, 4);
     ar->Read(&m_108, 4);
@@ -973,30 +973,30 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(&m_11c, 4);
     ar->Read(&m_120, 4);
     ar->Read(&m_124, 4);
-    ar->Read(&m_128, 4);
+    ar->Read(&m_placeMode, 4);
     ar->Read(&m_12c, 4);
     ar->Read(&m_130, 4);
-    ar->Read(&m_134, 0x10);
-    ar->Read(&m_144, 0x10);
+    ar->Read(&m_extentL, 0x10);
+    ar->Read(&m_areaL, 0x10);
     ar->Read(&m_154, 0x10);
     ar->Read(&m_164, 4);
     ar->Read(&m_168, 4);
     ar->Read(&m_16c, 4);
     ar->Read(&m_170, 4);
-    ar->Read(&m_174, 4);
-    ar->Read(&m_178, 4);
+    ar->Read(&m_deltaX, 4);
+    ar->Read(&m_deltaY, 4);
     ar->Read(&m_17c, 4);
     ar->Read(&m_180, 4);
     ar->Read(&m_10, 4);
     ar->Read(&m_14, 4);
     ar->Read(&m_lastX, 0x24); // +0x18 render-state block
-    ar->Read(&m_40, 4);
+    ar->Read(&m_stateFlags, 4);
     ar->Read(&m_44, 4);
     ar->Read(&m_48, 4);
-    ar->Read(&m_50, 4);
-    ar->Read(&m_54, 4);
-    ar->Read(&m_58, 4);
-    ar->Read(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Read(&m_drawFillCmd, 4);
+    ar->Read(&m_fillFraction, 4);
+    ar->Read(&m_drawActive, 4);
+    ar->Read(&m_64, 0x10); // +0x64 clip rect
     ar->Read(&m_04, 4);
     ar->Read(&m_flags, 4);
     ar->Read(&m_184, 4);
@@ -1004,8 +1004,8 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_workerCache->m_10.Lookup(name, found);
-        if (((CGameObject*)this)->EnsureWorker80((CGameObject*)found) == 0) {
+        m_0c->m_workerCache->m_10.Lookup(name, found);
+        if (this->EnsureWorker80(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }
@@ -1013,8 +1013,8 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_workerCache->m_10.Lookup(name, found);
-        if (((CGameObject*)this)->EnsureWorker88((CGameObject*)found) == 0) {
+        m_0c->m_workerCache->m_10.Lookup(name, found);
+        if (this->EnsureWorker88(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }
@@ -1022,8 +1022,8 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_workerCache->m_10.Lookup(name, found);
-        if (((CGameObject*)this)->EnsureWorker90((CGameObject*)found) == 0) {
+        m_0c->m_workerCache->m_10.Lookup(name, found);
+        if (this->EnsureWorker90(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }
@@ -1033,7 +1033,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // ---------------------------------------------------------------------------
 // Sub151b90 (0x151b90): cache the linked object (m_98) resolved from the
 // serialized key handle (m_184) through the manager's kill-cue map
-// (m_mgr->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
+// (m_0c->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
 // caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
 // @early-stop
 // Logic complete + verified (74.6%). Residual is a pure MSVC5 block-layout tiebreak:
@@ -1051,14 +1051,14 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
     }
     if (m_184 != 0) {
         void* found = 0;
-        if (m_mgr->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
-            m_linkedObject = 0;
+        if (m_0c->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
+            m_carrier = 0;
             return 1;
         }
-        m_linkedObject = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
+        m_carrier = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
         return 1;
     }
-    m_linkedObject = 0;
+    m_carrier = 0;
     return 1;
 }
 
@@ -1078,12 +1078,12 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     if (ar == 0) {
         return 0;
     }
-    AnimWorkerObj* w = m_worker;
+    AnimWorkerObj* w = m_7c;
     if (w == 0) {
         return 0;
     }
     if (w->m_1c == 0) {
-        w->m_notify((CGameObject*)this);
+        w->m_notify(this);
     }
 
     i32 ebx = 0;
@@ -1091,7 +1091,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
         ebx = this->Vfunc40();
     }
 
-    w = m_worker;
+    w = m_7c;
     i32 edi = 0;
     if (w->m_logic != 0) {
         edi = w->m_logic->GetTypeTag();
@@ -1101,14 +1101,14 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_00 = m_04;
     rec.m_08 = this->GetTypeId();
     rec.m_04 = m_188;
-    rec.m_94 = m_posX;
-    rec.m_98 = m_posY;
-    rec.m_9c = m_sortKey;
+    rec.m_94 = m_screenX;
+    rec.m_98 = m_screenY;
+    rec.m_9c = m_latchedAnimId;
     rec.m_0c = ebx;
     rec.m_10 = edi;
 
     {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_worker));
+        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_7c));
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
@@ -1193,7 +1193,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
 
 // ---------------------------------------------------------------------------
 // AnimWorkerObj::Clear (0x151e70, vtable slot 7): reset the worker - zero the
-// notify callback, release the owned +0x14 buffer (+ its m_178 size),
+// notify callback, release the owned +0x14 buffer (+ its m_deltaY size),
 // scalar-delete the bound logic leaf (slot 0, arg 1), zero m_170.
 // ---------------------------------------------------------------------------
 RVA(0x00151e70, 0x3b)
