@@ -45,8 +45,10 @@ _ZVEC_FAMILY = {"_zvec", "zDArray", "CTypeKeyColl", "CActReg", "CActColl"}
 _ZVEC_FIELDS = {"m_alloc", "m_base", "m_cur", "m_spare"}
 
 
-def _zvec_origin(op):
-    """True if the operand expression reads a _zvec-family storage field."""
+def _zvec_origin(op, tainted=None):
+    """True if the operand expression reads a _zvec-family storage field, or (one
+    dataflow hop) a local whose initializer/assignment did (`tainted` = the USR set
+    of such locals, collected per function body)."""
     stack = [op]
     depth = 0
     while stack and depth < 400:
@@ -57,8 +59,35 @@ def _zvec_origin(op):
             par = d.semantic_parent if d is not None else None
             if par is not None and par.spelling in _ZVEC_FAMILY:
                 return True
+        if tainted and n.kind == cidx.CursorKind.DECL_REF_EXPR:
+            d = n.referenced
+            if d is not None and d.get_usr() in tainted:
+                return True
         stack.extend(n.get_children())
     return False
+
+
+def _collect_tainted(fn_body):
+    """USRs of locals initialized or assigned from _zvec storage fields."""
+    out = set()
+    stack = [fn_body]
+    depth = 0
+    while stack and depth < 20000:
+        depth += 1
+        n = stack.pop()
+        if n.kind == cidx.CursorKind.VAR_DECL:
+            kids = list(n.get_children())
+            if kids and _zvec_origin(kids[-1]):
+                out.add(n.get_usr())
+        elif n.kind == cidx.CursorKind.BINARY_OPERATOR:
+            kids = list(n.get_children())
+            if len(kids) == 2 and kids[0].kind == cidx.CursorKind.DECL_REF_EXPR \
+                    and _zvec_origin(kids[1]):
+                d = kids[0].referenced
+                if d is not None and d.kind == cidx.CursorKind.VAR_DECL:
+                    out.add(d.get_usr())
+        stack.extend(n.get_children())
+    return out
 _HANDLE = {"HWND__", "HINSTANCE__", "HANDLE", "HDC__", "HBITMAP__", "HBRUSH__",
            "HICON__", "HMENU__", "HKEY__", "HFONT__", "HPALETTE__", "HRGN__"}
 
@@ -179,7 +208,11 @@ def main():
             sys.stderr.write("PARSE-FAIL %s: %s\n" % (e["file"], ex))
             continue
 
-        def visit(node, parent=None):
+        def visit(node, parent=None, tainted=None):
+            if node.kind in (cidx.CursorKind.FUNCTION_DECL, cidx.CursorKind.CXX_METHOD,
+                             cidx.CursorKind.CONSTRUCTOR, cidx.CursorKind.DESTRUCTOR) \
+                    and node.is_definition():
+                tainted = _collect_tainted(node)
             if node.kind == cidx.CursorKind.CXX_REINTERPRET_CAST_EXPR:
                 rel = _rel(node)
                 if rel:
@@ -192,7 +225,7 @@ def main():
                             b, frm, to = _classify(node.type.get_canonical(),
                                                    op.type.get_canonical())
                             if b in ("cross-class", "char-walk", "char-io", "other", "int-ptr") \
-                                    and _zvec_origin(op):
+                                    and _zvec_origin(op, tainted):
                                 b = "collection"  # _zvec runtime-stride storage origin
                             if b == "char-arith":
                                 # SPLIT: does the cast participate in pointer math?
@@ -222,7 +255,7 @@ def main():
                             counts[b] += 1
                             rows.append((b, "%s:%d" % (rel, off), frm, to))
             for ch in node.get_children():
-                visit(ch, node)
+                visit(ch, node, tainted)
 
         visit(tu.cursor)
         if (i + 1) % 40 == 0 or i + 1 == len(tus):
