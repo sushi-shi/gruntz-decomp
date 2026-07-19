@@ -273,8 +273,8 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CGameLevel* view = m_world->m_level;
-    i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.minX + sx;
-    i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.minY + sy;
+    i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.left + sx;
+    i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.top + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 

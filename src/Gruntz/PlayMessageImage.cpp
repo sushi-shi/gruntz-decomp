@@ -56,8 +56,8 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
             LevelCoordRect& vp = m_c->m_level->m_planeCtx;
-            i32 cx = vp.minX + (vp.maxX - vp.minX) / 2;
-            i32 cy = vp.minY + (vp.maxY - vp.minY) / 2;
+            i32 cx = vp.left + (vp.right - vp.left) / 2;
+            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
             LayerBlitFrame(m_c, frame, cx, cy, useFront, 1);
         }
     }

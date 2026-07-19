@@ -59,10 +59,10 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     // dword loads - the member-wise copy of the 4-int rect below lowers to exactly those.
     const LevelCoordRect& lr = m_c->m_level->m_planeCtx;
     RECT src;
-    src.left = lr.minX;
-    src.top = lr.minY;
-    src.right = lr.maxX;
-    src.bottom = lr.maxY;
+    src.left = lr.left;
+    src.top = lr.top;
+    src.right = lr.right;
+    src.bottom = lr.bottom;
     RECT dst;
     ::CopyRect(&dst, &src);
     i32 cx = dst.left + (dst.right - dst.left) / 2;

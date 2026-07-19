@@ -159,10 +159,10 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     m_height = h;
     m_tilePixW = tileW;
     m_tilePixH = tileH;
-    m_bounds50.minX = bounds->minX;
-    m_bounds50.minY = bounds->minY;
-    m_bounds50.maxX = bounds->maxX;
-    m_bounds50.maxY = bounds->maxY;
+    m_bounds50.left = bounds->left;
+    m_bounds50.top = bounds->top;
+    m_bounds50.right = bounds->right;
+    m_bounds50.bottom = bounds->bottom;
     m_94 = depthX;
     m_98 = depthY;
     m_fillRect.left = 0;
@@ -171,8 +171,8 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     m_wrapW = tileW * w;
     m_wrapH = tileH * h;
     m_fillRect.right = tileW;
-    i32 pw = m_bounds50.maxX - m_bounds50.minX + 1;
-    i32 ph = m_bounds50.maxY - m_bounds50.minY + 1;
+    i32 pw = m_bounds50.right - m_bounds50.left + 1;
+    i32 ph = m_bounds50.bottom - m_bounds50.top + 1;
     m_viewW = pw;
     m_viewH = ph;
     m_anchorX = pw / 2;
@@ -196,12 +196,12 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     if (name != 0) {
         strcpy(m_name, name);
     }
-    if (bounds->minX != static_cast<i32>(0x80000000)) {
+    if (bounds->left != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
         CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(bounds));
         m_bounds50 = local;
-        i32 pw2 = m_bounds50.maxX - m_bounds50.minX + 1;
-        i32 ph2 = m_bounds50.maxY - m_bounds50.minY + 1;
+        i32 pw2 = m_bounds50.right - m_bounds50.left + 1;
+        i32 ph2 = m_bounds50.bottom - m_bounds50.top + 1;
         m_viewW = pw2;
         m_viewH = ph2;
         m_anchorX = pw2 / 2;
@@ -377,12 +377,12 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
 // ===========================================================================
 RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
-    if (coords->minX != static_cast<i32>(0x80000000)) {
+    if (coords->left != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
         CopyRect(reinterpret_cast<RECT*>(&local), reinterpret_cast<RECT*>(coords));
         m_bounds50 = local;
-        i32 width = m_bounds50.maxX - m_bounds50.minX + 1;
-        i32 height = m_bounds50.maxY - m_bounds50.minY + 1;
+        i32 width = m_bounds50.right - m_bounds50.left + 1;
+        i32 height = m_bounds50.bottom - m_bounds50.top + 1;
         m_viewW = width;
         m_viewH = height;
         m_anchorX = width / 2;

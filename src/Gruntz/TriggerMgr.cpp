@@ -132,10 +132,10 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
     CGameLevel* view = m_world->m_level;
-    r.left += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
-    r.top += view->m_mainPlane->m_originY - view->m_planeCtx.minY;
-    r.right += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
-    r.bottom += view->m_mainPlane->m_originY - view->m_planeCtx.minY;
+    r.left += view->m_mainPlane->m_originX - view->m_planeCtx.left;
+    r.top += view->m_mainPlane->m_originY - view->m_planeCtx.top;
+    r.right += view->m_mainPlane->m_originX - view->m_planeCtx.left;
+    r.bottom += view->m_mainPlane->m_originY - view->m_planeCtx.top;
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++) {
             CTmCell* g = m_grid[j];
@@ -758,8 +758,8 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     }
     CGameLevel* view = m_world->m_level;
     CPlaneRender* pl = view->m_mainPlane;
-    i32 ox = pl->m_originX - view->m_planeCtx.minY + row;
-    i32 oy = pl->m_originY - view->m_planeCtx.minX + col;
+    i32 ox = pl->m_originX - view->m_planeCtx.top + row;
+    i32 oy = pl->m_originY - view->m_planeCtx.left + col;
     this->PlaceCell(oy, ox, 1);
     return 1;
 }

@@ -28,9 +28,9 @@
 // [minX,maxX) x [minY,maxY); minX==0x80000000 is the "unset" sentinel. (Moved here
 // from GameLevel.h - the plane embeds one.)
 SIZE_UNKNOWN(LevelCoordRect);
-struct LevelCoordRect {
-    i32 minX, minY, maxX, maxY;
-};
+// (a REAL RECT - min/max are left/top/right/bottom; the LevelCoordRect->tagRECT
+// casts were the proof. 2026-07-19.)
+typedef struct tagRECT LevelCoordRect;
 
 // PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
 // (its ADDRESS is passed into CDDSurface::BltEx by Draw). A zero-size marker so the

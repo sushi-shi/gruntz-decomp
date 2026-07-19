@@ -646,14 +646,14 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     s.bottom = s.top + h;
     dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_loadResult);
     info->m_outLeft = dleft;
-    info->m_outRect.m_00 = dleft;
+    info->m_outRect.left = dleft;
     info->m_outTop = dtop;
     info->m_outWidth = w;
-    info->m_outRect.m_04 = dtop;
+    info->m_outRect.top = dtop;
     info->m_outHeight = h;
     info->m_result = 0;
-    info->m_outRect.m_08 = dright;
-    info->m_outRect.m_0c = dbottom;
+    info->m_outRect.right = dright;
+    info->m_outRect.bottom = dbottom;
 }
 
 // ---------------------------------------------------------------------------

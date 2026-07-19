@@ -2243,10 +2243,10 @@ i32 CPlay::ClampViewport(i32 inset) {
     CDDrawSurfaceMgr* v = m_c;
     LevelCoordRect* vp = &v->m_level->m_planeCtx;
     RECT r;
-    r.left = vp->minX;
-    r.top = vp->minY;
-    r.right = vp->maxX;
-    r.bottom = vp->maxY;
+    r.left = vp->left;
+    r.top = vp->top;
+    r.right = vp->right;
+    r.bottom = vp->bottom;
 
     i32 clamped = 0;
     if (r.right - r.left > 0xc0) {
@@ -2544,8 +2544,8 @@ void CPlay::StepScroll() {
     CGameLevel* v = m_c->m_level;
     CLevelPlane* geom = v->m_mainPlane;
 
-    i32 y = m_cursorY + (geom->m_originY - v->m_planeCtx.minY); // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_originX + (m_cursorX - v->m_planeCtx.minX); // [edx]; +=m_cursorX-m_10
+    i32 y = m_cursorY + (geom->m_originY - v->m_planeCtx.top); // [edx+4]-m_14; +=m_cursorY
+    i32 x = geom->m_originX + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -2633,7 +2633,7 @@ void CPlay::LoadSBITextEdges(char* name) {
 
     RECT rect;
     LevelCoordRect& vp = m_c->m_level->m_planeCtx;
-    i32 l = vp.minX, t = vp.minY, r = vp.maxX, b = vp.maxY;
+    i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
     i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
     i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
     i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
@@ -2679,7 +2679,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         // the viewport rect (m_c->m_level->m_viewport) ptr (edx) does not survive
         // the GetInt calls, so all 4 corners are read up front.
         LevelCoordRect& vp = m_c->m_level->m_planeCtx;
-        i32 l = vp.minX, t = vp.minY, r = vp.maxX, b = vp.maxY;
+        i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
         i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
         i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
         i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
@@ -3960,7 +3960,7 @@ i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
         return 1;
     }
     LevelCoordRect& vp = m_c->m_level->m_planeCtx;
-    if (x >= vp.minX && x <= vp.maxX && y >= vp.minY && y <= vp.maxY) {
+    if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
         return 1;
     }
     m_guts->ClickAt_ff9d0(a, x, y);
@@ -4056,8 +4056,8 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
     }
 
     CGameLevel* h = m_4->m_world->m_level;
-    i32 px = h->m_mainPlane->m_originX - h->m_planeCtx.minX + x;
-    i32 py = h->m_mainPlane->m_originY - h->m_planeCtx.minY + y;
+    i32 px = h->m_mainPlane->m_originX - h->m_planeCtx.left + x;
+    i32 py = h->m_mainPlane->m_originY - h->m_planeCtx.top + y;
     for (i32 i = 0; i < markerCount(); i++) {
         CHitMarker* e = markerData()[i];
         if (e == 0) {
@@ -4192,10 +4192,10 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     //  path is the fall-through "success" so the OUTSIDE block floats to the
     //  tail; see docs/patterns/nested-if-success-deepest-error-tail.md.)
     LevelCoordRect box = m_c->m_level->m_planeCtx;
-    left = box.minX;
-    top = box.minY;
-    right = box.maxX;
-    bottom = box.maxY;
+    left = box.left;
+    top = box.top;
+    right = box.right;
+    bottom = box.bottom;
     if (x >= left && x <= right && y >= top && y <= bottom) {
         // INSIDE the box -> finish the drag.
         if (m_dragInProgress != 0) {
@@ -4232,8 +4232,8 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             }
         }
         CGameLevel* v = m_c->m_level;
-        i32 wx = v->m_mainPlane->m_originX - v->m_planeCtx.minX + x;
-        i32 wy = v->m_mainPlane->m_originY - v->m_planeCtx.minY + y;
+        i32 wx = v->m_mainPlane->m_originX - v->m_planeCtx.left + x;
+        i32 wy = v->m_mainPlane->m_originY - v->m_planeCtx.top + y;
         m_4->m_cmdGrid->PlaceObjectFull(wx, wy); // 0x2ca7 -> @0x78a50
         return 1;
     }
@@ -4490,8 +4490,8 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
         CGruntzMgr* w = m_4;
         CGameLevel* geom = w->m_world->m_level;
         CLevelPlane* cam = geom->m_mainPlane;
-        i32 sx = cam->m_originX - geom->m_planeCtx.minX + xr;
-        i32 sy = cam->m_originY - geom->m_planeCtx.minY + y;
+        i32 sx = cam->m_originX - geom->m_planeCtx.left + xr;
+        i32 sy = cam->m_originY - geom->m_planeCtx.top + y;
         if (m_dragInhibit1 == 0) {
             goto mode_36c;
         }
@@ -4551,8 +4551,8 @@ mode_36c:
         // inside the world rect: place a waypoint through the trigger grid
         CGameLevel* ds = m_c->m_level;
         CLevelPlane* cam = ds->m_mainPlane;
-        i32 wx = cam->m_originX - ds->m_planeCtx.minX + xr;
-        i32 wy = cam->m_originY - ds->m_planeCtx.minY + y;
+        i32 wx = cam->m_originX - ds->m_planeCtx.left + xr;
+        i32 wy = cam->m_originY - ds->m_planeCtx.top + y;
         i32 tok = *reinterpret_cast<char*>(&m_cursorFrame);
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
             w->m_cmdSubMgr->EnqueueSingle(1, static_cast<char>(a), static_cast<char>(y), 8, 0, 0, static_cast<char>(tok), 0);
@@ -4800,12 +4800,12 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
         return 1;
     }
     CGameLevel* ph = m_4->m_world->m_level;
-    if (x < ph->m_planeCtx.maxX && x >= ph->m_planeCtx.minX && y < ph->m_planeCtx.maxY
-        && y >= ph->m_planeCtx.minY) {
+    if (x < ph->m_planeCtx.right && x >= ph->m_planeCtx.left && y < ph->m_planeCtx.bottom
+        && y >= ph->m_planeCtx.top) {
         CGameLevel* ds = m_c->m_level;
         CLevelPlane* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_originX - ds->m_planeCtx.minX + x;
-        i32 rawY = geom->m_originY - ds->m_planeCtx.minY + y;
+        i32 rawX = geom->m_originX - ds->m_planeCtx.left + x;
+        i32 rawY = geom->m_originY - ds->m_planeCtx.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
         i32 snapY = (rawY & ~0x1f) + 0x10;
         m_tileClickX = snapX;

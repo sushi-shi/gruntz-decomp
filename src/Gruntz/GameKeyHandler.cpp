@@ -609,10 +609,10 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         CGruntzMgr* h = self->m_4;
         i32 my = self->m_cursorY;
         LevelCoordRect* r = &h->m_world->m_level->m_planeCtx;
-        i32 x0 = r->minX;
-        i32 y0 = r->minY;
-        i32 x1 = r->maxX;
-        i32 y1 = r->maxY;
+        i32 x0 = r->left;
+        i32 y0 = r->top;
+        i32 x1 = r->right;
+        i32 y1 = r->bottom;
         i32 mx = self->m_cursorX;
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
@@ -634,15 +634,15 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 mx = self->m_cursorX;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_planeCtx;
-        i32 x0 = r->minX;
-        i32 y0 = r->minY;
-        i32 x1 = r->maxX;
-        i32 y1 = r->maxY;
+        i32 x0 = r->left;
+        i32 y0 = r->top;
+        i32 x1 = r->right;
+        i32 y1 = r->bottom;
         i32 my = self->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CPlaneRender* g = q->m_mainPlane;
-            i32 by = g->m_originY - q->m_planeCtx.minY + my;
-            i32 bx = g->m_originX - q->m_planeCtx.minX + mx;
+            i32 by = g->m_originY - q->m_planeCtx.top + my;
+            i32 bx = g->m_originX - q->m_planeCtx.left + mx;
             host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
@@ -655,8 +655,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 my = self->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CPlaneRender* g = q->m_mainPlane;
-        i32 by = ((g->m_originY - q->m_planeCtx.minY + my) & ~0x1f) + 0x10;
-        i32 bx = ((self->m_cursorX - q->m_planeCtx.minX + g->m_originX) & ~0x1f) + 0x10;
+        i32 by = ((g->m_originY - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
+        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_originX) & ~0x1f) + 0x10;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }

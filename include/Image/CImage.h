@@ -82,12 +82,9 @@ public:
 
 // A plain {left, top, right, bottom} rect (the sprite blitters copy the parent
 // clip rect into a stack BlitRect before CopyRect'ing it into the working rect).
-struct BlitRect {
-    i32 m_00; // left
-    i32 m_04; // top
-    i32 m_08; // right
-    i32 m_0c; // bottom
-};
+// (a REAL RECT - the m_00..m_0c quad's own comments said left/top/right/bottom,
+// and the BlitRect->const tagRECT casts at the Blt sites were the proof. 2026-07-19.)
+typedef struct tagRECT BlitRect;
 
 // The clip-region owner reached through CImageParent::m_24 by the sprite blitters:
 // its +0x10 is the active clip RECT (copied to a local, then CopyRect'd before

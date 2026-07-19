@@ -164,7 +164,7 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
     m_pairB[1] = 1000;
 
     // cl auto-stamps &??_7CGameLevel here (the derived phase of the two-phase store).
-    m_planeCtx.minX = LEVEL_COORD_UNSET;
+    m_planeCtx.left = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
     m_checksum = 0;
@@ -338,7 +338,7 @@ fail:
 // CGameLevel::IsLoaded (0x161190) adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
-    if (m_planeCtx.minX == LEVEL_COORD_UNSET) {
+    if (m_planeCtx.left == LEVEL_COORD_UNSET) {
         goto fail;
     }
     if (m_0c == 0) {
@@ -375,10 +375,10 @@ fail:
 // store order regressed it further (74.8%); not source-steerable. Deferred.
 RVA(0x0015d030, 0x8f)
 i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
-    m_planeCtx.minX = 0;
-    m_planeCtx.minY = 0;
-    m_planeCtx.maxX = w - 1;
-    m_planeCtx.maxY = h - 1;
+    m_planeCtx.left = 0;
+    m_planeCtx.top = 0;
+    m_planeCtx.right = w - 1;
+    m_planeCtx.bottom = h - 1;
     StampParamBlock(this);
     return 1;
 }
@@ -479,7 +479,7 @@ i32 CGameLevel::Unload() {
         }
     }
     m_imageSets.SetSize(0, -1);
-    m_planeCtx.minX = LEVEL_COORD_UNSET;
+    m_planeCtx.left = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
@@ -778,7 +778,7 @@ extern i32 __stdcall ResolveLevelName(EditSink* sink, i32 a, i32 b, i32 c);
 // not adjacent. Kept-in-place + flagged until the neighbour obj is reconstructed.)
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
-    if (x < r->maxX && x >= r->minX && y < r->maxY && y >= r->minY) {
+    if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
         return 1;
     }
     return 0;
@@ -893,14 +893,14 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 maxX = w - 1;
     i32 maxY = h - 1;
     LevelCoordRect rect;
-    m_planeCtx.minX = 0;
-    rect.minX = 0;
-    rect.maxY = maxY;
-    m_planeCtx.minY = 0;
-    rect.minY = 0;
-    rect.maxX = maxX;
-    m_planeCtx.maxX = maxX;
-    m_planeCtx.maxY = maxY;
+    m_planeCtx.left = 0;
+    rect.left = 0;
+    rect.bottom = maxY;
+    m_planeCtx.top = 0;
+    rect.top = 0;
+    rect.right = maxX;
+    m_planeCtx.right = maxX;
+    m_planeCtx.bottom = maxY;
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
