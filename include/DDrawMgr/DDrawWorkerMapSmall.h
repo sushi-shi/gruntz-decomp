@@ -41,8 +41,8 @@ class CDDrawWorkerMapSmall : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
 public:
-    virtual i32 IsReady();       // [5]  0x156cd0 (G obj)
-    virtual i32 Slot06_156db0(); // [6]  0x156db0 (G obj)
+    virtual i32 IsLoaded();      // [5]  0x156cd0 (G obj; the worker-gate - CWapObj-scheme slot 5)
+    virtual i32 IsReady();       // [6]  0x156db0 (G obj; own return-1 copy of the scheme default)
     virtual void DestroyAll();   // [7]  0x165810 (T obj)
     // [8] the class's REAL GetStateId (`mov eax,0x14; ret` @0x156cf0 - a Ghidra
     // recovery gap, declared-only). The old "GetStateId 0x157600" plain-method

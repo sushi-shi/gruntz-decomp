@@ -64,8 +64,8 @@ public:
     // The leaf vtable (??_7CDDrawSubMgrLeaf @0x5efc78) is 9 slots: 5 shared CObject
     // slots from CDDrawSubMgrGrandBase (slot 1 overridden below), then 4 leaf
     // virtuals at slots 5..8 in declaration order.
-    virtual i32 IsReady();        // [5] 0x1577a0 (G obj)
-    virtual i32 Slot06_152640();  // [6] 0x152640 (S2 obj)
+    virtual i32 IsLoaded();       // [5] 0x1577a0 (G obj; the worker-gate - CWapObj-scheme slot 5)
+    virtual i32 IsReady();        // [6] 0x152640 (S2 obj; own return-1 copy of the scheme default)
     virtual void Cleanup();       // [7] 0x152650 (S2 obj; tail-calls FreeAll)
     virtual void GetTypeId(); // [8] 0x154a00 (shared, declared-only)
 

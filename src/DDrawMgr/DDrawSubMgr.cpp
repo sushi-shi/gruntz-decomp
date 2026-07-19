@@ -250,7 +250,7 @@ CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall quartet (0x156cd0-0x157610).
 RVA(0x00156cd0, 0x16)
-i32 CDDrawWorkerMapSmall::IsReady() {
+i32 CDDrawWorkerMapSmall::IsLoaded() {
     if (m_0c == 0) {
         goto fail;
     }
@@ -281,7 +281,7 @@ CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
 }
 
 RVA(0x00156db0, 0x6)
-i32 CDDrawWorkerMapSmall::Slot06_156db0() {
+i32 CDDrawWorkerMapSmall::IsReady() {
     return 1;
 }
 
@@ -746,7 +746,7 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 
 // [5] 0x1577a0: leaf ready iff +0x0c is bound and the +0x04 status latch isn't -1.
 RVA(0x001577a0, 0x16)
-i32 CDDrawSubMgrLeaf::IsReady() {
+i32 CDDrawSubMgrLeaf::IsLoaded() {
     if (m_0c == 0) {
         goto fail;
     }

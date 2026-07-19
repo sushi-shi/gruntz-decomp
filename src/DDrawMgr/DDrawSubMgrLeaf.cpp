@@ -62,7 +62,7 @@ CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
 
 // The leaf vtable slots 6/7 (S2-resident tiny virtuals, out-of-line like retail).
 RVA(0x00152640, 0x6)
-i32 CDDrawSubMgrLeaf::Slot06_152640() {
+i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;
 }
 RVA(0x00152650, 0x5)
