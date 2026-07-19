@@ -7010,7 +7010,8 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
     if (!head) {
         return 0;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)this->m_c->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node
+        = reinterpret_cast<CDDrawGroupNode*>(this->m_c->m_childGroup->m_list.GetHeadPosition());
     while (node) {
         CGameObject* obj = node->m_gameObj;
         CDDrawGroupNode* nxt = node->m_next;

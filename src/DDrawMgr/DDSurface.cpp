@@ -101,7 +101,7 @@ void ClearImageCache_13e070() {
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
     if (a != 0) {
-        memcpy((char*)this + 0x10, (const void*)a, 0x6c);
+        memcpy(m_ddsd, (const void*)a, 0x6c); // the +0x10 DDSURFACEDESC scratch
     }
     return BlitIntoDesc(h);
 }
