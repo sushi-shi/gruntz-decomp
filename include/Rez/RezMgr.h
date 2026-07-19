@@ -265,17 +265,9 @@ public:
 // ---------------------------------------------------------------------------
 class CRezDirNode; // fwd (a CHashElement holds a CRezDirNode* sub-dir at +0x14)
 
-// A polymorphic stream object: the recursive read does
-//   ecx = src->m_stream (the object @ src+0x20)
-//   edx = *(void**)ecx   (its vtable)
-//   call [edx+8]         (the 3rd virtual slot) with this=ecx, args (off,0,size,buf)
-// So model it as a class with the read method at vtable slot index 2.
-class RezStream {
-public:
-    virtual void v0() = 0;
-    virtual void v1() = 0;
-    virtual i32 ReadAt(i32 off, i32 zero, u32 size, void* buf) = 0; // slot +0x08
-};
+// The polymorphic stream object at src+0x20 IS a CRezItmBase-family item: the
+// dispatched slot-2 (call [edx+8], args (off,0,size,buf)) is exactly CRezItmBase's
+// [2] Read(off, base, count, buf) - the RezStream dispatch view is dissolved.
 
 // The archive source object that the dir node points to at +0x18. Load checks
 // m_8 (nonzero) and m_1c (<=1) and reads through the stream at +0x20.
@@ -284,7 +276,7 @@ struct RezSrc {
     i32 m_8; // +0x08  (must be nonzero)
     char m_padc[0x1c - 0x0c];
     i32 m_1c;            // +0x1c  (must be <= 1)
-    RezStream* m_stream; // +0x20  (the polymorphic read stream)
+    CRezItmBase* m_stream; // +0x20  the polymorphic read stream (family item)
 };
 
 // The child collection embedded at CRezDirNode+0x38 is the canonical CHashBase
