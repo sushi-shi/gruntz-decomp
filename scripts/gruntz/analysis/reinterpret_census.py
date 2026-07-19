@@ -69,7 +69,8 @@ def _usr(d):
 
 
 def _bases(decl, seen):
-    for ch in decl.get_children():
+    d = decl.get_definition() or decl
+    for ch in d.get_children():
         if ch.kind == cidx.CursorKind.CXX_BASE_SPECIFIER:
             d = ch.type.get_declaration()
             u = _usr(d)
@@ -80,6 +81,8 @@ def _bases(decl, seen):
 
 
 def _hier_related(a, b):
+    a = a.get_definition() or a
+    b = b.get_definition() or b
     au, bu = _usr(a), _usr(b)
     if not au or not bu:
         return False
@@ -129,6 +132,8 @@ def _classify(tgt, opt):
             return "collection", on, tn
         if _hier_related(td, od):
             return "hier-related", on, tn
+        if td.get_definition() is None or od.get_definition() is None:
+            return "cross-incomplete", on, tn
         return "cross-class", on, tn
     return "other", on, tn
 
