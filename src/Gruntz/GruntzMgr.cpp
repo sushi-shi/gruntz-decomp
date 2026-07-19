@@ -281,7 +281,7 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 // the other. BroadcastCmd's fan-out calls it through the real declaration now, from
 // the owner's header - see <Gruntz/MapLogic.h> for why its arity is 4.)
 
-// The +0x60 timer/poll object (CGruntzMgr::m_timer; reloc-masked thiscalls).
+// The +0x60 timer/poll object (CGruntzMgr::m_cueSink; reloc-masked thiscalls).
 // SetVoiceVolume mirrors the latest input-state value into its +0x2c field; Stop
 // pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
 // broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
@@ -2607,7 +2607,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
-    CGruntSpawnConfig* timer = m_timer;
+    CGruntSpawnConfig* timer = m_cueSink;
     if (timer) {
         timer->m_gruntPercent = v;
     }
@@ -2779,8 +2779,8 @@ i32 CGruntzMgr::Quicksave() {
     if (reinterpret_cast<char*>(m_curState) + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
         return 0;
     }
-    if (m_timer) {
-        m_timer->Stop();
+    if (m_cueSink) {
+        m_cueSink->Stop();
     }
     FillSaveInfo(m_saveInfoRec, 0);
     if (g_gameReg->m_saveSink->Save(reinterpret_cast<i32>(m_saveInfoRec->m_serial), 0x81a7)) {
@@ -2802,8 +2802,8 @@ i32 CGruntzMgr::Quickload() {
     if (m_saveSink == 0) {
         return 0;
     }
-    if (m_timer) {
-        m_timer->DtorBody();
+    if (m_cueSink) {
+        m_cueSink->DtorBody();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
         // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
@@ -3070,7 +3070,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // ~78% block-layout wall: logic is exact and the cmd==7 arm + the whole fan-out
 // (options loop, m_cmdGrid/source/m_cmdSubMgr/m_tileGrid/hook/m_scoreHud) match byte for byte. Retail
 // emits the cmd==4 arm OUT-OF-LINE at the function tail (`cmp 4; je <end>`; the
-// 4-block jmps back into the shared m_timer->Tick), but MSVC here keeps it inline
+// 4-block jmps back into the shared m_cueSink->Tick), but MSVC here keeps it inline
 // between the gate and the cmd==7 test, shifting that one block. Pure basic-block
 // placement; case reorder doesn't move it (see docs/patterns/switch-cases-source-order.md).
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
@@ -3085,13 +3085,13 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
             if (PrepCmd4(a0) == 0) {
                 return 0;
             }
-            m_timer->Tick();
+            m_cueSink->Tick();
             break;
         case 7:
             if (PrepCmd7(a0) == 0) {
                 return 0;
             }
-            m_timer->Tick();
+            m_cueSink->Tick();
             break;
     }
 
@@ -3420,8 +3420,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     if (app == 0) {
         return;
     }
-    if (m_timer) {
-        m_timer->Stop();
+    if (m_cueSink) {
+        m_cueSink->Stop();
     }
     if (m_world) {
         RedrawMapIndex(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair));
@@ -3456,8 +3456,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 // self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
-    if (m_timer) {
-        m_timer->Stop();
+    if (m_cueSink) {
+        m_cueSink->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -3764,8 +3764,8 @@ void CGruntzMgr::Close() {
         if (m_sound) {
             cfg->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }
-        if (m_timer) {
-            cfg->SetValueDword("Voice_Volume", m_timer->m_gruntPercent);
+        if (m_cueSink) {
+            cfg->SetValueDword("Voice_Volume", m_cueSink->m_gruntPercent);
         }
         if (m_world && m_world->m_soundRegistry) {
             cfg->SetValueDword("Sound_Volume", g_sndCueTag);
@@ -3862,10 +3862,10 @@ void CGruntzMgr::Close() {
         operator delete(m_chatLog);
         m_chatLog = 0;
     }
-    if (m_timer) {
-        m_timer->Teardown();
-        operator delete(m_timer);
-        m_timer = 0;
+    if (m_cueSink) {
+        m_cueSink->Teardown();
+        operator delete(m_cueSink);
+        m_cueSink = 0;
     }
     if (m_world) {
         delete m_world; // virtual ~ -> the flagged slot-1 ??_G dispatch
@@ -4067,8 +4067,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     if (dlgProc == 0) {
         return 0;
     }
-    if (m_timer) {
-        m_timer->Stop();
+    if (m_cueSink) {
+        m_cueSink->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -4186,7 +4186,7 @@ CGruntzMgr::CGruntzMgr() {
     m_inputState = 0;
     m_saveSink = 0;
     m_chatLog = 0;
-    m_timer = 0;
+    m_cueSink = 0;
     m_cmdGrid = 0;
     m_cmdSubMgr = 0;
     m_tileGrid = 0;
@@ -4609,7 +4609,6 @@ SIZE_UNKNOWN(ScoreNotifier);
 SIZE_UNKNOWN(StateMgrBZ);
 SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
-SIZE_UNKNOWN(TimerObj);
 SIZE_UNKNOWN(CGameRegistry);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

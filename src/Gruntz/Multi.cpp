@@ -925,7 +925,7 @@ void ShowHudMessage(
 // /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_4->m_timer->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_4->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_40) {
         QuitToMenu();
@@ -1020,7 +1020,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_574 = 0;
     Mgr()->m_chatLog->FreeNodes();
     m_session->Reset(); // 0xbf150
-    Mgr()->m_timer->DtorBody();
+    Mgr()->m_cueSink->DtorBody();
     return 1;
 }
 
@@ -4164,7 +4164,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
     }
-    Mgr()->m_timer->DtorBody();
+    Mgr()->m_cueSink->DtorBody();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();

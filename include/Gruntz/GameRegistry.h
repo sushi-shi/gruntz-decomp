@@ -63,7 +63,8 @@ class CDDrawChildGroup; // +0x30 -> +0x08 the object collection / sprite factory
 namespace Utils {
     class RegistryHelper; // the +0x38 settings writer (<Utils/RegistryHelper.h>)
 }
-class CGruntCueSink;    // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
+class CGruntSpawnConfig;
+typedef CGruntSpawnConfig CGruntCueSink;    // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
                         // the pure-Win32 grunt-step TUs that can't pull Grunt.h,
                         // completed locally with just the 0x4039f4 6-arg cue - a
                         // data-less method handle, so layout-neutral, no cross-cast)

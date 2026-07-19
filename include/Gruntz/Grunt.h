@@ -101,7 +101,8 @@ typedef struct tagRECT CCueRect;
 // +0x18 receiver takes the death resolve in HandleCommand's 0x8106 cheat).
 // CDDrawSurfaceMgr (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
 
-class CGruntCueSink; // defined below (the 5-arg on-screen cue receiver)
+class CGruntSpawnConfig;                  // the +0x60 registry object (one class, three ex-names)
+typedef CGruntSpawnConfig CGruntCueSink; // cue-receiver face: methods live on CGruntSpawnConfig
 
 // CGameRegistry - the shared global singleton (*g_gameReg). The CGrunt
 // resolvers below read the visible-bounds gate (m_134, m_13c..m_148) and fire
@@ -172,19 +173,10 @@ extern "C" i32 GruntRand(); // stub
 // BuildEntranceAnimation fires a SIX-arg variant (a different cue overload, also
 // via g->m_60); modeled as a second method (CueA, ret 0x18). Both reloc-mask.
 // ---------------------------------------------------------------------------
-class CGrunt; // fwd-declared for CueA's first arg
+class CGrunt; // fwd (CueA/CueSpawn first arg; the resolvers below)
 
-SIZE_UNKNOWN(CGruntCueSink);
-class CGruntCueSink {
-public:
-    void Cue(i32 a, i32 b, i32 c, i32 d, i32 e);             // via thunk 0x33b4
-    void Cue1(i32 a);                                        // 1-arg cue (thunk_0x1163 -> 0x51c730)
-    void CueA(CGrunt* g, i32 b, i32 c, i32 d, i32 e, i32 f); // 6-arg entrance cue (ret 0x18)
-    void CueSpawn(CGrunt* g, i32 b, i32 c, i32 d, i32 e);    // via thunk 0x27ac (ret 0x14)
-    // 0x39f4: the on-screen event cue the per-tick game-object managers (CObjectTracker::Update)
-    // fire on the registry's m_cueSink when the managed object is inside the viewport rect.
-    void CueEvent(void* obj, i32 id, i32 c, i32 d, i32 e, i32 f);
-};
+// (The 5-arg/6-arg cue receivers Cue/Cue1/CueA/CueSpawn/CueEvent live on
+// CGruntSpawnConfig - the +0x60 object's one real class; see the typedef above.)
 
 // The entrance-reset (ResetEntranceAnimation) cue-gate visibility helper (thunk_FUN_0046b330,
 // __cdecl(viewport, x, y) ret int): tests whether the grunt's HUD point is inside

@@ -8,6 +8,7 @@
 // The per-direction entrance-cell records live at CGrunt+0x470, stride 0x68, two
 // CString fields each (+0 and +4). They predate the named m_474 member, so they are
 // reached by raw offset (the documented naming-independent-codegen exception).
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620

@@ -31,6 +31,7 @@
 // switch runs only with m_poweredUp==0), (3) the shared-return tail-merge cl won't permute.
 // Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
+#include <Gruntz/GruntSpawnConfig.h> // complete type for the cue calls
 #include <Gruntz/GameRegPtr.h>
 #include <Ints.h>
 #include <string.h>

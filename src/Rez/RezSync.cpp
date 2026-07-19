@@ -728,12 +728,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     g_localVersion = static_cast<i32>(g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion)));
-    m_timer = new CGruntSpawnConfig;
-    if (!m_timer->Init(reinterpret_cast<CSpawnOwner*>(this))) {
+    m_cueSink = new CGruntSpawnConfig;
+    if (!m_cueSink->Init(reinterpret_cast<CSpawnOwner*>(this))) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
-    *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_timer) + 0x2c)) = vScroll;
+    *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_cueSink) + 0x2c)) = vScroll;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;

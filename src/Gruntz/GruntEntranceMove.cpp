@@ -15,6 +15,7 @@
 // In-interval fold: LoadWingzGruntSprites @0x68880 (ex GruntAssetLoaders.cpp -
 // its 31 private cells sit inside this TU's band).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)

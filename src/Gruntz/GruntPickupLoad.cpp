@@ -5,6 +5,7 @@
 // the pickup type resolves the matching GRUNTZ_PICKUPS_* sprite (the MEGAPHONE case
 // runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/WwdGameRegPtr.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)

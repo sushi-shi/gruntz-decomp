@@ -42,6 +42,7 @@
 //
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>            // the shared CActReg (g_actionTable @0x644610)

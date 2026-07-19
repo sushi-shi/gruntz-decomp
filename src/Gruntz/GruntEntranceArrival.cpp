@@ -21,6 +21,7 @@
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record)
 #include <Bute/SymTab.h>              // CSymTab (ResolveQualified)

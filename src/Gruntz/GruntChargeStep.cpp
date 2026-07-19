@@ -166,7 +166,7 @@ i32 CGrunt::ChargeStep() {
                             mp->m_screenY
                         );
                         if (los != 0) {
-                            (reinterpret_cast<CGruntSpawnConfig*>(mgr->m_cueSink))
+                            mgr->m_cueSink
                                 ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                         }
                     }

@@ -1,4 +1,5 @@
 #include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):

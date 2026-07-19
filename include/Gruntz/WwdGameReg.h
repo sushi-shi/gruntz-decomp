@@ -30,7 +30,8 @@
 // Pointer-member facet types (each consumer completes the ones it dereferences).
 class CState;           // +0x2c  current game state (== GameRegistry m_curState; State.h)
 class CDDrawSurfaceMgr; // +0x30  the ONE world/resource holder (<DDrawMgr/DDrawSurfaceMgr.h>)
-class CGruntCueSink;    // +0x60  on-screen cue receiver
+class CGruntSpawnConfig;
+typedef CGruntSpawnConfig CGruntCueSink;    // +0x60  on-screen cue receiver
 struct GruntBoard;      // +0x70  level tile board
 class CSpriteRefTable;  // +0x74  sprite/animation ref table (GetSel)
 class CBattlezData;     // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)

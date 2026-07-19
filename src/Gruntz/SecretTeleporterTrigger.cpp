@@ -356,7 +356,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CLevelPlane* rc = g->m_world->m_level->m_mainPlane;
             if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
                 && ey >= rc->m_originY) {
-                (reinterpret_cast<CGruntSpawnConfig*>(g->m_cueSink))
+                g->m_cueSink
                     ->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
             }
         }

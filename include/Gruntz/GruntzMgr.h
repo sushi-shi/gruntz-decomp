@@ -485,8 +485,8 @@ public:
     CSaveGame* m_saveSink;        // +0x58  the save game (Quicksave/Quickload/warp cheats;
                                   //         0x8174 restarts at its m_maxLevel)
     CFontConfig* m_chatLog;       // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
-    CGruntSpawnConfig*
-        m_timer; // +0x60  per-frame timer/poll (== the spawn-config obj; Stop/Tick; m_2c mirror)
+    CGruntSpawnConfig* m_cueSink; // +0x60  the spawn-config / cue-sink / per-frame poll object
+                                  //         (ONE class; ex "m_timer"/"TimerObj"; Stop/Tick; m_2c mirror)
     i32 m_64;    // +0x64
     CTriggerMgr* m_cmdGrid;           // +0x68  world command/trigger grid (CTriggerMgr)
     CGruntzCmdMgr* m_cmdSubMgr;       // +0x6c  command sub-manager (REAL class CGruntzCmdMgr)

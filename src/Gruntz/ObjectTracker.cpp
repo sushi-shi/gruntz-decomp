@@ -18,6 +18,7 @@
 // 0x1e97 -> CGrunt::RectContainsGated (0x51a20), CheckOwnerCell 0x1014 ->
 // CGrunt::GruntInRadius (0x67b00), PlaceAtTile 0x1640 -> CGrunt::TileSwitch
 // (0x4b320), ReportObjectAt 0x3030 -> CTriggerMgr::ApplyTriggerB (0x6e120).
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <rva.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)

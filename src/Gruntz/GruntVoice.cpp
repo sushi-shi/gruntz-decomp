@@ -454,7 +454,7 @@ i32 CVoiceTrigger::Tick() {
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
-            if ((reinterpret_cast<CGruntSpawnConfig*>(g_gameReg->m_cueSink))
+            if (g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(
                         reinterpret_cast<i32>(hit),
                         m_object->m_124,

@@ -12,6 +12,7 @@
 // their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
+#include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr

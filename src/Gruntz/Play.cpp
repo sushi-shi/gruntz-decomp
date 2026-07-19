@@ -345,7 +345,7 @@ void ShowHudMessageAlt(
 // or decl-order steerable - tried both). Permuter candidate for the final sweep.
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
-    m_4->m_timer->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_4->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_40) {
         QuitToMenu();
@@ -488,7 +488,7 @@ i32 CPlay::Render() {
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - static_cast<u32>(m_bootyTimerLo);
             if (elapsed >= static_cast<u32>(m_bootyInterval)) {
-                RegCue(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */, 0x33e); // reg->m_cueSink cue
+                RegCue(g_gameReg->m_cueSink, 0x33e); // the +0x60 cue-sink cue
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
                 m_bootyTimerLo = static_cast<i32>(g_frameTime);
@@ -903,8 +903,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     self->m_4->m_sound->StopAndFlush();
     self->m_4->m_inputState->Teardown();
-    self->m_4->m_timer->DtorBody();
-    self->m_4->m_timer->ClearSprites();
+    self->m_4->m_cueSink->DtorBody();
+    self->m_4->m_cueSink->ClearSprites();
     self->m_4->RestoreVideoMode(0);
 
     gameReg = g_gameReg;
@@ -4514,7 +4514,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             }
         }
         if (placed == 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))
+            g_gameReg->m_cueSink
                 ->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
         }
         m_dragInhibit1 = 0;
@@ -4669,7 +4669,7 @@ drag_box: {
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))
+            g_gameReg->m_cueSink
                 ->SpawnVoiceDriver(reinterpret_cast<i32>(slot), 0x324, -1, 0, -1, -1);
         }
     }
@@ -5085,7 +5085,7 @@ i32 CPlay::Vslot15() {
         }
         m_4->m_sound->StopAndFlush();
         m_4->m_inputState->Teardown(); // 0x28ab -> CWorldSoundSet::Teardown @0xb660
-        m_4->m_timer->ClearSprites();  // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
+        m_4->m_cueSink->ClearSprites();  // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
         ::PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
@@ -5159,7 +5159,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_dragClampMaxY = 0;
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
-        (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
+        g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
         this->m_bootyInterval = BOOTY_INTERVAL_MS;
         this->m_bootyIntervalHi = 0;
         this->m_bootyTimerLo = g_frameTime;
@@ -6038,7 +6038,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) == 0) {
-            (reinterpret_cast<CGruntSpawnConfig*>(reinterpret_cast<CGameRegistry*>(g_gameReg)->m_cueSink /* +0x60 view: conflicts with GruntzMgr.h TimerObj - arbitrate */))->DtorBody();
+            g_gameReg->m_cueSink->DtorBody();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
@@ -6334,7 +6334,7 @@ i32 CPlay::Vslot09(i32 mode) {
             (static_cast<CWorldSoundSet*>(m_4->m_inputState))->Resume();
         }
         (static_cast<CTriggerMgr*>(m_4->m_cmdGrid))->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
-        (static_cast<CGruntSpawnConfig*>(m_4->m_timer))->DtorBody();
+        (static_cast<CGruntSpawnConfig*>(m_4->m_cueSink))->DtorBody();
     }
     return 1;
 }
@@ -6551,7 +6551,7 @@ void CPlay::FreeListTeardown() {
     }
     m_4->m_sound->StopAndFlush();
     m_4->m_inputState->Teardown();
-    m_4->m_timer->ClearSprites();
+    m_4->m_cueSink->ClearSprites();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
     m_c->m_level->ReleaseChildren(); // slot 17 (+0x44) - the real CGameLevel virtual
     (m_c->m_childGroup)->PruneList_15aa90();
