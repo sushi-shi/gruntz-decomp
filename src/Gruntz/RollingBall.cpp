@@ -369,18 +369,18 @@ i32 CRollingBall::Update() {
         if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
             CString fall;      // [esp+0x14]
             CString explosion; // [esp+0x10]
-            // Resolve the action id from the level's main-plane tile/object graph
-            // (g_gameReg->m_world->m_level is the CGameLevel). The plane +0x5c geom /
-            // +0x20 attr array / +0x4c object table below stay raw-offset: this is
-            // the same murky level-graph the sibling ApplySwitch/WireTileSwitchLogic
-            // walk with raw casts (its interior classes are unmodeled).
-            char* lvl = reinterpret_cast<char*>(g_gameReg->m_world->m_level);
+            // Resolve the action id from the level's main-plane tile graph - the
+            // SAME walk GameLevel's collision macro does typed. DISASM NOTE: the old
+            // raw-offset spelling read the attr grid off LVL+0x20; retail reads it
+            // off the PLANE (+0x20 m_tileGrid, same edi as the +0x24 column read) -
+            // a mis-based recon offset, fixed by the typed spelling.
+            CGameLevel* lvl = g_gameReg->m_world->m_level;
             i32 ax = m_targetY >> 5;
             i32 ay = m_targetX >> 5;
             if (ax < 0) {
                 ax = 0;
             } else {
-                i32 w = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x28));
+                i32 w = lvl->m_mainPlane->m_gridW;
                 if (ax >= w) {
                     ax = w - 1;
                 }
@@ -388,19 +388,17 @@ i32 CRollingBall::Update() {
             if (ay < 0) {
                 ay = 0;
             } else {
-                i32 h = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x2c));
+                i32 h = lvl->m_mainPlane->m_gridH;
                 if (ay >= h) {
                     ay = h - 1;
                 }
             }
-            i32 col = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x5c) + 0x24));
-            i32 idx = *reinterpret_cast<i32*>(reinterpret_cast<char*>(col) + ay * 4) + ax;
-            i32 raw = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(lvl + 0x20) + idx * 4));
+            CLevelPlane* pl = lvl->m_mainPlane;
+            i32 idx = pl->m_colOffsets[ay] + ax;
+            i32 raw = pl->m_tileGrid[idx];
             i32 obj = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
-                void* tbl = *reinterpret_cast<void**>((lvl + 0x4c));
-                void* ent = *reinterpret_cast<void**>((reinterpret_cast<char*>(tbl) + (raw & 0xffff) * 4));
-                obj = VtblResolve(ent);
+                obj = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
             }
 
             // The action switch (obj's terrain id, near-dense range): FALL,
