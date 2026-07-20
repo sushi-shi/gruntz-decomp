@@ -14,28 +14,29 @@
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's base)
 #include <rva.h>
 
-class CWwdGrid;       // the grid the cursor walks (each TU supplies its own definition:
-                      // canonical in WwdGrid.cpp, reduced view in WwdSpatialMgr.cpp)
-class CWwdGameObject; // the owning wide object (node back-pointer @ +0x18)
-struct WwdBucketHead; // a grid cell's {head,tail} bucket (node's cached owner @ +0x0c)
+#include <Dsndmgr/SoundVoiceList.h> // DSoundLink - the node IS the link (unbiased)
+
+class CWwdGrid; // the canonical grid (<Gruntz/WwdGrid.h>); the cursor holds a pointer
+struct BucketHead; // a grid cell's {head,tail} bucket (<Gruntz/WwdGrid.h>)
 
 // A 16-byte query rectangle passed by value into the cursor + the grid scroll.
 struct WwdRect {
     i32 a, b, c, d;
 };
 
-// A grid bucket list node (the region sub-object embedded at CWwdObject+0x9c):
-// intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
-// position @ +0x10/+0x14, owning-object back-pointer @ +0x18. The cursor walks
-// these and reads their position; consumers read m_object.
-struct WwdGridNode {
-    WwdGridNode* m_next; // +0x00
-    WwdGridNode* m_prev; // +0x04
+// THE grid region node (ex-WwdGridNode - WwdGrid.h and this header modeled this one
+// struct field-for-field; merged 2026-07-20): link pair @ +0x00 (from DSoundLink -
+// the node IS the link, so the shared InsertHead/Unlink take it directly),
+// owning-bucket back-pointer @ +0x0c, pixel position @ +0x10/+0x14, owning-object
+// back-pointer @ +0x18 (the engine's CWwdObject region sub-object @ object+0x9c,
+// 0x1c bytes). Lives HERE (not WwdGrid.h) so the object headers that embed it by
+// value (UserLogic.h/WwdGameObject.h) stay off the full grid header.
+struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
     char m_pad08[0x0c - 0x08];
-    WwdBucketHead* m_bucket;  // +0x0c  cached owning bucket head
-    i32 m_x;                  // +0x10
-    i32 m_y;                  // +0x14
-    CWwdGameObject* m_object; // +0x18  owning wide-object back-pointer
+    BucketHead* m_bucket; // +0x0c  cached owning bucket
+    i32 m_x;              // +0x10
+    i32 m_y;              // +0x14
+    class CWwdGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
 
 // Position-iterator over a CWwdGrid: a rect-restricted cursor. REAL POLYMORPHIC:
@@ -61,14 +62,14 @@ public:
     virtual ~CWwdGridIter() OVERRIDE; // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
 
     CWwdGridIter();
-    WwdGridNode* Start(CWwdGrid* grid, i32 remove);              // 0x191ad0 init cursor + first
-    WwdGridNode* Init(CWwdGrid* grid, WwdRect rect, i32 remove); // 0x191b10 set rect + first
-    WwdGridNode* GetNext();                                      // 0x191c30 advance the cursor
+    WwdRegion* Start(CWwdGrid* grid, i32 remove);              // 0x191ad0 init cursor + first
+    WwdRegion* Init(CWwdGrid* grid, WwdRect rect, i32 remove); // 0x191b10 set rect + first
+    WwdRegion* GetNext();                                      // 0x191c30 advance the cursor
 
     // implicit vptr @ +0x00  (= 0x5f02a8, shared g_planeRenderVtbl)
     CWwdGrid* m_grid;    // +0x04
-    WwdGridNode* m_cur;  // +0x08  current matched node
-    WwdGridNode* m_next; // +0x0c saved-next (cell head cursor)
+    WwdRegion* m_cur;  // +0x08  current matched node
+    WwdRegion* m_next; // +0x0c saved-next (cell head cursor)
     WwdRect m_rect;      // +0x10  clamped query rect (x0,y0,x1,y1)
     i32 m_rowStart;      // +0x20  (x0-minX)>>shiftY
     i32 m_colStart;      // +0x24  (y0-minY)>>shiftX
@@ -95,7 +96,7 @@ inline CWwdGridIter::CWwdGridIter() {
 // frame (a destructible local => fs:0 registration).]
 inline CWwdGridIter::~CWwdGridIter() {}
 
-SIZE_UNKNOWN(WwdGridNode);
 SIZE_UNKNOWN(WwdRect);
+SIZE(WwdRegion, 0x1c); // == the +0x9c..+0xb7 embedded m_region span
 
 #endif // GRUNTZ_WWDGRIDITER_H

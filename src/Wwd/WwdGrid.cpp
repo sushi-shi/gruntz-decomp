@@ -224,13 +224,13 @@ i32 CWwdGrid::Clear() {
 // visiting each node truly inside it (optionally unlinking it). It reads the
 // canonical CWwdGrid's bounds/shift/cols/bucket fields directly; the buckets are
 // the canonical BucketHead ({head,tail} DSoundList) so the node reads cast through
-// (WwdGridNode*) exactly as CWwdGrid::Query/Clear do.
+// (WwdRegion*) exactly as CWwdGrid::Query/Clear do.
 // ===========================================================================
 
 // 0x191ad0 - Start(grid, remove): seed the cursor over the grid's ENTIRE bounds
 // rect (grid->minX..maxY passed by value) and return the first in-rect node.
 RVA(0x00191ad0, 0x34)
-WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
+WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
     // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied as a
     // contiguous 16-byte block - the four bounds ints ARE the query rect.
     WwdRect full = *reinterpret_cast<WwdRect*>(&grid->m_minX);
@@ -249,7 +249,7 @@ WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
 // a 3-instr operand-register choice. Not source-steerable (see
 // docs/patterns/zero-register-pinning.md / statement-schedule-faithful.md).
 RVA(0x00191b10, 0x111)
-WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
+WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
     m_rect = rect;
     m_remove = remove;
@@ -286,7 +286,7 @@ WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_row = m_rowStart;
     m_rowBase = base;
     m_cell = base;
-    m_next = reinterpret_cast<WwdGridNode*>(grid->m_buckets[base].m_head);
+    m_next = static_cast<WwdRegion*>(grid->m_buckets[base].m_head);
     return GetNext();
 }
 
@@ -302,8 +302,8 @@ WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
 // the remove-block reg assignment. Not source-steerable (member-bound LICM
 // choice; see docs/patterns/zero-register-pinning.md).
 RVA(0x00191c30, 0xcc)
-WwdGridNode* CWwdGridIter::GetNext() {
-    WwdGridNode* node;
+WwdRegion* CWwdGridIter::GetNext() {
+    WwdRegion* node;
 top:
     node = m_next;
     m_cur = node;
@@ -321,7 +321,7 @@ top:
             m_row = m_rowStart;
             ++m_col;
         }
-        m_cur = reinterpret_cast<WwdGridNode*>(m_grid->m_buckets[m_cell].m_head);
+        m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].m_head);
         if (m_cur == 0) {
             goto nextcell;
         }
@@ -330,11 +330,11 @@ top:
         goto top;
     }
 walk:
-    m_next = m_cur->m_next;
+    m_next = static_cast<WwdRegion*>(m_cur->m_next);
     if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
         && m_cur->m_y <= m_rect.d) {
         if (m_remove) {
-            m_grid->m_buckets[m_cell].Unlink(reinterpret_cast<DSoundLink*>(m_cur));
+            m_grid->m_buckets[m_cell].Unlink(m_cur);
             m_cur->m_bucket = 0;
             --m_grid->m_count;
         }

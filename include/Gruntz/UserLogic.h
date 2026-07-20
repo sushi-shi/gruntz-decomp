@@ -39,7 +39,7 @@
 // The REAL +0x1a0 tail member: the wide game object embeds the 0x3c-byte
 // CAniAdvanceCursor at +0x1a0 (vptr @+0x1a0, ends at +0x1dc == SIZE(CGameObject)).
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/WwdGridIter.h> // WwdGridNode - the embedded +0x9c region node
+#include <Gruntz/WwdGridIter.h> // WwdRegion - the embedded +0x9c region node
 
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
@@ -221,7 +221,7 @@ struct CGameObject {
     // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its m_object
     // (+0xb4) the self back-pointer. The factories' +0x9c record ctors
     // (0x15b2a0/0x15b2b0) initialize exactly it.
-    WwdGridNode m_region; // +0x9c..+0xb7
+    WwdRegion m_region; // +0x9c..+0xb7
     char m_b8[0x24];      // +0xb8  serialized state block
     char* m_name;         // +0xdc  CString name (handle = buffer pointer)
     i32 m_e0;             // +0xe0

@@ -6,7 +6,7 @@
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
 #include <Gruntz/UserLogic.h>        // CGameObject - the BASE (all data + the 17-slot vtable)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - the real +0x1a0 anim/command cursor
-#include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
+#include <Gruntz/WwdGridIter.h>      // WwdRegion - the embedded +0x9c region node
 
 // CWwdGameObject - a runtime "plane object" deserialized from WWD level data.
 // WwdFile::ReadPlaneObjects (0x162af0) constructs one per record via the ctor

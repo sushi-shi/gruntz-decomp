@@ -17,23 +17,15 @@
 #include <Ints.h>
 #include <Wap32/Object.h>           // CObject - the shared engine grand-base
 #include <Dsndmgr/SoundVoiceList.h> // the engine's ONE {head,tail} intrusive-list
+#include <Gruntz/WwdGridIter.h>       // WwdRegion (the node) + the rect cursor
                                     // primitive DSoundList/DSoundLink (0x1390e0/
                                     // 0x1391e0) - the grid's buckets ARE this list.
 #include <rva.h>
 
 struct BucketHead;
 
-// A grid region node: link pair @ +0x00, owning-bucket back-pointer @ +0x0c,
-// pixel position @ +0x10/+0x14 (the engine's CWwdObject region sub-object @
-// object+0x9c). The +0x00 {next,prev} pair IS a DSoundLink (unbiased: the node
-// itself is the link), so the shared InsertHead/Unlink take it directly.
-SIZE_UNKNOWN(WwdRegion);
-struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
-    char m_pad08[0x0c - 0x08];
-    BucketHead* m_bucket; // +0x0c  cached owning bucket
-    i32 m_x;              // +0x10
-    i32 m_y;              // +0x14
-};
+// (WwdRegion - THE grid region node, ex-WwdGridNode - is defined in
+// <Gruntz/WwdGridIter.h> beside its cursor: the lean header the object headers embed.)
 
 // 8-byte intrusive list head: {head, tail}. IS the engine's shared DSoundList
 // primitive (its InsertHead @0x1390e0 / Unlink @0x1391e0 are reloc-masked externs
