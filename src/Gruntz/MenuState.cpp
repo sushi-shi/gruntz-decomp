@@ -33,8 +33,8 @@ extern "C" {
     CGMVerRect g_versionRect; // .bss - zero at load
 }
 
-static inline CGMOwner* Owner(CState* s) {
-    return reinterpret_cast<CGMOwner*>(s->m_4);
+static inline CGruntzMgr* Owner(CState* s) {
+    return s->m_4;
 }
 
 void operator delete(void*);
@@ -283,7 +283,7 @@ i32 CMenuState::Render() {
     for (c = 0; c < n; c++) {
         if (L->m_data[c]->m_2ac & 0x100) {
             if (!m_1b4->OnFlag00000100()) {
-                PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8036, 0);
+                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
             }
             goto tail;
         }
@@ -311,7 +311,7 @@ i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
     } else if (key == 0x1b) {
         if (m_1b4->OnFlag00000100() == 0) {
             m_1b8 = 0;
-            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8027, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
         }
     }
     return 1;

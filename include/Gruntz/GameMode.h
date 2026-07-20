@@ -14,34 +14,12 @@
 typedef AttractActor CGMEntity;
 typedef AttractActorList CGMEntityList;
 
-SIZE_UNKNOWN(CGMSound);
-struct CGMSound {
-    void Play(const char* name, i32 z); // (thiscall, 2 args)
-    i32 Find(const char* name);         // (thiscall, 1 arg -> ptr)
-};
-SIZE_UNKNOWN(CGMSoundEntry);
-struct CGMSoundEntry {
-    i32 Query();
-}; // (thiscall, no arg -> int)
-SIZE_UNKNOWN(CGMOwner);
-struct CGMOwner {
-    void Post(u32 a, u32 b); // (thiscall, 2 args)
-    char p0[0x4];            // +0x00
-    struct M4 {
-        char p0[0x4];
-        HWND m_4;
-    }* m_4; // +0x04 -> +0x04 = HWND
-    struct M8 {
-        char p0[0x244];
-        i32 m_244;
-    }* m_8; // +0x08 -> +0x244 latch
-    char p0c[0x14 - 0x0c];
-    i32 m_musicEnabled; // +0x14 the base CGameMgr::m_musicEnabled (this facet IS the
-                        //       CGameMgr region: +0x4 gameWnd, +0x8 app->m_running latch;
-                        //       the credits FX gate on music-on). Full dissolve queued.
-    char p18[0x48 - 0x18];
-    CGMSound* m_48; // +0x48 sound manager
-};
+// (CGMSound / CGMSoundEntry / CGMOwner DISSOLVED 2026-07-20: they were phantom views of
+// the CState::m_4 CGruntzMgr. The credits/menu code now reaches the real classes cast-free:
+// CGMOwner IS the CGruntzMgr (m_4 -> CGameMgr::m_gameWnd, m_8 -> CGameMgr::m_owner CGameApp,
+// m_musicEnabled, m_48 -> CGruntzMgr::m_sound; Post IS CGruntzMgr::ReportError @0x8dc60);
+// CGMSound IS CGruntzSoundZ (Play/Find -> PlayByName/FindBank); CGMSoundEntry IS the
+// CGruntzSoundInnerZ bank FindBank returns (Query -> IsStarted @0x138a10).)
 
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 

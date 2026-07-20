@@ -10,7 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <Gruntz/GameMode.h>              // CCreditsState : CState + CGMOwner/CGMSoundEntry
+#include <Gruntz/GameMode.h>              // CCreditsState : CState (ex CGMOwner/CGMSound views dissolved to CGruntzMgr/CGruntzSoundZ)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
 #include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
@@ -24,8 +24,8 @@
 #endif
 #include <afxwin.h>
 
-static inline CGMOwner* Owner(CState* s) {
-    return reinterpret_cast<CGMOwner*>(s->m_4);
+static inline CGruntzMgr* Owner(CState* s) {
+    return s->m_4;
 }
 
 void operator delete(void*);
@@ -139,7 +139,7 @@ i32 CCreditsState::Render() {
     IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
-            Owner(this)->Post(0x8006, 0xfa0);
+            Owner(this)->ReportError(0x8006, 0xfa0);
             return 0;
         }
     }
@@ -168,8 +168,8 @@ i32 CCreditsState::Render() {
                 if (m_24 == 5) {
                     wp = 0x8023;
                 }
-                PostMessageA(Owner(this)->m_4->m_4, 0x111, wp, 0);
-                Owner(this)->m_8->m_244 = 0;
+                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, wp, 0);
+                Owner(this)->m_owner->m_running = 0;
                 break;
             }
         }
@@ -186,13 +186,13 @@ i32 CCreditsState::Render() {
     ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
 
     if (!m_1b4 && Owner(this)->m_musicEnabled) {
-        Owner(this)->m_48->Play("CREDITZ", 1);
+        Owner(this)->m_sound->PlayByName("CREDITZ", 1);
         m_1b4 = 1;
     }
 
     if (m_1c4) {
-        i32 s = Owner(this)->m_48->Find("MONOLITH");
-        if (s && !(reinterpret_cast<CGMSoundEntry*>(s))->Query()) {
+        CGruntzSoundInnerZ* s = Owner(this)->m_sound->FindBank("MONOLITH");
+        if (s && !s->IsStarted()) {
             Sub3();
         }
     }
@@ -231,9 +231,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         if (m_24 == 5) {
-            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8023, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         } else {
-            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8027, 0);
+            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
         }
     }
     return 1;
@@ -269,7 +269,7 @@ i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
     } else {
         cmd = 0x8027;
     }
-    PostMessageA(Owner(this)->m_4->m_4, 0x111, cmd, 0);
+    PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, cmd, 0);
     return 1;
 }
 

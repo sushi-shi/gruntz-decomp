@@ -194,7 +194,7 @@ public:
     // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one
     // object: m_4->m_c is the SAME field as g_gameReg->m_c (the active-selection gate),
     // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
-    // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
+    // (the CGMOwner facet-view of m_4 is DISSOLVED - credits/menu reach the real CGruntzMgr).
     CGruntzMgr* m_4;
     // +0x08  the level/rez symbol parser (ResolvePath @0x13c030; == mgr->m_symParser,
     // cached by LoadGameAssetNamespaces). Ex `CBankMgr*` - a shell type every consumer
