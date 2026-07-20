@@ -1,8 +1,9 @@
-#include <Mfc.h> // afx-first: CString + the dialog API
+#include <Mfc.h>
+#undef _AFX_ENABLE_INLINES // skip afxwin1.inl (MFC4.2 implicit-int inlines clang rejects)
+#include <afxwin.h> // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
 #include <Gruntz/GameRegMfcPtr.h>
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
-#include <Gruntz/WaitCursorApp.h>      // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
 #include <Gruntz/GameRegistry.h> // the canonical manager singleton view (m_gameWnd/m_world/m_owner)
 #include <Gruntz/GruntzMgr.h>    // the MFC view of the same singleton (IsBattlezMapFile)
 #include <Wwd/WwdFile.h>         // WwdHeader + WwdFile statics + WwdFile_CheckHeader
@@ -196,7 +197,7 @@ namespace m4 {
         _finddata_t fd;
         i32 h = _findfirst(pattern, &fd);
         i32 found = (h != -1);
-        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->BeginWaitCursor();
+        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
         if (found) {
             do {
                 char disp[260];
@@ -211,7 +212,7 @@ namespace m4 {
             } while (_findnext(h, &fd) != -1);
         }
         CustomGate(g_dotDot);
-        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->EndWaitCursor();
+        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
         return 1;
     }
 
