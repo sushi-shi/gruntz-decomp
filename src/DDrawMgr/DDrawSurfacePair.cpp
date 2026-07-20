@@ -901,7 +901,7 @@ void* operator new(u32 n);
 // callers (CWwdGameObject::Serialize/WriteSnapshot) reverse-look-up a worker here;
 // the sibling CDDrawWorkerRegistry (+0x10) shares the byte-identical map@+0x10 (m_10).
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerCache::FindKeyOfValue_165360(CImageSet* target) {
+CString CDDrawWorkerCache::FindKeyOfValue_165360(::CObject* target) {
     ::CObject* val = 0;
     POSITION pos = m_10.GetStartPosition();
     CString key;
@@ -912,7 +912,7 @@ CString CDDrawWorkerCache::FindKeyOfValue_165360(CImageSet* target) {
         // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
         // constant-vs-itself and the scan returns the first key. That is pre-existing
         // and out of this fold's scope - the fold only preserves the same memory read.
-        if (val != 0 && *reinterpret_cast<i32*>(&(static_cast<CImageSet*>(val))->m_items) == *reinterpret_cast<i32*>(&target->m_items)) {
+        if (val != 0 && *reinterpret_cast<i32*>(&(static_cast<CImageSet*>(val))->m_items) == *reinterpret_cast<i32*>(&(static_cast<CImageSet*>(target))->m_items)) {
             return key;
         }
     }

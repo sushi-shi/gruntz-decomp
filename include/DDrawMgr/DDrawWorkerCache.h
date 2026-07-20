@@ -76,7 +76,9 @@ public:
     // Serialize/WriteSnapshot, xref-confirmed) reverse-look-up a WORKER in THIS worker cache,
     // so this reverse-lookup is a CDDrawWorkerCache method (was mis-attributed to the +0x10
     // CDDrawWorkerRegistry sibling, which shares the byte-identical map@+0x10 layout).
-    CString FindKeyOfValue_165360(CImageSet* target); // 0x165360
+    CString FindKeyOfValue_165360(::CObject* target); // 0x165360  (the m_10 map's
+    // true element base: values are heterogeneous - CImageSet/worker templates AND
+    // the objects' own AnimWorkerObj records get reverse-looked-up here)
 
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };

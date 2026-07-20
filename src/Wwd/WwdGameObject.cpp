@@ -915,21 +915,21 @@ i32 CGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_80);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_88);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collideWorker != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_collideWorker));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_collideWorker);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -1109,7 +1109,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_10 = edi;
 
     {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_7c));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_7c);
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
