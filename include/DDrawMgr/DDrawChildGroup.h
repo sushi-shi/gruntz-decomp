@@ -1,33 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H
 #define GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H
 
-// DDrawChildGroup.h - THE single-source shape of CDDrawChildGroup, the DDraw
-// surface-manager child held at CDDrawSurfaceMgr+0x08 (the m_childGroup slot).
-// It is an intrusive-list "broadcast" manager: a CObList sub-object @+0x10 whose
-// node-head sits at +0x14, plus two CMapPtrToPtr collections @+0x2c/+0x48, over
-// a parent/root handle @+0x0c and a status word @+0x04. Every leaf method walks the
-// +0x14 list dispatching one of the child's sibling virtuals, some following with a
-// dispatch of the object's own +0x2c virtual (see DDrawChildGroup.cpp for bodies).
-//
-// IDENTITY (consolidated 2026-07-16): CDDrawChildGroup IS the class that used to
-// wear THREE names - the ex "CWwdObjMgr" (the WWD level-object collection role:
-// factories, list/map ops, spatial finders) and the ex "CSpriteFactory" (the
-// game-side created-sprite role: CreateSprite/AttachSprite + the live-object
-// list) are method-sets of THIS one class. Both twins are dissolved here:
-//  - one object: every holder reaches it at CDDrawSurfaceMgr+0x08 (m_childGroup
-//    == the ex m_world->m_childGroup / m_c->m_childGroup), new'd 0x6c by Init @0x155900 with the
-//    ctor stamping ??_7CDDrawChildGroup (0x5efdc0);
-//  - one TU: WwdObjMgr.cpp (0x159250..0x15b2xx) defines all three "classes'"
-//    methods interleaved on the same receiver;
-//  - one layout: vptr + m_status/m_flags08/m_parent + CObList @+0x10 +
-//    CMapPtrToPtr @+0x2c/+0x48 (Lookup 0x001b8760 =
-//    ?Lookup@CMapPtrToPtr@@QBEHPAXAAPAX@Z, FID-confirmed) + walk cursor @+0x64.
-// The +0x10 list is the MFC CObList (AddTail/RemoveAt/InsertBefore =
-// 0x1b5af6/0x1b5c2c/0x1b5bb0; teardown ~CObList 0x1b5a2b in this class's dtor).
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing
-// (campaign doctrine).
-
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>            // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
@@ -36,10 +9,6 @@
 
 struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
 
-// (The former CDDrawGroupChild dispatch view of the wide game object is
-// DISSOLVED onto the real family (<Wwd/WwdGameObjectFamily.h>, base
-// CGameObject): its ReleaseSubs was slot-7 Unload, its GetTypeId slot-8
-// GetClassId, its m_78/m_7c/m_d8 the family m_posCache/m_7c/m_d8.)
 struct CGameObject;
 
 // One node of the intrusive list at +0x14 (the +0x10 CObList's CNode: pNext @0,
@@ -65,12 +34,6 @@ struct CDDrawGroupNode {
     };
 };
 
-// ---------------------------------------------------------------------------
-// CDDrawChildGroup - the full 17-slot vtable (0x1efdc0), every slot proven from
-// the retail table (vtable_hierarchy + the slot bodies' xrefs: 0x1575e0/0x1576c0/
-// 0x157600 are referenced ONLY from ??_7CDDrawChildGroup+0x14/+0x18/+0x20).
-// Slots 0-4 CObject, 5/6 CWapObj-scheme overrides (own copies), 7-16 own.
-// ---------------------------------------------------------------------------
 class CDDrawChildGroup : public CWapObj {
 public:
     // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
@@ -181,9 +144,6 @@ public:
     void DestroyChildren_159ef0();
 };
 
-// The per-object descriptor the level reader fills (0xa0 bytes; LoadObjects reads
-// one per record). +0x04 is the dedup id, +0x08 the kind selector, +0x14 the
-// object's name string. (Hoisted from the ex WwdObjMgr.h.)
 struct WwdObjDesc {
     i32 m_00;               // +0x00  passed to the factory
     i32 m_04;               // +0x04  dedup key / object id
@@ -200,7 +160,5 @@ SIZE_UNKNOWN(WwdObjDesc);
 SIZE_UNKNOWN(CDDrawChildGroup);
 VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 SIZE_UNKNOWN(CDDrawGroupNode);
-
-// --- vtable catalog ---
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

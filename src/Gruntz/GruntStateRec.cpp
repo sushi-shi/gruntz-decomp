@@ -1,22 +1,3 @@
-// GruntStateRec.cpp - CSBI_StatzTabGruntBar::SerializeFields (0x0ea990), the stat tab's
-// vtable slot-1 serialize (??_7CSBI_StatzTabGruntBar 0x1eace4, thunk 0x11e0).
-//
-// IDENTITY (was `CGruntStateRec::Load`, a .cpp-local placeholder class): this is
-// CSBI_StatzTabGruntBar's slot-1 override - see <Gruntz/SBI_StatzTabGruntBar.h> for the
-// four-way proof (vtable slot / the qualified `call 0x1848` base chain / the RVA band /
-// the view's 19-field layout matching the real class offset for offset). The view's
-// `char m_pad00[0x30]` was literally the CStatusBarItem base subobject, and its
-// fabricated `ChainLoad // 0x1848 (base chain)` was CStatusBarItem::SerializeFields.
-//
-// TU PLACEMENT IS STILL OPEN (follow-up, deliberately not moved here): the body stays in
-// its own `gruntstaterec` unit. Its retail obj is most likely sbi_statztabgruntbar's -
-// 0xea990 slots in strictly-ascending between that unit's 0xea6c0 (+0x237 -> ends
-// 0xea8f7) and its pooled dtor at 0x104b00, and nothing else claims 0xea990..0xeb402 -
-// but StatusBarTabBuilders.cpp also holds a method of this class at 0xea1f0, so which of
-// the two objs owns it is an interleaver question this change does not try to settle.
-// Moving the body is a separate, measurable step; renaming the class is not.
-//
-// Field names now come from the real class; only offsets + code bytes are load-bearing.
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -26,11 +7,6 @@
 #include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
 #include <Gruntz/Sprite.h> // CSprite - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
 #include <string.h>                      // inline strlen / strcpy / memset over the scratch buffer
-
-// The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
-
-// The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
-// string field read.
 
 // ===========================================================================
 // CSBI_StatzTabGruntBar::SerializeFields (0x0ea990) - the stat tab's dual-mode slot-1

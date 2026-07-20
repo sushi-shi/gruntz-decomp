@@ -1,21 +1,3 @@
-// SBI_Image.h - Gruntz CSBI_Image (C:\Proj\Gruntz), the FRAMELESS method view.
-// RTTI .?AVCSBI_Image@@; the real single-inheritance chain (RTTI-confirmed):
-//   CSBI_Image : CSBI_RectOnly : CStatusBarItem   (vtable 0x5eac0c).
-//
-// This is the ONE canonical frameless spelling of CSBI_Image + its RectOnly
-// intermediate, shared by the concrete method TUs (SBI_Image.cpp defines
-// SetupImage; SBI_ImageSet.h derives CSBI_ImageSet from it). It is the FRAMELESS
-// counterpart of two deliberate, NEVER-co-included views of the SAME retail class:
-//   * <Gruntz/SbiDtorChain.h> - the CHAIN view (polymorphic /GX dtor chain, size
-//     0x60 grand-base) the *Eh.cpp dtor TUs fold; and
-//   * the builder-facet views (CSbConfigItem/CSbDialogItem/CSbMenuItem in the
-//     CStatusBarMgr.cpp / SBI_TabzDialogEh.cpp / StatusBarGameMenu.cpp builders) -
-//     the same CSBI_Image level modeled as a native-dispatch polymorphic base so
-//     `new CSBI_X` auto-stamps the retail vtable and Configure lowers to
-//     `call [edx+0x2c]`. One MSVC5 spelling emits only one of these shapes, so the
-//     views stay split (see the two-view-split note atop StatusBarItem.h).
-//
-// Fields are placeholders; the offsets + total 0x34 size are the load-bearing fact.
 #ifndef GRUNTZ_SBI_IMAGE_H
 #define GRUNTZ_SBI_IMAGE_H
 
@@ -24,19 +6,10 @@
 #include <Gruntz/SbRect.h>        // SetupImage args 5..8 - ONE by-value geometry rect
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
 
-// The +0x24 config host is the shared canonical CDDrawSurfaceMgr (SbiConfig.h, pulled
-// in the .cpp); only a pointer is needed here, so forward-declare it.
 class CDDrawSurfaceMgr;
-// SetupImage arg1 is the owning status-bar manager (latched into the base m_2c slot);
-// only a pointer is needed here. `class` (not `struct`) - the mangling depends on it.
 class CStatusBarMgr;
 class CImage; // the latched/resolved m_30 frame (<Image/CImage.h>)
 
-// CSBI_RectOnly - the empty intermediate between CStatusBarItem and CSBI_Image
-// (RTTI: CSBI_Image : CSBI_RectOnly : CStatusBarItem). In retail it overrides only
-// the virtual destructor and adds no fields; the frameless method view constructs
-// nothing here, so modeling it as a field-less intermediate is layout-identical to
-// deriving CStatusBarItem directly (matching-neutral) while recovering the real level.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     // INLINE in the header (like CStatusBarItem's ctor): MSVC5's per-site inline
@@ -67,18 +40,12 @@ public:
 SIZE_UNKNOWN(CSBI_RectOnly);
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
 
-// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
-// /GX leaf TUs; SBI_OWN_RECTONLY_DTOR marks the TU that owns the out-of-line ??1.
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
 inline CSBI_RectOnly::~CSBI_RectOnly() {
     DtorRect();
 }
 #endif
 
-// CSBI_Image - the image status-bar item. Inherits the CStatusBarItem base-region
-// fields (via CSBI_RectOnly), INCLUDING the id slot at +0x2c (base CStatusBarItem::m_2c,
-// which SetupImage latches the id into - the base owns +0x2c, proven by its slot-2
-// CStatusBarItem::Setup @0x100660 storing arg1 there); adds only the latched-value m_30.
 class CSBI_Image : public CSBI_RectOnly {
 public:
     // The type tag (m_8 = 3) is CSBI_Image's own ctor leg: every `new CSBI_Image` in the
@@ -132,9 +99,6 @@ public:
 SIZE(CSBI_Image, 0x34);
 VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 
-// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
-// /GX leaf TUs; SBI_OWN_IMAGE_DTOR marks the TU that owns the out-of-line ??1
-// (SBI_Image.cpp, RVA 0x100870).
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
 inline CSBI_Image::~CSBI_Image() {
     ClearFrame();

@@ -1,7 +1,3 @@
-// ActionArea.h - the action-area trigger tile-logic game-object (C:\Proj\Gruntz),
-// a CUserLogic leaf (RTTI .?AVCActionArea@@). The 1-arg ctor (0x7da0) folds the
-// shared CUserLogic(obj) prologue then a per-class tail; the leaf state begins at
-// +0x54. Offsets + code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CACTIONAREA_H
 #define GRUNTZ_CACTIONAREA_H
 
@@ -11,8 +7,6 @@
 #include <Gruntz/UserLogic.h>
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase) - CPulseHighlight::Serialize
-                                  // arg; the typedef keeps the mangling PAVCFileMemBase (a bare
-                                  // `class CSerialArchive;` would shadow it and break the match)
 
 SIZE_UNKNOWN(CActionArea);
 class CActionArea : public CUserLogic, public CWapX {
@@ -47,10 +41,6 @@ public:
 };
 VTBL(CActionArea, 0x001e7004);
 
-// The action-area projectile-action entry: its first dword is the registered
-// handler, dispatched __thiscall on `this` (4-byte single-inheritance PMF ->
-// `mov ecx,this; call [entry]`; CActionArea is complete above so the PMF stays 4
-// bytes). Was the .cpp-local R3Entry view.
 typedef void (CUserLogic::*ProjActHandler)();
 struct CActionAreaActEntry {
     ProjActHandler m_fn; // [entry] - the registered handler
@@ -78,8 +68,6 @@ public:
     i64 m_timestamp;           // +0x58 last-toggle game clock
     i64 m_duration;            // +0x60 current interval (ms)
 };
-// Layout modeled to +0x68 (m_duration i64 @+0x60); exact retail size not yet pinned
-// from an operator new / sizeof site, so left UNKNOWN rather than asserted.
 SIZE_UNKNOWN(CPulseHighlight);
 
 #endif // GRUNTZ_CACTIONAREA_H

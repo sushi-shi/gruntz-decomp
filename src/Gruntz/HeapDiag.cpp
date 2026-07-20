@@ -1,12 +1,3 @@
-// HeapDiag.cpp - the engine's heap self-check / walk diagnostic (RVA 0x118a30).
-//
-// A __cdecl diagnostic that runs the CRT heap consistency check (_heapchk),
-// reports the status through the sibling status-reporter (0x118b50, which itself
-// wraps OutputDebugStringA), and - when asked and the heap is NOT _HEAPOK - walks
-// the heap to the first non-OK block and dumps it. Misfiled into the CRT/library
-// backlog originally; it is game code (it calls the engine's own status reporter,
-// not a CRT routine). The CRT heap primitives + OutputDebugStringA are external /
-// reloc-masked.
 #include <Win32.h>  // OutputDebugStringA
 #include <malloc.h> // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
 #include <stdio.h>  // sprintf
@@ -14,22 +5,12 @@
 
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// Window / file-probe helpers that lead this TU in retail-RVA order (0x118930..
-// 0x1189c0, just before HeapCheckDump). Re-homed from the deleted fake grab-bag
-// src/Utils/WinAPI.cpp; they interleave with the heap-diag functions in .text
-// (WinAPI 0x118930..0x1189c0, heap-diag 0x118a30..0x118bf0, WinAPI 0x118ce0) -> one
-// real TU. Plain file-scope free functions (the fake Utils::WinAPI namespace is gone).
-// ---------------------------------------------------------------------------
-
-// SetActiveAndFocus (0x118930): activate + focus the same window.
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
     SetActiveWindow(hWnd);
     SetFocus(hWnd);
 }
 
-// SetTopmostStyle (0x118960): OR WS_EX_TOPMOST into the window's extended style.
 RVA(0x00118960, 0x20)
 void SetTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
@@ -38,7 +19,6 @@ void SetTopmostStyle(HWND hWnd) {
     }
 }
 
-// ClearTopmostStyle (0x118990): clear WS_EX_TOPMOST from the extended style.
 RVA(0x00118990, 0x20)
 void ClearTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
@@ -47,9 +27,6 @@ void ClearTopmostStyle(HWND hWnd) {
     }
 }
 
-// FileExists (0x1189c0): OpenFile(OF_EXIST) probe; false for a null/empty path. The
-// out-of-line COMDAT copy of the inline helper (byte-identical to the WinAPICdRom /
-// SoundFontPath copies); CGruntzMgr's movie-path checks call this one.
 RVA(0x001189c0, 0x45)
 i32 FileExists(char* szPath) {
     OFSTRUCT of;
@@ -63,12 +40,6 @@ i32 FileExists(char* szPath) {
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
 
-// The engine wrappers retail calls here. The status reporter (0x118b50) takes the
-// heap status - its real owner is this diagnostic TU (its sole caller), DEFINED
-// below after HeapCheckDump (it follows in retail-RVA order). The heap-walk wrapper
-// (0x1206b0, retail's _heapwalk re-attributed) is declared no-arg but invoked with
-// &hinfo, so it is reached through a casted pointer to keep its no-arg mangled
-// symbol; it stays external / reloc-masked (defined in src/Stub/ApiCallers.cpp).
 namespace ApiCallerStubs {
     void winapi_118b50_OutputDebugStringA(i32 status);
     i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk();
@@ -112,9 +83,6 @@ int HeapCheckDump(int walkOnBad) {
     return status;
 }
 
-// 0x118b50: the heap-status reporter HeapCheckDump funnels through - trace a
-// _heapchk()/_heapwalk() status code to the debugger. __cdecl(status). Re-homed
-// from src/Stub/ApiCallers.cpp (this is its only caller).
 namespace ApiCallerStubs {
     RVA(0x00118b50, 0x5b)
     void winapi_118b50_OutputDebugStringA(i32 status) {
@@ -141,13 +109,6 @@ namespace ApiCallerStubs {
     }
 } // namespace ApiCallerStubs
 
-// 0x118bf0: HeapStats - the engine's heap-statistics probe (sibling of
-// HeapCheckDump). Run the CRT heap check, report the status through the sibling
-// reporter (0x118b50), then - when the heap is _HEAPOK - walk every block summing
-// its total/used/free byte totals and dump them to the debugger. __cdecl, no args,
-// returns the _heapchk status. (Retail labels the %lu args "Total/Free/Used" but
-// passes total/used/free in that arg order - the swapped labels are reproduced
-// verbatim.) The CRT heap primitives + OutputDebugStringA are external/reloc-masked.
 RVA(0x00118bf0, 0xb4)
 int HeapStats() {
     _HEAPINFO hinfo;
@@ -181,22 +142,12 @@ int HeapStats() {
     return status;
 }
 
-// ---------------------------------------------------------------------------
-// Toolhelp32 process-scan support (tail of this TU in retail-RVA order, 0x118ce0).
-// The Toolhelp APIs are resolved at run time via GetProcAddress (they are Win9x/NT
-// version dependent, so never linked directly); the snapshot records are the REAL
-// SDK <tlhelp32.h> PROCESSENTRY32 / MODULEENTRY32 (layout-identical to the former
-// hand-rolled ProcEntry32/ModEntry32 views - 0x128/0x224 B, asserted below).
-// Re-homed from the deleted fake grab-bag src/Utils/WinAPI.cpp.
-// ---------------------------------------------------------------------------
 #include <tlhelp32.h>
 SIZE(PROCESSENTRY32, 0x128);
 SIZE(MODULEENTRY32, 0x224);
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-// Fills a MODULEENTRY32 for the main module of the given process (engine helper at
-// 0x118f60; Module32First/Next based). Reloc-masked direct call.
 extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, MODULEENTRY32* out, u32 size);
 
 // -------------------------------------------------------------------------

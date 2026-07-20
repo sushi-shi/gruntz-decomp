@@ -1,16 +1,3 @@
-// SoundDevice.h - the WAP32 DirectSound *device* manager (Dsndmgr module,
-// C:\Proj\Dsndmgr\DSNDMGR.CPP). This is the higher-level class that OWNS the
-// per-buffer sound-buffer wrappers: it holds the IDirectSound device (+0x14),
-// the primary buffer (+0x84), an intrusive list of owned sound-buffer wrappers
-// (a DSoundList value sub-object at +0x04, each buffer chained through its own
-// +0x04 link, the stored pointer biased +4 - an engine POSITION), a voice/channel
-// sub-list (a DSoundList at +0x0c), an "initialized" flag (+0x78) and a
-// per-derived instance-list head (+0x94, used by SoundStream).
-//
-// Its retail vftable is 0x5ef6c4 (the *device* class), distinct from the buffer
-// wrapper's 0x5ef6b8. SoundDevice is never instantiated on its own - it is the
-// base subobject of SoundStream (DSndMgSR.CPP, 0x5ef6ec), the concrete class;
-// every device method runs on a SoundStream `this`.
 #ifndef DSNDMGR_SOUNDDEVICE_H
 #define DSNDMGR_SOUNDDEVICE_H
 
@@ -22,21 +9,9 @@
 
 class SoundDevice;
 
-// SoundBuf - the device's owned buffer, as its +0x04 buffer list threads it. This IS
-// the DirectSoundMgr per-buffer wrapper's base view (the concrete leaf minted in
-// CreateBuffer is a DSoundCloneInst; RemoveBuffer only touches the base fields + the
-// virtual dtor, so it takes a DirectSoundMgr*). The former standalone SoundBuf struct
-// was a duplicate view of DSoundCloneInst (matcher-6 unified it - every SoundBuf method
-// mapped to the same RVA as a DirectSoundMgr/DSoundCloneInst method). SoundBuf survives
-// only as this alias so the cross-cluster CDDrawSubMgrLeafScan.cpp (LeafElementObj,
-// owned by another worker) keeps compiling its `RemoveBuffer((SoundBuf*)m_10)`.
 class DSoundCloneInst; // the concrete per-buffer leaf the factories mint
 typedef DirectSoundMgr SoundBuf;
 
-// ParseFmt - the fmt-chunk descriptor ParseWaveChunks fills (its `out` param) and
-// Acquire/ReloadRiff read. m_fmt points at the WAVEFORMATEX inside the RIFF blob;
-// m_flags carries the parse flags (bit 0 forces an 8-bit downconvert). Its address
-// escapes to the parser, so the pre-zeroed slots stay live (not constant-folded).
 struct ParseFmt {
     WaveFormatX* m_fmt; // +0x00  fmt-chunk WAVEFORMATEX pointer (into the RIFF blob)
     u32 m_reservedA;    // +0x04  (zeroed by Acquire; parser output slot, unused for WAVE)
@@ -47,7 +22,6 @@ struct ParseFmt {
 SIZE(ParseFmt, 0x14); // 5-DWORD parser scratch descriptor (address escapes)
 
 struct StreamVoice; // TickSubManagers instance-list node: the canonical per-stream voice
-                    // (<Dsndmgr/StreamVoice.h>; former SubNode view, folded wave 3)
 
 class SoundDevice {
 public:

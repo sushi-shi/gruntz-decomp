@@ -1,10 +1,3 @@
-// MenuVersion.h - the app version-banner fields owned by MenuState.cpp (CMenuState::
-// BuildVersionString reads them; each DATA()-bound in MenuState.cpp). A NARROW, owner-
-// only decl header: included solely by MenuState.cpp so the definitions can drop the
-// `extern "C"` keyword while keeping the exact C-linkage symbol + DATA() binding, WITHOUT
-// putting these file-private globals into the widely-shared <Gruntz/GameMode.h> (which
-// would ripple regalloc in unrelated GameMode.h includers via the decl-count butterfly).
-// Mutable .bss ints -> byte-neutral.
 #ifndef GRUNTZ_MENUVERSION_H
 #define GRUNTZ_MENUVERSION_H
 

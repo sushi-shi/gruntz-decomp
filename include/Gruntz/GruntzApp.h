@@ -1,14 +1,6 @@
-// GruntzApp.h - CGruntzApp, the game's CGameApp subclass (C:\Proj\Gruntz). One
-// canonical definition: WinMain.cpp `new`s it and drives slots 2/6
-// (Init / RunMessageLoop); GruntzApp.cpp implements the
-// overrides. Its own fields begin after the base (CGameApp ends at 0x254); the
-// matched methods touch only base CGameApp fields, so no CGruntzApp-specific
-// members are modeled yet.
 #ifndef GRUNTZ_GRUNTZ_GRUNTZAPP_H
 #define GRUNTZ_GRUNTZ_GRUNTZAPP_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
-// <Mfc.h> brings <windows.h> (HWND / HINSTANCE / UINT / WPARAM / LPARAM) and INT_PTR
-// (the dialog proc's return type).
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
 

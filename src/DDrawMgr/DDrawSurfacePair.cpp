@@ -1,22 +1,3 @@
-// DDrawSurfacePair.cpp - a surface-backed drawing region in the DDrawMgr
-// DDrawMgr image family. It owns one held DDraw surface (a CFileImageSurface, the
-// CDDSurface wrapper) borrowed from the parent CDirectDrawMgr's surface pool,
-// plus a cached pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an
-// x/y offset window @+0x1c. Its own vtable is @0x5eff30; the grand-base dtor
-// vtable is g_wapObjectDtorVtbl @0x5e8cb4. See include/DDrawMgr/DDrawSurfacePair.h.
-//
-// This TU carries four of the class's methods (in retail-RVA order):
-//   BltSelf       (0x03a1d0) - BltFast another pair's surface onto ours
-//   ~dtor         (0x1590f0) - teardown chain + base-vtable restore (/GX EH frame)
-//   TeardownSurface (0x163e20, vtable slot 7) - remove the surface from the pool
-//   DrawBox       (0x163f40) - draw a 1px rectangle outline into the locked surface
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine). The engine callees (CDDSurface
-// Lock/BltFast, the pool RemoveItemA, IDirectDrawSurface::Unlock) are reloc-
-// masked external __thiscall/__stdcall calls.
-// ---------------------------------------------------------------------------
-
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -61,34 +42,11 @@
 // CreatePoolItem/CreateDevice remain (CDirectDrawMgr*) casts on m_ptrColl (the
 // documented CDDrawPtrCollections==CDirectDrawMgr manager-unification @identity-TODO).
 
-// ---------------------------------------------------------------------------
-// 0x03a1d0: BltFast `src`'s held surface onto ours at (0,0) with the source's
-// offset window (&src->m_srcRect) as the src rect and DDBLTFAST_SRCCOLORKEY|WAIT
-// (0x10) flags.  __thiscall, one ptr arg.
-// @interleaver CDDrawSurfacePair - own-class out-of-line COMDAT at 0x3a1d0, far from the
-// main block @0x163bf0+; RVA-placement artifact, kept in its own class file.
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
     m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
 }
 
-// Set by the record parser (0x168c60) to the parsed name length; the builder uses
-// it to advance the record-stream cursor. 0x6bf3c4 -> file RVA 0x2bf3c4.
-
-// The 'ANI' source entry's tag reader / parse session (CParseSource family,
-// __thiscall on the entry node). Modeled as a layout-compatible view so the
-// `mov ecx,entry; call` forms fall out; external/no-body.
-// The 0x34-byte frame record Build `new`s + catalogs is the shared CAniRecordView
-// (include/Gruntz/AniRecordView.h): its ctor stamps the primary vptr (@0x5f02c0)
-// and seeds m_owner/m_count/m_indices. (Formerly a CAniElement.cpp-local
-// CAniRecordInit duplicate - folded into the one shared view.)
-
-// ---------------------------------------------------------------------------
-// 0x06b270: bounds-checked CObArray fetch. 1 stack arg (ret 4).
-// @interleaver CAniElement - CAniElement is co-hosted in THIS obj (its Build_165460 /
-// Configure_1655c0 / LoadFile_165620 / DeleteAll methods sit in the main block); this
-// lone bounds-check is the same obj's COMDAT pooled out at 0x6b270. Not a foreign class
-// to carve (no separate CAniElement TU) - own-obj interleaver, kept + flagged.
 RVA(0x0006b270, 0x1b)
 ::CObject* CAniElement::AtChecked_06b270(i32 i) const {
     if (i >= 0 && i < m_records.GetSize()) {
@@ -97,16 +55,6 @@ RVA(0x0006b270, 0x1b)
     return 0;
 }
 
-// ===========================================================================
-// The CDDrawWorkerList teardown trio (0x163bc0-0x163c60).
-// ===========================================================================
-// DestroyWorkers (0x163bc0, vtable slot 7): walk the work-node list (head @
-// this+0x14), destroy every node's child via its scalar-deleting destructor, then
-// RemoveAll the list (tail call 0x1b5a0b == CObList::RemoveAll - byte-IDENTICAL
-// twin of the non-virtual ClearWorkers below; no /OPT:ICF, the same source body
-// compiled twice). The REAL dtor is 0x156f50 (DDrawSubMgr.cpp), which direct-calls
-// this slot body. (Was misbound as ~CDDrawWorkerList: the reloc-masked tail hid
-// that the old model's implicit ~CObList bound 0x1b5a2b, not retail's 0x1b5a0b.)
 RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::DestroyWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
@@ -119,10 +67,6 @@ void CDDrawWorkerList::DestroyWorkers() {
     m_workers.RemoveAll();
 }
 
-// PruneWorkers (0x163bf0, vtable slot 13 - the play states' per-frame "present"):
-// for each node dispatch the worker's RenderFrame onto the two surface pairs,
-// decrement child->m_refCount, and remove + destroy (immediately when pair b is
-// live (m_surface set) and not flagged 0x20000, else on refcount expiry).
 RVA(0x00163bf0, 0x6d)
 void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     POSITION pos = m_workers.GetHeadPosition();
@@ -140,7 +84,6 @@ void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) 
     }
 }
 
-// ClearWorkers (0x163c60): destroy each node's child then RemoveAll the list.
 RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
@@ -256,10 +199,6 @@ i32 CDDrawSurfacePair::InitFromSurface_163db0(CDDSurface* src) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x163e20: the surface teardown (vtable slot 7). When the held surface is
-// present AND owned (m_ownsSurface set), remove it from the parent manager's surface pool;
-// then zero m_surface. Always zero the width (m_width).
 RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::TeardownSurface() {
     if (m_surface != 0 && m_ownsSurface != 0) {
@@ -270,12 +209,6 @@ void CDDrawSurfacePair::TeardownSurface() {
     m_width = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x163e50 (vtable slot 13): load an image from a parse source into the held
-// surface. Read the source's 4-char magic tag ('BMP'/'PCX'/'DIR'/'DIP' -> type
-// 1/2/3/4; anything else fails), pull the live source pointer (BeginParse), hand
-// it to CDDSurface::Resolve(pool, buf, type, length, 0), release the parse buffer
-// (EndParse), and return Resolve's status. __thiscall, 1 ptr arg (ret 0x4).
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
     i32 type;
@@ -566,7 +499,6 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
     w->m_8->ReleaseDC(hdc);
 }
 
-// __thiscall(rc, text): print text centred into rc using the held surface's DC.
 RVA(0x00164420, 0x79)
 void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
     CDDSurface* w = m_surface;
@@ -688,10 +620,6 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x164650: the dirty-rect blit hook - an empty (retail `ret 0xc`) no-op. The
-// CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region; the
-// retail build left the body empty. __thiscall, 3 args (ret 0xc).
 RVA(0x00164650, 0x3)
 void CDDrawSurfacePair::BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos, i32* size) {}
 
@@ -712,22 +640,8 @@ i32 CDDrawSurfacePair::Probe_164660() {
            || m_surface->m_8->Restore() == 0 || m_surface->m_8->Restore() == 0;
 }
 
-// ===========================================================================
-// wave4-L CP3b: further T-obj take-ins (mapsmall/list/workers/cache/filemem
-// meat + the pages child SetGeom + the CAniElement section + the worker
-// helpers). Ordering pass follows (CP4).
-// ===========================================================================
-
 void operator delete(void*);
 
-// ---------------------------------------------------------------------------
-// CDDrawSurfaceChildA::SetGeom (0x1646b0, vtable slot 10 override): re-set the child
-// surface geometry to {w,h,bpp}. If the cached geometry already matches, return 1.
-// Otherwise drop the current surface from the parent manager's pool, reconfigure
-// the pool for {w,h,bpp}, then attach a mode surface (double-buffer bit from the
-// manager's caps flags) and validate it; cache the new geometry + a {0,0,w,h} src
-// rect. __thiscall, 3 args (ret 0xc). (Pool/manager reached through this TU's
-// owner views; ConfigureSurface added to the local pool view.)
 RVA(0x001646b0, 0xde)
 i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
@@ -766,13 +680,6 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// The CDDrawWorkerBase/B non-virtual helpers (0x164790 / 0x166040): the worker
-// hierarchy's reset/arm helper (inherited by both subtypes) and CDDrawWorkerB's
-// named-object frame fetch. Both hang off the worker's +0x0c owner context.
-// The object Lookup yields, viewed as a bounded element array: CDDrawWorkerObj
-// (<DDrawMgr/DDrawFrameNode.h>).
-
 // CResolveNode::SetPosition (0x164790, vtable slot 9 of ??_7CResolveNode - the
 // datum holds this RVA at +0x24): set position + reset the draw state; seeds m_3c
 // off the +0x0c owner-ctx handle. Called directly (rel32) by the wide-object
@@ -798,11 +705,6 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CResolveNode::Init (0x1647e0): seeds m_0c/m_04/m_08 (owner/field04/field08),
-// clears m_4c/m_58, sets m_50 = 1, dispatches the node's own Resolve virtual
-// (slot 9, 0x164790) with (resolveX, resolveY), finally stores field40 into m_40
-// and returns TRUE.
 RVA(0x001647e0, 0x48)
 i32 CResolveNode::Init(
     i32 owner,
@@ -823,12 +725,6 @@ i32 CResolveNode::Init(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerRegistry::DestroyAll (0x165210): map teardown - iterate all entries
-// in m_map via GetNextAssoc, destroying each CObject* value via its scalar-deleting
-// destructor (vtbl +0x4 arg 1), then RemoveAll the map. Same pattern as
-// CDDrawWorkerMapSmall::DestroyAll but without the final m_cachedWorker clear (that field
-// does not exist in this class). /GX EH frame for the local CString key.
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerRegistry::DestroyAll() {
     ::CObject* val = 0;
@@ -845,11 +741,6 @@ void CDDrawWorkerRegistry::DestroyAll() {
     m_10map.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerCache::CreateWorker (0x1652c0): allocate + construct a 0x17c-byte
-// worker, call its +0x24 virtual with (arg1, arg3). On success store it into the
-// map under `key` and return it; on failure run its scalar-deleting dtor and
-// return 0. (Vfunc24 dispatched BEFORE the null check, matching the target asm.)
 static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
     return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
 }
@@ -885,21 +776,8 @@ void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, 
     return w;
 }
 
-// Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body so its
-// rel32 call is reloc-masked.
 void* operator new(u32 n);
-// The buffer is freed via _RezFree (@0x1b9b82, __cdecl).
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerCache::FindKeyOfValue_165360 (0x165360): map scan - return (by
-// value) the key of the first entry whose value's +0x10 dword equals target's
-// +0x10; empty CString if none. Closed by the map-scan idiom (top-tested while +
-// real GetStartPosition) plus spelling the no-match return as a named
-// `CString empty; return empty;` so cl materializes the empty temp + copy-ctor
-// exactly as retail (a bare `return CString()` RVOs it into the return slot). The
-// true owner is CDDrawWorkerCache (the +0x14 worker cache): xref shows the only
-// callers (CWwdGameObject::Serialize/WriteSnapshot) reverse-look-up a worker here;
-// the sibling CDDrawWorkerRegistry (+0x10) shares the byte-identical map@+0x10 (m_10).
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerCache::FindKeyOfValue_165360(::CObject* target) {
     ::CObject* val = 0;
@@ -982,9 +860,6 @@ fail:
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x1655c0: gate on the 'ANI' tag, then BeginParse / Build / EndParse the entry.
-// __thiscall, 3 stack args (ret 0xc). Returns Build's result (0 if not 'ANI').
 RVA(0x001655c0, 0x53)
 i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
     if ((static_cast<CParseSource*>(entry))->GetEntryTag() != 0x414e49) {
@@ -1003,35 +878,6 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);
-
-// ============================================================================
-// merged from AniElementEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
-// ============================================================================
-// AniElementEh.cpp - the /GX (eh) sibling of CAniElement.cpp, carrying the single
-// member whose destructible file-reader local forces the C++ EH frame (the rest of
-// CAniElement stays in the frameless base TU; split per
-// docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md).
-//
-//   0x165620  LoadFile - open a file via a stack-local reader, slurp it into a
-//             RezAlloc'd buffer, hand the buffer to Build_165460, free it, return
-//             the build result.  /GX frame from the reader local's non-trivial dtor.
-//
-// The file-reader engine helpers (0x1bexxx-0x1bf5xx, a CRT/MFC file class) and
-// RezAlloc/RezFree are reloc-masked external __thiscall/__cdecl callees.
-
-// Engine heap alloc/free.  Reloc-masked __cdecl externs.
-
-// (the ex-`CAniFileReader` view is GONE: it was MFC's CFile, proven against the real
-// NAFXCW .LIB export table -
-//   ctor  0x1befd7 -> ??0CFile@@QAE@XZ
-//   dtor  0x1bf121 -> ??1CFile@@UAE@XZ                       (virtual)
-//   Open  0x1bf200 -> ?Open@CFile@@UAEHPBDIPAVCFileException@@@Z
-//   "GetSize" 0x1bf505 -> ?GetLength@CFile@@UBEKXZ           (returns DWORD, not i32)
-//   Read  0x1bf328 -> ?Read@CFile@@UAEIPAXI@Z                (returns UINT, not i32)
-// - so all five were declared-and-never-defined PHANTOMs standing in for a library
-// class we already link. The file's own comment at LoadFile_165620 already said
-// "retail's reader is CFileIO"; it is the plain MFC CFile. Using the real class also
-// restores its virtual dtor, which is what raises the destructible-local /GX frame.)
 
 // ---------------------------------------------------------------------------
 // 0x165620: load + build the element from a file.  Open the reader on `filename`;
@@ -1062,12 +908,6 @@ i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
     return r;
 }
 
-// ===========================================================================
-// 0x165730 - DeleteAll: delete every owned record via its scalar-deleting dtor
-// (vtbl slot 1, arg 1), free the +0x1c name buffer (RezFree), then RemoveAll the
-// array. Plain /O2 leaf (no EH frame). (From AniElementCollection.cpp; the /GX
-// ~CAniElement @0x152e30 lives in the S2 obj, src/DDrawMgr/DDrawSubMgrLeaf.cpp.)
-// ===========================================================================
 RVA(0x00165730, 0x4c)
 void CAniElement::DeleteAll() {
     for (i32 i = 0; i < m_records.GetSize(); i++) {
@@ -1083,18 +923,6 @@ void CAniElement::DeleteAll() {
     m_records.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
 }
 
-// ===========================================================================
-// The CDDrawWorkerMapSmall meat (0x165810-0x165d30).
-// ===========================================================================
-// The worker construction is now the real CAniRecordBase2(field04, field0c) ctor
-// (AniRecordBase2.h); the former MakeMapWorker `static inline` helper was NOT inlined by
-// cl (it emitted a call), so it capped the factories at ~66%. Each site now writes
-// `new CAniRecordBase2(m_map1.GetCount(), m_0c)` and cl folds the ctor in with the
-// vptr scheduled 4th - see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
-
-// Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_map1 via
-// GetNextAssoc, destroying each CObject* value through its scalar-deleting
-// destructor, RemoveAll the map, then clear the +0x64 counter.
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::DestroyAll() {
     CObject* val = 0;
@@ -1227,7 +1055,6 @@ void CDDrawWorkerMapSmall::ResetSlots() {
     m_cachedWorker = 0; // +0x64 (the teardown nulls it - a pointer, not a counter)
 }
 
-// 0x165c40 (__thiscall, /GX): remove a specific worker `obj` from m_map1 by value.
 RVA(0x00165c40, 0xe7)
 i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     if (m_cachedWorker == obj) {
@@ -1270,10 +1097,6 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     return 1;
 }
 
-// ===========================================================================
-// The CFileMem runtime core (0x165e30-0x165f50).
-// ===========================================================================
-// CFileMemBase::SetName (0x165e30, slot 1, shared by both vtables).
 RVA(0x00165e30, 0x27)
 i32 CFileMemBase::SetName(const char* name, i32 a, i32 b) {
     m_name = name;
@@ -1282,8 +1105,6 @@ i32 CFileMemBase::SetName(const char* name, i32 a, i32 b) {
     return 1;
 }
 
-// CFileMem::Open (0x165e60): dispatch on the read-vs-create predicate; open the
-// inner file read-only recording its length, or for create (flags 0x1001).
 RVA(0x00165e60, 0x82)
 i32 CFileMem::Open() {
     if (m_name.GetLength() == 0) {
@@ -1307,15 +1128,12 @@ i32 CFileMem::Open() {
     return 1;
 }
 
-// CFileMem::Ready (0x165ef0): poke the inner file's Close and report ready (1).
 RVA(0x00165ef0, 0xf)
 i32 CFileMem::Ready() {
     (reinterpret_cast<CFileIODispatch*>(&m_file))->Close();
     return 1;
 }
 
-// CFileMem::Read (0x165f00): read n bytes through the inner CFileIO, advancing
-// the consumed-count m_offset by n.
 RVA(0x00165f00, 0x48)
 i32 CFileMem::Read(void* buf, i32 n) {
     if (buf == 0) {
@@ -1331,8 +1149,6 @@ i32 CFileMem::Read(void* buf, i32 n) {
     return 1;
 }
 
-// CFileMem::Write (0x165f50): write n bytes through the inner CFileIO, advancing
-// the position pair by n.
 RVA(0x00165f50, 0x45)
 i32 CFileMem::Write(const void* buf, i32 n) {
     if (buf == 0) {
@@ -1420,10 +1236,6 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
 // The dispatch view CDDrawFrameNode (slot names are CImage's own, vtable 0x1eaa2c ground
 // truth) lives in <DDrawMgr/DDrawFrameNode.h> (included at the top of this TU).
 
-// 0x1660b0 (CDDrawWorkerB vtable slot 10): draw the worker's current frame node
-// (m_78) onto the first target `a`, then - when the second target `b` has a live
-// surface and is not flagged 0x20000 - onto `b` too. m_78 is the int-frame slot
-// reinterpreted as the frame-node pointer (authentic DWORD-stores-a-pointer).
 RVA(0x001660b0, 0x33)
 void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     (reinterpret_cast<CDDrawFrameNode*>(m_78))->RenderImage(this, a);

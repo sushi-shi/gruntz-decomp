@@ -1,9 +1,3 @@
-// SpriteRefTable.cpp - the game-registry sprite/animation reference table (trace
-// placeholder tomalla-10). Methods in ascending retail-RVA order. The table
-// shape (two 17-slot CSpriteRef buckets at +0x08 / +0x4c) and the CSpriteRef /
-// CSpriteRefHashTable helpers come from <Gruntz/SpriteRefTable.h>; every cross-
-// cluster callee (the node ctor/dtor, the hash Lookup, the engine alloc/free) is
-// modeled NO-body so its `call` reloc-masks.
 #include <Bute/SymParser.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Win32.h>
@@ -14,25 +8,15 @@
 
 #include <rva.h>
 
-// The sprite-ref / palette hash tables are the real MFC CMapStringToPtr
-// (Lookup @0x1b8008, brought in via <Mfc.h>); no local view.
 #include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
-// The engine heap reached by Add()/Clear() is the NAFXCW global operator new/delete
-// (??2@YAPAXI@Z @0x1b9b46, ??3@YAXPAX@Z @0x1b9b82); reloc-masked DIR32/REL32.
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
-
-// The holder IS the canonical CDDrawSurfaceMgr; its +0x18 m_workerMap
-// (CDDrawWorkerMapSmall) carries the name->object registry at +0x10 (m_map1,
-// CMapStringToOb). Add()/LoadGruntzPalette() reach it cast-free.
 
 // The object Lookup writes into `out`: +0x10 is the sprite, whose +0xc holds the
 // frame data fed to the alpha factory. The reduced reader views CLookupSprite /
 // CLookupResult live in <Gruntz/SpriteRefTable.h> (@identity-TODO - the sprite value's
 // concrete class needs an xref chase from the sprite LOADER side; it is NOT
 // CAniRecordBase2, whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).
-
-// ---------------------------------------------------------------------------
 
 RVA(0x000e2250, 0x26)
 i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
@@ -80,8 +64,6 @@ void CSpriteRefTable::Clear() {
     }
 }
 
-// GetA (0x0e2360): bucket-A node for slot i, null if out of [0,17). Out-of-line
-// (retail emits it standalone; the inline member folded away and never emitted).
 RVA(0x000e2360, 0x15)
 CSpriteRef* CSpriteRefTable::GetA(i32 i) {
     if (static_cast<u32>(i) >= 0x11) {
@@ -90,7 +72,6 @@ CSpriteRef* CSpriteRefTable::GetA(i32 i) {
     return m_refA[i];
 }
 
-// GetB (0x0e2390): bucket-B node for slot i, null if out of [0,17). Out-of-line.
 RVA(0x000e2390, 0x15)
 CSpriteRef* CSpriteRefTable::GetB(i32 i) {
     if (static_cast<u32>(i) >= 0x11) {
@@ -99,8 +80,6 @@ CSpriteRef* CSpriteRefTable::GetB(i32 i) {
     return m_refB[i];
 }
 
-// GetSel (0x0e23c0): resolve slot i (bucket B when bAlt else A), return the node's
-// m_alphaKey, or 0. Out-of-line (retail emits it standalone).
 RVA(0x000e23c0, 0x2d)
 i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (static_cast<u32>(i) >= 0x11) {
@@ -151,26 +130,6 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     return node;
 }
 
-// ---------------------------------------------------------------------------
-// CSpriteRefTable::LoadGruntzPalette (0xe2d10) - register a level's
-// "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry reached through
-// this->m_spriteMgrHolder->m_workerMap (CDDrawWorkerMapSmall). m_map1.Lookup() (the
-// +0x10 CMapStringToOb) probes whether it is already present; Factory_1658c0
-// (vtable slot 9, the fabricated "Install") installs the resolved palette. src is
-// the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
-// by namespaced name); name is the level/name string. Helpers are reloc-masked
-// externals; the registry is reached cast-free through the real polymorphic member.
-//
-// int (BOOL) return: the `!src` and already-present guards return literal 0/1
-// (reusing the zeroed eax / `mov eax,1`); the success path normalizes the
-// Factory_1658c0() return through neg/sbb/neg (`!!x`). A void return would tail-merge
-// the bare epilogues and drop the eax=1 tail.
-//
-// The fabricated CPaletteDestRegistry (v0-v8 + Install@9) / CPaletteHashTable /
-// CPaletteDestRoot / CSpriteMgrHolder views ARE the real CDDrawSurfaceMgr +
-// CDDrawWorkerMapSmall (Install@slot9 == Factory_1658c0 @0x1658c0, Lookup @0x1b8008
-// == CMapStringToOb::Lookup). Dissolved onto them 2026-07-14.
-
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
 // the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
@@ -198,11 +157,6 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     return m_spriteMgrHolder->m_workerMap->Factory_1658c0(pal, 0, 0) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpriteRefTable::LoadToolToyPalettes (0xe2980) - register the full tool/toy color
-// palette set by calling LoadGruntzPalette for each of the 34 fixed color names.
-// Short-circuits to 0 on the first failure (a null src bails immediately); returns 1
-// only when every palette resolved. __thiscall(src), ret 4.
 RVA(0x000e2980, 0x2cd)
 i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
     // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
@@ -231,12 +185,6 @@ i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpriteRefTable::BuildToolToyColorTable (0xe2400) - build the per-color tool/toy
-// sprite-ref table. Bails on a null src; if already built (m_built) returns success.
-// Otherwise registers the color palettes (LoadToolToyPalettes), then Add()s each
-// color's "<COLOR>TOOL"/"<COLOR>TOY" sprite into bucket A/B at the color's fixed
-// kind slot (any Add miss aborts with 0), and latches m_built. __thiscall(src), ret 4.
 RVA(0x000e2400, 0x39e)
 i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
     if (!src) {
@@ -422,5 +370,3 @@ i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
     m_built = 1;
     return 1;
 }
-
-// --- vtable catalog ---

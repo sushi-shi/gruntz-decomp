@@ -1,15 +1,8 @@
-// RegistryHelper.h - Utils::RegistryHelper, the engine's registry/config wrapper
-// (callers of ADVAPI32!Reg*). Minimal reconstruction sufficient to byte-match
-// the leaf value-getters. Field names are placeholders (m_<hexoffset>); only the
-// OFFSETS are load-bearing.
 #ifndef UTILS_REGISTRYHELPER_H
 #define UTILS_REGISTRYHELPER_H
 
 #include <Ints.h>
 
-// ---------------------------------------------------------------------------
-// Reg* (ADVAPI32) + HKEY/DWORD/REGSAM/... come from the real <windows.h>
-// (winreg.h), pulled the MFC-controlled way via <Mfc.h>.
 #include <Mfc.h>
 
 namespace Utils {

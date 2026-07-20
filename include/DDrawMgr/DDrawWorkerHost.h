@@ -1,20 +1,3 @@
-// DDrawWorkerHost.h - THE WWD level plane object (ctor 0x1615a0, dtor 0x163af0;
-// own 12-slot vtable ??_7CDDrawWorkerHost @0x5f0270; `new` size 0x158). ONE class
-// that was reconstructed as FIVE views, now unified here (name-preserving union of
-// every view's proven members):
-//   * CDDrawWorkerHost      - the ctor/dtor/RegisterNamed shape (this header)
-//   * CPlane     (WwdFile.h)   - CGameLevel::ReadPlane's product (kept as a typedef)
-//   * CPlaneRender (WwdFile.h) - the render facet (Draw/SetTileSize/scroll; typedef)
-//   * CLevelPlane (GameLevel.h)- the level's typed facet (geometry/probes; typedef)
-//   * "CImageSet3" grid-owner  - the ex-LevelPlane.cpp local pocket (Cleanup/Prune/
-//     GetSize) - a MISATTRIBUTION: the receiver view+0x5c is the distinguished MAIN
-//     plane (this class), not the 0x18-byte CImageSet3 collision record.
-// Identity proof: ReadPlane's `new`(0x158) calls 0x1615a0 which stamps 0x5f0270;
-// the +0xf4 pool ends exactly at +0x158; the slot map (vtable_hierarchy) ties
-// IsLoaded@5/Cleanup@7/InitGeometry@9/Read@10 to the bodies the facets dispatch.
-// Where two views recovered DIFFERENT readings of one retail field, both spellings
-// are kept via a union and flagged for the naming pass. Only offsets + emitted
-// bytes are load-bearing.
 #ifndef GRUNTZ_CDDRAWWORKERHOST_H
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
@@ -23,35 +6,18 @@
 #include <DDrawMgr/DDrawWorker.h> // CLoadable (m_frameSets is the real MFC ::CObArray)
 #include <rva.h>
 
-// The 4-int coordinate/extent record (CGameLevel+0x10; passed by pointer to the
-// level-load/edit methods and embedded at plane+0x50). Half-open tile-bounds box
-// [minX,maxX) x [minY,maxY); minX==0x80000000 is the "unset" sentinel. (Moved here
-// from GameLevel.h - the plane embeds one.)
 SIZE_UNKNOWN(LevelCoordRect);
-// (a REAL RECT - min/max are left/top/right/bottom; the LevelCoordRect->tagRECT
-// casts were the proof. 2026-07-19.)
 typedef struct tagRECT LevelCoordRect;
 
-// PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
-// (its ADDRESS is passed into CDDSurface::BltEx by Draw). A zero-size marker so the
-// +0xF4 field is addressable without pulling the 0xc0-byte surface into the layout.
 SIZE_UNKNOWN(PlaneBlitScratch);
 struct PlaneBlitScratch {};
 
-// The camera/scroll + spatial-grid worker at plane+0xb0: the canonical
-// CWwdSpatialMgr (<Wwd/WwdSpatialMgr.h>) - ONE class now (the ex-CPlaneScroll
-// scroll-rect view and the WwdSpatialMgr.cpp canonical were the same object, and
-// every offset agreed). A pointer member here, so a forward decl suffices; the two
-// TUs that dispatch on it (LevelPlane.cpp / DDrawWorkerHost.cpp) include the header.
 struct CWwdSpatialMgr;
 
-// Support types the method signatures reference (full defs in <Wwd/WwdFile.h> /
-// <Image/ImageSet.h> / <Io/FileMem.h> - pointer-only here).
 class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
 struct CPlaneDrawCtx; // Draw's render context (its +0x2c is the blit target surface)
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
 class CDDrawWorkerHost : public CObject {
@@ -199,7 +165,6 @@ public:
     // ENDS AT 0x158 - the ReadPlane allocation size.
 };
 
-// The facet spellings (one class, several historical view names - kept as aliases).
 typedef CDDrawWorkerHost CPlane;       // the WwdFile.h loader-facet spelling
 typedef CDDrawWorkerHost CPlaneRender; // the render-facet spelling
 typedef CDDrawWorkerHost CLevelPlane;  // the GameLevel.h level-facet spelling

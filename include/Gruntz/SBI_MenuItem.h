@@ -1,17 +1,3 @@
-// SBI_MenuItem.h - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), RTTI .?AVCSBI_MenuItem@@.
-//
-// The most-derived member of the status-bar-item family:
-//   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem
-// proven by the destructor at 0x1007d0, which unwinds the subobject chain by
-// re-stamping the four base vtables 0x5eab4c -> 0x5eac0c -> 0x5eab8c -> 0x5eabcc
-// (CSBI_MenuItem / CSBI_Image / CSBI_RectOnly / CStatusBarItem). The sibling
-// "CSBI_RectOnly.cpp" TU actually models CSBI_ImageSet (vtable 0x5eac4c); this
-// menu-item class is distinct.
-//
-// The class sits on the real polymorphic canonical chain (SBI_Image.h) since the
-// *Eh.cpp collapse - the compiler emits its ??_7 from the sema-proven slot decls.
-// Offsets are the load-bearing fact; field names are placeholders recovered from
-// the matched use-sites.
 #ifndef SBI_MENUITEM_H
 #define SBI_MENUITEM_H
 
@@ -21,18 +7,8 @@
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// The +0x24 config host is the shared canonical CDDrawSurfaceMgr (SbiConfig.h, pulled
-// in the .cpp); only a pointer is needed here, so forward-declare it.
 class CDDrawSurfaceMgr;
 
-// ---------------------------------------------------------------------------
-// Engine-referent views the reconstructed CSBI_MenuItem methods drive (modeled
-// minimally; the methods/fields touched are the only load-bearing facts - every
-// call through them is reloc-masked). Moved here from the per-TU inline defs so
-// they carry a single shared definition.
-
-// A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
-// +0x18 interval).
 class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 struct CMiCue {
     char m_pad0[0x10];
@@ -42,41 +18,6 @@ struct CMiCue {
 };
 SIZE_UNKNOWN(CMiCue);
 
-// (CMiMusicHost DISSOLVED 2026-07-20: it was a duplicate view of
-// g_gameReg->m_world->m_soundRegistry, whose real class CDDrawSubMgrLeafScan already
-// carries the cue map (m_10, CMapStringToPtr @+0x10, Lookup 0x1b8438) and the busy/gate
-// guard (m_30). The old "cue map @0x1b8438 differs from the install map @0x1b8008" note
-// was a mis-read - it is the ONE +0x10 Ptr-band map. The cue play reads m_soundRegistry
-// directly; SBI_MenuItem.cpp includes <DDrawMgr/DDrawSubMgrLeafScan.h>.)
-
-// (CMiTabHost DISSOLVED 2026-07-20: it was a duplicate view of m_2c, whose real type
-// is already CStatusBarMgr* (CStatusBarItem::m_2c). SetState drives the tab state
-// through CStatusBarMgr's own ClearTabGroup/LoadTabSprites/Deactivate, and the ex
-// m_10c active-tab latch is CStatusBarMgr::m_activeTab @+0x10c - all cast-free now.)
-
-// The frame-name reverse-lookup (0x155630) on the config registry is
-// CImageRegistry::ReadField (mgr->m_10, <Gruntz/ResMgr.h>); the former CMiNameReg
-// view is gone (wave 3).
-
-// The archive object passed to Serialize is the shared WAP32 CSerialArchive (Read @
-// vtable +0x2c / Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h>
-// - the former local `CMiArchive` view is folded away.
-
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem - a single status-bar menu entry, on the real RTTI chain
-// CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem. The inherited base
-// region carries: m_4 active flag, m_8 subtype tag (=2), m_c command/tab id, m_10
-// arg0, m_rect14 the rect block (x0/y0/x1/y1; .m_4/.m_8 double as the frame draw
-// origin), m_24 the config host (CDDrawSurfaceMgr*, i32 slot - cast at the deref like
-// the sibling leaves), m_28 the counter, m_2c the owning tab host (CMiTabHost view
-// at the deref), m_30 the resolved frame handle (CImage* stored as DWORD, the
-// CSBI_Image slot). Adds the menu state tag (+0x34) and the resolved cue/config
-// record (+0x38).
-//
-// Formerly kept FLAT to preserve the menu-item field names; folded onto the
-// canonical chain by the *Eh.cpp collapse (this TU also owns the /GX chain dtor
-// 0x1007d0, which requires the real polymorphic base chain).
-// ---------------------------------------------------------------------------
 class CSBI_MenuItem : public CSBI_Image {
 public:
     // The REAL inline default ctor. Retail has no out-of-line ??0: it INLINES this body
@@ -157,7 +98,5 @@ public:
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // SBI_MENUITEM_H

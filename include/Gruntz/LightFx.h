@@ -1,15 +1,3 @@
-// LightFx.h - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
-// CUserLogic leaf (RTTI .?AVCUserLogic@@ / .?AVCUserBase@@; ctor 0x9cf00).
-// sizeof 0x5c = CUserLogic(0x40) + 0x1c leaf data.
-//
-// This header declares ONLY the two leaf methods reconstructed so far
-// (Activate 0x9d520 + RebindNode 0x9d770). The class spine (CUserLogic base,
-// m_14/m_30/m_38/m_3c) comes from <Gruntz/UserLogic.h>; the leaf adds the
-// +0x40/+0x54/+0x58 data words those two methods touch.
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes
-// are load-bearing. The ctor (0x9cf00) and the other sibling methods (0x9d320
-// etc.) are not yet reconstructed.
 #ifndef GRUNTZ_GRUNTZ_CLIGHTFX_H
 #define GRUNTZ_GRUNTZ_CLIGHTFX_H
 
@@ -62,9 +50,6 @@ public:
 VTBL(CLightFx, 0x1e7af4);
 SIZE(CLightFx, 0x5c);
 
-// The per-class activation-registry entry: its first dword receives the per-frame
-// handler PMF (AdvanceAnim; a 4-byte code ptr on this complete single-inheritance
-// class). Declared here (not .cpp-local) with the class it binds to.
 typedef i32 (CUserLogic::*LightFxHandler)();
 struct CLightFxActEntry {
     LightFxHandler m_fn;

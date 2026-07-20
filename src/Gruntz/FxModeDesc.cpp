@@ -20,11 +20,6 @@
 #include <rva.h>
 #include <string.h>
 
-// ===========================================================================
-// 0xf9280 - MakeButeSectionKey(dst, section, key): build "[section:key]" by
-// appending onto dst. Returns 0 when key is null, else 1. The five concatenations
-// lower to inline strcat (repne scasb + rep movs at /O2 /Oi).
-// ===========================================================================
 RVA(0x000f9280, 0xe4)
 i32 MakeButeSectionKey(char* dst, const char* section, const char* key) {
     if (!key) {

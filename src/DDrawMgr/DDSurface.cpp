@@ -1,22 +1,3 @@
-// DDSurface.cpp - CDDSurface, the ORIGINAL C:\Proj\DDrawMgr\DIRSURF.CPP TU
-// (interval dossier #14G): one obj spanning retail 0x13e060-0x1413cb.
-// The __FILE__ assert string is referenced from 16 sites across the whole span; the
-// obj's single init frag (@0x13e060) + its atexit companion ClearImageCache_13e070
-// lead it. The former image / fileimage / fileimageblit / fileimagerundecode /
-// lutshaderect units' fns in this span were fn-granularity-interleaved slices of
-// this file and are folded in, in retail-RVA order: the IDirectDrawSurface COM
-// thunks, the surface geometry/blit/save ops, the pixel-format converter blitters
-// (Blit<dest><src>), the in-surface RLE decoders (DecodeRun8/24 - retail compiled
-// these UNOPTIMIZED: `#pragma optimize("",off)` islands, see below), the CImage
-// factory/cache, and the rotate-blit forwarders. RezMgr::MakeImageKey (0x13e5d0,
-// text-contained) rides along. EH sites at Build_13e9a0 + ~CDDSurface prove the
-// obj is /GX.
-//
-// On a DDERR_SURFACELOST the COM thunks call the wrapper's own virtual RestoreLost
-// (slot 7) to restore + retry, then route a still-bad HRESULT through
-// CDirectDrawMgr::GetErrorString. The class's pool ctor/dtor emission anchor is
-// the DDRAWMGR TU (DirectDrawMgr.cpp); ~CDDSurface's kept COMDAT copy (0x141350)
-// is THIS obj's.
 #include <Io/FileStream.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 
@@ -31,22 +12,10 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-// The engine logger DDrawLogLine (0x141cb0) is declared in <DDrawMgr/DirectDrawMgr.h>
-// (included below). Rez heap + operator new (reloc-masked):
 void* operator new(u32); // engine allocator (reloc-masked rel32)
 
-// The live screen RGB-format shift table (same globals ShadeTableCache reads): the
-// per-channel "up" shifts (ea0/ea4/ea8 = R/G/B) and the device "down" widths
-// (eac/eb0/eb4). Reloc-masked DIR32.
-// g_lut16 (the 16-bit palette LUT, 256 u16) sits just before g_rUp (0x283ca0..0x283ea0):
-// DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
-// The live screen RGB565 pixel-format shift/size ints (0x683ea0..0x683eb4, .bss set at
-// device init). DEFINED here (owner TU); the g_pf* names (g_rUp/GreenSize/RedSize/
-// GreenShift/BlueSize) in Globals.cpp were a redundant SECOND labeling of these same
-// datums - FOLDED onto the canonical g_rUp/g_gUp/g_rDown/g_gDown/g_bDown. Reference
-// externs stay local in the using TUs. (REHOME DD-G, conflation resolved)
 DATA(0x00283ea0)
 i32 g_rUp; // 0x683ea0  (== ex g_rUp)
 DATA(0x00283ea4)
@@ -60,44 +29,18 @@ i32 g_gDown; // 0x683eb0  (== ex g_gDown)
 DATA(0x00283eb4)
 i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
-// The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
-
-// The global image cache the new item is filed into: a real MFC CPtrArray holding
-// the 0xc0 CDDSurface pool items the 0x13e9a0 factory below builds. Stored
-// in retail .data at 0x653c88; DATA-referenced (reloc-masked), so declared extern.
 DATA(0x00253c88)
 CPtrArray g_imageCache;
-// g_imageCacheIndex (the next-free slot, an i32 right after the 8-byte CPtrArray)
-// DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
 DATA(0x00253c90)
 i32 g_imageCacheIndex = 0; // 0x653c90
-// The 3-plane 16bpp colour LUT (0x653c9e; G plane @+0, B @+0x10000, R @+0x20000 -
-// 0x30000 bytes ending just before g_lut16 @0x683ca0). .bss, built at runtime. The
-// per-plane read pointers are interior slices of g_clut: bank1 (G) = g_clut+0x2
-// (0x653ca0), bank2 (B) = g_clut+0x10002 (0x663ca0), bank0 (R) = g_clut+0x20002
-// (0x673ca0) - SUBSUMED, no separate bank symbols. DEFINED here (owner TU), reference
-// extern stays in <Globals.h>. (REHOME DD-G / DD-Drain-1)
 DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
 
-// Global image-cache in-place reconstruction (0x13e070): mov ecx,&g_imageCache; jmp
-// ??0CPtrArray@@QAE@XZ (0x1b4f0b). This is the in-place re-construct of the CPtrArray
-// (vptr-stamp + zero the 4 dwords), NOT RemoveAll (which frees the storage). The
-// explicit-ctor-call extension gives the clean tail-jmp with no placement-new
-// null-guard (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md). Folded from
-// Stub/BoundaryUpper.cpp.
 RVA(0x0013e070, 0xa)
 void ClearImageCache_13e070() {
     g_imageCache.CPtrArray::CPtrArray();
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Init1 (0x13e0a0, vtable slot 2): if the descriptor arg (a, a 0x6c-byte
-// Blk6c* passed as an int handle) is non-null, copy it into the +0x10 DDSURFACEDESC
-// scratch, then dispatch the surface own slot-8 BlitIntoDesc with the collection context h;
-// return its result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Apply - the view
-// IS CDDSurface; the "ambiguous CDDSurface::Init1" note is resolved). Decl in DDSurface.h.
-// ---------------------------------------------------------------------------
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
     if (a != 0) {
@@ -106,14 +49,6 @@ i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
     return BlitIntoDesc(h);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::BlitSurf
-// The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
-// the colour-key arg (m_78), record width/height into the desc, set dwSize/
-// dwFlags, and - when a4 names a non-zero source bpp that differs from the
-// palette context's bpp (surf->m_palBpp, the display manager passed in) - flag a colour-key blit (dwFlags|0x1000,
-// ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
-// own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
 i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
     i32* desc = reinterpret_cast<i32*>((this->m_desc));
@@ -133,10 +68,6 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
     return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
 }
 
-// CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
-// scratch desc, then derive the row/pixel geometry by a bit-depth switch. The
-// desc geometry is read through the named DDSURFACEDESC fields (m_descSize/
-// m_height/m_width/m_pitch) of the surface's embedded scratch.
 RVA(0x0013e140, 0x133)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_8 = surf;
@@ -204,12 +135,6 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
-// Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
-// element's slot-0 scalar-deleting destructor, RemoveAll the array (SetSize(0,-1)),
-// then - unless the "don't-own" flag (m_dontOwn & 1) is set - Release the two held
-// IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
     for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
@@ -232,16 +157,6 @@ void CDDSurface::FreeSurfaces() {
     this->m_b8 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Resolve
-// The file-format dispatcher (the .REZ payload path). `type` (1=BMP, 2=PCX,
-// 4=PID) selects the matching decoder; the destination buffer arg (`size`) must
-// be non-zero. Each decoder is handed (surf, buf, size); PID additionally takes
-// the transparency-colour pass-through (surf2). Returns 1 on a successful decode,
-// else 0. The near-consecutive case labels lower to MSVC's running-subtract chain
-// (dec/dec/sub 2), so this is spelled as a switch (see
-// docs/patterns/switch-subtract-chain-vs-ifelse.md), case bodies in retail .text
-// order (4, 2, 1).
 RVA(0x0013e550, 0x71)
 i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) {
     if (size == 0) {
@@ -269,16 +184,6 @@ i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::MakeImageKey (0x13e5d0; text contained in THIS obj, between Resolve
-// and SetPalette). Dispatch a resource load by the file extension of `name`:
-// locate the last '.' (strrchr @0x120680), then case-insensitively match
-// (_strcmpi @0x11fdf0) .BMP/.PCX/.PID and hand off to the matching loader on
-// `this` (LoadBmp/LoadPcx take (name,path); LoadPid takes (name,path,arg3)).
-// Returns 1 unless the extension matched but its loader failed (then 0); an
-// unrecognised/absent extension also returns 1. (`this` == the CDDSurface loading
-// the resource - the calls target CDDSurface::LoadBmp/Pcx/Pid @0x144110/0x145110/
-// 0x145cd0.)
 RVA(0x0013e5d0, 0xb1)
 i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
     char* ext = strrchr(name, '.');
@@ -298,7 +203,6 @@ i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
     return 1;
 }
 
-// CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_palette).
 RVA(0x0013e690, 0x35)
 i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
     i32 hr = m_8->SetPalette(pal->m_palette);
@@ -309,8 +213,6 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
     return 0;
 }
 
-// CDDSurface::Lock (__thiscall). Lock(this->m_desc) with NULL rect / flags 1;
-// on SURFACELOST restore-and-retry, else report. Returns m_lockBits on hard fail.
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
     i32 hr = m_8->Lock(static_cast<LPRECT>(rect), reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
@@ -332,12 +234,6 @@ i32 CDDSurface::Lock(void* rect) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Fill
-// Colour-fill blt: build a zeroed DDBLTFX (dwSize 0x64, dwFillColor = `color` at
-// +0x50) and Blt(NULL, NULL, NULL, DDBLT_COLORFILL|DDBLT_WAIT (0x1000400), &fx)
-// through the surface's BltEx thunk. A bad HRESULT routes through
-// CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
 RVA(0x0013e760, 0x63)
 i32 CDDSurface::Fill(u32 color) {
     i32 fx[0x19]; // DDBLTFX (0x64 bytes)
@@ -354,10 +250,6 @@ i32 CDDSurface::Fill(u32 color) {
     return hr == 0;
 }
 
-// CDDSurface::Restore (__thiscall, 0x13e7d0):
-// color-fill the dstRect region with `fillColor` via a DDBLT_COLORFILL Blt (BltEx). The
-// stack DDBLTFX is zeroed (dwSize=0x64, dwFillColor=fillColor); reports a non-zero
-// HRESULT through GetErrorString. Guarded on a non-null rect; returns 1 on success.
 RVA(0x0013e7d0, 0x73)
 i32 CDDSurface::Restore(void* dstRect, i32 fillColor) {
     if (dstRect == 0) {
@@ -374,7 +266,6 @@ i32 CDDSurface::Restore(void* dstRect, i32 fillColor) {
     return hr == 0;
 }
 
-// CDDSurface::Flip (__thiscall). Flip(target->m_8, 1); SURFACELOST retry.
 RVA(0x0013e850, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
     IDirectDrawSurface* tsurf = 0;
@@ -412,9 +303,6 @@ i32 Gap_13e8f0(void) {
     return 0;
 }
 
-// The IID passed to the QI below is the REAL SDK GUID IID_IDirectDrawSurface3
-// (its bytes at 0x5ef888 ARE {DA044E00-69B2-11D0-A1D5-00AA00B8DFBB}; DEFINED in
-// DDPageMgr.cpp).
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
 // ---------------------------------------------------------------------------
@@ -455,7 +343,6 @@ i32 __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc
     return 1; // DDENUMRET_OK (continue enumeration)
 }
 
-// CDDSurface::GetElementAt (__thiscall): bounds-checked m_elements[i], or 0.
 RVA(0x0013ea70, 0x21)
 void* CDDSurface::GetElementAt(i32 i) {
     if (i >= 0 && i < m_elements.GetSize()) {
@@ -464,7 +351,6 @@ void* CDDSurface::GetElementAt(i32 i) {
     return 0;
 }
 
-// CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
 RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, void* key) {
     i32 hr = m_8->SetColorKey(flags, static_cast<LPDDCOLORKEY>(key));
@@ -475,8 +361,6 @@ i32 CDDSurface::SetColorKey(u32 flags, void* key) {
     return 0;
 }
 
-// CDDSurface color-key convenience overloads (0x13eae0/0x13eb10/0x13eb80): build a
-// DDCOLORKEY {low,high} on the stack and forward to SetColorKey.
 RVA(0x0013eae0, 0x24)
 i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
     DDCOLORKEY ck;
@@ -492,11 +376,6 @@ i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
     return SetColorKey(flags, &ck);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::FillPalette
-// Installs the transparency colour. arg == -1 means "no colour key": clear the
-// have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
-// source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
 RVA(0x0013eb40, 0x3c)
 void CDDSurface::FillPalette(u32 key) {
     u32 ck[2];
@@ -592,12 +471,6 @@ void CDDSurface::FlipVertical() {
     RezFree(tmp);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::BlitDirect
-// Straight copy of `src` into the locked surface. Lock() returns the locked bits
-// pointer (m_34); on failure return 0. Each row of m_ac bytes is copied into the
-// row at locked + row*lPitch; mode 2 walks rows bottom-up (flipped), else top-
-// down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
 i32 CDDSurface::BlitDirect(void* src, i32 mode) {
     u8* locked = reinterpret_cast<u8*>(Lock(0));
@@ -630,11 +503,6 @@ i32 CDDSurface::BlitDirect(void* src, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Clear (ret 4) - blank the surface. Build a zeroed 0x64-byte DDBLTFX
-// on the stack (dwSize@+0x0 = 0x64, fill flags@+0x8 = 0x42 | (white ? 0xff0020 :
-// 0)), Blt(NULL, NULL, NULL, 0x1020000, &fx) through the held surface, and on a
-// non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
 RVA(0x0013edb0, 0x78)
 void CDDSurface::Clear(i32 white) {
     DDBLTFX fx;
@@ -654,31 +522,12 @@ void CDDSurface::Clear(i32 white) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x13ee30 - a surface flip-wait: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`. The
-// +0x8 surface is an IDirectDrawSurface-STYLE object but NOT the ddraw.h one (retail's
-// Flip pushes ONE arg here, slot 0x48), so it is modeled as a minimal own-vtable view -
-// distinct from CDDSurface (whose Flip is 0x13e850). Placeholder identity, RVA-adjacent
-// to CDDSurface::Clear. Re-homed from src/Stub/BoundaryUpper.cpp.
-// 0x13ee30 - CDDSurface::WaitFlip: spin until the held surface's pending flip retires.
-// The IDDS_ee30 (18 filler slots) + B_13ee30 views that stood here are GONE - they are
-// the REAL <ddraw.h> IDirectDrawSurface and THIS class:
-//   * "Flip at slot 18 (+0x48)" IS IDirectDrawSurface::GetFlipStatus - slot 18 of the
-//     real DX surface vtable (QI/AddRef/Release/AddAttachedSurface/AddOverlayDirtyRect/
-//     Blt/BltBatch/BltFast/DeleteAttachedSurface/EnumAttachedSurfaces/EnumOverlayZOrders/
-//     Flip/GetAttachedSurface/GetBltStatus/GetCaps/GetClipper/GetColorKey/GetDC/
-//     GetFlipStatus). Its argument 2 is DDGFS_ISFLIPDONE and the compared 0x8876021c is
-//     DDERR_WASSTILLDRAWING - the spin is textbook "wait for the flip".
-//   * B_13ee30's m_8 @+0x08 IS CDDSurface::m_8, the same held IDirectDrawSurface every
-//     other method in this TU already dispatches on.
 RVA(0x0013ee30, 0x29)
 void CDDSurface::WaitFlip() {
     while (m_8->GetFlipStatus(DDGFS_ISFLIPDONE) == DDERR_WASSTILLDRAWING) {
     }
 }
 
-// CDDSurface::Blt (__thiscall, ret 4 => 1 arg). Blts src's RECT (src->m_80) into
-// this surface's RECT (this->m_80) with flags 0x1000000; SURFACELOST retry.
 RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
@@ -697,8 +546,6 @@ i32 CDDSurface::Blt(CDDSurface* src) {
     return hr;
 }
 
-// CDDSurface::BltEx (__thiscall, ret 0x14 => 5 args). Generic Blt with the source
-// surface conditional (src may be NULL); SURFACELOST retry.
 RVA(0x0013eef0, 0x98)
 i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx) {
     i32 hr;
@@ -720,7 +567,6 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
     return hr;
 }
 
-// CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
 RVA(0x0013ef90, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans) {
     i32 hr = m_8->BltFast(x, y, src->m_8, static_cast<LPRECT>(srcRect), trans);
@@ -981,11 +827,6 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-// The three 64 KB RGB channel-spread lookup tables, one contiguous 0x30000 block:
-// G @0x653c9e, B @+0x10000, R @+0x20000. Indexed by a byte offset built from the
-// (a<<11) block + 2*n. Modeled as one base so the three writes keep retail's three
-// independent disp32 encodings (each masked by its own DIR32 reloc).
-
 // BuildColorChannelTables (0x13f740, __cdecl) - precompute the per-channel CLUTs that
 // map a (row, hi, lo) triple onto a packed 16-bit colour. The 32x32x32 nest folds a
 // row/col interpolation (rounded /32) into a channel sum that is shifted into the R/G/B
@@ -1049,11 +890,6 @@ void BuildColorChannelTables() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::SaveFile (ret 0x10) - the surface SAVE entry point. Bail (return 0)
-// unless the surface is valid (slot-5 IsValid), `buf` is non-null and non-empty
-// (*buf != 0), and `type` == 1. Then hand (buf, a3, a4) to the per-bit-depth
-// dispatcher and return its result.
 RVA(0x0013f910, 0x4a)
 i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -1073,9 +909,6 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
     }
 }
 
-// CDDSurface::RestoreLost (__thiscall, slot 7, 0x13f960): if a per-surface restore
-// callback is installed (m_b8) and succeeds, done (1); otherwise run the shared
-// CDDrawPtrCollections restore trampoline and report failure (0).
 extern i32 RestoreLostSurfaces_1437f0(); // 0x1437f0 (BoundaryUpper2.cpp)
 RVA(0x0013f960, 0x22)
 i32 CDDSurface::RestoreLost() {
@@ -1088,9 +921,6 @@ i32 CDDSurface::RestoreLost() {
     return 0;
 }
 
-// CDDSurface::Tile (__thiscall, ret 8 => 2 args). Tile the source surface across
-// this surface with raw IDirectDrawSurface::BltFast (DDBLTFAST_WAIT, +SRCCOLORKEY
-// when useColorKey), clipping the source rect for the right/bottom edge tiles.
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
     i32 dwTrans = 0x10 + (useColorKey != 0); // DDBLTFAST_WAIT (+DDBLTFAST_SRCCOLORKEY)
@@ -1118,8 +948,6 @@ void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
     }
 }
 
-// CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
-// non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
     DDCOLORKEY key;
@@ -1133,13 +961,6 @@ i32 CDDSurface::GetColorKey() {
     return -1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Blit
-// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_bitDepth,
-// src bpp = bitcount). When m_bitDepth==0 / bitcount agree on the "no remap" fast path
-// it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
-// then src bpp picks the matching Blit<dest><src> specialization. Unhandled
-// combinations return 0.
 RVA(0x0013faa0, 0x108)
 i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
     i32 dest = this->m_bitDepth;
@@ -1330,11 +1151,6 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
     this->m_8->Unlock(0);
     return 1;
 }
-
-// CDDSurface / CFileImageSurface / CRezSurfaceItem are all real-polymorphic
-// now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
-// in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
-// base-surface vtable extern/stamp remains (all-vtables mandate).
 
 RVA(0x0013ff80, 0x184)
 i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
@@ -1712,14 +1528,6 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// The two in-surface RLE row-decoders retail compiled UNOPTIMIZED: a full ebp
-// frame with every local spilled to the stack, no register allocation or strength
-// reduction - inside this otherwise-/O2 obj. One obj = one flag set, so the old
-// per-unit /Od profile (fileimagerundecode) was structurally impossible; the
-// only period mechanism is a `#pragma optimize("", off)` island in the source
-// (VC5 supports it), modeled exactly so here. Locals are declared in retail's
-// /Od stack-slot order so the [ebp-N] displacements match.
 #pragma optimize("", off)
 
 // ---------------------------------------------------------------------------
@@ -1930,14 +1738,6 @@ i32 CDDSurface::DecodeRun24(void* src) {
 
 #pragma optimize("", on)
 
-// ---------------------------------------------------------------------------
-// The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60), __cdecl,
-// 9 args. TRUE signature recovered from the retail def body (fld arg6 -> deg->rad
-// -> fsin/fcos = rotation, fmul arg7 = scale, arg8/arg9 read as ints) AND the three
-// thunks' push sequences: (int,int,int*,void*,void*, float rot, float scale, int
-// mode, int colorkey) => ?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z. The three thunks feed
-// these slots with per-thunk-typed forwarded params (below) so the call binds and
-// the pushes stay byte-identical.
 extern void ImageRotateBlit(
     i32 a1,
     i32 a2,
@@ -1950,11 +1750,6 @@ extern void ImageRotateBlit(
     i32 colorkey // arg9
 );
 
-// RotateBlit / ScaleBlit / RotateScaleBlit (0x141040 / 0x141200 / 0x141240) - thin
-// arg-reorder thunks forwarding to ImageRotateBlit with `this` as the destination.
-// Each returns 1. Orphan copies (no caller); __thiscall. Each param is typed by the
-// ImageRotateBlit slot it flows into (float rot/scale, int mode/colorkey) so no
-// int<->float conversion is inserted and the dword pushes match retail exactly.
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(
     i32 rect,
@@ -2033,9 +1828,6 @@ void CDDSurface::
     this->Run(a1, a2, a3, a4, a5, a6, clip);
 }
 
-// ---------------------------------------------------------------------------
-// 0x1412d0 (slot 5): IsValid - a held DirectDraw surface present and a positive
-// cached width/height. __thiscall, no args.
 RVA(0x001412d0, 0x24)
 i32 CDDSurface::IsValid() {
     if (m_8 != 0 && m_88 > 0 && m_8c > 0) {
@@ -2044,15 +1836,6 @@ i32 CDDSurface::IsValid() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x141310 / 0x141320: the geometry accessors the run-decoders call out-of-line
-// (DecodeRun8/DecodeRun24 in this unit; also LightFxRender/WarpTextureBlit). Four
-// bytes each - `mov eax,[ecx+0x1c] / ret` and `mov eax,[ecx+0x18] / ret` - i.e. the
-// embedded DDSURFACEDESC's dwWidth (+0x1c) and dwHeight (+0x18). They were DECLARED
-// in DDSurface.h and never defined: every caller emitted a reloc to a symbol nothing
-// in the tree defines (a guaranteed unresolved external; objdiff masks it).
-// Out-of-line here on purpose: retail calls them (cl /O2 = /Ob1, so a non-inline
-// definition in the same TU is NOT inlined into DecodeRun8/24 - matching retail).
 RVA(0x00141310, 4)
 i32 CDDSurface::GetWidth() {
     return m_width;
@@ -2063,40 +1846,21 @@ i32 CDDSurface::GetHeight() {
     return m_height;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::~CDDSurface
-// The virtual destructor: MSVC stamps the vptr (compiler-implicit, stamp-first),
-// runs the shared surface teardown (FreeSurfaces: release the held DirectDraw
-// surfaces + walk the +0x98 object array), then destroys the owned CPtrArray at
-// +0x94. The CPtrArray member-dtor is guarded -> the /GX EH frame. The implicit
-// stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
 RVA(0x00141350, 0x53)
 CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
 
-// CDDSurface::UnlockThunk (0x1413b0): unlock the held DirectDraw surface
-// (IDirectDrawSurface::Unlock(0), vtable slot 0x80). Folded from Stub/BoundaryUpper.cpp
-// (Owner1413::Thunk - the m_8 sub-object IS the real m_8 IDirectDrawSurface); decl in
-// DDSurface.h. The DecodeRun8 (FileImageRunDecode.cpp) run-decoder calls it on `this`.
 RVA(0x001413b0, 0xf)
 void CDDSurface::UnlockThunk() {
     m_8->Unlock(0);
 }
 
-// CDDSurface::Scale (0x1413c0): the pitch-scaled row offset (m_pitch * n). Folded
-// from Stub/BoundaryUpper.cpp (B_1413c0::Scale - this IS CDDSurface, from DecodeRun8);
-// decl in DDSurface.h.
 RVA(0x001413c0, 0xb)
 i32 CDDSurface::Scale(i32 n) {
     return m_pitch * n;
 }
 
-// ===========================================================================
-// Class-metadata annotations (EOF-hosted).
-// ===========================================================================
 SIZE_UNKNOWN(CFileImageElement);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
-
-// --- vtable catalog ---

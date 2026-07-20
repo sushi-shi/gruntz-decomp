@@ -1,70 +1,15 @@
-// GameKeyHandler.cpp - the in-game keyboard/cheat input dispatcher
-// (C:\Proj\Gruntz). The biggest backlog megafunction (5850 B): the PLAY-state
-// key handler, CPlay::DispatchKey(vk, lparam), which routes a virtual-
-// key code to its game/cheat action.
-//
-// `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
-// singleton g_gameReg (*0x64556c), the dev/render-state g_spawnConfig
-// (*0x645578, its +0x18 flags byte gated by 0x20 = "cheats enabled"), the area
-// index g_curPlayer (0x644c54), the recycled-node free list g_coordPool.m_freeHead /
-// g_coordPool.m_linkOffset, and a set of cheat-enable globals (g_gruntDestruction/B/C/D); it
-// posts WM_COMMAND (0x111) to the host window via PostMessageA. Every callee is
-// an engine method reached through a reloc-masked __thiscall ILT thunk; the only
-// string it clears before most actions is "GAME_TABHIGHLIGHT1" (the hint sprite:
-// Lookup in the image registry, then free via g_sndCueTag).
-//
-// Top: a 5-flag transition guard, then a 3-way modal split on the level state
-// (m_2dc's m_550/m_554): dialog (Y/Enter accept, N/Esc reject), paused (Q quit,
-// plus S/R/N/O cheats), else the normal gameplay map. The normal map is one long
-// cmp/je ladder over the vk codes (HUD toggles, letter/digit cheats, numpad
-// recorder/teleport keys, alt-modified arrows), ending in a two-level jump-table
-// switch over the F-keys / numpad debug keys (key-0xC in 0..0x84).
-//
-// `this` and its sub-objects are TYPED against the real engine classes - self=CPlay,
-// host=CGruntzMgr (the m_4 owner), level/lv=CStatusBarMgr (m_guts),
-// dev=StateMgrBZ (g_spawnConfig), rec=CChatBoxOwner (m_hitTest), g_gameReg=CGruntzMgr,
-// area=GruntzPlayer (g_gameReg->m_options[]). Every offset-cast site is typed - the
-// render context is
-// m_c->m_level(CGameLevel)->m_mainPlane(CPlaneRender) with m_planeCtx/m_originX/m_snappedX,
-// the frame gate is CGameMgr::m_frameGate (+0xc), the goal is CTmGoal, the recorder ring
-// nodes are CoordPoolNode, and the 0x23d90 blit is CGruntzCmdMgr::BlitTileMarker on
-// m_cmdSubMgr (the ex-CObj23d90 view).
-// Every callee body is external (reloc-masked rel32). Only offsets / code bytes are load-bearing.
-
 #include <Wap32/Object.h>      // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/CurPlayer.h>  // g_curPlayer
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// Named globals (so their DIR32 operands reloc-mask in objdiff).
-// ---------------------------------------------------------------------------
-// g_devState was a SECOND NAME for g_spawnConfig (0x245578) - same address,
-// so nothing ever defined it. The canonical `StateMgrBZ* g_spawnConfig` comes from
-// <Gruntz/Play.h> (included below); the dev->m_18 flag reads still mask.
-// g_areaIdx was a SECOND NAME for g_curPlayer (0x244c54 current player index) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-// g_cheatA was a SECOND NAME for g_gruntDestruction (0x2455a4 cheat toggle) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_gruntDestruction;
-// g_cheatB was a SECOND NAME for g_gruntCreation (0x2455a8 cheat toggle) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_gruntCreation;
-// g_cheatC was a SECOND NAME for g_gooPuddlez (0x2455ac cheat toggle) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_gooPuddlez;
-// g_cheatD was a SECOND NAME for g_explosionz (0x2455f8 cheat toggle) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_explosionz;
 
-// External engine receivers - all now the REAL canonical classes (declared-only
-// methods stay reloc-masked, so each `call rel32` masks; the SYMBOL is the real
-// class method defined in its own unit). No .cpp-local receiver views remain.
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
@@ -73,30 +18,11 @@ extern "C" i32 g_explosionz;
 #include <Gruntz/SoundCue.h>     // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
-// CObj23d90 (the 0x23d90 grid-snap blit) is the canonical view in
-// <Gruntz/BoundaryTailViews.h>, included below; its Blit body is re-homed here.
-// The +0x488 ring buffer is a real MFC CDWordArray (SetAtGrow @0x1b5144, InsertAt
-// @0x1b516b, RemoveAt @0x1b5200) and the +0x10 name map a real CMapStringToOb
-// (Lookup @0x1b8008 -> CObject*&); both from <Mfc.h>, no local views. (??_7CMapStringToOb
-// @0x1eafd4 is in the library vtable catalog.)
 
-// Free-standing engine helpers (no `this`, reloc-masked, callee-cleanup).
 void __stdcall FreeHintSprite(i32 tag, i32 a, i32 b, i32 c); // 0x25fe
 void __stdcall Fn213f(i32 a, i32 b);                         // 0x213f
 void __stdcall Fn2135(i32 a);                                // 0x2135
 
-// The game-mgr's area table at reg+0x150 IS the canonical GruntzPlayer m_options[4]
-// (each 0x238 bytes: drives the `idx*71` strength-reduced index addressing) -
-// <Gruntz/GruntzPlayer.h> via GruntzMgr.h above. No local area-slot view.
-
-// The game-mgr singleton (*0x64556c). Declared here - AFTER GruntzMgr.h - so the type
-// is the complete CGruntzMgr (per Play.h's note, each TU declares the singleton with the
-// view type it needs). extern "C" -> the symbol is `g_gameReg`, so retyping is byte-neutral.
-
-// The recurring "clear GAME_TABHIGHLIGHT1 hint" idiom: through base->m_30->m_28,
-// if its +0x30 sub-flag is clear, Lookup the hint sprite in the table at +0x10
-// and free it via g_sndCueTag when present. Inlined at ~15 sites; a fresh `found`
-// local per site so MSVC colors its stack slot from local liveness (as retail).
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         CSndHost* _s = (sndHost);                                                                  \
@@ -107,17 +33,6 @@ void __stdcall Fn2135(i32 a);                                // 0x2135
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);                                              \
         }                                                                                          \
     } while (0)
-
-// DispatchKey's `this` (esi) IS the canonical CPlay (Play.h). Its self-receiver (esi)
-// engine callees are all real CPlay methods (thunk RVAs resolved to their bodies):
-//   Fn2c7f 0x2c7f->0xda2d0 CPlay::FlushPendingOps    Fn385a 0x385a->0xd6560 ReleaseLevelOverlay
-//   Fn2e28 0x2e28->0xd5f00 CPlay::ResetGoals         Fn3c15 0x3c15->0xd6440 EnterOverlayDrag
-//   Fn17a8 0x17a8->0xd1b30 CPlay::SetCursorFrame     Fn35da 0x35da->0xd0120 LoadCursorSprites
-// (all declared on CPlay in Play.h; reloc-masked non-virtual __thiscall calls).
-
-// 0x23d90 (CGruntzCmdMgr::BlitTileMarker, the grid-snap blit DispatchKey drives
-// on m_cmdSubMgr) lives in its home TU per the interval dossier:
-// src/Gruntz/GruntzCmdMgr.cpp (the command-TU sandwich).
 
 // ===========================================================================
 // @early-stop

@@ -14,16 +14,8 @@
 #include <Mfc.h> // RECT (m_area/m_placed/m_28)
 
 class CAmbientPosSound; // the live voice (aux->m_voice) - the REAL 0x48-byte channel
-                        // the spawn factory (0xb960 = CWorldSoundSet::CreatePos5_b960)
-                        // returns; PosSoundVoice was its view, now folded.
 struct PosSoundAux;
 
-// The aux sub-object at PosSoundObj+0x7c: the init/action handler, the request state,
-// the emit src-clip and the live voice slot.
-// PROVEN IDENTITY: this IS the canonical +0x7c worker AnimWorkerObj (0x17c bytes; the
-// same slot Demo.cpp's anim handlers read as owner->m_7c). DEFERRED-FOLD: folding onto
-// <Gruntz/AnimWorker.h>'s AnimWorkerObj needs its m_10/m_1c/m_2c..m_38/m_168 named as
-// m_handler/m_requestState/m_srcL..m_srcB/m_voice (a shared-header rename), deferred.
 struct PosSoundAux {
     char m_pad00[0x10];
     void (*m_handler)(); // +0x10  the object's init/action handler fn
@@ -39,15 +31,6 @@ struct PosSoundAux {
     CAmbientPosSound* m_voice; // +0x168  the live voice (was the PosSoundVoice view)
 };
 
-// The CGameObject the request rides on (only the touched offsets).
-// PROVEN IDENTITY: this IS the canonical CGameObject (<Gruntz/UserLogic.h>) - the object
-// _CreateAmbientSound / _CreateSpotAmbientSound (gameobjectfactory) build and pass here;
-// m_aux@+0x7c == CGameObject::m_7c, m_120@+0x120, m_layer, m_x/m_y all line up.
-// DEFERRED-FOLD (UserLogic.h is a hot/owned header - read-only this wave) + one offset
-// to reconcile: this view puts m_layer@+0x19c while CGameObject::m_layer is @+0x198
-// (CGameObject::m_19c is a separate "WwdFile stamp" word) - the layer read here is
-// `*reinterpret_cast<void**>(m_layer+0x10)`, so either this +0x19c is off-by-4 or CGameObject's +0x198
-// vs +0x19c pair needs the owner's attention. Flagged for the CGameObject owner.
 struct PosSoundObj {
     char m_pad00[0x08];
     i32 m_flags08; // +0x08  flags
@@ -69,13 +52,6 @@ struct PosSoundObj {
                              //        feeds the spawn factory)
 };
 
-// The create-helper return record: the factory (WorldSoundCreateFull == CreateRandom
-// @0xbb60 / WorldSoundCreateSimple == CreateAmbient5 @0xb7b0) returns a CAmbientSound-
-// family channel; CommitSpriteAction writes the placed RECT into its +0x28 box.
-// PROVEN IDENTITY: this IS the returned channel (CRandomAmbientSound / CAmbientSound);
-// its +0x28 record IS CAmbientSound::m_box2 (an AmbientBox == a 4-int RECT). DEFERRED-
-// FOLD: folding needs the +0x28 box viewed as a RECT (an AmbientBox/RECT union on the
-// canonical CAmbientSound, a cross-header edit), deferred.
 struct PosSoundPlaced {
     char m_pad0[0x28];
     RECT m_28; // +0x28  == CAmbientSound::m_box2 written as the placement rect

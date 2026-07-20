@@ -1,23 +1,3 @@
-// State.h - the WAP32 base game-state class (C:\Proj\Gruntz). One canonical
-// definition, shared by GameMode.h (the leaf states CMenuState/CCreditsState/
-// CBootyState + the gamemode CPlay::Update match) and CPlay.h (the in-game PLAY
-// state whose Render drives the high vtable slots).
-//
-// Layout is the ctor ground truth (CState::CState at 0x08c750 zeroes a flat
-// scalar list and seeds four fields to 0x40). The two reconstructions modeled
-// the same owner/view sub-objects under different names: the +0x04 owner back-
-// ptr is the game-manager singleton `CGruntzMgr *` (gamemode/cplay downcast it to
-// their local CGMOwner/CWorld facet views); the +0x0c holder is `CDDrawSurfaceMgr *`
-// (cplay dereferences it directly, gamemode casts to CGMView). Both are 4-byte
-// pointer slots, so the casts are codegen-neutral.
-//
-// The virtual interface is ~41 slots. Most are out-of-line stubs that only
-// anchor the vftable order so the meaningful slots land at the right offset:
-// Update (slot 4 / +0x10), Render (slot 5 / +0x14), InputVirtual (slot 8 / +0x20,
-// CCreditsState's per-frame poll), BeginFrameClear (slot 31 / +0x7c) and
-// RenderSlow/RenderFast (slots 39/40, the CPlay frame-rate split). The vftables
-// are not diffed, so the high slots' presence is free; the concrete states
-// override the few they implement.
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
@@ -26,30 +6,17 @@
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
 class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_world;
-                        // defined in <Gruntz/GameRegistry.h> (its render sub-object
-                        // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
 class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
-// +0x34 m_symParser, cached here by LoadGameAssetNamespaces. The ex-CBankMgr
-// shell WAS this class: every consumer called ((CSymParser*)m_8)->ResolvePath
-// (@0x13c030), and the loader stores mgr->m_symParser here outright.
 class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
 class CSymTab;
 typedef CSymTab CResSource; // +0x28/+0x30/+0x34 resolved asset banks (== the ButeMgr symbol table)
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-// (CMenuRoot is GONE - the 'menu root' facet WAS m_c, the CDDrawSurfaceMgr itself.)
 class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
-                         // Forward-declared (MFC-free) so this widely-included header stays
-                         // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
 class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
-                         // RetireScene's Add/Remove target). Opaque here.
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
-                         // worker + gate RetireScene walks). Full shape in SoundFxEmitter.h.
 class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
-// The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
-// CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
-// catalog entry.
 SIZE_UNKNOWN(CState);
 VTBL(CState, 0x001ea21c);
 class CState {

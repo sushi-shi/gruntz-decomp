@@ -1,27 +1,3 @@
-// LobbyDialogs.cpp - the multiplayer LOBBY / in-game network DialogProcs and
-// their per-dialog WM_INITDIALOG init helpers, re-homed from src/Stub/ApiCallers.cpp.
-//
-// Two __stdcall DialogProc callbacks drive a network-session dialog: the lobby proc
-// (LobbyDlgProc, 0xbdc00) and its in-game sibling (NetGameDlgProc, 0xbe0a0).
-// WM_INITDIALOG binds the network object (the current game-state, g_gameReg->m_curState);
-// WM_COMMAND ends the dialog on the lobby button IDs; WM_TIMER (0x113) polls the session
-// deadline and re-posts the cancel. The remaining functions are the per-dialog init
-// helpers (init + arm a 500/750 ms timer + cache the 0x4b6 child control) and the
-// chat-edit append/submit helpers.
-//
-// THE NETWORK OBJECT - RESOLVED (netmgr-vs-cmulti, full proof in <Net/NetMgr.h>):
-// g_gameReg->m_curState during a network game is the multiplayer game-state CMulti
-// (RTTI CMulti : CPlay : CState), and CMulti itself owns the +0x2d8..+0x60c network
-// field block and the 0xb5xxx-0xbdxxx method cluster these DlgProcs drive
-// (PollSession 0xb95f0 / SendNetStat 0xb9290 / BroadcastChatLine 0xbb190 /
-// ReportVersionMsg 0xb7e30 / ReportStatusId 0xb7ec0, defined below in its RVA-order
-// home). The former TU-local CNetMgrView/CNetSessionView/StrHost_0b7ec0 views are
-// dissolved onto the canonical <Gruntz/Multi.h> CMulti / <Net/NetMgr.h> CNetSession. The real
-// CNetMgr (the small DirectPlay wrapper, ??1 @0xb6000) lives at CMulti+0x524 and is
-// not touched here.
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS, control IDs, and code
-// bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -36,28 +12,9 @@
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
 #include <stdio.h>       // sprintf (the drop-in banner)
 
-// --- shared globals (canonical home elsewhere; extern-only pins here) ---
-// The CGameRegistry singleton: the lobby DlgProcs read its current game-state
-// (m_curState, +0x2c) which - while a network game is open - IS the CMulti.
-// GetDlgItem(hWnd, 0x4b6) cache (0x248ce0; the modeless dialog's cached child HWND,
-// stored raw as i32), shared by the timer wrappers. Bound to the DATA home name
-// (extern "C" g_sharedFlag, DATA @0x248ce0 in Multi.cpp) so the store relocs.
 extern "C" i32 g_sharedFlag;
-// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-// The DirectPlay session/client-status CString global (0x6473d8; canonical home
-// g_sessionName in Multi.cpp). Declared in <Gruntz/Multi.h> (included above).
 
-// BlockScreenSaver (0x1192d0, GLOBAL scope; home Utils/TimeSplit.cpp): the shared
-// WM_SYSCOMMAND screensaver/monitor-power swallow each lobby DlgProc runs first. 4-arg
-// (lParam unused) so every DlgProc's push count matches. Declared at file scope (NOT
-// inside NetLobby) so it mangles to the global ?BlockScreenSaver@@ TimeSplit binds. First
-// param is void* (not HWND): TimeSplit compiles under the non-STRICT <Win32.h> where HWND
-// is void* (PAX), so the mangled name is ?BlockScreenSaver@@YAHPAXIIJ@Z - this TU's STRICT
-// <Mfc.h> HWND (HWND__*, PAU) would mis-mangle. The HWND args convert to void* implicitly.
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
-// DAT_00648cec: the "connection established / abort" latch the join-wait timer polls
-// (nonzero = keep waiting, skip the timeout EndDialog). Declared in <Net/NetMgr.h>
-// (included above) - the extern-only consumer pin; the DATA binding is homed elsewhere.
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
@@ -96,8 +53,6 @@ namespace NetLobby {
     void NetDlgInit_bdfe0(HWND hWnd, void* ctx); // 0xbdfe0
     void NetDlgInitDropIn(HWND hWnd, void* ctx); // 0xbe760
 } // namespace NetLobby
-// CMulti::ReportStatusId (0xb7ec0) + NetLobby::AppendEditLine (0xbb3e0) live in
-// their home TU per the interval dossier (#4b): src/Gruntz/Multi.cpp.
 
 namespace NetLobby {
 

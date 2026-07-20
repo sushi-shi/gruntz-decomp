@@ -3,36 +3,10 @@
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/DDSurface.h>
-// LightFxRender.cpp - software light/glow/overlay renderer (ex tracer placeholder
-// tomalla-68), a non-polymorphic helper in the lighting module. Methods in
-// ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
-// +0x4c that the shape generators fill; it allocates a DirectDraw work surface
-// via the world's surface pool and blits the computed light. Engine callees
-// (Lock / BltEx / surface alloc) are reloc-masked (no body). Intra-class calls go
-// through the ILT thunks in retail; objdiff masks the rel32 displacement.
-//
-// IDENTITIES (xref-proven; the 9 former .cpp-local Lfx* views are dissolved):
-//   LfxMgr        == CGruntzMgr      (Init's arg IS CPlay::m_4, the typed mgr)
-//   LfxTileBank   == CTriggerMgr     (mgr+0x68; the +0x1c table IS m_grid[4][15])
-//   LfxTileDesc   == CGrunt          (the board cells; m_arrived/m_tileOwnerHi/
-//                                     m_1f4_moveIcon/m_combatClock*/m_combatTimeout*)
-//   LfxGrid       == CGruntzMapMgr   (mgr+0x70; CMapMgr m_rows/m_width/m_height)
-//   LfxCell       == BrickzCell      (the 0x1c-stride map cell; m_4 id / m_c color)
-//   LfxSurfMgr    == CDDrawSurfaceMgr (mgr+0x30; m_ptrColl pool + m_24 level)
-//   LfxView       == CGameLevel      (holder+0x24; m_mainPlane @+0x5c)
-//   LfxWorldRect  == CLevelPlane     (the world rect IS m_originX..m_extentY @+0x40)
-//   LfxBorderCtx  == CDDrawSurfacePair (both retail callers - CPlay::Render
-//                    @0xc9255 and CMulti::PumpB - pass m_c->m_drawTarget->m_backPair,
-//                    the back pair; the +0x2c "work surface" IS its m_surface)
-//
-// Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. See <Gruntz/LightFxRender.h> for the layout.
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs
-                 // the real CMapStringToOb. Still supplies the windows.h base types ddraw.h wants.
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) on
-                   // CDDSurface::m_8 (the pair's held surface)
 #include <Gruntz/LightFxRender.h>
 
 #include <Gruntz/GameRegistry.h>       // the g_gameReg singleton (0x24556c) canonical view
@@ -46,34 +20,10 @@
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
-// The per-tile color node returned by the ref table (CSpriteRefTable::GetA
-// @0xe2360) is the real CSpriteRef (<Gruntz/SpriteRefTable.h>): the renderer
-// reads one of its three 16-bit team-color slots (+0x8 / +0xa / +0xc) by the
-// alternate-set selector.
-
-// g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view. The global
-// apply path blits through g_gameReg->m_cmdGrid (+0x68), the real CTriggerMgr
-// (<Gruntz/TriggerMgr.h>): CTriggerMgr::ResetGroup @0x79520.
-
-// The live screen RGB-format shift table (VA 0x683ea0..0x683eb4 = RVA 0x283ea0..):
-// per channel a right-shift (8-bit -> channel width) then a left-shift into the
-// channel's slot. B sits at bit 0, so it has no left-shift.
-// See docs/patterns/rgb-pack-variable-shift.md.
-
-// Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
-//   g_frameTime - the running game clock (low 32 bits of the engine ms counter)
-//   g_curPlayer - the current area / world index
-//   g_timer100 - a frame-quality / detail threshold (>=0x32 picks the live color)
-// g_timer100 (0x245594, C++ linkage) comes from <Rez/FrameClock.h>.
-
-// Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.
 static inline u16 Pack(i32 r, i32 g, i32 b) {
     return static_cast<u16>((((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown)));
 }
 
-// ===========================================================================
-// CLightFxRender::Init  (0x0a32c0)  - bind the manager, validate, zero state.
-// ===========================================================================
 RVA(0x000a32c0, 0x72)
 i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     if (mgr == 0) {
@@ -100,9 +50,6 @@ i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::Ctor  (0x0a3360)  - zero core pointers + sizes.
-// ===========================================================================
 RVA(0x000a3360, 0x29)
 void CLightFxRender::Ctor() {
     FreeSurface();
@@ -116,9 +63,6 @@ void CLightFxRender::Ctor() {
     m_refreshRemaining = 0;
 }
 
-// ===========================================================================
-// CLightFxRender::FreeSurface  (0x0a33a0)
-// ===========================================================================
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
     if (m_world != 0 && m_surface != 0) {
@@ -634,9 +578,6 @@ i32 CLightFxRender::Shape1() {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::FillSpan  (0x0a4840)  - fill a 16-bit span in the +0x4c buffer.
-// ===========================================================================
 RVA(0x000a4840, 0x32)
 void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
     if (x1 > x2) {
@@ -1548,11 +1489,6 @@ i32 CLightFxRender::Shape8() {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::ApplyA  (0x0a9480)  - clamp (x,y) to a tile cell; if the mgr
-// has a draw context, convert the cell to a pixel center (cell*32+16) and draw.
-// Always latches m_48 = 1.
-// ===========================================================================
 RVA(0x000a9480, 0x5c)
 i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     i32 cell[2];
@@ -1569,9 +1505,6 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::ClearHandle  (0x0a9500)
-// ===========================================================================
 RVA(0x000a9500, 0x16)
 i32 CLightFxRender::ClearHandle(i32, i32, i32) {
     if (m_handle != 0) {
@@ -1580,10 +1513,6 @@ i32 CLightFxRender::ClearHandle(i32, i32, i32) {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::ApplyGlobal  (0x0a9550)  - clamp (x,y) to a tile cell, then
-// blit the effect through the global g_gameReg surface (+0x68).
-// ===========================================================================
 RVA(0x000a9550, 0x5b)
 i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     i32 cell[2];
@@ -1594,9 +1523,6 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     return 1;
 }
 
-// ===========================================================================
-// CLightFxRender::ApplyB  (0x0a95d0)  - like ApplyA, but only if m_48 is latched.
-// ===========================================================================
 RVA(0x000a95d0, 0x69)
 i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     if (m_handle == 0) {
@@ -1649,7 +1575,5 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLightFxRender);
 SIZE_UNKNOWN(LfxRect);

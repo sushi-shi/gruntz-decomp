@@ -1,13 +1,3 @@
-// GruntToyTimeSprite.h - the grunt toy-timer HUD sprite (C:\Proj\Gruntz).
-//
-// RTTI (.?AVCGruntToyTimeSprite@@, vtbl 0x1e79ec) gives the true base as
-// CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden), so
-// the class is modeled `: CGruntHealthSprite` - the ctor (0x0007fbd0) chains the
-// out-of-line CGruntHealthSprite base ctor (0x7eb00) and the leaf dtor (0x012130)
-// folds the SAME CUserLogic teardown in-place (the intermediate leaf/health vptr
-// stamps dead-store-eliminate against the CUserLogic stamp - CGruntHealthSprite's dtor
-// is inline, see GruntHealthSprite.h). Adds no data members over the 0x64-byte base.
-// Only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_CGRUNTTOYTIMESPRITE_H
 #define GRUNTZ_CGRUNTTOYTIMESPRITE_H
 

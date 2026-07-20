@@ -1,16 +1,3 @@
-// GruntzWnd.h - CGruntzWnd, the Gruntz main window (the game's CGameWnd
-// subclass; RTTI class, ??_7 @0x1ea2d4, SIZE 0x10 == the CGameWnd base - it adds
-// no fields). ONE canonical definition: was defined .cpp-locally twice
-// (GruntzWnd.cpp full class + GruntzApp.cpp's reduced `new`-site view), unified
-// here 2026-07-16.
-//
-// CGruntzWnd overrides the CGameWnd message handlers (slot map:
-// vtable_hierarchy --class CGruntzWnd: 16 override / 6 inherited / 0 new); each
-// override forwards the message to the running CGruntzMgr (reached through the
-// owning CGameApp: m_owner->m_gameMgr) and, where retail does, chains the
-// CGameWnd base handler. Bodies + the RVA bindings live in
-// src/Gruntz/GruntzWnd.cpp (0x94640..0x94bf1); slot 2 (Wap32GameWndVfunc2) is
-// still declared-only (unreconstructed; the vftable reloc masks).
 #ifndef GRUNTZ_GRUNTZWND_H
 #define GRUNTZ_GRUNTZWND_H
 

@@ -1,31 +1,9 @@
-// TypeCollRuntime.cpp - CTypeCollRuntime::ScalarDelete (0x16ea20), the zDArray<CString>
-// runtime collection's `??_G` scalar-deleting destructor. Retail inlined the real
-// dtor into the deleting thunk, so the whole body lives here as one method: read the
-// element buffer, stamp the CTypeCollRuntime vptr, destruct each CString, run the
-// ~_zdvec base teardown (0x16df40, reloc-masked), then conditionally RezFree.
 #include <Gruntz/TypeCollRuntime.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <rva.h>
 
 #include <Mfc.h> // CString (element type; ~CString @0x1b9cde)
 
-// operator delete / RezFree (0x1b9b82, __cdecl one-arg); reloc-masked.
-
-// ??_7CTypeCollRuntime@@6B@ (0x5f04e4) - the vtable the dtor re-stamps at entry
-// (reloc-masked address operand).
-// REALIZATION WALL (audited 2026-07-16, F13): this manual stamp cannot convert to a
-// cl-emitted vptr store yet. Retail's ONLY reference to this ??_G (0x16ea20) is the
-// 1-slot vtable @0x1f04e4 itself (no direct calls, no ILT thunk, byte-scanned), and
-// NO ctor/dtor/delete-site of the class is reconstructed anywhere in-tree - cl emits
-// ??_7 + a synthesized ??_G (with this stamp inside) only from a real ctor/dtor
-// context (vtable-realization-ctor-boundary). The realization recipe: make the ??1
-// an in-class inline (element loop + ~_zdvec chain), reconstruct the TU that
-// destructs the global instance @0x6bf650 (its atexit dtor @0x16e7a0, currently
-// unowned, interleaved with TypeKeyColl's 0x16e9c0 ??_G band), and bind the emitted
-// thunk with an rva-symbol pin of ??_GCTypeCollRuntime@@UAEPAXI@Z at 0x0016ea20
-// (0x51) - the same pending state as TypeKeyColl.cpp's ??_GCButeTree. Until
-// that TU exists, this is the documented CFileImageSurface::ScalarDelete pattern
-// (hand-written non-virtual + RVA pin), not a banned idiom.
 DATA(0x001f04e4)
 extern void* const CTypeCollRuntime_vtbl;
 

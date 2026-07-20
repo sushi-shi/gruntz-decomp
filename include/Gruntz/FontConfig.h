@@ -1,7 +1,3 @@
-// FontConfig.h - CFontConfig, the GDI font-configuration object (HOLDS a CPtrList of
-// FontItem* at +0x00 - it does NOT derive from it, see below). Promoted from
-// FontConfig.cpp so the reduced per-TU views (Refresh/Scroll sinks) can fold onto it.
-// Only the load-bearing member offsets are modeled.
 #ifndef GRUNTZ_GRUNTZ_FONTCONFIG_H
 #define GRUNTZ_GRUNTZ_FONTCONFIG_H
 
@@ -10,13 +6,6 @@
 #include <rva.h>
 
 SIZE(CFontConfig, 0x44);
-// NOT `: public CPtrList` - CFontConfig is NOT polymorphic, proven from retail:
-//   * `~CFontConfig` @0x85f40 does NO vptr restamp (a polymorphic dtor always restamps), and
-//   * CFontConfig has no vtable and no RTTI in the 306-class scan.
-// Deriving from CPtrList (a CObject) would force a virtual dtor, so `delete p` would emit a
-// vtable call - but retail's GruntzMgr +0x5c leg calls the dtor DIRECTLY. The list is a MEMBER
-// at +0x00; base-at-0 and member-at-0 have identical layout AND identical codegen
-// (`mov ecx,esi; call ~CPtrList`), which is why the mis-model went unnoticed.
 class CFontConfig {
 public:
     CPtrList m_list; // +0x00 (0x1c: vptr, m_pNodeHead@+0x04, m_nCount@+0x0c) - the FontItem* list
@@ -87,19 +76,11 @@ public:
     HFONT m_messageFont;       // +0x40  the MessageFont
 };
 
-// The chat/caret .bss state globals owned by FontConfig.cpp (each DATA()-bound there).
-// Declared here (C linkage) so the definitions can drop `extern "C"` while keeping the
-// exact symbol + binding. Emit no code -> matching-neutral.
 extern "C" i32 g_chatTextWidth;      // 0x62b434: DT_CALCRECT-measured text width
 extern "C" i32 g_caretBlinkMs;       // 0x62b438: caret blink countdown in ms
 extern "C" i32 g_caretBlinkOn;       // 0x62b43c: caret blink phase
 extern "C" i32 g_lastDrawTextFormat; // 0x60c7a8: last DrawTextA format flags
 
-// ---------------------------------------------------------------------------
-// A single font-config record stored in the list (0xc bytes). `name` is the
-// face/text string; `type`/`data` are the packed flags+payload. The list owns
-// these (FreeNodes/Scroll delete them). Ex FontConfig.cpp-local.
-// ---------------------------------------------------------------------------
 struct FontItem {
     i32 type;     // +0x00
     i32 data;     // +0x04

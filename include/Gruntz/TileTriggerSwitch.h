@@ -1,8 +1,3 @@
-// TileTriggerSwitch.h - the tile-trigger-switch tile-logic game-object
-// (C:\Proj\Gruntz), a CUserLogic leaf (RTTI game class, vtable 0x5e7f6c). The
-// CANONICAL CTileTriggerSwitch, extracted from the former UserLogic.cpp-local view.
-// NOTE: distinct from CTileTriggerSwitchLogic (the 4-virtual switch-matrix helper in
-// <Gruntz/TileTriggerSwitchLogic.h>). Only offsets / code bytes are load-bearing.
 #ifndef GRUNTZ_CTILETRIGGERSWITCH_H
 #define GRUNTZ_CTILETRIGGERSWITCH_H
 
@@ -28,7 +23,6 @@ public:
     i32 AdvanceAnim();          // 0x10e200 (declared-only; recovery gap)
 };
 
-// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
 typedef i32 (CUserLogic::*TileTriggerSwitchHandler)();
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;

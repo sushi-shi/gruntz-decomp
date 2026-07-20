@@ -1,16 +1,3 @@
-// MultiStartDlgRoster.cpp - the multiplayer roster/color/net dialog TU: the WOVEN
-// original obj at retail .text [0x0c2980 .. 0x0c5f15] (own 8-frag init run @0xc5360;
-// a SEPARATE obj from MultiStartDlg.cpp's 0xc16b0 interval). The five former units
-// multistartdlgroster + netmgrmisc(interval fns) + netgamedlg + multistartdlgcolor +
-// multistartdlgnet, + the Sub_c3e30 stray from MultiStartDlg.cpp interleave into one
-// TU. Everything here runs on the ONE
-// multiplayer-start dialog (CMultiStartDlg) or its roster records; definitions in
-// strict ascending retail-RVA order.
-//
-// Homed in its own unit (not Dialogs.cpp) so it can't perturb that TU's parked dtors;
-// it reuses the shared Dialogs.h dialog models, the canonical CGameRegistry spine
-// (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
-// placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -26,47 +13,14 @@
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
-// A roster slot's FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
 #include <Gruntz/GruntzPlayer.h> // canonical GruntzPlayer (GetName)
-// @interleaver GruntzPlayer::GetName (0x0001f450) emitted-in bootystateactivate - blocked:
-// inline-header COMDAT (not body-movable). GetName is defined INLINE in
-// <Gruntz/GruntzPlayer.h> (RVA there), so MSVC emits its out-of-line COMDAT in EVERY TU
-// that references it; symbol_names.csv currently attributes 0x1f450 to THIS unit
-// (multistartdlgroster calls it at line ~870). Retail's real home is bootystateactivate
-// (its .text sits between bootystateactivate FrameSlot28 @0x1e660 pool and QueryGruntSlots
-// @0x1ecf0). Fixing this is an inline-header emission-migration (steer which TU emits the
-// COMDAT), NOT a .cpp body relocation - deferred + flagged.
 
-// --- shared globals (canonical homes elsewhere; reloc-masked references here) ---
-// The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each
-// player-slot's combo value into its m_focusSlots[] record. Reference-only (undefined
-// external, reloc-masks) as in LobbyDialogs.cpp.
-// The multiplayer game-state (a CMulti, xref-proven); the roster reads m_isHost /
-// m_hostIndex off it. Declared in <Gruntz/Multi.h>.
-// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-// USER32 entry points reached through the game's own IAT-style function pointers
-// (ff 15 [ptr]); UpdatePlayers drives its listboxes/redraws through them.
-// More USER32 entry points via the game's own IAT-style pointers.
-// The EchoLatencySettings printf format (.data), DEFINED here (owner TU). The retail
-// bytes are exactly this 44-byte string, so the initializer is byte-faithful.
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-// The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
-// CGameRegistry::m_focusSlots[] +0x150, stride 0x238).
-
-// Dialog-item resolver (push idx; __stdcall) that relies on the caller's live ecx=this:
-// a thiscall ready-checkbox accessor (0x1159) spelled __stdcall so the byte stream omits
-// the `mov ecx` the caller already satisfied. (SetListCurSel / OnSlotSelect0..3 now call
-// the real CMultiStartDlg::GetCtrlC @0xc27c0 directly.)
 CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
-// Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
-
-// The per-channel player-slot record (a proven +0x150-shifted view of CFocusSlot) lives
-// in <Gruntz/ChannelSlot.h>; the full CFocusSlot fold is deferred there (the +0x154
-// CString member into CGameRegistry's by-value CFocusSlot array needs ctor reconciliation).
 
 extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
 
@@ -75,15 +29,6 @@ i32 ChannelSlots_FindFree();            // 0xdb280
 CString GetConfigNameA();               // 0xb6090
 CString GetConfigNameB();               // 0xb60d0
 
-// __stdcall(hDlg, id, *lo, *hi): split control `id`'s selected listbox item data into
-// two words; returns 1 when a valid item is selected. Generic listbox helper.
-// @interleaver GetSelItemData emitted-in <boundary: slotcombofill?>
-// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are slotcombofill
-// CLatencyList::SelectItem @0x38150 (before) + statemgrbz StateMgrBZ::Init @0x382c0
-// (after), NOT one host both sides; free __stdcall listbox helper, no class anchor.
-// Home hint videoconfig is proximity-only (block 0x363a0.., not adjacent); the
-// preceding slotcombofill (a dialog combo helper) is the thematic candidate but its
-// obj boundary isn't pinned. Kept in place + flagged.)
 RVA(0x00038220, 0x73)
 i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);
@@ -103,8 +48,6 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     return 1;
 }
 
-// __thiscall(id, wParam): if list control `id` resolves (GetCtrlC @0xc27c0), set its
-// LB_SETCURSEL to wParam-1. ecx=this passes through to GetCtrlC (no `mov ecx` emitted).
 RVA(0x000c2980, 0x28)
 void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     CWnd* it = GetCtrlC(id);
@@ -113,21 +56,12 @@ void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// One connect step: reconcile slot 1 (0xc2ab0) then the connect drive (0xc40b0).
-// ---------------------------------------------------------------------------
 RVA(0x000c2a20, 0x13)
 void CMultiStartDlg::ConnectStep() {
     SyncChannelSlot(1);
     Drive();
 }
 
-// ---------------------------------------------------------------------------
-// Channel 2 / 3 handlers: reconcile the channel's player slot (0xc2ab0) then re-drive
-// the connect state (0xc40b0). Twins of ConnectStep (channel 1). Re-homed here from
-// src/Stub/Cluster0c.cpp (CCluster0c::Run) and src/Stub/ReconBatch2.cpp (Host_c2a80::Run) -
-// both PROVEN CMultiStartDlg: they self-call SyncChannelSlot + Drive on `this`.
-// ---------------------------------------------------------------------------
 RVA(0x000c2a50, 0x13)
 void CMultiStartDlg::Method_c2a50() {
     SyncChannelSlot(2);
@@ -209,9 +143,6 @@ i32 CMultiStartDlg::OnInitDialog() {
     return 1;
 }
 
-// __thiscall(str): resolve control 0x511 (the chat/message log edit) and append `str`
-// to it - CRLF-prefixed when the control already has text, then scroll the caret into
-// view. Same shape as LobbyDialogs' AppendEditLine.
 RVA(0x000c2ce0, 0xf3)
 void CMultiStartDlg::AppendChatLine(char* str) {
     CWnd* item = GetDlgItem(0x511);
@@ -240,8 +171,6 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     ::SendMessageA(edit, 0xb6, 0, 0x270f);
 }
 
-// Advance the shared LCG one step (lazily seeded); returns 15-bit value.
-// Retail inlines this three times per colour, so force it inline.
 static __inline i32 GameRand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
@@ -295,18 +224,6 @@ i32 CMultiStartDlg::FlashCtrlD() {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Owner-draw swatch fill for CMultiStartDlg::OnDrawItem (twin of the CBattlezDlg swatch
-// draw in Dialogs.cpp). The former CSwatchBrush/CSwatchDrawBase/CWndOnDrawR fake views are
-// DISSOLVED onto the real MFC classes: the stack brush is ::CBrush (CGdiObject base -
-// ??_7CObject/CGdiObject/CBrush COMDATs first-instantiated in Dialogs.cpp), the stack DC
-// is ::CDC, and the base owner-draw default is CWnd::OnDrawItem (0x1bbde7). Passing the
-// CBrush to FillRect runs its inline operator HBRUSH(). The /GX EH
-// frame unwinds the CDC/CBrush locals.
-// The game's FillRect fn-ptr (the .idata IAT slot, reloc-masked indirect call). The
-// canonical DATA binding is in Dialogs.cpp (g_pFillRectDlg @0x006c44e0); reference-
-// only here so the roster call reloc-masks without a duplicate DATA binding.
 
 // CMultiStartDlg::OnDrawItem (0xc3100): owner-draw the four team-color swatch static
 // controls (0x501/0x503/0x505/0x507) of the multiplayer roster - the exact twin of
@@ -673,13 +590,6 @@ void CMultiStartDlg::OnColorSlot3() {
     }
 }
 
-// (the local `inline CBattlezDlgCustom::~CBattlezDlgCustom() {}` that used to sit here is
-// GONE. It was written to force /Ob1 to inline OnCustomWorld's teardown - which it did, but
-// at the cost of a `mov [..],??_7CBattlezDlgCustom` vptr re-stamp retail does not have. The
-// dtor is COMPILER-GENERATED in the real source (see <Gruntz/Dialogs.h>): cl inlines an
-// implicit dtor at a stack local's scope exit AND omits the stamp, which is exactly the
-// shape retail emits. Nothing to define here.)
-
 // ---------------------------------------------------------------------------
 // OnCustomWorld (0xc3cb0): double-click the world combo (0x4ff). Host-only: run the
 // modal CBattlezDlgCustom name dialog, and on IDOK with a non-empty name uppercase it
@@ -711,14 +621,6 @@ void CMultiStartDlg::OnCustomWorld() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::Sub_c3e30 (0xc3e30) - the caller SetupWorldCombo runs it as a
-// self-call. When this is the host, read the current selection of the 0x4ff world
-// combo, and if its text is non-empty commit it as the game's world/host name into
-// the CMulti game-state (m_5b4 = name, m_5b8 = "", m_5b0 = 0, Commit3ada). The /GX
-// EH frame unwinds the local scratch CString. GetLBText (CComboBox::GetLBText
-// 0x1ce7db) / operator= / Commit3ada / SendMessageA all reloc-mask.
-// (RVA 0xc3e30 lies in THIS roster interval.)
 RVA(0x000c3e30, 0xfe)
 void CMultiStartDlg::Sub_c3e30() {
     if (g_multiState->m_isHost != 0) {
@@ -740,9 +642,6 @@ void CMultiStartDlg::Sub_c3e30() {
     }
 }
 
-// OnChatSend (0xc3f70): compose "<localName> says: <typed text>" and, when the input
-// (control 0x42d) is non-empty, append it to the chat log and broadcast it to every
-// peer, then clear the input. The /GX EH frame unwinds the two scratch CStrings.
 RVA(0x000c3f70, 0xfb)
 void CMultiStartDlg::OnChatSend() {
     CWnd* input = GetDlgItem(0x42d);
@@ -766,10 +665,6 @@ void CMultiStartDlg::OnChatSend() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Drive the connect state off the file-scope CMulti: if this is the host, broadcast
-// the channel table + refresh players; else transform the local id and submit it.
-// ---------------------------------------------------------------------------
 RVA(0x000c40b0, 0x42)
 void CMultiStartDlg::Drive() {
     CMulti* netMgr = g_multiState;
@@ -897,19 +792,6 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     return 1;
 }
 
-// ===========================================================================
-// CMultiStartDlg::Watchdog  (0x0c46b0). Guarded by a re-entrancy flag, it refreshes the
-// per-slot roster display, advances two blink counters, then walks the net-session
-// status flags and, on any terminal condition, kills the poll timer, pops a status
-// message, and tears down. Field/class names are placeholders; g_multiState/g_gameReg
-// reuse this TU's canonical decls.
-// ===========================================================================
-// The watchdog reads three fields (m_14 present / m_20 active / m_latency display value)
-// per player off the canonical CGameRegistry::m_focusSlots[] (GameRegistry.h, +0x150,
-// stride 0x238).
-
-// The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
-// Watchdog re-entrancy guard + two blink counters (.data).
 extern "C" i32 g_watchBusy;      // 0x64bdc4
 extern "C" i32 g_watchBlinkA;    // 0x64bdc8
 extern "C" i32 g_watchBlinkB;    // 0x64bdcc
@@ -1045,10 +927,6 @@ void CMultiStartDlg::Watchdog() {
     g_watchBusy = 0;
 }
 
-// GetSlotIndex (0xc4b30): resolve the local player's options slot through the host
-// facet (m_host->FindOptionsSlot(g_multiState->m_hostIndex)); return the stored slot value
-// or -1 when absent. __thiscall. Re-homed from src/Stub/ReconBatch2.cpp (was the
-// OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
     i32* slot = reinterpret_cast<i32*>(m_host->FindOptionsSlot(g_multiState->m_hostIndex));
@@ -1100,9 +978,6 @@ void CMultiStartDlg::VerifyCustomLevel() {
     }
 }
 
-// __thiscall(): cache list N's current selection (+1) into the Nth player-slot's combo
-// value, then re-drive the connect state. Four handlers, one per player slot; slot 2
-// each resolves its list through the real CMultiStartDlg::GetCtrlC accessor (0xc27c0).
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = GetCtrlC(0)->m_hWnd;
@@ -1195,15 +1070,6 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::DestroyWindow (0x0c5240): vtable slot 24 (== ??_7CMultiStartDlg@@6B@
-// +0x60, reached via ILT thunk 0x218a; declared in Dialogs.h as the own CWnd override).
-// The former CCluster0c @orphan is DISSOLVED: the vtable DATA-ref proved this is
-// CMultiStartDlg's own DestroyWindow. It frees the +0x60 connection-latency slot list
-// (m_slotList, a CLatencyList : CKeyedList) via the container's CKeyedList teardown at
-// 0xc5280 (the CNetThing == CKeyedList unification is now DONE - the dtor lives on
-// CKeyedList, so no cast is needed), then chains CWnd::DestroyWindow.
-// ---------------------------------------------------------------------------
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
     CLatencyList* p = m_slotList; // +0x60 connection-latency slot list
@@ -1215,16 +1081,9 @@ i32 CMultiStartDlg::DestroyWindow() {
     return CWnd::DestroyWindow(); // 0x1bbb7c ?DestroyWindow@CWnd@@UAEHXZ (base, eax passthrough)
 }
 
-// EchoLatencySettings (0xc52f0): print the current session CmdDelay (m_5a4) and
-// ResendDelay (m_drainReload) to the chat log via wsprintfA into a stack buffer.
 RVA(0x000c52f0, 0x43)
 void CMultiStartDlg::EchoLatencySettings() {
     char buf[128];
     wsprintfA(buf, s_UsingCmdDelay, g_multiState->m_5a4, g_multiState->m_drainReload);
     AppendChatLine(buf);
 }
-
-// (The 0xc5f00 "NetConfigureBe90" that was parked here is really
-//  CObjectDropper::InitActReg - the dropped-object TU's registry construct; it
-//  lives in src/Gruntz/DroppedObject.cpp (wave2-H, private-globals-oracle-proven).
-//  This TU's retail extent ends at 0xc5333 + its 8-frag init run @0xc5360.)

@@ -1,13 +1,3 @@
-// PixelShift.h - the engine's RGB565 channel shift amounts (16bpp pixel format).
-//
-// The six per-channel shift counts derived once from the primary surface's pixel
-// format: g_rUp/g_gUp/g_bUp are the left-shifts that PACK an 8-bit channel into its
-// 16-bit slot, g_rDown/g_gDown/g_bDown the right-shifts that REDUCE a source byte to
-// the channel's bit width. Every blit/shade/team-recolor path across DDrawMgr, Image,
-// Font and Gruntz reads them. Their ONE definition + DATA pins live in
-// src/DDrawMgr/DDSurface.cpp; each is a plain C++-linkage int (?g_rUp@@3HA ...), so a
-// reference is DATA-reloc-masked. Declared once here (a minimal owner header the four
-// modules can share) so consumers stop re-`extern`-ing them per-TU.
 #ifndef INCLUDE_DDRAWMGR_PIXELSHIFT_H
 #define INCLUDE_DDRAWMGR_PIXELSHIFT_H
 #include <Ints.h>

@@ -1,51 +1,13 @@
-// WinMain.cpp - Gruntz program entry point (C:\Proj\Gruntz).
-//
-//   _WinMain@16 - the WINAPI entry. SEH-framed (push -1; push &handler;
-//       mov fs:0). Allocates a 0x10c-byte frame and drives the whole startup:
-//         1. GetModuleFileNameA -> engine path-check (CheckExePath);
-//         2. single-instance guard (FindWindowA "GruntzClass"); if a prior
-//            instance exists: restore it if iconic, forward a lobby-launch
-//            WM_COMMAND if the cmd line contains "LOBBYLAUNCH", then return 0;
-//         3. otherwise: read our own FileVersion (VERSION.DLL) into four
-//            file-scope version ints, run a startup gate (resource/CD check),
-//            `new CGruntzApp`, then scan the cmd line for "advanced"/"optionz"
-//            (+ the ALL-CAPS variants) or the dev hot-key, optionally run the
-//            Advanced Options dialog, Init the app, run its message loop
-//            (app->Run, vtable +0x18), and tear it down.
-//
-// THE MAIN MESSAGE LOOP itself is NOT inline here: WinMain reaches it via the
-// app's run virtual (vtable slot +0x18 -> CGameApp::RunMessageLoop,
-// 159 B - a GetMessageA / TranslateAcceleratorA / TranslateMessage /
-// DispatchMessageA pump with an idle vtable callback `[vtbl+0x20]`). That pump
-// is the next dedicated target; here we only emit the dispatching
-// `call [eax+0x18]`.
-//
-// Built /O2 /MT /GX: the normal path `new CGruntzApp`s under a C++ EH frame
-// (the /GX `fs:0` setup matching the target's prolog). Only offsets / code
-// bytes are load-bearing; class and field names are placeholders. Unmatched
-// engine callees are modeled as external no-body functions so their `call` /
-// `push &fn` relocs are masked in objdiff.
-// <Mfc.h> brings <windows.h> USER32/KERNEL32 (GetModuleFileNameA / FindWindowA /
-// IsIconic / SendMessageA / GetAsyncKeyState / DialogBoxParamA / PostMessageA;
-// HINSTANCE / HWND / DWORD / WPARAM / LPARAM / LPSTR / LPCSTR / UINT / BOOL / WINAPI)
-// and the WM_* / SC_RESTORE / CW_USEDEFAULT / VK_CONTROL / VK_SHIFT literals.
 #include <Mfc.h>
 #include <string.h> // strstr (0x120090), cmd-line flag scan
 #include <Wap32/Wap32.h>
 #include <Gruntz/Enums.h>
 #include <rva.h>
 
-// The developer hot-key's third key (no SDK VK_ name for '$'; == VK_HOME's code).
 typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
 } GruntzHotKey;
 
-// ---------------------------------------------------------------------------
-// Engine callees (unmatched; modeled as external no-body functions so the
-// `call rel32` / `push &fn` reloc is masked - only the call/push bytes matter).
-// The reloc-masked literal addresses (the "Gruntz" string, the cmd-line tokens)
-// are passed as casted absolute pointers; objdiff masks the DIR32 operand.
-// ---------------------------------------------------------------------------
 extern "C" {
     // CheckExePath (reached via an incremental-link thunk). Validates
     // the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
@@ -68,39 +30,10 @@ extern "C" {
     // come from <windows.h> (winver, pulled by afx.h/MFC).
 }
 
-// The "Gruntz" app-name literal (0x60aac8, this TU's .data run - the "1.0" version
-// literal follows it). Owner-TU definition; shared as the window title here and as
-// the MessageBoxA caption in GruntzMgr.cpp (extern there as g_msgCaption). Length
-// NULL-TERMINATOR-PROVEN ("Gruntz" + NUL = 7 B).
-// (g_msgCaption @0x20aac8 was a FICTION -- an invented name for cl's folded
-// `??_C@_06HPPL@Gruntz@` literal COMDAT, which all 7 referencing TUs emit for
-// themselves. Spelled inline now.)
-
-// The MFC global allocator / deallocator (NAFXCW); used as
-// the explicit operator-function forms for the FileVersion query buffer (the
-// `new CGruntzApp` further down uses the implicit new+ctor form).
-
-// The Advanced Options modal dialog proc (matched, unit advancedoptions). Its
-// address is taken for DialogBoxParamA (reloc-masked via a thunk).
 i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
-// CGruntzApp - the game application object `new`'d on the normal path, defined
-// once in <Gruntz/GruntzApp.h>. WinMain touches only its vtable: slot 2
-// (Init, the app "Init"), slot 6 (RunMessageLoop) and the
-// scalar-deleting dtor (slot 0) - all virtual dispatches (`call [vtbl+N]`), so
-// the call bytes are byte-exact regardless of method names.
 #include <Gruntz/GruntzApp.h>
 
-// ---------------------------------------------------------------------------
-// File-scope globals (the relocs that name them are masked in objdiff; only the
-// address-load bytes are load-bearing).
-//   g_version0..3   - the parsed FileVersion components
-//       (order matches the "%d.%d.%d.%d" out-params left-to-right).
-//   g_pApp          - the CGruntzApp* (constructed on the normal path,
-//       `delete`d on every exit of that path).
-//   g_hInstance     - this module's HINSTANCE (shared with
-//       AdvancedOptions.cpp, which reads it for LoadIconA).
-// ---------------------------------------------------------------------------
 static i32 g_version0; // 1st %d
 static i32 g_version1; // 2nd %d
 static i32 g_version2; // 3rd %d
@@ -108,9 +41,6 @@ static i32 g_version3; // 4th %d
 static CGruntzApp* g_pApp;
 static HINSTANCE g_hInstance;
 
-// ---------------------------------------------------------------------------
-// WinMain - extern "C" int WINAPI WinMain(...) -> the linker symbol is
-// `_WinMain@16` (NOT C++ mangled).
 SYMBOL(_WinMain @16)
 RVA(0x0011c860, 0x327)
 extern "C" i32 WINAPI

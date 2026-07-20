@@ -1,18 +1,3 @@
-// RezSync.cpp - CGruntzMgr::Run(CGameWnd*, char* cmdLine) @ RVA 0x00083450
-// (6445 B), the boot override of CGameMgr::Run - SLOT-PROVEN: CGruntzMgr's
-// retail vtable (0x1e9b64) slot 1 is ILT thunk 0x249b -> jmp 0x83450. `this` (ebp)
-// is the 0xa30 CGruntzMgr singleton; returns 1 on success / 0 on every early error
-// 2026-07-16 - every field was a canonical <Gruntz/GruntzMgr.h> member.)
-//
-// Large /GX C++-EH carcass: the retail body carries a full exception frame
-// (push -1 / push handler / mov fs:0,esp / sub esp,0x428) driven by ~0x29 EH
-// states over the `new T` resource allocations + destructible CString temps;
-// every early error path is `return 0` funnelling through one shared fs:0-
-// restoring epilogue. See docs/patterns/big-seh-fuzzy-desync.md +
-// docs/patterns/throwing-operator-new-eh-state-transition.md. Objdiff rolls up
-// LOW on such functions even for a faithful carcass (alignment desync at the
-// multi-way error ladder) - the deliverable is the control-flow + offset +
-// ordered-call carcass, not a byte-perfect frame.
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
 #include <Utils/RegistryHelper.h>
@@ -22,9 +7,6 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
-// AfxWinInit (the boot MFC init Run calls @0x1d3eff). The afxwin*.inl bodies are
-// skipped for the clang LABEL step only (implicit-int CMenu::operator== that clang
-// rejects, wine cl accepts) - docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -59,50 +41,12 @@
 #include <Gruntz/BattlezData.h>
 #include <Globals.h>
 
-// retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
-// post-alloc null-check + ctor-in-flight EH-state store the retail body has.
 void* operator new(unsigned int);
 void operator delete(void*);
 
-// ---------- reloc-masked engine globals ----------
-// The coord-node recycle pool - ONE 16-byte FreeNodePool object at 0x645540, NOT four
-// scalars. Init below builds it (block / count / free-list head / link offset); the four
-// former per-field globals (g_coordPool/g_coordFreeList/g_coordCount/g_freeBias) were
-// separate fabricated symbols at 0x645540/44/48/4c - interior addresses of this object,
-// so they could never resolve at link. Defined in src/Gruntz/GameText.cpp (owner TU).
-// 0x24556c is the game-registry singleton g_gameReg (DEFINED in GruntzMgr.cpp). The
-// assignment below is CGruntzMgr::Init SELF-REGISTERING - which is exactly what proves
-// the cell holds this manager. Spelling it `g_mgrPtr` with C++ linkage made a second,
-// unresolvable symbol (?g_mgrPtr@@3PAXA) for a cell 50 other TUs already share.
 extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
-// g_lastNow (0x245580, the frame-clock "now" cell) is declared in <Rez/FrameClock.h>;
-// Init seeds it with the boot timeGetTime().
-// 0x645584 is extern-"C" tree-wide (RezMgr's g_frameDelta, the frame delta); a plain
-// C++ `extern` here emitted the divergent ?g_frameDelta@@3HA.
 extern "C" i32 g_frameDelta; // 0x645584
-// 0x20fa70: the local protocol/rez-sync version word (canonical decl in <Net/NetMgr.h>,
-// DEFINED in Multi.cpp). Init loads it from the .bute [General] "RezSync" key; Net
-// compares it against the host packet's version field. This TU had it as a private
-// `void* g_60fa70` - same cell, divergent symbol, and the void* forced two casts.
 extern "C" i32 g_localVersion; // 0x60fa70
-// ---------------------------------------------------------------------------
-// The [Config] gate band, 0x6455b4..0x6455e4 - DEFINED HERE (storage), declared in
-// <Globals.h>.
-//
-// Nothing in the tree defined any of these twelve. They were `extern`-only under THREE
-// different namings - this TU's C++-linkage `g_2455b4..` (-> ?g_2455b4@@3HA), Globals.h's
-// `g_optLock*` / `g_6455xx`, and Attract's `g_fxDirectGate` - so every reference was an
-// unresolved external (objdiff masks the DIR32, the linker would not).
-//
-// OWNER: this TU. RezSync::Init is the sole initializer of the whole band - it reads
-// every one of the twelve straight out of the .bute [Config] section, and those KEY
-// NAMES are what name them (no invention; see the assignments in Init below).
-//
-// The old names `g_optLockAudio` (0x2455bc) / `g_optLockSpeech` (0x2455c0) were simply
-// WRONG, and three independent sites agree on the correction:
-//   * Init loads 0x2455bc from "Disable Sound" and 0x2455c0 from "Disable Music";
-//   * VideoConfig gates the XMidi *music* control on 0x2455c0 (not speech);
-//   * GruntzMgr writes SetValueDword("Disable_Joystick", <0x2455c8>) - confirming c8.
 extern "C" {
     DATA(0x002455b4)
     i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
@@ -130,21 +74,10 @@ extern "C" {
     i32 g_enableEmulation = 0; // "Enable Emulation"
 }
 
-// The settings-dialog numeric cells (0x2451a4..0x245568). Init bulk-resets them; the
-// dialog at 0x092ab0 (GruntzCmdMgr.cpp) owns them and DEFINES the storage. This TU had
-// spelled them g_6451a4/... with C++ linkage - a second symbol for the same memory, so
-// neither name resolved. Reference the owner's names.
 extern i32 g_dlgVal_6451a4, g_dlgVal_645268, g_dlgVal_64526c, g_dlgVal_6452a8;
 extern i32 g_dlgVal_6452d0, g_dlgVal_6452d4, g_dlgVal_645538, g_dlgVal_645558;
 extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 
-// LINKAGE FIX: 0x245570/0x245578 are extern-"C" tree-wide (GruntzMgr owns and DEFINES
-// them, typed DirectInputMgr2*/StateMgrBZ*). Declaring them with C++ linkage here
-// emitted ?g_inputMgr@@3PAXA - a divergent symbol for the same address, unresolved on both
-// sides. Same names, one linkage. (This TU's void* view of them contradicts GruntzMgr's
-// types - RezSync casts 0x245578 to CGruntSpawnConfig* and 0x245570 to CSpawnOwner*.
-// extern "C" carries no type, so it links either way; the disagreement is REAL and
-// unresolved - flagged, not papered over.)
 extern "C" {
     // @identity-TODO: 0x645570 has TWO readings and they contradict - here it is the
     // CSpawnOwner* handed to CGruntSpawnConfig::Init, in GruntzMgr it is read as a
@@ -159,12 +92,6 @@ extern "C" {
     extern CGruntSpawnConfig* g_spawnConfig;
 }
 
-// DEFINED HERE (owner = the producer): the attract title-screen count. Init counts how
-// many "\SCREENZ\TITLE%d" tabs resolve under STATEZ_ATTRACT (loop below); AttractState /
-// CreditsState then pick a screen with `g_gameReg->m_numRuns % g_attractStateCount + 1`.
-// It had THREE spellings and no storage: ?g_attractStateCount@@3HA (Attract), this TU's
-// C++-linkage ?g_645534@@3HA, and the extern-"C" _g_645534 (AttractState/CreditsState/
-// Multi). One name (Attract's - the only semantic one), one linkage (extern "C").
 DATA(0x00245534)
 extern "C" {
     i32 g_attractStateCount = 0; // 0x645534
@@ -180,90 +107,10 @@ extern char g_lab545854[]; // 0x545854
 void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
 void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 
-// real MFC methods - C_1b9c69 == CString::Empty (FID-anchored NAFXCW) on
-// m_strWorldFile, and D_1b48c6 == ~CPtrList on the sound set's m_list.)
-
-// <DDrawMgr/DDrawSurfaceMgr.h>: VInit was the slot-6 Init, VMethod155f50 is
-// SetHwnd, m_04/m_24/m_28 are m_drawTarget/m_level/m_soundRegistry. The local
-// CSymParser/CFaderMgr re-declarations resolve to <Bute/SymParser.h> /
-// <Gruntz/FaderMgr.h>, and the 0x94-byte H70 (m_tileGrid) IS the canonical
-// CGruntzMapMgr - the RTTI-proven +0x70 board whose teardown thunk 0x35b7 is
-// ~CGruntzMapMgr @0x85d10. m_sound is the audio host = canonical CGruntzSoundZ
-// (Init @0x138490 / SetXMidiVolume @0x138950 / m_enabled @+0x28).)
-
-// GAME_ATTRIBUTEZ ButeMgr config load: the parse stream is the canonical
-// CParseSource (BeginParse/EndParse @0x139960/0x1399d0), included above.
-// The bute-config manager + its owned keyed stores are the canonical CButeMgr /
-// CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
-// GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive
-// (0x16e070) are all reloc-masked __thiscall.
-// g_buteMgr (@0x6453d8) comes from <Bute/ButeMgr.h>; its CRT-init note is at the field block below.
-// g_store6453f0 / g_store64544c are NOT separate objects: 0x6453f0 is g_buteMgr + 0x18
-// (== m_tree) and 0x64544c is g_buteMgr + 0x74 (== m_tree74) - two of the manager's three
-// EMBEDDED zPTrees, aliased here as standalone CButeStore globals. (CButeStore IS zPTree;
-// see <Bute/ButeStore.h>.) They stay declared for now only because ClearRecursive is
-// modelled on CButeStore, not on zPTree - folding the two calls onto
-// g_buteMgr.m_tree / .m_tree74 is the next step, and it clears 2 more undefined-DATA rows.
 extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree74
 
-// This TU's own .bss scalar (0x645210 is outside every modelled object).
 DATA(0x00245210)
 i32 g_appHInstance;
-
-// ---------------------------------------------------------------------------
-// SHREDDED-OBJECT FIX. Fourteen "globals" used to be DEFINED here as separate .bss
-// scalars (the g_6453e5 / g_645404 / ... / g_6454e7 family) on the reasoning that this TU
-// referenced them and nobody defined them. Every one is pinned STRICTLY INSIDE g_buteMgr
-// (0x6453d8, size 0x110 -> 0x6453d8..0x6454e8): they are its INTERIOR FIELDS, so defining
-// them fabricated fourteen .bss variables at interior offsets of one real object. The
-// field map (from the compiler's own record layout) is exact:
-//
-//   0x6453e5 +0x00d  m_0d                        0x645460 +0x088  m_tree74.m_nodeCount
-//   0x645404 +0x02c  m_tree.m_nodeCount          0x645464 +0x08c  m_tree74.m_root
-//   0x645408 +0x030  m_tree.m_root               0x645474 +0x09c  m_tree74.m_lookupPending
-//   0x645418 +0x040  m_tree.m_lookupPending      0x645478 +0x0a0  m_stream
-//   0x645420 +0x048  m_tree48 (start; unused)    0x6454e6 +0x10e  m_10e
-//   0x645434 +0x05c  m_tree48.m_nodeCount        0x6454e7 +0x10f  m_10f (CButeTail)
-//   0x645438 +0x060  m_tree48.m_root
-//   0x645448 +0x070  m_tree48.m_lookupPending
-//
-// The USE SITES prove it independently: the Phase-15 block zeroes three consecutive
-// {m_root, m_lookupPending, m_nodeCount} triples, one per embedded zPTree, each right
-// after that tree's ClearRecursive - i.e. zPTree::Reset inlined three times over
-// g_buteMgr's trees. (0x645420 was written by nothing at all.)
-//
-// g_buteMgr ITSELF STAYS UNDEFINED, and NOT for the reason previously recorded here.
-// The old note said defining it would emit a CRT dynamic-initialiser entry "whose order is
-// the link order". Retail's dynamic-init table is 30 entries (rva 0x2096e4..0x20975c,
-// NULL-bounded); I decoded all 30 and NONE constructs 0x6453d8 - and the address lies past
-// .data's raw extent, so the loader zero-fills it. So retail does NOT dynamically construct
-// g_buteMgr. But our CButeMgr models four CString members (+0x10, +0x100, +0x104, +0x108)
-// and a CButeTail, which WOULD force a dyninit if we defined it. Those two facts cannot both
-// be true: either the CString members are mis-modelled (a raw char*/POD string in retail), or
-// g_buteMgr is placement-constructed at runtime like the CActReg registries are. That is the
-// open question a definition must answer FIRST - defining it on today's model would fabricate
-// a 31st initializer the binary does not have. Left undefined and honest.
-// ---------------------------------------------------------------------------
-
-// ctors - 0x169700 == ??0istrstream@@QAE@PADH@Z and 0x1698c0 ==
-// ??0ostrstream@@QAE@PADHH@Z (both FID-anchored LIBCIMT); the trailing `1` arg at
-// each retail call site is the virtual-base most-derived ctor flag. The whole
-//   Init          == this Run override (vtable slot 1 -> 0x83450)
-//   Run(0x13dd50) == CGameMgr::Run (the base call)
-//   Error2 0x346d == ReportError            Error1 0x3f80 == ReportWorldStatus
-//   Fn2db0  -> 0x115810 InitializeFonts     Fn4214 -> 0x8fa70 GetGruntzDriveLetter
-//   Fn2112  -> 0x8eca0 InitializeLobbyConnectionSettings
-//   Fn1db6  -> 0x8f7f0 RecomputeViewScale (the "Step1db6" duplicate id)
-//   Fn1c12  -> 0x91670 MakeRezPath (CGruntzMgr's own; RezMgr.cpp - facet fold DONE)
-//   Fn1df7  -> 0x91170 SetColorDepth        Fn262b -> 0xf8970 SFManager_SelectBestDevice
-//   Fn129e  -> 0xf8e20 CloseSoundFontDevice Fn2423 -> 0xf8f30 BuildSoundFontPath
-//   Fn2cc5  -> 0x90200 RunFromState         Fn201d -> 0x8fab0 ChangeState_8fab0
-//   Fn1ed8  -> 0x90aa0 CheckMovieFileExists Fn12d0 -> 0x8b960 TransitionState
-//   Fn320b  -> 0x85500 GetRezPath           Fn3526 -> 0xa3b0 RegisterGameObjectTypes
-//   Fn40c0  -> 0x919d0 SetSoundVolume       Fn4174 -> 0x91a10 SetVoiceVolume
-//   Fn1d3eff = 0x1d3eff AfxWinInit (NAFXCW) ProbeSettings150 -> 0xda870
-//                                           GruntzPlayer::SeedForSlot(i32)
-// )
 
 // =====================================================================
 // @early-stop
@@ -784,21 +631,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x0853d0 (RVA-homed from src/Stub/BoundaryThunks.cpp) - __stdcall forwarder: hand
-// the single arg to the __cdecl rez-free helper (0x1b9b82). Returns void; one arg
-// (ret 4). A standalone forwarder with no owning class.
 RVA(0x000853d0, 0x10)
 void __stdcall RezFreeStdcall(void* a) {
     ::operator delete(a); // 0x1b9b82 == ??3@YAXPAX@Z (the __cdecl rez-free helper)
 }
 
-// 0x85500 - CGruntzMgr::GetRezPath: return the +0xec assembled-REZ-path CString BY
-// VALUE. IDENTITY RECOVERED (ex the Obj85500 placeholder): both callers - Run above
-// and LoadWorldMode - invoke it with ecx == the manager `this`, and +0xec is the
-// mgr's m_strRezPath (ex the RezMgr view's "m_pathA - assembled archive path #1",
-// the slot MakeRezPath fills). 100% EXACT once folded onto the real class - the old "/O2
-// dead-local wall" (~74%) was the misattributed Obj85500 view's artifact, not a wall.
 RVA(0x00085500, 0x23)
 CString CGruntzMgr::GetRezPath() {
     return m_strRezPath;

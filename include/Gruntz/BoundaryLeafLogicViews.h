@@ -1,13 +1,3 @@
-// BoundaryLeafLogicViews.h - the placeholder CUserLogic leaf classes reconstructed in
-// BoundaryLeafLogic.cpp (tile-logic leaf destructors + Serialize overrides recovered
-// from the engine_boundary backlog).
-//
-// RTTI cannot attribute these COMDAT-folded leaf methods, so the leaf class names are
-// placeholders (L_<rva> / S_<rva>); the recovered FACT is that each is a CUserLogic
-// leaf (the shared game-object hierarchy) - only the inheritance chain + offsets are
-// load-bearing. Formerly declared inline per-TU; consolidating the class declarations
-// into this shared header is pure code motion (matching-neutral). The bodies (each
-// carrying its RVA()) stay in BoundaryLeafLogic.cpp.
 #ifndef GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H
 #define GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H
 

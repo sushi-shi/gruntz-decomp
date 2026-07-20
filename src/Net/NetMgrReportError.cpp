@@ -1,27 +1,3 @@
-// NetMgrReportError.cpp - CNetMgr::ReportError, the Net module's DirectPlay
-// HRESULT->error-string diagnostic reporter (C:\Proj\NetMgr\, the DirectPlay
-// sibling of CDirectDrawMgr::GetErrorString and the DInput/DSound formatters).
-//
-// Maps a DirectPlay error code to a "<DPERR_NAME> (<code>) - <description>"
-// string and, depending on three reporting-mode globals, beeps, formats it
-// and/or pops a "Net Manager" message box. `this` is unused; the work is driven
-// entirely by the (file, line, hr) arguments the call sites push.
-//
-// Same archetype as CDirectDrawMgr::GetErrorString, with three retail-body
-// differences:
-//   (1) the working buffers szCode/szMsg and the saved code/hr are GLOBALS
-//       (g_szCode/g_szMsg/g_code/g_hr in .data), not stack locals - only the
-//       formatted output line szLine is a stack buffer here;
-//   (2) there is NO early "any output wanted?" return before the switch: the
-//       (hr & 0xffff) save + beep run unconditionally, the switch ALWAYS runs,
-//       and the three reporting-mode gates are consulted only afterwards; and
-//   (3) the dispatch is a cmp/je binary-search tree (sparse DPERR values), not
-//       a jump table, and the log path is sprintf-only (no separate logger
-//       call), like the DInput sibling.
-//
-// The function self-identifies its module via the strings it references (every
-// DPERR_* name + "Net Manager"); names of locals/globals are placeholders, the
-// switch case VALUES and string contents are load-bearing.
 #include <Net/NetMgr.h> // the single shared CNetMgr (ReportError is a static member)
 #include <Net/EmptyString.h> // g_emptyString (owner-only decl header)
 #include <rva.h>
@@ -29,24 +5,6 @@
 #include <string.h> // inline strcpy (rep movs / repne scasb)
 #include <Globals.h>
 
-// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real <windows.h>
-// (pulled in by <Net/NetMgr.h> -> <Mfc.h> -> <afx.h>; Win32.h would double-pull
-// windows.h and hard-conflict with the MFC header). The reporter's uType is
-// MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
-// the "hand" icon, whose real windows.h value is 0x10.
-
-// ---------------------------------------------------------------------------
-// Module-global reporting state - netmgrerror.obj's own .bss block, DEFINED here
-// (their owning TU), zero-init. The linker lays them out gaplessly at
-// 0x2bf6e8..0x2bf840: the four reporting-mode gates, the saved (hr, code), then
-// the two working buffers. Unlike the DDraw/DInput/DSound siblings (which buffer
-// everything on the stack), the Net reporter keeps all of this in fixed globals.
-// g_hr/g_code/g_szCode/g_szMsg keep their reference `extern`s in the consolidated
-// <Globals.h> (its canonical role; CMulti::ReportNetError reads g_code/g_szCode
-// through that header) - only the DATA() binding moves here, onto the definition.
-// The .bss contiguity (g_code/g_szCode bracketed by netmgrerror-private g_hr and
-// g_szMsg) proves all eight live in this one .obj despite the cross-TU read.
-// ---------------------------------------------------------------------------
 extern "C" {
     DATA(0x002bf6e8)
     i32 g_logEnabled = 0; // drives the format-line path
@@ -68,18 +26,9 @@ extern "C" {
     // in between get swallowed). Inline the literal at its use site instead.
 }
 
-// Empty string in .data copied into the working line up front (strcpy source; every
-// user reads it as ""). Owner TU per xref: this error-report cluster and its siblings
-// (DDrawMgr/DinMgr2/Dsndmgr ReportError twins) all strcpy from this one cell.
-// The previous [484] = {...} definition here was a FABRICATION: it transcribed 472
-// bytes PAST the .data raw end into .idata (all the {x,y,44,0} runs are 0x2cXXXX
-// import-table VAs read through the section boundary) and would have linked wrong-
-// sized. Only the terminator is proven; define exactly that.
 DATA(0x002293f4)
 char g_emptyString[] = ""; // decl in <Net/EmptyString.h>
 
-// ---------------------------------------------------------------------------
-// CNetMgr::SetReportMode (0x177670) - latch the four reporting-mode gates.
 RVA(0x00177670, 0x27)
 void CNetMgr::SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_logEnabled = log;
@@ -88,8 +37,6 @@ void CNetMgr::SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_thirdEnabled = third;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::ReportError
 RVA(0x001776a0, 0xa01)
 void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
     char szLine[512]; // the only stack buffer (the formatted output line)

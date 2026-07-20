@@ -1,61 +1,18 @@
-// Image.h - the engine's image-resolution surface (the REZ -> image load path).
-//
-// Two classes live here, both reconstructed only as deeply as needed to
-// byte-match their leaf methods. Fields are named from their use across the
-// matched methods; the OFFSETS + code bytes stay load-bearing. A few write-only
-// fields with no proven role keep their m_<hexoffset> placeholder.
-//
-//   class CRezImage  - the extension DISPATCHER class plus its five per-extension
-//     loaders. LoadFromRez(name,a2,a3) does `ext = strrchr(name,'.')` then a
-//     stricmp ladder on ".BMP"/".PCX"/".RID"/".PID" and hands off (all args
-//     forwarded) to one of five sibling __thiscall loaders (LoadBmp/LoadPcx/
-//     LoadRid/LoadPid/LoadDefault), each `ret 0xc`. The loaders are the real
-//     file/resource consumers: LoadBmp opens a CFileIO, parses the BMP file +
-//     info headers, builds the CRezImage via a decode helper and reads the pixel
-//     bytes; LoadPcx/Rid/Pid slurp the whole file into an `operator new` buffer
-//     and run a per-format decode helper; LoadDefault loads a Win32 RT_BITMAP
-//     resource and decodes it. The per-format decode helpers are also CRezImage
-//     __thiscall methods, reconstructed in Image.cpp; they share the plane
-//     allocator DecodeBmpHeader and the blitter DecodeBlit (external/no-body).
-//
-//   class CFileImage - the file-backed BMP/PCX/PID loaders that actually open a
-//     file via CFileIO, slurp its bytes into an `operator new` buffer and hand
-//     them to a per-format decode helper. Matched here: LoadBmp/LoadPcx (ret 8)
-//     and LoadPid (ret 0xc). The CFileIO stack object forces a C++ EH frame -> /GX.
 #ifndef SRC_IMAGE_IMAGE_H
 #define SRC_IMAGE_IMAGE_H
 
 #include <rva.h>
 
 #include <Mfc.h> // POSITION (CRezImage::m_listPosition, the pool's cached list-node handle)
-                 // + <windows.h> (BITMAPINFOHEADER / HBITMAP the DIB fields use)
 #include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held COM surface interface) + the
-                                // CDDSurface wrapper vtable (IsValid/BlitIntoDesc dispatch)
 #include <Io/FileStream.h>
 
-// The DDraw surface/palette pool host (<DDrawMgr/DDrawPtrCollections.h>) - the display
-// manager the file-image decoders receive as their palette-context argument (m_palBpp /
-// m_palette / m_hasPalette). Pointer/param-only here, so a forward decl keeps the manager
-// (and its MFC container members) out of the widely-included consumers of this header.
 class CDDrawPtrCollections;
 
-// The palette list node CRezImage::m_paletteNode holds (+0x458). Pointer-only here, so a
-// forward decl in its home namespace (the full shape + bodies are <Image/ImagePaletteNode.h>,
-// owned by ImagePool.cpp). CImagePool::Free reads m_paletteNode as this type (it was a
-// `void*` cast to CImagePaletteNode* at every read).
 namespace ApiCallerStubs {
     struct CImagePaletteNode;
 }
 
-// ---------------------------------------------------------------------------
-// CRezImage - the image-resolution dispatcher.
-// LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
-// args). It forwards (name, a2, a3) verbatim to the matching format loader.
-// The five sibling loaders and the per-format decoders are reconstructed in
-// Image.cpp; only the shared blitter DecodeBlit stays external/no-body.
-// ---------------------------------------------------------------------------
-// The {left,top,right,bottom} fill rectangle FillRect scan-fills and FillRectAt builds
-// (a plain rect record, not a class view).
 struct CRezFillRect {
     i32 left;   // +0x00
     i32 top;    // +0x04
@@ -64,10 +21,6 @@ struct CRezFillRect {
 };
 SIZE(CRezFillRect, 0x10);
 
-// The foreign 8bpp palette object CRezImage::Convert8To16 reads through its void* pal
-// arg (retail's `PAX...0` signature; the pool hands it around as an i32 handle): an
-// 8-byte header then the 256-entry RGB table indexed by the source pixel. Only the
-// table is touched here - a partial reader view of the (unmodeled) engine palette.
 struct ScanlinePalette {
     char m_pad0[8];    // +0x00  header
     u32 m_colors[256]; // +0x08  RGB table (indexed by the 8bpp pixel)
@@ -155,54 +108,11 @@ public:
     ApiCallerStubs::CImagePaletteNode* m_paletteNode; // +0x458  the pool's palette list node
 };
 
-// ---------------------------------------------------------------------------
-// CFileImage - the file-backed format loaders (the REZ payload consumers) AND
-// their per-format pixel decoders. The Load{Bmp,Pcx,Pid} entry points construct
-// a stack CFileIO, open the file, slurp it into an `operator new` buffer and call
-// the matching per-format decoder; the buffer is freed + the stream closed on
-// every exit.
-//
-// The decoders (DecodeBmp/DecodePcx/DecodePid + the low-level DecodePcxData) are
-// reconstructed in Image.cpp. They read the format header out of `buf`, validate
-// the geometry against the destination surface fields, optionally build a
-// 256-entry RGBQUAD palette into a per-decoder file-scope buffer (from the BMP
-// in-file RGBQUADs / the PCX|PID trailing 768-byte VGA palette) and hand the
-// pixel bytes to one of the surface blitters (Blit / BlitDirect, ret 0x10/8 -
-// external no-body) which copy into the destination plane.
-//
-// The OFFSETS + code bytes are load-bearing. The decoders touch only the 0xc0
-// surface geometry (m_height, m_width) on `this`; the palette context they read
-// (m_palBpp / m_palette / m_hasPalette at +0x538/+0x53c/+0x93c) lives on the
-// CDDrawPtrCollections display manager passed in as the `surf`/`info` ARGUMENT -
-// NOT on this 0xc0 surface (both surface ctors 0x13e9a0/0x1421a0 operator-new(0xc0)).
-// The former conflated palette fields were retired to <DDrawMgr/DDrawPtrCollections.h>.
-// ---------------------------------------------------------------------------
-
-// A heap element held in CFileImage::m_elements (the +0x94 CPtrArray). FreeSurfaces
-// walks the array `delete`-ing each element, which lowers to its slot-0
-// scalar-deleting destructor (`??_G`, vtbl[0](1)). Real polymorphic stand-in: a
-// real virtual destructor (declared-only) so `delete e` emits the canonical
-// null-guarded slot-0 dispatch. The element type itself lives in another
-// (unmatched) TU, so no ??_7/dtor body is emitted here - address never taken.
 class CFileImageElement {
 public:
     virtual ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)
 };
 
-// ---------------------------------------------------------------------------
-// CFileImageSurface - a CDDSurface-derived pool-item surface (the "a58" subclass,
-// vtable 0x5efa58: overrides the dtor + slot 6 GetPoolKind, adds slots 9/10/11).
-// It is the SAME retail class DDrawPtrCollections.h models as CPoolItemA; its ??_G/~
-// COMDAT (0x142340/0x142360) is emitted under the CFileImageSurface name from
-// DirectDrawMgr.cpp (CPoolItemA there is the declared-only RELOC_VTBL alias).
-//
-// It adds NO destructible members of its own (the +0x94 CPtrArray lives in the
-// CDDSurface base), so ~CFileImageSurface is the /O2-inlined base teardown: MSVC5
-// elides the derived vptr stamp and emits ONLY the base ??_7CDDSurface (0x5ef7f0)
-// stamp, then FreeSurfaces + the base's ~m_elements - byte-identical to ~CDDSurface
-// (0x141350) and matching retail. That is why the dtor's vtable stamp binds to
-// ??_7CDDSurface @0x1ef7f0 (reloc-fidelity), not this class's own 0x1efa58 datum.
-// ScalarDelete is its `??_G` (0x142340): destroy + conditional RezFree.
 SIZE(CFileImageSurface, 0xc0);
 VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
 class CFileImageSurface : public CDDSurface {
@@ -237,21 +147,6 @@ public:
     ); // slot 11 0x148840 (blit + install colour key)
 };
 
-// CFileImage's own surface vtable lives at VA 0x5ef7f0 - the SHARED 9-slot base vtable
-// of the pool-item surface family (bound by address in CDirectDrawMgr.cpp as
-// g_poolItemVtbl; the sibling derived classes CPoolItemA @0x5efa58 / CDDSurface / ... in
-// CDDrawPtrCollections.cpp / CDDSurfaceDtor.cpp derive from this same base). CFileImage
-// declares the full 9-slot polymorphic layout above (dtor / Refresh / Init1 / BlitSurf /
-// FreeSurfaces / IsValid / GetPoolKind / RestoreLost / BlitIntoDesc), so the virtuals it dispatches
-// (IsValid @0x14 slot 5, BlitIntoDesc @0x20 slot 8) and the slot-3 BlitSurf dispatch are genuine
-// virtual calls - the former pointer-only CFileImageVtblView is retired.
-
-// [The former CFileImageHeldSurface (a 33-slot thiscall placeholder view of the held
-// surface, Unlock @+0x80) is retired: retail's Unlock sites are genuine COM stdcall
-// (push arg / push surf / call [vtbl+0x80]) on m_8 (IDirectDrawSurface*), slot 32.]
-
-// The run-length source header handed to Decode (arg `src`): a +0x04/+0x06/+0x08/+0x0a
-// int16 bounding box and a +0x41 format byte (1 = 8-bit, 3 = 24-bit); run data at +0x80.
 class CFileImageSrc {
 public:
     char _00[0x04];
@@ -263,27 +158,10 @@ public:
     u8 m_41; // +0x41  format (1 = 8-bit, 3 = 24-bit)
 };
 
-// The palette source SaveBmp reads (arg2): +0x0c = the 256-entry source palette
-// (4 bytes/entry; the export copies bytes 0/1/2 into the BMP RGBQUADs).
 class CFileImagePal {
 public:
     char _00[0x0c];
     u8* m_0c; // +0x0c  source palette (4 bytes/entry)
 };
-
-// ClipRect16 (the 16-byte rect/clip record Run takes by value) now lives on the unified
-// surface class's header, <DDrawMgr/DDSurface.h>.
-
-// The CFileImage.cpp save/decode data records (DecodeSrc / BmpFileHeader / TgaHeader)
-// live in <Image/FileImageRecords.h> - a CFileImage.cpp-only header, kept out of this
-// widely-included one so the other Image TUs are not perturbed (MSVC codegen leak).
-
-// The former CFileImage class (the DIRSURF.CPP 0xc0 surface: BMP/PCX/PID loaders +
-// surface blitters + DirectDraw thunks + 9-slot vtable) is UNIFIED with CDDSurface -
-// it was one physical class under two names. Its full definition now lives in
-// <DDrawMgr/DDSurface.h> (included above); the method bodies below in this module
-// (Image.cpp / FileImage*.cpp / LutShadeRect.cpp) are defined on CDDSurface.
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 #endif // SRC_IMAGE_IMAGE_H

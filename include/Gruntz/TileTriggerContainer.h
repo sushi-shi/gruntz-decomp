@@ -1,14 +1,3 @@
-// TileTriggerContainer.h - Gruntz CTileTriggerContainer (C:\Proj\Gruntz).
-//
-// A 3-CPtrList container: a base sub-object at +0x00 plus three CPtrList members
-// at +0x1c / +0x38 / +0x54 (their m_pNodeHead at +0x20 / +0x3c / +0x58).  The
-// lists hold heap command objects; the accessors here move/find/remove those
-// objects across the three lists.  The list elements are sibling command objects
-// (the CTileTriggerLogic class) destroyed inline (vtable 0x5eaea4 stamp + RezFree)
-// before the node is unlinked.
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
@@ -19,21 +8,15 @@
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
 
-// The owning container; back-stamped into the list elements (m_14 / m_20 / m_24).
 class CTileTriggerContainer;
 class CTileTriggerLogic;       // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
 class CGiantRockLogic;         // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
 class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
 
-// The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
-// reloc-masked rel32 callees.
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
-// The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern "C" u32 g_frameTime;
 
-// A singly-walked CPtrList node: next@+0x00, data@+0x08 (MFC CList layout, the
-// +0x04 prev slot unused by these walkers).
 struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
@@ -44,41 +27,11 @@ struct TtcNode {
 };
 SIZE_UNKNOWN(TtcNode);
 
-// The three list sub-objects ARE the real MFC ::CPtrList (0x1c bytes; its methods are the
-// FID-labeled NAFXCW CPtrList members RemoveAt @0x1b4ac7 / AddTail @0x1b4991 / RemoveAll
-// @0x1b48a6 / ~CPtrList @0x1b48c6, and its vtable is the library ??_7CObList @0x1ed4b4).
-// The former local TtcObList re-declaration (whose emitted ??_7 aliased that bound library
-// vtable - a RELOC_VTBL) is DISSOLVED: the walkers reach the head through the INLINE
-// CPtrList::GetHeadPosition() (afxcoll.inl: `return (POSITION)m_pNodeHead;` - the identical
-// single load) and the count through the inline GetCount().
 typedef ::CPtrList TtcObList;
-// Typed intrusive-node access: a POSITION IS the CPtrList::CNode* the walkers step through
-// (MFC's CNode is protected, so the head is retrieved as a POSITION and typed here).
 inline TtcNode* TtcHead(const ::CPtrList& l) {
     return reinterpret_cast<TtcNode*>(l.GetHeadPosition());
 }
 
-// The former local element views are DISSOLVED onto the real classes:
-//   TtcMark     -> CTileActionEvent   (<Gruntz/TileActionEvent.h>; 0x28 bytes; the
-//                  "TtcMarkCtor @0x1e1a" is ??0CTileActionEvent @0x112d80)
-//   TtcBaseElem -> CGiantRockLogic    (<Gruntz/TileTriggerLogic.h>; 0xc8 bytes; the
-//                  "TtcBaseElemCtor @0x2c3e" is ??0CGiantRockLogic @0x112210 -
-//                  SAME ILT thunk; every field matched: type tag 0x16 == factory id
-//                  22, m_matrix @+0x9c, m_c0/m_c4, init gate m_1c, owner m_20)
-//   TtcKeyedElem-> CTileActionEvent   (the m_playerFlags[4] @+0x18..+0x24 record
-//                  FindByField0C returns)
-//   TtcTrigElem -> the two real element families. The register thunks resolve to
-//                  THREE different targets (retail ILT jmps): 0x277f -> 0x113860 =
-//                  CTileTriggerSwitchLogic::ValidateByType, 0x1abe -> 0x113a90 =
-//                  CTileTriggerLogic::ValidateByType, 0x1d39 -> 0x113d40 =
-//                  CGiantRockLogic::ApplyByType. All __thiscall on the ELEMENT
-//                  (retail: `mov ecx,edi` before each call) - the old "all three
-//                  are Gate113860, drop the receiver" comment was wrong.
-
-// The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
-// functions: stream the element's tag, then dispatch its family's serializer.
-// ApplyA serves the m_base 0x8c switch-logic family (tags 1..8); ApplyB serves
-// the m_list1/m_list2 CTileTriggerLogic family (tags 0x15..0x1a).
 i32 __stdcall
 SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
 i32 __stdcall
@@ -233,7 +186,5 @@ public:
     i32 m_74;                // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
 SIZE_UNKNOWN(CTileTriggerContainer);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

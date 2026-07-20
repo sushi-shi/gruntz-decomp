@@ -1,15 +1,3 @@
-// UserLogic.cpp - Gruntz game-object base hierarchy + the tile-logic leaf ctors
-// (C:\Proj\Gruntz).
-//
-// Reconstructs CUserBase / CUserLogic (see include/Gruntz/UserLogic.h) and the
-// game-object leaf constructors that fold them. Two ctor shapes:
-//   * NO-ARG leaf ctors (75 B): base prologue + leaf vptr, members untouched.
-//   * 1-ARG leaf ctors `(CGameObject*)`: fold the inline CUserLogic(obj) shared
-//     init, then store the leaf vptr and run a per-class tail.
-//
-// The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
-// (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
-// src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (winapi_064540 arrival anim)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (winapi_064540)
 #include <Mfc.h>                     // CString / RECT / PostMessageA
@@ -30,12 +18,6 @@
 // depth 2). Isolating the forcer + inline body in its own TU keeps the leaves here
 // calling the out-of-line helper.
 
-// ---------------------------------------------------------------------------
-// Out-of-line vtable anchors. These give each base class a real vftable in this
-// TU so the inline ctors emit the right vptr stores. Bodies are not matched.
-// (~CUserBase / ~CUserLogic are now inline in the header so leaf dtors fold the
-// whole base teardown; the remaining out-of-line virtuals still anchor the
-// vftables.)
 i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
@@ -47,8 +29,6 @@ void CUserLogic::XferName(char* name) {
     // ret-4 one-arg no-op (the base 0x00106e shape); leaves override to receive
     // their serialized type name.
 }
-// The real base body (0x8b70, reached via the slot's ILT thunk 0x246e) is a bare
-// `ret 4` - an empty do-nothing hook taking the activation id. Anchor only.
 void CUserLogic::FireActivation(i32) {}
 i32 CUserLogic::Activate() {
     return 0;
@@ -109,16 +89,6 @@ i32 CUserLogic::UserLogicVfuncD() {
 // @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEHXZ 0x000089b0
 // @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEHXZ 0x000089d0
 // @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEHXZ 0x000089f0
-
-// ---------------------------------------------------------------------------
-// CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
-// override (0x010a10) chains; both __thiscall ret 0x10 (4 args), modeled NO-body
-// so the calls reloc-mask:
-//   * CUserLogic::SerializeMove (0x16e7f0) - run on `this`.
-//   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
-//     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
-//     (Chain @0x8c00, <Gruntz/SerialArchive.h>).
-// (Both bodies are pinned in src/Stub/Discovered.cpp.)
 
 // @confidence: low
 // @source: winapi:CopyRect

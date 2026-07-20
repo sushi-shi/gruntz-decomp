@@ -1,7 +1,3 @@
-// WarpStonePad.h - the warp-stone pad tile-logic leaf (C:\Proj\Gruntz), a CUserLogic
-// game-object (RTTI game class, vtable 0x5e71ac). Extracted from the former
-// UserLogic.cpp-local view so the leaf dtor (0x10fc0) homes onto the real class.
-// Only offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CWARPSTONEPAD_H
 #define GRUNTZ_CWARPSTONEPAD_H
 
@@ -32,9 +28,6 @@ public:
                                //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
-// The activation-registry entry record (the .data CActReg row): its first dword
-// receives the per-frame handler PMF (4-byte code pointer on this complete
-// single-inheritance class); FireActivation dispatches it thiscall on the leaf.
 typedef i32 (CUserLogic::*WarpStonePadHandler)();
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;

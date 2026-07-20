@@ -1,13 +1,3 @@
-// PreviewState.h - CPreviewState, the level-preview screen state (shows PREVIEW%i,
-// fades \SCREENZ\%s).
-//
-// A real CState leaf: proven by the shared base layout (its m_4/m_8/m_c/m_2c coincide
-// with CState's, verified vs the other screen states) and the per-frame slot-8 virtual
-// dispatch. It has NO distinct vtable of its own (the CState family is RTTI-complete),
-// so the methods below are non-virtual command handlers the game's command table
-// dispatches. Defined in src/Gruntz/LevelPreview.cpp.
-//
-// Field names are placeholders; only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_PREVIEWSTATE_H
 #define GRUNTZ_PREVIEWSTATE_H
 

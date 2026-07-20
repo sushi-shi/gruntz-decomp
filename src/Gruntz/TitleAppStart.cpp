@@ -15,12 +15,6 @@
 #include <Mfc.h>          // afx-first (unified CObject; superset of Win32.h) - ::ShowCursor fn-ptr
 #include <Gruntz/State.h> // the CState base this title state derives (RunTitleSeq @0xfa350)
 
-// The title-sequence's const-char* arg source @0x24e25c IS the global asset-root CString
-// `g_assetRoot` (same datum SplashState/GruntzMgr bind); RunTitleSeq consumes its data
-// ptr (CString::operator LPCTSTR -> the +0 m_pszData load). Single-sourced onto the
-// canonical `g_assetRoot` name (was the fake `g_64e25c` void* that lost the per-rva
-// keep-last dedup to netmgrmisc's ex-`g_netE25c` view - now dissolved -> UNBOUND).
-// Declared in <Gruntz/AssetRoot.h>; DATA home NetMgrMisc.cpp.
 #include <Gruntz/AssetRoot.h>
 #include <Gruntz/TitleApp.h> // canonical CTitleApp (CState leaf; identity @identity-TODO)
 

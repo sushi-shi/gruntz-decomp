@@ -1,20 +1,3 @@
-// GruntzMgr.cpp - CGruntzMgr, the Gruntz game manager (the real derived
-// CGameMgr; C:\Proj\Gruntz). This is the 0xa30-byte game manager that
-// CGruntzApp::InitializeGameManager allocates (`new CGruntzMgr`); the base
-// CGameMgr is the genuine 0x2c engine class.
-//
-// Reconstructed here:
-//   CGruntzMgr::ReportError        - forwards to the app's ReportError (m_8
-//       holds the CGameApp; call its vtbl slot +0x1c).
-//   CGruntzMgr::GetGruntzDriveLetter - memoised CD drive-letter accessor
-//       (Utils::WinAPI::GetGruntzDriveLetter on first call).
-//   CGruntzMgr::~CGruntzMgr        - virtual dtor: runs Close() then the
-//       compiler-generated member/base teardown under the /GX C++ EH frame.
-//   the scalar-deleting destructor (vtable slot 0) is auto-emitted by MSVC.
-//
-// The ctor is the member-construction-heavy 0x083030 (deferred to the stub).
-// <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
-// WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/AssetRoot.h>     // g_assetRoot (SetAssetRoot target; DATA home NetMgrMisc.cpp)
@@ -25,12 +8,6 @@
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MapLogic.h>      // MapSerializeCurve (0x0ec230) - BroadcastCmd's fan-out hook
 #include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
-// The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
-// arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl
-// bodies are skipped for the clang LABEL step only (they carry an implicit-int
-// CMenu::operator== that clang rejects and wine cl accepts); without this the label pass
-// emits NO IR and the entire TU silently vanishes from symbol_names.csv.
-// See docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -78,8 +55,6 @@
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
-// Brings the full windows.h/objbase.h COM chain (STDMETHOD_/HRESULT/CLSID).
-// Mfc.h already provides the STDMETHODs the CWorldDispatch view uses.
 #include <rva.h>
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
@@ -88,103 +63,28 @@
 #include <DinMgr2/DirectInputMgr2.h> // the REAL g_inputMgr input singleton
 #include <Bute/SymParser.h>          // CSymParser - the REAL m_symParser (+0x34)
 #include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
-// m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
-// name - its tile-collision record is CTileImageSet now.
 #include <Net/NetMgr.h>                   // the ONE CNetMgr (ReportError is its static member)
 #include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // CImageRegistry - the REAL m_world->m_imageRegistry
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
 #include <Globals.h>
 
-// ---------------------------------------------------------------------------
-// The two COM-interface views CGruntzMgr dispatches on. Defined HERE (the only TU
-// that calls their slots) rather than in the widely-included class header, so the
-// STDMETHOD virtual-interface footprint stays out of GruntzMgr.h's ~14 includers.
-// ---------------------------------------------------------------------------
-
-// A polymorphic world sub-object (CWorldZ::m_1c -> *m_1c): abstract __stdcall COM
-// interface, only slot 10 (+0x28) is dispatched. STDMETHOD_(void, ...) ==
-// `virtual void __stdcall`, so `d->Slot0a()` lowers to `mov eax,[d]; call [eax+0x28]`.
-// (CDDrawPtrCollections); its "Prepare" @0x08dd80 IS GetCapsChecked (the
-// IDirectDraw2::GetCaps probe), and the "*m_1c slot-10 Slot0a" dispatch is
-// m_device->FlipToGDISurface() (IDirectDraw2 slot 10, +0x28) before each modal UI.]
-
-// CGruntzMgr::m_lobby is the REAL DirectPlay lobby COM interface (IDirectPlayLobby,
-// from the vendored <dplobby.h>); only Release (slot 2) + GetConnectionSettings
-// (slot 8, called twice in the size-probe / fill idiom) are dispatched. The former
-// hand-rolled IDirectPlayLobbyZ view is gone: the real interface's slots line up
-// exactly (v01=AddRef, v03-v07=Connect/CreateAddress/EnumAddress/EnumAddressTypes/
-// EnumLocalApplications, slot 8=GetConnectionSettings), so dispatch is byte-identical.
-
-// The free CD-ROM / file-probe helpers CGruntzMgr calls (plain file-scope free
-// functions; reloc-masked). GetGruntzDriveLetter (0x1ffe0, WinAPICdRom.cpp) collides
-// by name with the CGruntzMgr member below, so its call site qualifies with `::`.
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
-
-// DirectPlayLobbyCreate (DPLAYX ordinal 4) now comes from the real <dplobby.h>
-// (macro -> DirectPlayLobbyCreateA); reached as [IAT] - the displacement reloc-masks,
-// so only the arg shapes are load-bearing. CNetMgr::ReportError is a `call rel32`.
-// `m_connSettings` (the connection-settings buffer) is freed through a small
-// NAFXCW-style operator-delete helper (out-of-line, reloc-masked); a plain free fn.
-
-// CNetMgr::ReportError is the REAL static member of the ONE CNetMgr (<Net/NetMgr.h>,
-// included above).
 
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
-// Cached Win32/WINMM API entry points the engine calls through game-owned global
-// fn-ptr slots (`call ds:[ptr]` / `mov reg,ptr; call reg`), NOT the IAT. Each is a
-// typed fn-ptr global pinned by its DATA() RVA (the indirect-call displacement
-// reloc-masks; the DATA pin pairs the named slot). Same model as ::ShowCursor.
-
-// Game-clock/registry globals reached by AccrueScoreTime / Close.
 extern "C" {
     DATA(0x00248ce8)
     i32 g_scoreTimeBase;
 }
 
-// AccrueScoreTime's objects are all CANONICAL now - the three views that stood here
-// (GameRegHudView / StateScoreView / LevelClock) were duplicates of classes this TU
-// already includes:
-//   * GameRegHudView(+0x7c)  == CGruntzMgr::m_scoreHud (CBattlezData*) - g_gameReg IS
-//     the CGruntzMgr (this TU DEFINES the singleton at its real type), so the view was
-//     casting the class back out of its own singleton.
-//   * StateScoreView(+0x1c / +0x3f4) == CState::m_levelIndex + CPlay::m_frameMarker.
-//     The +0x3f4 read only happens on the m_134==3 ("won") arm, where the live state IS
-//     the PLAY state - a plain derived downcast, not a reinterpret.
-//   * LevelClock(+0x38, 64-bit) == CTimer's +0x38:+0x3c level-start stamp
-//     (<Gruntz/Timer.h>) - read 64-bit the way the timer's other clock pairs already are.
-// (m_cmdGrid's scored flag +0x288 is CTriggerMgr::m_288.)
-
-// DelayedQuit's menu lookup goes through the world's CSndHost (+0x28), a SoundCue.h
-// canonical (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
-// is the LeafCue whose m_10 DSoundCloneInst carries the +0x28 cue duration).
-
-// Close's teardown vocabulary. m_30/m_3c are torn down through vtable slot 1 - the MFC
-// CObject-family flagged scalar-deleting destructor (`delete p` on the polymorphic
-// class): m_30 (m_world) IS the CDDrawSurfaceMgr (slot map: CObject slots 0-4 with the
-// ??_G override @1), m_3c an unidentified CObject-derived engine sub-object. m_settings
-// is the settings/registry writer (WriteInt per named key), and g_spawnConfig is zeroed
-// field-by-field before delete. Each engine entrypoint is out-of-line / reloc-masked.
-// The settings store open/close brackets around the WriteInt block (reloc-masked
-// __cdecl free fns; no this).
 void OpenSettingsStore();  // FUN_005158f0
 void CloseSettingsStore(); // FUN_004f8e20
 
-// The modal dialogs OnCheckpointReached / SaveGameAs pop (CCheckpointDlg / CBattlezDlg)
-// are the canonical <Gruntz/Dialogs.h> classes. Both were fixed to an IMPLICIT
-// compiler-generated dtor, which inlines the stack-local teardown here EXACTLY as retail
-// (~CString m_6c + ~CDialog, no vptr restamp) - so the per-TU implicit-dtor twins that
-// used to sit here are dissolved. This is the "ODR landmine that the implicit dtor
-// removes" the Dialogs.h CBattlezDlg comment describes; both ctors (0x234a0 / 0x14b30)
-// stay reloc-masked, CCheckpointDlg reaches ExitModalUI as a CModalScreen (== CDialog)
-// cast-free, and CBattlezDlg's custom-flag is m_customNameFlag (+0x68) / name m_6c (+0x6c).
 #include <Gruntz/Dialogs.h>
 
-// Resets the 17 sound-channel slots (g_soundChannelInUse[17] = 1); SaveGameAs calls it before
-// popping the modal. Reloc-masked __cdecl free fn (0xdb1d0).
 void ChannelSlots_InitAll(); // 0xdb1d0
 
 // The Win32 dialog procedures handed to RunModalDialog. Each pushed code address is
@@ -201,24 +101,9 @@ extern "C" void GruntzLoadGameDlgProc();    // thunk 0x2167 -> body 0x9dff0 (Loa
 extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
 extern "C" void GruntzSaveGameDlgProc();    // thunk 0x1041 (GAME_SAVE)
 extern "C" void GruntzSaveMsgDlgProc();     // thunk 0x11d1 (GAME_SAVEMSG)
-// The "go to level" developer dialog proc body (AppDialogs.cpp @0x08e7c0); DebugJumpLevel
-// pushes its ILT thunk 0x2ab8 (LevelNumberDialogProcThunk), not the body address.
 extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
-// -------------------------------------------------------------------------
-// Engine objects reached through CGruntzMgr's member pointers. Each engine-side
-// method is a reloc-masked __thiscall (`mov ecx,obj; call rel32`), so only the
-// layout offsets + call shapes are load-bearing; the displacements reloc-mask.
-// The serialize sequence counter is C++-linkage (?g_serialCounter@@3HA @0x229ad0),
-// kept OUT of the extern "C" block below.
-// SaveState/LoadState stream these; their canonical C++-linkage (?g_...@@3HA)
-// bindings live in the globals/lightfxrender units - reference those directly so the
-// DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
-// (g_timer100 @0x245594, also C++-linkage and streamed here, now comes from <Rez/FrameClock.h>.)
-// 0x64557c - the active modeless dialog HWND (cleared on both modal-dialog exits);
-// DEFINED in src/Net/LobbyDialogs.cpp (namespace NetLobby), where the dialog procs
-// cache it.
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 extern "C" {
     // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
@@ -228,143 +113,25 @@ extern "C" {
 
 extern "C" {}
 
-// The two shared sound globals, DEFINED here (owner TU: CGruntzMgr::SetRunState mirrors
-// the run-state into g_sndEnabled and SetSoundVolume latches the cue tag; ~20 TUs read
-// them). C++ linkage, so every `extern i32 g_snd*` reference tree-wide binds to
-// ?g_sndEnabled@@3HA / ?g_sndCueTag@@3HA. (They were previously only DATA-pinned on
-// `extern "C"` DECLARATIONS in LevelPreview.cpp, which bound _g_sndEnabled/_g_sndCueTag
-// and left every C++-mangled reference - the overwhelming majority - UNBOUND.)
-// The plain externs live in <Globals.h>.
 DATA(0x0021ab20)
 i32 g_sndEnabled = 1; // 0x61ab20  sound-on gate (retail .data init = 1)
 DATA(0x0021ab24)
 i32 g_sndCueTag = 100;         // 0x61ab24  the cue-item id (retail .data init = 100)
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A).
-// DEFINED here (owner = the class TU of the object it points at). ~50 TUs reference this
-// singleton and NONE defined it. Its producer is CGruntzMgr::Init (RezSync.cpp), which
-// self-registers with `g_gameReg = this` - that is what proves 0x24556c holds the
-// CGruntzMgr. extern "C" keeps ONE C symbol whatever C++ view a TU declares it at (the
-// CGameRegistry==CGruntzMgr fold is a separate, deferred pass).
 DATA(0x0024556c)
 extern "C" {
     CGruntzMgr* g_gameReg = 0;
 }
 
-// The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
-// "Teardown" 0x3b1b == ~CTriggerMgr, "Reset"/"Flush" 0x15c3 == DestroyAllAnims,
-// "Command" 0x4250 == RebuildOverlay; the +0x20c/+0x21c delta tables are
-// m_rowStateB/m_rowStateC and the +0x288 scored flag is m_288.
-
-// The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
-// score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
-// command sink (BroadcastCmd), and the shared Teardown (Close).
-// The +0x44 object is the canonical CCheatMgr
-// (<Gruntz/CheatMgr.h>); its m_124 is the "a cheat was used" flag.
-
-// The archive/serializer object SaveState/LoadState stream every clock/scroll/warp
-// field through: the shared WAP32 CSerialArchive stream interface (Read @ vtbl +0x2c,
-// the Load read path; Write @ +0x30, the Save write path), now the one modeled class
-// in <Gruntz/SerialArchive.h>.
-// Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
-
-// The engine reaches the USER32 cursor through a stored function pointer at
-// 0x6c44c4 (`mov edi,ds:...; call edi`), not a direct IAT call; model it as a
-// typed global fn-ptr so the indirect call shape (`call reg`) falls out.
-
-// A free helper that flushes/forces a redraw of one map index (reloc-masked).
 void RedrawMapIndex(i32 idx); // FUN_00558c70
 
-// (The `CmdHook` declared-only fake - "i32 CmdHook(i32,i32,i32,i32); // FUN @ 0x17da
-// thunk" - is GONE. Thunk 0x17da jmps to 0x0ec230, which this tree already DEFINES as
-// MapSerializeCurve in MapLogic.cpp: one function under two names, neither binding to
-// the other. BroadcastCmd's fan-out calls it through the real declaration now, from
-// the owner's header - see <Gruntz/MapLogic.h> for why its arity is 4.)
-
-// The +0x60 timer/poll object (CGruntzMgr::m_cueSink; reloc-masked thiscalls).
-// SetVoiceVolume mirrors the latest input-state value into its +0x2c field; Stop
-// pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
-// broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
-
-// The reduced PLAY-state status views (PlayStatusSlot / CPlayStateView, reached via
-// ((CPlayStateView*)m_curState)->m_520) live in <Gruntz/PlayStateView.h>.
 #include <Gruntz/PlayStateView.h>
-
-// SaveInfo (the save-slot record) and SaveSink58 (the +0x58 sink) now come from
-// <Gruntz/SaveInfo.h> (via GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
-
-// The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
-// the CRT __strncpy at 0x120340 (`push n; push src; push dst; call; add esp,0xc`).
-
-// CModalScreen IS MFC's CDialog. Binary proof (see GruntzMgr.h): ExitModalUI
-// (0x903f0) dispatches `call [vtbl+0xc0]` = slot 48, and CDialog's retail vtable (0x1eb174)
-// holds 0x1ba9d2 = CDialog::DoModal at slot 48 (slots 49/51 likewise = OnInitDialog 0x1bac5e
-// / OnOK 0x1bacc3).
-
-// The "active object" the two modal runners finalize on the way out is the live
-// PLAY/paused state (reached via PickPausedThenPlayState; both
-// call sites go through ILT 0x4278 -> 0x929b0), the object IS a CPlay, its +0x2dc
-// sub-object IS CPlay::m_guts (the CStatusBarMgr), and the two "reloc-masked
-// thiscalls" resolve to real matched methods:
-//     Release()  == CStatusBarMgr::Deactivate  (ILT 0x125d -> 0x100cb0)
-//     Finalize() == CPlay::PostHudRect         (ILT 0x2c9d -> 0x0da440, 100% EXACT)
 
 extern "C" {
     extern i32 g_optionsCursor; // DAT_006455fc  (round-robin options cursor)
 }
 
-// -------------------------------------------------------------------------
-// The packed-color global SetColorDepth writes + the RGB shift/size globals it
-// reads: the live RGB565 pixel-format ints, DEFINED in their owner TU
-// src/DDrawMgr/DDSurface.cpp (g_rUp/g_gUp/g_rDown/g_gDown/g_bDown). Reference
-// externs only here.
-
-// The world's +0x10 slot is the game's IMAGE/NAME registry: the REAL CImageRegistry
-// embedded lookup" IS that class's CMapStringToOb m_10map, and every value it resolves
-// is a real CImageSet (<Image/ImageSet.h>): the two 0x14/0x64/0x68 "color row" /
-// "config record" shells that stood here were that class, offset for offset -
-//     m_14 == CImageSet::m_frames (CImage**)   m_64/m_68 == m_minIndex/m_maxIndex,
-// and SetGruntColor's in-range index test IS CImageSet::GetAt()'s.
-//
-// Map-type labels: 0x1b8008 IS CMapStringToOb::Lookup (its band [0x1b7e17, 0x1b8247)'s
-// ctor stamps ??_7CMapStringToOb@@6B@); CMapStringToPtr::Lookup is the SEPARATE body at
-// 0x1b8438 (no COMDAT fold - MSVC5 has no /OPT:ICF). The map is CMapStringToOb, so its
-// out-param is a CObject*& (the values ARE CObject-derived).
-//
-// CImageRegistry's key helpers are the CDDrawWorkerRegistry bodies (the class pair is
-// still unreconciled), so the level-asset RegisterKey (0x155460) casts at the call the
-// same way that header's Has/Register/Release already do.
-
-// The world's +0x38 load-status code (mapped to a message id by ReportWorldStatus)
-// is now a real CWorldZ member (GruntzMgr.h). It is UNSIGNED: the switch range checks
-// emit `cmp;ja/jbe` (unsigned), not the signed `jg/jle`.
-
-// LoadWorldMode's reloc-masked siblings (engine objects reached through the
-// manager's member pointers; all are __thiscall, so each is modeled as a method on
-// its object so `mov ecx,obj; call` falls out - the displacements reloc-mask).
-//   m_symParser: the REAL CSymParser (<Bute/SymParser.h>). The old CRezSurface94
-//         shell's three "engine surface" methods were that class's ctor/dtor/parser at
-//         the SAME rvas - Build == CSymParser::CSymParser (0x13aa10), Apply ==
-//         CSymParser::ParseBuffer (0x13ad00), Teardown == ~CSymParser (0x13abc0) - and
-//         its "0x94-byte surface" is SIZE(CSymParser) == 0x94 exactly. LevelRezPath.cpp
-//         already cast this same +0x34 member to CSymParser* to call ResolvePath.
-//   m_54: the input/state object (0x30 bytes; an embedded CPtrList at +8 ctor'd
-//         CPtrList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
-//         state-flush (+0) + the embedded CPtrList dtor (+8)).
-// The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
-// object the ambient-sound TU reads; its +0x08 is that class's CPtrList voice list.
-
-// [The world IS the
-// polymorphic CDDrawSurfaceMgr (slot 6 +0x18 = the 5-arg Init "SetVideoMode",
-// slot 7 +0x1c = Cleanup_155e20 the pre-Init "Notify" teardown) - the same class
-// this TU already reaches via the SetHwnd casts. The full CWorldZ==CDDrawSurfaceMgr
-// field-view fold (m_4==m_drawTarget, m_8==m_childGroup, m_24==m_level/CGameLevel,
-// m_28==m_soundRegistry, m_38==m_lastError) is the deferred reconciliation.]
-// The mode-reset callback registration reached during LoadWorldMode: a non-virtual
-// thiscall on the world with a code-address callback (LAB_00403193) handed in. The
-// callback is an external function whose pushed address reloc-masks.
 extern "C" void ModeResetCallback(); // LAB_00403193
-// The per-load world-object factory (CreateGameObjectByName, __cdecl, reloc-masked).
 void CreateWorldObjects(void* world);
 
 // ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/
@@ -374,57 +141,10 @@ void CreateWorldObjects(void* world);
 void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
 
-// The 4-entry options array embedded at CGruntzMgr +0x150 (each 0x238 bytes) is
-// GruntzPlayer m_options[4] (<Gruntz/GruntzPlayer.h> via GruntzMgr.h): m_name @+0x04,
-// m_010 config id, m_014 arm, m_018 key, m_020 loaded, +0x38 CBattlezMapConfig. The
-// methods below call ?Reset@GruntzPlayer@@QAEHXZ (0xda9e0) directly, so the reference binds.
-
-// The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
-// +0x68 grid (CTriggerMgr), the live source object (via GetSaveSource), the +0x6c
-// sub-mgr (m_cmdSubMgr), the +0x70 tile/map board (m_tileGrid, CGruntzMapMgr, vtbl slot 1),
-// and the +0x7c HUD (ScoreHud). Each returns nonzero to keep broadcasting. The
-// +0x6c sub-mgr also shares the Teardown + operator delete (Close). All
-// reloc-masked.
-// The +0x6c sub-manager is the REAL RTTI class CGruntzCmdMgr (<Gruntz/GruntzCmdMgr.h>):
-// retail's Close() +0x6c teardown leg calls thunk 0x4066 -> ~CGruntzCmdMgr @0x85bd0. The
-// former invented `CmdSink` class that stood here is GONE. NOTE: BroadcastCmd's +0x6c
-// command leg really does target CTriggerMgr::RebuildOverlay @0x7a5e0 (retail thunk 0x4250)
-// - a genuine cross-class call in the original, so that ONE cast stays (binding-correct).
-// The +0x70 object is the REAL RTTI class CGruntzMapMgr (<Gruntz/GruntzMapMgr.h>, pulled by
-// GruntzMgr.h): its slot-1 MapCommand is the 4-arg command dispatch BroadcastCmd drives, and
-// its ~CGruntzMapMgr @0x85d10 is the teardown Close() calls (retail thunk 0x35b7). The former
-// invented `CmdSinkV` class that stood here is GONE - see the note in <Gruntz/GruntzMgr.h>.
-
-// The world's layer/plane object is the canonical CPlaneRender (<Wwd/WwdFile.h>): an
-// element of the active view's +0x38 layer array AND the object its +0x5c distinguished-
-// layer slot points at (same memory, so one type). Its visibility flag word (+0x08),
-// height grid (value grid +0x20, per-column base table +0x24), playable field limits
-// (+0x30/+0x34) and edge origins (+0x40..+0x4c) all live in the folded CPlaneRender - each
-// caller reads only the facet it needs.
-
-// The active world view held at m_world->m_level. One object; each manager method reads a
-// different facet: the tile rect (+0x10..+0x1c) + the three scaled-extent output pairs
-// (+0xc8..+0xdc) RecomputeViewScale fills, the layer array (+0x38 base / +0x3c count),
-// the distinguished layer/plane (+0x5c), and the mode-reload extent pair (+0x64/+0x68
-// LoadWorldMode stamps to 0xe). The rescale notify is a reloc-masked thiscall.
-
-// (the cell-height SetCellHeight() is a method of the real CGruntzMapMgr.)
-
-// The engine's __cdecl CString-formatting helper (sprintf-style into a CString
-// destination; reloc-masked - only the call shape is load-bearing).
 extern "C" void Format(CString* dst, const char* fmt, ...);
 
-// The engine's __cdecl struct-returning world-file-name builder (FUN_0003ad90):
-// resolves the current world file from the game window handle into a CString
-// (returned by value -> hidden return-slot arg). The real callee at 0x3ad90 is
-// ?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z (customworlddialog); the (hwnd, 0)
-// push shape matches its (int, CString*) params byte-for-byte. Reloc-masked.
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
-// The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
-// g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
-// stored into the game-side mirror g_lastNow/g_frameDelta); g_killCueClock/g_engineFrameDelta are the
-// draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
     // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
@@ -443,28 +163,9 @@ extern "C" {
     DATA(0x00245600)
     u32 g_resolutionChanged; // DAT_00245600 (owner-TU definition, .bss)
 }
-// The "Traitor Mode" cheat gate (0x6455b0; DEFINED in src/Gruntz/Grunt.cpp, C++
-// ?g_traitorMode@@3HA - GruntCombat/TriggerMgrGrid/GruntzMgrCmd read the same symbol).
-// The debug-overlay display-flags word (0x6455f4). PROVEN i32, not u8: the cheat
-// switch (0x862f0) xors/ands it with 0x100/0x400 masks through full DWORD loads and
-// stores. The old `u8 g_debugFlags` model (with a documented `*(u32*)&` over-wide
-// zero) is gone; ResetClockGlobals' dword store is just `= 0` now. Owner-TU
-// definition (this TU's .bss band holds the 0x2455a4..0x2455f8 run + writes it first).
 DATA(0x002455f4)
 i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
-                         // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
 
-// The two engine input/state singletons TickStateMgrs drives once per call
-// (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_inputMgr is the REAL
-// DirectInputMgr2 (<DinMgr2/DirectInputMgr2.h>): PollAll == 0x133080 (100% EXACT in
-// the directinputmgr2 unit), ReadAll == 0x133110, and its "Teardown" is the real
-// ~DirectInputMgr2 (Close's ILT thunk 0x2969 -> 0x85fc0), so the teardown leg is a
-// plain `delete`. g_spawnConfig is a second mgr (Flush @0x4385e0).
-// The +0x578 state manager (g_spawnConfig). One object: TickStateMgrs drives its Flush;
-// Close zeroes its field block (+0x00..+0x14) before delete.
-// DEFINED here (this TU already held the canonical binding). Both were extern-only
-// everywhere - here, Play.h, and RezSync (which spelled them with C++ linkage, a second
-// symbol for the same memory) - so neither name had storage. .bss, zero-init.
 extern "C" {
     DATA(0x00245570)
     DirectInputMgr2* g_inputMgr = 0; // DAT_00245570
@@ -484,36 +185,12 @@ extern "C" {
 // (The base CGameMgr vtable 0x1e9b8c binding lives on the class itself now -
 // VTBL(CGameMgr) in <Wap32/Wap32.h>; the class is global-namespace per RTTI.)
 
-// -------------------------------------------------------------------------
-// The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
-// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CPlaneRender)
-// carries a flag word at +0x8 whose bit 1 (0x2) is a visibility toggle the level-cycle
-// / debug methods flip.
-
-// The live state's +0x1c "current level index" the next/prev cycle reads is now the
-// real CState::m_levelIndex (<Gruntz/State.h>); the TU-local CLevelState view is gone.
-
-// The +0x5c chat/message-log object: AppendChatMessage routes one message line
-// (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
-
-// The shared scratch buffer the toggle-message formatter renders "<item> is
-// ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
-// the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
-
-// Owner-TU .data definitions, RVA-ascending. The deferred per-frame pump flag
-// (0x60fac8, init 1); the two warp-target ints (0x612610/0x612614, init -1; canonical
-// externs in <Globals.h>).
 DATA(0x0020fac8)
 i32 g_pendingFrame = 1;
 DATA(0x00212610)
 i32 g_warpX = -1;
 DATA(0x00212614)
 i32 g_warpY = -1;
-
-// The game-manager singleton (*0x64556c). Declared at its REAL type here - this is
-// CGruntzMgr's OWN TU. Declaring it as a CGameRegistry view would emit the phantom
-// ?ReportError@CGameRegistry@@QAEXHH@Z (an unlinkable name) and force `(CGruntzMgr*)g_gameReg`
-// casts back to its own class.
 
 // -------------------------------------------------------------------------
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
@@ -557,26 +234,6 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// The CPlay/CDemo /GX destructors (the FLAGS
-// table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj,
-// GruntzMgr.cpp, __FILE__-anchored). Uses the ONE canonical CPlay
-// (<Gruntz/Play.h>): its five destructible MFC members are typed there (CString
-// m_1b4, CPtrArray m_startMarkers, CPtrArray m_3a4[4], CString m_cueText,
-// CPtrArray m_488), so the dtor's /GX member-teardown machinery + the
-// most-derived vptr stamp fall out from cl. The members fold in reverse decl
-// (= reverse offset) order under descending /GX trylevels:
-//   +0x488  CByteArray   state 4
-//   +0x410  CString      state 3
-//   +0x3a4  CByteArray[4] (__ehvec_dtor over CByteArray::~CByteArray)  state 2
-//   +0x370  CByteArray   state 1
-//   +0x1b4  CString      state 0
-// The dtor body first runs the explicit slot-2 teardown CPlay::ReleaseResources (0xc8700, ex "CPlayDtorBody") at the
-// top trylevel (state 5), then the members fold, then the CState base subobject
-// restamps its dtor vtable (0x5ea21c, reloc-masked) and runs the CState dtor
-// body (0xfa150). cl auto-emits ??_7CPlay@@6B@ (masks retail 0x5ea0bc, paired
-// via vtable_names.csv) + ??_7CDemo@@6B@ (masks 0x5e9f0c).
-
 // 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run the slot-2 ReleaseResources
 // at the top trylevel, fold the five members (reverse decl order, descending /GX
 // states), then fold the CState base subobject (restamp 0x5ea21c, call CState body).
@@ -603,38 +260,7 @@ void ForceEmitCStateDtor() {
     g_forceEmitCState->CState::~CState();
 }
 #pragma inline_depth()
-// ===========================================================================
-// CGruntzMgr::TransitionState (0x08b960). The /GX game-state factory; CPlay is the
-// canonical Play.h class, g_inputMgr reuses this TU's local DirectInputMgr2 (ReadAll
-// added). The state object the factory drives IS the canonical CState (<Gruntz/State.h>,
-// already included).
-// OPEN DEFECT (handed off, not fixed here): the CState slot-1 loader's FIRST parameter is typed
-// i32 but is really a CGruntzMgr* - proven twice, (a) retail's TransitionState passes
-// `this` into it, and (b) CPlay::LoadGameAssetNamespaces (ModeObjInit.cpp) casts that arg to a view whose
-// +0x164 / +0x170 fields ARE m_options[0].m_014 / m_020 of the game manager. Retyping it
-// touches CState/CPlay/CDemo/CBootyState + ~40 OVERRIDE decls, so it is left for the
-// owner of State.h; until then this one site converts the pointer at the call.
 
-// The minimal destructible MFC members that force the per-object EH-state ladder;
-// their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
-// The two out-of-line base ctors (0x8c750 = CState base; 0x8c9d0 = CPlay base for
-// the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
-// are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
-// stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
-
-// ---- the CState-derived game states this factory builds ------------------------
-// ALL SIX are the CANONICAL classes now (<Gruntz/GameMode.h> CMenuState / CCreditsState /
-// CBootyState / CMultiBootyState, <Gruntz/SplashState.h> CSplashState, <Gruntz/Multi.h>
-// CMulti - alongside CAttract / CDemo / CHelpState / CPlay / CState). Each leaf's ctor is
-// inline in its canonical header (cl folds it into the factory's new-expression); the
-// `CTsSub45 m_1e8` (ctor 0x8c3b0) is the canonical's REAL MFC CRgn (RTTI .?AVCRgn@@).
-// The dtors stay declared-only in the canonicals, so each `delete state` binds to the
-// one real /GX body in the leaf's own TU.
-
-// Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
-// into the factory's new-expressions). The manual vptr stamp leads each body (the
-// ctor body runs after the base + member sub-object ctors, matching the retail
-// position of the `mov [this],offset ??_7<Class>` store).
 CPlay::CPlay() {
     // cl runs the CState base ctor + the five member ctors, then auto-stamps
     // ??_7CPlay, then this field-init body (matching the retail inlined construction).
@@ -682,9 +308,6 @@ CPlay::CPlay() {
     m_dragInProgress = 0;   // +0x2ec
     m_dragEndNotify = 0;    // +0x504
 }
-// CMulti (state id 17, 0x660) - the canonical <Gruntz/Multi.h> class. cl runs the CPlay
-// base ctor (which runs CState's + the five MFC members'), auto-stamps ??_7CMulti, then
-// this field seed - exactly the retail inlined construction at the new-site.
 CMulti::CMulti() {
     m_session = 0;
     m_netGate = 0;
@@ -818,9 +441,6 @@ SIZE_UNKNOWN(CPlay);
 
 VTBL(CPlay, 0x001ea0bc);
 
-// 0x8d0d0 - CDemo::~CDemo (/GX): stamp the derived vtable (0x5e9f0c), run the derived
-// cleanup (0x3c010) at trylevel 0, then INLINE-fold CPlay's teardown (restamp 0x5ea0bc,
-// CPlay::ReleaseResources, the five members, the CState base).
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
     // The retail +0x2b call targets the ILT thunk 0x3c010, itself a 5-byte jmp to
@@ -832,14 +452,6 @@ CDemo::~CDemo() {
     CPlay::ReleaseResources();
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::GoToNextLevel (0x08d850; ret). Only when the live state is PLAY
-// (id 3): clears the world-file name, computes the next level index
-// (m_curState->m_levelIndex + 1, wrapping past 0x28 back to 1), and - unless that
-// index lands in the reserved band 0x21..0x24 - notifies the state (FrameSlot28
-// with the live id) and routes the level switch through LoadByMode(next, 1). On a
-// successful switch it re-notifies via Vslot09(live id) and returns 1; any
-// reserved-index / failed-switch surfaces a (0x8007, 0x436) error and returns 0.
 RVA(0x0008d850, 0x83)
 i32 CGruntzMgr::GoToNextLevel() {
     if (m_curState->Update() != 3) {
@@ -862,10 +474,6 @@ i32 CGruntzMgr::GoToNextLevel() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::GoToPrevLevel (0x08d910; ret). The descending twin of GoToNextLevel:
-// the index is m_curState->m_levelIndex - 1, wrapping at/below 0 back to 0x28, and
-// the failure error code is (0x8007, 0x437).
 RVA(0x0008d910, 0x82)
 i32 CGruntzMgr::GoToPrevLevel() {
     if (m_curState->Update() != 3) {
@@ -888,11 +496,6 @@ i32 CGruntzMgr::GoToPrevLevel() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ReportError  (__thiscall; `ret 8`)
-// Forwards the (id, detail) error to the owning CGameApp held in the base
-// CGameMgr::m_8 pointer, via its vtable slot +0x1c (CGameApp::ReportError).
-// No-op when there is no app bound yet.
 RVA(0x0008dc60, 0x19)
 void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameApp* pApp = m_owner;
@@ -901,14 +504,6 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::XorLiveObjectFlags  (@0x08dc20, ret 4)
-// Toggle the given flag bits (m_stateFlags @+0x40) on every live object in the
-// world object manager's created-object list. Retail computes `m_8+0x10` (the
-// embedded CObList m_list) then reads its head `[+4]` behind a dead null-guard
-// (`add eax,0x10; je`) - exactly the `&m_list` + GetHeadPosition() spelling now
-// that the list is the real member (the old flat `m_liveObjects@+0x14` field
-// could not produce the +0x10 intermediate; that 87.6% wall dissolves with it).
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     CObList* list = &m_world->m_childGroup->m_list;
@@ -926,14 +521,6 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     }
 }
 
-// The "GAME" asset-namespace root key (0x60ba44; DEFINED in
-// src/Gruntz/BootyStateActivate.cpp, whose .data run holds it).
-
-// -------------------------------------------------------------------------
-// CGruntzMgr::RegisterLevelAssetKeys  (@0x08dc90, ret 0)
-// (Re)register the level asset-namespace keys into the world's lookup holder
-// (m_10, with a flag) and its sound host (m_28), resetting the world coord
-// dispatch (m_1c) twice in between. No-op with no world loaded.
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
     CDDrawSurfaceMgr* w = m_world;
@@ -990,9 +577,6 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::IsStandardMode (0x08f980; ret 0). True when the live video mode is
-// 640x480 (m_modeW == 0x280 && m_modeH == 0x1e0).
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
     if (m_modeW == 0x280 && m_modeH == 0x1e0) {
@@ -1001,10 +585,6 @@ i32 CGruntzMgr::IsStandardMode() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::AppendChatMessage (0x08f9c0; ret 4). Routes one message line into
-// the +0x5c chat/message-log object (insert with type 0 / channel 0x11),
-// returning its result; 0 when no log is bound.
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
     CFontConfig* log = m_chatLog;
@@ -1014,13 +594,6 @@ i32 CGruntzMgr::AppendChatMessage(char* msg) {
     return log->AddItem(msg, 0, 0x11);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ShowToggleMessage (0x08f9f0; ret 8). Formats "<item> is ON/OFF"
-// (selected by `on`) into the shared scratch buffer and appends it to the chat
-// log, returning AppendChatMessage's result.
-// Per-branch sprintf (NOT a ternary on the fmt arg) so each branch pushes
-// itemName + its format literal and the optimizer cross-jumps only the shared
-// `push g_msgScratch; call sprintf` tail - retail's exact block layout.
 RVA(0x0008f9f0, 0x3e)
 i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     if (on) {
@@ -1031,9 +604,6 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     return AppendChatMessage(g_msgScratch);
 }
 
-// IsInPlayState (0x08fa40): live-state playability probe - 0 when no current
-// state, else CheckPlayState() as a bool. Out-of-line (retail emits it standalone;
-// the inline member folded into its callers and never emitted).
 RVA(0x0008fa40, 0x16)
 i32 CGruntzMgr::IsInPlayState() {
     if (m_curState == 0) {
@@ -1042,13 +612,6 @@ i32 CGruntzMgr::IsInPlayState() {
     return CheckPlayState() != 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
-// Returns the CD-ROM drive letter holding the Gruntz disc, memoised in the
-// pair (m_driveLetter = letter, m_driveLetterProbed = probed-flag): once probed, return the cached
-// letter; otherwise call the free ::GetGruntzDriveLetter() (WinAPICdRom.cpp), cache + set the
-// flag. (The result is discarded by the engine on the first/uncached path - the
-// store IS the return, the cached path returns the byte.)
 RVA(0x0008fa70, 0x2c)
 char CGruntzMgr::GetGruntzDriveLetter() {
     if (m_driveLetterProbed) {
@@ -1059,13 +622,6 @@ char CGruntzMgr::GetGruntzDriveLetter() {
     return m_driveLetter;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CheckPlayState  (__thiscall; retail FUN_0048ec50)
-// A small game-state predicate over the active state's Update() id: 0 if there
-// is no state, 1 when it reports PLAY (3), else (id == 0x11 ? 1 : 0) - i.e. true
-// for the in-game PLAY state or the paused/hold state. AdvanceFrame uses it to
-// decide whether the sound bank should keep running. (Update() is re-evaluated
-// on the second compare, matching the retail two-call codegen.)
 RVA(0x0008ec50, 0x33)
 i32 CGruntzMgr::CheckPlayState() {
     if (m_curState == 0) {
@@ -1077,15 +633,6 @@ i32 CGruntzMgr::CheckPlayState() {
     return m_curState->Update() == 0x11;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::InitializeLobbyConnectionSettings  (__thiscall)
-// One-shot (guarded by m_lobbyProbed) acquisition of the DirectPlay lobby connection
-// settings the game was launched with: create an IDirectPlayLobby (m_lobby), then
-// pull the launch-time connection-settings blob into a freshly allocated buffer
-// (m_connSettings) using the classic size-probe / fill-buffer two-call idiom. Every COM /
-// DPLAYX failure routes a CNetMgr::ReportError diagnostic (with this TU's file +
-// the call-site line) through the game window. m_lobbyResult records success (1) / failure
-// (0); the result also lands in eax for the call site.
 RVA(0x0008eca0, 0x164)
 i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (m_lobbyProbed) {
@@ -1227,10 +774,6 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ToggleHeightLayer (0x08f060; ret). Visibility toggle for the world
-// view's distinguished sub-layer (m_world->m_level->m_mainPlane) - flipped unconditionally
-// (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
@@ -1246,10 +789,6 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ToggleBaseLayer (0x08f0b0; ret). Visibility toggle for the world
-// view's first layer (m_world->m_level->m_38[0], present only when the count is
-// positive); unlocked-checked (bit 0) then m_8 ^= 2. Active-gated + guarded.
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
@@ -1266,19 +805,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// LaunchWebBrowser (0x08f120; free __stdcall(url)) - read the HKCR http\shell\open
-// \command browser command line, strip any leading flags / IEXPLORE.EXE prefix and
-// trailing -/ switches, then CreateProcess it with the supplied URL appended. A free
-// helper CGruntzMgr::HandleCommand (0x862f0) calls; RVA-contiguous with the manager
-// methods (in the gruntzmgr .obj). Re-homed from src/Stub/ApiWrappers.cpp.
-// The real callee at 0x118ce0 (reloc-masked): ?FindProcessByName@@YAHPBDHPAPAX@Z.
 i32 FindProcessByName(const char* name, i32 flag, void** out);
-// Size was 0x264 - OVER-DECLARED by 0xf4, reaching past this function's end (0x8f290,
-// where its int3 padding starts) and swallowing both that padding and the whole of
-// ?PollUnlessIdle@CGruntzMgr@@QAEHXZ @0x8f2f0, which is a real function (64 bytes of
-// int3 before it; a self-contained __thiscall). Found by the new overlapping-range
-// census in verify_unique_names - name-injectivity never looked at extents.
 RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
@@ -1325,10 +852,6 @@ i32 __stdcall LaunchWebBrowser(char* url) {
     return CreateProcessA(0, cmdline, 0, 0, FALSE, 0, 0, 0, &si, &pi);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PollUnlessIdle (0x08f2f0; ret). Unless the live state is the idle
-// state (id 5), runs the play-state poll (CheckPlayState, result discarded);
-// always returns 0.
 RVA(0x0008f2f0, 0x1b)
 i32 CGruntzMgr::PollUnlessIdle() {
     if (m_curState->Update() != 5) {
@@ -1337,11 +860,6 @@ i32 CGruntzMgr::PollUnlessIdle() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CaptureWorldFile (0x08f340; /GX EH). Engine helper FUN_0003ad90
-// (__cdecl, struct-return) builds the current world-file CString from the game
-// window handle; modeled as a value-returning free function so the hidden
-// return-slot + (hwnd, 0) args fall out (the call rel32 reloc-masks).
 RVA(0x0008f340, 0xf6)
 i32 CGruntzMgr::CaptureWorldFile() {
     i32 st = m_curState->Update();
@@ -1359,17 +877,6 @@ i32 CGruntzMgr::CaptureWorldFile() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::RefreshGameClock  (__thiscall; `ret`; ex "PerFrameTick" - it was
-// NEVER vtable slot 4: retail ??_7CGruntzMgr slot 4 = thunk 0x1c7b -> 0x8b740,
-// the real PerFrameTick override in RezMgr.cpp; every retail caller of THIS body
-// is a direct `call 0x3d23`, byte-verified.)
-// The per-frame draw-clock refresh. If the active state's Update() reports the
-// "paused/hold" id (0x11) the refresh is skipped; otherwise it refreshes the engine
-// clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
-// draw clock (g_killCueClock = timeGetTime(), g_engineFrameDelta = 0) when the draw gate m_world is
-// set, and finally mirrors the freshly-refreshed engine clock into the game-side
-// pair (g_lastNow/g_frameDelta).
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::RefreshGameClock() {
     if (m_curState && m_curState->Update() == 0x11) {
@@ -1387,20 +894,6 @@ void CGruntzMgr::RefreshGameClock() {
     g_frameDelta = g_wap32FrameDelta;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::AdvanceFrame  (__thiscall; `ret 8`)
-// Retail Ghidra labels this ?VirtualMethod06@CGruntzMgr@@QAEXXZ (a
-// void(void) mistype), but the body reads its first arg ([esp+8]) and `ret 8`s
-// two args, so the true shape is void(int,int). The natural MS mangle of that
-// signature (?AdvanceFrame@CGruntzMgr@@QAEXHH@Z) is what the base obj emits and
-// the delinker names the target through (labels.py authority check), so no
-// SYMBOL() override is needed - the match is by SHAPE.
-// The per-frame advance gate. Bails when the owning window's "active" virtual
-// (slot 3) reports 0. On the draw path (doDraw != 0) it runs the draw tick, then
-// - unless mid-transition (m_c set) and only while a level is loaded (m_14) -
-// either keeps the sound bank running (CheckPlayState() => PLAY/paused) or stops
-// it; on the non-draw path it stops the sound bank once its inner object reports
-// idle.
 RVA(0x0008f6a0, 0x7d)
 void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     if (IsActive() == 0) {
@@ -1431,13 +924,6 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     m_sound->StopAll();
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::BuildMoviePath  (__thiscall; returns CString by value; /GX EH)
-// Resolves the on-disk path of a numbered intro/cutscene .vob: maps the movie
-// id to its file name, then probes first the working directory ("<cwd>\<name>")
-// and, failing that, the Movies\ folder on the Gruntz CD ("<letter>:\Movies\
-// <name>"), returning the first that exists (empty CString if neither, or for an
-// unresolved id). The two CString temps + the szPath buffer give the /GX frame.
 RVA(0x0008ff30, 0x1ca)
 CString CGruntzMgr::BuildMoviePath(i32 movie) {
     CString name;
@@ -1505,11 +991,6 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
     return path;
 }
 
-// -------------------------------------------------------------------------
-// Per-state notification forwarders (0x08d9d0..0x08dbe0). Each dispatches its
-// (a,b[,c]) args into the live state's vtable slot 11..20 (+0x2c..+0x50),
-// returning the slot's result or 0 when there is no live state. The args are
-// re-loaded fresh from the moving stack per push (the natural forwarder codegen).
 RVA(0x0008d9d0, 0x1e)
 i32 CGruntzMgr::NotifyState0b(i32 a, i32 b) {
     if (m_curState) {
@@ -1581,11 +1062,6 @@ i32 CGruntzMgr::NotifyState14(i32 a, i32 b, i32 c) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CheckSavedMode (0x08de70; ret). If the live mode (m_modeW x m_modeH)
-// already equals the saved/last-good mode (m_savedModeW x m_savedModeH) it succeeds; otherwise
-// it drives SetVideoMode(saved-w, saved-h, save=1), falling back to
-// RestoreVideoMode(1), and on total failure surfaces a (0x8008, 0x45e) error.
 RVA(0x0008de70, 0x61)
 i32 CGruntzMgr::CheckSavedMode() {
     // All success paths short-circuit to one trailing `return 1` (retail tail-
@@ -1598,19 +1074,6 @@ i32 CGruntzMgr::CheckSavedMode() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ClearWorldFile (0x08f480). The counterpart of CaptureWorldFile
-// (0x08f340): when the live state is playable (Update() in {5,2,3}) drop the
-// cached world-file name and post WM_COMMAND 0x8005; ret 1 (else 0).
-//
-// The four local views here (ModeHost/ModeObj/WndChain/Sub_08f480) were all
-// canonical - `this` is CGruntzMgr, proven by the identical `mov ecx,[esi+0x2c];
-// mov eax,[ecx]; call [eax+0x10]` state-id idiom the matched sibling
-// CheckPlayState (0x08ec50) emits:
-//   +0x2c -> m_curState, slot 4 (+0x10) == CState::Update()  (the "mode" is the state id)
-//   +0x04 -> CGameMgr::m_gameWnd (CGameWnd::m_hwnd @+0x04)
-//   +0xc8 -> m_strWorldFile, and the "Reset" @0x1b9c69 is MFC's CString::Empty
-//            (NAFXCW, FID HIGH) - not an engine sub-object at all.
 RVA(0x0008f480, 0x49)
 i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
@@ -1622,9 +1085,6 @@ i32 CGruntzMgr::ClearWorldFile() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ResetClockGlobals (0x08f4f0). Zeroes the seven game-clock / scroll
-// state globals (reloc-masked DATA refs).
 RVA(0x0008f4f0, 0x26)
 void CGruntzMgr::ResetClockGlobals() {
     g_resolutionChanged = 0;
@@ -1636,9 +1096,6 @@ void CGruntzMgr::ResetClockGlobals() {
     g_debugDisplayFlags = 0; // clear the debug-overlay flags word
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SetGameClock (0x08f7b0; ret 0xc). Mirrors the three clock args into
-// the game-side now/delta/abs globals plus the draw-clock pair (reloc-masked).
 RVA(0x0008f7b0, 0x2b)
 void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_lastNow = now;
@@ -1648,16 +1105,11 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_engineFrameDelta = delta;
 }
 
-// RunFromState (0x090200): forward to ChangeState_8fab0(1). Out-of-line (retail
-// emits it standalone; the inline member folded away and never emitted).
 RVA(0x00090200, 0x8)
 i32 CGruntzMgr::RunFromState() {
     return ChangeState_8fab0(1);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::TopState (0x090980). Returns the last pushed state (or 0 when the
-// stack is empty).
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
     CPtrArray* st = &m_stateStack;
@@ -1667,9 +1119,6 @@ CState* CGruntzMgr::TopState() {
     return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PushState (0x0909b0; ret 4). Appends s to the state stack via
-// SetAtGrow(GetSize(), s); ignores a null push.
 RVA(0x000909b0, 0x1b)
 void CGruntzMgr::PushState(CState* s) {
     if (!s) {
@@ -1679,10 +1128,6 @@ void CGruntzMgr::PushState(CState* s) {
     st->SetAtGrow(st->GetSize(), static_cast<void*>(s));
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PopTopIfMatches (0x0909e0; ret 4). Saves the last stack slot,
-// RemoveAt()s it, and reports whether the removed top was s. The count/data are
-// read fresh off `this` (+0xe0/+0xdc); only the helper call forms &m_stateStack.
 RVA(0x000909e0, 0x46)
 i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
@@ -1697,10 +1142,6 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     return top == s;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ClearStateStack (0x090a50; ret). Deletes every pushed state then
-// clears the array via SetSize(0, -1). The loop reads count/data off `this`
-// (+0xe0/+0xdc) so the array base is not hoisted into a register.
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
     for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
@@ -1712,29 +1153,16 @@ void CGruntzMgr::ClearStateStack() {
     m_stateStack.SetSize(0, -1);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CheckMovieFileExists (0x090aa0; cdecl ret). Probes whether the
-// resolved movie path (m_strMoviePath) exists on disk.
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
     return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)));
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::IsMoviePathValid (0x0901d0; cdecl ret). The bool-normalized twin of
-// CheckMovieFileExists: FileExists(m_strMoviePath) run through the neg/sbb/neg
-// 0/1 canonicalizer (the result is consumed as a boolean here).
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
     return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath))) != 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::Post (0x090220; thiscall(code), ret 4). Clamp `code` into (0,0x29]
-// and PostMessageA WM_COMMAND 0x807f to the game window (wParam = code, or 1 when
-// code == 0x29). The receiver is the CGruntzMgr singleton, reached by CPlay::Dispatch
-// (0xcfbd0) as
-// m_4->Post via the CState owner back-ptr.
 RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= 0x29) {
@@ -1813,21 +1241,6 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::LoadMonologoSprite (0x090d10). PLAY-state only (m_curState->Update()
-// == 3): look "GAME_MONOLITH" up in the world config map (m_world->m_imageRegistry), then
-// find-or-create the "MONOLITH" logo sprite in the world view (m_world->m_level). An
-// existing sprite TOGGLES its visible bit (m_flags & 2) + the g_monologoShown shown-flag; a
-// fresh sprite gets its cell grid checkerboard-seeded with the config index / -1 and
-// the flag set to 1. No destructible local -> no /GX frame (the sprite-grid loop).
-//
-// All seven CMono* views that stood here were canonical classes: CMonoConfigRec ==
-// CImageSet (m_frames/+0x14, m_minIndex/+0x64), CMonoEntry == CImage (m_width/+0x10,
-// m_height/+0x14 - the ReadObjectPlane geometry), CMonoConfigMap/CMonoConfigHolder ==
-// the world's registry + its embedded CMapStringToPtr, CMonoWorld == CWorldZ,
-// CMonoView == CGameLevel (already cast to it), and CMonoSprite == CPlaneRender
-// (m_flags/+0x08, m_tileGrid/+0x20, m_colOffsets/+0x24, m_gridW/H, m_80, and the
-// +0x9c CObArray that WwdFile.h now types as CPlaneRender::m_frameSets).
 RVA(0x00090d10, 0x18e)
 i32 CGruntzMgr::LoadMonologoSprite() {
     if (m_curState == 0) {
@@ -1885,17 +1298,6 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SetGruntColor (0x0910d0; ret 0xc). Blits one frame of a source image
-// set (`sink`) over the corresponding frame of the set named `key`: resolve `key`
-// in the world's image registry, gate on THAT set's lowest-index frame being
-// populated, then - when `idx` is inside the sink's own [minIndex, maxIndex] range
-// (== CImageSet::GetAt) - copy the sink's frame into it. Returns 1 on a hit.
-//
-// The two 0x14/0x64/0x68 "color row" views are CImageSet, and the "RecolorCell(cell)"
-// call is CImage::CopyFrom (0x1532b0, __thiscall): retail
-// keeps the resolved row frame LIVE in ecx across the range test and calls with it as
-// `this` (`mov ecx,[edx+ecx*4]; test ecx,ecx; je; ... push eax; call 0x1532b0`).
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
@@ -1916,15 +1318,6 @@ i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::WarpCheat (0x08eaf0; __thiscall; ret). Reads the per-level warp
-// target (registry keys "Level %i Warp X"/"Level %i Warp Y" for the current level)
-// through m_settings. If either is unset (-1) it bails. When the live state is PLAY
-// (id 3) it just records the current level as "Last Warp Level" (arming the return
-// warp) and returns 1. Otherwise it reads back "Last Warp Level" and warps there via
-// PassClickToPlayState, posting WM_COMMAND 0x80ca to the game window on success; a
-// failed warp surfaces (0x8005, 0x43b) and returns 0. The two format sprintf reads
-// use the g_gameReg singleton view (ds:g_gameReg) exactly as retail does.
 RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
@@ -1951,12 +1344,6 @@ i32 CGruntzMgr::WarpCheat() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CheatRevealTreasures (0x090f10; __thiscall; ret). PLAY-state only
-// (m_curState->Update() == 3, world loaded): looks the "GAME_DEVHEADS" row up in the
-// world's +0x10 color-lookup table and, when found, recolors every treasure/
-// collectible sink through SetGruntColor - the geckos/scepters group 0, crosses
-// group 1, chalices group 2. Returns 1 on a hit, 0 on any missing precondition.
 RVA(0x00090f10, 0x151)
 i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_curState == 0) {
@@ -2114,15 +1501,6 @@ void CGruntzMgr::CheatEclipseToggle() {
     // `pop; ret` here; the clang label step's -Wreturn-type is a warning, not an error.
 }
 
-// The live game objects are dispatched to a __cdecl callback (obj, user).
-
-// -------------------------------------------------------------------------
-// CGruntzMgr::ScanObjectsInRadius (0x092180; __thiscall; ret 0x18). Walks the live
-// game-object list (m_world->m_childGroup->m_list) and, for each object whose
-// collision-category bits (m_collCategory) intersect `mask`, tests a game-space reach
-// metric (|dx|^2 + 2*|dy|) against radius^2. Every in-range object is counted and
-// passed to cb(obj, user); the walk stops early if cb returns 0. Returns the hit
-// count. A null cb returns 0.
 RVA(0x00092180, 0x98)
 i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user) {
     if (cb == 0) {
@@ -2426,9 +1804,6 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::StopBankIfActive (0x092000; ret). When a sound object is bound and a
-// level is loaded, tail-calls m_sound->StopAll().
 RVA(0x00092000, 0x16)
 void CGruntzMgr::StopBankIfActive() {
     if (m_sound && m_musicEnabled) {
@@ -2436,18 +1811,12 @@ void CGruntzMgr::StopBankIfActive() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::StopBank0IfActive (0x092030; ret). When a sound object is bound and
-// a level is loaded, stops the bank with flag 0.
 RVA(0x00092030, 0x18)
 void CGruntzMgr::StopBank0IfActive() {
     if (m_sound && m_musicEnabled) {
         m_sound->StopBank(0);
     }
 }
-
-// The global asset-root path CString (0x64e25c) SetAssetRoot assigns is declared in
-// <Gruntz/AssetRoot.h> (included at the top); DATA home NetMgrMisc.cpp.
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::SetAssetRoot (0x092060; ret 4). Copy `path` into the global asset-root
@@ -2466,10 +1835,6 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PostSlotCommandB1 (0x0920e0; ret 4). For an in-range slot (0..3),
-// post WM_COMMAND 0x80b1 to the game window with the slot index as lParam. Returns
-// 1 (0 when the slot is out of range).
 RVA(0x000920e0, 0x32)
 i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
@@ -2479,9 +1844,6 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PostSlotCommandB6 (0x092130; ret 4). Twin of PostSlotCommandB1 with
-// command code 0x80b6.
 RVA(0x00092130, 0x32)
 i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
@@ -2491,10 +1853,6 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// winapi_092a30_EndDialog (0x092a30): a bare OK/Cancel modal DialogProc (address-
-// taken via the 0x2649 thunk). WM_INITDIALOG returns TRUE; on WM_COMMAND IDOK (1)
-// / IDCANCEL (2) it ends the dialog with the command id / 0 respectively.
 RVA(0x00092a30, 0x52)
 INT_PTR CALLBACK winapi_092a30_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -2514,10 +1872,6 @@ INT_PTR CALLBACK winapi_092a30_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPA
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::IsLobbyHostReady (0x091500). Null-chain predicate: returns
-// m_curState->ReleaseResources-slot result (slot 7, +0x1c) only when m_curState, the
-// CGameApp (m_8), its m_appActive flag (+0x240) and !m_modalBusy all hold; else 0.
 RVA(0x00091500, 0x42)
 i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_curState == 0) {
@@ -2550,7 +1904,6 @@ i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     return 0;
 }
 
-// 0x0915d0 - fade the current music track to silence over `ms` when it is playing.
 RVA(0x000915d0, 0x3f)
 void CGruntzMgr::MuteMusicIfActive(i32 ms) {
     if (m_sound == 0) {
@@ -2574,7 +1927,6 @@ void CGruntzMgr::MuteMusicIfActive(i32 ms) {
     m_sound->m_pCurrent->SetVolume(0, ms);
 }
 
-// 0x091620 - restore the current music track to full volume over `ms`.
 RVA(0x00091620, 0x3f)
 void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
     if (m_sound == 0) {
@@ -2598,9 +1950,6 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
     m_sound->m_pCurrent->SetVolume(kSoundVolumeMax, ms);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SetVoiceVolume (0x091a10; ret 4). Stores v at +0x120, and when the
-// +0x60 sub-object is present mirrors it into that object's +0x2c.
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
@@ -2611,9 +1960,6 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     return v;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::TickStateMgrs (0x0920b0). Drives the two engine state singletons
-// (g_inputMgr/g_spawnConfig) once and reports success.
 RVA(0x000920b0, 0x1c)
 i32 CGruntzMgr::TickStateMgrs() {
     g_inputMgr->PollAll();
@@ -2656,10 +2002,6 @@ void CGruntzMgr::SetRunState(i32 v) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::FindStateById (0x092900; ret 4). Returns the live state when its
-// Update() id matches `id`; otherwise the first stack entry whose Update() id
-// matches (or 0).
 RVA(0x00092900, 0x6e)
 CState* CGruntzMgr::FindStateById(i32 id) {
     if (m_curState && m_curState->Update() == id) {
@@ -2675,16 +2017,11 @@ CState* CGruntzMgr::FindStateById(i32 id) {
     return 0;
 }
 
-// PickPlayOrPausedState (0x092990): the concrete PLAY state, FindStateById(3).
-// Out-of-line (retail emits it standalone; the inline member folded away).
 RVA(0x00092990, 0x8)
 CPlay* CGruntzMgr::PickPlayOrPausedState() {
     return static_cast<CPlay*>(FindStateById(3));
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PickPausedThenPlayState (0x0929b0; ret). Prefers the paused/hold
-// state (id 0x11), falling back to PLAY (id 3).
 RVA(0x000929b0, 0x19)
 CState* CGruntzMgr::PickPausedThenPlayState() {
     CState* s = FindStateById(0x11);
@@ -2732,9 +2069,6 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
     snd->StopAll();
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::RunLoadGameDialog (0x092500; ret). Shows the "GAME_LOAD" modal
-// dialog (through the engine's DialogBoxParamA wrapper) and returns 1.
 RVA(0x00092500, 0x17)
 i32 CGruntzMgr::RunLoadGameDialog() {
     RunModalDialog("GAME_LOAD", static_cast<void*>(GruntzLoadGameDlgProc), 0);
@@ -2788,12 +2122,6 @@ i32 CGruntzMgr::Quicksave() {
     return 1;
 }
 
-// CGruntzMgr::Quickload (0x092710) - the quickload counterpart of Quicksave (above).
-// Bails (0) with no save sink; otherwise flushes the timer, and on a valid quicksave
-// record (m_saveInfoRec bit 0) loads it via the sink (SaveSink58::Check @0xe52c0),
-// notifies the window (WM_COMMAND 0x807e via ::PostMessageA) and logs "Game
-// Quickloaded successfully." into the chat log; if no valid record, falls back to
-// RunLoadGameDialog (0x092500). Re-homed from the ApiCaller stubs at 100%.
 RVA(0x00092710, 0x77)
 i32 CGruntzMgr::Quickload() {
     if (m_saveSink == 0) {
@@ -2816,10 +2144,6 @@ i32 CGruntzMgr::Quickload() {
     return RunLoadGameDialog();
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::RunDebugGruntTypeDialog (0x0929e0; ret). Only in the PLAY state (id
-// 3), shows the "DEBUG_GRUNTTYPE" modal dialog (flag 1); returns whether it ran
-// (bool-normalized via setne).
 RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
@@ -2829,10 +2153,6 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     return ran != 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::DebugJumpLevel (0x08e780; ret). Shows the "DEBUG_JUMPLEVEL" modal
-// dialog (flag 1); on a positive level number, jumps the play state to it via
-// PassClickToPlayState(level, 0, 1). Returns 0 when the dialog is cancelled.
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
     i32 level = RunModalDialog("DEBUG_JUMPLEVEL", static_cast<void*>(LevelNumberDialogProcThunk), 1);
@@ -2842,11 +2162,6 @@ i32 CGruntzMgr::DebugJumpLevel() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::LoadOptionsSlotName (0x092d50; ret 0x1c). When in a play-ish state
-// (CheckPlayState) and the indexed options slot has not yet been loaded
-// (slot->m_020 == 0), assign its per-slot name CString from `val`. Returns 0. Only
-// the slot index (arg0) + the value string (arg5) are used; the rest are ignored.
 RVA(0x00092d50, 0x3c)
 i32 CGruntzMgr::LoadOptionsSlotName(
     i32 slot,
@@ -2870,9 +2185,6 @@ i32 CGruntzMgr::LoadOptionsSlotName(
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ResetOptionsSlot (0x092da0; ret 4). Reset the indexed options slot
-// when it is in range and loaded (m_20 != 0); returns Reset()'s result, else 0.
 RVA(0x00092da0, 0x3a)
 i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     if (static_cast<u32>(idx) >= 4) {
@@ -2889,9 +2201,6 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     return s->Reset();
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ResetAllOptionsSlots (0x092df0). Reset all four options slots
-// unconditionally (each guarded by a non-null check).
 RVA(0x00092df0, 0x24)
 void CGruntzMgr::ResetAllOptionsSlots() {
     GruntzPlayer* s = &m_options[0];
@@ -2903,10 +2212,6 @@ void CGruntzMgr::ResetAllOptionsSlots() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CountReadyOptionsSlots (0x092e30; ret 4). Counts the four options
-// slots that are loaded (m_20 != 0) and either `anyState` is set or the slot is
-// armed (m_14 != 0). The running pointer walks at the slot's m_14 field.
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
@@ -2956,35 +2261,16 @@ i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
     return 0;
 }
 
-// CGruntzMgr::Close (@0x0855e0) is the large member-teardown method the
-// dtor calls; its body is still the stub (src/Stub/CGruntzMgr.cpp). It is only
-// DECLARED here (in the header) - the dtor's call to it is an external ref whose
-// reloc objdiff masks, so no definition is needed in this TU.
-
-// -------------------------------------------------------------------------
-// CGruntzMgr::~CGruntzMgr  (virtual; vtable slot 0; own vftable @0x5e9b64)
-// The own body just runs Close(); the compiler then destructs the five
-// destructible members (m_options, m_strMoviePath, m_strRezPath, m_stateStack, m_strWorldFile, in
-// reverse-construction order) and chains the base ~CGameMgr - all under the /GX
-// C++ EH frame (per-member unwind states 4..0).
 RVA(0x00083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
-// CGameMgr::IsActive (0x85560, base vtable 0x5e9b8c slot 3): the
-// "active?" gate - nonzero iff a game window is bound (m_gameWnd != 0).
 RVA(0x00085560, 0xb)
 i32 CGameMgr::IsActive() {
     return m_gameWnd != 0;
 }
 
-// CGruntzMgr::IsActive (0x83300, own vtable 0x5e9b64 slot 3 via thunk
-// 0x40d9 - byte-verified): the derived "active?" gate - nonzero iff a world is
-// loaded AND a state is live. (Was a declared-only phantom; the 0x17-byte body is
-// a Ghidra recovery gap - no functions.csv boundary - reconstructed from the raw
-// bytes: mov eax,[ecx+0x30]; test; je; mov eax,[ecx+0x2c]; test; je; mov eax,1;
-// ret; xor eax,eax; ret.)
 RVA(0x00083300, 0x17)
 i32 CGruntzMgr::IsActive() {
     if (m_world) {
@@ -2995,8 +2281,6 @@ i32 CGruntzMgr::IsActive() {
     return 0;
 }
 
-// CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
-// no-op command sink (CGruntzMgr overrides it at 0x862f0). Returns 0 (unhandled).
 RVA(0x00085580, 0x5)
 i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
@@ -3167,13 +2451,6 @@ void CGruntzMgr::UpdateScoreHud() {
     m_scoreHud->m_08 = 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SaveState (0x093620; ret 4; returns 1/0). Streams the whole
-// game-clock / scroll / warp snapshot through the supplied archive. Bails (0)
-// when no archive or no loaded world. Bumps the global save serial, writes the
-// world file name (m_strWorldFile, copied into a fresh 0x80 buffer), then the per-frame
-// state block (m_114..m_13c) and the clock/scroll/warp globals - each via the
-// archive's Serialize(&field, size) slot. Returns 1.
 RVA(0x00093620, 0x254)
 i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     if (ar == 0) {
@@ -3222,14 +2499,6 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::LoadState (0x093920; ret 4). The deserialize counterpart of
-// SaveState: streams the SAME clock/scroll/warp run back IN through the
-// serializer's read slot (+0x2c, vs SaveState's write slot +0x30). Bails unless a
-// reader is supplied and the GLOBAL manager's world is loaded (`g_pMgr->m_world`,
-// the singleton at 0x64556c - not `this`), bumps the save serial, reads the world
-// file name into a scratch buffer and assigns it to m_strWorldFile, then transfers
-// each scalar field/global in the identical order as SaveState.
 RVA(0x00093920, 0x22f)
 i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     if (ar == 0) {
@@ -3390,12 +2659,6 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// The game-manager singleton (*0x64556c) - the CGruntzMgr view of the 0x24556c datum
-// used by the modal reporters below. (SerializeSyncMarker, the free 0x13610 serialize
-// validator that also used this, is split out to SerializeSyncMarker.cpp.)
-// GruntzMgr.cpp is the OWNER TU: this DATA() binds the g_gameReg symbol to RVA 0x24556c;
-// consumers get the decl from <Gruntz/GameRegMfcPtr.h> / <Gruntz/GameRegPtr.h> instead.
 DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
@@ -3441,17 +2704,6 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ExitModalUI (0x0903f0; ret 8; returns the modal result). Runs a
-// modal dialog/screen (dlg->vtbl[+0xc0]) over the suspended game: stops the
-// +0x60 timer, flushes the +0x68 controller (when m_10 is set), and - if the
-// world is loaded and `notify` is set and the live state isn't already idle (id
-// 5) - notifies the live state it is exiting (NotifyExit(0x32)) and ticks the
-// world dispatch object; otherwise clears `notify`. It then forces the cursor
-// visible, runs the dialog with the busy gate raised, clears the gate, optionally
-// polls the live state (Vslot06) when notify held, restores the cursor, runs the
-// post-switch hook, and finalizes the freshly-activated object (+0x2dc sub +
-// self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     if (m_cueSink) {
@@ -3499,14 +2751,6 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     return result;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SwitchToNextState (0x08d6a0; ret). If the manager is ready
-// (vtbl slot 3) and a next state can be built (MakeNextState), and it differs
-// from the live state, it tears the live state down (notify slot 10 with the new
-// state's id, then delete it), installs the new state (m_curState = next; Activate),
-// then notifies slot 9 (Vslot09) with the old state's id and polls slot 6
-// (Vslot06); on either success it arms the app's resume flag (m_8->+0x244) and
-// runs the post-switch hook, returning 1. Otherwise returns 0.
 RVA(0x0008d6a0, 0xaf)
 i32 CGruntzMgr::SwitchToNextState() {
     if (IsActive() == 0) {
@@ -3571,10 +2815,6 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     return ChangeToPlayState(3, a0, 0, 0);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::UnloadSoundChain (0x08f740; ret). Tears down the loaded world's
-// inner controller object (m_world->m_soundRegistry->m_2c->Teardown(), each guarded) then, if
-// the sound object's inner busy-poll reports busy, stops the bank via StopBank2.
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::UnloadSoundChain() {
     if (m_world) {
@@ -3592,10 +2832,6 @@ void CGruntzMgr::UnloadSoundChain() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SetSoundVolume (0x0919d0; ret 4). Records the input flag at +0x11c;
-// when the loaded world's +0x28 sub-object is present it also mirrors the flag
-// into the g_sndCueTag global; finally forwards the flag to the +0x54 input object.
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::SetSoundVolume(i32 v) {
     m_soundVolume = v;
@@ -3608,10 +2844,6 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ClearOptionsSlots (0x092ec0; ret). Walks the 4-element options
-// array at +0x150 and zeroes each element's +0x20/+0x24 pair (the array base +
-// the `if (&elem)` guard fall out of the manual per-element loop).
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
     char* p = reinterpret_cast<char*>(&m_options[0]) + 0x24; // &m_options[0].m_clearedRound
@@ -3625,14 +2857,6 @@ void CGruntzMgr::ClearOptionsSlots() {
     }
 }
 
-// CGruntzMgr::GetWorldFileName (0x000928c0) is now an inline member in the header.
-
-// -------------------------------------------------------------------------
-// CGruntzMgr::AdvanceOptionsCycle (0x0933e0; ret). Bumps the global round-robin
-// cursor g_optionsCursor (mod 4); for the options slot whose index matches the cursor,
-// if it is armed (m_164 == 0) and loaded (m_170 != 0) it ticks the slot's +0x38
-// sub-object. The loop runs i in [0, m_optionsCount]; both the count and the cursor are
-// re-read each iteration (the cursor after the reloc-masked tick).
 RVA(0x000933e0, 0x5e)
 i32 CGruntzMgr::AdvanceOptionsCycle() {
     i32 cursor = (g_optionsCursor + 1) & 3;
@@ -3723,10 +2947,6 @@ i32 CGruntzMgr::SyncOptionsState() {
     }
     return 1;
 }
-
-// -------------------------------------------------------------------------
-// CGruntzMgr::SetCellHeight (0x111ec0) lives in GruntzMgr2.cpp (a separate retail
-// object far out at 0x111ec0 among the tile-trigger-switch-logic .text block).
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::Close (0x0855e0; vtbl slot 2). The full manager teardown the
@@ -3915,14 +3135,6 @@ void CGruntzMgr::Close() {
     g_gameReg = 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::AccrueScoreTime (0x0861e0; the timeGetTime-wrapping per-state HUD
-// time/score accrual). When the level state (m_134) is "active" (1) it refreshes the
-// HUD only if the grid's scored flag is set, then pushes state 0xa. Otherwise it
-// refreshes the registry HUD with the live tally id and, for the "won" state (3),
-// folds the clamped 64-bit level-clock delta (g_frameTime - clock->m_38) into the HUD
-// total; for any other state it folds the live timeGetTime() delta. Each finishes by
-// pushing state 0x12.
 RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
@@ -3949,11 +3161,6 @@ void CGruntzMgr::AccrueScoreTime() {
     TransitionState(0x12, 1, 0, 0);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::OnCheckpointReached (0x08e6c0; /GX EH; the SendMessageA-wrapping
-// checkpoint prompt). When checkpoint prompts are enabled (m_isCheckpointPrompts), pops a modal
-// dialog and - if it returns 1 ("yes") - SendMessageA WM_COMMAND 0x80cf to the game
-// window. The destructible dialog local gives the /GX frame.
 RVA(0x0008e6c0, 0x85)
 void CGruntzMgr::OnCheckpointReached() {
     if (m_isCheckpointPrompts == 0) {
@@ -4005,8 +3212,6 @@ void CGruntzMgr::DelayedQuit() {
     }
 }
 
-// The Portal companion path resolver + process spawner (PortalPath.cpp, both
-// __stdcall free functions; reloc-masked here).
 i32 __stdcall LaunchPortalExe(char* outPath);
 i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
 
@@ -4109,11 +3314,6 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     return result;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::LoadSaveMessageSprite (0x092420; /GX EH; ret 1). The save-feedback
-// path Quicksave falls into: when the first-frame guard (m_cheatMgr->m_124) is set it pops a
-// localized message (resource 0x81aa) through a modal; otherwise it runs the GAME_SAVE
-// dialog and, on success, the GAME_SAVEMSG dialog. Returns 1.
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
     if (m_cheatMgr->m_124 != 0) {
@@ -4126,13 +3326,6 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::SaveGameAs (0x092f00; /GX EH; ret 1/0). The save-as name dialog: when
-// the live state is playable (Update() in {5,2,3,7}), reset the sound channels, pop the
-// name dialog, and - if accepted - capture the entered name into m_strWorldFile (prefixed
-// "custom\" and flag m_128=0 when the dialog's custom flag is set, else the raw name with
-// m_128=1). If the resulting name is non-empty, PostMessageA WM_COMMAND 0x80e3. The dialog
-// (with its CString member) is the compound /GX frame's two destructibles.
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
     CBattlezDlg dlg(this, 0); // ctor 0x14b30 (a0 = this, pParent = null)
@@ -4158,14 +3351,6 @@ i32 CGruntzMgr::SaveGameAs() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::CGruntzMgr (0x083030; /GX EH; returns this). Constructs the base
-// CGameMgr, then the four destructible members in declaration order (m_strWorldFile
-// CString state 0, m_stateStack CByteArray state 1, m_strRezPath CString state 2,
-// m_strMoviePath CString state 3, the 4-slot m_options array via __ehvec_ctor state
-// 4), stamps the derived vftable, and seeds the flat scalar field block. The field
-// stores are written in retail's exact (non-offset-sorted) source order so the
-// compiler's edi(=0)/ebx(=1) constant reuse and store schedule fall out byte-exact.
 RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
     m_curState = 0;
@@ -4225,9 +3410,6 @@ CGruntzMgr::CGruntzMgr() {
     m_optionsCount = 3;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::ScalarDeletingDtor (0x083330; ??_G; ret 4). Run the dtor body, then
-// (when the hidden low flag bit is set) operator delete this; return this.
 RVA(0x00083330, 0x1e)
 void* CGruntzMgr::ScalarDeletingDtor(u32 flags) {
     this->CGruntzMgr::~CGruntzMgr(); // qualified -> direct (non-virtual) dtor call
@@ -4236,22 +3418,6 @@ void* CGruntzMgr::ScalarDeletingDtor(u32 flags) {
     }
     return this;
 }
-
-// ---------------------------------------------------------------------------
-// CheckDisplayBoundsA/B (0x08e1d0 / 0x08e2b0). When the game is in PLAY/PAUSED
-// (m_curState->Update() == 3 || 0x11), resolve a screen point through the world
-// coord-resolver (m_world->m_1c); if it falls off the expected field, force the
-// display back to 640x480 and pop the matching ReportError. The two variants
-// differ only in the resolver entry + the in/out-of-bounds test + the error id.
-//
-// The resolver result is filled into a caller `pt` and returned (the function
-// returns the same out-pointer in eax). m_world->m_1c is reached as a distinct
-// coord-resolver view of the world's +0x1c sub-object (a reinterpret of the
-// shared CWorldDispatch** member). 0x143510/0x143590 + SetVideoMode are out-of-
-// line / reloc-masked; ReportError (0x08dc60) is the matched sibling.
-// The out-param IS the canonical CDdModePair (<DDrawMgr/DirectDrawMgr.h>), the
-// declared parameter type of FindFwd/FindBack - the local CPointXY twin (which was
-// cast to CDdModePair* at both call sites anyway) is gone.
 
 // @early-stop
 // reloc-masked plateau (~97%): code bytes exact; the only residual is the
@@ -4305,13 +3471,6 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x8e3a0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(out): default to the
-// full 0x280x0x1e0 screen rect, or the active viewport's rect (m_30->m_24 + 0x10) when
-// one is set; write it to *out.
-// OWNER RECOVERED: every caller runs it on the 0x64556c singleton (DrawDebugStats
-// loaded it from ds:0x64556c). The view's `m_30` IS CGruntzMgr::m_world
-// (+0x30) and its `m_24` is CWorldZ::m_24 (the active CGameLevel view, whose +0x10 is
 RVA(0x0008e3a0, 0x94)
 RECT* CGruntzMgr::GetRect(RECT* out) {
     RECT local;
@@ -4325,30 +3484,6 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
     return out;
 }
 
-// ---------------------------------------------------------------------------
-// The developer option-dialog Win32 DialogProc callbacks (the FLAGS table's
-// 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj, GruntzMgr.cpp).
-// Free __stdcall INT_PTR CALLBACK(HWND, UINT, WPARAM, LPARAM)
-// procs the engine hands to the USER32 dialog manager.
-//
-// WarpDialogProc backs the developer "warp" cheat dialog: on WM_INITDIALOG it
-// seeds two edit controls (0x40e / 0x40f) with the current warp X/Y from the
-// game registry; on WM_COMMAND it ends the dialog (IDCANCEL=2) or, on IDOK=1,
-// reads the two edit fields back, stores them, and - if checkbox 0x410 is set -
-// persists them to the registry as the warp target.
-//
-// The procs reach the registry slots through the canonical members:
-//   g_gameReg->m_curState->m_levelIndex - the CURRENT LEVEL NUMBER (the "Level %i
-//                        Warp X/Y" registry key + the go-to-level seed). RECONCILED:
-//                        UpdateScoreHud reads the SAME +0x1c slot, and this is what it
-//                        is - a level index (fed to FillRecord /
-//                        SetCurLevel / `% 0x28 + 1` MaxLevel).
-//   g_gameReg->m_settings->SetValueDword(...)
-//   g_gameReg->m_world->m_level->m_mainPlane->m_originX / ->m_originY  seed X/Y (the
-//     ex-CGameRegWarp view: CGameLevel::m_mainPlane is already a typed CLevelPlane*,
-//     and that class carries the +0x84/+0x88 pair under its real names).
-
-// WarpDialogProc - the warp-cheat dialog callback.
 RVA(0x0008e4e0, 0x172)
 INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
@@ -4393,12 +3528,6 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-// LevelNumberDialogProc (0x0008e7c0 / 0x0008e8c0) - two byte-identical developer
-// "go to level" dialog callbacks. On WM_INITDIALOG the current level number
-// (g_gameReg->m_curState->m_1c) seeds edit control 0x40c; on WM_COMMAND IDCANCEL
-// (2) ends the dialog with 0, IDOK (1) ends it with the entered level number
-// (GetDlgItemInt of 0x40c). The two procs back two separate dialog resources with
-// the same layout, so the compiler emits them identically.
 RVA(0x0008e7c0, 0x86)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -4543,18 +3672,6 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGruntzMgr::IsBattlezMapFile(CString path) @0x093be0 (/GX, ret 4)
-// Open the file at `path`; if it carries a full WWD header (>= 0x5f4 bytes), read
-// the header and report whether the literal "Battlez" appears past the 0x10-byte
-// magic. `this` is unused. The path CString is taken by value (callee destroys it),
-// so cl emits the /GX frame: the destructible stack file reader + the arg CString
-// each unwind at their own trylevel.
-// ---------------------------------------------------------------------------
-// The stack-local WWD file reader is the engine CFileIO (include/Io/FileStream.h);
-// its virtual dtor makes the local destructible -> /GX frame.
-
-// The strstr-class substring helper (0x120090); nonzero when `needle` occurs.
 extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
 // @early-stop
@@ -4583,13 +3700,6 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     return 0;
 }
 
-// size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
-
-// ---------------------------------------------------------------------------
-// The screen/video-region manager (Open @0x0fe460 / Reset @0x0fe600) lives in
-// ScreenRegionMgr.cpp - a separate retail object far from this block, interleaved
-// with the CSBI_RectOnly .text at 0x0fe4xx.
-
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
 SIZE_UNKNOWN(CMonoConfigHolder);
@@ -4609,5 +3719,4 @@ SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
 SIZE_UNKNOWN(CGameRegistry);
 
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CDemo, 0x001e9f0c); // vtable_names -> code (RTTI game class; dtor 0x8d0d0 lives here)

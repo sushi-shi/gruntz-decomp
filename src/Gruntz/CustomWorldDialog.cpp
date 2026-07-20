@@ -1,23 +1,3 @@
-// CustomWorldDialog.cpp - the custom-world picker feature file (C:\Proj\Gruntz):
-// ONE original obj `[0x3ac30 .. 0x3bc78]` (dossier #16). Holds the
-// CUSTOM_WORLD modal launcher + its DlgProc, the level-list filler, the level-info
-// pane filler, the CUSTOM_WORLDINFO popup + its loader, the custom-path builder,
-// and the two WwdFile static helpers (ValidateMainBlock / GetMapBaseName) whose
-// birth positions are woven into this block.
-//
-// Merge evidence (initialized-.data privates + text weave): private cell 0x20cfa4
-// is shared by FillLevelInfoDialog + CustomWorldInfoDlgProc; 0x20cfbc by
-// LoadCustomWorldSelection + LoadCustomWorldInfo + BuildCustomWwdPath; 0x20cfc4 by
-// LoadCustomWorldSelection + LoadCustomWorldInfo; the adjacent .bss static band
-// 0x22c25c-0x22c274 is read intermixed by the customworlddialog and
-// customworldinfodlg fns.
-// /GX per the EH prologues at 0x3b470 / 0x3b940 / 0x3bb50.
-//
-// The head statics: g_pathStr @0x62c25c (frag i513 + atexit-style reset 0x3ac30),
-// g_str62c264 @0x62c264 (frag i514 -> InitStr62c264 0x3acb0), g_levelStr @0x62c260
-// (frag i515 -> FreeLevelStr 0x3ad30). All three are MFC CStrings (Set=??4 0x1b9e74,
-// Append=?+= 0x1ba0c8, Reset=?Empty 0x1b9c69, Free1b9b93=??0 0x1b9b93 -
-// config/library_labels.csv, all anchored).
 #include <Mfc.h> // afx-first: CString + the dialog API
 #include <Gruntz/GameRegMfcPtr.h>
 
@@ -36,7 +16,6 @@
 #include <stdlib.h> // atoi
 #include <string.h> // strstr / inline strcpy-strlen
 
-// The picker's dialog procs (defined below in RVA order).
 extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
@@ -46,18 +25,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // @data-symbol: _CustomWorldInfoDlgProcThunk@16 0x0000305d
 extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
-// The active modeless dialog HWND, cached on entry (shared NetLobby global @0x64557c).
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-// This file's private .data/.bss globals, DEFINED here (the owning TU) in ascending
-// RVA order. The map-name scratch pair (used by GetMapBaseName below), g_dat62c268
-// (RunCustomWorldDialog's world-slot exchange) and the two launcher handles + the
-// level listbox are POD, so a plain zero-init definition is byte-neutral. The three
-// exchange CStrings stay `extern`: their storage is default-constructed in place by
-// this obj's .CRT$XC init statics (FreeGlobal62c25c/InitStr62c264/FreeLevelStr), so
-// a real `CString g_x;` definition here would emit a duplicate dynamic initializer.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
 extern char g_mapNamePre[]; // 0x62c00c  GetMapBaseName: NUL-at-len-4 via the preceding slot
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
@@ -76,7 +44,6 @@ HINSTANCE g_customWorldInst = 0; // 0x62c270  launcher instance exchange
 DATA(0x0022c274)
 HWND g_customLevelList = 0; // 0x62c274  the picker's level listbox (id 0x3fc)
 
-// The launcher's command dispatchers (defined below in RVA order).
 namespace m4 {
     i32 FillCustomLevelList(HWND hWnd); // 0x3af90
 }
@@ -84,39 +51,18 @@ i32 LoadCustomWorldInfo(HWND hDlg);      // 0x3b7c0
 i32 FillLevelInfoDialog(HWND hDlg);      // 0x3b1a0
 i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310
 
-// The game-manager singleton (*0x64556c). Only the seed members + the modal-dialog
-// runner are modeled; RunModalDialog (0x90260, __thiscall) is reloc-masked. The obj
-// names the pointer _g_mgrSettings (extern "C"), matching the codebase convention
-// for 0x64556c.
-// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
-// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
-// (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
-// extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-
-// The "game root dir" the loaders resolve is just the current working directory:
-// 0x11fc10 is the CRT _getcwd (LIBCMT __getcwd), the same routine BuildCustomWwdPath
-// (below) and FecCrypt call.
-// The OpenFile(OF_EXIST) existence probe (FUN_00004282) is reloc-masked.
 i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
-// FreeGlobal62c25c @0x03ac30 - reset the g_pathStr global in place (the
-// explicit-ctor-call tail-jmp to ??0CString@@QAE@XZ; the file's leading static,
-// frag i513). The unit split was an aggregation artifact (dossier #16).
 RVA(0x0003ac30, 0xa)
 void FreeGlobal62c25c() {
     g_pathStr.CString::CString();
 }
 
-// InitStr62c264 @0x03acb0 - the dynamic initializer that default-constructs the
-// global CString g_str62c264 in place (explicit-ctor-call tail-jmp; see
-// docs/patterns/explicit-ctor-call-inplace-tail-jmp.md).
 RVA(0x0003acb0, 0xa)
 void InitStr62c264() {
     g_str62c264.CString::CString();
 }
 
-// FreeLevelStr @0x03ad30 - reconstruct the global g_levelStr in place (same
-// ??0CString@@QAE@XZ tail-jmp as its two sibling statics).
 RVA(0x0003ad30, 0xa)
 void FreeLevelStr() {
     g_levelStr.CString::CString();
@@ -158,14 +104,6 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     return g_pathStr;
 }
 
-// ===========================================================================
-// CustomWorldDlgProc @0x03ae60 - the CUSTOM_WORLD level-picker dialog proc.
-// ===========================================================================
-// WM_INITDIALOG caches the level listbox (id 0x3fc) and fills it. WM_COMMAND: the
-// Cancel button (2) ends the dialog; button 0x42a pops the world-info popup; the OK
-// button (1) commits the selection and ends the dialog; a notification from the
-// listbox re-fills the info pane on select-change (LBN_SELCHANGE=1) or simulates OK
-// on double-click (LBN_DBLCLK=2 -> PostMessage WM_COMMAND/1).
 RVA(0x0003ae60, 0xec)
 extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
@@ -205,17 +143,6 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
     return 0;
 }
 
-// ===========================================================================
-// FillCustomLevelList @0x3af90 - fill the custom-level listbox.
-// ===========================================================================
-// clear listbox 0x3fc, bail if the "Custom" gate is set, then walk the
-// custom-level directory glob (_findfirst/_findnext under a shared singleton lock),
-// format each entry's display name, ask the settings manager whether to hide it,
-// and LB_ADDSTRING it with its 4-char extension stripped. __cdecl(HWND).
-
-// This TU's .data literal run (0x60cf90.. "..", "*.WWD", "Custom", "Bad Level
-// File"...): owner-TU definitions, lengths NULL-TERMINATOR-PROVEN from the retail
-// bytes. g_dotDot doubles as SymTab's directory-walk skip-name (it externs it).
 DATA(0x0020cf90)
 char g_dotDot[] = ".."; // 0x60cf90
 DATA(0x0020cf94)
@@ -290,10 +217,7 @@ namespace m4 {
 
 } // namespace m4
 
-// FillLevelInfoDialog reaches USER32 through the game's cached fn-pointers (bare
-// 0x6c45xx absolutes, no import symbols) - the same pattern as g_pPostMessageA.
 DATA(0x002c4554)
-// The listbox-selection precheck (0x2176, cdecl).
 extern "C" i32 func_2176(HWND hDlg);
 
 // ===========================================================================
@@ -339,11 +263,6 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     return 1;
 }
 
-// ===========================================================================
-// 0x3b310: build "<gameroot>\Custom\<selected>.WWD" for the custom-world list's
-// current selection into g_pathStr and stash the bare name in g_str62c264;
-// returns 1 iff a valid item is selected and its .WWD file exists.
-// ===========================================================================
 RVA(0x0003b310, 0x10d)
 i32 LoadCustomWorldSelection(HWND hWnd) {
     char itemText[256];
@@ -374,17 +293,6 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// WwdFile::ValidateMainBlock (static, __cdecl: ignores `this`, caller-cleaned
-// `ret`; Ghidra mis-derived the void/no-arg `QAEXXZ` prototype).
-// Takes a CString BY VALUE (the callee runs its dtor on every exit). Returns -1
-// for the three reject paths, else the integer parsed from the first digit run
-// of the validated header:
-//   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. ((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath must be non-null;
-//   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
-// Then skip leading non-digits and atoi() the first digit run. The CString is
-// unused beyond its non-empty check; `this` is never touched -> static.
 RVA(0x0003b470, 0x13a)
 i32 WwdFile::ValidateMainBlock(CString name) {
     char header[0x100];
@@ -412,15 +320,6 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     return atoi(p);
 }
 
-// ===========================================================================
-// CustomWorldInfoDlgProc @0x03b600 - the CUSTOM_WORLDINFO level-info popup proc.
-// ===========================================================================
-// WM_INITDIALOG validates the selected .WWD (the g_pathStr full path exists AND the
-// world's level-info source parses its header); on success it fills the four info
-// items - the level name (0x408 = g_levelStr), the header's author/paths sub-strings
-// (0x428/0x429 = the +0x50/+0x90 slices of the name block), and a numeric field
-// (0x40c) parsed out of the +0x10 version string; on any failure every item reads
-// "Bad Level File". WM_COMMAND ends the dialog on OK (1).
 RVA(0x0003b600, 0x15f)
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -460,11 +359,6 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
     return 0;
 }
 
-// ===========================================================================
-// LoadCustomWorldInfo (0x3b7c0) - reads the level name from the dialog's listbox
-// (id 0x3fc), builds "<gameDir>\Custom\<level>.WWD" through the exchange CStrings,
-// and if the file exists pops the CUSTOM_WORLDINFO dialog.
-// ===========================================================================
 RVA(0x0003b7c0, 0x12c)
 i32 LoadCustomWorldInfo(HWND hDlg) {
     char szLevel[0x100];
@@ -503,14 +397,6 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     return 1;
 }
 
-// ===========================================================================
-// BuildCustomWwdPath @0x03b940 - the custom-level path resolver (__cdecl, returns
-// a CString by value). Given a bare WWD name, rewrite it to an absolute custom
-// path "<cwd>\CUSTOM\<NAME>.WWD" (upper-cased, ".WWD" appended if absent). Names
-// that are empty, already contain a backslash (already a path), or hit a getcwd
-// failure are returned unchanged. /GX: the by-value CString param + the inner
-// `orig` copy are destructible.
-// ===========================================================================
 RVA(0x0003b940, 0x19d)
 CString BuildCustomWwdPath(CString name) {
     if (name.GetLength() == 0) {

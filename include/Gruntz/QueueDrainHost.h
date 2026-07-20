@@ -24,8 +24,6 @@
 
 struct CGameObject; // <Gruntz/UserLogic.h> - the collection's payload
 
-// One list cell (the MFC CObList node shape: next@+0x00, prev@+0x04 unused by these
-// walkers, data@+0x08).
 SIZE_UNKNOWN(CQueueProbeNode);
 struct CQueueProbeNode {
     CQueueProbeNode* m_next; // +0x00

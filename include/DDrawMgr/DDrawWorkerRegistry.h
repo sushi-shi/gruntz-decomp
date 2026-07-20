@@ -1,30 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 
-// DDrawWorkerRegistry.h - THE canonical shape of CDDrawWorkerRegistry, a tomalla-named
-// CDirectDrawMgr surface/page sub-manager (the "DDraw surface manager" family; see
-// docs/ddraw-family-names.md; sibling of CDDrawSubMgrLeaf / CDDrawSubMgrLeafScan). Owns
-// a CMapStringToOb at +0x10 (m_map) keyed by const char* worker keys; the map values
-// are the keyed CDDrawWorker objects (FindOrCreateWorker is the only insert path).
-//
-// REAL POLYMORPHIC (2026-07-14): the 23-slot vtable ??_7CDDrawWorkerRegistry @0x1efd28
-// is cl-emitted from this one class. The old three-way split - a non-polymorphic
-// method-holder + the CWorkerVtableView dispatch view + the DDrawSubMgr.cpp-local
-// CDDrawRegistryDtorHost dtor facet - is FOLDED: the dtor (??1 @0x156e10 in
-// DDrawSubMgr.cpp, the vtable-emitting ctor/dtor boundary; the retail body stamps this
-// very 0x5efd28) proves the identity, and the retail caller graph proves the all-virtual
-// shape: EVERY slot body's ONLY .text reference is its vtable slot (zero direct rel32
-// callers; the lone direct call to Unload @0x154ac0 is the dtor's own devirtualized
-// call). Base is the canonical CLoadable (slots 5-8 = IsLoaded/IsReady/Unload/GetClassId
-// scheme; CLoadable's inline dtor supplies the retail post-member-teardown
-// m_04/-1 m_08/0 m_0c/0 resets).
-//
-// Slot 8 note: the family's "GetStateId" and CLoadable's "GetClassId" are the SAME
-// slot-8 virtual over ONE tag space (STATE_* 0x10-0x14 and CLASSID_* are disjoint
-// ranges of the same id space); as a CLoadable override it must carry the base name.
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
-
 #include <Mfc.h>             // CObject / CMapStringToOb / POSITION / CString
 #include <Gruntz/StateId.h>  // StateId (the slot-8 tag value STATE_WORKERREGISTRY)
 #include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject (m_04/m_08/m_0c + reset dtor)
@@ -32,23 +8,11 @@
 #include <rva.h>
 
 class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
-                    // class-key MUST match the definition (mangling: PAV vs PAU)
-                    // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
-                    // RemoveWorker method manglings that take CDDrawWorker*.
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 class CImage; // the frame element (AnyValueMatches probes each set for it)
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerRegistry - the one polymorphic registry class. Retail vtable
-// ??_7CDDrawWorkerRegistry @0x1efd28 (23 slots): [0..4] CObject, [5..8] the
-// CLoadable-scheme overrides, [9..22] own virtuals in declaration order.
-// InstallTree/LoadNamespace take `void*` trees: the call sites hand them the
-// untyped handles of CSymTab::FindSub/ResolvePath (heterogeneous by API shape);
-// the walker bodies read them as CSymTab scopes.
-// ---------------------------------------------------------------------------
 class CDDrawWorkerRegistry : public CLoadable {
 public:
     // [1] ??1 @0x156e10 (DDrawSubMgr.cpp - the family dtor pocket; cl emits the

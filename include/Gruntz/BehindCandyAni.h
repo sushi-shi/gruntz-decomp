@@ -1,21 +1,3 @@
-// BehindCandyAni.h - a behind-candy eyecandy animation game-object
-// (C:\Proj\Gruntz).
-//
-// CBehindCandyAni : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CGruntPuddle (proven by its dtor @0x0100f0 stamping the
-// CUserLogic vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down
-// the +0x18 link via the embedded ~EngStr at 0x16d2a0 - byte-identical in shape
-// to ~CSimpleAnimation @0x00f9d0 / the established leaf-dtor archetype). The leaf
-// adds no destructible members beyond CUserLogic, so its dtor folds the bare
-// CUserLogic teardown (the /GX leaf-dtor archetype).
-//
-// AdvanceAnim (0x0adbb0) is the per-frame animation-advance: re-target the bound
-// object's animation sub-object (m_38 + 0x1a0) to the current draw-delta
-// (g_engineFrameDelta) and return 0 - byte-identical to CSimpleAnimation::AdvanceAnim
-// (0x0abf70) save the call displacement.
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CBEHINDCANDYANI_H
 #define GRUNTZ_CBEHINDCANDYANI_H
 
@@ -51,10 +33,6 @@ public:
 VTBL(CBehindCandyAni, 0x001e838c);
 SIZE(CBehindCandyAni, 0x54);
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class). FireActivation invokes it __thiscall on the trigger. Defined after the
-// complete class (the FortressFlag.h record pattern).
 typedef i32 (CUserLogic::*BehindCandyHandler)();
 struct CBehindCandyActEntry {
     BehindCandyHandler m_fn;

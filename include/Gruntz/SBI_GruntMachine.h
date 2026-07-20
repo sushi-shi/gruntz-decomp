@@ -1,19 +1,3 @@
-// SBI_GruntMachine.h - Gruntz CSBI_GruntMachine (C:\Proj\Gruntz).
-// RTTI .?AVCSBI_GruntMachine@@; a sibling leaf of the SBI family
-//   CSBI_GruntMachine : CStatusBarItem  (RTTI hierarchy: {CSBI_GruntMachine,
-//   CStatusBarItem}). Vtable @0x5eadbc (RTTI meta 0x5f4fa0). The /GX-framed scalar
-// destructor (0x104ce0) lives in SBI_GruntMachineEh.cpp.
-//
-// The "grunt machine" status item: a short two-frame anim driven by a countdown.
-// SetFrames primes the two frame indices and arms the countdown (m_28=2); each
-// Render tick decrements the countdown, resolves the two indexed frame records
-// through the config record's gated frame table, and blits up to three frames (the
-// standalone handle m_44, plus the two resolved records) at the base origin offset
-// by each record's own draw delta. Modeled with the SBI family's manual-vtable-stamp
-// device (no real `virtual`); sibling/engine callees are ILT/vtable-reloc-masked.
-//
-// Fields are placeholders; the offsets + code bytes are the load-bearing fact, the
-// mangled (?<method>@CSBI_GruntMachine@@...) name is layout-independent.
 #ifndef SBI_GRUNTMACHINE_H
 #define SBI_GRUNTMACHINE_H
 
@@ -22,35 +6,12 @@
 #include <Gruntz/StatusBarItem.h> // CStatusBarItem base
 #include <Gruntz/SbRect.h>        // BuildResourceTabStatusBar's by-value geometry rect
 
-// BuildResourceTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
-// `class` vs `struct` is load-bearing for the mangling; both match their real defs.
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
 #include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
 #include <Image/ImageSet.h> // the config record IS the canonical CImageSet (SbiConfig.h fold)
 
-// The frame record (an element of the config record's m_frames table, and the
-// type of the standalone m_44 handle) is the RTTI-confirmed CImage: a draw-offset
-// pair at m_18/m_1c, drawn by CImage::RenderFrame (0x153790, __thiscall).
-//
-// (The ex CGmConfig view of the resolved config record m_30 is DISSOLVED onto the
-// real CImageSet: frame table m_frames @+0x14, gates m_minIndex/m_maxIndex
-// @+0x64/+0x68, inline name m_name @+0x24 - the member the slot-1 serialize's
-// mode-4 leg strcpy's out. BuildResourceTabStatusBar already called
-// SetAllTypes/SetAllFormats through a (CImageSet*) cast of the same member.)
-
-// The active surface context Render passes into RenderFrame is reached through the
-// canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
-// m_drawTarget (CDDrawSubMgrPages, +0x04) -> m_drawContext (+0x14). Modeled by the shared
-// <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_GruntMachine.cpp); no
-// per-TU game-manager facet is kept.
-
-// ---------------------------------------------------------------------------
-// CSBI_GruntMachine - the grunt-machine status-bar item. Real RTTI base is
-// CStatusBarItem (vtable @0x5eadbc); kept FLAT (frameless method-view) because the
-// render methods read base-region storage (m_14/m_18/m_28) under machine-specific
-// names that CStatusBarItem models as the m_rect14 aggregate.
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
     // tag 9 (the Resource-tab MACHINE widget). Built through BuildResourceTabStatusBar.

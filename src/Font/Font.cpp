@@ -1,46 +1,9 @@
-// Font.cpp - the engine's bitmap Font class (the text/glyph subsystem). Each
-// Font owns a per-letter table of glyph metrics (m_glyphs[], {width,height})
-// and a parallel table of decoded pixel surfaces (m_surfaces[]), loaded from a
-// binary font file through the MFC CFile/CArchive I/O stack.
-//
-// Matched leaf methods (the font-resource lifecycle):
-//   Font::Font           - the empty ctor (all four members 0).
-//   Font::AllocateMemory - (re)allocate the two parallel tables
-//                          for `count` glyphs, zero them.
-//   Font::FreeMemory     - free every glyph surface + both
-//                          tables and reset to the empty state.
-//   Font::LoadFont       - open the font file, read the glyph
-//                          count + metric table via a CArchive,
-//                          decode each glyph's pixel surface,
-//                          and compute the line-height.
-//
-// Built /O2 /MT /GX: LoadFont holds stack CFile/CArchive/CString objects whose
-// destructors run under a C++ EH frame (the target opens an fs:0 SEH/EH frame:
-// `push -1; push &handler; mov fs:0`). The NAFXCW callees (operator new/delete,
-// CFile::*, CArchive::*, CString::~CString) are external/no-body so their
-// `call rel32` displacements reloc-mask in objdiff.
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Font/Font.h>
 #include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
 #include <rva.h>
 
-// The live screen RGB-format shift table at 0x683ea0..0x683eb4 (file RVA 0x283ea0..) -
-// already named by SpriteRef.cpp / FileImage.cpp / LightFxRender.cpp. DrawGlyphRun packs
-// m_color into the screen 16bpp format and (in the blend path) unpacks the dest pixel
-// through these. Reloc-masked DIR32 data refs.
-
-// The InterfaceObject::IsInterface1-5 GUID predicates (0x1794b0-0x179570), their
-// g_guid1-5 tables, and CWapNodeB::FreeStrings (0x179680) are re-homed to the
-// NetMgr.cpp tail (src/Net/NetMgr.cpp): they precede ??0Font (0x179700) in retail,
-// i.e. they are NetMgr.cpp-obj code, not Font.cpp's (docs/exe-map/
-// interval-dossiers.md calibration case; the netmgr+font seam).
-
-// ---------------------------------------------------------------------------
-// Font::Font
-// The empty constructor: zero both table pointers and the {ready,count} pair.
-// The store order (m_surfaces, m_glyphs, m_ready, m_count) reproduces MSVC's
-// schedule (it writes +0x8/+0xc before +0x0/+0x4).
 RVA(0x00179700, 0x10)
 Font::Font() {
     m_surfaces = 0;
@@ -49,12 +12,6 @@ Font::Font() {
     m_count = 0;
 }
 
-// ---------------------------------------------------------------------------
-// Font::AllocateMemory
-// Free any prior tables, then allocate the surface-pointer table (count*4) and
-// the glyph-metric table (count*8) and zero every entry. Returns 1 on success,
-// 0 when count < 1. (No allocation-failure path is taken - operator new throws
-// / returns the buffer; the null-test on the glyph table is the source's own.)
 RVA(0x00179720, 0x87)
 i32 Font::AllocateMemory(i32 count) {
     FreeMemory();
@@ -78,11 +35,6 @@ i32 Font::AllocateMemory(i32 count) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Font::FreeMemory
-// Release everything the tables hold: each glyph's pixel surface, then the
-// surface-pointer table, then the glyph-metric table, then reset to empty. A
-// no-op when m_ready is already 0.
 RVA(0x001797b0, 0x71)
 void Font::FreeMemory() {
     if (m_ready) {
@@ -103,13 +55,6 @@ void Font::FreeMemory() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Font::LoadFont
-// Open the named binary font file, read the glyph count + the metric table via
-// a CArchive, decode each glyph's pixel surface into m_surfaces[i] (width*height
-// bytes read straight from the archive), then compute m_maxHeight (the font
-// line-height = the tallest glyph). Returns 0 if the file fails to open, 1 once
-// the font is fully populated.
 RVA(0x00179830, 0x1b1)
 i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
@@ -144,13 +89,6 @@ i32 Font::LoadFont(CString szFileName) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Font::SaveFont
-// The write mirror of LoadFont: open the named file for create (flags 0x1001),
-// layer a store-mode CArchive over it, emit the glyph count, then for each glyph
-// write its 8-byte metric record + its width*height pixel surface. Same /GX
-// CFile/CArchive/CString stack frame as LoadFont. Returns 0 on open failure, 1
-// once the font is fully written.
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
@@ -174,28 +112,22 @@ i32 Font::SaveFont(CString szFileName) {
     return 1;
 }
 
-// Font::GetSurface (0x179b60) - &m_surfaces[c].
 RVA(0x00179b60, 0x12)
 void** Font::GetSurface(u8 c) {
     return &m_surfaces[c];
 }
 
-// Font::GetGlyph (0x179b80) - copy glyph metric c into out.
 RVA(0x00179b80, 0x22)
 Glyph& Font::GetGlyph(Glyph& out, u8 c) {
     out = m_glyphs[c];
     return out;
 }
 
-// Font::GetMaxHeight (0x179bd0) - the font line-height.
 RVA(0x00179bd0, 0x4)
 i32 Font::GetMaxHeight() {
     return m_maxHeight;
 }
 
-// =========================================================================
-// FontRenderer::FontRenderer
-//
 RVA(0x00179be0, 0x14)
 FontRenderer::FontRenderer() {
     m_font = 0;
@@ -204,27 +136,11 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
-// FontRenderer::SetFont (0x179c10, m_font = f) is declared in Font.h but left as an
-// external reloc-masked call here: RVA(0x00179c10) collides with a config/library_labels.csv
-// carve-out row (a FID false-positive labeling it CDataBoundProperty::SetClientSite), so
-// reconstructing it needs that CSV row pruned - deferred (out of this lane's config scope).
-
-// FontRenderer::SetColor (0x179c20) - set the packed colour.
 RVA(0x00179c20, 0xa)
 void FontRenderer::SetColor(i32 color) {
     m_color = color;
 }
 
-// CharCursor::GetChar (0x0017b4f0) is now an inline member in the header.
-
-// =========================================================================
-// FontRenderer::DrawLine
-// Public single-line entry: measure the run, reject it if it would overflow
-// the destination surface's height, otherwise hand off to DrawLineClipped with
-// the full-extent rect {0,0,ext.width,ext.height}. No-op when no font is
-// loaded. Real arg flow (0x179c30 disasm): arg2 is the CDDSurface* itself
-// (its +0x18 dwHeight is the vertical limit), forwarded as DrawLineClipped's
-// surface; z is forwarded unchanged (the blend flag).
 RVA(0x00179c30, 0xdb)
 void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     TextExtent ext = MeasureText(text);
@@ -238,13 +154,6 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
     DrawLineClipped(text, surf, CRect(0, 0, ext.width, ext.height), x, y, z);
 }
 
-// =========================================================================
-// FontRenderer::DrawLineClipped
-// Draw one text run with up to two shadow passes: a white pass offset by
-// (+1,+1) when m_clip is set, a black pass offset by (.,+2) when m_surface is
-// set, then the main pass in m_color. Each pass forwards the same rect+text to
-// the inner glyph-blit (DrawGlyphRun, external). The CString is taken by value
-// (destroyed by the EH frame).
 RVA(0x00179d10, 0x15c)
 void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
@@ -845,8 +754,6 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
     return ext;
 }
 
-// CRect::Width (0x17b500) - right - left. The engine rect's own accessor, placed in
-// this TU by retail (the DrawWrapped/DrawTextBox centering callers all live here).
 RVA(0x0017b500, 0x8)
 i32 CRect::Width() {
     return right - left;

@@ -1,8 +1,3 @@
-// SingleFrameMessage.cpp - a single-frame message eyecandy game-object
-// (C:\Proj\Gruntz). One trace-discovered method:
-//   RegisterActs @0x0ab710 - bind the per-frame handler to the "A" key.
-//
-// CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Mfc.h> // RECT / CopyRect (the ctor centers the object in a bounds rect)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -13,13 +8,6 @@
 #include <Gruntz/WwdGameReg.h>   // g_gameReg->GetMessageBounds (on-screen message bounds)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
-// The game registry singleton (canonical <Gruntz/WwdGameReg.h>); the ctor asks it
-// for the on-screen message-bounds RECT. Declared extern only (wwdfile owns 0x24556c).
-
-// CSingleFrameMessage::Serialize @0x00f5a0 - the vtable slot-1 override: chain the
-// shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
-// sub-object's chain, both over the same (ar, tag, c, d) tuple; normalize the second
-// chain's result to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f5a0, 0x47)
 i32 CSingleFrameMessage::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -36,9 +24,6 @@ i32 CSingleFrameMessage::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CSingleFrameMessage@@UAE@XZ 0x0000f640 0x44
 
-// --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c --- the ctor anchors the
-// ??_7CSingleFrameMessage vtable in this TU. Folds the inline CUserLogic(obj) base,
-// applies the message sprite, then centers the object in g_gameReg's message bounds.
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -51,31 +36,14 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
     m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-// (The handler-entry record CSingleFrameActEntry lives with the class in
-// <Gruntz/SingleFrameMessage.h>.)
-
-// The class's activation-coordinate registry singleton (@0x645ef0), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
-// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
-// derives from it, keeping its own placeholder name so the DATA-pinned global is
-// unchanged.
 DATA(0x00245ef0)
 extern CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 
-// CSingleFrameMessage::InitActReg @0x0ab530 - construct the class's activation-
-// coordinate registry singleton (g_singleFrameActReg @0x645ef0) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ab530, 0x15)
 void CSingleFrameMessage::InitActReg() {
     g_singleFrameActReg.Construct(2000, 2010);
 }
 
-// CSingleFrameMessage::RunAct @0x0ab5b0 - resolve the registry entry for id; if a
-// handler is bound, re-resolve and invoke it as a PMF on this, else return the
-// entry pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id));
@@ -116,8 +84,6 @@ void CSingleFrameMessage::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

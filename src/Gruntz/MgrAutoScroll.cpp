@@ -1,13 +1,3 @@
-// MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
-// __cdecl helper called from the render path (CPlay::Render etc., via the ILT
-// thunk at 0x2356) with arg0 = g_gameReg (the CGruntzMgr singleton). Walks the
-// active view (pm->m_world->m_level->m_view), runs a timeGetTime-driven random auto-pan
-// when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
-// bounds (centered on g_gameReg->m_modeW/m_modeH), publishes the scaled scroll to the
-// view (m_scrollX/m_scrollY) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
-// the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
-// writes the four scroll-bound fields (pm->m_viewOriginL..0x148). Field names are
-// placeholders; offsets + code bytes are the load-bearing fact.
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
@@ -20,16 +10,6 @@
 #include <Gruntz/StatusBarMgr.h> // the status-bar mgr (bar->m_position gates the h-center)
 #include <Globals.h>
 
-// The active scroll "view" (pm->m_world->m_level->m_mainPlane, and the back-plane g_64c27c)
-// IS the canonical CLevelPlane (CDDrawWorkerHost): the former MgrSub/MgrSub2/ScrollView
-// +0x24 CGameLevel, and every ScrollView field maps to an already-named plane member:
-//   m_flags@08, m_scrollX/Y@10/14 -> m_scaledX/Y, m_scaleX/Y@18/1c, m_clampX/Y@30/34 ->
-//   m_wrapW/H, m_boundL/T/R/B@40/44/48/4c -> m_originX/originY/extentX/extentY,
-//   m_curScrollX/Y@84/88 -> m_snappedX/Y. Reached cast-free through the typed m_mainPlane.
-
-// The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall)
-// is on the canonical CButeMgr (include/Bute/ButeMgr.h).
-
 extern "C" {
     // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
     // timeGetTime(). Reloc-masked E8 call.
@@ -37,27 +17,17 @@ extern "C" {
     void RecomputePlaneCoords(void); // 0x161c90
 }
 
-// Reloc-masked engine globals (DIR32 data operands).
-// g_buteMgr (VA 0x6453d8) comes from <Bute/ButeMgr.h>.
-// g_frameTime was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" u32 g_frameTime;
-// g_frameDelta was a SECOND NAME for g_frameDelta (0x245584 per-frame delta) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" u32 g_frameDelta;
 DATA(0x0024cfc0)
 u32 g_scrollClock;
 DATA(0x0024cfb0)
 i64 g_scrollAccum;
-// Last-frame scroll position (owner-TU defs; .bss, VA 0x64cfd0/0x64cfd4).
 DATA(0x0024cfd0)
 i32 g_lastScrollX; // 0x64cfd0
 DATA(0x0024cfd4)
 i32 g_lastScrollY; // 0x64cfd4
 
-// State singletons owned by the camera auto-scroll manager (.bss, zero-init),
-// RVA-ascending. Referenced by CGruntzMgr / CmdScrollApply too; the reference
-// externs stay in <Globals.h>. (REHOME DD-Drain-1)
 DATA(0x002452a4)
 i32 g_jitterX;
 DATA(0x002452cc)
@@ -73,7 +43,6 @@ i64 g_scrollLimit;
 DATA(0x0024cfc4)
 u32 g_scrollTimer;
 
-// timeGetTime-driven random value in [lo, hi]; inlined three times by retail.
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;
     if (range == 0) {
@@ -90,7 +59,6 @@ static i32 RandRange(i32 lo, i32 hi) {
 // keeps scrollY in its stack home while this cl pins `pm` in ebp / scrollY in ebx;
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
-// __cdecl 3-arg (retail callers push 3; the former 4th `unused` param was spurious).
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     CLevelPlane* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_snappedX;

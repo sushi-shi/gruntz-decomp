@@ -1,7 +1,3 @@
-// Random.cpp - the MS-CRT-style LCG random helpers, re-homed out of the
-// src/Stub/ApiCallers.cpp winapi grab-bag. Two 214013/2531011 LCG generators
-// reached through ILT jmp-thunks; the primary state lives in src/Globals.cpp
-// (g_randSeeded/g_randSeed), the second generator's state (g_rng2*) is here.
 #include <Gruntz/Random.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -10,29 +6,18 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
 
-// Owner-TU definitions of this TU's generator/coin state (.bss zero), RVA-ascending.
-// The srand/rand LCG helpers live here, so the primary generator's state is homed to
-// this owner TU; reference externs stay in <Globals.h> (referenced by
-// SpotLightCtor/BootyWalkAnim/...). (REHOME DD-Drain-1)
-// Per-frame cached coin bit used by the deterministic coin-flip helper:
 DATA(0x0024c22c)
 char g_coinRolled; // bit0 set once this frame's coin was rolled
 DATA(0x0024c26c)
 i32 g_coinValue; // the cached 0/1 result
-// The primary 214013/2531011 LCG generator's seed-init flag + 32-bit state:
 DATA(0x002c127d)
 u8 g_randSeeded; // 0x6c127d bit0 set once seeded
 DATA(0x002c1288)
 i32 g_randSeed; // 0x6c1288 32-bit LCG state
-// The second generator's state, seeded lazily from timeGetTime:
 DATA(0x002c278c)
 char g_rng2Seeded; // bit0 set once seeded
 DATA(0x002c2798)
 i32 g_rng2State; // 32-bit LCG state
-
-// The game-registry singleton (0x24556c); only its replay-mode flags (m_130/m_134)
-// are read here. The former CoinGameReg local view is dissolved onto the canonical
-// CGameRegistry (<Gruntz/GameRegistry.h>) - same object, same offsets.
 
 namespace Rng {
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.

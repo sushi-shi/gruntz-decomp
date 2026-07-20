@@ -5,24 +5,6 @@
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (this) + CSpawnResolver
 #include <Gruntz/SpawnList.h>        // canonical CSpawnList (the built voice list)
 #include <rva.h>
-// VoiceSoundList.cpp - CGruntSpawnConfig::BuildVoiceSoundList (0x11c210, 669 B):
-// build the CSpawnList of valid "VOICES_<dir>[_<sub>]" sound names for speech-group
-// `n`, reading the group's DIR / sub-keys from g_buteMgr ([SG<n>]) and keeping only
-// the names that resolve to a 'WAV' resource through m_00->m_34 (the owner's
-// CSpawnResolver). The four CString temps + the heap CSpawnList node give the
-// routine its /GX exception frame.
-//
-// (The old CVoiceBuilder / VoiceRoot / VoiceResolver / VoiceList views were folded
-// onto the canonicals: CVoiceBuilder was CGruntSpawnConfig (m_0 == m_00, the
-// CSpawnOwner), VoiceResolver the owner's +0x34 CSpawnResolver, and VoiceList the
-// canonical CSpawnList - its AddName was CSpawnList::AddVoiceSound(name, 0), per
-// the retail call site `push 0; push <name copy>; call 0x2446->0x11c560`.)
-//
-// Only offsets / code bytes are load-bearing; engine callees are reloc-masked.
-
-// CButeMgr getter (g_buteMgr @ 0x6453d8): GetStringDef(tag, key, def) returns the
-// stored CString (or `def`) - 0x173180 __thiscall. On the canonical CButeMgr.
-// g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
 // @early-stop
 // /GX EH-state + regalloc wall (~79%): complete body - the n bounds guards, the four

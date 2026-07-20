@@ -1,91 +1,19 @@
-// GameMode.h - the game-state ("mode") hierarchy that the per-frame tick drives.
-//
-// CGruntzMgr::PerFrameTick (0x8b740, matched in the `rezmgr` unit) holds
-// the active game-state object at CGruntzMgr+0x2c (m_curState) and each frame calls:
-//     int  m_curState->vtbl[+0x10]()   (slot 4) = Update()  -> a state-ID/status int
-//     int  m_curState->vtbl[+0x14]()   (slot 5) = Render()  -> the per-frame step+draw
-// (PerFrameTick gates timing on `Update() != 0x11` and gates Render on
-// m_renderGate.) This file reconstructs that state hierarchy.
-//
-// THE HIERARCHY (recovered from RTTI + the vtables, ImageBase 0x400000):
-//   CState           base game-state class.
-//                    (CState itself derives from a WAP32 base - the dtor
-//                     chains to it; modeled here as an external no-body fn.)
-//   CPlay            the in-game PLAY state.
-//   CMenuState       the front-end menu state.
-//   CCreditsState    the credits state.
-//   CBootyState      the bonus/"booty" state.
-//
-// THE KEY FINDING: each state's Update() (slot +0x10) is a 6-byte stub that just
-// returns the state's own ID tag - it is NOT the per-frame logic:
-//   CState::Update      ->  return 1;
-//   CPlay::Update       ->  return 3;
-//   CMenuState::Update  ->  return 5;
-//   CCreditsState::Update -> return 8;
-//   CBootyState::Update ->  return 0xa;
-// The REAL per-frame step+draw lives in Render() (slot +0x14): CState::Render is a
-// trivial `return 1;` default, but the concrete states override it with
-// the heavy per-frame work (input poll -> entity update loop -> network post ->
-// draw): CCreditsState::Render, CMenuState::Render,
-// CBootyState::Render, CPlay::Render (the in-game per-frame heart).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code bytes
-// are load-bearing (campaign doctrine). The CState layout below is confirmed from
-// the ctor and dtor.
 #ifndef SRC_GRUNTZ_GAMEMODE_H
 #define SRC_GRUNTZ_GAMEMODE_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-// The m_c holder's full shape (the leaf states' teardown/render paths walk its
-// sub-managers). (The ex-CGameModeBase this-view of CState that used to live
-// between State.h and this header is folded: its cleanup is
-// CState::ReleaseResources - see <Gruntz/State.h>.)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-// (The scalar-deleting dtor's `operator delete` is reached via MSVC's
-// auto-synthesized `??3@YAXPAX@Z` in the `??_G` thunk - no explicit decl needed.)
 
-// ---------------------------------------------------------------------------
-// Sub-object layouts the concrete Render overrides (CCreditsState::Render,
-// CMenuState::Render) walk - only the offsets they read are
-// modeled; field names are placeholders. Unmatched engine callees are external
-// no-body fns (reloc-masked); the global per-frame entity set + the cached
-// USER32/engine globals (the frame clock, the version-RECT) are file-scope.
-// ---------------------------------------------------------------------------
-// <Mfc.h> brings <windows.h> USER32: PostMessageA (the per-frame message scan posts
-// WM_COMMAND to the owner HWND; the owner's HWND member is typed HWND below).
 #include <Mfc.h>
-// CRgn (the CCreditsState +0x1e8 embed) - RTTI .?AVCRgn@@ @0x1ea2a4. Skip the
-// afxwin*.inl bodies for the CLANG LABEL STEP only (implicit-int CMenu::op==);
-// wine cl keeps the inlines. docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
 
-// A per-frame entity (the g_actorList element) and the list itself. These WERE defined
-// here as CGMEntity/CGMEntityList - a second, byte-identical model of the classes
-// <Gruntz/AttractActor.h> already carries as AttractActor/AttractActorList (same vtable
-// slots, same +0x2ac flag word, same {pad,count,ptr-array} list at the same global). One
-// class, two names, and the global they hang off had no definition under EITHER name.
-// The shape lives in <Gruntz/AttractActor.h>.
 #include <Gruntz/AttractActor.h> // AttractActor / AttractActorList / g_actorList
 typedef AttractActor CGMEntity;
 typedef AttractActorList CGMEntityList;
 
-// (The list's element array is m_data[] on AttractActorList; the Render loops load the
-// global first: `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`. The old spelling
-// `g_645574` is gone - the one symbol is g_actorList, declared in AttractActor.h.)
-
-// (The former CGMInputObj "input/anim sub-object" view - a 24-filler fake vtable
-// with a __stdcall "Poll" at slot 24 (+0x60) - is GONE. The object at
-// m_c->m_drawTarget->m_frontPair->m_2c->m_8 is the game's real IDirectDrawSurface and the
-// "poll" is IDirectDrawSurface::IsLost (COM slot 24, +0x60, __stdcall) - exactly how
-// CreditsState.cpp / SplashState.cpp already dispatch the same path via <ddraw.h>.
-// Nothing referenced the view anymore.)
-
-// The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
-// OS HWND (PostMessageA target); +0x8 a sub-object (m_244 cleared); +0x14 a view
-// gate; +0x48 the sound manager; the credits "post & bail" is m_4->Post(...).
 SIZE_UNKNOWN(CGMSound);
 struct CGMSound {
     void Play(const char* name, i32 z); // (thiscall, 2 args)
@@ -115,20 +43,10 @@ struct CGMOwner {
     CGMSound* m_48; // +0x48 sound manager
 };
 
-// The cursor/anim object reached via m_c->m_soundRegistry->m_2c (credits only). Callee-
-// cleaned (no `add esp,4` at the call site) -> __stdcall.
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
-// The view/draw holder (CState+0xc) render facet the credits poll walks is the same
-// shared CDDrawSurfaceMgr (<Gruntz/View.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
-// block m_c->m_4->{m_10->m_2c (Draw), m_14 (Blit), m_18 (blit arg)}, m_28->m_2c
-// (cursor gate). Reached through m_c directly (no cast).
-
-// CMenuState's m_1b4 menu-UI object IS a CChatBox (the entity-flag scans fire its
-// OnFlag*/Step/Pre/Post/HitTest* front-end drive; the delete path runs ~CChatBox).
 #include <Gruntz/ChatBox.h>
 
-// The version-string RECT source globals (4 ints copied to a stack RECT by value).
 SIZE_UNKNOWN(CGMVerRect);
 struct CGMVerRect {
     i32 a, b, c, d;
@@ -136,61 +54,24 @@ struct CGMVerRect {
 extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" i32 g_frameDelta;         // (last-frame delta, fed to Step)
 
-// A {y,x} onscreen-coordinate pair (the booty idle-sprite geometry table @0x5e8fe4;
-// DATA home BootyMessages.cpp). Homed here from that TU (per-TU view -> owner header).
 SIZE_UNKNOWN(BzGeomPair);
 struct BzGeomPair {
     i32 m_y; // +0x00  onscreen y
     i32 m_x; // +0x04  onscreen x
 };
 
-// The SecretColor -> handle color table (the CBootyState/wormhole-tint local table;
-// DATA home GameMode.cpp). Homed here from that TU.
-// (The former CGlitterColorTable view is DISSOLVED: its +0x14 handle table IS
-// CLightFxMgr::m_tables - the shade-table pointers read as int handles.)
-// The 8 booty-message layout RECTs (0x60b8f8; DATA home BootyMessages.cpp). Shared
-// by CBootyState/CMultiBootyState layout code here (declared, not per-TU extern).
 extern RECT g_levelMsgRectsB[8];
 
-// (g_60ce90 / g_60ce74 were NOT globals: they are the .rdata STRING LITERALS
-//  "CREDITZ" and "MONOLITH" - the credits cue/sound names - re-declared by a previous
-//  pass as extern char[] symbols that nothing defines. The literals are written at
-//  their use sites in CreditsState.cpp; cl emits the same reloc-masked $SG entries.)
-
-// ---------------------------------------------------------------------------
-// CState - the base game-state class. One canonical definition, shared via
-// <Gruntz/State.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
-// below derive from it; the gamemode TU casts the owner member (CGruntzMgr* m_4)
-// to its own CGMOwner reconstruction and reaches the +0x0c CDDrawSurfaceMgr resource facet
-// (m_c, the shared <Gruntz/View.h> class) directly.
 #include <Gruntz/State.h>
 #include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the CState::m_c holder itself)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CImageRegistry/CDDrawSubMgrLeafScan)
 
-// Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
-// declared so the leaf members below are typed to their real class (no per-site
-// cast). Each is a pointer slot, so the typing is codegen-neutral.
 struct LeafCue;     // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
 class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
-// (CBootyBonusState is GONE - there was never a "bonus state object": +0x2f8 holds the
-// BOOTY_PERFECT CGameObject sprite, and its "phase" is that sprite's own m_screenX.)
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
 class CWwdGameObjectA; // the created-sprite kind (sprite fields below hold it)
-                    // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
-                    //  draw walks the same objects as position/flag records)
 
-// ---------------------------------------------------------------------------
-// The concrete leaf states. Each overrides Update() to return its own state-ID
-// tag (the 6-byte stub) - the only override modeled here for the leaf match
-// (their own vtables carry the heavy Render overrides, matched/carcassed
-// separately). The in-game PLAY state CPlay lives in its own <Gruntz/Play.h>.
-// ---------------------------------------------------------------------------
-
-// CMenuState - the front-end menu state. Render
-// (464 B) drives the per-frame menu: a per-entity Update pass, then six
-// entity-flag scans each firing a distinct method on the menu UI object m_1b4,
-// then the UI step + the on-screen version-string RECT draw.
 SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
@@ -264,22 +145,7 @@ public:
 };
 VTBL(CMenuState, 0x1e9e84);
 
-// The +0x1e8 embed is a REAL MFC CRgn (afxwin.h) - RTTI-proven: the vtable its
-// out-of-line ctor COMDAT (??0CRgn @0x8c3b0, called by CGruntzMgr::TransitionState
-// when it builds the credits state) stamps is 0x1ea2a4, whose COL names .?AVCRgn@@.
-// ~CCreditsState's inlined member teardown is the inlined ~CRgn chain with the
-// CRgn own-stamp dead-store-elided: stamp ??_7CGdiObject (0x1e8cd4), call
-// CGdiObject::DeleteObject (0x1c6a5c; its Detach calls afxMapHGDIOBJ and the
-// indirect call goes through the
-// GDI32 DeleteObject IAT slot), restamp ??_7CObject (0x1e8cb4). The former fake
-
-// CCreditsState - the credits state. Render
-// is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
-// -> per-entity Update loop -> message scan -> two sub-steps -> draw -> two
-// latched one-shot FX.
 SIZE_UNKNOWN(CCreditsState);
-// The 4-arg `Set` the credits ctor calls on each of its two +0x1c8/+0x1d8 rect
-// sub-objects (0x08c380, __thiscall on the sub-object; reloc-masked, no body here).
 void CreditsRectSet(void* rect, i32 l, i32 t, i32 r, i32 b); // 0x08c380
 
 class CCreditsState : public CState {
@@ -585,13 +451,6 @@ public:
 };
 VTBL(CBootyState, 0x001e9cec);
 
-// CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
-// vtable @0x5e9bdc; a SIBLING of CBootyState (.?AVCBootyState@@, vtable @0x5e9cec),
-// NOT the same class - the trace conflated the two under "CBootyState"). Drives the
-// "multi"/"BOOTY_LOOP"/"BOOTY_PERFECT" cue set. Its slots line up with CState's
-// (ReleaseResources slot 2, the dtor slot 0); on top of the CState layout it owns a
-// glitter/spawn animation block at +0x1b4..+0x208 (a count, a phase, two scratch
-// coords, two ptr arrays @+0x1ec/+0x204, a target @+0x1fc) and a state object @+0x2f8.
 SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
@@ -694,11 +553,5 @@ public:
     char m_pad224[0x244 - 0x224];
 };
 VTBL(CMultiBootyState, 0x001e9bdc);
-
-// (g_versionMajor/g_versionMid/g_versionMinor moved to the narrow, owner-only header
-//  <Gruntz/MenuVersion.h> - keeping them out of this widely-shared header avoids a
-//  decl-count-butterfly regalloc ripple in unrelated GameMode.h includers.)
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

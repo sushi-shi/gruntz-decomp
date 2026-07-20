@@ -1,34 +1,3 @@
-// SymTab.h - CSymTab, the ButeMgr hierarchical symbol table.
-//
-// The ButeMgr parser (CParseSource @0x139800/0x139960/0x1399d0, right next to
-// these methods) builds a tree of named scopes through CSymTab. Each node is a
-// two-level keyed store reached through two hash tables:
-//   +0x38  m_subTabs  - child CSymTab scopes (nested namespaces); freed by
-//                       recursing ~CSymTab on each entry.
-//   +0x40  m_symbols  - leaf symbol records (the CSymRec class @0x139cf0/0x1397a0);
-//                       freed by CSymRec::Clear (0x139cf0) on each entry.
-// A dotted path "a.b.c" is resolved by tokenizing on the parser's delimiter set:
-// the first segment selects a child scope (Find via the +0x38 hash), the rest
-// recurses. The hash tables themselves are the canonical engine hash class
-// (CHashBase + CHash/CHashB from <Bute/Hash.h>: Lookup 0x184b40, First 0x184ae0,
-// Next 0x1848b0, Remove 0x184ab0, RemoveAll 0x184a40; the child-scope table's Walk
-// is 0x13c3f0 (CHashB), the leaf/value tables' Walk 0x13c270 + FindInt 0x13c360
-// (CHash) - two distinct instantiations at distinct RVAs).
-//
-// Layout recovered from the dtor (0x139ee0), the +0x38 walk wrapper (0x13a230)
-// and the two recursive path-resolvers (0x13bae0/0x13be40). Only the OFFSETS +
-// code bytes are load-bearing (campaign doctrine); unproven roles keep m_<hex>.
-//
-//   +0x00  m_name    : char* - this scope's owned name buffer (freed in dtor).
-//   +0x04..+0x14     : value/link words (zero-init; only nulled in the dtor --
-//                      roles unproven by the matched methods, so kept m_<hex>).
-//   +0x18  m_owner   : CSymParser* - the owning parser; supplies the delimiter
-//                      set ([+0x4]) the tokenizer splits on and a flag ([+0x68]
-//                      != 0) passed to the +0x38 walk.
-//   +0x30/+0x34      : link words (zero-init).
-//   +0x38  m_subTabs : CHashB - child-scope table (destructed at trylevel -1).
-//   +0x40  m_symbols : CHash  - leaf-symbol table (destructed at trylevel 0).
-//   +0x48  m_mappedBuf : char* - the owned mapped/shared buffer (freed in dtor; nonzero = mapping active).
 #ifndef SRC_BUTE_SYMTAB_H
 #define SRC_BUTE_SYMTAB_H
 
@@ -36,41 +5,9 @@
 
 #include <Bute/Hash.h> // CHashElement (the embeddable hash-node prefix records carry)
 
-// The engine resource alloc/free (RezAlloc @0x1b9b46 = operator new / RezFree
-// @0x1b9b82, both __cdecl one-arg); reloc-masked. The scope-name buffer is allocated
-// through the throwing global ::operator new (0x1b9b46) so the ctor's /GX state-1
-// member-cleanup transition falls out; RezAlloc is the nothrow C alias used elsewhere.
 void* operator new(u32 size);
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
-// The CRT string/path helpers the tokenizer/resolvers emit (strchr 0x120120 /
-// strncpy 0x120340 / inline strcpy/strlen / _splitpath 0x18c530 / _strupr 0x18d330)
-// come from the real <string.h>/<stdlib.h> in SymTab.cpp, the sole user - kept out
-// of this shared header so the other includers don't pull the CRT.
-
-// The real polymorphic class the 0x1ef748 vtable belongs to: the CSymTab +0x20
-// hash-node prefix (distinct from CSymRec's own +0x4 node at 0x1ef744).
-//
-// IDENTITY PROVEN (UB1 2026-07-17) - it IS a CHashElement, exactly like its two
-// sibling nodes (CParseSlotHashNode 0x1ef740 / CSymRecNode 0x1ef744). The slot-0
-// body @0x13c3b0 is the SAME 15-byte forwarder all three share, read straight out
-// of the image:
-//     mov eax,[ecx+0x14]  ; this->m_record   <- CHashElement::m_record @+0x14
-//     mov ecx,[ecx+0x0c]  ; this->m_owner    <- CHashElement::m_owner  @+0x0c
-//     mov edx,[eax]       ; m_record's FIRST dword == the key ("key first")
-//     push edx
-//     call 0x13c3c0       ; CHashB::HashStr(key), __thiscall on m_owner
-//     ret
-// i.e. literally CHashElement::Hash() == m_owner->HashStr(m_record->key) - the
-// child-scope (CHashB) instantiation, which is precisely the table CSymTab::m_subTabs
-// is. The ex "role unrecovered / void Slot00_13c3b0" placeholder returned void; the
-// body plainly returns HashStr's u32.
-//
-// The CSymTab embed corroborates it dword for dword: node@+0x20 => vptr +0x20
-// (m_node20's manual stamp), m_link +0x24, m_owner +0x2c, m_bucket +0x30, m_record
-// +0x34 - and +0x34 is the field the ctor zeroes and the header already calls "the
-// scope's own record back-pointer", i.e. the element pointing at its own record,
-// key first, exactly as CParseSlotHashNode does at ITS +0x30.
 struct CSymTabNode : public CHashElement {
     // Slot 0 (0x13c3b0): m_owner->HashStr(m_record's key), on the CHashB child-scope
     // instantiation. Defined out-of-line in Hash.cpp (retail emits it beside that
@@ -88,43 +25,13 @@ struct CSymTabNode : public CHashElement {
 SIZE(CSymTabNode, 0x18); // no new fields over CHashElement
 VTBL(CSymTabNode, 0x001ef748);
 
-// The clock-seed builder is CSymParser::MakeSeed (0x13ba70, __thiscall on the parser);
-// see SymParser.h. It is called as ctor arg5 so its leftover stack args double as the
-// next ctor args. (Formerly a free `MakeSymSeed` dual-view; folded to the real method,
-// wave5-R8, so its thiscall reloc binds.)
-
-// The ButeMgr string<->DWORD "tag" pack/unpack free helpers (__stdcall), defined in
-// SymParser.cpp. PackTag maps a file-extension string to its packed int key (the
-// name->key map CSymTab::Find + CSymParser::ParseRecords reach); UnpackTag inverts it.
 u32 __stdcall PackTag(const char* s);         // 0x13b910
 void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 
-// ---------------------------------------------------------------------------
-// The two embedded hash tables of a scope/record are the canonical engine hash
-// class from <Bute/Hash.h> (wave5-F1: the former per-TU CHashTable/CHashTableEntry
-// views folded onto it): CHashBase is the key-agnostic base (First/Last/Lookup/
-// Insert/Remove/RemoveAll + the sized Construct 0x184960 and default ctor 0x184950),
-// CHashElement the 24-byte intrusive node (payload record at +0x14), and CHash/CHashB
-// the two key-typed template instantiations (Walk 0x13c270 vs 0x13c3f0 - the leaf/
-// value table vs the child-scope table are DISTINCT physical Walk RVAs, which is why
-// they must stay two derived classes, not one merged view). Both are reloc-masked
-// externals whose bodies live in Hash.cpp / RezColl.cpp.
-// ---------------------------------------------------------------------------
-
-// CSymParser - the owning ButeMgr parser (CSymTab::m_owner @+0x18 points back to it).
-// The single full definition lives in <Bute/SymParser.h>; here it is only a
-// forward-declaration (m_owner is a pointer, so the layout is not needed in this
-// header). The methods that deref m_owner live in SymTab.cpp, which includes
-// SymParser.h for the full layout.
 class CSymParser;
 
 class CSymTab; // fwd (CSymRec keeps the owning-scope back-ptr at +0x2c)
 
-// The int-key hash-node prefix CSymRec embeds at +0x04. Its OWN vtable is
-// 0x1ef744 (slot0 sub_13c340) - DISTINCT from CSymTabNode's 0x1ef748 above. The
-// inline default ctor stamps the vptr and zeroes the payload slot (exactly the
-// two stores the CSymRec ctors 0x139bf0/0x139c80 open with); the record ctor
-// then re-points the payload at `this`.
 struct CSymRecNode : public CHashElement {
     // Slot 0 override: the int-key bucket hash (sub_13c340; declared-only -> the
     // emitted ??_7CSymRecNode slot reloc-masks against the retail 0x1ef744 datum).
@@ -136,14 +43,6 @@ struct CSymRecNode : public CHashElement {
 SIZE(CSymRecNode, 0x18); // no new fields over CHashElement
 VTBL(CSymRecNode, 0x001ef744);
 
-// ---------------------------------------------------------------------------
-// CSymRec - the leaf symbol record stored in m_symbols. FULL layout (unified
-// from the former SymRec.cpp TU-local model, wave4-K): the dtor (0x139cf0)
-// proves a SECOND live hash container @+0x1c (drained only when the owning
-// parser's m_6c flag is set) and the owner-scope back-ptr @+0x2c. Bodies for
-// the two ctors + the dtor live in SymTab.cpp (retail RVAs 0x139bf0/0x139c80/
-// 0x139cf0 - the same original TU as CSymTab).
-// ---------------------------------------------------------------------------
 class CSymRec {
 public:
     // The two leaf-record ctors (selected by m_owner->m_6c). Both stamp the +0x04
@@ -170,18 +69,8 @@ public:
 };
 SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
-// (CSymLeafBuilder is GONE - the 0x3c "parse slot" IS CParseSource through its
-// lifecycle: Build fills the record the stream methods then read. Offset for offset:
-// m_record==m_entry, m_typeTag==+0x08, f3==m_length, m_ownerScope==m_owner (the
-// owning scope - the SAME +0x10 both phases store; the ex-ParseMappedSource "mapped
-// source" WAS the scope: baseOffset==CSymTab::m_baseOffset, mapping==m_mappedBuf),
-// f1==m_base, +0x18==m_cursor, m_node==m_node1c, m_sourceStream==m_reader,
-// m_valueBuf==m_buffer. Build/Teardown are CParseSource methods now.)
 struct CParseSource; // <Gruntz/ParseSource.h>
 
-// ---------------------------------------------------------------------------
-// CSymTab - the recursive scope node.
-// ---------------------------------------------------------------------------
 class CSymTab {
 public:
     // ctor (0x139de0): stamp the +0x20 hash-node vtable + the +0x34 self-ptr, build
@@ -328,10 +217,6 @@ public:
 };
 SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
-// The "\" path separator literal owned by SymTab.cpp (DATA()-bound there; extern "C"
-// avoids the P/Q const-array mangling split). Declared here (C linkage) so the
-// definition can drop `extern "C"` while keeping the exact symbol. Used as a pointer
-// (strcpy/strcat) - no scalar constant-propagation, so header-ward is byte-neutral.
 extern "C" const char g_sepSlash[]; // 0x60cff0  "\"  (CSymTab directory-path builder)
 
 #endif // SRC_BUTE_SYMTAB_H

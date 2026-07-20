@@ -1,22 +1,9 @@
-// ShadeDescrTable.cpp - the global ShadeDescr* selector pair (RVAs 0x14dcf0 /
-// 0x14dd90), trace-attributed to tomalla-2 / tomalla-11. 0x14dcf0 is a
-// __stdcall setter that stashes a descriptor pointer into one of the seven global
-// ShadeDescr* slots (0x6bf208..0x6bf220, with g_blendDescr the named one at
-// 0x6bf218) keyed by a mode id; 0x14dd90 is the __thiscall selector that copies a
-// caller-supplied descriptor (or, when null, the mode's global default) into the
-// object's +0x1c field.
 #include <rva.h>
 #include <Globals.h>
 #include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit - the REAL owner of Select @0x14dd90
 
 struct ShadeDescr;
 
-// Seven global ShadeDescr* slots; only +0x6bf218 carries a real RTTI name.
-// The six mode-keyed slots are owned by this TU (SetShadeDescr writes them,
-// CDDrawShadeBlit::Select reads them); DEFINED here (shadedescrtable.obj's .bss,
-// zero-init), DATA()-pinned, reference externs kept in <Globals.h>. Ascending RVA;
-// g_blendDescr (0x6bf218, the RTTI-named slot) keeps its extern. (Were extern-only
-// in the Globals.cpp pool.)
 DATA(0x002bf208)
 ShadeDescr* g_shadeDescr208 = 0;
 DATA(0x002bf20c)
@@ -64,12 +51,6 @@ void SetShadeDescr(ShadeDescr* v, int mode) {
             break;
     }
 }
-
-// Select @0x14dd90 is a CDDrawShadeBlit method (<DDrawMgr/DDrawShadeBlit.h>): it writes
-// this class's own m_drawType (+0x14) and m_palDescr (+0x1c). The `ShadeSelector` class
-// this body used to be BOUND to never existed - it was a field-view of the shaded sprite,
-// and every caller reached it by casting a CImage::m_owned (a CDDrawShadeBlit) to it.
-// Re-bound to the real owner; the ((ShadeSelector*)m_owned) casts fell out.
 
 // @early-stop
 // Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except

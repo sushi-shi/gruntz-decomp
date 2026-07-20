@@ -1,19 +1,3 @@
-// LevelInfo.h - the shared, single definition of CLevelInfo, the per-level
-// descriptor. This is a REAL retail class name (recovered from two symbols):
-//   ?BuildLevelTitleString@@YAXPAUHWND__@@HPAUCLevelInfo@@@Z   (0x0e44e0)
-//   ?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z     (0x025020)
-// formerly modeled as two divergent .cpp-local views (wave 3 fold):
-//   * SaveGame.cpp (level-preview half)  - the level-SELECT dialog reads m_levelNum/m_path/m_name/
-//     the m_isCustom/m_isBattlez flags (BuildLevelTitleString formats the title,
-//     opens the level file, extracts the preview image).
-//   * BattlezMapConfig.cpp - CBattlezMapConfig::LoadConfig reads the three engine
-//     handles m_spawnInfo(+0x2c)/m_objList(+0x30)/m_68(+0x68)/m_dims(+0x70).
-// The two views read DISJOINT offsets (no naming conflict). The old dialog view
-// modeled a single 0x35..0x74 char path buffer that ran OVER the +0x68/+0x70
-// pointer members LoadConfig dereferences; here the path buffer ends at the m_68
-// pointer (matching-neutral: BuildLevelTitleString only takes &m_path, never its
-// length). Field names are placeholders where the role is unproven; only OFFSETS +
-// emitted code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_LEVELINFO_H
 #define SRC_GRUNTZ_LEVELINFO_H
 
@@ -27,25 +11,12 @@ class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
 struct CGameObject;          // <Gruntz/UserLogic.h>
 class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
 
-// The spawn-info handle at +0x2c. Its +0x2e4 is the level's tile-trigger CONTAINER
-// (settled 2026-07-13: ModeObjInit/Multi construct it as the 4-CPtrList + m_74
-// container; FindChild @0x116ee0 / FindByField0C @0x1171d0 are container methods) -
-// LoadConfig copies it into CBattlezMapConfig::m_14, and the run phase fires
-// FindChild / FindByField0C on it (`mov ecx,[this+0x14]`).
-// Was TWO .cpp-local views of one object (CLevelSpawnInfo + CArriveSub10b).
 SIZE_UNKNOWN(CLevelSpawnInfo);
 struct CLevelSpawnInfo {
     char m_pad00[0x2e4];
     CTileTriggerContainer* m_2e4; // +0x2e4  the level's tile-trigger container
 };
 
-// The level object-list ROOT (CLevelInfo::m_objList, +0x30). m_coll is the collection
-// the marker loops / spawn scan walk; m_view holds the world->screen mapper. Was TWO
-// .cpp-local views of one object (`CLevelList` outer + `Scene`); the object hung off
-// m_view (+0x24) was a third (`SceneView24`).
-// The plane class itself (CPlaneRender is one of its typedef spellings; an
-// elaborated `struct CPlaneRender*` here would re-declare it as a DISTINCT class -
-// MSVC5 silently keeps a prior `class X;` over a later `typedef Y X;`).
 class CDDrawWorkerHost;
 
 SIZE_UNKNOWN(CLevelViewHolder);

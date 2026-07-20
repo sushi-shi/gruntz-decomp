@@ -1,25 +1,6 @@
-// BlowfishPi.h - the Blowfish pi-digit init constants (Bruce Schneier's reference
-// `bf_pi.h`): the first hex digits of pi, used to seed the P-array and the four
-// 256-entry S-boxes.
-//
-// GRUNTZ.EXE carries the table bytes TWICE, back to back and byte-for-byte equal
-// (verified against the retail image):
-//
-//     g_bfP     0x21aeb0 +0x48    == g_bfInitP  0x21bef8 +0x48
-//     g_bfS     0x21aef8 +0x1000  == g_bfInitS  0x21bf40 +0x1000
-//
-// i.e. the live key state is PRE-SEEDED with the same constants that the pristine
-// init copy holds, exactly as the reference design does (InitializeBlowfish then
-// re-copies init -> live on every re-key). Both pairs are file-backed inside the
-// retail `.data` section [0x208000, 0x2c27ac), so neither is const and neither is
-// zero-init `.bss`.
-//
-// Kept as object-like macros so the one list seeds both definitions: the retail
-// bytes are duplicated, the source text need not be.
 #ifndef CRYPTO_BLOWFISHPI_H
 #define CRYPTO_BLOWFISHPI_H
 
-// clang-format off
 #define BF_PI_P_INIT                                                          \
     {    0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822, 0x299f31d0, \
     0x082efa98, 0xec4e6c89, 0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c, \
@@ -208,6 +189,5 @@
         0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6, \
     }, \
     }
-// clang-format on
 
 #endif // CRYPTO_BLOWFISHPI_H

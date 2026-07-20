@@ -34,48 +34,19 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
-                 // real CMapStringToOb. Still supplies RECT (credits-text rect @0x645d88).
 #include <rva.h>
 
 typedef u32 u32;
 
-// The main-menu credits/version text rectangle (BSS @0x645d88, contiguous RECT).
-// SetMenuTextRect (0x0a1190) seeds it each time the main-menu page opens.
 DATA(0x00245d88)
 RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
-// The per-item object AddItem/AddSubItem return IS the canonical CMenuItem
-// (<Gruntz/MenuItem.h>, via MenuPage.h): the "+0x18 disable" dispatch is its
-// slot 6, Disable(i32) @0x184650 (name recovered HERE - the builder disables the
-// network-gated / progress-gated / FINAL items). The FINAL-movie probe (thunk 0x31ac) is
-// CSaveGame::CheckMagic run on g_gameReg->m_saveSink - NOT on any item field
-// (retail: `mov eax,ds:0x64556c; mov ecx,[eax+0x58]; call 0x31ac`).
 #include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
 #include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
 #include <Io/SaveGame.h>     // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
-// The page object is the canonical CMenuPage (<Gruntz/MenuPage.h>): the builder
-// calls Configure (0x1832f0) / AddItem (0x183460) / AddSubItem (0x1835a0), and its
-// 14 `new CMenuPage` / `delete page` sites INLINE the header's ctor/dtor exactly as
-// retail does (op-new 0x68 + member ctors + the 5 zero stores; InitDefaults + member
-// teardown + op-delete on the failure paths). The ex "MenuPage" .cpp-local view is
-// dissolved.
-
-// The menu host the page is registered into (the `arg`) IS the CChatBox: xref proved
-// the register-page callee 0x182ba0 is CChatBox::AddNode (?AddNode@CChatBox@@QAEHPAX@Z),
-// which commits a finished page and returns nonzero on success. The arg stays void* only
-// because it is BuildMainMenuTree's
-// mangled ?...@@YAXPAX@Z parameter; cast to CChatBox at the register boundary).
-
-// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58
-// save sink (the CSaveGame) carries the m_curLevel (+0x1c) area-progress counter
-// the QUESTZ/AREAS gates read.
-
-// The multiplayer-availability gate (DAT_006455ec): nonzero disables the
-// multiplayer/network-gated items.
 extern i32 g_multiplayerAvail;
 
-// Commit a finished page into the menu host (CChatBox::AddNode @0x182ba0).
 static i32 RegisterPage(void* arg, CMenuPage* page) {
     return static_cast<CChatBox*>(arg)->AddNode(page);
 }
@@ -162,8 +133,6 @@ static char s_MENU_AREAS_AREA6TITLE[] = "MENU_AREAS_AREA6TITLE";
 static char s_MENU_AREAS_AREA7TITLE[] = "MENU_AREAS_AREA7TITLE";
 static char s_MENU_AREAS_AREA8TITLE[] = "MENU_AREAS_AREA8TITLE";
 
-// SetMenuTextRect (0x0a1190): seed the main-menu credits/version text RECT to its
-// fixed screen position {left=5, top=453, right=635, bottom=478}.
 RVA(0x000a1190, 0x29)
 void SetMenuTextRect() {
     g_menuTextRect.left = 5;
@@ -172,9 +141,6 @@ void SetMenuTextRect() {
     g_menuTextRect.bottom = 478;
 }
 
-// ===========================================================================
-// BuildMainMenuTree  (0x0a11d0)
-// ===========================================================================
 RVA(0x000a11d0, 0x180d)
 void BuildMainMenuTree(void* arg) {
     if (arg == 0) {
@@ -523,6 +489,3 @@ void BuildMainMenuTree(void* arg) {
         return;
     }
 }
-
-
-// --- vtable catalog ---

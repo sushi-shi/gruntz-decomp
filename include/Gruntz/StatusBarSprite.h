@@ -1,7 +1,3 @@
-// StatusBarSprite.h - the status-bar sprite tile-logic leaf (C:\Proj\Gruntz), a
-// CUserLogic game-object (RTTI game class, vtable 0x5e7fc4). Extracted from the former
-// StatusBarSpriteActs.cpp-local view so the leaf dtor (0x11b80) homes onto the real
-// class. Only offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CSTATUSBARSPRITE_H
 #define GRUNTZ_CSTATUSBARSPRITE_H
 
@@ -27,9 +23,6 @@ public:
 VTBL(CStatusBarSprite, 0x1e7fc4);
 SIZE(CStatusBarSprite, 0x54);
 
-// The activation-registry handler-entry record (the .data CActReg row): its first
-// dword receives the per-frame handler PMF (4-byte code ptr on this complete
-// single-inheritance class).
 typedef i32 (CUserLogic::*StatusBarSpriteHandler)();
 struct CStatusBarSpriteActEntry {
     StatusBarSpriteHandler m_fn;

@@ -20,14 +20,9 @@
 
 class CUserLogic; // fwd; deref'd in the pump TUs via <Gruntz/UserLogic.h>
 
-// (The `Worker` / `Owner` shells are DISSOLVED, 2026-07-19 - the "foreign vtable
-// 0x5efb80" was ??_7AnimWorkerObj all along; see WorkerHandler.h. The real classes:)
 #include <Wwd/WwdGameObjectFamily.h> // CGameObject (m_7c worker slot)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (m_logic / m_1c role-union)
 
-// The engine default message pump run for any unhandled state IS the real shared
-// coordinate/type-registry resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z,
-// __cdecl). Thin forwarder so callers emit the bound rel32 (was fake _Worker_DefaultPump).
 inline void Worker_DefaultPump(CUserLogic* sub) {
     ProjTypeXfer(sub);
 }

@@ -1,12 +1,3 @@
-// GruntBehaviorLeaf.cpp - the per-frame grunt "decay/wand" AI (0x612a0 / 0x61570 /
-// 0x65a60), re-homed out of the UserLogic god-TU (C:\Proj\Gruntz).
-//
-// These run on CGruntBehaviorLeaf (a placeholder-identity CUserLogic leaf; see
-// <Gruntz/GruntBehaviorLeaf.h>). The decay timer (m_830 start / m_838 duration, both
-// hi=0) drives a 0..256 fixed-point fill bar on the bound object's draw command;
-// m_object is the real inherited CGameObject. The bute/anim callees are reloc-masked
-// __thiscall externs. g_frameTime = running ms clock. Only offsets / code bytes are
-// load-bearing.
 #include <Gruntz/GruntBehaviorLeaf.h>
 #include <Gruntz/TriggerMgr.h> // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
 #include <Image/ImageSet.h>    // CImageSet::SetAllTypes (m_drawState->m_194)
@@ -15,7 +6,6 @@
 
 extern "C" u32 g_frameTime;        // 0x645588  running game clock (ms)
 extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
-// g_buteMgr (0x6453d8, getters reloc-mask) comes from <Bute/ButeMgr.h>.
 
 // LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
 // anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
@@ -112,6 +102,3 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
     m_object->m_fillFraction = r;
     return 0;
 }
-
-// LoadWandGruntItemConfig @0x65a60 was re-homed to GruntEntranceArrival.cpp
-// (wave3-I): its retail body + private .data cells sit inside the 0x616e0 obj.

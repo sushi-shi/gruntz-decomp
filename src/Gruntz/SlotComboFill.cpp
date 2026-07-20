@@ -1,27 +1,5 @@
-// SlotComboFill.cpp - CLatencyList::FillCombo (0x37ff0), the /GX combo-box populate
-// for the multiplayer connection-latency slot list. It resets the (hDlg, ctrlId)
-// combo, walks the CPtrList node list (head @+0x4, count @+0xc), and for each node's
-// CLatencyItem payload adds GetName() text (a returned CString temp) then stashes a
-// packed MAKELONG(m_param,m_id) as the item data.
-//
-// The container is the canonical CLatencyList (<Net/LatencyList.h>) - the former
-// per-TU CMultiSlotList/SlotNode/SlotRec views here folded onto it (wave 3). The
-// node walk is the inline MFC POSITION API on the m_list member (GetHeadPosition/
-// GetNext lower to the same head/pNext/data loads the old raw CNode walk spelled;
-// CKeyedList no longer derives CPtrList - see KeyedList.h). GetDlgItem/SendMessageA
-// are Win32 imports; GetName
-// (0x38120 via the 0x256d ILT thunk) and ~CString are reloc-masked. Only offsets +
-// code bytes are load-bearing.
 #include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CPtrList/CString/windows.h)
 #include <rva.h>
-
-// The engine's cached USER32 imports, held as function-pointer globals (the dialog
-// helpers call THESE, not the raw USER32 imports - reloc-masked indirect calls).
-// Both reference their canonical DATA homes (no local DATA here): ::GetDlgItem is the
-// C++-mangled ?::GetDlgItem@@3P6GPAUHWND__@@PAU1@H@ZA (home CustomWorldDialog.cpp
-// @0x2c4564) and ::SendMessageA is the extern-"C" _g_pSendMessageA (home GruntzMgr.cpp
-// @0x2c44a4) - so both DIR32 references reloc against the tree-winning symbol at the
-// right RVA (the old extern-"C" _g_pGetDlgItem + DATA(0x006c44a4) VA-typo mis-bound them).
 
 // The control lookup + the four combo messages go through the engine's cached USER32
 // function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
@@ -73,16 +51,6 @@ CString CLatencyItem::GetName() {
     return m_text;
 }
 
-// CLatencyList::SelectItem (0x38150) - re-homed from src/Gruntz/Dialogs.cpp
-// (matcher-1 de-fragmentation); it is the immediate retail .text neighbour of
-// GetName above and a CLatencyList method (CMultiStartDlg::BuildSlotList/UpdateSlot
-// call it, reloc-masked). Find the list item in control `id` of dialog `hDlg` whose
-// item-data equals MAKELONG(lo, hi) and select it (LB_SETCURSEL); returns 1 if
-// found, else 0. The method ignores `this` (a dialog-item scan) - ecx is unused.
-// The control lookup + the three list messages go through the engine's cached USER32
-// function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
-// retail loads ::SendMessageA once into edi (`mov edi,[::SendMessageA]; call edi`),
-// so the local pSend caches it here.
 RVA(0x00038150, 0x91)
 i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
     HWND list = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), id);

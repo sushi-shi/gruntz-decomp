@@ -1,12 +1,3 @@
-// ModeObjInit.cpp - a game-mode/object initializer re-homed out of
-// src/Stub/ApiCallers.cpp (0x000c7ec0). __thiscall(a1, a2, a3): stamps a couple of
-// owner flags, sets its own flag block, then allocates + wires four owned
-// sub-objects (a 0x1c control block, a 0x630 worker with several sub-object arrays,
-// a 0x78 four-CString record, and a 0x50 record); on any construction/attach
-// failure it tears the partial state back down and returns 0. Finishes by resetting
-// its own geometry/timer state, running two vtable init slots + a bind slot, and
-// flagging the linked peer. /GX for the owned-object unwind. Placeholder names;
-// only offsets + code bytes are load-bearing.
 #include <Mfc.h> // MFC superset (CPtrList; timeGetTime/ShowCursor); was Win32.h
 #include <new>
 
@@ -21,7 +12,6 @@
 #include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
-// Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
 #include <Gruntz/Timer.h>
 
 namespace modeinit {
@@ -59,12 +49,6 @@ namespace modeinit {
 
 } // namespace modeinit
 
-// The out-of-line element ctor 0xc86d0 (`mov eax,ecx; xor ecx,ecx; mov [eax+8],ecx;
-// mov [eax+0x10],ecx; mov [eax+0xc],ecx; mov [eax+0x14],ecx; ret`) - the address-taken
-// COMDAT that CStatusBarMgr's ctor hands to the vector-ctor iterator for BOTH
-// m_groupSlots[3] (+0x2c0) and m_hlGrid[12] (+0x378). It is a compiler-generated
-// default ctor, so its home is the TU that instantiates it; the retail COMDAT sits in
-// this obj's band (right after CPlay::LoadGameAssetNamespaces / ~CPlay's pool).
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
     m_8 = 0;

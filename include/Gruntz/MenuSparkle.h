@@ -1,9 +1,3 @@
-// MenuSparkle.h - the menu-sparkle eyecandy tile-logic leaf (C:\Proj\Gruntz), a
-// CUserLogic game-object (vtable 0x5e82dc). The CANONICAL CMenuSparkle (ctor +
-// full vtable); extracted from the former UserLogic.cpp-local view so the leaf dtor
-// (0x101b0) homes onto the real class. NOTE: distinct from the Grunt.h-world serialize
-// view in <Gruntz/MenuSparkleSerial.h> (documented dual-model, never coexist in a TU).
-// Only offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CMENUSPARKLE_H
 #define GRUNTZ_CMENUSPARKLE_H
 

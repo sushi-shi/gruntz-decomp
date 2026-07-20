@@ -1,11 +1,3 @@
-// LevelSync.h - CLevelSync (C:\Proj\Gruntz), the level serialize/sync walk, plus the
-// referent shapes its one method drives.
-//
-// These were .cpp-local views inside the merged SBI_RectOnly.cpp. When CLevelSync::Sync
-// was un-merged back to its own TU (LevelSync.cpp, 2026-07-13) the views came with it -
-// into a header, not into the new .cpp: a type defined in a main-tree .cpp is a fake
-// per-TU view, and homing a function out of a merged TU is exactly the point where that
-// debt would otherwise be created.
 #ifndef GRUNTZ_LEVELSYNC_H
 #define GRUNTZ_LEVELSYNC_H
 
@@ -28,7 +20,6 @@ struct SyncSub {
     virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
 };
 
-// The lazily-allocated +0x54c child (operator new(0x40) + ctor 0x401271).
 class CLevelSync; // owner (defined below); m_3c back-links to it
 struct CLevelSyncChild {
     char pad[0x3c];

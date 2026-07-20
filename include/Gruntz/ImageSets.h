@@ -1,29 +1,9 @@
 #ifndef GRUNTZ_IMAGESETS_H
 #define GRUNTZ_IMAGESETS_H
-// ImageSets.h - the three CImageSet collision-record variants CGameLevel::
-// ReadImageSet allocates from a WWD tile-descriptor record (the first int of the
-// record selects the kind). Split out of the GameLevel god-TU: the class defs live
-// here (shared by the gamelevel factory + the imageset1/2/3 method TUs); the
-// out-of-line method bodies live in src/Gruntz/ImageSet{1,2,3}.cpp.
-//
-// REAL-POLYMORPHIC: each is an 18-slot class deriving the CObject grand-base
-// (slots 0-4 inherited, slot 1 = its virtual dtor), so cl emits its
-// ??_7CImageSetN@@6B@ (VTBL-bound in GameLevel.cpp, where ReadImageSet's
-// `new CImageSetN` instantiates the inline ctor) and AUTO-stamps the vptr in that
-// INLINE ctor - the base-subobject stamp dead-store-elides, lowering `new
-// CImageSetN` to exactly the retail `RezAlloc(size); if (p) { stamp vptr; zero
-// fields }` shape. Only the matched slots carry bodies; the inherited base thunks +
-// engine slots are declared-only (their vtable entries reloc-mask). The vptr sits
-// at +0x00 (implicit); the padding pins each size: kind 1 = 0x10, kind 2 = 0x24,
-// kind 3 = 0x18. Slot RVAs (from retail 0x5f0198/01e0/0228) noted per class.
 #include <Wap32/Object.h> // CObject grand-base (slots 0-4)
 #include <Ints.h>
 #include <rva.h>
 
-// The engine routes object allocation through the Rez heap (RezAlloc @0x1b9b46 =
-// nothrow operator new / RezFree @0x1b9b82). ReadImageSet `new`s its variants
-// through RezAlloc, so each class models it as the class allocator: `new CImageSetN`
-// emits a direct `push size; call RezAlloc` instead of the global `??2`.
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 struct CImageSet1 : CObject {

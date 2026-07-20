@@ -1,8 +1,3 @@
-// BattlezData.cpp - CBattlezData, the multiplayer (Battlez) progress/score
-// tracker held at g_gameReg->m_7c (see include/Gruntz/BattlezData.h). A 0x388-
-// byte, non-polymorphic helper the game manager owns: a ctor + accessors over
-// two 4x4 int grids (a head-to-head win matrix and a flag matrix) and an array
-// of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -11,17 +6,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
-// The shared 0.0f seed / divide-by-zero-guard constant (owner-TU def; VA 0x5eab40).
 DATA(0x001eab40)
 float g_zeroF = 0.0f; // 0x5eab40
 
-// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
-// view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
-// the `mov ds:g_gameReg` load against the already-named symbol.
-
-// 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind
-// the record array. (The object is raw-`operator new`d by the game manager and
-// driven through these two plain Init methods; there is no C++ ctor.)
 RVA(0x000fc9c0, 0x17)
 i32 CBattlezData::InitWithRecords(void* records) {
     Init();
@@ -75,9 +62,6 @@ void CBattlezData::Init() {
     }
 }
 
-// 0xfcad0 - set the record count; flag whether the current group-of-4 of records
-// is fully populated (each record's +0x00 non-zero). Counts above 0x24 force the
-// flag off.
 RVA(0x000fcad0, 0x53)
 void CBattlezData::SetCount(i32 count) {
     m_count = count;
@@ -95,7 +79,6 @@ void CBattlezData::SetCount(i32 count) {
     m_allDone = flag;
 }
 
-// 0xfcb50 - set flags[y][x] = 1 (both bounded to 0..4 inclusive).
 RVA(0x000fcb50, 0x2b)
 void CBattlezData::MarkFlag(i32 y, i32 x) {
     if (y >= 0 && y <= 4 && x >= 0 && x <= 4) {
@@ -103,7 +86,6 @@ void CBattlezData::MarkFlag(i32 y, i32 x) {
     }
 }
 
-// 0xfcb90 - clear the flag matrix.
 RVA(0x000fcb90, 0x12)
 void CBattlezData::ClearFlags() {
     for (i32 i = 0; i < 16; i++) {
@@ -111,7 +93,6 @@ void CBattlezData::ClearFlags() {
     }
 }
 
-// 0xfcbc0 - sum all 16 flags (the argument is range-gated but unused in the sum).
 RVA(0x000fcbc0, 0x3a)
 i32 CBattlezData::SumFlags(i32 y) {
     if (y < 0 || y > 4) {
@@ -127,8 +108,6 @@ i32 CBattlezData::SumFlags(i32 y) {
     return sum;
 }
 
-// GetFlag (0x0fcc10): bounds-checked read of the 5x5 flag grid (0 outside range).
-// Out-of-line (retail emits it standalone; the inline member folded away).
 RVA(0x000fcc10, 0x2f)
 i32 CBattlezData::GetFlag(i32 x, i32 y) {
     if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
@@ -137,7 +116,6 @@ i32 CBattlezData::GetFlag(i32 x, i32 y) {
     return 0;
 }
 
-// 0xfcc50 - bump wins[y][x] for off-diagonal (y!=x) cells (both bounded 0..4).
 RVA(0x000fcc50, 0x2a)
 void CBattlezData::BumpWin(i32 y, i32 x) {
     if (y >= 0 && y <= 4 && x >= 0 && x <= 4 && y != x) {
@@ -145,7 +123,6 @@ void CBattlezData::BumpWin(i32 y, i32 x) {
     }
 }
 
-// 0xfcc90 - clear the win matrix.
 RVA(0x000fcc90, 0xf)
 void CBattlezData::ClearWins() {
     for (i32 i = 0; i < 16; i++) {
@@ -153,8 +130,6 @@ void CBattlezData::ClearWins() {
     }
 }
 
-// 0xfccb0 - sum row y of the win matrix (4 cells). The row base is this + y*0x10
-// + 0x58, matching the retail `shl y,4; lea` addressing.
 RVA(0x000fccb0, 0x21)
 i32 CBattlezData::SumWinRow(i32 y) {
     i32 sum = 0;
@@ -165,10 +140,6 @@ i32 CBattlezData::SumWinRow(i32 y) {
     return sum;
 }
 
-// 0xfccf0 - "every record is populated and within its own bounds": walk all
-// 0x20 records, fail (return 0) on the first whose +0x00/+0x28 is zero or whose
-// progress field falls below the matching bound. The per-record tests mirror
-// InBounds' member-band comparisons, applied to each record's own fields.
 RVA(0x000fccf0, 0x57)
 i32 CBattlezData::AllRecordsInBounds() {
     i32 i = 0;
@@ -199,9 +170,6 @@ i32 CBattlezData::AllRecordsInBounds() {
     return 1;
 }
 
-// 0xfcd70 - gated "within bounds" test: only meaningful when m_scoreValue is set; then
-// the m_30..m_40 band must each stay <= the m_toyzCount..m_2c band. Takes one (unused)
-// stack argument (retail cleans 4 bytes on return).
 RVA(0x000fcd70, 0x61)
 i32 CBattlezData::InBounds(i32 unused) {
     if (m_scoreValue == 0) {
@@ -222,9 +190,6 @@ i32 CBattlezData::InBounds(i32 unused) {
     return m_40 <= m_2c;
 }
 
-// 0xfce00 - ratio over the current group of 4 records: (Sum m_24) / (Sum m_3c),
-// or 0 when the m_3c sum is zero. Both sums are accumulated in float (fild);
-// g_zeroF (0.0f) seeds the accumulators and the divide-by-zero guard.
 RVA(0x000fce00, 0x56)
 float CBattlezData::GroupRatio() {
     float den = g_zeroF;
@@ -240,7 +205,6 @@ float CBattlezData::GroupRatio() {
     return num / den;
 }
 
-// 0xfce80 - true iff all 4 records in the current group are scored (m_28 != 0).
 RVA(0x000fce80, 0x32)
 i32 CBattlezData::GroupAllScored() {
     i32 g = (m_count - 1) / 4 * 4;
@@ -252,7 +216,6 @@ i32 CBattlezData::GroupAllScored() {
     return 1;
 }
 
-// 0xfcf20 - sum field m_0c over the 4 records in the current group.
 RVA(0x000fcf20, 0x37)
 i32 CBattlezData::SumGroupField0c() {
     i32 sum = 0;
@@ -263,7 +226,6 @@ i32 CBattlezData::SumGroupField0c() {
     return sum;
 }
 
-// 0xfcf70 - sum field m_2c over the 4 records in the current group.
 RVA(0x000fcf70, 0x37)
 i32 CBattlezData::SumGroupField2c() {
     i32 sum = 0;
@@ -274,7 +236,6 @@ i32 CBattlezData::SumGroupField2c() {
     return sum;
 }
 
-// 0xfcfc0 - sum field m_score over the 4 records in the current group.
 RVA(0x000fcfc0, 0x37)
 i32 CBattlezData::SumGroupField10() {
     i32 sum = 0;
@@ -285,7 +246,6 @@ i32 CBattlezData::SumGroupField10() {
     return sum;
 }
 
-// 0xfd010 - sum field m_30 over the 4 records in the current group.
 RVA(0x000fd010, 0x37)
 i32 CBattlezData::SumGroupField30() {
     i32 sum = 0;
@@ -296,7 +256,6 @@ i32 CBattlezData::SumGroupField30() {
     return sum;
 }
 
-// 0xfd060 - sum field m_1c over the 4 records in the current group.
 RVA(0x000fd060, 0x37)
 i32 CBattlezData::SumGroupField1c() {
     i32 sum = 0;
@@ -307,7 +266,6 @@ i32 CBattlezData::SumGroupField1c() {
     return sum;
 }
 
-// 0xfd0b0 - sum field m_34 over the 4 records in the current group.
 RVA(0x000fd0b0, 0x37)
 i32 CBattlezData::SumGroupField34() {
     i32 sum = 0;
@@ -318,7 +276,6 @@ i32 CBattlezData::SumGroupField34() {
     return sum;
 }
 
-// 0xfd100 - sum field m_20 over the 4 records in the current group.
 RVA(0x000fd100, 0x37)
 i32 CBattlezData::SumGroupField20() {
     i32 sum = 0;
@@ -329,7 +286,6 @@ i32 CBattlezData::SumGroupField20() {
     return sum;
 }
 
-// 0xfd150 - sum field m_38 over the 4 records in the current group.
 RVA(0x000fd150, 0x37)
 i32 CBattlezData::SumGroupField38() {
     i32 sum = 0;
@@ -340,7 +296,6 @@ i32 CBattlezData::SumGroupField38() {
     return sum;
 }
 
-// 0xfd1a0 - sum field m_24 over the 4 records in the current group.
 RVA(0x000fd1a0, 0x37)
 i32 CBattlezData::SumGroupField24() {
     i32 sum = 0;
@@ -351,7 +306,6 @@ i32 CBattlezData::SumGroupField24() {
     return sum;
 }
 
-// 0xfd1f0 - sum field m_3c over the 4 records in the current group.
 RVA(0x000fd1f0, 0x37)
 i32 CBattlezData::SumGroupField3c() {
     i32 sum = 0;
@@ -362,7 +316,6 @@ i32 CBattlezData::SumGroupField3c() {
     return sum;
 }
 
-// 0xfd240 - sum field m_18 over the 4 records in the current group.
 RVA(0x000fd240, 0x37)
 i32 CBattlezData::SumGroupField18() {
     i32 sum = 0;
@@ -373,7 +326,6 @@ i32 CBattlezData::SumGroupField18() {
     return sum;
 }
 
-// 0xfd290 - sum field m_14 over the 4 records in the current group.
 RVA(0x000fd290, 0x37)
 i32 CBattlezData::SumGroupField14() {
     i32 sum = 0;
@@ -384,7 +336,6 @@ i32 CBattlezData::SumGroupField14() {
     return sum;
 }
 
-// 0xfd2e0 - sum field m_08 over the 4 records in the current group.
 RVA(0x000fd2e0, 0x37)
 i32 CBattlezData::SumGroupField08() {
     i32 sum = 0;
@@ -411,9 +362,6 @@ i32 CBattlezData::GetRecordValue(i32 b) {
     return m_records[idx].m_scoreValue;
 }
 
-// 0xfd330 - fill the record at `index` (0x40-byte stride, biased -0x40) from the
-// current m_score..m_scoreValue band; phase 0 writes the head fields (+m_118 from the
-// registry), any other phase writes the tail.
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
     i32* rec = reinterpret_cast<i32*>((reinterpret_cast<char*>(m_records) + index * 0x40 - 0x40));

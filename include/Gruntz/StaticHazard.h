@@ -1,22 +1,3 @@
-// StaticHazard.h - a static hazard game-object (C:\Proj\Gruntz).
-//
-// CStaticHazard : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CTimeBomb (proven by its dtor @0x012b30 stamping the CUserLogic
-// vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down the +0x18
-// link via the embedded ~EngStr at 0x16d2a0 - byte-identical in shape to
-// ~CTimeBomb @0x012a70). The leaf adds its own activation/pulse bookkeeping
-// (+0x40..+0x68) on top of CUserLogic (0x40).
-//
-// The 1-arg ctor (0x0fb7a0) is the standard CUserLogic(CGameObject*) leaf init
-// plus a static-hazard tail (re-arm the IDLE animation, snap the bound object to
-// tile center, seed the pulse window from the "Hazardz/AniPad" bute int).
-// LoadAttributes (0x0fc1a0) / LoadAttributes2 (0x0fc0b0) are the periodic
-// tick/pulse, the same time-gated animation idiom as the CGrunt::Resolve*Animation
-// cluster. FireActivation (0x0fbbf0) is the per-coordinate activation-registry
-// dispatcher (the CTimeBomb::FireActivation archetype).
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CSTATICHAZARD_H
 #define GRUNTZ_CSTATICHAZARD_H
 
@@ -55,8 +36,6 @@ public:
 };
 VTBL(CStaticHazard, 0x001e7824);
 
-// The activation-registry handler-entry records (the .data CActReg rows; 4-byte
-// PMFs; FireActivation dispatches them thiscall on the leaf).
 typedef void (CUserLogic::*HaznHandler)();
 struct CHaznEntry {
     HaznHandler m_fn;

@@ -1,38 +1,9 @@
-// AreaMgr.h - Gruntz CAreaMgr (C:\Proj\Gruntz).
-//
-// The area/zone + spawn-entry manager: a current-index word at +0x00 and an
-// embedded CSpawnList (<Gruntz/SpawnList.h>) at +0x04 - the named spawn-entry
-// list the level loader, the OBJECTZ_ resource reconcilers and the multiplayer
-// roster all walk. One instance is a file-scope singleton (DAT_006459b0);
-// another is reached via the level-loader's pointer at DAT_0061139c. The class
-// is non-polymorphic (the ctor stamps no vtable); only the embedded CPtrList
-// carries a vptr.
-//
-// Reset() clears the current-index word; Dispatch(index) records the 1..40 index
-// then calls the matching per-area handler (40 sibling methods, each a no-op that
-// returns 1); SameGroup(a) reports whether `a` and the current index fall in the
-// same group-of-four within mod-36 index space (the level-loader's adjacency
-// test). The /GX destructor clears the index then inline-folds the member
-// ~CSpawnList (DeleteAllEntries + ~CPtrList, EH state 1).
-//
-// LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20, defined in
-// src/Gruntz/LoadObjectResources.cpp) are CAreaMgr methods: their `this` reaches
-// the entry list at +0x04 exactly like the methods here (the old CObjResTree
-// view), and they sit inside the 0x99ba0..0x9b430 areamgr retail TU band.
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_AREAMGR_H
 #define SRC_GRUNTZ_AREAMGR_H
 
 #include <Ints.h>
 #include <Gruntz/SpawnList.h> // CSpawnList (embedded at +0x04) + CSpawnEntry
 
-// The per-spawn registry-holder + resolution-source args of the LoadObject*
-// reconcilers. The holder IS the canonical CDDrawSurfaceMgr (proven: its +0x10
-// image / +0x28 sound / +0x2c aniz registries are exactly m_imageRegistry /
-// m_soundRegistry / m_animRegistry, and the sibling GameAssetNamespaces.cpp's
-// WorkerHolder is the same object == CDDrawSurfaceMgr).
 class CDDrawSurfaceMgr; // DDrawMgr/DDrawSurfaceMgr.h (the per-spawn registry holder)
 class CSymTab;          // Bute/SymTab.h (ResolvePath)
 
@@ -111,9 +82,6 @@ public:
 };
 SIZE(CAreaMgr, 0x28);
 
-// The manager singleton object (VA 0x6459b0; DEFINED in src/Gruntz/AreaMgr.cpp) and
-// the statically-initialized pointer to it (VA 0x61139c; DEFINED in src/Gruntz/Play.cpp,
-// its only referencing unit - retail .data holds &g_areaMgr there).
 extern CAreaMgr g_areaMgr;
 extern CAreaMgr* g_pAreaMgr;
 

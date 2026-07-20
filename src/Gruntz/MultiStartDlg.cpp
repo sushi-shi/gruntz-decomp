@@ -1,21 +1,3 @@
-// MultiStartDlg.cpp - the CMultiStartDlg (multiplayer-start CDialog, resource
-// 0xc5) TU, interval 0xc16b0-0xc296b (+ the 0xc3e30 stray). ONE original TU per
-// docs/exe-map/interval-dossiers.md #4a: our multistartdlg + multistartdlgworld
-// units were slices of this single file - the "world" unit's fns are
-// CMultiStartDlg's own methods (SetupWorldCombo) + its free helpers
-// (BuildNamedGruntTable, _WndProc_c1a10), and the two units' init frags form one
-// fragment neighborhood before the code. The adjacent WOVEN roster/color/net
-// interval (0x0c2980+) is a SEPARATE dialog obj - do not merge across 0x0c296b.
-//
-// Contents: the ctor (the vtable emission anchor), the world-combo setup, the
-// color-item updater (dossier seam 0xc1aa0), the slot-list build/update model,
-// the per-index control accessors, and the GetCtrlE combo helpers.
-//
-// Built /GX (eh): the ctor default-constructs embedded MFC members (CString m_70 /
-// CStringList m_74) and BuildSlotList's new-expression carries the fs:0 EH frame.
-// Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing (campaign doctrine).
-// ---------------------------------------------------------------------------
 #include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -32,69 +14,19 @@
 #include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
 #include <Globals.h>
-// NetLobby::g_curDlg, g_sharedFlag, and the USER32 fn-ptr globals
-// (g_pSendMessageA / g_pGetWindow) come from <Gruntz/Dialogs.h> above.
 
-// The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
-// the file-scope multiplayer game-state sink g_multiState (both reloc-masked DIR32).
-// 0x64bd5c holds the multiplayer game-state singleton (a CMulti, xref-proven); the
-// ctor snapshots it from g_gameReg->m_curState (+0x2c). Declared in <Gruntz/Multi.h>.
-// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-
-// The per-slot player record CMultiSlot (a proven CFocusSlot view, fold deferred on the
-// +0x154 CString into CGameRegistry's by-value slot array) lives in <Gruntz/MultiSlot.h>.
-
-// The dialog drives exactly four player slots (four kind combos / name edits /
-// slot records; retail's save loop walks the m_host CMultiSlot[] with stride
-// sizeof(CMultiSlot)==0x238 up to 4*0x238).
 enum {
     NUM_PLAYER_SLOTS = 4
 };
 
-// GetCtrlE's per-case control fetch. The retail free-function body threads the
-// caller's dialog `this` straight through ecx into CWnd::GetDlgItem (0x1be27d)
-// WITHOUT reloading it, so the call is modeled as a reloc-masked free helper that
-// emits the bare `push id; call; ret 4` (stdcall, no ecx setup). Declared-only.
 extern CWnd* __stdcall GetDlgItemThreaded(i32 id);
 
-// The subclass window-proc installed on the combo's edit child (0x4c1a10). Only
-// its address is taken (push offset -> DIR32 reloc-masks).
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-// The GAME_MULTI registry path -> a name registry. m_host is the canonical CNetDlgHost;
-// its +0x34 m_registry is the real Bute CSymParser (ResolvePath 0x13c030 - proven), which
-// returns a CSymTab symbol table. The table is iterated FirstSym/NextSym2 (first entry)
-// then NextSym3 (advance) - CSymTab methods; kept as this TU's iteration view.
-// The payload reader MpSymItem lives in <Gruntz/MpSymItem.h> (each payload's +0x00 is
-// the entry name; folding onto CSymTab is proven but the item identity is unsettled).
 #include <Gruntz/MpSymItem.h>
 
-// The color-dialog facet (0xc1aa0) IS CMultiStartDlg - PROVEN, dissolved (was the
-// m4::MultiColorDlg view): its SlotIndex2d4c is the ILT thunk 0x2d4c to
-// CMultiStartDlg::GetSlotIndex (0xc4b30), its m_5c is CMultiStartDlg::m_host (+0x5c,
-// the 0x238-stride slot table) and its m_6c the cached selection (+0x6c), and all
-// three UpdateColorItems callers (DoDataExchange/Watchdog/ToggleReady) are CMultiStartDlg
-// methods. The lobby game-state singleton g_multiState (0x64bd5c) is a CMulti (xref-proven):
-// m_isHost (+0x528) gates the active branch, m_5b0 the current selection, Name42ff/
-// Name31d4 return the current-slot / default name (CString by value).
-
-// ---------------------------------------------------------------------------
-// BuildNamedGruntTable (0xc16b0) - seeds the 4 default named-grunt CString globals
-// (the contiguous array at 0x64bdb0, read back as the multiplayer channel labels)
-// with their default names via CString::operator=(LPCSTR) (FUN_001b9d4c, reloc-
-// masked __thiscall). Its caller is the (unmodeled) CMultiStartDlg init routine at
-// 0xc1690, one function before the ctor (0xc1750).
-// ---------------------------------------------------------------------------
-// 4 contiguous CString globals at 0x64bdb0 (the multiplayer channel-label table; also
-// modeled as g_64bdb0 in MultiStartDlgRoster.cpp). BuildNamedGruntTable is the array's
-// dynamic initializer: it in-place constructs each element from its default-name literal
-// via CString::CString(const char*) (0x1b9d4c == ??0CString@@QAE@PBD@Z, reloc-masked
-// NAFXCW). The former EngStrAssign::operator= view mis-named that ctor and reloc-masked
-// UNBOUND; a real CString ctor call binds it to the library symbol.
 DATA(0x0024bdb0)
 CString g_gruntNames[4];
-// The saved original window proc of the roster child (GWL_WNDPROC), private to this
-// dialog; DEFINED here (owner TU), a plain `extern` stays in Globals.h.
 DATA(0x0024bdc0)
 i32 g_savedMultiWndProc = 0; // 0x24bdc0
 
@@ -106,7 +38,6 @@ void BuildNamedGruntTable() {
     g_gruntNames[3].CString::CString("Jebediah");
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_host = a0;
@@ -115,11 +46,6 @@ CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pP
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
 
-// ---------------------------------------------------------------------------
-// SetupWorldCombo (0xc1840, /GX): fill the 0x4ff "world" combo from the GAME_MULTI
-// registry path (each entry name uppercased through a scratch CString), make the
-// combo's edit child read-only, select the first item, and subclass the edit
-// child's window-proc (saving the old proc in g_savedMultiWndProc).
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
     CWnd* combo = GetDlgItem(0x4ff);
@@ -151,9 +77,6 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     return 1;
 }
 
-// WndProc_c1a10 (0xc1a10) - the subclass window-proc installed on the world combo's
-// read-only edit child: swallow an empty WM_SETTEXT (keeps the shown selection text)
-// and chain everything else to the saved original proc (g_savedMultiWndProc).
 RVA(0x000c1a10, 0x70)
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
@@ -571,8 +494,6 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     return result;
 }
 
-// SetComboSelE (0xc28c0, __stdcall): set the GetCtrlE combo's current selection
-// (CB_SETCURSEL 0x14e), if the control exists.
 RVA(0x000c28c0, 0x27)
 void __stdcall SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
@@ -581,8 +502,6 @@ void __stdcall SetComboSelE(i32 index, i32 sel) {
     }
 }
 
-// GetComboSelE (0xc2900, __stdcall): the GetCtrlE combo's current selection
-// (CB_GETCURSEL 0x147), or -1 when the control is missing.
 RVA(0x000c2900, 0x2a)
 i32 __stdcall GetComboSelE(i32 index) {
     CWnd* c = GetCtrlE(index);
@@ -592,9 +511,6 @@ i32 __stdcall GetComboSelE(i32 index) {
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
 }
 
-// GetComboSelC (0xc2940): the GetCtrlC combo's cur-sel + 1 (CB_GETCURSEL 0x147), or
-// -1 when the control is missing. The GetCtrlC sibling of CBattlezDlg::Query015d30
-// (which lacks the null guard).
 RVA(0x000c2940, 0x2b)
 i32 CMultiStartDlg::GetComboSelC(i32 id) {
     CWnd* c = GetCtrlC(id);

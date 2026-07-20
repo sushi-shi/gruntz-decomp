@@ -17,25 +17,6 @@
 #include <Gruntz/SerialArchive.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Image/CImage.h>              // the resolved frame record (TickRenderCurrent's blit)
 #include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
-// SBI_Image.cpp - Gruntz CSBI_Image (C:\Proj\Gruntz), the frameless methods.
-// RTTI .?AVCSBI_Image@@; in the SBI family
-//   CSBI_Image : CSBI_RectOnly : CStatusBarItem  (CSBI_ImageSet derives from this).
-// Vtable @0x5eac0c. The /GX chain destructor (0x100870) is defined below - the
-// former SBI_ImageEh.cpp companion split is collapsed (retail's one TU was /GX).
-//
-// These are concrete virtual-slot methods modeled with the SBI family's
-// manual-vtable-stamp device (no real `virtual`); sibling/engine callees are
-// ILT-reloc-masked.
-
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only the touched members/methods are
-// load-bearing; every call through them is reloc-masked).
-
-// The config host + its lookup map + record now come from the shared canonical
-// family (<Gruntz/SbiConfig.h>): CDDrawSurfaceMgr / CSbiConfigMap / CSbiConfigRecord.
-
-// CSBI_Image (+ its CSBI_RectOnly intermediate) now come from the canonical
-// frameless header <Gruntz/SBI_Image.h>. SetupImage is defined below.
 
 // vtable slot 11 (0xe6c80): store the live config args into the base-region
 // fields, then (if a key is supplied) look up the config record through the host
@@ -90,12 +71,6 @@ i32 CSBI_Image::SetupImage(
     return val != 0;
 }
 
-// The g_gameReg singleton (*0x24556c) + the per-serialize round counter.
-
-// ---------------------------------------------------------------------------
-// CSBI_Image::ClearFrame (0xe6d90): drop the resolved frame. The vtable slot-3 body
-// AND the chain-dtor member teardown (one retail body). Re-attributed from
-// CSBI_MenuItem (dossier #16: vtbl 0x1eac0c slot [3] thunk 0x1b59).
 RVA(0x000e6d90, 0x8)
 void CSBI_Image::ClearFrame() {
     m_30 = 0;
@@ -190,14 +165,6 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     return CStatusBarItem::SerializeFields(ar, kind, a, b) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_Image (0x100870): the /GX chain destructor - stamp ??_7CSBI_Image, run
-// ClearFrame (0xe6d90, the slot-3 body above), then MSVC folds the
-// two inline base dtors in (??_7CSBI_RectOnly + DtorRect, ??_7CStatusBarItem +
-// DtorStatus - the SBI_DTOR_CHAIN device; this TU owns ~CSBI_Image itself via
-// SBI_OWN_IMAGE_DTOR) behind the /GX SEH frame with 0/1/-1 trylevels. Collapsed
-// from SBI_ImageEh.cpp (3-level case of
-// docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
 RVA(0x00100870, 0x6a)
 CSBI_Image::~CSBI_Image() {
     ClearFrame();

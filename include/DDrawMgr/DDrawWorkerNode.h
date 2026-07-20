@@ -1,30 +1,3 @@
-// DDrawWorkerNode.h - the shared CDDrawWorkerList "worker" class hierarchy. A
-// worker is a 0x7c-byte polymorphic frame-animation node the CDDrawWorkerList
-// factory (CreateWorker24/28/2C/30) allocates, seeds, and dispatches. Two
-// concrete subtypes appear: CDDrawWorkerA (vtable 0x1efea0, 12 slots, BYTE frame at
-// +0x78) and CDDrawWorkerB (vtable 0x1efed0, 14 slots, int frame at +0x78).
-//
-// IDENTITY (proven, realized 2026-07-14): CDDrawWorkerBase IS CResolveNode-derived
-// (<Gruntz/ResolveNode.h>). The proof that unlocked it:
-//   - 0x164790 IS CResolveNode::SetPosition (slot 9 of ??_7CResolveNode @0x1efbc0 -
-//     the vtable datum holds 0x164790 at +0x24), and it is `call`ed BOTH from the
-//     wide-object family Setup @0x150d60 (on a CGameObject, a CResolveNode) AND
-//     from every worker Vfunc* - so a worker holds a CResolveNode base subobject.
-//   - the base field block +0x04..+0x64 maps field-for-field onto CResolveNode
-//     (the owner ctx handle @+0x0c == CLoadable::m_0c; m_20/m_38/m_5c/m_64 are its
-//     dirty-rect/position sentinels); the workers add only +0x68..+0x7b.
-//   - the worker slots [5..9] are OVERRIDES of the CResolveNode scheme (IsLoaded/
-//     Unload/GetClassId/SetPosition) with ONE shared body each (the same RVAs sit
-//     in BOTH the A and B vtables - a base-class definition, since MSVC5 has no ICF).
-// The old ctor blocker (retail builds a worker with a SINGLE inline vptr stamp and
-// NO out-of-line `call CResolveNode::CResolveNode()` - disasm 0x157150) is unblocked
-// by the CResolveNode NO_SEED tag-ctor (inline + empty: the intermediate stamps are
-// dead stores under the derived stamp, MSVC5 /O2 elision).
-//
-// Field names are placeholders; only offsets + code bytes are load-bearing. The
-// +0x0c owner sub-manager handle (CResolveNode/CLoadable's i32 m_0c) is the
-// CDDrawWorkerCtx the factories seed; SetPosition/Helper_166040 reinterpret it
-// (the CLoadable-family int-handle idiom).
 #ifndef GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 #define GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 
@@ -32,23 +5,12 @@
 #include <Gruntz/ResolveNode.h> // CResolveNode : CLoadable - the worker base
 #include <rva.h>
 
-// +0x0c owner sub-manager (a CLoadable-family node); its +0x24 int primes m_3c
-// and its +0x10 named-object map backs Helper_166040. Completed in HelperHost.cpp.
 class CDDrawSurfaceMgr; // the +0x0c owner (the ex-CDDrawWorkerCtx view)
 
-// PlaceFrame's frame-source arg IS the canonical CDDrawWorker (m_items CObArray
-// m_pData@+0x14, windowed by m_64/m_68) - the ex CDDrawFrameSource view.
 class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view)
 
-// The two surface-pair render targets slot 10 (RenderFrame) draws the worker onto.
-// Full def in <DDrawMgr/DDrawSurfacePair.h>, pulled by the method-body TUs.
 class CDDrawSurfacePair;
 
-// The worker base: CResolveNode supplies the +0x04..+0x64 field block and vtable
-// slots [0..9]; this base OVERRIDES the scheme slots with the family-shared bodies
-// (declared-only, reloc-masked - one definition each, present in BOTH leaf vtables)
-// and adds the +0x68..+0x77 tail. Abstract (never instantiated): its own emitted
-// vtable is a dead COMDAT no retail datum corresponds to - no VTBL.
 class CDDrawWorkerBase : public CResolveNode {
 public:
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x157200 (family-shared body)
@@ -94,8 +56,6 @@ public:
 };
 SIZE(CDDrawWorkerBase, 0x7c);
 
-// BYTE-frame worker (12-slot vtable 0x1efea0): slots 0-9 from the base scheme
-// (dtor + RenderFrame overridden), Vfunc2C its own new slot 11.
 struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (compiler ??_G @0x1570b0; ~ @0x1570d0)
     // [10] 0x165fa0: plot the marker pixel (m_78) at (m_5c,m_60) onto both pairs.
@@ -110,8 +70,6 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
 SIZE(CDDrawWorkerA, 0x7c);
 VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
-// int-frame worker (14-slot vtable 0x1efed0): adds PlaceFrame (slot 12) / PlaceBound
-// (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).
 struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (compiler ??_G @0x157220; ~ @0x157240)
     // [10] 0x1660b0: draw the current frame node (m_78) onto the two surface-pair
@@ -132,10 +90,6 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
 };
 SIZE(CDDrawWorkerB, 0x7c);
 
-// ??_7CDDrawWorkerB (was g_ddrawWorkerBVtbl). Emitted by `new CDDrawWorkerB` in
-// CDDrawWorkerList.cpp; the slot-11/12/13 relocs now name the real overrides.
 VTBL(CDDrawWorkerB, 0x001efed0);
-
-// --- vtable catalog ---
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

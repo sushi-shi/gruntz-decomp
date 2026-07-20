@@ -1,17 +1,3 @@
-// BridgeMoveSprites.cpp - CTileTriggerLogic::LoadBridgeMove (RVA 0x110860), the
-// bridge/pyramid sound-cue helper called by slot-0 Tick (0x110c10). Given the
-// trigger's own tile (m_08 = tile x, m_0c = tile y) and a sprite-type id,
-// it dispatches a 0x66-case jump table over (type - 0xf): each in-bounds case
-// plays the matching bridge-transition sound cue. Two cue shapes:
-//   * FindEntry + rate-limited Play(g_sndCueTag) (GAME_PYRAMIDMOVE /
-//     LEVEL_WATERBRIDGEMOVE), gated on the sound-set guard (set->m_30 == 0);
-//   * a bare PlaySimple(name) (LEVEL_WATERBRIDGEMOVE / LEVEL_DEATHBRIDGEMOVE /
-//     LEVEL_CRUMBLE), no guard.
-// The bounds gate clamps the descriptor's pixel origin (tile<<5 + 0x10) into the
-// game-reg map rect (m_13c..m_144 / m_140..m_148). Only offsets / code bytes are
-// load-bearing; the sound-chain helpers + the GAME_*/LEVEL_* strings are reloc-
-// masked externals/$SG literals on the same singleton (*0x64556c) as its siblings.
-
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -20,15 +6,6 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/GameRegistry.h>     // g_gameReg canonical view (0x24556c)
 #include <Gruntz/TileTriggerLogic.h> // this IS CTileTriggerLogic (m_08/m_0c coord x/y)
-
-// The booty/bridge sound chain on the *0x64556c game registry (the same shape the
-// BootyState/CHelpBookSprite cue idioms use). It reads the canonical CGameRegistry:
-// the rect is m_viewOrigin* (+0x13c..+0x148) and the sound chain is m_world->m_soundRegistry
-// (CSndHost == CDDrawSubMgrLeafScan).
-
-// The receiver IS the canonical CTileTriggerLogic (<Gruntz/TileTriggerLogic.h>): its
-// slot-0 Tick (0x110c10) calls this helper on itself, and the tile coords m_08/m_0c
-// are the trigger's own (m_08=x, m_0c=y).
 
 // @early-stop
 // switch range-header + inline-jump-table wall (~77%): all six case bodies are

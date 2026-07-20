@@ -1,8 +1,3 @@
-// SplashState.h - CSplashState, the splash-screen game state (CSplashState : CState,
-// RTTI .?AVCSplashState@@, vtbl@0x1e9d74). Its methods are split across two TUs by
-// retail RVA: the loader/frame methods (LoadGameAssetNamespaces/Render/InputVirtual/... @0xf97xx)
-// live in SplashState.cpp; the out-of-line /GX destructor (0x08d000, in the 0x08dxxx
-// band) is emitted in HelpState.cpp - both include this one shared class definition.
 #ifndef GRUNTZ_SPLASHSTATE_H
 #define GRUNTZ_SPLASHSTATE_H
 

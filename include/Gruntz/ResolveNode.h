@@ -1,19 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_RESOLVENODE_H
 #define GRUNTZ_GRUNTZ_RESOLVENODE_H
 
-// ResolveNode.h - CResolveNode, the 0x68-byte CLoadable node (own primary
-// vftable @0x1efbc0 = ??_7CResolveNode) that is BOTH the DDraw surface/page-
-// manager leaf AND the direct base of the wide game-object family
-// (CGameObject : CResolveNode - proven by the family ctor 0x15b390 stamping
-// 0x5efbc0 for its base subobject and every family dtor folding this class's
-// teardown; the former WwdBResolve duplicate of this class is DISSOLVED).
-// Hoisted from ResolveNode.cpp (wave4-L) so the split method set can live in its
-// retail objs: default ctor pocket (D, ResolveNode.cpp), the 3-arg ctor
-// (I obj, WwdFactoryObject.cpp), Init (T obj, DDrawSurfacePair.cpp).
-//
-// Layout recovered from the ctor/dtor/Init/SetPosition stores + the wide-object
-// dirty-rect blits; only OFFSETS + emitted code bytes are load-bearing.
-
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 #include <Ints.h>
 #include <rva.h>

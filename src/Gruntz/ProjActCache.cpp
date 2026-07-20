@@ -1,21 +1,10 @@
-// ProjActCache.cpp - zBitVec::zBitVec (0x16d790): construct the zErrHandling
-// error-tracking base (cl re-stamps the implicit most-derived ??_7zBitVec vptr after
-// it returns - real polymorphic shape, no manual stamp), size the bit-vector to cover
-// `idx`, then set bit `idx`; on a sizing failure record the caller return address
-// and fire the error sink. The destructible polymorphic base forces the /GX frame.
 #include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Set)
 #include <Gruntz/ProjActCache.h>
 
 #include <stdlib.h> // realloc (0x125180), malloc (0x120b60)
 #include <string.h> // memset (rep stos)
 
-// memset stays the rep-stos intrinsic; memcpy is intrinsic (rep movs) for the trie
-// insert below but forced out-of-line (call) for EnsureSize - the #pragma toggles
-// per function.
 #pragma intrinsic(strlen, strcmp, memcpy)
-
-// (zBitVec::zBitVec(i32,i32) @0x16d790 lives in its retail TU, the merged
-//  container obj src/Gruntz/TypeKeyColl.cpp - wave2-H.)
 
 // ===========================================================================
 // CProjActMap::Insert  (0x1933b0) - find-or-insert a string key into the crit-bit
@@ -146,11 +135,6 @@ void* CProjActMap::Insert(const char* key, void* value) {
     return 0;
 }
 
-// ===========================================================================
-// zBitVec::Or  (0x193680) - OR the words of `o` into this, growing first if `o`
-// covers more bits (EnsureSize; on failure leave this as-is). Walks the smaller of
-// the two SBO/heap word bands (`o`'s bit count) OR-combining word-by-word.
-// ===========================================================================
 RVA(0x00193680, 0x5e)
 zBitVec* zBitVec::Or(zBitVec* o) {
     if (static_cast<u32>(o->m_capacity) > static_cast<u32>(m_capacity)) {
@@ -167,15 +151,7 @@ zBitVec* zBitVec::Or(zBitVec* o) {
     return this;
 }
 
-// ===========================================================================
-// zBitVec::EnsureSize  (0x1936e0)
-// ===========================================================================
 #pragma function(memcpy)
-// Grow the word band to cover `nbits` bits, preserving existing words. When the
-// band is already on the heap (capacity > 32) realloc and zero only the grown
-// tail; from the inline 4-byte SBO buffer malloc fresh, zero it, and copy the
-// inline word in. On allocation failure record the caller return address and
-// fire the container error sink, returning 0.
 RVA(0x001936e0, 0xd3)
 i32 zBitVec::EnsureSize(i32 nbits) {
     u32 ndwords = ((nbits & 0x1f) != 0 ? 1 : 0) + (static_cast<u32>(nbits) >> 5);

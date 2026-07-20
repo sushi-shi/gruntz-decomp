@@ -1,10 +1,3 @@
-// SpriteRef.cpp - the CSpriteRef bucket-element node of CSpriteRefTable (trace
-// placeholder tomalla-42). Build() bakes the per-`kind` team-color triple
-// into the node (three RGB565 pixels at +0x08/+0x0a/+0x0c) and caches the shade
-// cache + alpha table; Free() returns the table to the cache. The class shape +
-// the shared RGB-format shift globals come from <Gruntz/SpriteRefTable.h> /
-// <DDrawMgr/ShadeTableCache.h>; CShadeTableCache::FindRemove is modeled NO-body so
-// Free()'s `call` reloc-masks.
 #include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -15,14 +8,6 @@
 #include <Gruntz/GameRegistry.h>      // g_gameReg (m_saveSink) for the re-homed 0x0e35f0 dlg proc
 
 #include <rva.h>
-
-// The live screen RGB-format shift table at 0x683ea0..0x683eb4 - already named by
-// CLightFxRender.cpp / ShadeTableCache.cpp. Reloc-masked DIR32 data refs.
-
-// The shade cache that owns m_alphaKey; Free() hands the table back via FindRemove
-// (0x14fb80). Modeled NO-body so the `call` reloc-masks.
-
-// ---------------------------------------------------------------------------
 
 // Bake the team-color triple for `kind` and cache the shade table. Returns 1, or
 // 0 for an out-of-range kind. __thiscall, ret 0xc.
@@ -239,7 +224,6 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
     return 1;
 }
 
-// Hand the alpha table back to its cache and clear the cached pointers.
 RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
     CShadeTableCache* cache = reinterpret_cast<CShadeTableCache*>(m_cache);
@@ -250,12 +234,6 @@ void CSpriteRef::Free() {
     }
 }
 
-// -------------------------------------------------------------------------
-// 0x0e35f0. __stdcall dialog
-// proc: WM_INITDIALOG seeds the selection index + active save-sink from the game
-// registry; WM_COMMAND handles Cancel / the shared save-menu draw. The two callees
-// and the selection global are the canonical savegame symbols (DrawSaveGameMenu
-// @0xe3f40, FillSaveDialog @0xe3c60, g_savedMenuCmd @0x213a9c), reloc-masked.
 DATA(0x0024c86c)
 i32 g_dlg64c86c = 0;       // DAT_0064c86c (the active save-sink; owner-TU definition)
 extern i32 g_savedMenuCmd; // 0x213a9c (canonical, DATA-bound in savegame)

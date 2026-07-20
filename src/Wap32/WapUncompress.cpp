@@ -1,20 +1,5 @@
 #include <rva.h>
-// WapUncompress.cpp - the game's zlib `compress` helper (0x1853b0). Despite the
-// leaked "WapUncompress" name this is the COMPRESS side: its body is verbatim
-// zlib-1.0.4 compress.c `compress` shape (deflateInit at Z_DEFAULT_COMPRESSION,
-// deflate(Z_FINISH), deflateEnd) and it calls the DEFLATE entry points of the
-// single statically-linked zlib - deflateInit_ 0x186180, deflate 0x186620,
-// deflateEnd 0x186990 (all three now library-anchored; the earlier "second zlib
-// copy / inflate" note was a misread - there is one zlib and these are its
-// compressors). The "1.0.4" version string is the zlib $SG constant; the three
-// zlib entry points are reloc-masked rel32 externs.
 
-// The zlib z_stream (1.0.4 layout, sizeof 0x38) + the deflate entry points come from
-// the REAL vendored <zlib.h> (extern "C", EXPORT==empty==__cdecl since ZLIB_DLL is
-// unset) - the struct is byte-identical to the retail layout, so the field stores land
-// at the retail offsets. (Was a hand-rolled GzStream view + local extern "C" decls;
-// deflateInit_ 0x186180, deflate 0x186620, deflateEnd 0x186990 are the reloc-masked
-// rel32 externs the vendored zlib TUs anchor.)
 #include <zlib.h>
 
 // ===========================================================================

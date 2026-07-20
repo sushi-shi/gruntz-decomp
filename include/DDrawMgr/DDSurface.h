@@ -1,24 +1,3 @@
-// DDSurface.h - the WAP32 DirectDraw surface wrapper (DDrawMgr module,
-// C:\Proj\DDrawMgr\DIRSURF.CPP): the 0xc0-byte surface base of the pool-item surface
-// family (vtable 0x5ef7f0, RTTI-less `g_poolItemVtbl`) and the IDirectDrawSurface COM
-// interface it drives.
-//
-// THE canonical single-source shape for CDDSurface. This class was formerly modeled
-// under THREE names - CDDSurface (this header, the widely-included surface-op view),
-// CFileImage (<Image/Image.h>, the fuller BMP/PCX/PID loader + surface-blit view) and
-// CPoolItemBase (DDrawPtrCollections.cpp, the pool view) - now UNIFIED here. Evidence
-// for the CDDSurface name: every method (Lock/Fill/Refresh/SetPalette/Flip/Blt/...)
-// references the string "C:\Proj\DDrawMgr\DIRSURF.CPP", so this is one DDrawMgr-module
-// class from DIRSURF.CPP; "CDDSurface" (C DirectDraw Surface) is the literal expansion
-// of DIRSURF, and its core role (Lock/Blt/Flip/BltFast/SetColorKey/SetPalette/Unlock)
-// is DirectDraw surface ops. RTTI-less, so no ground-truth mangled name; the winning-
-// symbol split (Lock->CDDSurface / Fill->CFileImage) was a per-TU naming artifact.
-//
-// Field names are placeholders (m_<hexoffset>); the offsets, the COM vtable SLOT
-// offsets, and the code bytes are load-bearing. See
-// docs/patterns/surface-pool-comdat-dtors.md for the 1-base + 4-derived hierarchy
-// (CFileImageSurface / CPoolItemA / ...A88 / ...AB8 / ...AE8 derive from this base;
-// vtables 0x5efa58/a88/ab8/ae8).
 #ifndef DDRAWMGR_CDDSURFACE_H
 #define DDRAWMGR_CDDSURFACE_H
 
@@ -26,33 +5,16 @@
 #include <Ints.h>
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// IDirectDrawSurface (DDRAW) - the held surface COM interface the CDDSurface
-// thunks drive; the real <ddraw.h> declaration. The dispatching TUs (DIRSURF.CPP
-// and the blit/flip/unlock/probe paths) pull <ddraw.h> for the full interface + slot
-// signatures; pointer-only includers of this header need only the forward decl below.
-// Every DX6 vtable slot the thunks touch is at its retail index, so
-// `iface->Method(args)` lowers to `mov eax,[iface]; call [eax+slot]` exactly as the
-// hand-rolled vtbl-struct view did:
-//   Blt@5 (+0x14), BltFast@7 (+0x1c), Flip@11 (+0x2c), GetColorKey@16 (+0x40),
-//   GetSurfaceDesc@22 (+0x58), IsLost@24 (+0x60), Lock@25 (+0x64),
-//   SetColorKey@29 (+0x74), SetPalette@31 (+0x7c), Unlock@32 (+0x80).
-// ---------------------------------------------------------------------------
 struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
 
 struct CDDPalette;          // fwd (SetPalette takes a wrapper ptr; PAUCDDPalette => struct)
 class CDDrawPtrCollections; // fwd (the display/pool manager passed as the palette/init context)
 class CFileImageSrc;        // fwd (Decode's run-length source header; full def in <Image/Image.h>)
 
-// The 16-byte rect/clip record DecodeThunk builds on the stack and passes by value to
-// the inner blit/decode worker (Run, 0x1471d0).
 struct ClipRect16 {
     i32 a, b, c, d;
 };
 
-// The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
-// (libwap32 wap32/pid.h). Same immediates as the bare masks, so naming them is
-// matching-neutral. (Shared by the DIRSURF + file-codec TUs.)
 enum PidFlags {
     PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
     PID_VIDEO_MEMORY = 0x02,     // bit1  "VID"
@@ -61,11 +23,6 @@ enum PidFlags {
     PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
 };
 
-// The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). CRezImage::DecodePidData
-// reads it at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream
-// begins right after it (buf + 0x20). Monolith's WAP32 layout (libwap32 wap32/pid.h);
-// naming the fields is matching-neutral (same offsets/widths). Shared here next to the
-// PidFlags it carries at +0x04.
 struct PidHeader {
     u32 fileDesc; // +0x00  id / file descriptor
     u32 flags;    // +0x04  PidFlags
@@ -79,34 +36,14 @@ struct PidHeader {
 };
 SIZE(PidHeader, 0x20);
 
-// The CDDSurface::Resolve / ResolveEx `type` selector. Same case immediates as the
-// bare 1/2/4 labels (the running-subtract switch chain is value-driven), so naming
-// them is matching-neutral; bodies stay in retail .text order (4, 2, 1).
 enum FileImageFormat {
     FMT_BMP = 1,
     FMT_PCX = 2,
     FMT_PID = 4,
 };
 
-// ---------------------------------------------------------------------------
-// CDDSurface (DIRSURF.CPP) - the WAP32 0xc0-byte surface base and the POLYMORPHIC
-// base of the pool-item surface family. The same 0xc0 object CFileImageSurface /
-// CPoolItemA / CPoolItemA88 / ...AB8 / ...AE8 (sibling TUs) derive from (vtables
-// 0x5efa58/a88/ab8/ae8). cl emits ??_7CDDSurface@@6B@ and stamps the vptr in the
-// ctor/dtor (implicit, stamp-first); it reloc-masks against the shared 0x5ef7f0 vtable.
-//
-// This one class both wraps two IDirectDrawSurface COM surfaces (m_8/m_c: Lock/Blt/
-// Flip/BltFast/SetColorKey/SetPalette/Unlock) AND loads/saves image files (BMP/PCX/
-// PID -> the decoders + blitters below). The +0x08/+0x0c held surfaces are released by
-// the dtor's FreeSurfaces teardown; the +0x94 CPtrArray of polymorphic sub-elements is
-// walked + each element deleted via its slot-0 dtor, then the array itself destroyed
-// (the throwing CPtrArray member ctor is what gives each factory `new` its /GX frame).
-// ---------------------------------------------------------------------------
 SIZE(CDDSurface, 0xc0);
 
-// The slot-6 (GetPoolKind) per-class tag of the surface-pool family: every body is
-// a bare `mov eax,<kind>; ret` (byte-dumped 2026-07-14). Enumerators name the PROVEN
-// owning class of each value; the tag's consumers are unreconstructed engine code.
 typedef enum DDSurfacePoolKind {
     POOLKIND_PLAIN = 0,     // CDDSurface base default        (0x141300: xor eax,eax)
     POOLKIND_MODE = 1,      // CPoolItemAB8 device/mode page  (0x143cd0)
@@ -370,8 +307,5 @@ public:
     i32 m_bc; // +0xbc  cleared
 };
 SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
-                        // operator-new(0xc0); == the CImage held-surface pool item)
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 #endif // DDRAWMGR_CDDSURFACE_H

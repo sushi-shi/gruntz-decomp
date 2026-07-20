@@ -1,11 +1,3 @@
-// ColorHsv.cpp - RgbToHsv (0x14fcc0): convert a packed 3-byte color (b0/b1/b2 =
-// the low three bytes of the dword arg) to a {hue, sat, value} float triple
-// written through the first (output) pointer arg. __cdecl. The integer max/min
-// of the three channels lower via the classic non-CSE'ing `((a)>(b)?(a):(b))`
-// MACRO (max(max(b0,b1),b2) re-evaluates the inner max), and the hue/sat are
-// computed in x87 with single-precision constants (60 deg/sextant, the +2/+4
-// sextant biases, and a -360 wrap). Field names are placeholders; only the
-// byte layout + emitted code bytes are load-bearing.
 #include <Ints.h>
 #include <DDrawMgr/ColorHsv.h> // the shared ColorHSV record + RgbToHsv decl
 #include <rva.h>
@@ -59,5 +51,4 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     return out;
 }
 
-// ColorHSV SIZE lives with its definition (include/DDrawMgr/ColorHsv.h -> ColorHsv.cpp).
 SIZE_UNKNOWN(ColorHSV);

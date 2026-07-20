@@ -1,9 +1,3 @@
-// GruntPowerupSprite.h - the "grunt has a powerup" indicator sprite, a
-// CUserLogic-derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor
-// folds the bare CUserLogic teardown (leaf-dtor archetype); SetCell stashes the
-// grunt cell + powerup id and binds the bute sprite; Update tracks the grunt.
-//
-// Field names are placeholders; only the OFFSETS + code bytes are load-bearing.
 #ifndef GRUNTZ_CGRUNTPOWERUPSPRITE_H
 #define GRUNTZ_CGRUNTPOWERUPSPRITE_H
 
@@ -41,8 +35,6 @@ public:
 };
 VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 
-// The class registry entry: its first dword receives the Update handler PMF (a
-// 4-byte code pointer on this complete single-inheritance class).
 typedef i32 (CUserLogic::*PowerupActHandler)();
 struct CPowerupActEntry {
     PowerupActHandler m_fn;

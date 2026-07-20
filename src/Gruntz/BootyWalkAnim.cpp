@@ -1,19 +1,3 @@
-// BootyWalkAnim.cpp - the per-frame update of the booty ("WARP" spell) walking-
-// grunt animation state machine. A sibling
-// of CBootyState::BuildBootyGruntIdleAnimation (src/Gruntz/BootyMessages.cpp) on the
-// same booty game-state object (the former BzState view is folded onto the canonical
-// CBootyState : CState, <Gruntz/GameMode.h>): `this` carries the per-player grunt arrays at
-// +0x2c8 / +0x2d8, the active-player step index m_stepIndex, and the sub-state flags
-// m_walkStarted / m_soundStarted; m_initGate gates the init vs step path.
-//
-// IDENTITY recovered by string-xref (the "GRUNTZ_PICKUPS_<W/A/R/P>" WARP cycle,
-// "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D" / "GAME_FLAGRISE" cues). The Bz* object graph is
-// the shared <Gruntz/BzState.h>; the booty-state class, g_gameReg sub-objects and
-// every callee are unmatched engine code reached by raw this+offset / reloc-masked
-// external thunks; only the offsets / code bytes are load-bearing (campaign
-// doctrine). Modeled with real <Mfc.h> CString so cl emits the same /GX EH frame +
-// the same WARP-letter jump-table CString build idiom.
-
 #include <Ints.h>
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Gruntz/BattlezData.h>
@@ -30,11 +14,8 @@
 #include <rva.h>
 #include <Globals.h>
 
-// Per-player idle-sprite id table (0x5e9068), the wand/flag cue tag + enable gate,
-// the wrap-safe draw clock, the "A" action-key string, and the inline-RNG state.
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
-// The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)
 char g_secretChars[] = "WARP"; // "WARP"
 

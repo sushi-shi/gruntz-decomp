@@ -1,58 +1,10 @@
-// Font.h - the engine's bitmap Font class (the text/glyph subsystem). A Font
-// owns a per-letter table of glyph metrics + a parallel table of decoded pixel
-// surfaces, loaded from a binary font file through the MFC CFile/CArchive I/O
-// stack. Minimal Monolith-faithful reconstruction sufficient to byte-match the
-// leaf methods. Field names are placeholders (m_<hexoffset>); only the OFFSETS
-// and the code bytes are load-bearing (campaign doctrine).
-//
-// Font instance layout (pinned from the matched methods):
-//   +0x00  m_ready    : loaded/allocated flag (0 = empty, 1 = populated).
-//   +0x04  m_count    : letter count (number of glyphs in the font).
-//   +0x08  m_surfaces : void*[m_count] - per-glyph decoded pixel buffers
-//                       (each operator-new'd to glyph.width * glyph.height
-//                       bytes; freed in FreeMemory).
-//   +0x0c  m_glyphs   : Glyph[m_count] - per-glyph metric records (8 B each:
-//                       {int width; int height;}); operator-new'd as one block.
-//   +0x10  m_maxHeight: max glyph height across the table (the font line-height,
-//                       computed at the tail of LoadFont).
 #ifndef SRC_FONT_FONT_H
 #define SRC_FONT_FONT_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-// The global operator new / delete (the NAFXCW heap) are the language's
-// implicitly-declared allocation functions (also surfaced by <Mfc.h>/<new> below);
-// no local re-declaration is needed - their `call rel32` displacements reloc-mask
-// in objdiff exactly the same.
-
-// ---------------------------------------------------------------------------
-// The MFC I/O stack the font file is read through. Each class is reconstructed
-// only as deeply as its byte-match needs:
-//
-//   CString  - a single char* @+0 (the MFC string). Only its destructor is
-//              touched here (the by-value szFileName arg + the throwaway temp
-//              the file-name normalizer builds), the NAFXCW dtor.
-//   CFile    - the MFC binary file. Default-constructed on the stack, opened,
-//              closed, destroyed. NO field of it is accessed inline, so only the
-//              method symbols/calling-convention are load-bearing; its size just
-//              has to cover the stack slot. Its Open/~CFile/Close are virtual in
-//              MFC (UAE) but devirtualize to direct `call rel32` on the concrete
-//              stack object.
-//   CArchive - the buffered reader layered over the CFile. Its inlined
-//              extraction operator reads straight out of the m_lpBufCur/
-//              m_lpBufMax window (load-bearing offsets +0x24/+0x28), topping up
-//              via the out-of-line FillBuffer; Read/Close/~CArchive are
-//              out-of-line library calls.
-//
-// All of these resolve to NAFXCW (the statically linked MFC) - their bodies are
-// never matched here; only the exact mangled symbol + arg shape matter.
-// ---------------------------------------------------------------------------
 #include <Mfc.h>        // real MFC CString / CFile / CArchive / CFileException (kept first)
 #include <Wap32/Rect.h> // canonical CRect (the 16-B by-value rect bundle; ctor 0x29ac0)
 
-// ---------------------------------------------------------------------------
-// A single glyph's metric record (the m_glyphs[] element, 8 B). The pixel
-// surface for the glyph is width*height bytes (one byte per pixel).
-// ---------------------------------------------------------------------------
 struct Glyph {
     Glyph() {}  // user-declared (drives the array-new shape)
     i32 width;  // +0x00
@@ -60,9 +12,6 @@ struct Glyph {
 };
 SIZE(Glyph, 0x8); // m_glyphs[] element stride (8-byte metric record)
 
-// ---------------------------------------------------------------------------
-// Font - the bitmap font.
-// ---------------------------------------------------------------------------
 class Font {
 public:
     Font();
@@ -86,42 +35,18 @@ public:
     i32 m_reserved14;  // +0x14  (unread here; present in the retail object)
 };
 SIZE(Font, 0x18); // the four global Font instances are laid out 0x18 apart
-                  // (g_mediumFont 0x24eae8 -> g_smallFont 0x24eb00, adjacent)
 
-// The four size-selected global Font instances (VFont in retail). DATA homes in
-// src/Gruntz/Fonts.cpp; declared here so consumers reference them from this owner
-// header, not per-TU externs.
 extern Font g_largeFont;  // 0x24eac0
 extern Font g_mediumFont; // 0x24eae8
 extern Font g_smallFont;  // 0x24eb00
 extern Font g_tinyFont;   // 0x24ea58
 
-// ---------------------------------------------------------------------------
-// The pixel extent of a measured run of text: {total advance width, line
-// height}. Returned by value (sret) from FontRenderer::MeasureText - a plain
-// 8-byte pair so the two int stores reproduce exactly.
-// ---------------------------------------------------------------------------
 struct TextExtent {
     i32 width;  // +0x00 (sum of per-glyph advance widths)
     i32 height; // +0x04 (the font line-height, Font::GetMaxHeight)
 };
 SIZE(TextExtent, 0x8); // sret 8-byte {w,h} pair
 
-// ---------------------------------------------------------------------------
-// FontRenderer - a stateful rendering shim wrapping a Font*. The leaf methods
-// (ctor / SetColor / GetChar) plus the text geometry/word-wrap/draw entry
-// points below are matched here; the lower-level blit/glyph callees stay
-// external (no body) so their calls reloc-mask.
-// ---------------------------------------------------------------------------
-// The 16-byte by-value rectangle bundle passed to the inner glyph-blit
-// (DrawGlyphRun) is the canonical CRect (Wap32/Rect.h): four ints {left,top,right,
-// bottom} built by the out-of-line CRect(i32,i32,i32,i32) ctor at 0x29ac0. The former
-// per-TU `struct Rect` view of it is dissolved (MODEL THE CLASS, NOT THE VIEW).
-
-// The draw target of the whole draw family is the DirectDraw surface wrapper
-// (proven by DrawGlyphRun 0x179e70: arg2 is Lock()ed / m_width / m_height /
-// m_pitch read / m_8->Unlock(0), and DrawLine's vertical limit [p+0x18] is its
-// dwHeight). The former per-TU "DrawRect" view of it is dissolved.
 class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 
 class FontRenderer {
@@ -184,20 +109,7 @@ public:
     void* m_clip;    // +0x0c  (optional clip-rect handle)
 };
 SIZE(FontRenderer, 0x10); // stateful render shim; the ctor inits exactly the four
-                          // fields m_font/m_color/m_surface/m_clip (through +0x0c)
 
-// (TextRange is GONE - a fabricated {begin..end} view with ZERO real callers: every
-// caller of the 0x17b500 helper passes a CRect, so it is CRect::Width()
-// (<Wap32/Rect.h>), out-of-line in this TU per the retail contribution range.)
-
-// ---------------------------------------------------------------------------
-// CharCursor - the per-character accessor at 0x17b4f0. It reads byte `i` of the
-// char* stored at its +0x00. The word-wrap loops call it on their CString line
-// temps (whose m_pchData sits at +0x00) by reinterpreting the CString as this
-// accessor - the retail bridge between MFC CString storage and the engine's own
-// byte-indexed glyph lookup. GetChar's `this` is therefore always one of those
-// CString temps, never a real FontRenderer.
-// ---------------------------------------------------------------------------
 struct CharCursor {
     u8* m_str; // +0x00  (aliases CString::m_pchData)
     RVA(0x0017b4f0, 0xc)
@@ -206,16 +118,5 @@ struct CharCursor {
     }
 };
 SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
-
-// (The ex-CWapNodeB/CWapNodeBase pair is DISSOLVED 2026-07-16: it was a duplicate
-// view of <Net/NetMgr.h>'s CNetPlayerListNode - its m_type/m_buf34/m_buf38 were
-// m_desc.m_dwSize/m_lpszName/m_lpszPassword inside the node's DPSESSIONDESC2 copy,
-// and FreeStrings (0x179680, NetMgr.cpp) is that node's dtor helper.)
-
-// (The FontInterfaceObject view is GONE: the five IsInterface1-5 GUID predicates at
-// 0x1794b0-0x179570 are the canonical <Net/InterfaceObject.h> InterfaceObject's own
-// methods, defined in NetMgr.cpp on that class - not a Font type.)
-
-// --- vtable catalog ---
 
 #endif // SRC_FONT_FONT_H

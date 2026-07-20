@@ -1,14 +1,3 @@
-// GruntVoice.cpp - the voice TU (C:\Proj\Gruntz): the WOVEN original obj at
-// retail .text [0x119620 .. 0x11aa78] (TU_MIGRATION interval 0x119620, weave
-// 0.45). The two former units gruntvoice + voicetrigger interleave function-by-
-// function throughout the interval (Step/ctor/dtor/InitActReg/Dispatch of BOTH
-// classes alternate) - impossible across objs at first link => ONE original TU
-// (wave2-F merge). Classes: CGruntVoice + CVoiceTrigger (both CUserLogic-derived
-// voice leaves; twin worker-pumps, twin activation registries). The low-RVA
-// CVoiceTrigger band (0x13400..0x135a0: L_13400 + no-arg ctor + Serialize +
-// ~dtor) is the boundary orphan-COMDAT pool emission - kept, ascending.
-//
-// Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h>              // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
@@ -32,61 +21,11 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
-// The global running game clock (DAT_00645588); the value-load reloc-masks.
-
-// Reloc-fidelity bindings for the registry statics whose plain externs live in
-// GruntVoice.h (labels.py does not scan a header's DATA(), so they are bound here
-// in the owning .cpp - same header-extern/cpp-DATA split as Globals). The shared
-// alloc-scratch cache is the canonical g_projActCache @0x2bf464 (the old
-// g_actCache spelling was an unbound VA-typo alias).
-// (The "A" bute key @0x20a454 is the canonical s_codeA, bound in toobspikez and
-// declared below; the former per-TU g_voiceKeyA alias lost the per-rva dedup and is
-// folded away - all uses now reference s_codeA.)
-// INTERIOR-OFFSET TRAP, removed 2026-07-13. This TU used to declare EIGHT separate globals
-// here - g_vactColl (0x6514d8), g_vactColl2 (+4), g_vactLo (+8), g_vactHi (+0xc), g_vactBase
-// (+0x10), g_vactCur (+0x14), g_vactStride (+0x18), g_vactScratch (+0x20) - and it DEFINED
-// one of them (g_vactColl2) outright. They are not globals: those are the FIELDS of the one
-// CActReg at 0x6514d8, whose offsets they reproduce exactly (m_coll2/+4, m_lo/+8, m_hi/+0xc,
-// m_base/+0x10, m_cur/+0x14, m_stride/+0x18, m_scratch/+0x20 - see <Gruntz/ActReg.h>). The
-// same object is already DATA-pinned and DEFINED as `CActReg g_actReg_6514d8` in
-// GruntVoiceActReg.cpp, so 0x2514d8 carried TWO competing DATA() claims under two names.
-// Subsumed: one object, one definition, one name; the per-field scalars are gone.
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
-// The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
-// alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
-
-// ---------------------------------------------------------------------------
-// The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
-// trigger's OWN instance at 0x651500 (the SAME range/cache shape as every
-// FireActivation registry: g_vtrigColl base + the lo/hi/base/stride/cur/scratch
-// fields). The slow path Finds (0x16da80), and on miss rebuilds (GetRetAddr 0x16d990
-// -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
-// so the loads reloc-mask; the collection methods are external/no-body.
-// ---------------------------------------------------------------------------
-
-// (The registry Entry type CVTrigEntry - a CVoiceTrigger PMF at [entry] - is the
-// canonical <Gruntz/VoiceTrigger.h> type, mirroring GruntVoice.h's CVActEntry; no
-// per-TU view.)
-
-// SAME INTERIOR-OFFSET TRAP as the 0x6514d8 block above, and the old comment right here
-// spelled the shape out without drawing the conclusion: "the SAME range/cache shape as every
-// FireActivation registry: g_vtrigColl base + the lo/hi/base/stride/cur/scratch fields".
-// That IS <Gruntz/ActReg.h>'s CActReg. The seven globals this TU used to DEFINE
-// (g_vtrigColl2 +4, g_vtrigLo +8, g_vtrigHi +0xc, g_vtrigBase +0x10, g_vtrigCur +0x14,
-// g_vtrigStride +0x18, g_vtrigScratch +0x20) are its FIELDS, and VTrigLookup was
-// CActReg::ResolveEntry hand-inlined over them - identical statement for statement.
-// One object, one definition. The registry the voice trigger registers into is the CActReg
-// at 0x651500; nothing else was ever there.
 DATA(0x00251500)
 extern CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 
-// The shared activation-NAME registry (the first block interns "A"). g_buteTree
-// (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
-// is the running id counter; s_codeA (0x60a454) is the "A" key; the scratch
-// name registry is @0x6bf650 (same shape as g_vtrigColl).
-// s_codeA is the "A" key byte-array @0x60a454 (RVA 0x20a454); the DATA binding lives
-// in toobspikez (?s_codeA@@3PADA), so this is a plain extern here.
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 static inline char* ActNameLookup(i32 id) {
@@ -103,33 +42,7 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// The logic handler bound into the slot (the ILT to CVoiceTrigger::Tick @0x11a700);
-// referenced by address so the DIR32 operand reloc-masks.
 extern i32 VTrigLogic_11a700();
-
-// The on-screen cue path (Tick). FindGruntAt (0x75c60, via the 0x32ce thunk) is
-// CTriggerMgr::FindGruntAt and returns the placed grunt under the trigger's screen
-// rect as a CTmCell* == CGrunt* (typedef CGrunt CTmCell, <Gruntz/TriggerMgr.h>);
-// the cue fire (0x11b3b0, via the 0x39f4 thunk) is CGruntSpawnConfig::SpawnVoiceDriver
-// (canonical <Gruntz/GruntSpawnConfig.h>). Both __thiscall, reloc-masked.
-//   FindGruntAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> grunt* (or 0).
-//   SpawnVoiceDriver(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
-// The returned grunt's own bound object sits at +0x10 (CUserLogic::m_object); its
-// screen x/y are read at +0x5c/+0x60 (CGameObject). The former CVoiceHit/
-
-// Tick reads the bound object (m_10, CGameObject*) directly: +0x5c/+0x60 screen
-// x/y, +0x124/+0x128 the voice-cue ids passed to CueA, +0x134/+0x144 the probe rect
-// bounds; the on-screen window (m_38)'s +0x08 status bits carry bit 0x10000
-// ("fired / handled this frame"). All modeled on CGameObject (<Gruntz/UserLogic.h>).
-
-// The global game registry (CGameRegistry, RVA 0x24556c; wwdfile owns the DATA
-// label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the
-// cue receiver at +0x60 (CueA's `this`) and the probe sink at +0x68 (QueryAt's
-// `this`).
-
-// The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
-// only fires for the active area. extern "C" so the load reloc-masks against the
-// already-named global.
 
 // @early-stop
 // @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
@@ -147,16 +60,9 @@ void RealizeUfoDtor(CUFO* p) {
     p->CUFO::~CUFO(); // qualified direct call - odr-uses the implicit ??1CUFO COMDAT
 }
 
-// --- CVoiceTrigger no-arg ctor (0x013470) --- the deserialize-path ctor: base
-// prologue + link + leaf vptr stamp (the empty body is enough for cl). It anchors
-// GetTypeTag @0x133b0 in this TU alongside the class's dtor/Serialize band.
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
-// CVoiceTrigger::Serialize @0x0134e0 - the vtable slot-1 override: chain the shared
-// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
-// sub-object's chain; normalize the second chain's success to a strict bool. The
-// byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x000134e0, 0x47)
 i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -179,11 +85,6 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CVoiceTrigger@@UAE@XZ 0x000135a0 0x44
 
-// GruntVoiceStep @0x119620 - the CGruntVoice worker-pump (free __cdecl, /GX): the
-// controller lives at obj->m_7c; dispatch on its state id, building the CGruntVoice
-// state object on state 0 and dispatching to the state object's vtable slots otherwise.
-// Byte-identical to StepController @0x10d150 bar the leaf `new`d on state 0 (CGruntVoice
-// is 0x78).
 RVA(0x00119620, 0xf1)
 i32 GruntVoiceStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
@@ -222,11 +123,6 @@ i32 GruntVoiceStep(CGameObject* obj) {
     return 1;
 }
 
-// VoiceTriggerStep @0x119760 - the CVoiceTrigger worker-pump (free __cdecl, /GX):
-// the controller lives at obj->m_7c; dispatch on its state id, building the
-// CVoiceTrigger state object on state 0 and dispatching to the state object's vtable
-// slots otherwise. Byte-identical to StepController @0x10d150 bar the leaf `new`d on
-// state 0 (CVoiceTrigger is 0x54).
 RVA(0x00119760, 0xf1)
 i32 VoiceTriggerStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
@@ -351,25 +247,11 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = m_object->m_screenY + (m_object->m_extent.bottom << 5) + 7;
 }
 
-// ===========================================================================
-// CGruntVoice::InitActReg  (0x119dc0)
-// ===========================================================================
-// Construct the class's activation-coordinate registry singleton (g_vactColl
-// @0x6514d8) over the fixed range [2000, 2010] via the shared registry ctor
-// (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
 RVA(0x00119dc0, 0x15)
 void CGruntVoice::InitActReg() {
     g_actReg_6514d8.Construct(2000, 2010);
 }
 
-// ===========================================================================
-// CGruntVoice::Dispatch  (0x119e40)
-// ===========================================================================
-// The per-coordinate activation registry dispatch - the SAME ActLookup/
-// FireActivation shape as CSecretTeleporterTrigger::FireActivation (0x042150),
-// on CGruntVoice's OWN registry statics (0x6514xx). Look the coordinate up to an
-// Entry*; if its handler slot is set, look it up again and invoke the handler
-// __thiscall on `this`.
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 coord) {
     CVActEntry* e = VActLookup(coord);
@@ -379,19 +261,11 @@ void CGruntVoice::FireActivation(i32 coord) {
     }
 }
 
-// CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
-// coordinate registry singleton (g_vtrigColl @0x651500) over the fixed range
-// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
     g_vtrigActReg.Construct(2000, 2010);
 }
 
-// CVoiceTrigger::FireActivation @0x11a3a0 - vtable slot 4. Look the activation
-// coordinate up in the trigger's OWN registry (g_vtrigColl, via VTrigLookup); if the
-// resolved entry carries a registered handler PMF, resolve it again and dispatch it
-// __thiscall on `this`. Same double-lookup + PMF-dispatch archetype as
-// CSecretTeleporterTrigger::FireActivation.
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
     CVTrigEntry* e = reinterpret_cast<CVTrigEntry*>(g_vtrigActReg.ResolveEntry(coord));
@@ -431,10 +305,6 @@ void CVoiceTrigger::RegisterActs() {
     *reinterpret_cast<void**>(g_vtrigActReg.ResolveEntry(id)) = static_cast<void*>(&VTrigLogic_11a700);
 }
 
-// CVoiceTrigger::Tick @0x11a700 - query the entity under the trigger's screen
-// rect; if it is in the active area and its sprite sits inside the on-screen
-// window, fire the voice cue and mark the window handled this frame. Always
-// returns 0.
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
@@ -508,12 +378,6 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     return 1;
 }
 
-// ===========================================================================
-// CGruntVoice::Reset  (0x11a870)
-// ===========================================================================
-// Clear the voice: zero the sample slot (+0x54), swap the +0x14 sub-object's
-// bute node to the "A" idle-anim key (stashing the previous in CUserLogic::m_prevAnimSetNode),
-// then clear the flag/owner slots (+0x6c/+0x68).
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_sample = 0;
@@ -523,20 +387,6 @@ void CGruntVoice::Reset() {
     m_source = 0;
 }
 
-// ===========================================================================
-// CGruntVoice::Update  (0x11a8e0)
-// ===========================================================================
-// The per-frame voice-bubble handler. If the voice is inactive (m_sample == 0) or
-// its timed-play window has elapsed (game clock - the i64 start @+0x58 >= the i64
-// duration @+0x60), reset to the idle "A" pose (the inlined Reset). Otherwise resolve
-// the play's source object by its cookie (m_source) through the object factory's
-// id->object map (g_gameReg->m_world->m_childGroup + 0x48, an MFC CMapPtrToPtr, keeping it
-// only when its type tag == 5) and reposition the bound bubble object over it: when a
-// carrier (m_owner) is set, follow the resolved object's bound logic leaf's object;
-// otherwise offset by the resolved object's layer scroll. On a miss/wrong-type, mark
-// the bubble object visible (stalled this frame). Always returns 0. The map-lookup +
-// branchless `(GetTypeId()==5)?obj:0` resolve is the SAME idiom as
-// CSpotLight::SerializeMove's Read path.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
     if (m_sample == 0 || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon) >= *reinterpret_cast<i64*>(&m_durationMs)) {

@@ -1,49 +1,11 @@
-// RezMgr.cpp - the CGruntzMgr game-manager MAIN-cluster sibling TU: the per-frame
-// game tick (the real vtable slot 4), the debug-position probe, and the archive-
-// path assembler (0x08b740 / 0x08e470 / 0x91670). The former "RezMgr" facet view
-// of CGruntzMgr is DISSOLVED (2026-07-16): every method/member here is proven
-// CGruntzMgr's own (see the per-method notes; the frame-clock base methods
-// 0x13ddc0-0x13df00 are CGameMgr's, defined in src/Wap32/GameApp.cpp).
-//
-// The CRez* archive-container file-system family (ONE contiguous retail .text obj at
-// 0x13c4e0-0x13ceec: CRezItmBase/CRezItm/CRezDir/CRezParseNode directory nodes +
-// CRezFile/CRezFileMgr open-file wrapper) was carved into src/Rez/RezFile.cpp
-// (holding-TU drain, 2026-07-11) - a distinct, separately-linked obj. (MakeImageKey
-// @0x13e5d0 lives in DDSurface.cpp - see RezFile.cpp's breadcrumbs.)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the real owner of the three methods below
 #include <Rez/RezMgr.h>       // RezFormat/RezFileExists helper decls (rez-path externs)
 #include <Rez/FrameClock.h>
 #include <Globals.h> // g_disableHqMovie (0x2455d4) - the GruntzLo.FEC selector
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// The per-frame frame-clock globals PerFrameTick reads are the CANONICAL WAP32
-// clock cells (0x253c70/0x253c74, DATA-bound in Globals.cpp) - the same cells
-// GameApp.cpp's CGameMgr::InitializeTimeGlobal seeds and the base
-// CGameMgr::PerFrameTick (0x13ddc0, GameApp.cpp) advances. The per-second
-// accumulators below are the SHARED band this override owns.
-// g_wap32Now/g_wap32FrameDelta (0x253c70/0x253c74) come from <Globals.h> (already
-// included above) - the canonical WAP32 clock cells.
-// ---------------------------------------------------------------------------
-
-// The base class, aliased at file scope: MSVC 5.0 rejects the namespace-qualified
-// base-call spelling `CGameMgr::PerFrameTick()` inside a member (C2352,
-// the same lookup bug GameApp.cpp works around); the typedef-qualified call
-// devirtualizes identically (direct `call 0x13ddc0`).
 typedef CGameMgr CGameMgrBase;
 
-// The per-frame accumulators PerFrameTick reads/writes are SHARED WAP32 globals
-// (0x245580..0x2455a0), not rezmgr file-statics: multi/projectile/gruntzmgr/
-// lightfxrender/RezSync/CreditsState all touch the same cells (declared once in
-// <Rez/FrameClock.h>; g_frameDelta==0x245584, g_frameTime==0x245588).
-//
-// DEFINED HERE (owner = the producer): PerFrameTick below is the sole WRITER of the whole
-// band - it samples now, derives the delta, accumulates it, and decrements the five
-// countdown timers; every other TU only reads. Nothing in the tree defined any of them,
-// and each was ALSO spelled differently somewhere (?g_startTick@@3IA for 0x245580;
-// ?g_frameDelta@@3HA / @@3IA / @m4@@3HA for 0x245584; ?g_gruntCtor64558c@@3HA for 0x24558c),
-// so EVERY name was an unresolved external - N symbols, one cell, no storage. One semantic
-// name + one linkage per address now; consumers pull the decls from <Rez/FrameClock.h>.
 extern "C" {
     DATA(0x00245580)
     i32 g_lastNow = 0; // last timeGetTime() sample
@@ -65,46 +27,9 @@ extern "C" {
     DATA(0x002455a0)
     i32 g_timer500 = 0; // interval countdown, seed 0x1f4
 }
-// 0x245594 keeps C++ linkage - all three users (this TU / gruntzmgr / lightfxrender)
-// agree on ?g_timer100@@3HA, so there is no divergence to fix here.
 DATA(0x00245594)
 i32 g_timer100 = 0; // interval countdown, seed 0x64
 
-// ---------------------------------------------------------------------------
-// CGruntzMgr::PerFrameTick()  (virtual, vtable slot 4 / +0x10).
-// THE per-frame game tick: the engine's idle (CGameApp slot +0x20) dispatches
-// this every frame on an empty message queue. Retail ??_7CGruntzMgr @0x5e9b64
-// slot 4 = thunk 0x1c7b -> THIS body (byte-verified); the base slot it overrides
-// is CGameMgr::PerFrameTick @0x13ddc0 (GameApp.cpp), which this body calls FIRST
-// (the direct `call 0x13ddc0` = the qualified base-call).
-//
-//   if (m_curState == 0) return 0;       // nothing to drive yet
-//   CGameMgr::PerFrameTick();            // advance g_wap32Now / g_wap32FrameDelta
-//   int r = m_curState->Update();        // step the active game-state (slot +0x10)
-//   if (r != GAMESTATE_NONE) {           // 0x11 = a state that suppresses timing
-//       <clamp delta to <= 0x64 ms, accumulate, run the 5 countdown timers>
-//       g_frameTicks++;
-//   }
-//   if (m_renderGate != 0) return 0;     // render suppressed this frame
-//   m_curState->Render();                // post-step (slot +0x14)
-//   return 1;
-//
-// Each countdown timer t loads its current value (or its SEED when it has hit
-// 0), and either zeroes (delta has run it out) or subtracts the clamped delta:
-//   v = (g_tN == 0) ? SEED : g_tN;
-//   if (dt >= v) g_tN = 0; else g_tN = v - dt;
-// The disasm reseeds in a register (mov ecx,SEED) without storing, so the
-// reseed value is only visible through the subtract/zero - reproduce with the
-// ternary feeding the compare directly.
-//
-// STATUS: BYTE-EXACT under reloc-masking (98.70% fuzzy). All 92 instructions are
-// opcode+ModRM-identical vs dump_target.py; the only 24 diffs are
-// reloc-masked address operands (the base-call REL32 + the 23 DIR32 to
-// the frame-clock globals below).
-// LEVER: the frame-delta clamp and the timer compares are UNSIGNED. `dt`/`v` MUST
-// be `unsigned int` so the target's `jbe` (dt>0x64 clamp) and `jb` (dt>=v timer
-// test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_wap32FrameDelta is a
-// timeGetTime() delta (genuinely unsigned ms).
 RVA(0x0008b740, 0x12d)
 i32 CGruntzMgr::PerFrameTick() {
     if (m_curState == 0) {
@@ -174,14 +99,6 @@ i32 CGruntzMgr::PerFrameTick() {
 // @data-symbol: _WarpDialogProcThunk 0x00002d0b
 extern "C" void WarpDialogProcThunk(); // thunk 0x2d0b -> body 0x8e4e0
 
-// ---------------------------------------------------------------------------
-// CGruntzMgr::HandleDebugPosition()
-// When the live state reports GAMESTATE_PLAY, run the DEBUG_POSITION modal
-// dialog (RunModalDialog @0x90260 through thunk 0x2bb7 - the ex "CheckDbgVal"
-// phantom WAS RunModalDialog: same thunk, same (tmpl, dlgProc, flag) shape) with
-// WarpDialogProc; if it reports a hit, post WM_COMMAND (0x111) command 0x805c to
-// the game window (base CGameMgr::m_gameWnd->m_hwnd - the ex "RezMgrOwner" view).
-// Returns nonzero iff the dialog reported a hit.
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
@@ -195,7 +112,6 @@ i32 CGruntzMgr::HandleDebugPosition() {
     return r != 0;
 }
 
-// The archive base names / path templates - file-scope literals (reloc-masked).
 static const char s_rezName[] = "Gruntz.REZ";
 static const char s_join[] = "%s\\%s";
 static const char s_dataPath[] = "%c:\\DATA\\%s";

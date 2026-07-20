@@ -1,6 +1,3 @@
-// StatusBarItem.h - Gruntz status-bar item base class (C:\Proj\Gruntz).
-// Reconstruction sufficient to byte-match the small constructor. Field names
-// are placeholders; the offsets are the load-bearing fact the match proves.
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
@@ -8,37 +5,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-// ONE canonical CStatusBarItem, TWO dtor spellings selected per-TU by macro (the
-// CHAIN-DTOR device below): by default the dtor is DECLARED-only, so ctor-side/
-// builder TUs fold the tiny inline ctor with no /GX frame; a merged one-file-per-
-// class SBI TU #defines SBI_DTOR_CHAIN and gets the retail INLINE DtorStatus dtor
-// body, so its leaf's out-of-line ~CSBI_X folds the multilevel destructor chain +
-// /GX EH frame. This device superseded the old frameless-vs-<Gruntz/SbiDtorChain.h>
-// two-view split for the collapsed TUs (the *Eh.cpp collapse proved both spellings
-// co-host in one TU byte-exactly - dtors 100%, ctor-side fns unchanged);
-// SbiDtorChain.h remains only for the still-split dtor TUs (sbi_rectonlydtor_eh,
-// sbi_statztabarrow_eh). (StatusBarItem.cpp + StatusBarGameMenu.cpp add two further
-// LABELING-DEVICE redefs whose class NAME must stay "CStatusBarItem" so their
-// ctor-call symbols pair with the 0x1005d0 ctor.)
-//
-// ---------------------------------------------------------------------------
-// CStatusBarItem - base of the SBI_* family. One class, one definition.
-//
-// The ctor is INLINE: the derived CSBI_RectOnly ctor folds it (zeroing
-// m_4/m_24/m_28; the base's m_8=0 store is then dead, since CSBI_RectOnly sets
-// m_8=1, and the optimiser drops it). MSVC 5.0 only folds a base ctor that is
-// visible inline, so inline is the load-bearing choice the match pins.
-//
-// Retail also has a standalone complete-object ctor (one that *does* zero all
-// four fields, at its own RVA 0x1005d0): MSVC's out-of-line COMDAT copy of this
-// same inline ctor. It is NOT a second class. MSVC 5.0 inlines this tiny ctor at
-// every instantiation we can synthesize, so the canonical inline form cannot emit
-// a labelable standalone ??0 to diff against it. To keep that byte-match,
-// src/Gruntz/StatusBarItem.cpp is a stand-in TU that locally redeclares the class
-// with an out-of-line ctor purely as a labeling device for the COMDAT - a tooling
-// workaround, not a second class the developers wrote.
-// ---------------------------------------------------------------------------
-// The +0x14 sub-block CSBI_RectOnly::Setup fills (a RECT-like 4-int record).
 class CStatusBarMgr;      // the owning status-bar manager (Setup arg1 / m_2c)
 class CDDrawSurfaceMgr;   // the config host (Setup arg2 / m_24)
 
@@ -133,17 +99,6 @@ public:
 };
 SIZE_UNKNOWN(CStatusBarItem);
 
-// ---------------------------------------------------------------------------
-// CHAIN-DTOR device (opt-in): a merged /GX leaf TU (the original one-file-per-class
-// SBI TUs, rebuilt by the *Eh.cpp collapse) #defines SBI_DTOR_CHAIN before its first
-// include; the base destructors then get their retail INLINE bodies, so the leaf's
-// out-of-line ~CSBI_X folds the whole subobject teardown walk (per-level ??_7
-// re-stamps + Dtor* calls) behind one /GX SEH frame with descending trylevels.
-// Every other TU (macro undefined) sees today's declared-only dtor - preprocessor-
-// identical, so this device is output-neutral outside the merged TUs. It supersedes
-// <Gruntz/SbiDtorChain.h> for the collapsed TUs; the SBI_OWN_*_DTOR guards mirror
-// that header's device (the one TU that owns a level's out-of-line dtor suppresses
-// the inline body). See docs/patterns/eh-dtor-multilevel-polymorphic-chain.md.
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_ITEM_OWN_DTOR)
 inline CStatusBarItem::~CStatusBarItem() {
     DtorStatus();

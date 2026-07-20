@@ -1,24 +1,3 @@
-// LevelRezPath.cpp - BuildLevelRezPath (0x93d40), the level/battlez rez-data
-// loader, a __thiscall(this; a1,a2,a3,a4, CString name) (ret 0x14) that returns
-// the parsed descriptor's +0x2ec field (0 on any failure). The by-value CString
-// arg + the CFileIO / CString locals give it the /GX exception frame, so it lives
-// in its own `eh` unit (graduated out of the engine_label_stubs aggregate).
-//
-// Structure (recovered dump_target + decomp + string_xref):
-//   - a3 != 0: the CUSTOM-file path. Build the file name ("custom\" + name when
-//     a1==a2==0, else name), CFileIO::Open it; when it opens AND is >= 0x5f4 bytes,
-//     Read 0x5f4 bytes into a stack descriptor and return its +0x2ec field; else 0.
-//   - a3 == 0: the namespace path. Resolve one of three rez trees off this->m_34
-//     (a1!=0 -> "AREA%i_WORLDZ" for the world index; a2==0 -> "GAME_MULTI"; else
-//     "GAME_BATTLEZ"), Insert the level key ("LEVEL%i"/"TRAINING%i" for the AREA
-//     path, else `name`), BeginParse -> memcpy 0x5f4 bytes -> EndParse, and return
-//     the descriptor's +0x2ec field. Any resolve/insert/parse failure returns 0.
-//
-// CARCASS doctrine: the owning class + the ButeMgr symbol tree are engine classes
-// reached by raw this+offset; every callee is a reloc-masked external; the format
-// / namespace strings are $SG literals reloc-masked against the matched string
-// symbols. The Insert() flags arg (0x575744) is a NON-relocated literal constant
-// in retail (verified against .reloc), so it is written as a bare immediate.
 #include <Mfc.h>           // MFC CString (ctor/dtor/op=/op+, all reloc-masked)
 #include <Io/FileStream.h> // CFileIO (0x1befd7 ctor / 0x1bf121 dtor / Open/Read/GetLength/Close)
 #include <string.h>        // inline memcpy (rep movsd) at /O2
@@ -30,18 +9,6 @@
 #include <Gruntz/GruntzMgr.h>   // the REAL owner (was the LevelRezLoader view)
 #include <Gruntz/LevelRezPath.h> // LevelRezData (the 0x5f4 rez descriptor)
 #include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
-
-// The ButeMgr symbol tree the rez data is resolved/parsed through.
-
-
-// OWNER RECOVERED: the fake `LevelRezLoader` was CGruntzMgr - CSaveGame::VerifySlot /
-// ::Register call this method on the 0x64556c singleton (retail loads ecx from
-// ds:0x64556c), and CGameRegistry::BuildLevelRezPath was the phantom name for it.
-//
-// @conflict: this body reads +0x34 as the rez-tree CSymParser*, while GruntzMgr.cpp's
-// Build/Apply/Teardown read the SAME +0x34 as a CRezSurface94* (m_symParser). Both
-// claims carry in-source evidence; one is a misattribution. Flagged with the cast rather
-// than silently re-typing either side - the cast is the symptom, the conflict is the bug.
 
 // @source: decomp-xref
 // @early-stop

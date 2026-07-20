@@ -1,20 +1,3 @@
-// AniRecordBase2.h - CAniRecordBase2, the 0x14-byte secondary/base facet of the
-// 'ANI' frame-record family (14-slot vtable ??_7CAniRecordBase2 @0x1f02d8,
-// = 0x1f02c0+0x18; slot-1 dtor pair ??_G 0x165db0 / ??1 0x165dd0 in AniRecord.cpp).
-//
-// This is ALSO the standalone keyed "map worker" object the CDDrawWorkerMapSmall
-// factories allocate (`new` 0x14 bytes, seed m_04..m_10, dispatch slots 10/11/12) -
-// the former DDrawWorkerMapSmall.h view pair CDDrawMapWorker (RELOC_VTBL alias) +
-// CDDrawMapWorkerObj was this ONE class under two fake names; both are dissolved
-// onto this canonical definition (the factory new-sites stamp 0x5f02d8 as the
-// object's own primary vtable - one vtable, one class).
-//
-// HELD (vtable_hierarchy correction): slot 6 = 0x001c08 is the CWapObj-family
-// marker, so the true chain is CObject -> CWapObj -> CAniRecordBase2; kept on the
-// direct CObject base pending CWapObj modeling (do NOT re-flatten elsewhere).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
 #ifndef GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H
 #define GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H
 
@@ -61,6 +44,5 @@ struct CAniRecordBase2 : public CObject {
 };
 SIZE(CAniRecordBase2, 0x14);       // standalone map-worker allocation size (`new` 0x14)
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
-
 
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H

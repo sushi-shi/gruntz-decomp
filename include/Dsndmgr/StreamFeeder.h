@@ -1,15 +1,3 @@
-// StreamFeeder.h - the streaming feeder/pump sub-object embedded at
-// StreamVoice+0x6c (Dsndmgr module, C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable
-// 0x5ef6f0). The trace tagged this class "Timer_1380d0" after its Tick pump
-// (0x1380d0), but it is the StreamFeeder referenced by SoundStream::OpenStream
-// (feeder->FeederStart / FeederReset / window seed) - see SoundStream.h.
-//
-// The feeder owns a per-stream DirectSound buffer wrapper (m_buffer, a
-// DirectSoundMgr it Lock/Unlock-fills) and is armed with a data window
-// (+0x2c..+0x40) over the source. Each Tick it copies the window into the
-// secondary buffer (the circular Lock-fill at FillBuffer 0x137f30), wrapping +
-// padding the tail with the silence byte (+0x24). Field names are placeholders;
-// only OFFSETS + the emitted code bytes are load-bearing.
 #ifndef DSNDMGR_STREAMFEEDER_H
 #define DSNDMGR_STREAMFEEDER_H
 
@@ -18,23 +6,10 @@
 #include <Dsndmgr/WaveFormatX.h> // WAVEFORMATEX-shaped PCM header (FeederStart)
 #include <Gruntz/ParseSource.h>  // the positioned byte-reader the feeder pulls from (m_source)
 
-// The feeder's owner (m_owner): the SoundDevice (base of SoundStream) that creates
-// the streaming DirectSound buffer (CreateBuffer 0x1366f0) and reaps it
-// (RemoveBuffer 0x136d80). Full definition included in StreamFeeder.cpp; its
-// methods are reloc-masked __thiscall calls.
 class SoundDevice;
 
-// The feeder's per-stream buffer wrapper (m_buffer): a DirectSoundMgr the feeder
-// Lock/Unlock-fills + Stop/Pause/Play-drives. Full definition included in
-// StreamFeeder.cpp; its methods are reloc-masked __thiscall calls.
 class DirectSoundMgr;
 
-// The streaming feeder. ALL-VTABLES phase: REAL polymorphic base - cl auto-emits
-// ??_7StreamFeeder@@6B@ (0x5ef6f0) and auto-stamps the vptr in the ctor (0x137cd0).
-// Slot 0 Feed is declared-only (retail base = __purecall; kept non-pure so the
-// class stays concrete/embeddable); slots 1/2 FeedData (0x137e10 `return 1`) and
-// OnDrain (0x137e20 no-op) are defined in SoundStream.cpp. The voice's embedded
-// feeder overrides slot 0 with CopyWindow (0x137380).
 struct StreamFeeder {
     virtual i32
     Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] feed-two-regions

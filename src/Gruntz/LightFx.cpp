@@ -19,70 +19,16 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
 
-// The per-frame draw-delta mirror (_g_6bf3bc @0x6bf3bc) AdvanceAnim hands the anim sink.
 extern "C" u32 g_engineFrameDelta;
-// LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
-// CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
-// reconstructed here, in ascending retail-RVA order:
-//   * Activate  (0x9d520) - bind the effect spec from the object bute map.
-//   * RebindNode(0x9d770) - re-point the object bute map at the "A" section.
-//
-// The spine (CUserLogic base, m_14/m_prevAnimSetNode/m_38/m_3c) is in <Gruntz/UserLogic.h>;
-// CLightFx adds the +0x40/+0x54/+0x58 leaf words. Engine callees (the bute-map
-// Lookup, the per-frame logic-table push, the layer SetNode) are modeled NO-body
-// so their call displacements reloc-mask. Field names are placeholders; only the
-// OFFSETS + code bytes are load-bearing.
 
-// The spec/effect resource stores are the typed m_0c world root's m_imageRegistry
-// (CDDrawWorkerRegistry, Ob band 0x1b8008) and m_animRegistry (CDDrawSubMgrLeaf, Ptr band
-// 0x1b8438); the former LfxSpecStore/LfxEffectStore/LfxMapHolder views (included
-// above) - the two store maps are DIFFERENT real MFC types (CMapStringToOb for the
-// spec @0x1b8008, CMapStringToPtr for the effect @0x1b8438: proven by disasm of
-// CLightFx::Activate @0x9d520; the labels used to be inverted here).
-
-// The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
-// read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
-
-// The global bute store RebindNode re-points the object map at ("A" section).
-// g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;
-// declared extern only so `g_buteTree.Find("A")` reloc-masks (CButeTree owns the
-// DATA label).
-
-// CImageSet (<Image/ImageSet.h>): its "value table @+0x14" is CImageSet::m_frames,
-// its "key bounds @+0x64/+0x68" are m_minIndex/m_maxIndex - the spec result IS a
-// CImageSet (pushed to the pump as one), read for the frame in its index range.)
-
-// The bound object (m_38) IS the real CGameObject (<Gruntz/UserLogic.h>): the ex
-// (the owner context), +0x190/m_194/m_layer(+0x198) are CGameObject's role-union
-// resolved-node fields (source-def/z-clamp descriptor, reinterpreted here per the
-// canonical's own note), +0x1a0 the per-leaf anim sub-object (CAniAdvanceCursor,
-// reached by address), +0x1b4 the m_value geometry descriptor. The alleged +0x198
-// "conflict" was the documented role-union, not a distinct field.
-
-// CLightFxActEntry (the registry entry's per-frame handler PMF) is declared with
-// the class in <Gruntz/LightFx.h> (included above).
-
-// The class's activation-coordinate registry singleton (@0x645ad0): the fixed
-// [2000,2010] range built by the shared registry ctor (0x408710). It IS the shared
-// <Gruntz/ActReg.h> CActReg archetype - the empty CLightFxActReg subclass (whose
-// the mangled symbol unique and DATA() rebinds it, so the archetype IS the type
-// (same fold TileLogicPump's ActReg globals use).
 DATA(0x00245ad0)
 extern CActReg g_lightFxActReg; // 0x645ad0
 
-// CLightFx::InitActReg @0x9d140 - construct the class's activation-coordinate
-// registry singleton (g_lightFxActReg @0x645ad0) over the fixed range
-// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0009d140, 0x15)
 void CLightFx::InitActReg() {
     g_lightFxActReg.Construct(2000, 2010);
 }
 
-// CLightFx::RunAct @0x9d1c0 - the slot-4 (UserLogicVfunc2) impl: resolve the class
-// coordinate-registry entry for id; if a handler PMF is bound there, re-resolve the
-// entry and dispatch the PMF on this, else return the entry pointer. Two inline
-// CActReg::ResolveEntry expansions (side-effecting -> cl cannot CSE across the guard).
-// The SAME archetype as CEyeCandyAni::RunAct (0x0acbb0).
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
     CLightFxActEntry* e = reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id));
@@ -182,12 +128,6 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     return 0;
 }
 
-// ===========================================================================
-// CLightFx::SerializeMove  (0x9d660, slot 1)  - chain the base CUserLogic serialize
-// (bail 0 on failure) + the +0x34 serialized-object-reference (CSerialObjRef::Chain
-// via the 0x1aff thunk, bail 0), then per mode: 4 = write, 7 = read the (anchorA,
-// anchorB) pair; 8 = re-push the effect (m_38->m_194) into the logic pump. Return 1.
-// ===========================================================================
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4) == 0) {
@@ -212,10 +152,6 @@ i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
-// ===========================================================================
-// CLightFx::RebindNode  (0x9d770)  - save the object map's current bute node into
-// m_prevAnimSetNode, re-point it at the "A" section of g_buteTree, return 0.
-// ===========================================================================
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -223,13 +159,6 @@ i32 CLightFx::RebindNode() {
     return 0;
 }
 
-// ===========================================================================
-// CLightFx::AdvanceAnim  (0x9d7b0)  - the per-frame handler PMF: advance the bound
-// object's animation sink (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta), then -
-// if the sink is active (m_1c8) but idle (!m_1c0) and anchorB is latched - set the
-// bound object's "advance" flag (m_flags |= 0x10000). Returns 0. Same sink archetype as
-// CEyeCandyAni::AdvanceAnim.
-// ===========================================================================
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -238,19 +167,6 @@ i32 CLightFx::AdvanceAnim() {
     }
     return 0;
 }
-
-// or homed to headers: LfxObj -> CGameObject, LfxMapSource -> AnimWorkerObj::m_0c,
-// LfxEffectNode -> CImageSet, CLightFxActReg -> the CActReg archetype,
-// the canonical CDDrawSurfaceMgr members. No struct/class is defined in this .cpp.
-
-// ============================================================================
-// merged from LightFxEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
-// ============================================================================
-// LightFxEh.cpp - the /GX EH-framed CLightFx method(s), split off the frameless
-// clightfx TU (C:\Proj\Gruntz). MSVC5's /GX frames the leaf dtor (its destructible
-// +0x18 CUserLogic link forces the EH frame), so it cannot share the base TU's
-// frameless flags without re-framing its 100% leaves. The split is matching-neutral
-// (each function is RVA-keyed); see split-tu-eh-dtor-vs-frameless-cstring.md.
 
 // CLightFx::~CLightFx (0x12430) - the /GX leaf dtor. CLightFx adds no destructible
 // members beyond CUserLogic and shares its vtable, so the most-derived vptr store
@@ -264,18 +180,6 @@ i32 CLightFx::AdvanceAnim() {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CLightFx@@UAE@XZ 0x00012430 0x44
 
-// The default-state fall-through helper IS the real shared coordinate/type-registry
-// resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl); the record
-// arg is the active logic leaf, reinterpreted as the archive record it drives.
-
-// LightFxLogicDispatch @0x9cdc0 - the LightFx logic-type per-frame state dispatcher
-// (__cdecl free fn bound into the class's logic dispatch table). Reaches the object's
-// embedded logic record (obj->m_7c) and switches on its state tag (m_1c): state 0
-// lazily constructs the CLightFx (new 0x5c, ctor 0x9cf00), activates it (slot 6), and
-// latches state 0x3e8; each Op<NN> state dispatches the like-named CUserLogic slot on
-// the bound logic; state 0x3e8 is the built/idle no-op. The /GX EH frame comes from the
-// `new` (delete-on-unwind funclet). SAME archetype as LogicRecordDispatch.cpp's
-// LogicDispatchA (0xf1, all four 100%); the built type here is the real CLightFx.
 RVA(0x0009cdc0, 0xf1)
 i32 LightFxLogicDispatch(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;

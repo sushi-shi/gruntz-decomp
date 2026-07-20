@@ -1,14 +1,3 @@
-// FecCrypt.cpp - the two leaf string-obfuscation routines that sit between the
-// Font cluster and the "FEC File" reader (0x17b5f0 references the "Opened FEC
-// File %s" diagnostics). A simple alternating-byte cipher: even-index bytes are
-// biased by 0x4f, odd-index bytes by 0x53. Encode/Decode are pure leaf functions
-// (no relocs; inline strlen via the /Oi `repnz scasb` intrinsic), __stdcall.
-//
-// The loop index is a `unsigned short` kept in a full register and masked to
-// 16-bit on use (the `and reg,0xffff`); `i % 2` promotes it to int, so the
-// even/odd test lowers to MSVC's signed `% 2` idiom (cdq/xor/sub) even though the
-// value is always >= 0. Names are placeholders; offsets + code bytes are the
-// load-bearing fact.
 #include <Ints.h>
 #include <rva.h>
 #include <string.h> // strlen (inlined as repnz scasb at /O2 /Oi), memset/memcpy
@@ -18,20 +7,9 @@
 
 #include <Crypto/FecCrypt.h> // the unified CFecFile (embedded MFC CFile stream) shape
 
-// The alternating-byte name cipher (defined below at 0x17bf70 / 0x17bfe0); AddFile
-// encodes the entry name and ExtractArchive decodes it.
 void __stdcall FecEncode(const char* src, char* dst);
 void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
 
-// ---------------------------------------------------------------------------
-// The CMoviePlayer decode-store lifecycle (this same object is CMoviePlayer's m_540).
-// Re-homed from src/Stub/BoundaryUpper2.cpp where they were the placeholder view
-// CPageStore17b510::Init/Close/Free/Lookup (== CMovieDecodeStore Begin/Abort/-/OpenB);
-// they are CFecFile methods (same +0x124 stream, +0x138 index). Init/OnFail byte-exact.
-// ---------------------------------------------------------------------------
-
-// 0x17b510 - Init: one-time reset+arm of the store. Bail if already armed (m_00);
-// else clear the flags/header, empty the index, and set the open-gate. __thiscall.
 RVA(0x0017b510, 0x55)
 i32 CFecFile::Init() {
     if (m_00) {
@@ -47,8 +25,6 @@ i32 CFecFile::Init() {
     return 1;
 }
 
-// 0x17b570 - Close: if armed, run the fail teardown (OnFail), empty the index and drop
-// the open-gate. __thiscall. (== CMovieDecodeStore::Abort.)
 RVA(0x0017b570, 0x24)
 void CFecFile::Close() {
     if (!m_00) {
@@ -59,8 +35,6 @@ void CFecFile::Close() {
     m_00 = 0;
 }
 
-// 0x17b5a0 - OnFail: drop the active stream (CFile::Close, slot +0x54) and clear the
-// open flags when the store is armed and open; returns whether it did work. __thiscall.
 RVA(0x0017b5a0, 0x48)
 i32 CFecFile::OnFail() {
     if (m_00 && (m_04 || m_08)) {
@@ -144,10 +118,6 @@ fail:
     return 0;
 }
 
-// 0x17b840 - Lookup: resolve the 1-based entry `idx` (must be in [1, m_14] with the
-// store armed+open). Seek the stream to that entry's recorded offset (m_13c[idx-1]); if
-// the seek lands exactly there, return the raw file handle (m_stream.m_hFile), else 0. __thiscall.
-// (== CMovieDecodeStore::OpenB.)
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_04 && m_00 && idx <= static_cast<u32>(m_14) && idx != 0) {
@@ -159,13 +129,6 @@ i32 CFecFile::Lookup(u32 idx) {
     return 0;
 }
 
-// ===========================================================================
-// 0x17b8a0 - CFecFile::CreateArchive(name): open `name` for writing (mode 0x1002),
-// emit the "FEC" magic + a 12-byte {major=1, minor=1, count=0} header, then flush
-// the stream. Gated by the shared m_00 open-gate + the m_08 write-open flag (distinct
-// from ReadArchive's m_04 read-open flag). __thiscall; returns 1 on success, 0 on any
-// gate/open failure.
-// ===========================================================================
 RVA(0x0017b8a0, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
     if (name != 0 && m_08 == 0 && m_00 != 0 && m_stream.Open(name, 0x1002, 0) != 0) {
@@ -370,10 +333,6 @@ fail:
     return 0;
 }
 
-// ===========================================================================
-// Encode(src, dst): dst[i] = src[i] + (i odd ? 0x53 : 0x4f), for the
-// whole NUL-terminated src (strlen recomputed each iteration). __stdcall.
-// ===========================================================================
 RVA(0x0017bf70, 0x65)
 void __stdcall FecEncode(const char* src, char* dst) {
     for (unsigned short i = 0; i < strlen(src); i++) {
@@ -409,5 +368,3 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
 
 SIZE(CFecFile, 0x814c);
 SIZE(FecEntry, 0x10c); // the CFecFile+0x18 per-entry record (typed in FecCrypt.h)
-
-// --- vtable catalog ---

@@ -1,21 +1,6 @@
-// GruntWingzTimeSprite.cpp - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
-//
-// Two trace-discovered CGruntWingzTimeSprite methods, defined in ascending
-// retail-RVA order:
-//   ~CGruntWingzTimeSprite @0x0121f0 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   GetWingzTime           @0x07fd90 - a tiny __stdcall +0x3f8 accessor (ret 4).
-//
-// CGruntWingzTimeSprite : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/GruntWingzTimeSprite.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
-
-// The engine bute store the sprite ctor queries for its "A" animset node. wwdfile /
-// others own the DATA label (0x2bf620); declared extern so the address reloc-masks.
-
-// CGruntWingzTimeSprite::GetTypeTag (0x000121a0) is now an inline member in the class header.
 
 // CGruntWingzTimeSprite::CGruntWingzTimeSprite @0x0007fcc0 - the /GX HUD sprite ctor.
 // Chains the CGruntHealthSprite base ctor (0x7eb00, via thunk 0x3224; declared-only
@@ -56,17 +41,6 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CGruntWingzTimeSprite@@UAE@XZ 0x000121f0 0x44
 
-// CGruntWingzTimeSprite::Vslot16 (0x07fd90) - ??_7CGruntWingzTimeSprite (0x1e77cc)
-// slot 16, +0x40: the leaf's stat-time getter. Reads the bound grunt's +0x3f8
-// wingz-timer and returns it (`mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`).
-// WIRED (VT1): was the free fn `GetWingzTime`, whose comment claimed it "is never
-// stored as a fn pointer" - refuted by vtable_scan --holds 0x07fd90, which puts it in
-// this class's slot 16 while the declared `virtual Vslot16 OVERRIDE` had no definition.
-// The old note reasoned from the ecx/this trace, which is unreliable for non-__thiscall
-// (see the archived trace-owner memo) - vtable_scan is the authority.
-// Byte-neutral: a __thiscall virtual that never touches `this` (ecx) emits exactly the
-// __stdcall bytes above - `grunt` is the sole stack arg at [esp+4] and cleanup is ret 4.
-// That codegen coincidence is precisely what let the wiring defect hide.
 RVA(0x0007fd90, 0xd)
 i32 CGruntWingzTimeSprite::Vslot16(CGrunt* grunt) {
     return grunt->m_wingzTime;

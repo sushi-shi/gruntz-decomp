@@ -1,24 +1,3 @@
-// GruntSprintAnim.cpp - BuildGruntSprintAnimation @0x019920 (graduated from
-// src/Stub/Backlog.cpp). The per-direction grunt "sprint" animation builder: for
-// each of the 8 compass directions it asks the HUD sprite factory
-// (g_gameReg->m_world->m_childGroup) for a "SimpleAnimation" sprite, caches its first frame
-// from the directional walk-cycle name "GRUNTZ_NORMALGRUNT_<DIR>_WALK", applies
-// the "GAME_GRUNTSPRINT" cycle geometry, stamps a few fixed fields (the
-// g_gameReg->m_spriteFactory sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
-// +0x58) and the per-direction sub-tile origin from the sibling geometry helper
-// (PerDirGeometry @0x019cd0). The 8 sprites are stored in this->m_204[0..7].
-//
-// It is /GX EH-framed: the directional name is assembled through three MFC
-// CString temporaries ("GRUNTZ_NORMALGRUNT_" + dir + "_WALK"), whose destructors
-// give it the exception frame - so it lives in an `eh` unit.
-//
-// CARCASS doctrine: the owning collection class (best-guess CGruntSprintAnim; the
-// real RTTI owner is reloc-masked anyway) and the g_gameReg sub-objects are
-// unmatched engine classes accessed by raw this+offset; every callee is an
-// external reloc-masked __thiscall thunk; the GRUNTZ_*/GAME_*/compass strings are
-// $SG/$S literals reloc-masked against the matched string symbols. Only the
-// offsets / code bytes are load-bearing (campaign doctrine).
-
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -30,29 +9,6 @@
 #include <Gruntz/GameMode.h>          // the REAL owner: CBootyState (was the CGruntSprintAnim view)
 
 #include <rva.h>
-
-// The HUD sprite factory reached via g_gameReg->m_world->m_childGroup is the canonical
-// CDDrawChildGroup (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
-// up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created
-// CGameObject. The world holder is the canonical CDDrawSurfaceMgr
-// (<Gruntz/GameRegistry.h>) - no local holder view.
-
-// The g_gameReg->m_spriteFactory lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
-// returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
-// The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
-// i32-typed here (no cast at the store).
-
-// The created SimpleAnimation sprite is the shared CGameObject: ApplyName (0x150540)
-// caches the named first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle
-// geometry; the loader stamps its draw-fill block (m_drawFillArg/m_drawFillCmd/
-// m_drawActive) and screen position. Both setters reloc-masked __thiscall.
-
-// (the CGruntSprintAnim view is GONE - it WAS CBootyState. 0x19920's ONLY caller is
-// 0x18830, CBootyState's own vtable slot 1, calling it with `mov ecx,esi` - its own `this`.
-// Its m_sprintSprites[8] @+0x204 fills exactly what was padding in that class, 8 pointers
-// ending at 0x224 where the level-message bomb sprites begin.)
-// (PerDirGeometry @0x19cd0 was a fabricated alias of GenMenuRandPos - the SAME rva. It is
-// a CBootyState member (declared in GameMode.h), so the member call below is the real one.)
 
 // ===========================================================================
 // BuildGruntSprintAnimation @0x019920

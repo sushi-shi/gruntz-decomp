@@ -19,7 +19,6 @@
 class CDDrawWorkerB;
 class CDDrawSurfacePair;
 
-// The object Lookup yields, viewed as a bounded element array.
 struct CDDrawWorkerObj {
     char pad_00[0x14];
     void** m_14; // +0x14  element array
@@ -29,7 +28,6 @@ struct CDDrawWorkerObj {
 };
 SIZE_UNKNOWN(CDDrawWorkerObj);
 
-// The frame node (a CImage dispatch view; vtable 0x1eaa2c ground truth).
 struct CDDrawFrameNode {
     virtual void GetRuntimeClass(); // [0]  CObject slot (0x1bef01)
     virtual void ScalarDtor();      // [1]  0x002adb

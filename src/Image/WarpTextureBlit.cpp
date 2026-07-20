@@ -1,17 +1,3 @@
-// WarpTextureBlit.cpp - the affine textured-polygon rasterizer @0x146a20 (the
-// gouraud/textured sibling of the rotate rasterizer at 0x146550, reached from
-// ImageRotate.cpp). __cdecl, 6 args.
-//
-// Rasterizes a convex polygon (the `n` vertices at `va`/`vb`, 0x1c-byte records
-// with float x@0/y@4/u@8/v@0xc) by filling per-scanline left/right edge tables
-// (the global arrays at 0x6a2cf0 / 0x6856f8) with 16.16 fixed-point x + the texture
-// (u,v) walked via the +65536/-65536 scale trick (the bottom vertex coords are
-// multiplied by -65536 so the gradient falls out of a single subtract). Then locks
-// the source texture (-> g_warpTexBase) + the dest surface, and for each scanline
-// interpolates u/v across the span, sampling the power-of-2 texture by the combined
-// index ((V & mask) | U) >> 14, in one of three inner loops: copy-all, skip-zero,
-// or skip-colorkey. Field names are placeholders; offsets + code bytes are the
-// load-bearing fact.
 #include <Mfc.h>   // afx-first (this TU pulls MFC downstream; Mfc.h supersets Win32.h)
 #include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual +0x80 dispatch)
 #include <Ints.h>
@@ -40,28 +26,16 @@ i32 WarpIsPow2(i32 x) {
     return c == 1;
 }
 
-// The polygon vertex is the shared 28-byte ClipVtx (x,y screen; u,v texel coords;
-// the c/d/e attrs unused here). Definition in <Image/RasterVtx.h>.
-
-// The locked surface (src texture + dest): m_8 = the lock object (vtable slot 0x80
-// = Unlock), m_1c = width, m_20 = row pitch.
-
-// Per-scanline edge tables (left = 0x6a2cf0, right = 0x6856f8): an array of 0x1c-
-// byte records {x(16.16), u, v} at +0x10/+0x14/+0x18, indexed by scanline.
 DATA(0x002a2cf0)
 extern "C" ClipVtx g_rasterEdgeL[]; // 0x6a2cf0 (per-scanline edge rows; fixed x/u/v at fx/fu/fv)
 DATA(0x002856f8)
 extern "C" ClipVtx g_rasterEdgeR[]; // 0x6856f8
 
-// The rasterizer global scratch (all reloc-masked DATA).
 DATA(0x002a2ce8)
 i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
 DATA(0x002becf4)
 i32 g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 
-// The per-span texture-walk accumulators/steps. Owned by this TU; DEFINED here
-// (warptextureblit.obj's .bss, zero-init), DATA()-pinned; reference externs kept in
-// <Globals.h>. Ascending retail RVA. (Were extern-only in the Globals.cpp pool.)
 DATA(0x002856f0)
 i32 g_warpU = 0; // 0x6856f0  (u accumulator)
 DATA(0x002856f4)
@@ -77,7 +51,6 @@ i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
 DATA(0x002becfc)
 i16 g_warpColorkey = 0; // 0x6becfc
 
-// The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)
 extern "C" const float g_rasterScale = 16384.0f;
 DATA(0x001efb1c)

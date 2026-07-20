@@ -29,14 +29,6 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <rva.h>
 
-// The collision-relevant tile codes are the typed enum TileCollision in
-// <Gruntz/GameLevel.h> (consolidated from here + GameLevel.cpp).
-
-// LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
-// (no tile placed); -1 is the explicit "clear" marker.
-
-// The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): BroadPhase tests it
-// before treating an object's AABB as a live box.
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // The mode-1..2 sub-dispatch is CGameLevel::MoveKindDispatch12 (@0x1671c0,
@@ -91,14 +83,6 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
     return eax;
 }
 
-// ---------------------------------------------------------------------------
-// MoveKindDispatch12 (@0x1671c0): drive both axes toward (x,y). For the X axis,
-// if x is above/below the target's current scrollX call the matching hi/lo stepper
-// (which clamps x in place through &x); same for Y; OR the two results. Finally
-// commit the (possibly stepped) screen x/y (+0x5c/+0x60) back into the target and
-// return the accumulated flag word. this=CGameLevel; `t` is the moved CGameObject
-// (verified: CMovingLogic::Update loads m_object->owner->m_level as this and passes
-// m_object as the target - see the IDENTITY note above).
 RVA(0x001671c0, 0x97)
 i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
@@ -118,20 +102,6 @@ i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
     t->m_screenY = y;
     return result;
 }
-
-// ===========================================================================
-// The four axis steppers (MoveStepXHi/XLo/YHi/YLo @0x167260/450/640/830).
-// All __thiscall (this=level), ret 0x14. Each sweeps the OTHER axis across a tile
-// region [t->axis brackets], inlining the per-tile probe (== AxisProbe). When a
-// probed tile reports a blocking kind (1/2), it scans the resolved axis inward via
-// AxisProbe to find the first clear coord, accumulating a state-flag word. Finally
-// it tails into BroadPhase to test moving objects, writing the resolved scroll coord
-// back through the out-pointer and returning the state word.
-//   X-variants resolve X (out = &x, scroll +0x5c, step +0xfc, outer Y over +138..+140);
-//   Y-variants resolve Y (out = &y, scroll +0x60, step +0xf8, outer X over +134..+13c).
-//   Hi-variants fix the high edge (+0x13c / +0x140) and scan down; Lo-variants fix the
-//   low edge (+0x134 / +0x138) and scan up. Field names via EditTarget (file-scope).
-// ===========================================================================
 
 // MoveStepXHi - 0x167260. Fixed X = high edge (x + axisMid); sweep Y, scan X down.
 // @early-stop
@@ -505,15 +475,6 @@ done_eq:
     return state;
 }
 
-// ===========================================================================
-// The four wall-slide coordinate resolvers (@0x167a20..0x167d80). Each scans one
-// axis in one direction from a desired coord toward the object's per-side extent
-// limit for the nearest passable (0) tile, returning that tile's coord converted
-// back to the object's screen space (coord - extent) - or the object's current
-// screen coord when no passable tile is found before the limit. A tight single
-// inlined-PROBE_TILE loop.
-// ===========================================================================
-
 // @early-stop
 // ~93%: the `for` form fixed the exit-block order (jg loop + two distinct screenX
 // exits). Residual is two byte-level codegen picks, NOT reloc: (1) the scheduler
@@ -582,18 +543,6 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     }
     return t->m_screenY;
 }
-
-// ===========================================================================
-// BroadPhase - 0x167ea0 (__thiscall, ret 0xc). The AABB broad-phase the steppers
-// tail into. `t` is the moving CGameObject; it walks the world's object chain
-// (this level's m_0c owner -> m_objChain) and, for every other collision-active
-// object whose category matches t's mask and whose extents are set (m_extent.left !=
-// sentinel), tests whether t currently overlaps it. If NOT (a separation on any
-// axis) but t's CANDIDATE box (at candX, candY) WOULD overlap, it stores the
-// other party in t->m_hitOther and fires t's worker m_notify; on a
-// nonzero reply it fires the object's own notify (masks permitting), returns 1.
-// (m_0c is the typed CDDrawSurfaceMgr owner; the walk reads its m_childGroup.)
-// ===========================================================================
 
 // @early-stop
 // regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
@@ -719,7 +668,6 @@ i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6,
     return 0;
 }
 
-// tile-collision code names (file-local; see the block near the top of this TU).
 #undef kTilePassable
 #undef kTileSoft
 #undef kTileSoft2

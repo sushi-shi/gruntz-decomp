@@ -1,16 +1,3 @@
-// StateId.h - the DDraw-manager "state id" tag space returned by every
-// CDDrawSubMgr / CDDrawWorker leaf's GetStateId() virtual (vtable slot 8, the
-// 6-byte `mov eax,<id>; ret` accessor). Each concrete manager/worker leaf returns
-// a UNIQUE constant identifying its state kind; the engine's DDraw dispatch keys
-// off it (e.g. GruntzCmdMgr compares against 0x11 for the "worker-list" state).
-//
-// Named here so every GetStateId body returns the named enumerator, not a bare
-// literal (matching-NEUTRAL: an MSVC5 enum is int-width, so a named enumerator
-// lowers to the exact same immediate and each `mov eax,<id>; ret` stays
-// byte-identical). Mirrors LogicTypeId in LogicTypeId.h.
-//
-// Field/state names are placeholders keyed off the owning class; only the id
-// itself is the recovered fact.
 #ifndef GRUNTZ_STATEID_H
 #define GRUNTZ_STATEID_H
 

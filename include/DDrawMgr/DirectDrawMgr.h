@@ -1,22 +1,3 @@
-// DirectDrawMgr.h - the WAP32 DirectDraw manager group (DDrawMgr module,
-// C:\Proj\DDrawMgr\). Reconstructs the surface needed to byte-match three
-// related TUs that all share the CDirectDrawMgr::GetErrorString reporter:
-//
-//   * CDirectDrawMgr (DDRAWMGR.CPP / ddrawmgr.h) - the top-level DirectDraw
-//     device manager. Holds the diagnostic formatter GetErrorString and the two
-//     bring-up methods that DirectDrawCreate + QueryInterface the device, set
-//     the cooperative level and create surfaces. `this` offset 0 is the held
-//     IDirectDraw2 interface (m_0), so the class is NON-polymorphic.
-//   * CDDSurface (DIRSURF.CPP) - a held-IDirectDrawSurface wrapper. POLYMORPHIC
-//     (vtbl @0, the held surface @0x8); its thin Blt/Flip/Lock/... thunks, on a
-//     DDERR_SURFACELOST, call the wrapper's own virtual (slot 7, @0x1c) to
-//     restore the surface and retry, then route a still-bad HRESULT through
-//     GetErrorString.
-//   * CDDPalette (DIRPAL.CPP) - a palette wrapper. Held IDirectDrawPalette @0x4,
-//     two 0x400-byte PALETTEENTRY caches @0xc/@0x10; Get/SetEntries thunks.
-//
-// Field names are placeholders; the offsets, the COM vtable SLOT offsets, and
-// the GetErrorString call (file, line, hr) tuples are the load-bearing facts.
 #ifndef GRUNTZ_CDIRECTDRAWMGR_H
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
@@ -24,49 +5,14 @@
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE device/pool class
 
 #include <Mfc.h> // POSITION (CDDPalette::m_pos, the pool-B cached CPtrList handle) from the
-                 // real MFC header, not a hand-rolled forward-decl/typedef
-// IDirectDrawSurface (the surface COM interface) + CDDSurface (the wrapper) live
-// in the canonical single-source header; every DDraw-touching TU includes it.
 #include <DDrawMgr/DDSurface.h>
 
-// ---------------------------------------------------------------------------
-// The DirectDraw COM interfaces the DDrawMgr classes hold, forward-declared here
-// (the real <ddraw.h> definitions). The dispatching TUs (DDRAWMGR.CPP / DIRPAL.CPP
-// / DDScreen / PaletteCopy) pull <Win32.h>+<ddraw.h> for the full interfaces + slot
-// signatures; every other includer holds only typed pointers, so a forward decl
-// keeps the OLE/windows chain out of this widely-included header.
-//   IDirectDraw        - the raw device DirectDrawCreate returns (QI'd to v2).
-//   IDirectDraw2       - device (CreatePalette@5, CreateSurface@6, GetCaps@11,
-//                        GetDisplayMode@12, SetCooperativeLevel@20, SetDisplayMode@21,
-//                        WaitForVerticalBlank@22, EnumDisplayModes@8).
-//   IDirectDrawPalette - GetEntries@4, SetEntries@6.
-// NOTE the DDCAPS m_caps/m_helCaps below are the driver + HEL DDCAPS_DX6 value
-// blocks: 0x5f i32 == 0x17c bytes == EXACTLY sizeof(DDCAPS_DX6) (probe-verified,
-// wine-cl + clang). The retail's hardcoded dwSize=0x17c is therefore CORRECT - it
-// is sizeof(DDCAPS), NOT a stale/mistaken constant (an earlier note wrongly read
-// 0x13c off the MSVC5 toolchain's OLDER shadow DDRAW.H; the vendored DX6 ddraw.h
-// defaults DIRECTDRAW_VERSION=0x0600 => DDCAPS aliases DDCAPS_DX6 @ 0x17c). They
-// stay RAW i32[0x5f] here only because this header is widely included and must not
-// pull the OLE/windows <ddraw.h> chain; the .cpp (which has <ddraw.h>) accesses
-// them through the REAL DDCAPS type - `((DDCAPS*)m_caps)->dwSize`/`->dwCaps`,
-// `GetCaps((LPDDCAPS)m_caps, ...)` - so the size/offsets are byte-identical.
-// ---------------------------------------------------------------------------
 struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
 struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
 struct IDirectDrawPalette; // <ddraw.h>: the held palette
 
-// The DDrawMgr-local printf-style TRACE logger (0x141cb0; RELEASE body compiled out to
-// a bare ret). Defined in DirectDrawMgr.cpp, referenced by the DDraw TUs (DDSurface).
 void __cdecl DDrawLogLine(char* fmt, ...);
 
-// The pool-item / mode-list array (m_poolItems @+0x4b4) is a real MFC CPtrArray -
-// stored void* CDdMode* records; SetSize(0,-1) clears, SetAtGrow appends. <Mfc.h> is
-// already pulled via <DDrawMgr/DDSurface.h> (CDDSurface's own +0x94 CPtrArray member),
-// so the real type is available here with no extra include; the former CDdObArray view
-// is dissolved. The array accessors (GetData/GetSize) are inline (byte-neutral).
-
-// One enumerated display-mode / pool record (stored as void* in m_poolItems); the
-// mode search + sort key on the width/height (m_8/m_c) and a mode tag (m_54).
 struct CDdMode {
     char _0[8];
     u32 m_8; // +0x08  key part A (height)
@@ -76,31 +22,14 @@ struct CDdMode {
 };
 SIZE_UNKNOWN(CDdMode);
 
-// The {m_c, m_8} pair CheckDisplayBounds' neighbour lookup writes out.
 struct CDdModePair {
     i32 a, b;
 };
 SIZE_UNKNOWN(CDdModePair);
 
-// ---------------------------------------------------------------------------
-// CDirectDrawMgr (DDRAWMGR.CPP) - the top-level device manager. NON-polymorphic;
-// `this` offset 0 holds the IDirectDraw2 device interface.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CDirectDrawMgr);
-// CDirectDrawMgr IS CDDrawPtrCollections - one retail object (this+0 == the held
-// IDirectDraw2 device; +0x08/+0x184 caps blocks; +0x4b4 pool array; +0x944 last
-// error), its methods split across DDRAWMGR.CPP and the collections TU exactly as
-// retail's project did. ONE class, both spellings (the CImageSet==CDDrawWorker
-// typedef pattern); the merged def lives in <DDrawMgr/DDrawPtrCollections.h>.
 typedef CDDrawPtrCollections CDirectDrawMgr;
 
-// ---------------------------------------------------------------------------
-// CDDPalette (DIRPAL.CPP) - a palette wrapper. Held IDirectDrawPalette @0x4,
-// two 0x400-byte PALETTEENTRY caches @0xc/@0x10. Also the +0x498 pool-B item of
-// CDDrawPtrCollections (wave4-K: the pool view's Init/Init2/Init3/Teardown were
-// RVA-proven == CreateRGB/LoadFromFile/CreateFromTrailing/Destroy; folded here).
-// +0x00 doubles as the pool's cached CPtrList POSITION (MFC POSITION, from <Mfc.h>).
-// ---------------------------------------------------------------------------
 SIZE(CDDPalette, 0x38); // measured: the pool factories RezAlloc 0x38-byte items
 struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
@@ -184,14 +113,6 @@ public:
     i32 m_active;          // +0x34  fade active/pending flag (cleared by Destroy/Flush)
 };
 
-// ---------------------------------------------------------------------------
-// CDDPageMgr (DDrawMgr) - the primary-surface / display-mode bring-up class
-// behind the second DirectDrawCreate caller (0x17c040). It owns its OWN
-// IDirectDraw + IDirectDraw2 + primary surface + palette (distinct from
-// CDirectDrawMgr; offset 0/4 differ). Mode info comes in as {w,h,bpp}. On a
-// failed COM call it routes through its own error handler (HandleError),
-// not CDirectDrawMgr::GetErrorString.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(DDModeInfo);
 struct DDModeInfo {
     i32 width;  // +0x00
@@ -199,8 +120,6 @@ struct DDModeInfo {
     i32 bpp;    // +0x08
 };
 
-// A cached page record (CDDPageMgr::m_data element): three independently-owned heap
-// buffers (RemoveAt frees them, memmoves the tail down and drops the record).
 SIZE_UNKNOWN(CPageRec);
 struct CPageRec {
     u8* m_00; // +0x00  owned heap buffer (RemoveAt frees)
@@ -209,15 +128,6 @@ struct CPageRec {
     u8* m_14; // +0x14  owned heap buffer
 };
 
-// CDDPageMgr IS CMoviePlayer (<Io/MoviePlayer.h>) - ONE retail class. Notably THIS
-// view's m_data/m_count/m_8698 (+0x8690/94/98) are the m_pData/m_nSize/m_nMaxSize of
-// the RTTI-proven MFC CArray playlist embedded at +0x868c, and its CPageRec is that
-// array's PLAYLISTINFOSTRUCT (the three owned buffers RemoveAt frees). Full proof in
-// <Io/MoviePlayer.h>.
-//
-// Kept as a TYPEDEF ALIAS (fwd decl only - this header has 18 consumers and must not
-// pull MFC/afxtempl into them; a TU needing the members includes <Io/MoviePlayer.h>).
-// @fold-TODO: rename the consumers to CMoviePlayer, then drop this alias.
 class CMoviePlayer;
 typedef CMoviePlayer CDDPageMgr;
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

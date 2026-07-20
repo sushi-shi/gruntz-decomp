@@ -1,24 +1,12 @@
-// NetCmdMgr.cpp - CNetSessHost::SelectColor (0x0c4b60, __thiscall): claim the
-// color slot `idx` for player `pid`. When the live-session flag (g_multiState->m_isHost)
-// is set, a color already taken (ChannelSlots_Get==0) rejects with the chat error;
-// otherwise the prior owner is released and the new one flagged. Slots are the
-// session's 0x238-byte command buffers (matcher-4's CNetCmdBuf); the selection
-// field is at +0x158. All callees/globals are external (reloc-masked). Field names
-// are placeholders; only offsets + code bytes are load-bearing.
 #include <Ints.h>
 #include <Net/NetMgr.h>      // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
 #include <Net/NetSessHost.h> // the shared CNetSessHost session-host facet
 #include <Gruntz/Multi.h>    // the g_multiState singleton is a CMulti (xref-proven)
 #include <rva.h>
 
-// The multiplayer game-state singleton (g_multiState) is a CMulti: its +0x528 is-host
-// latch and the ReportVersionMsg chat-error method (0xb7e30) reached off it are both
-// CMulti's (xref: the CNetMgr::ShowError label was a heuristic mis-attribution).
 DATA(0x0024bd5c)
 CMulti* g_multiState;
 
-// The shared channel/color-slot array accessors (Play.cpp, __cdecl). The
-// multiplayer color picker reads/stamps a player's slot through them.
 i32 ChannelSlots_Get(i32 i);         // 0xdb2d0  (color-taken read)
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0  (color-flag stamp)
 

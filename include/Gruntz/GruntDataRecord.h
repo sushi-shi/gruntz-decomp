@@ -1,14 +1,3 @@
-// GruntDataRecord.h - a fixed-size (0x68 B) game-data record serialized through a
-// binary writer in the big grunt-data Serialize (FUN_00453f90 @0x53f90, in the
-// LoadVehicleGruntSprites/LoadGruntAbilityTuning cluster). The enclosing Serialize
-// walks an array of these records (stride 0x68) and calls SerializeStrings on each.
-//
-// The record opens with five owned name strings (char*[5] at +0x00..+0x10) that
-// SerializeStrings writes out as fixed 0x80-byte zero-padded fields, followed by
-// three 0x10-byte blocks (+0x14/+0x24/+0x34) and one 0x20-byte block (+0x48).
-// Only the OFFSETS + the emitted code bytes are load-bearing (campaign doctrine);
-// the record's real class name is unrecovered (the enclosing Serialize is unnamed,
-// no RTTI), so the fields keep placeholder names.
 #ifndef SRC_GRUNTZ_GRUNTDATARECORD_H
 #define SRC_GRUNTZ_GRUNTDATARECORD_H
 
@@ -16,11 +5,6 @@
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// The binary writer the record serializes through is the shared WAP32 CSerialArchive
-// (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
-// <Gruntz/SerialArchive.h> - the former local `DataWriter` view is folded away.
-
-// The 0x68-byte record. SerializeStrings is the only matched method.
 SIZE_UNKNOWN(GruntDataRecord);
 struct GruntDataRecord {
     char* m_str[5];  // +0x00..+0x10  five owned name strings

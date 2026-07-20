@@ -1,17 +1,5 @@
-// GruntToyTimeSprite.cpp - the grunt toy-timer HUD sprite (C:\Proj\Gruntz), a
-// CGruntHealthSprite leaf. Split out of the former GameObjectCtors.cpp catch-all so
-// the class maps to one TU / one retail .obj; the ctor is the emission anchor (cl
-// emits ??_7CGruntToyTimeSprite@@6B@ + the GetTypeTag COMDAT here).
-//
-// Functions in ascending retail-RVA order:
-//   CGruntToyTimeSprite ctor @0x0007fbd0 - the /GX HUD sprite ctor.
-//   GetToyTime           @0x0007fca0 - a tiny __stdcall +0x3f4 CGrunt accessor (ret 4).
-//   ~CGruntToyTimeSprite @0x00012130 - the /GX leaf dtor (folds the CUserLogic teardown).
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
-
-// The engine bute store the sprite ctor queries for its "A" animset node. wwdfile /
-// others own the DATA label (0x2bf620); declared extern so the address reloc-masks.
 
 // CGruntToyTimeSprite::CGruntToyTimeSprite @0x0007fbd0 - the /GX HUD sprite ctor.
 // Chains the CGruntHealthSprite base ctor (0x7eb00, via thunk 0x3224; declared-only
@@ -40,11 +28,6 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(
     m_60 = -0x20; // +0x60  toy-time icon screen-offset Y (drawn above the grunt)
 }
 
-// CGruntToyTimeSprite::Vslot16 (0x0007fca0) - the leaf's slot-16 stat-time getter:
-// read the bound grunt's +0x3f4 toy-timer (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
-// WIRED (VT1): was the free fn `GetToyTime` while the declared `virtual Vslot16
-// OVERRIDE` had no definition (vtable_scan --holds 0x07fca0 -> this class's slot 16).
-// Byte-neutral - see the CGruntWingzTimeSprite::Vslot16 sibling for the ABI argument.
 RVA(0x0007fca0, 0xd)
 i32 CGruntToyTimeSprite::Vslot16(CGrunt* grunt) {
     return grunt->m_toyTime;

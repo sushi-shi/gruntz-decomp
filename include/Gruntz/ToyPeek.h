@@ -1,7 +1,3 @@
-// ToyPeek.h - the toy-peek HUD eyecandy (C:\Proj\Gruntz), a CUserLogic tile-logic
-// leaf (RTTI .?AVCToyPeek@@). The 1-arg ctor (0x98140) folds the shared
-// CUserLogic(obj) prologue then a per-class tail; the leaf state begins at +0x58.
-// Offsets + code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CTOYPEEK_H
 #define GRUNTZ_CTOYPEEK_H
 
@@ -44,8 +40,6 @@ public:
 };
 VTBL(CToyPeek, 0x1e7204);
 
-// The handler PMF stored in each g_iconStateTable slot (a 4-byte code pointer on
-// this complete single-inheritance class; FireActivation dispatches it on `this`).
 typedef i32 (CUserLogic::*ToyPeekActHandler)();
 
 #endif // GRUNTZ_CTOYPEEK_H

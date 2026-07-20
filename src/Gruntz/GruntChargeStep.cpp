@@ -1,33 +1,3 @@
-// GruntChargeStep.cpp - CGrunt::ChargeStep (0x0ef6b0) re-homed from
-// src/Stub/Discovered.cpp. The per-frame "pursue / charge the target grunt"
-// behavior step: a three-state machine (m_defenderState = scan / move / arrived)
-// over the trigger-mgr grunt grid, issuing move/attack commands and re-arming a
-// random-wander fallback. /base - no destructible locals.
-//
-// family was the canonical model, and every "reloc-masked engine callee" was a
-// phantom alias of an ALREADY-RECONSTRUCTED method (each read off its ILT thunk):
-//   Grunt        -> CGrunt (every field already carries the same canonical name:
-//        m_poweredUp/m_combatActive/m_neighborValid/m_defenderState/m_dwell/
-//        m_arrivalCol/Row/m_defenderX/Y/m_stamina/...; the "+0x328 coord count"
-//        is the m_31c CPtrList's GetCount()).
-//   PosObj       -> CGruntHud (m_5c/m_60 pixel pos; m_134..m_140 wander rect).
-//   GruntTable   -> CTriggerMgr (the +0x260 board): "Find" (ILT 0x253b) is
-//        FindNearestEnemy @0x77df0 (the ex Grid_77df0::FindNearest), "entries"
-//        is m_grid.
-//   GameMgr/MgrSubA/MgrSubB/MgrGrid/MgrBounds/MgrNotifySink -> WwdGameReg +
-//        its grunt facets: m_world (GruntSoundCat) -> m_24 (CGruntViewMid) ->
-//        m_5c+0x40 the visible rect (retail: mov edx,[ecx+0x5c]; add edx,0x40 -
-//        the old view's extra ->m_30 deref misread this lea), m_tileGrid
-//        (GruntBoard m_c/m_10 bounds), m_cueSink (the CGruntSpawnConfig voice
-//        driver).
-//   callees: "AtTile"=RectContains @0x51850 (ILT 0x3c4c), "IsBusy"=
-//        FindGridNeighbor @0x5b6f0 (0x3d5a), "StopMove"=ResetEntranceAnimation
-//        @0x62e10 (0x136b), "CanReach"=GruntInRadius @0x67b00 (0x1014),
-//        "FaceTarget"=CommitNeighbor @0x5b050 (0x302b), "MoveTo6"=
-//        StepArrivalDrop @0x4b370 (0x14e2), "Attack"=CGrunt::TileSwitch @0x4b320
-//        (0x1640, the free __stdcall), "Snap"=SetEntrancePos @0x4d060 (0x1401),
-//        "Notify"=CGruntSpawnConfig::SpawnVoiceDriver @0x11b3b0 (0x39f4),
-//        "GruntLos1127"=CGameLevel::PointInBounds @0x6b330 (0x1127, static).
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Ints.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)

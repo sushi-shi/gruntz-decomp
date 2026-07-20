@@ -1,10 +1,3 @@
-// ActionArea.cpp - the action-area trigger tile-logic obj + the projectile-action
-// type registry + the pulse-highlight sprite (C:\Proj\Gruntz). waveM-mech merged the
-// ex projactregistry + pulsehighlight units into this file: the 0x7c60-0x8600 .text
-// is ONE original TU (text A-B-A weave - ActionArea's ApplyColor@0x8580 sits AFTER
-// the projactregistry block and BETWEEN PulseHighlight's Tick@0x8440 / Serialize@
-// 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
-// only OFFSETS + code bytes are load-bearing.
 #include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -23,51 +16,15 @@
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
-// pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-
-// (The CProjActOwner placeholder is GONE: the vtable-owner probe proves the dtor that
-// opens the projactregistry block IS ~CActionArea - ??_7CActionArea @0x1e7004 (RTTI-named)
-// slot 0 -> ILT thunk -> the scalar-deleting dtor 0x7fa0 -> the body at 0x7fd0. There was
-// never a second class: two byte-identical CUserLogic leaf teardowns cannot be two COMDAT
-// copies of one dtor - MSVC5 keeps one COMDAT per name - so the "folded twin" story was
-// wrong in the other direction: it is ONE dtor, and it belongs to CActionArea.)
-
-// The global registry object at VA 0x629388 - the shared _zvec-based registry
-// collection (canonical CCoordColl, <Gruntz/HaznColl.h>). SetActiveRange reaches it
-// as CZDArrayDerived::Construct (@0x3742 ILT thunk -> 0x8710) and the slow
-// coordinate probe as _zvec::GrowTo (@0x16da80), both through a cast at each call
-// (see below). Was the .cpp-local CProjReg view (its `Find` method was never called).
 DATA(0x00229388)
 extern CCoordColl g_projReg;
 
-// (The R3 registry's lo/hi/base/cur/stride/scratch per-field scalars are
-// reunified into the g_projReg object above - the registry object IS the whole
-// 0x24-byte collection.)
-// The shared alloc-cache pair + the alloc helper the rebuild path drives.
-
-// The dispatch object FireActivation runs on IS CActionArea (vtable_hierarchy:
-// ??_7CActionArea slot 4 == FireActivation @0x80e0). Its entry type
-// CActionAreaActEntry + the ProjActHandler PMF are the canonical decls in
-// <Gruntz/ActionArea.h>. (Was the .cpp-local CProjActObj + CActionAreaActEntry views.)
-
-// The inlined coordinate->CActionAreaActEntry* lookup (fast-range / slow-Find /
-// rebuild), folded in twice by FireActivation and once by RegisterType.
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     return reinterpret_cast<CActionAreaActEntry*>(g_projReg.ResolveEntry(coord));
 }
 
-// The shared game-object type-name registry (R1, @0x6bf650) RegisterType funnels
-// through, keyed by the per-type id the global bute-tree assigns to a class name.
-// Same fast-range/slow-Find/rebuild lookup as the per-class R3 table. All globals
-// are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
-// external/no-body. CTypeColl2 (the Insert facet) is the shared def in
-// <Gruntz/TypeColl2.h>.
-// CTypeColl was a fake view of the REAL zDArray at 0x6bf650 - and it mangled to a
-// DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 
-// R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
@@ -82,19 +39,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-// The R3 handler stored into the per-class table (LAB_00403517, an ILT thunk).
 extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
-
-// The global millisecond tick (_g_645588). The DWORD load reloc-masks.
-
-// The per-frame brightness sink the pulse ramp drives is the bound object's image
-// set (CGameObject::m_194, a CImageSet at +0x194) - reached cast-at-use, exactly
-// like ApplyColor below. Was the .cpp-local CPulseAnim view. CPulseHighlight itself
-// is now the canonical class in <Gruntz/ActionArea.h>.
-// NOTE (hot header): CGameObject::m_194 is typed `char*` in UserLogic.h; it is really
-// the object's CImageSet (SetAllTypes/SetAllField18 @0x152480/0x1524d0). Retyping it
-// to CImageSet* would drop the two casts here + in ApplyColor - a UserLogic.h change
-// for the shared-base lane.
 
 // @early-stop
 // 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj), /GX;
@@ -174,16 +119,11 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CActionArea@@UAE@XZ 0x00007fd0 0x44
 
-// 0x8060: register the default projectile-action id range [0x7d0, 0x7da] on the
-// global registry.
 RVA(0x00008060, 0x15)
 void ProjActRegisterDefaults() {
     g_projReg.Construct(0x7d0, 0x7da);
 }
 
-// 0x80e0: CActionArea::FireActivation - look the activation coordinate up in the
-// R3 registry; if the entry has a registered handler, look it up again and
-// dispatch it __thiscall on this. Same archetype as CKitchenSlime::FireActivation.
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
     CActionAreaActEntry* e = R3Lookup(coord);
@@ -205,10 +145,6 @@ void CActionArea::FireActivation(i32 coord) {
 // ebp,[eax+1]` strength-reduced idiom (cl loads the count plainly) and pins the
 // type-id register differently. Not source-steerable; deferred to the final sweep.
 RVA(0x00008240, 0x18d)
-// The level-load registrar for the ActionArea type. Kept under the CProjActObj
-// registrar-shell name (ObjTypeRegistrars.h) that GameObjectFactory calls, for
-// caller/definition reloc consistency - the object VIEW folded to CActionArea, but
-// this static registrar's symbol stays CProjActObj:: (no phantom).
 void CProjActObj::RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
@@ -232,9 +168,6 @@ void CProjActObj::RegisterType() {
     *reinterpret_cast<void**>(R3Lookup(id)) = static_cast<void*>(&ProjActHandlerThunk);
 }
 
-// 0x8440: per-frame pulse. Every 500 ms the phase flag toggles and the timestamp
-// resets; the elapsed time since the timestamp drives a brightness ramp (phase-on:
-// (1 - t*0.002)*50 + 155; phase-off: t*0.1 + 155) pushed to the bound anim sink.
 RVA(0x00008440, 0xfe)
 i32 CPulseHighlight::Tick() {
     i64* ts = &m_timestamp;
@@ -256,9 +189,6 @@ i32 CPulseHighlight::Tick() {
     return 0;
 }
 
-// CActionArea::ApplyColor (0x8580) - re-name the bound object's sprite for the owning
-// team (owner 1 -> BLUE, owner 2 -> RED), reset its image set's pixel-format types,
-// and clear the object's active bit. Returns 1 on a recognized owner, else 0.
 RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (owner) {
@@ -281,8 +211,6 @@ i32 CActionArea::ApplyColor(i32 owner) {
     return 1;
 }
 
-// 0x8600: Serialize override - chain the base serialize + the +0x34 sub-object,
-// then transfer the pulse-timer fields (tag 4 = write, tag 7 = read).
 RVA(0x00008600, 0xcd)
 i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {

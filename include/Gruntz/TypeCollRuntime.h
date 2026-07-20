@@ -1,9 +1,3 @@
-// TypeCollRuntime.h - CTypeCollRuntime, a zDArray<CString> runtime collection
-// (vtable ??_7CTypeCollRuntime@@6B@ @0x5f04e4). Derives from the canonical _zdvec
-// allocating base (<Wap32/ZVec.h>; the former `CZArray2D` model of that same class is
-// folded onto it); its own scalar-deleting destructor destructs the CString element
-// array (m_base, count = m_hi - m_lo + 1) then runs the ~_zdvec base teardown. The global type-name
-// runtime (@0x6bf650, its atexit dtor 0x16e7a0) is an instance.
 #ifndef GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H
 #define GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H
 

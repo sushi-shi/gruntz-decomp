@@ -60,105 +60,27 @@
 #include <Mfc.h> // CString (the scratch name-vec element)
 #include <rva.h>
 
-// The global CButeMgr text-config tree (the singleton). The `ecx=&g_buteMgr;
-// call GetIntDef` shape reloc-masks against the matched CButeMgr::GetIntDef.
-// g_buteMgr (CButeMgr singleton) comes from <Bute/ButeMgr.h>.
-
-// The game-manager singleton (CGameRegistry* @ 0x64556c) comes typed from
-// <Gruntz/InGameIcon.h> (via GruntPuddle.h); SpawnPartners reaches the object list
-// through its real m_world (CDDrawSurfaceMgr) -> m_8 (object factory/manager).
-
-// 0x2bf3bc is NOT a "default geometry source": it is the per-frame DRAW-DELTA mirror
-// (Play.cpp sets it every frame from g_frameDelta == g_lastDelta), and what the calls below
-// do is advance an animation cursor BY THE FRAME DELTA. This TU had it as a C++-mangled
-// `g_defaultGeo` - a divergent, undefinable symbol under a wrong name. It comes from
-// <Gruntz/Teleporter.h> (extern "C" u32 g_engineFrameDelta), included above.
-
-// The current local player index (g_curPlayer) the teleporter warp gates on.
-
-// The wormhole-type marker: the address of CWormhole's vtable slot-4 method. The
-// partner walk identifies a game object as a wormhole by comparing its +0x7c
-// sub-object's +0x10 slot against this code address. Declared as a no-body extern
-// so `mov ebp, OFFSET` emits a DIR32 reloc, reloc-masked against LAB_004039b3.
 extern "C" void WormholeTypeMarker();
 
-// The "Wormhole" config group + the three color keys (the original source string
-// literals; objdiff matches these .data relocations by value against the target).
-
-// ---------------------------------------------------------------------------
-// The game-object registry list SpawnPartners walks IS the world's object chain:
-// g_gameReg->m_world (the world CDDrawSurfaceMgr; the CDDrawSurfaceMgr/
-// CDDrawChildGroup (== CDDrawChildGroup); its CObList @+0x10 heads at +0x14 and each
-// CDDrawGroupNode chains via m_next with the CGameObject at +0x08 - the SAME
-// canonical shape CGameLevel::VisitVisible walks (<DDrawMgr/DDrawChildGroup.h>).
-// ---------------------------------------------------------------------------
-// (the CTeleporter selection-record node holder at mgr->m_cmdGrid->m_recList's head
-// is the real MFC CPtrList node - its +0x8 data (the {row,col} index pair) is reached
-// through the inline CPtrList::GetHead() accessor; the former CTeleSelHolder view is
-// (the CTeleMgrSub view at mgr->m_7c is GONE - that object is the CBattlezData score
-// accumulator, and its "+0x28 bumped on a teleport" is CBattlezData::m_28, the
-// wormhole/teleporter use counter FormatHudText reads back as its case-7 stat.
-// g_gameReg->m_scoreHud is typed now, so the cast fell out.)
-
-// ===========================================================================
-// The shared per-class registration infrastructure. g_buteTree / g_typeCounter /
-// s_codeA / ActNameLookup / g_typeColl.m_grown / g_typeColl.m_alloc come from
-// <Gruntz/ActNameRegistry.h>. (The former Wormhole.cpp-local aliases
-// g_logicRegCounter/s_wormholeLogicKey were the SAME globals - folded.)
-// ===========================================================================
-
-// The second activation key string "B" (0x60d1bc; its .data run continues with this
-// TU's "NormalColor"/"SingleUseColor" literals - owner pool). DEFINED here; the ten
-// registration TUs + the icon/hazard headers reference it (the old `s_actKeyB`
-// name was a second alias of this same literal).
-
-// (The three teleporter key strings @0x20a72c/0x20bd38/0x20d1fc were FICTIONS -- invented
-// names for cl's own folded `??_C@` literal COMDATs, not named char[] globals. Spelled
-// inline now; the <Globals.h>/<Gruntz/Teleporter.h> externs are gone with them.)
-
-// The puddle sprite-set geometry key (0x60c1c0; extern in <Gruntz/GruntPuddle.h>).
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-// The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
-// IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-// g_typeColl by <Gruntz/ActNameRegistry.h>; this field-modeled alias stays a bare
-// extern so the loads reloc-mask.)
-
-// The CWormhole-logic dispatch table (a zDArray<int (CUserLogic::*)(void)> @
-// 0x644660). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
-// Shared shape: <Gruntz/LogicFnTable.h>.
 DATA(0x00244660)
 extern LogicFnTable g_wormholeDispatch;
 
-// The CGruntPuddle logic dispatch table (@0x6445e8), constructed by
-// InitLogicDispatch_6445e8 below. Modeled through the CActReg lookup path
-// (ResolveEntry).
 DATA(0x002445e8)
 extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
-                                       // extent covers the interior fields
-                                       // 0x2445ec..0x244608 (bind as g_obj+offset)
 
-// CTeleporter's activation-coordinate registry singleton (@0x6446b0), built over
-// the fixed [2000, 2010] range by the shared registry ctor (0x408710).
 DATA(0x002446b0)
 extern CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte
-                                      // CActReg extent covers interior fields
-                                      // 0x2446b4..0x2446d0, bind as g_obj+offset)
 
-// The handler member function loaded into the wormhole dispatch slot
-// (LAB_0040181b, a CWormhole logic method). Referenced by address so its DIR32
-// operand reloc-masks.
 extern i32 WormholeLogic_40181b();
 
-// The per-frame handler entries (ILT thunks) the moved-in registrars bind.
 extern "C" void Handler_4021f8(); // 0x4021f8 (puddle "A")
 extern "C" void Handler_403418(); // 0x403418 (puddle "B")
 extern "C" void Handler_40187a(); // 0x40187a (teleporter "A")
 extern "C" void Handler_403846(); // 0x403846 (teleporter "B")
 
-// The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
-// the freshly-grown region (the _zdvec::IndexToPtr body).
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
     v->m_grown = 0;
@@ -184,7 +106,6 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-// The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
 static inline char* ResolveSlot(_zvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
@@ -200,8 +121,6 @@ static inline char* ResolveSlot(_zvec* v, i32 idx) {
     return v->m_spare;
 }
 
-// The shared name-slot free loop both key blocks of a registrar run before
-// assigning the key (the same archetype LogicActRegistrars.cpp keeps).
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
@@ -213,8 +132,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-// The stored handler is a CUserLogic member-fn-ptr (the shared LogicFnTable
-// element type; see CSimpleAnimation::Dispatch).
 typedef i32 (CUserLogic::*LogicFn)();
 
 // ===========================================================================
@@ -294,14 +211,6 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     s->m_drawFillArg = color;
 }
 
-// ---------------------------------------------------------------------------
-// CWormhole::Serialize @0x03fed0 - the two-chain Serialize override (SAME archetype
-// as CFortressFlag::Serialize @0x46410): chain the shared CUserLogic helper, then
-// the +0x34 sub-object's chain; on the post-load tag (tag == 8), resolve the
-// wormhole draw color. m_124 == -1 -> the config default (GetIntDef("Wormhole",
-// "EntranceColor", 3)), else the cached kind index; look it up in g_gameReg's color
-// table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
-// ---------------------------------------------------------------------------
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -332,23 +241,11 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-// ===========================================================================
-// InitWormholeDispatch  (0x03ffd0)
-// File-scope static-init thunk: construct the wormhole-logic dispatch table over
-// the index band [0x7d0, 0x7da].
-// ===========================================================================
 RVA(0x0003ffd0, 0x15)
 void InitWormholeDispatch() {
     g_wormholeDispatch.Construct(0x7d0, 0x7da);
 }
 
-// ===========================================================================
-// CWormhole::Dispatch  (0x040050)
-// Index g_wormholeDispatch by idx; if the resolved slot holds a non-null member
-// function, invoke it on this. The bounds-check + grow of the table accessor is
-// inlined (ResolveSlot), computed once for the null-test and once for the call.
-// Same archetype as CSimpleAnimation::Dispatch (0x0abc10).
-// ===========================================================================
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&g_wormholeDispatch, idx)) != 0) {
@@ -470,24 +367,11 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_placed = 0;
 }
 
-// ===========================================================================
-// InitLogicDispatch_6445e8  (0x0406d0)
-// File-scope static-init thunk: construct the CGruntPuddle logic dispatch table
-// (@0x6445e8) over [0x7d0, 0x7da]. (Moved from LogicDispatchInit.cpp - the frag
-// is text-contained in this TU.)
-// ===========================================================================
 RVA(0x000406d0, 0x15)
 void InitLogicDispatch_6445e8() {
     g_logicDispatch_6445e8.Construct(0x7d0, 0x7da);
 }
 
-// ===========================================================================
-// CGruntPuddle::FireActivation  (0x040750)  - slot-4 (UserLogicVfunc2) override
-// ===========================================================================
-// Resolve `id` in the class dispatch table g_logicDispatch_6445e8; if the resolved
-// entry carries a registered handler, re-resolve and dispatch it __thiscall on
-// `this`. Same archetype as CTeleporter::FireActivation (the ResolveEntry inline
-// expands twice, side-effecting so it isn't CSE'd).
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
     CPuddleActEntry* e = reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
@@ -689,9 +573,6 @@ i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-// --- CTeleporter (0x041020), vptr 0x5e80cc --- the ctor is the vtable-emission
-// anchor: GetTypeTag @0x10d80 + the ??_7CTeleporter vtable emit in this TU. Folds
-// the inline CUserLogic(obj) base + the tile-snap/enter-field tail.
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_armClockLo = 0;
@@ -709,13 +590,6 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     EnterField2();
 }
 
-// ---------------------------------------------------------------------------
-// CWormhole::LoadColors  (0x0411f0)
-// The one-time color-attribute resolver. Maps the wormhole kind (m_124 == 2
-// SECRET / == 1 SINGLE-USE / else NORMAL) to a color id read once from the global
-// CButeMgr "Wormhole" config group via GetIntDef, cached in m_128 (done only while
-// m_128 == 0), then indexes the game registry's color table (g_gameReg -> [+0x78]
-// -> [m_128*4 + 0x14]) and stamps the draw trio.
 RVA(0x000411f0, 0xa0)
 void CWormhole::LoadColors() {
     // The kind/color fields live on the bound object (m_10, a CGameObject*).
@@ -751,12 +625,6 @@ void CWormhole::LoadColors() {
     s->m_drawFillArg = colorEntry;
 }
 
-// ---------------------------------------------------------------------------
-// CWormhole::ReapplyConfig - re-apply the bound object's wormhole config (the tail
-// the ctor shares): stamp the WORMHOLE name + TELEPORTEROPEN geometry on m_38,
-// re-cache the "A" act-key node (m_objAux->m_1c, saving the old into m_prevAnimSetNode), raise the
-// two config flags, then clear bit0 of the bound object's m_40.
-// ---------------------------------------------------------------------------
 RVA(0x000412c0, 0x63)
 i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
@@ -770,14 +638,6 @@ i32 CWormhole::ReapplyConfig() {
     return 1;
 }
 
-// CTeleporter::Serialize @0x041350 - slot-1 (SerializeMove) override. Chain the
-// shared CUserLogic serialize helper + the +0x34 sub-object's chain (either bailing
-// out on failure), then round-trip the leaf state: the two i64 arm-clock/interval
-// snapshots (+0x58/+0x60, walked through one hoisted base ptr; read-inline/write-else
-// block layout) then the two i32 fields m_armed/+0x54 + m_tickHandled/+0x68 (a
-// switch), and on the post-load tag 8 re-apply the config through LoadColors (its
-// body is COMDAT-ICF-folded with CWormhole::LoadColors at 0x411f0). Same archetype
-// as CGruntPuddle::Serialize. Byte-exact.
 RVA(0x00041350, 0xee)
 i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -814,18 +674,11 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-// CTeleporter::InitActReg @0x0414a0 - construct the class's activation-coordinate
-// registry singleton (g_teleporterActReg @0x6446b0) over the fixed range
-// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000414a0, 0x15)
 void CTeleporter::InitActReg() {
     g_teleporterActReg.Construct(2000, 2010);
 }
 
-// CTeleporter::FireActivation @0x041520 - look the activation coordinate up in
-// g_teleporterActReg; if the resolved entry carries a registered handler, resolve
-// it again and dispatch it __thiscall on `this`. Same archetype as
-// CParticlez::FireActivation (double ResolveEntry + dispatch).
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
     CTeleporterActEntry* e = reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
@@ -1031,8 +884,6 @@ i32 CTeleporter::Update() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CWormGeoSub);
 SIZE_UNKNOWN(CTeleAnimSink);
 SIZE_UNKNOWN(CTeleIconTable);

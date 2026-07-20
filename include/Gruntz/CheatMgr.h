@@ -1,26 +1,3 @@
-// CheatMgr.h - the cheat-code dictionary (C:\Proj\Gruntz\, the 0x22bxx region).
-//
-// CCheatMgr is a plain (non-CObject, no vtable) value bag that owns a
-// CMapStringToPtr keyed by each cheat's (obfuscated) code string. Each map value
-// is a heap-allocated 8-byte CheatEntry {commandId, flag}; AddCheat inserts one,
-// Empty() frees every entry's payload + RemoveAll()s the map + clears the scalar
-// state, and the destructor runs Empty() then the embedded map's ~CMapStringToPtr.
-// RegisterCheats seeds the 19 built-in codes (each -> a WM_COMMAND id) then calls
-// LoadCheatConfig (the bute/registry config loader, defined in another TU).
-//
-// Recovered shape (the map sits at +0x04, NOT offset 0 - so CCheatMgr EMBEDS a
-// CMapStringToPtr member rather than deriving from it):
-//   m_count  +0x00  a DWORD reset to 0 by Empty()
-//   m_map    +0x04  CMapStringToPtr (0x1c bytes: CObject vptr + 6 fields, spans
-//                   +0x04..+0x20), keyed by the cheat code, value = CheatEntry*
-//   m_flag   +0x20  a BYTE flag reset to 0 by Empty()
-//   ...      +0x21..+0x120  inline state (not touched by these four methods)
-//   m_120    +0x120 a DWORD reset to 0 by Empty()
-//   m_124    +0x124 a DWORD reset to 0 by Empty()
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing (campaign doctrine). Layout recovered from Empty()/the dtor + the
-// AddCheat stores; engine callees / MFC helpers are reloc-masked (no body).
 #ifndef GRUNTZ_GRUNTZ_CHEATMGR_H
 #define GRUNTZ_GRUNTZ_CHEATMGR_H
 
@@ -29,19 +6,12 @@
 #include <Ints.h>
 #include <Mfc.h> // CMapStringToPtr / CString / POSITION + <windows.h>
 
-// ---------------------------------------------------------------------------
-// The per-cheat map value: a heap-allocated {commandId, flag} pair (operator
-// new(8), freed via operator delete from Empty()).
-// ---------------------------------------------------------------------------
 struct CheatEntry {
     i32 commandId; // +0x00  the WM_COMMAND id this cheat fires
     i32 flag;      // +0x04  enable flag (always 1 for the built-ins)
 };
 SIZE_UNKNOWN(CheatEntry);
 
-// ---------------------------------------------------------------------------
-// CCheatMgr - the cheat-code dictionary (no vtable; a value bag).
-// ---------------------------------------------------------------------------
 class CCheatMgr {
 public:
     BOOL Init(i32 owner);                                 // 0x22ad0  seed +0, clear scalars

@@ -1,11 +1,3 @@
-// SBI_ImageSetAni.cpp - CSBI_ImageSetAni::Serialize (0xe7cd0), the frameless slot-1
-// serialize the ANI conveyor SBI leaf shares with CSBI_StatzTabArrow (both vtables'
-// slot 1 = thunk 0x2829 -> 0xe7cd0). RE-ATTRIBUTED here from SBI_WarlordHead.cpp,
-// where it was mis-named CSBI_WarlordHead::Serialize: the vtable proof (gruntz sema
-// class) shows CSBI_ImageSetAni/CSBI_StatzTabArrow slot 1 = 0x2829 -> 0xe7cd0, while
-// CSBI_WarlordHead slot 1 = thunk 0x3cd8 -> 0xeb970 (that real one now lives in
-// SBI_WarlordHead.cpp). The six persistent ints m_3c..m_50 belong to this class
-// (size 0x54), not warlord (which serializes only its single m_3c direction).
 #define SBI_DTOR_CHAIN           // enable the inline base-dtor bodies (see StatusBarItem.h)
 #define SBI_OWN_IMAGESETANI_DTOR // this TU owns the out-of-line ~CSBI_ImageSetAni (0x1047f0)
 #include <rva.h>
@@ -22,8 +14,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (Init's map lookup)
 #include <Image/CImage.h>              // the resolved frame record (Tick's blit)
-
-// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 
 // ===========================================================================
 // CSBI_ImageSetAni::Init (0xe7980, vtable slot 13): seed the item from a config
@@ -178,11 +168,6 @@ void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i
     m_40 = ::timeGetTime();
 }
 
-// vtable slot 1 (0xe7cd0): save/load the six persistent ints (m_3c..m_50) through the
-// stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize and normalize
-// its result to a bool. mode 7 = load, mode 4 = save; any other mode just chains.
-// Bails early when the stream is null or the active game manager (g_gameReg->m_world)
-// is gone.
 RVA(0x000e7cd0, 0xf8)
 i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
@@ -212,14 +197,6 @@ i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_ImageSetAni (0x1047f0): the /GX chain destructor - stamp
-// ??_7CSBI_ImageSetAni, run the inherited ResetCounters (0xe7400), then MSVC folds
-// the four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. The folded ImageSet level calls
-// ResetCounters AGAIN, so retail shows two `call 0xe7400` here (@0x2c and @0x41).
-// Collapsed from SBI_ImageSetAniEh.cpp (5-level case of
-// docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
 RVA(0x001047f0, 0x94)
 CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     ResetCounters();

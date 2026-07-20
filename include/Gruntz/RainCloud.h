@@ -1,8 +1,3 @@
-// RainCloud.h - the rain-cloud path-hazard game-object (C:\Proj\Gruntz), a
-// CPathHazard leaf (RTTI-proven; vtable_hierarchy --tree). The real base is the
-// fully-modeled 21-slot CPathHazard (<Gruntz/PathHazard.h>). Adds no data members
-// over the 0x130-byte base; cl emits its own ??_7CRainCloud + the implicit post-
-// base-ctor vptr stamp. Only offsets / code bytes are load-bearing.
 #ifndef GRUNTZ_CRAINCLOUD_H
 #define GRUNTZ_CRAINCLOUD_H
 

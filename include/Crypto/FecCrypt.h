@@ -1,41 +1,9 @@
-// FecCrypt.h - CFecFile, the "FEC File" encrypted-resource archive reader/writer
-// (0x17b5f0 references the "Opened FEC File %s" diagnostics) AND the CMoviePlayer decode
-// store (it is CMoviePlayer's embedded m_540 sub-object). Formerly modeled under three
-// names - CFecFile (FecCrypt.cpp), CPageStore17b510 (retired; the pen header is gone) and
-// CMovieDecodeStore (MoviePlayer.h) - all the SAME object (same +0x124 polymorphic
-// stream, +0x138 CDWordArray index). Unified here as the single-source shape.
-//
-// Field names are placeholders; the offsets, the vtable SLOT offsets and the code bytes
-// are the load-bearing facts (campaign doctrine).
 #ifndef CRYPTO_FECCRYPT_H
 #define CRYPTO_FECCRYPT_H
 
 #include <Ints.h>
 #include <Mfc.h> // CDWordArray, CFile, MSG/PeekMessageA (windows.h)
 
-// The stream subobject at CFecFile+0x124 is the embedded MFC CFile (recovered identity):
-//   - ~CFecFile (0x390a0) runs ~CFile in-place on +0x124, and ~CMoviePlayer (0x38fc0)
-//     inlines that same dtor for its m_540 store (see src/Io/MoviePlayer.cpp);
-//   - the archive methods dispatch exactly MFC CFile's vtable slots (RTTI-backed retail
-//     vtable @0x1ed15c): Open@+0x28 / Seek@+0x30 / Read@+0x3c / Write@+0x40 /
-//     Flush@+0x50 / Close@+0x54 (the pre-2026-07-13 model misread +0x50/+0x54 as
-//     Close/Abort - the real afx.h declaration order puts Flush at 20 and Close at 21);
-//   - the layout fits byte-exactly: sizeof(CFile)==0x10 {vptr, m_hFile @+4,
-//     m_bCloseOnDelete @+8, m_strFileName @+0xc}, so the old "+0x128 Lookup success
-//     result" member IS m_stream.m_hFile - Lookup returns the raw Win32 file HANDLE.
-// Modeled as a concrete `CFile` member: MSVC5 does NOT devirtualize member-object
-// virtual calls (measured - OnFail/Init were byte-exact with virtual dispatch through
-// the member), so `m_stream.Read(...)` lowers to the same `mov eax,[this+0x124];
-// call [eax+0x3c]` retail has. (The former `FecStream` declared-only proxy - and its
-// devirtualization fear - is dissolved; the fear was disproven by the same measurement.)
-
-// The per-entry on-disk record (the CFecFile+0x18 scratch, 0x10c bytes, streamed as a
-// blob by Read/Write). Its fields (record-relative offsets):
-//   +0x00 i32   m_index      entry index (1-based; = ++m_134 on the write path)
-//   +0x04 u16   m_nameLen    encoded-name length
-//   +0x06 char  m_name[0x100] FecEncode'd basename + random padding
-//   +0x106 u16  m_scramble   rand()%0x400 + 0x2b8 (per-entry pad/scramble word)
-//   +0x108 i32  m_payloadLen payload length (== the source file size)
 struct FecEntry {
     i32 m_index;        // +0x00
     u16 m_nameLen;      // +0x04

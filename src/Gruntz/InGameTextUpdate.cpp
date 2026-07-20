@@ -1,15 +1,3 @@
-// InGameTextUpdate.cpp - CInGameText::Update (0x997c0), the in-game text/help
-// object's per-frame tick (C:\Proj\Gruntz), re-homed from src/Stub/Backlog.cpp.
-//
-// Ghidra symbol cluster proves CInGameText ownership: 0x997c0 sits inside the
-// CInGameText method run (ctor 0x99110, InitActReg 0x993e0, Dispatch 0x99460,
-// RegisterTextLogic 0x995c0, Update 0x997c0, Serialize 0x99a30). The class is the
-// canonical <Gruntz/InGameText.h> model (folded here - no per-TU view): the two
-// receivers the update path drives (m_object @ +0x10, m_38 @ +0x38) are the shared
-// CGameObject the ctor binds (both == obj), reached through their real CGameObject
-// fields (m_screenX/m_screenY/m_124/m_stateFlags + the +0x1a0 per-leaf anim sub).
-// Only offsets / code bytes are load-bearing; the engine sub-object helpers below
-// (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
 #include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -22,26 +10,8 @@
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
-// The per-leaf anim sub-object embedded at CGameObject+0x1a0: its Advance @0x15c360 is
-// CAniAdvanceCursor::Advance (header-less; the canonical class is a CLoadable,
-// see <Gruntz/AniAdvanceCursor.h>). Local minimal decl - only the non-virtual advance
-// call is reached here (via a cast), no fields/vtable.
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance)
 #include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
-// The shared sound chain is fully canonical (same as Projectile/VideoConfig/BootyState):
-// g_gameReg->m_world->m_soundRegistry is the CSndHost (SoundCue.h, pulled by GameRegistry.h) whose
-// +0x10 CMapStringToPtr cue registry maps "GAME_HELPBOOK" to a LeafCue, whose +0x10
-// CSoundCueMgr plays it (ConfigureItem @0x1360d0). No per-TU view - the real types.
-// The *0x64556c singleton is the canonical CGameRegistry: m_cmdGrid the CTriggerMgr cell
-// hit-tester, m_world the resource holder (its +0x28 CSndHost is the cue host),
-// m_viewOriginL/T/R/B (+0x13c..+0x148) the on-screen view bounds.
-// g_gameReg: plain extern; its one canonical DATA(0x0024556c) definition lives in GruntzMgr.cpp
-// The array-touch loop default-constructs a run of CString cache nodes (each 4 bytes,
-// so `p++` advances by 4; the ctor is ??0CString@@QAE@XZ @0x1b9b93, reloc-masked). The
-// former EngStr4 view IS the real MFC CString (m_pszData@+0 == CString's LPTSTR); used
-// directly (CString comes from <Gruntz/Grunt.h>'s <Mfc.h>).
-// zDArray (IndexToPtr == thunk 0x403864 -> node) is the shared
-// <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)

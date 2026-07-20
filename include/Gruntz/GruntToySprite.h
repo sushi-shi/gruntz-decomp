@@ -1,9 +1,3 @@
-// GruntToySprite.h - the "grunt has a toy" indicator sprite, a CUserLogic-
-// derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor folds the
-// bare CUserLogic teardown (leaf-dtor archetype); SetCell stashes the grunt cell
-// and clears a flag bit; Update tracks the grunt's screen position + layer.
-//
-// Field names are placeholders; only the OFFSETS + code bytes are load-bearing.
 #ifndef GRUNTZ_CGRUNTTOYSPRITE_H
 #define GRUNTZ_CGRUNTTOYSPRITE_H
 
@@ -44,8 +38,6 @@ public:
     i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
 };
 
-// The class registry entry: its first dword receives the Update handler PMF (a
-// 4-byte code pointer on this complete single-inheritance class).
 typedef i32 (CUserLogic::*ToyActHandler)();
 SIZE_UNKNOWN(CToyActEntry);
 struct CToyActEntry {

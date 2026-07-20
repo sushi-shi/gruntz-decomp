@@ -1,19 +1,5 @@
 #include <Mfc.h>
 #include <Gruntz/Grunt.h>
-// GruntTileScan.cpp - the per-tick grunt region-scan (0x032ce0, __thiscall ret 4).
-// `this` (edi) is a grunt manager owning the move grid (m_c, a CBrickz-shape grid)
-// plus a goal-point table (m_f4/m_f8); the argument (ebp) is the CGrunt being
-// serviced. When the grunt's "stuck" counter (m_3f0) crosses 0x64 the method:
-//   (A) if a pending coord is latched (m_328) and the grunt's current tile is a
-//       0x4000/type-0x99 cell, drains the pending-coord list (g_coordPool recycle
-//       + m_31c RemoveAll) and returns; else
-//   (B) if the idle counter (m_2ec) exceeds the manager threshold (m_cc) and no
-//       coord is pending, scans a 10x10 tile box (clamped to the grid) around the
-//       grunt, firing the trigger (DoTrigger1fb9, msg 0xd87) on up to five
-//       flagged cells, recomputes the grid dirty rect (m_60/m_70/m_74), picks a
-//       random goal from the table and re-targets the grunt (Trigger1640, msg
-//       0x983), then clears the idle counter.
-// Shares the CGrunt coord-pool / grid family with GruntMoveStep.cpp + Brickz.cpp.
 #include <rva.h>
 
 #include <Ints.h>
@@ -24,14 +10,6 @@
 #include <Gruntz/FreeNodePool.h>
 #include <stdlib.h> // engine rand (0x11fee0)
 
-// --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// GruntTilePos/GruntCoordNode (grunt->m_324), GruntCoordNode (grunt->m_320 pending-coord
-// node) and CGruntSub10 (grunt->m_10) are the shared def in <Gruntz/ScanGrid.h>.
-// CScanCell (the grid's 0x1c-B cell), plus the scan owner CScanMgr and its goal-point
-// element CScanGoal, are the shared defs in <Gruntz/ScanGrid.h>.
-
-// Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a
-// copy of itself; m_70/m_74 = the resulting size. Inlined at each exit.
 #define SCAN_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \

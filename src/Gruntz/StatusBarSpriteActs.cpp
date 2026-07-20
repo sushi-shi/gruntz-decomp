@@ -1,14 +1,3 @@
-// StatusBarSpriteActs.cpp - CStatusBarSprite's activation-name registration
-// (C:\Proj\Gruntz).
-//
-// CStatusBarSprite : CUserLogic (RTTI vtable 0x5e7fc4; ctor 0x10c230, in
-// src/Stub/CStatusBarSprite.cpp). Its per-frame activation handler is bound here
-// by RegisterActs (the 0x18d shared-name-registry archetype) into the class's own
-// coordinate registry singleton (g_statusBarSpriteActReg @0x64e670 - the slot
-// just below the sibling tile-trigger registries in .data). Like CWormholeActs.cpp,
-// this lives in a dedicated TU so it can pull the shared
-// <Gruntz/ActNameRegistry.h> view of the registry globals without colliding with
-// the stub TU's class model.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
@@ -18,26 +7,12 @@
 #include <rva.h>
 #include <Wap32/ZVec.h>
 
-// CStatusBarSprite comes from <Gruntz/StatusBarSprite.h> (folded; ctor 0x10c230 below).
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// (The handler-entry record CStatusBarSpriteActEntry lives with the class in
-// <Gruntz/StatusBarSprite.h>.)
-
-// The class's activation-coordinate registry singleton (@0x64e670), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
-// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
-// derives from it, keeping its own placeholder name so the DATA-pinned global is
-// unchanged.
 DATA(0x0024e670)
 extern CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 
-// StatusBarSpriteStep @0x10c0f0 - the CStatusBarSprite worker-pump (free __cdecl,
-// /GX): the controller lives at obj->m_7c; dispatch on its state id, building the
-// CStatusBarSprite state object on state 0 and dispatching to the state object's
-// vtable slots otherwise. Byte-identical to StepController @0x10d150 bar the leaf
-// TYPE `new`d on state 0 (hence the size 0x54 + ctor target).
 RVA(0x0010c0f0, 0xf1)
 i32 StatusBarSpriteStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
@@ -96,18 +71,11 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-// CStatusBarSprite::InitActReg @0x10c430 - construct the class's activation-
-// coordinate registry singleton (g_statusBarSpriteActReg @0x64e670) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0010c430, 0x15)
 void CStatusBarSprite::InitActReg() {
     g_statusBarSpriteActReg.Construct(2000, 2010);
 }
 
-// CStatusBarSprite::FireActivation @0x10c4b0 - look the activation coordinate up in
-// the class registry (g_statusBarSpriteActReg); if the resolved entry carries a
-// registered handler PMF, resolve it again and dispatch it __thiscall on `this`. Same
-// archetype as CWormhole::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
     CStatusBarSpriteActEntry* e =
@@ -151,8 +119,6 @@ void CStatusBarSprite::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
-// CStatusBarSprite::SerializeMove (0x11ae0), vtable slot 1 - the
-// CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011ae0, 0x47)
 i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {

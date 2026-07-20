@@ -1,35 +1,15 @@
-// PathHazardActReg.cpp - CPathHazard's two-key activation registrar (C:\Proj\Gruntz).
-//
-// Split out of the LogicActRegistrars.cpp holding TU (REHOME D1). Owner CRACKED:
-// the registry table @0x646250 is CPathHazard's activation-dispatch registry
-// (g_actReg_646250 is walked by CPathHazard's activation handler - see
-// PathHazard.cpp). The Construct+Register pair @0xb3ae0/0xb3cc0 is text-contained in
-// CPathHazard's obj (interleaved with PathHazard.cpp's 0xb35a0/0xb3b60 methods) - a
-// deeper pass may FOLD it into PathHazard.cpp; kept standalone here (owner-TU
-// completeness + parallel-worker scope).
-//
-// Interns two activation keys ("A" 0x60a454 and "B" 0x60d1bc) into the shared bute
-// store + name registry, then binds each key's per-frame handler into the registry.
-// Bodies are owner-independent (every global is a reloc-masked DATA extern, every
-// callee external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
 
-// The second activation key string "B" (0x60d1bc); "A" + g_typeCounter + the name
-// registry come from <Gruntz/ActNameRegistry.h>.
-
-// CPathHazard's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x00246250)
 extern CActReg g_actReg_646250; // 0x646250
 
-// The per-frame handler entries (ILT thunks) this registrar binds.
 extern "C" void Handler_4021d5(); // 0x4021d5
 extern "C" void Handler_402252(); // 0x402252
 
-// The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
@@ -41,7 +21,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-// The static initializer that builds registry 646250's fast [0x7d0, 0x7da] id range.
 RVA(0x000b3ae0, 0x15)
 void ConstructActRange_646250() {
     g_actReg_646250.Construct(0x7d0, 0x7da);

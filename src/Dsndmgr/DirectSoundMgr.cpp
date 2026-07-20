@@ -1,41 +1,8 @@
-// DirectSoundMgr.cpp
-// original TU: C:\Proj\Dsndmgr\DSNDMGR.CPP
-//
-// The WHOLE DSNDMGR.CPP object, consolidated per docs/exe-map/interval-dossiers.md
-// (interval 0x1350b0-0x13848b splits at 0x137330 into DSNDMGR.CPP + DSndMgSR.cpp;
-// __FILE__-anchored). One retail obj = one TU, functions in retail RVA order:
-//   * SoundDevice - the DirectSound *device* manager (vftable 0x5ef6c4): bring-up,
-//     buffer/voice lists, RIFF acquire/reload, primary buffer (was SoundDevice.cpp).
-//   * DirectSoundMgr - the per-buffer wrapper base (vftable 0x5ef6b8) + its two
-//     leaves DSoundBaseSub (0x5ef6c0, 0x58B clone) and DSoundCloneInst (0x5ef6bc,
-//     0x60B owns a clone list).
-//   * DSoundVoice - the 0x28-byte volume-ramp voice node (vftable 0x5ef6d0),
-//     Tick/Stop (was DSoundVoice.cpp). Its ctor 0x136fe0 is NOT yet reconstructed
-//     (no source body anywhere; the dossier's "SoundTick_Ctor" gap) - CloneAndPlay's
-//     `new DSoundVoice(...)` reloc-masks to it.
-//   * DSoundList::RemoveMatching (0x136f60) - the reaping list helper (the other
-//     five DSoundList primitives live at 0x1390e0+, OUTSIDE this obj's span, and
-//     stay in SoundVoiceList.cpp).
-//   * DSoundCloneInst::GetItem/ConfigureItem (0x135d70/0x1360d0) - the Dsndmgr UI
-//     sound-cue manager (dossier seam re-homes from statusbarmgrgetitem /
-//     spriteresource; both walk DirectSoundMgr voices).
-//   * ConvertVolumeToPercent (0x135110) - the centi-dB -> percent transfer curve
-//     (dossier seam re-home; was the mis-homed "GruntCmdPercent" /Odi singleton,
-//     now compiled under this TU's real /O2 /GX profile).
-//   * SoundDevice::AcquireResource/ReloadResource (0x136a30/0x136ce0) - the WAVE
-//     Win32-resource siblings of AcquireFile/ReloadFile (dossier seam re-homes;
-//     were the ResLoaders::WaveHost_136a30/WaveHost2_136ce0 views).
-//
-// GetErrorString + SetDSoundReportModes (0x138120/0x138150) moved OUT to the
-// DSndMgSR.cpp side (SoundStream.cpp): they sit AFTER the StreamFeeder block in
-// retail, past the 0x137330 file boundary. Same for ??1PureSoundElem (0x137330)
-// and SoundDevice::TickSubManagers (0x137ac0).
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/DSoundVoice.h> // the 0x28-byte voice node CloneAndPlay news
 #include <Dsndmgr/SoundDevice.h> // SoundDevice: the owning device (m_owner) + its methods
 #include <Rez/RezMgr.h>          // RezAlloc/RezFree/RezFRead/RezFClose - the engine heap/file layer
-                                 // (pulls <Mfc.h>; MUST precede <Win32.h> - the C1189 rule)
 #include <Win32.h>               // windows.h base types (dsound.h needs them)
 #include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
@@ -47,40 +14,19 @@
 
 #include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
 
-// __FILE__ every wrapper passes to GetErrorString (single $SG pooled constant).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
-// DSOUND DX5-era SDK magics the retail build compiled against (the vendored DX6
-// dsound.h disagrees on both - byte-proven, load-bearing):
 typedef enum DSoundDx5Magic {
     DSB_RETAIL_LOOPBIT = 0x02, // retail IsLooping status mask (DX6 DSBSTATUS_LOOPING is 0x04)
     DSBUFFERDESC_SIZE = 0x14,  // retail sizeof(DSBUFFERDESC) (DX6 grew the struct)
 } DSoundDx5Magic;
 
-// RIFF FourCC chunk tags via the real <mmsystem.h> mmioFOURCC (identical expansion
-// -> the same immediate the retail chunk-tag compares use).
-
-// DSOUND.dll ordinal #1 device creator; no dllimport -> direct `e8 rel32` thunk (retail).
-
-// RIFF/WAVE chunk parser 0x137110 (__cdecl): scan a RIFF blob for `fmt `/`data`,
-// write fmt (*out), PCM ptr (*dataOut) + len (*sizeOut); nonzero if `fmt ` found.
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 
-// Volume->attenuation table SetVolumeByIndex indexes (rva 0x253ab8), filled by
-// BuildVolumeTable(i=0..100); INCLUSIVE loop -> the 101st store lands on
-// g_panTable[0] (retail). The pan table (rva 0x253c48, Globals.h) sits right after:
-// SetPanByIndex's +arg reads the negated entry.
 DATA(0x00253ab8)
 i32 g_volumeTable[100];
-// The pan-attenuation table (owner-TU def; .bss, VA 0x653c48), indexed by SetPanByIndex.
 DATA(0x00253c48)
 i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
-
-// The RIFF loaders read the file directly with the CRT: fopen (0x11f870 = _fopen),
-// _filelength (0x18c480 = __filelength, reads FILE._file fd), fread (0x18c220 =
-// _fread) + fclose (0x11f780 = _fclose) - all LIBCMT (config/library_labels.csv),
-// so these calls bind library-exempt. (<stdio.h> is included above; <io.h> below
-// declares _filelength.)
 
 // "rb" open-mode string the loader passes fopen (.data, rva 0x20b668). Bound via
 // @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
@@ -89,19 +35,6 @@ i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
 // cl mangling and is authority-checked against the base obj.
 // @data-symbol: ?s_rb@@3PBDB 0x0020b668
 extern const char s_rb[];
-
-// The WAVE resource loaders (AcquireResource/ReloadResource) read the module's
-// resource HINSTANCE through MFC's AfxGetModuleState (NAFXCW, 0x1d3631) - the
-// standard `AfxGetModuleState()->m_hCurrentInstanceHandle` (+0x08). Both the class
-// AFX_MODULE_STATE and the accessor come from the real MFC headers already pulled
-// in via <Rez/RezMgr.h> -> <Mfc.h> -> <afx.h> -> <afxstat_.h>; the call binds
-// library-exempt (?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ, library_labels.csv).
-
-// The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
-// WINMM import; PurgeVoiceList calls ds:[0x6c4650] - do NOT swap for timeGetTime.
-
-// The DirectSoundMgr clone hierarchy (CloneList / DSoundBaseSub / DSoundCloneInst) is
-// defined in DirectSoundMgr.h so the device + feeder can name the concrete leaf.
 
 // ---------------------------------------------------------------------------
 // VolumeToAttenuation (static __cdecl, x87): 0..100 volume -> centi-dB attenuation.
@@ -157,8 +90,6 @@ extern "C" i32 ConvertVolumeToPercent(i32 v) {
     return static_cast<i32>((-r));
 }
 
-// ---------------------------------------------------------------------------
-// BuildVolumeTable: g_volumeTable[i] = VolumeToAttenuation(i), i=0..100 (101 stores).
 RVA(0x001351a0, 0x23)
 void SoundDevice::BuildVolumeTable() {
     for (i32 i = 0; i <= 100; i++) {
@@ -166,9 +97,6 @@ void SoundDevice::BuildVolumeTable() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// ctor: cache buffer + owner, zero the caps/state, then (if buf) read caps into m_caps
-// and cache initial freq/pan/volume guarded by the capability bits (report on failure).
 RVA(0x001351d0, 0x109)
 DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     // cl auto-stamps ??_7DirectSoundMgr@@6B@ (0x5ef6b8) here.
@@ -225,14 +153,9 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
 // @0x135300, not the CRT).
 // @rva-symbol: ??_GDirectSoundMgr@@UAEPAXI@Z 0x001352e0 0x1e
 
-// ---------------------------------------------------------------------------
-// ~DirectSoundMgr - empty base-subobject dtor (just the vptr reset to 0x5ef6b8).
 RVA(0x00135300, 0x7)
 DirectSoundMgr::~DirectSoundMgr() {}
 
-// ---------------------------------------------------------------------------
-// Restore: IDirectSoundBuffer::Restore; HRESULT normalized to 0/1 (neg/sbb/neg), that
-// bool is both tested and forwarded to GetErrorString. 0 on failure, else 1.
 RVA(0x00135310, 0x2a)
 i32 DirectSoundMgr::Restore() {
     i32 hr = m_buffer->Restore() != 0;
@@ -243,9 +166,6 @@ i32 DirectSoundMgr::Restore() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ReacquireBuffer: gated on owner init. If m_reacquireCb(this, m_reacquireCtx) is set,
-// call it (1 on success); else tail into owner->ReacquireViaCallback (0x1365e0).
 RVA(0x00135340, 0x37)
 i32 DirectSoundMgr::ReacquireBuffer() {
     if (m_owner->m_initialized == 0) {
@@ -259,8 +179,6 @@ i32 DirectSoundMgr::ReacquireBuffer() {
     return m_owner->ReacquireViaCallback();
 }
 
-// ---------------------------------------------------------------------------
-// StopAndRewind: gated on owner init; Stop() then SetCurrentPosition(0), reported.
 RVA(0x00135380, 0x66)
 i32 DirectSoundMgr::StopAndRewind() {
     if (m_owner->m_initialized == 0) {
@@ -338,8 +256,6 @@ i32 DirectSoundMgr::IsInHardware() {
     return (caps.dwFlags & DSBCAPS_LOCHARDWARE) == DSBCAPS_LOCHARDWARE;
 }
 
-// ---------------------------------------------------------------------------
-// SetField3: gated on init; set/clear bit 0 of m_playFlags (the Play looping flag).
 RVA(0x00135510, 0x25)
 void DirectSoundMgr::SetField3(i32 on) {
     if (m_owner->m_initialized == 0) {
@@ -352,8 +268,6 @@ void DirectSoundMgr::SetField3(i32 on) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SetVolume: gated on init + volume-cap bit (m_caps & 0x80); SetVolume, report.
 RVA(0x00135560, 0x58)
 i32 DirectSoundMgr::SetVolume(i32 vol) {
     if (m_owner->m_initialized == 0) {
@@ -370,8 +284,6 @@ i32 DirectSoundMgr::SetVolume(i32 vol) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SetVolumeByIndex: gated on init; SetVolume(g_volumeTable[idx]).
 RVA(0x001355c0, 0x23)
 i32 DirectSoundMgr::SetVolumeByIndex(i32 idx) {
     if (m_owner->m_initialized == 0) {
@@ -380,8 +292,6 @@ i32 DirectSoundMgr::SetVolumeByIndex(i32 idx) {
     return SetVolume(g_volumeTable[idx]);
 }
 
-// ---------------------------------------------------------------------------
-// GetVolume: GetVolume out-param; report + 0 on failure, else the queried volume.
 RVA(0x001355f0, 0x42)
 i32 DirectSoundMgr::GetVolume() {
     if (m_owner->m_initialized == 0) {
@@ -396,10 +306,6 @@ i32 DirectSoundMgr::GetVolume() {
     return vol;
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::GetVolumePercent (__thiscall). Gated on init; reads the raw
-// DSound volume via GetVolume and maps it to a 0..100 linear percent through the
-// __cdecl helper ConvertVolumeToPercent.
 RVA(0x00135640, 0x1c)
 i32 DirectSoundMgr::GetVolumePercent() {
     if (m_owner->m_initialized == 0) {
@@ -408,14 +314,6 @@ i32 DirectSoundMgr::GetVolumePercent() {
     return ConvertVolumeToPercent(GetVolume());
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::CloneAndPlay (__thiscall, 3 args = key, mode, slot). Gated on
-// init. First reaps any matching finished voices from the owner's voice list;
-// when mode==0 it just re-applies the volume via SetVolumeByIndex; otherwise new's
-// a 0x28-byte DSoundVoice for the requested play and links its anchor into the
-// owner's voice list (new/ctor in a /GX EH frame). Returns 1 on success, 0 if the
-// device is down or the voice allocation/ctor failed. (The DSoundVoice ctor
-// 0x136fe0 has no reconstructed body yet - the call reloc-masks.)
 RVA(0x00135660, 0xe0)
 i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
     SoundDevice* owner = m_owner;
@@ -437,8 +335,6 @@ i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SetPan: gated on init + pan-cap bit (m_caps & 0x40); SetPan, report.
 RVA(0x00135740, 0x55)
 i32 DirectSoundMgr::SetPan(i32 pan) {
     if (m_owner->m_initialized == 0) {
@@ -455,8 +351,6 @@ i32 DirectSoundMgr::SetPan(i32 pan) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SetPanByIndex: gated on init; idx>=0 -> SetPan(-g_panTable[-idx]), else direct.
 RVA(0x001357a0, 0x42)
 i32 DirectSoundMgr::SetPanByIndex(i32 idx) {
     if (m_owner->m_initialized == 0) {
@@ -468,8 +362,6 @@ i32 DirectSoundMgr::SetPanByIndex(i32 idx) {
     return SetPan(g_panTable[idx]);
 }
 
-// ---------------------------------------------------------------------------
-// GetPan: GetPan out-param; report + 0 on failure, else the queried pan.
 RVA(0x001357f0, 0x42)
 i32 DirectSoundMgr::GetPan() {
     if (m_owner->m_initialized == 0) {
@@ -484,10 +376,6 @@ i32 DirectSoundMgr::GetPan() {
     return pan;
 }
 
-// ---------------------------------------------------------------------------
-// GetPanPercent (0x135840): gated on init; read the raw DSound pan via GetPan and
-// map it to a signed -100..100 percent through ConvertVolumeToPercent (0x135110):
-// right pan (>0) -> 100 - convert(-pan), left pan (<0) -> convert(pan) - 100.
 RVA(0x00135840, 0x3b)
 i32 DirectSoundMgr::GetPanPercent() {
     if (m_owner->m_initialized == 0) {
@@ -503,9 +391,6 @@ i32 DirectSoundMgr::GetPanPercent() {
     return ConvertVolumeToPercent(pan) - 100;
 }
 
-// ---------------------------------------------------------------------------
-// SetFrequency: gated on init + freq-cap bit (m_caps & 0x20); SetFrequency, report
-// (HRESULT tested directly, not normalized), cache in m_setFreq on success.
 RVA(0x00135880, 0x60)
 i32 DirectSoundMgr::SetFrequency(u32 freq) {
     if (m_owner->m_initialized == 0) {
@@ -523,9 +408,6 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SetField2: gated on init; bump freq by pct% of m_freq (clamp [101,99999]) via
-// SetFrequency, set m_sampleRate = pct% of m_rateBase, recompute duration; ret r.
 RVA(0x00135920, 0x80)
 i32 DirectSoundMgr::SetField2(i32 pct) {
     if (m_owner->m_initialized == 0) {
@@ -544,15 +426,11 @@ i32 DirectSoundMgr::SetField2(i32 pct) {
     return r;
 }
 
-// ---------------------------------------------------------------------------
-// ComputeDuration: m_durationMs = m_sampleCount*1000/m_sampleRate (*1000 = lea/shl chain).
 RVA(0x001359a0, 0x18)
 void DirectSoundMgr::ComputeDuration() {
     m_durationMs = m_sampleCount * 1000 / m_sampleRate;
 }
 
-// ---------------------------------------------------------------------------
-// Unlock: pass-through IDirectSoundBuffer::Unlock; report on failure.
 RVA(0x001359c0, 0x54)
 i32 DirectSoundMgr::Unlock(void* p1, u32 n1, void* p2, u32 n2) {
     if (m_owner->m_initialized == 0) {
@@ -566,8 +444,6 @@ i32 DirectSoundMgr::Unlock(void* p1, u32 n1, void* p2, u32 n2) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::GetCurrentPosition (__thiscall). Pass-through; report on failure.
 RVA(0x00135a20, 0x4a)
 i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     if (m_owner->m_initialized == 0) {
@@ -581,8 +457,6 @@ i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::SetCurrentPosition (__thiscall). Pass-through; report on failure.
 RVA(0x00135a70, 0x45)
 i32 DirectSoundMgr::SetCurrentPosition(u32 pos) {
     if (m_owner->m_initialized == 0) {
@@ -596,8 +470,6 @@ i32 DirectSoundMgr::SetCurrentPosition(u32 pos) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::GetFormat (__thiscall). Pass-through; report on failure.
 RVA(0x00135ac0, 0x4f)
 i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     if (m_owner->m_initialized == 0) {
@@ -645,10 +517,6 @@ DSoundCloneInst::~DSoundCloneInst() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Clone: gated on init; new a DSoundBaseSub clone (base ctor, original=this),
-// DuplicateSoundBuffer into clone->m_buffer (report 0x217 on failure), link into
-// m_cloneList, stamp m_playKey, return the clone.
 RVA(0x00135c20, 0xf6)
 DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
     if (m_owner->m_initialized == 0) {
@@ -669,9 +537,6 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
     return clone;
 }
 
-// ---------------------------------------------------------------------------
-// RemoveClone: gated on init; for a real clone (!= this) Release+clear its buffer,
-// unlink from m_cloneList, then delete it.
 RVA(0x00135d20, 0x47)
 void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
     if (m_owner->m_initialized == 0) {
@@ -741,10 +606,6 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
     return found;
 }
 
-// ---------------------------------------------------------------------------
-// LoadFromFile: (optionally fseek to `offset`), Lock the buffer FROMWRITECURSOR for
-// `bytes`, fread each wrap region straight from `fp`, then Unlock. Gated on init;
-// fseek/fread failures and Lock/Unlock HRESULTs each bail to 0.
 RVA(0x00135e10, 0x124)
 i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     if (m_owner->m_initialized == 0) {
@@ -786,10 +647,6 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// LockConvert: write src into the buffer across Lock's two wrap regions (p1/n1,p2/n2).
-// `convert`==0 -> byte memcpy; !=0 -> 16->8 downconvert ((s+0x8000)>>8, high byte).
-// Region 2 source continues at src+n1; gated on init, Lock/Unlock report on failure.
 RVA(0x00135f40, 0x169)
 i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     if (m_owner->m_initialized == 0) {
@@ -848,13 +705,6 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// DSoundCloneInst::ConfigureItem (0x1360d0) - the shared cue-configuration helper the
-// per-widget status-bar loaders funnel through. Guard on the surface being live
-// (m_10->m_78), resolve the pooled buffer via GetItem (0x135d70), then push the
-// four cue values through the DirectSoundMgr setters + Play, ANDing the checked
-// results (the 4th setter's result is ignored). __thiscall, ret 0x10. (Dossier
-// seam re-home from SpriteResource.cpp.)
 RVA(0x001360d0, 0x7c)
 i32 DSoundCloneInst::ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (!m_owner->m_initialized) {
@@ -881,8 +731,6 @@ i32 DSoundCloneInst::ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     return ok;
 }
 
-// ---------------------------------------------------------------------------
-// StopAllClones: gated on init; StopAndRewind each clone (list left intact).
 RVA(0x00136150, 0x22)
 void DSoundCloneInst::StopAllClones() {
     if (m_owner->m_initialized == 0) {
@@ -893,10 +741,6 @@ void DSoundCloneInst::StopAllClones() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// DSoundBaseSub clone/dup ctor 0x136180 (what Clone() news): chain base ctor, set
-// back-ptr + m_reacquireOwner=original, copy its sample/reacquire/rate block, recompute
-// duration. The trailing ComputeDuration over the destructible base -> /GX EH frame.
 RVA(0x00136180, 0x86)
 DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, DirectSoundMgr* original)
     : DirectSoundMgr(buf, owner) {
@@ -916,9 +760,6 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, Direct
 // ??_G__non_rtti_object false positive.
 // @rva-symbol: ??_GDSoundBaseSub@@UAEPAXI@Z 0x00136210 0x1e
 
-// ---------------------------------------------------------------------------
-// DSoundBaseSub 2-arg ctor 0x136230: chain base ctor (cl stamps 0x5ef6c0); set
-// m_cloneNode.m_inst=this, m_reacquireOwner=this, m_playKey=1.
 RVA(0x00136230, 0x2d)
 DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
     : DirectSoundMgr(buf, owner) {
@@ -928,14 +769,9 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
     m_playKey = 1;
 }
 
-// ---------------------------------------------------------------------------
-// ~DSoundBaseSub: empty; cl emits the vptr reset to 0x5ef6c0 + chains ~DirectSoundMgr.
 RVA(0x00136260, 0xb)
 DSoundBaseSub::~DSoundBaseSub() {}
 
-// ---------------------------------------------------------------------------
-// Play: gated on init; Play(m_playFlags); on DSERR_BUFFERLOST reacquire + retry once
-// (report on retry-fail or non-buffer-lost HRESULT, silent 0 on reacquire-fail).
 RVA(0x00136270, 0x8b)
 i32 DirectSoundMgr::Play() {
     if (m_owner->m_initialized == 0) {
@@ -960,9 +796,6 @@ i32 DirectSoundMgr::Play() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ApplyAndPlay: gated on init; SetVolumeByIndex/SetPanByIndex/SetField2/SetField3 then
-// Play. SetField3's result is not folded in; every other failure clears the 0/1 accum.
 RVA(0x00136300, 0x6f)
 i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
     if (m_owner->m_initialized == 0) {
@@ -1056,9 +889,6 @@ SoundDevice::~SoundDevice() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SoundDevice::Create: DirectSoundCreate into m_device, then SetCooperativeLevel;
-// on fail report + Release; on success cache coop params, clear m_createFlag, set init.
 RVA(0x00136550, 0x8c)
 i32 SoundDevice::Create(void* hwnd, u32 level, u32 flags) {
     i32 created = DirectSoundCreate(0, &m_device, 0) != 0;
@@ -1078,8 +908,6 @@ i32 SoundDevice::Create(void* hwnd, u32 level, u32 flags) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ReacquireViaCallback: tail-dispatch through m_reacquireProc (ptr-to-member), or 0.
 RVA(0x001365e0, 0xf)
 i32 SoundDevice::ReacquireViaCallback() {
     if (m_reacquireProc != 0) {
@@ -1088,8 +916,6 @@ i32 SoundDevice::ReacquireViaCallback() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// SetCooperativeLevel: gated on init; re-issue SetCooperativeLevel, cache m_coopLevel.
 RVA(0x001365f0, 0x57)
 i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
     if (m_initialized == 0) {
@@ -1104,9 +930,6 @@ i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Compact (0x136650): gated on init; IDirectSound::Compact (slot +0x1c) the device,
-// report + fail on a non-zero HRESULT.
 RVA(0x00136650, 0x37)
 i32 SoundDevice::Compact() {
     if (m_initialized == 0) {
@@ -1120,9 +943,6 @@ i32 SoundDevice::Compact() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Shutdown: RemoveBuffer each owned buffer, then Release the primary + device, clear
-// the flag. The `head ? node-4 : 0` biased-pointer recovery is language-forced.
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
@@ -1206,9 +1026,6 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     return voice; // DSoundCloneInst* -> DirectSoundMgr* base view (CreateBuffer's return)
 }
 
-// ---------------------------------------------------------------------------
-// AcquireFile: gated on init; fopen "rb", slurp whole file into a new'd buffer, Acquire
-// the RIFF blob, free + close. Returns the wrapper (0 on any I/O failure).
 RVA(0x00136860, 0xa9)
 DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
     if (m_initialized == 0) {
@@ -1282,11 +1099,6 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
     return wrapper;
 }
 
-// ---------------------------------------------------------------------------
-// AcquireResource (0x136a30): the WAVE Win32-resource sibling of AcquireFile -
-// find/load/lock the named "WAVE" resource in the app module, then Acquire the
-// RIFF blob. (Dossier seam re-home: was ResLoaders::WaveHost_136a30::LoadWave;
-// the +0x78 gate IS m_initialized and the 0x136910 callee IS Acquire.)
 RVA(0x00136a30, 0x76)
 DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 reserved) {
     if (m_initialized == 0) {
@@ -1309,9 +1121,6 @@ DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 r
     return Acquire(data, flags, reserved);
 }
 
-// ---------------------------------------------------------------------------
-// ValidateRestore: gated on init; require size + fmt (non-null) + wFormatTag==1, then
-// Restore the buffer and return its 0/1 success.
 RVA(0x00136ab0, 0x41)
 i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size) {
     if (m_initialized == 0) {
@@ -1329,10 +1138,6 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
     return buf->Restore() != 0;
 }
 
-// ---------------------------------------------------------------------------
-// ReloadFile: fopen a file and re-load it into an EXISTING looping buffer (the
-// AcquireFile sibling that funnels through ReloadRiff). Skip (return 1) unless the
-// buffer is looping; on any I/O failure return 0.
 RVA(0x00136b00, 0xc2)
 i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
     if (m_initialized == 0) {
@@ -1406,11 +1211,6 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
     return buf->LockConvert(data, size, cvt) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// ReloadResource (0x136ce0): the WAVE Win32-resource sibling of ReloadFile - if the
-// probe buffer is looping, find/load/lock the named "WAVE" resource and ReloadRiff
-// it into the buffer. (Dossier seam re-home: was ResLoaders::WaveHost2_136ce0::
-// LoadWave; the +0x78 gate IS m_initialized and the 0x136bd0 callee IS ReloadRiff.)
 RVA(0x00136ce0, 0x92)
 i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 reserved) {
     if (m_initialized == 0) {
@@ -1436,9 +1236,6 @@ i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 res
     return ReloadRiff(probe, data, reserved);
 }
 
-// ---------------------------------------------------------------------------
-// RemoveBuffer: reap the buffer's voices (keyed by its address), Release its COM
-// buffer, unlink from the owned-buffer list, then scalar-delete it.
 RVA(0x00136d80, 0x56)
 void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
     if (m_initialized) {
@@ -1455,8 +1252,6 @@ void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// StopAll: StopAndRewind + StopAllClones each owned buffer.
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAll() {
     if (m_initialized) {
@@ -1631,10 +1426,6 @@ i32 DSoundVoice::Tick(i32 now) {
     return done == 0;
 }
 
-// ---------------------------------------------------------------------------
-// DSoundVoice::Stop (0x1370d0, vtbl slot 1, __thiscall, no args). If the buffer
-// is still playing: when the stop flag is set, stop+rewind it; otherwise snap its
-// volume to the ramp end. Always returns 1.
 RVA(0x001370d0, 0x38)
 i32 DSoundVoice::Stop() {
     if (m_buffer->IsPlaying() != 0) {
@@ -1687,8 +1478,6 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// SetPrimaryFormat: ensure the primary buffer exists, then SetFormat; report + bail.
 RVA(0x001371a0, 0x5a)
 i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     if (m_initialized == 0) {
@@ -1705,10 +1494,6 @@ i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StartPrimary (0x137200): gated on init, lazily (re)create the primary buffer,
-// then start it looping (IDirectSoundBuffer::Play slot 12, DSBPLAY_LOOPING);
-// report + fail on a non-zero HRESULT.
 RVA(0x00137200, 0x53)
 i32 SoundDevice::StartPrimary() {
     if (m_initialized == 0) {
@@ -1725,9 +1510,6 @@ i32 SoundDevice::StartPrimary() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CreatePrimaryBuffer: gated on init + m_coopLevel==DSSCL_NORMAL; lazily
-// CreateSoundBuffer(primary, m_bufferFlags|DSBCAPS_PRIMARYBUFFER) into m_primaryBuffer.
 RVA(0x00137260, 0x95)
 i32 SoundDevice::CreatePrimaryBuffer() {
     if (m_initialized == 0) {
@@ -1750,11 +1532,6 @@ i32 SoundDevice::CreatePrimaryBuffer() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// GetPrimary (0x137300): gated on init, lazily (re)create the primary buffer, then
-// return it. The device-getter sibling of StartPrimary/CreatePrimaryBuffer. LAST
-// function of the DSNDMGR.CPP obj (the 0x137330 file boundary follows; DSndMgSR.cpp
-// = src/Dsndmgr/SoundStream.cpp).
 RVA(0x00137300, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
     if (m_initialized == 0) {

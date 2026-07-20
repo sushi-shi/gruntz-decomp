@@ -1,37 +1,3 @@
-// SBI_TabzDialogEh.cpp - CStatusBarMgr::BuildTabzDialog (0x10a340), the TABZ_DIALOG
-// end-of-level dialog builder (C:\Proj\Gruntz).
-//
-// The host was an ex-"CTabzBuilder" view until 2026-07-17. It is CStatusBarMgr, proven
-// by the receiver: BuildStatusBarTabs (0xffde0) takes its own `this` into edi
-// (`mov edi,ecx` @0xffdfc) and calls this fn with it unchanged (`mov ecx,edi;
-// call 0x41a1` @0x100353) - one object, so the receiver is a CStatusBarMgr. The view
-// had convicted itself: it cast its own `this` to CStatusBarMgr* at all 16 SetupImage
-// arg1 slots, because the canonical slot-11 SetupImage declares arg1 CStatusBarMgr* and
-// arg2 CDDrawSurfaceMgr* - which is exactly what its m_c cast said too. Both casts, and
-// the TabzSub / TabzRectHolder / CSBI_MenuItemDlg views, fell out with the retype.
-//
-// ITS OWN TU, AGAIN. This function had its own retail obj; the wave1-E one-file merge
-// folded it into SBI_RectOnly.cpp, and that merge was itself a matching bug:
-//
-//   MSVC5 has exactly ONE base-ctor spelling per TU. Retail CALLS the out-of-line
-//   ??0CStatusBarItem (0x1005d0) at THIS function's `new CSBI_Image` /
-//   `new CSBI_MenuItem` / `new CSBI_ImageSet` sites, but INLINES the base ctor at
-//   CStatusBarMgr::BuildStatusBarTabs's `new` sites. Two objs, two spellings - so once
-//   both lived in one TU, whichever spelling we picked made the other function wrong.
-//   Measured, merged: knob OFF -> BuildTabzDialog 75.39 / BuildStatusBarTabs 71.58;
-//   knob ON -> 83.72 / 67.34. Un-merged, each TU gets its own spelling and both are
-//   right: SBI_ITEM_OWN_CTOR is ON here (the retail base-ctor CALL) and OFF in
-//   SBI_RectOnly.cpp (the retail inlined base ctor).
-//
-// The un-merge was blocked until the CSBI_RectOnly/CStatusBarMgr host split, because
-// SBI_RectOnly.cpp also defined ??0CSBI_RectOnly (0x101fa0) - whose retail spelling
-// INLINES the base ctor, so turning the knob on there cratered that 100% function to
-// 25.5%. The split moved ??0CSBI_RectOnly out to SBI_RectOnlyBase.cpp, which removed
-// the last objector.
-//
-// SBI_ITEM_OWN_CTOR only DECLARES CStatusBarItem's ctor out-of-line here; the one body
-// is supplied by src/Gruntz/StatusBarItem.cpp at its retail RVA 0x1005d0, so the call
-// binds and nothing is duplicated.
 #define SBI_ITEM_OWN_CTOR // out-of-line base ctor => retail's `call ??0CStatusBarItem`
 
 #include <Mfc.h> // afx-first umbrella (CObject / CPtrList / ::CopyRect)
@@ -45,10 +11,6 @@
 #include <Gruntz/SBI_MenuItem.h>       // canonical CSBI_MenuItem (StatusBarMgr.h only fwd-decls it)
 #include <Gruntz/GameLevel.h>          // m_c->m_level->m_planeCtx (the dialog-centering rect)
 
-
-// ===========================================================================
-// CStatusBarMgr::BuildTabzDialog  @0x10a340
-// ===========================================================================
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_toggleActive == 0) {

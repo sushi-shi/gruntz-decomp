@@ -1,25 +1,6 @@
-// WinAPIModule.cpp - the Utils::WinAPI ToolHelp32 module-walk helper, in its own
-// TU to keep its symbol set out of WinAPI.cpp's already-matched functions
-// (entropy follows header churn; see docs/matching-patterns.md).
-//
-//   LegacyFindModule - walks the ToolHelp32 module list of a process, looking
-//                      for a module by its th32ModuleID and copying its
-//                      MODULEENTRY32 out. The ToolHelp32 entry points are
-//                      resolved dynamically off KERNEL32.DLL (GetProcAddress),
-//                      the legacy way that also works on the NT line that lacks
-//                      a static ToolHelp32 import.
-//
-// Field names are placeholders; only the OFFSETS, the dynamic import strings,
-// and the code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
 #include <string.h> // inline memcpy (rep movs)
 
-// The KERNEL32 imports (GetModuleHandleA / GetProcAddress / CloseHandle) + the
-// BOOL/DWORD/LPCSTR/HANDLE/LPBYTE/HMODULE/FARPROC types come from the real
-// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). MODULEENTRY32 and
-// TH32CS_SNAPMODULE come from <tlhelp32.h> (the load-bearing 0x224 struct layout).
-// The ToolHelp32 entry points are resolved at runtime by name (legacy NT-compat),
-// so their signatures are declared below as the GetProcAddress cast targets.
 #include <Win32.h>
 #include <tlhelp32.h>
 

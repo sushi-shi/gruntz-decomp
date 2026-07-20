@@ -15,48 +15,6 @@
 
 #include <stdlib.h> // rand (0x11fee0, the engine rng)
 
-// BrickzLoad.cpp - CGruntzMapMgr::LoadAttributes (0x0810f0), the level-load terrain
-// parser for the tile occupancy grid the game registry holds at +0x70.
-//
-// SETTLED IDENTITY (2026-07-14): this is NOT the game-object CBrickz (a distinct
-// CUserLogic-derived RTTI class, ??_7 @0x1e7c54) and NOT a plain CMapMgr. The object
-// is a CGruntzMapMgr - a real RTTI subclass of CMapMgr (??_7CGruntzMapMgr @0x1e9bb4).
-// Proven at its creation site inside the game-mgr init (0x83450):
-//     push 0x94 ; call ??2@YAPAXI@Z        ; allocate 0x94 bytes
-//     mov ecx,edi ; call ??0CMapMgr@@       ; run the CMapMgr base ctor (stamps 0x5ea3b4)
-//     lea ecx,[edi+0x7c] ; call 0x1b4f0b    ; construct the ::CPtrArray footprint at +0x7c
-//     mov DWORD PTR [edi],0x5e9bb4          ; re-stamp the DERIVED CGruntzMapMgr vtable
-//     mov DWORD PTR [ebp+0x70],edi          ; store into WwdGameReg::m_tileGrid (+0x70)
-// So the CMapMgr base carries +0x00..+0x7b (cell pool, row table, width/height, the
-// bound-rect, m_attrMgr) and the derived class adds the +0x7c CPtrArray + a +0x90 word
-// (object size 0x94). The former per-file `CBrickz` view (a fake placeholder) is gone.
-//
-// The function allocates the grid (AllocGrid), reads the five brick-colour counts
-// (Brown/Red/Blue/Gold/Black) from the "Brickz" bute section into cumulative
-// thresholds, then walks every cell (col x row):
-//   1. read the source tile id; in editor mode remap 0x105->0x101 / 0x106->0x103;
-//   2. when NOT in test mode, roll a random brick-colour id for the [0x12f,0x149]
-//      tile range via three weighted selectors (dense jump table);
-//   3. inline the per-cell ComputeCellFlags: LookupTile -> pack cell->m_0 via a
-//      second dense jump table -> run the 8-neighbour diagonal-passability walk.
-// Then a freelist-recycle pass seeds the moving-object footprints and finally
-// stamps the dirty flag m_dirty = 1.
-//
-// The two jump-table data regions score as a delinker artifact (REL32 vs cl's $L
-// self-relocs, same as CMapMgr::ComputeCellFlags), so the whole symbol reads ~0%;
-// the logic is byte-faithful. Field names are placeholders; the OFFSETS + code
-// bytes are the load-bearing fact.
-
-// ---------------------------------------------------------------------------
-// The engine registry singleton (*0x64556c). m_world (+0x30) is the world/asset
-// holder; the editor/test-mode gates are m_isEasyMode (+0x118) and m_134 (+0x134,
-// 1 => test). g_gameReg is a divergent-view singleton (CGruntzMgr* / WwdGameReg* /
-// CGameRegistry* across TUs, three distinct structs), so its extern stays local -
-// a shared-header decl would collide with the other views' TUs.
-
-// A weighted colour selector: rolls rand()%total (+1) or rand()&1 when total==0,
-// walks the four cumulative thresholds t1..t4 and returns the picked tile id.
-// Block A: solid colours (0x12f/0x132/0x138/0x13e/0x144).
 static i32 PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {
@@ -70,7 +28,6 @@ static i32 PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     }
     return (roll > t4) ? 0x144 : 0x13e;
 }
-// Block B: a 50/50 secondary variant on colours red..black (%100 threshold 50).
 static i32 PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {
@@ -87,7 +44,6 @@ static i32 PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     }
     return (rand() % 100 + 1 <= 0x32) ? 0x146 : 0x145;
 }
-// Block C: a 3-way variant (%600 thresholds 200/400) on colours.
 static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {

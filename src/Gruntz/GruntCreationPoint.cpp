@@ -1,13 +1,3 @@
-// GruntCreationPoint.cpp - the grunt creation-point game-object (C:\Proj\Gruntz).
-//
-// Two trace-discovered CGruntCreationPoint methods, defined in ascending
-// retail-RVA order:
-//   ~CGruntCreationPoint @0x010730 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   AdvanceAnim          @0x03ecc0 - the per-frame animation-advance (ret 0).
-//
-// CGruntCreationPoint : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -19,21 +9,11 @@
 #include <Gruntz/AnimSink.h>
 #include <Wap32/ZVec.h>
 
-// The per-class registry slot holds the per-frame handler PMF (AdvanceAnim, a 4-byte
-// code ptr on this single-inheritance class); read straight off the ResolveEntry slot
-// as the PMF pointer (no entry-struct view). FireActivation invokes it on `this`.
 typedef i32 (CUserLogic::*CreationPointHandler)();
 
-// The class's activation-coordinate registry singleton (@0x644700), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). IS the shared
-// <Gruntz/ActReg.h> CActReg archetype directly (single-TU global; the empty placeholder
-// subclass added nothing) - same pattern as g_lightFxActReg / g_kslimeColl.
 DATA(0x00244700)
 extern CActReg g_creationPointActReg; // 0x644700
 
-// The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
-// mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
-// here so the value-load reloc-masks against the already-matched symbol.
 extern "C" u32 g_engineFrameDelta;
 
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
@@ -48,18 +28,7 @@ extern "C" u32 g_engineFrameDelta;
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CGruntCreationPoint@@UAE@XZ 0x00010730 0x44
 
-// ---------------------------------------------------------------------------
-// The game registry singleton (0x24556c) is the canonical CGameRegistry. The former
-// sprite-ref table is m_spriteFactory (+0x74; GetSel via the 0x4165 GetByIndex thunk,
-// NO-body so the call reloc-masks), the mode discriminator is m_134, and the +0x158
-// "ref-index grid" is the per-player focus-slot array reinterpreted (row stride 71
-// 8-byte slots == 0x238 == one CFocusSlot): m_158[key*71].m_idx == m_focusSlots[key].m_08
-// (the ref-row index feeding GetSel) and m_158[key*71+3].m_idx == m_focusSlots[key].m_20
-// (the +0x18-probe arm gate).
 #include <Gruntz/GameRegistry.h>
-
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
-// pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
 
 // CGruntCreationPoint::CGruntCreationPoint @0x3e520 - fold the shared
 // CUserLogic(obj) init, flag the sub-object (+0x08 bit 1 via m_74==5 init), bind
@@ -107,8 +76,6 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-// ChannelSlots_FindFree (0x33e1 thunk) - the ref-slot fallback selector when the
-// ref-index array has no armed row. External/no-body (reloc-masked).
 extern "C" i32 ChannelSlots_FindFree();
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
@@ -155,20 +122,11 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     return 1;
 }
 
-// CGruntCreationPoint::InitActReg @0x03e8e0 - construct the class's activation-
-// coordinate registry singleton (g_creationPointActReg @0x644700) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710, through the 0x3742
-// import thunk). Free init thunk.
 RVA(0x0003e8e0, 0x15)
 void CGruntCreationPoint::InitActReg() {
     g_creationPointActReg.Construct(2000, 2010);
 }
 
-// CGruntCreationPoint::FireActivation @0x03e960 - look the activation coordinate
-// up in the class registry (g_creationPointActReg); if the resolved entry carries a
-// registered handler PMF, resolve it again and dispatch it __thiscall on `this`.
-// The SAME archetype as CParticlez::FireActivation (0x046d30) - the double
-// ResolveEntry + PMF dispatch.
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
     CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
@@ -210,9 +168,6 @@ void CGruntCreationPoint::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
-// CGruntCreationPoint::AdvanceAnim @0x03ecc0 - re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
-// return 0. Same archetype as CSimpleAnimation::AdvanceAnim (0x0abf70).
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

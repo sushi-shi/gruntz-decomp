@@ -1,15 +1,8 @@
 #ifndef GRUNTZ_RANDOM_H
 #define GRUNTZ_RANDOM_H
 
-// The MS-CRT-style LCG random helpers Gruntz reaches through ILT jmp-thunks.
-// Two independent generators share the same 214013/2531011 recurrence: the
-// primary state (g_randSeeded/g_randSeed, canonical DATA in src/Globals.cpp) and
-// a second state (g_rng2*) used by the 0x15cbe0 helper.
 #include <Ints.h>
 
-// The primary generator's state (DEFINED in src/Gruntz/Random.cpp): the seeded flag and
-// the 32-bit LCG value. Declared here (the random subsystem's owner header) so consumers
-// stop re-`extern`-ing them per-TU.
 extern u8 g_randSeeded; // 0x6c127d  bit0 set once seeded
 extern i32 g_randSeed;  // 0x6c1288  32-bit LCG state
 

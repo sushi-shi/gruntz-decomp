@@ -1,32 +1,7 @@
-// Dialogs.h - the MFC CDialog subclasses for the battle/multiplayer setup
-// dialogs. Each ctor chains the MFC CDialog(UINT nIDTemplate, CWnd* pParent)
-// base ctor (NAFXCW, reloc-masked), stores its own derived vftable, default-
-// constructs any embedded MFC members (CString / CObList), and zero/inits the
-// scalar members its ctor touches.
-//
-// THE HIERARCHY (RTTI-derived names; ImageBase 0x400000):
-//   CDialog            MFC base.
-//   CBattlezDlg        Battlez (host/setup) dialog.
-//   CBattlezDlgCustom  Battlez custom-rules dialog.
-//   CBattlezDlgColors  Battlez team-colors dialog.
-//   CMultiStartDlg     Multiplayer start dialog.
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code
-// bytes are load-bearing (campaign doctrine). Each subclass is reconstructed
-// with ONLY the members its ctor touches; the CDialog base is modeled as the
-// 0x5c-byte slab the subclass members sit above (the subclass fields begin at
-// +0x5c, so CDialog occupies +0x00..+0x5b incl. its vptr).
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
 #include <Wap32/Object.h> // CObject (the single real MFC CObject)
-// The REAL MFC CCmdTarget / CWnd / CComboBox / CDialog / CDataExchange.
-// (Wap32/Object.h already pulled <Mfc.h> -> afx.h, so afx comes FIRST - no windows.h-first
-// C1189 here.) The afxwin*.inl bodies are skipped for the clang LABEL step only: they carry
-// an implicit-int `CMenu::operator==` that clang rejects but wine cl accepts. Without this
-// the label pass emits no IR and every function in the TU silently vanishes from
-// symbol_names.csv (measured: 8 units and 211 functions dropped out of the report).
-// See docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -39,72 +14,19 @@ struct HWND__;               // the opaque Win32 HWND (windows.h arrives with <G
 struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureItem arg)
 struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
-// ---------------------------------------------------------------------------
-// Shared dialog-plumbing globals (canonical DATA homes elsewhere; declared here so
-// the dialog TUs reference them from this header, not per-TU externs).
-// ---------------------------------------------------------------------------
-// The active modeless-dialog HWND cache (0x24557c): NetLobby::g_curDlg.
 #include <Net/NetLobby.h>
-// The chat-log child-window HWND cache (0x248ce0; DATA home Multi.cpp).
 extern "C" i32 g_sharedFlag;
-// The engine's cached USER32 fn-ptr table (the 0x2c44xx block of bare absolutes,
-// no import symbols - the same unbound-reloc pattern as g_pPostMessageA): the
-// dialogs call THESE, not the raw USER32 imports.
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 typedef HWND(WINAPI* WapGetWindow)(HWND, UINT);
 extern "C" WapSendMessageA g_pSendMessageA; // 0x2c44a4
 extern WapGetWindow g_pGetWindow;           // 0x2c44d8
 
-// ---------------------------------------------------------------------------
-// Minimal MFC base models. Only the exact mangled symbol + the calling
-// convention/arg shape are load-bearing; the bodies live in NAFXCW and are
-// never matched here (their `call rel32` displacements reloc-mask in objdiff).
-// ---------------------------------------------------------------------------
-
-// CWnd - the MFC window base. Referenced as the `CWnd*` 2nd arg of the CDialog
-// ctor, as GetDlgItem's return, and as the holder of SetWindowTextA. The latter
-// is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
-// displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
-// bearing here.
-// MFC vtable hierarchy on CObject (the recognized 5-slot MFC CObject:
-// GetRuntimeClass@0, ~@1, Serialize@2, AssertValid@3, Dump@4). Declared-only
-// virtuals anchor the slot order (NAFXCW bodies reloc-mask).
-// CComboBox - the MFC combo-box control wrapper. Only GetLBText is reached (the
-// world/name combos downcast their GetDlgItem(CWnd*) to CComboBox* and read a row's
-// text). NAFXCW body reloc-masks; the const-qualified GetLBText mangles to the exact
-// library symbol ?GetLBText@CComboBox@@QBEXHAAVCString@@@Z (0x1ce7db, EXEMPT).
-// CString - the MFC string. Only its default ctor is touched (the embedded
-// string members the dialog ctors construct in place).
-// m_pchData = *_afxEmptyString.
 #include <Gruntz/String.h>
 
-// CObList - the MFC object list. Only the block-size ctor is touched (the
-// embedded list CMultiStartDlg constructs with nBlockSize=0xa).
-// 0x1c bytes (vptr + 5 scalar fields).
 #include <Gruntz/ObList.h>
 
-// CDialog - the MFC dialog base. The subclass ctors store their OWN vptr at
-// [this] AFTER chaining this base ctor, so CDialog must be polymorphic (a
-// virtual decl gives it a vptr at +0x00 and makes the derived vptr-store fall
-// out of the ctor). It is padded to 0x5c bytes so the subclass members land at
-// the offsets the disasm pins (+0x5c upward).
-// The MFC window/dialog chain (CCmdTarget / CWnd / CComboBox / CDialog) is the REAL
-// one from <afxwin.h>. The real classes carry the real slots and their bodies live in
-// NAFXCW.LIB. This assert pins the load-bearing fact: the derived dialogs' members start
-// at +0x5c, so CDialog must be 0x5c.
 SIZE(CDialog, 0x5c);
 
-// ---------------------------------------------------------------------------
-// CBattlezDlg
-//   base CDialog(0xc0, pParent); m_slots = a0; CString @+0x6c; m_68 = 0.
-// ---------------------------------------------------------------------------
-// (CBattlezSlot is FOLDED: the 0x238-stride slot array IS m_slots->m_options[]
-// (GruntzPlayer) - m_158 == m_008 (assigned color), m_170 == m_liveGate.)
-
-// CDataExchange is the REAL MFC one (<afxwin.h>) now; the local 1-field stand-in is gone.
-
-// The connection-latency slot list CMultiStartDlg::BuildSlotList allocates: the
-// canonical CLatencyList (<Net/LatencyList.h>); only a pointer is needed here.
 class CLatencyList;
 
 SIZE_UNKNOWN(CBattlezDlg);
@@ -230,10 +152,6 @@ public:
     long DoDefault();
 };
 
-// ---------------------------------------------------------------------------
-// CBattlezDlgCustom
-//   base CDialog(0xc3, pParent); CString @+0x5c.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgCustom);
 VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
@@ -254,10 +172,6 @@ public:
     CString m_customName; // +0x5c  (default CString)
 };
 
-// ---------------------------------------------------------------------------
-// CBattlezDlgColors (NO EH frame - no embedded C++ object).
-//   base CDialog(0xc2, pParent); m_slots = a0; m_slotIndex = a1; m_pickedColor = 0; m_68 = a2.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgColors);
 VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
@@ -282,16 +196,6 @@ public:
     i32 m_68;          // +0x68  (= a2; always 0 at call sites; role unproven)
 };
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg
-//   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
-//   (m_host: heterogeneous handle - CNetDlgHost host-facet + slot-array base; see below.)
-//   CString @+0x70; CStringList(0xa) @+0x74; then g_multiState = g_gameReg->m_curState.
-//   m_74 is a CStringList, NOT a CObList: the ctor @0xc1750 calls the band-C ctor
-//   0x1b5d04 and ~CMultiStartDlg @0xb8960 does `lea ecx,[esi+0x74]; call 0x1b5d78`
-//   - the CStringList dtor (band C = ctor 0x1b5d04 / dtor 0x1b5d78, whose vtable
-//   0x1ed4dc slot-0 GetRuntimeClass returns the CRuntimeClass naming "CStringList").
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
@@ -453,7 +357,6 @@ public:
     CStringList m_74;         // +0x74  (CStringList(0xa); ctor 0x1b5d04 / dtor 0x1b5d78)
 };
 
-// CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 SIZE_UNKNOWN(CCheckpointDlg);
 VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
@@ -475,8 +378,6 @@ public:
     void OnToggleCheckpointPrompts();
 };
 
-// CMultiHelpDlg - the multiplayer help/info CDialog (vtable 0x5ea474, 54 slots =
-// CDialog); ctor reached via EnableButtons_be820 (reconbatch2). Same 3-override shape.
 SIZE_UNKNOWN(CMultiHelpDlg);
 class CMultiHelpDlg : public CDialog {
 public:

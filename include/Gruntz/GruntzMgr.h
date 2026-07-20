@@ -1,27 +1,3 @@
-// GruntzMgr.h - CGruntzMgr, the Gruntz game manager (C:\Proj\Gruntz). It is the
-// REAL derived game manager: `CGruntzMgr : public CGameMgr`, 0xa30 bytes,
-// with its own vftable (??_7CGruntzMgr@@6B@ @0x5e9b64). CGruntzApp::Initialize-
-// GameManager (@0x080a20) does `new CGruntzMgr` => operator new(0xa30) + the
-// CGruntzMgr ctor.  The base CGameMgr is the genuine 0x2c engine class;
-// all the 0xa30 of per-game state lives HERE.
-//
-// SAME OBJECT AS THE g_gameReg SINGLETON (*0x24556c): CGruntzMgr is the RTTI-true,
-// fully-typed MFC VIEW of the very object that <Gruntz/GameRegistry.h>'s
-// CGameRegistry models as a plain (MFC-free) struct for the ~60 engine/Win32 TUs.
-// Proof: CGruntzMgr::ReportError == CGameRegistry::Ack (both @0x08dc60); m_curState
-// ==CGameRegistry::m_2c, m_sound==m_48, m_modeW==m_8c, etc. The two headers are the
-// ONE canonical layout expressed twice: CGameRegistry.h is the field-offset source
-// of truth (its comments carry these descriptive names). They CANNOT be a single
-// header - CGameRegistry.h is included by pure-Win32 TUs (`<Win32.h>`->windows.h)
-// and this MFC class pulls afx (C1189 "MFC apps must not #include <windows.h>").
-// See docs/vtable-conversion-log.md ("0x24556c dual-view: MFC/Win32 wall").
-//
-// Only the offsets the matched methods touch are load-bearing:
-//   +0xc8 CString, +0xd0 CD drive-letter cache (char) / +0xd4 probed flag,
-//   +0xd8 CByteArray, +0xec/+0xf0 CString, +0x150 a 0x238-byte options object
-//   (ctor/dtor are out-of-line NAFXCW-style FUN_0051f5a0/FUN_0051f640 calls,
-//   reloc-masked). The member subobjects' destructible nature is what gives the
-//   ctor/dtor their /GX C++ EH frame.
 #ifndef GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
@@ -30,143 +6,46 @@
 #include <Gruntz/GameLevel.h>     // CByteArray
 #include <Gruntz/State.h>         // CState (m_curState game-state; Update() at slot 4)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
-// The +0x54/+0x74 sub-objects are typed with their REAL classes (below); pull their
-// (lightweight, Ints.h-only) definitions instead of forward-declaring them. Including
-// the definition rather than a file-scope `struct X;`/`class X;` fwd-decl keeps the
-// SBI_MenuItem TU's transitive fwd-decl count under the DecCounter regalloc-butterfly
-// threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
 #include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec)
 #include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink
-// +0x70 is the REAL RTTI class CGruntzMapMgr (: CMapMgr, vtbl 0x1e9bb4). PROVEN by the
-// teardown legs of retail Close() @0x0855e0: the +0x68 leg calls ILT thunk 0x3b1b ->
-// ~CTriggerMgr @0x85c50, and the +0x70 leg calls a DIFFERENT thunk 0x35b7 ->
-// ~CGruntzMapMgr @0x85d10 (already 100% EXACT in src). The old `CmdSinkV` was an INVENTED
-// class; CTileGrid (GameRegistry.h) and CBrickzGrid (Multi.cpp) are views of this same one.
 #include <Gruntz/GruntzMapMgr.h>
 class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
-                     // pulling GruntzCmdMgr.h into this ~100-TU header trips the fwd-decl-count
-                     // regalloc butterfly (cost 1 exact fn when measured). TUs that DEREFERENCE
-                     // m_cmdSubMgr include <Gruntz/GruntzCmdMgr.h> themselves.
 
-// The 0x238-byte per-player options record embedded four times at +0x150 IS the real
-// GruntzPlayer (<Gruntz/GruntzPlayer.h>). CGruntzMgr's ctor/dtor hand the __ehvec
-// iterators this element's ctor
-// and dtor through ILT thunks 0x2a7c / 0x1465, and those chase to 0x0da790 / 0x083260 -
-// GruntzPlayer's default ctor + dtor (see the proof block in GruntzPlayer.h). m_comboSel
-// (+0x228) is carried over onto the real class.
 #include <Gruntz/GruntzPlayer.h>
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-// A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
-// stays a destructible CByteArray (so the ctor/dtor's EH-state numbering is
-// unchanged); the accessor methods reinterpret &m_stateStack as this CObArray-shaped
-// view (CObject vptr at +0x00, m_pData at +0x04, m_nSize at +0x08, ...). The
-// stored elements are CState* (the pushed game states) whose Update() (slot 4,
-// +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
-// NAFXCW helpers (reloc-masked).
-// The +0xd8 state stack is the MFC CPtrArray (<Mfc.h>). The old `CStateStackZ` reinterpret
-// view declared SetSize/SetAtGrow/RemoveAt on a class of its own name, so they mangled as
-// ?SetSize@CStateStackZ@@QAEXHH@Z etc. - symbols NAFXCW does NOT define (3 unresolved
-// externals, assert_relocs --fake-targets). Their rvas (0x1b4f75 / 0x1b5144 / 0x1b5200) are
-// FID-AMBIG across MFC's 4-byte-element arrays because the linker COMDAT-folds their bodies;
-// the elements here are CState* (NOT CObject-derived), so the honest class is CPtrArray.
-// NOTE the member below was typed CByteArray, which is simply WRONG: CByteArray::SetSize is
-// 0x1b52e8, a different body entirely. Raw m_pData/m_nSize are MFC-protected, so the leaves
-// now use the inline GetAt()/GetSize() accessors (identical single loads, not calls).
-// The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
-// CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
-// the active world view (the scroll/camera holder the FP scaler reads); +0x28 the
-// sound/anim cue host (the CSndHost of <Gruntz/SoundCue.h>, included above):
-// FUN_00537a80 == RVA 0x137a80 == SoundStream::Stop, and the +0x10 keyed map ==
-// CSndFinder (Lookup 0x1b8438). +0x520 is a 4-slot status array the paused-state
-// poll walks (status id at each slot's +0x20).
 struct CWorldView;
-// +0x28 sound/anim cue host: CSndHost IS the canonical CDDrawSubMgrLeafScan
-// (settled; <Gruntz/SoundCue.h> carries the typedef + proof).
 class CDDrawSubMgrLeafScan;
 typedef CDDrawSubMgrLeafScan CSndHost;
-// The world+0x10 image/name registry: the REAL CImageRegistry (<Gruntz/ResMgr.h>), whose
-// own +0x10 is the embedded CMapStringToOb name->object hash. A pointer here, so a fwd
-// decl suffices (GruntzMgr.cpp includes the real header). (Label note: 0x1b8008 IS
-// CMapStringToOb::Lookup.)
-// The image/name registry IS the canonical CDDrawWorkerRegistry
-// (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic).
 class CDDrawWorkerRegistry;
 typedef CDDrawWorkerRegistry CImageRegistry;
-// The loaded-world object at +0x30 IS the canonical CDDrawSurfaceMgr
-// (<Gruntz/GameRegistry.h>) == the polymorphic CDDrawSurfaceMgr (see the
-// settled-identity note there). The facets: m_4 == m_drawTarget (CWorldSub4 was
-// CDDrawSubMgrPages;
-// "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
-// m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_device IDirectDraw2::
-// FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.
 class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
 typedef CDDrawWorker CImageSet; // (identical repeat of ImageSet.h's typedef)
 class CDDrawSurfaceMgr;
 
-// Minimal IDirectPlayLobby-shaped COM surface used by
-// InitializeLobbyConnectionSettings (Release slot 2 / GetConnectionSettings slot 8,
-// called twice in the size-probe / fill idiom). The full COM-interface definition
-// (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on it; the
-// CGruntzMgr::m_lobby member is a pointer to the real DirectPlay lobby interface
-// (IDirectPlayLobby, from <dplobby.h>); a forward declaration suffices here, so this
-// ~60-TU header stays free of the DirectPlay/windows.h chain (only GruntzMgr.cpp,
-// which dispatches on it, includes <dplobby.h>).
 struct IDirectPlayLobby;
 
-// +0x54 active-level input/spatial-sound object: the REAL CWorldSoundSet
-// (<Gruntz/WorldSoundSet.h>). The mgr's "input/state" facet is just method aliases of
-// that class: Flush=Deactivate, Arm=Resume, Disarm=Stop, InitInput=Init,
-// StoreFlag=Restart, Teardown=Teardown; its +0x24 active flag is the mgr's armed gate.
-// A pointer member here, so a forward declaration suffices (GruntzMgr.cpp includes the
-// real header).
 class CWorldSoundSet;
 
-// The manager's owned engine sub-objects, each a real class reached only through a
-// reloc-masked thiscall / vtable slot from GruntzMgr.cpp; the members are pointers,
-// so forward declarations suffice here. Each unifies what were previously several
-// per-method facet views of the SAME object into its one real class (defined in
-// GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
-// multi-facet slots carry all their facets' fields + methods.
 struct EngObj;          // teardown-only sub-object (Teardown())
 class CFaderMgr;        // +0x40 the DDraw fader manager (Run news it; SetConfig @0x17d980 -
-                        //       the REAL src/DDrawMgr/FaderMgr.cpp method; ex EngObj)
 class CCheatMgr;        // +0x44 cheat-code dictionary (<Gruntz/CheatMgr.h>; Run news it:
-                        //       Init(hwnd) @0x22ad0 + RegisterCheats @0x22c80; ex HudGuard44)
 class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>;
-                        //       SpriteRefTable's shade feed; ex EngObj)
-// CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
-// defined by the <Gruntz/SpriteRefTable.h> include above.
 class CGruntSpawnConfig;
 class CGameLevel;
 class CLightFxMgr; // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 
-// +0x34 is the REAL CSymParser (<Bute/SymParser.h>; SIZE 0x94 == the size retail
-// operator-new's at it) and +0x38 the REAL Utils::RegistryHelper - the CRezSurface94 /
-// CSettingsWriter shells that stood for them were fake views over the same rvas.
 class CSymParser;
 namespace Utils {
     class RegistryHelper;
 }
-// CSaveGame (+0x58 save-record sink) is defined by the <Gruntz/SaveInfo.h>
-// include above.
 class CFontConfig; // +0x5c chat/message log (AddItem @0x21c60 - FontConfig.h)
 struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
-// +0x68: the world command/trigger grid is the ONE CTriggerMgr (TriggerMgr.h) -
-// dtor-proven the same object (Close's teardown thunk
-// 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
-// +0x288 scored flag == m_288).
 class CTriggerMgr;
 class CPlay; // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
-// +0x6c is the REAL RTTI class CGruntzCmdMgr (dtor @0x85bd0; retail Close thunk 0x4066).
-// Was the invented `CmdSink`.
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
 SIZE(CGruntzMgr, 0xa30);
@@ -567,8 +446,6 @@ public:
     GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
 
-// Shell-launch the given URL in the default browser. A free __stdcall function
-// (?LaunchWebBrowser@@YGHPAD@Z, body in GruntzMgr.cpp), NOT a CGruntzMgr method.
 i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

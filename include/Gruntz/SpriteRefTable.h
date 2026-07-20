@@ -1,33 +1,9 @@
-// SpriteRefTable.h - the game-registry sprite/animation reference table (trace
-// placeholder tomalla-10; recovered from the 7-method __thiscall cluster at
-// 0xe2250, 0xe2290, 0xe22d0, 0xe2360, 0xe2390, 0xe23c0, 0xe2890).
-//
-// A WAP32 game-registry sub-object (lives at g_gameReg+0x74; built in the game
-// bootstrap at 0x83450). It maps a small kind enum (0..16, i.e. 17 slots) to two
-// parallel buckets of CSpriteRef nodes: m_refA[17] (+0x08) and m_refB[17] (+0x4c)
-// -- a "normal" and an "alternate" set. Init(p0,p1) caches two engine sub-objects
-// (m_factory = sprite source, m_spriteMgrHolder = the sprite-mgr holder), Add() looks a named sprite
-// up in m_spriteMgrHolder's CMapStringToOb and builds a CSpriteRef from it, and GetSel(i,bAlt)
-// returns the resolved sprite/frame pointer of the chosen bucket's node -- the hot
-// accessor (~30 call sites, incl. BuildGruntSprintAnimation). m_built (+0x90) is a
-// count/flag reset to 0 on Init/Clear.
-//
-// No vtable: none of the 7 methods is referenced from a vftable and no ctor stamps
-// one - plain __thiscall methods, no /GX frame. Field names are placeholders; only
-// offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_SPRITEREFTABLE_H
 #define GRUNTZ_SPRITEREFTABLE_H
 
 #include <Ints.h>
 #include <rva.h>
 
-// The 0x10-byte sprite/animation reference node (trace placeholder tomalla-42,
-// the +0x8/+0x4c bucket element). Build (0xe2df0) caches a CShadeTableCache (m_cache)
-// + its CShadeTable alpha key (m_alphaKey) and bakes a 3-shade team-color triple
-// (m_teamColor1 / m_teamColor3 / m_teamColor2, each an RGB565 pixel) from the `kind` enum (0..16); Free (0xe32e0)
-// drops the table back to the cache via FindRemove and zeros both. __thiscall.
-// Bodies live in the sibling SpriteRef.cpp; modeled NO-body here so this table's
-// `call`s through them reloc-mask. Fields kept i32 so Add()/GetSel() stay byte-exact.
 SIZE_UNKNOWN(CSpriteRef);
 class CSpriteRef {
 public:
@@ -41,8 +17,6 @@ public:
     u16 m_pad0e;      // +0x0e  pad to 0x10
 };
 
-// The sprite name->object hash table (CMapStringToOb at +0x10 of the sprite mgr).
-// Lookup is the engine's 0x1b8008; modeled NO-body so its `call` reloc-masks.
 SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 
@@ -60,18 +34,8 @@ struct CLookupResult {
 SIZE_UNKNOWN(CLookupSprite);
 SIZE_UNKNOWN(CLookupResult);
 
-// The animation/alpha factory cached as Init's arg0 (m_factory) IS the canonical
-// CShadeTableCache (<DDrawMgr/ShadeTableCache.h>). XREF proof: its builder passes
-// RezSync+0x50 (RezSync.cpp: `CShadeTableCache* m_50`) as arg0, and the "factory"
-// method Add() calls on it - AlphaTable @0x14f5b0 - IS CShadeTableCache::AlphaTable
-// (same RVA). The former CSpriteRefFactory placeholder is DISSOLVED (2026-07-14).
-// Forward-declared for the pointer member; the deref TUs include ShadeTableCache.h.
 class CShadeTableCache;
 
-// m_spriteMgrHolder IS the canonical CDDrawSurfaceMgr (RezSync+0x30): its +0x18
-// m_workerMap (CDDrawWorkerMapSmall) is the polymorphic sprite/palette registry
-// Add()/LoadGruntzPalette() reach. Pointer member -> forward decl keeps the DDrawMgr
-// chain out of this header; the .cpp includes the full def.
 class CDDrawSurfaceMgr;
 
 SIZE_UNKNOWN(CSpriteRefTable);

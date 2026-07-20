@@ -1,13 +1,3 @@
-// DDrawShadeBlit.cpp - DDrawMgr software shaded-sprite blitter (tracer
-// placeholder tomalla-86). Methods in ascending retail-RVA order.
-//
-// 0x1497f0 Blit       - validate the destination rect, select the per-draw-type
-//                       translucency LUTs, dispatch to one of four mode loops.
-// 0x14a200 BlitLoop   - the big RLE-decode + 64KB-blend-table inner blit loop.
-//
-// Field names are placeholders; offsets + code bytes are load-bearing. The three
-// other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
-// external/reloc-masked. See <DDrawMgr/DDrawShadeBlit.h> for the layout.
 #include <DDrawMgr/DDSurface.h>  // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Win32.h>               // windows.h base types (ddraw.h needs them first)
@@ -18,33 +8,12 @@
 #include <string.h> // inline rep-movs memcpy intrinsic
 #include <Globals.h>
 
-// The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4, DEFINED in
-// src/DDrawMgr/DDSurface.cpp (owner TU; the C++ ?g_rUp@@3HA family).
-// The mode-2 gate compares these against the magic 5/10/3/3/3 state. Reloc-masked.
-
-// The per-scanline RLE-decode scratch (owner-TU def; .bss, VA 0x6bed08). The shaded
-// blit memcpy's the source run here, then indexes it through the palette LUT.
 DATA(0x002bed08)
 u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
 
-// The secondary palette/format descriptor (DAT_006bf218) used by the 16-bit alpha
-// path (case 7); its +0x8 LUT base is read as u16*. Reloc-masked.
 DATA(0x002bf218)
 ShadeDescr* g_blendDescr;
 
-// The three 2048-byte-strided translucency LUT banks selected by the light level.
-//
-// AUTHENTIC-FLOOR NOTE (cast audit): every `(u16*)` in this TU is a PROVEN-authentic
-// pixel-mode reinterpretation and must NOT be reduced. m_palDescr->m_lut and
-// m_lutBank0/1/2 are u16 word tables (all read sites); the seeds are byte-granular
-// (u8* pal / base), while the RGB565 16bpp paths reinterpret the SAME base as u16* for
-// the channel-split blend LUT reads. Typing the members u16* would break the 8bpp byte
-// reads (verified regressive). The only other cast, `(u8)m_light`, is a numeric fill-byte
-// conversion. This file is at its authentic floor.
-
-// BlitAt (0x149780, __thiscall, ret 0x14 => 5 args). Position the sprite's full
-// bounds at (x,y) on `dstSurf`: build the destination rect {x,y,x+w-1,y+h-1} and
-// the source clip {0,0,w-1,h-1} from the sprite's m_width/m_height, then call Blit.
 RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) {
     ShadeRect clip;

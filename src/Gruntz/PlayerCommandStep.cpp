@@ -1,21 +1,3 @@
-// PlayerCommandStep.cpp - CPlay::ExecCommand @0xd1b60, the player-command
-// executor. __thiscall(a2..a8) ret 0x1c, returns int. Switches on (a4 & 0xff) -
-// the command code 0..10 - and applies it to the addressed grid grunt
-// (m_4->m_cmdGrid slot grid, 15-wide rows): spawn-probe (0), move/attack/tool
-// variants (2..5,9,10), select/deselect (6,7), and the conversion/pickup
-// pre-pass (8). a2 = player id (== g_curPlayer is "local"), a3 = column, a5/a6 =
-// pixel target or a second grid cell, a7/a8 spare.
-//
-// ::CPlay - the two retail callers (CGruntzCommand::ApplyOne/ApplyMask via thunk
-// 0x21e4) hand it the CGruntzCmdTarget, and the body's own fields prove the play
-// state: m_4 the CGruntzMgr (its +0x0c frameGate / +0x68 cmdGrid), m_c the world
-// holder (its m_28 CSndHost +0x30 busy gate), m_2f4 m_cursorFrame, m_2dc m_guts,
-// m_36c m_dragInhibit2, m_4f0 the highlight-busy gate - and its two helper thunks
-// are real methods on those receivers: 0x17a8 -> CPlay::SetCursorFrame @0xd1b30
-// (ecx=this @0xd26d3), 0x213f -> CStatusBarMgr::EnterHlRow @0x106820
-// (ecx=[this+0x2dc] @0xd26c6). The grunt-state reset block (clear
-// m_arrivalReroll* / m_tileClaimed / m_arrivalState / mask m_arrivalFlags)
-// repeats across most cases. All engine helpers are external (reloc-masked).
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -30,26 +12,10 @@
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (CPlay::m_4)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
 
-// .rodata string literals (were bare (char*)0xADDR immediates; named so the operand
-// relocates like retail's `push offset` instead of an unrelocated `push imm32`).
 static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
-// The world grid (m_4->m_cmdGrid) is the real CTriggerMgr (TriggerMgr.h); its
-// 15-wide placed-cell grid is the typed m_grid[0x3c] (cells = CGrunt). The
-// per-command engine helpers are the real reloc-masked CTriggerMgr methods:
-//   PlaceObject 0x6b6d0, ClearCell 0x6e800, CellHitTest 0x6bea0, ApplyTriggerA
-//   0x6dae0, ApplyTriggerB 0x6e120, ResetAll 0x78430, ResetCell 0x6bfd0.
-
-// Bute-config manager (g_buteMgr @ VA 0x6453d8 -> RVA 0x2453d8): read the defender-radius
-// value via the canonical CButeMgr::GetIntDef (0x171aa0); g_buteMgr from <Bute/ButeMgr.h>.
-
-// The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;
-// its address is the LeafCue the Complain path fires).
-
-
-// Free engine helpers (reloc-masked).
 extern "C" {
     void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
     i32 BadSelect(const char* msg);                                           // 0x402cca (__cdecl)

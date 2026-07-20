@@ -1,21 +1,3 @@
-// GameMode.cpp - the free menu/HUD helpers the CState base drives. The concrete leaf
-// states were split into per-class
-// TUs (per-class TU cut of the former god-TU):
-//   CMenuState     -> src/Gruntz/MenuState.cpp
-//   CCreditsState  -> src/Gruntz/CreditsState.cpp  (+ CCreditzOwner)
-//   CBootyState + CMultiBootyState -> src/Gruntz/BootyStateActivate.cpp
-// The CState BASE implementation (ctor @0x08c750 + slot-0 ??_G @0x08c710 + slot-1/2
-// vtable-order anchors) was carved to src/Gruntz/State.cpp (unit "state", REHOME D7),
-// which now stamps ??_7CState and hosts all 18 CState inline virtuals.
-// See GameMode.h for the hierarchy. Names are placeholders; only offsets + code bytes
-// are load-bearing.
-//
-// Functions in this TU (ascending retail-RVA order):
-//   CBootyState::GenMenuRandPos @0x019cd0 - the per-selector edge-spawn RNG helper.
-//   CState::LoadGruntEffectSprites @0x01a040 - preload the in-game effect sprite set.
-//   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
-//   (the ex-"CGameModeBase" cleanup pair 0x0de140/0x0f9840 is homed to
-//    LevelPreview.cpp / SplashState.cpp - see the fold note at EOF.)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -35,38 +17,6 @@
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
-
-// (CState's ??_G scalar-deleting dtor - and the `operator delete` it reaches - moved to
-// src/Gruntz/State.cpp with the ctor; REHOME package D7.)
-
-// The global game registry (canonical <Gruntz/WwdGameReg.h>): the Rand()/RandRange()
-// __thiscall helpers GenMenuRandPos calls (all reloc-masked).
-
-// The SecretColor -> sprite-handle table hung off g_gameReg->m_78 (WwdGameReg types that
-// slot void*, since it is a genuinely heterogeneous reused slot - ~10 TUs cast it to the
-// type each needs, so it stays void* on the shared class). LoadGruntEffectSprites indexes
-// it by the "SecretColor" bute value to tint the wormhole. The former CGlitterMgr /
-// a CDDrawChildGroup via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
-// real WwdGameReg fields, reached directly; only this local color table remains.
-// CGlitterColorTable is declared in <Gruntz/GameMode.h> (included above).
-
-// LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
-// SecretColor bute tag + the go-kart install byte flag.
-// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
-
-// (The `CEffGeomRow g_effGeom[8]` view @0x60b8fc is GONE: it was a +4-SHIFTED alias
-//  of g_levelMsgRectsB @0x60b8f8 - its `a`/`c` members were rectsB[i].top/.bottom
-//  (its "unused" pads were .right and the NEXT rect's .left, straddling the rect
-//  boundary). The effect sprites' y-center is just the message rect's v-center.)
-// g_levelMsgRectsB (0x60b8f8) is declared in <Gruntz/GameMode.h> (included above).
-
-// (the CEffLoaderSelf `this`-alias view is GONE - it WAS CBootyState. Every field it
-// modeled sits in a CBootyState pad at the same offset, and the three it duplicated agree
-// exactly (m_hudPhase@+0x1b4 == m_initGate, m_shownA@+0x284 == m_readyFlags,
-// m_shownB@+0x2a4 == m_templateFlags); its top field ends at 0x31c, inside CBootyState's
-// allocation-proven 0x320. The three methods that cast `this` to it are now CBootyState
-// methods and use their own members directly - the `(CEffLoaderSelf*)this` casts, which
-// were the symptom, fell out. See <Gruntz/GameMode.h> for the full proof.)
 
 // ===========================================================================
 // CBootyState::GenMenuRandPos (0x19cd0): a MEMBER whose body never touches `this` (so the
@@ -333,24 +283,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     return 1;
 }
 
-// ===========================================================================
-// CState::LevelMsgHudDriver (0x1a700): the per-frame level-message HUD + explosion
-// eye-candy driver (really a CBootyState/CPlay-layout method - the only caller is
-// CBootyState::Render @0x1c210 on its own `this`, so it is __thiscall; Ghidra mislabeled
-// it as the free `?LevelMsgHudDriver@@YAHXZ`). It runs the eight message slots: on the
-// reveal pass (m_hudPhase == 0) it walks the current slot (m_slot), sliding the
-// bomb/gokart sprites toward the icon and, as each crosses its box, popping the level-
-// message text (rectsA) then the formatted stat line (rectsB) via ShowHudMessage and
-// firing the explosion cue; on the drive/finalize pass (m_hudPhase != 0) it re-draws all
-// slots and, once every slot has landed, latches the explosion sprites active.
-//
-// The message-slot .rdata tables (named so the DIR32 datum reloc-masks): rectsA the
-// level-message text box, rectsB the stat/formatted-text box, iconPos the icon {x,y},
-// strings the CString message set. ::CopyRect is the engine's CopyRect trampoline.
 extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
-// g_levelMsgIconPos ({x,y} icon-slide targets) is gamemode-private (extern-only) and
-// sits cleanly between RectsA and RectsB (no overlap): DEFINED here (owner gamemode.obj's
-// .data, real initializer) - REHOME DD-D. Subsumes the interior 0x20b8bc loop refs.
 DATA(0x0020b8b8)
 i32 g_levelMsgIconPos[16] = {
     0xea,
@@ -373,9 +306,6 @@ i32 g_levelMsgIconPos[16] = {
 extern CString g_levelMsgStrings[8]; // 0x629ef8
 extern "C" u32 g_killCueClock;       // 0x6bf3c0
 
-// ShowHudMessage (0x1154b0, glyphstr): draw a CString into a RECT via the render/HUD
-// sink (m_c). FormatHudText (0x1af70, shared with CMenuState; called on this): fill the
-// CString with the slot's formatted stat line. Both external, reloc-masked.
 extern void ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     RECT* box,
@@ -528,19 +458,3 @@ i32 CBootyState::LevelMsgHudDriver() {
     }
     return 0;
 }
-
-// ===========================================================================
-// CState - the base game-state class. Its ctor (0x0008c750) + slot-0 scalar-deleting
-// dtor ??_G (0x0008c710) + the slot-1/2 vtable-order anchors were carved to their own
-// obj src/Gruntz/State.cpp (REHOME package D7) - that TU stamps ??_7CState. The two
-// CState methods above (LoadGruntEffectSprites / LevelMsgHudDriver) are NON-virtual
-// out-of-line members, so this TU no longer emits the CState vtable.
-// ===========================================================================
-
-// (The ex-"CGameModeBase cleanup pair" is HOMED 2026-07-16: CGameModeBase was a
-// this-view of CState - RTTI proves CState is a root - so 0x0de140 is
-// CPreviewState::ResetPreview (LevelPreview.cpp, its retail obj block) and
-// 0x0f9840 is CSplashState::ReleaseResources (SplashState.cpp; retail
-// ??_7CSplashState @0x1e9d74 slot 2 = ILT 0x2919 -> 0xf9840). Their shared tail
-// "BaseCleanup" @0xfa150 IS CState::ReleaseResources - the CState vtable's own
-// slot 2 (StateReleaseResources.cpp).)

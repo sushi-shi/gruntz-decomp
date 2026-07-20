@@ -1,30 +1,3 @@
-// BattlezData.h - CBattlezData, the per-game multiplayer (Battlez) progress /
-// score tracker held at CGameReg+0x7c (g_gameReg->m_7c). The game manager
-// new[]s a 0x388-byte instance during Init (push 0x388; call new) and runs the
-// ctor on it; the slot-30 LoadByMode loader re-runs the ctor each level. The methods cluster
-// around two 4x4 int grids and an array of per-map records:
-//
-//   +0x00  m_records : pointer to an array of m_04 records, 0x40 bytes each
-//                      (each record's win/score field at +0x28). Init binds it
-//                      to a level-table slice ([gameReg.m_58]+0x24).
-//   +0x04  m_count   : number of records (a map count, range-checked to <=0x24)
-//   +0x08            : spare (zeroed, serialized)
-//   +0x0c  m_allDone : "every record in the current group of 4 is populated" flag
-//   +0x10..+0x44     : 14 scalar progress/bound fields (serialized one-by-one).
-//                      0fcd70 gates on m_scoreValue then compares the m_30..m_40 band
-//                      against the m_14..m_2c band (a "within bounds" test).
-//   +0x48  m_counts[4] : the per-row placed-object counters (serialized as a run of 4).
-//   +0x58  m_wins[16]: 4x4 head-to-head win matrix. 0fcc50 bumps [y][x] for
-//                      y!=x; 0fccb0 sums row y; 0fcc90 clears it.
-//   +0x98  m_flags[16]: 4x4 flag matrix. 0fcb50 sets [y][x]=1; 0fcbc0 sums all
-//                      16; 0fcc10 reads [x][y]; 0fcb90 clears it.
-//   +0xd8  m_weaponPickupz[88], +0x238 m_toyPickupz[40], +0x2d8 m_powerupPickupz[28],
-//          +0x348 m_miscPickupz[16] : per-owner x per-pickup-type counters
-//          (LoadPickupSprites bumps them; the former GruntPickupStats view of this
-//          same +0x7c object is dissolved onto these).
-//
-// Non-polymorphic (no vptr, no RTTI). Field names are placeholders; only the
-// offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_BATTLEZDATA_H
 #define GRUNTZ_BATTLEZDATA_H
 
@@ -32,11 +5,6 @@
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// The per-map record the m_records array points at (0x40 bytes / record): 16
-// ints mirroring the owner's m_10..m_scoreValue progress/bound band (see FillRecord's
-// rec[0..15] stores). +0x00 = populated flag; +0x28 = win/score value. The
-// proximity accessors below sum/test these per-record fields over the records
-// in the "current group of 4" (index (m_count-1)/4*4) or over all 0x20.
 struct BattlezRecord {
     i32 m_populated; // +0x00  populated flag (0fcad0 tests, 0fd330 sets to 1)
     i32 m_04;        // +0x04  from gameReg.m_118 (0fd330)
@@ -44,10 +12,6 @@ struct BattlezRecord {
     i32 m_scoreValue; // +0x28  win/score value (0fced0 returns; 0fd330 fills)
     i32 m_2c, m_30, m_34, m_38, m_3c;
 };
-
-// The serialization sink passed to Serialize is the shared WAP32 CSerialArchive
-// (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
-// <Gruntz/SerialArchive.h> - the former local `BattlezStream` view is folded away.
 
 class CBattlezData {
 public:

@@ -1,17 +1,3 @@
-// AmbientSound.h - the engine's positional ambient-sound game object
-// (C:\Proj\Gruntz). RTTI: CAmbientSound : CUserBase, sizeof 0x40, vftable
-// 0x5e710c (CUserBase's is 0x5e70b4). It owns a DirectSoundMgr voice handle
-// (+0x04), a level/scale (+0x08/+0x0c/+0x10), an "is playing" flag (+0x14), TWO
-// audible boxes (+0x18 / +0x28, sentinel left==0x80000000 == "no box / always
-// in range"), and a sound id (+0x38). It is the non-random sibling of
-// CRandomAmbientSound (see include/Gruntz/RandomAmbientSound.h); the field
-// layout, the DirectSoundMgr voice, the box sentinel, and the signed-/100 level
-// scale are shared between the two.
-//
-// Some field roles past +0x14 stay placeholders (m_<hexoffset>); OFFSETS + the
-// emitted code bytes are the load-bearing facts the matches prove. Only the parts
-// the reconstructed methods touch are modeled; every cross-class callee is
-// declared NO-body so its `call`/`mov ds:` reloc-masks.
 #ifndef GRUNTZ_CAMBIENTSOUND_H
 #define GRUNTZ_CAMBIENTSOUND_H
 
@@ -23,16 +9,10 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
-// left == AMBIENT_BOX_UNBOUNDED in either box means "no box / always in range":
-// the listener test for that box is skipped and the source is treated as audible
-// everywhere (the ctors seed the boxes with it).
 typedef enum AmbientBoxSentinel {
     AMBIENT_BOX_UNBOUNDED = 0x80000000, // INT_MIN sentinel (same immediate)
 } AmbientBoxSentinel;
 
-// An axis-aligned region the listener (x,y) must be inside for the sound to play.
-// left == AMBIENT_BOX_UNBOUNDED is the "no box / always pass" sentinel. Same shape
-// as CRandomAmbientSound::AmbientBox.
 SIZE_UNKNOWN(AmbientBox);
 struct AmbientBox {
     i32 left;   // +0x00
@@ -41,25 +21,6 @@ struct AmbientBox {
     i32 bottom; // +0x0c
 };
 
-// The (re)start path arms the voice through DirectSoundMgr::ApplyAndPlay (0x136300,
-// declared in <Dsndmgr/DirectSoundMgr.h> as m_voice->ApplyAndPlay(vol,pan,freq,dur)).
-
-// ---------------------------------------------------------------------------
-// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-// Update gates the (re)start on the active-level handle (+0x10) and the +0x54
-// active-level object's armed/playable gate (m_inputState->m_active; CWorldSoundSet in
-// <Gruntz/WorldSoundSet.h> - the same object CRandomAmbientSound taps).
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// CAmbientSound : CUserBase (sizeof 0x40, vftable 0x5e710c). Real polymorphic:
-// derives from CUserBase (its +0x00 vptr) and gives cl the implicit vptr stamp /
-// base teardown. The retail ~CAmbientSound (0xb790, 15 B) stores ONLY the base
-// vptr 0x5e70b4 - the derived-vptr store is DCE'd (the body has no virtual
-// dispatch); cl reproduces the same shape from the real virtual dtor. Its own
-// vftable (0x5e710c, 4 slots) is emitted by cl (VTBL below); the ctors that build
-// it stay stubbed. The StreamFeeder device.
-// ---------------------------------------------------------------------------
 VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
@@ -111,12 +72,6 @@ public:
 };
 SIZE(CAmbientSound, 0x40);
 
-// ---------------------------------------------------------------------------
-// CAmbientPosSound : CAmbientSound (RTTI, vftable 0x5e7124, sizeof 0x48). The
-// positional sibling built by CWorldSoundSet::CreatePos6_b850/CreatePos5_b960;
-// overrides slot 0 (scalar dtor) + slot 3 (Update). Its two own fields
-// (+0x40/+0x44, the anchor position) are untouched by reconstructed code.
-// ---------------------------------------------------------------------------
 VTBL(CAmbientPosSound, 0x001e7124);
 class CAmbientPosSound : public CAmbientSound {
 public:

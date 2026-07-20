@@ -1,14 +1,3 @@
-// FileImage.cpp - the CDDSurface file-format CODEC file, an ORIGINAL DDrawMgr TU
-// (wave4-K; interval dossier #14I): one obj spanning retail 0x143cf0-0x145dff -
-// the surface Load/Save/Decode paths for BMP/PCX/PID/TGA/RLE16 + the plain-buffer
-// RLE run-decoders. It CANNOT be DIRSURF.CPP (the whole DDRAWMGR obj sits between
-// the two blocks; obj contributions are contiguous at first link); it carries no
-// __FILE__ assert so the original name is unknown (a DIRFILE.CPP-like sibling).
-// The former image-unit codec fns and the fileimagerundecode RunDecode1/3 pair
-// (an in-source `#pragma optimize("",off)` island - see below) are folded in, in
-// retail-RVA order, plus CDDSurface::Load (0x144270, the RT_BITMAP loader - the
-// former ResLoaders::ResLoad_144270 view, RVA-proven to be this surface class).
-// ---------------------------------------------------------------------------
 #include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
@@ -21,22 +10,9 @@
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Globals.h>
 
-// The file loaders open through the real MFC CFile (RTTI 0x1ed15c); the heap
-// buffers are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82 (NAFXCW),
-// both declared by <Mfc.h> - all reloc-masked library calls (was CFileIO/RezFree).
-
-// The app HINSTANCE used as the RT_BITMAP resource module (DAT_00683ee0).
 DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
-// Per-decoder 256-entry RGBQUAD palette buffers (file-scope BSS, reloc-masked).
-// Each decoder builds its own when the source carries an inline/trailing palette;
-// the buffer addresses are differently-named symbols in the base obj (the absolute
-// pushes/compares reloc-mask against the retail DAT_* names). Declared in their
-// retail BSS order so the layout follows the binary.
-// The shared RGB palette-ramp buffers (.bss). g_paletteRampBuf (the 8-bit source's reversed
-// RGB ramp) + g_grayRamp (the greyscale ramp). DEFINED here (owner TU), reference
-// externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x00283ef0)
 u8 g_paletteRampBuf[0x400]; // 0x683ef0
 static u8 s_palBmp[0x400];  // 0x6842f0
@@ -151,17 +127,6 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodeBmp
-// `buf` is a whole .BMP file (packed BITMAPFILEHEADER + BITMAPINFOHEADER). Pull
-// biWidth/biHeight/biBitCount, validate them against the destination surface's
-// geometry (m_width/m_height) and require 8 or 24 bpp. `surf` is the palette context
-// (the CDDrawPtrCollections display manager: m_palBpp source bpp / m_palette palette /
-// m_hasPalette have-palette). When the surface bpp
-// differs from the file's, build a palette (for 8bpp: byte-reverse the BMP's
-// in-file RGBQUADs into s_palBmp; for 24bpp reuse the surface palette) and blit
-// through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
-// data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
 RVA(0x00143fc0, 0x142)
 void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
@@ -214,12 +179,6 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     return BlitDirect(pixels, 2) ? reinterpret_cast<void*>(1) : static_cast<void*>(0);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::LoadBmp
-// Open the file named by `path`; on failure return 0. GetLength(); if the length
-// is zero return 0. `operator new` a buffer of that size; if it fails return 0.
-// Read the file; if the read count != length, free + return 0. Else decode and
-// return the decoder's result. The CFile dtor + buffer free run on every exit.
 RVA(0x00144110, 0x156)
 void* CDDSurface::LoadBmp(char* name, char* path) {
     CFile file;
@@ -248,15 +207,6 @@ void* CDDSurface::LoadBmp(char* name, char* path) {
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::Load (0x144270) - the RT_BITMAP resource loader LoadByExt's default
-// branch dispatches (the former ResLoaders::ResLoad_144270 view, folded in wave4-K:
-// the view's Init@0x13e0a0 / Parse@0x13ece0 ARE CDDSurface::Init1/BlitDirect, its
-// +0x10..+0x78 fields ARE this surface's DDSURFACEDESC scratch). Find/load/lock
-// the named RT_BITMAP, validate its header (+0xe == 8), zero + seed the desc
-// (dwSize/dwFlags/width/height + the +0x78 control word), run the slot-2 init
-// with the resource's +0x8 word, then straight-copy the payload that follows the
-// 0x400-byte header. __thiscall(a, name, c); `a` unused.
 RVA(0x00144270, 0xd2)
 i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     HRSRC hr = FindResourceA(g_resModule, name, reinterpret_cast<LPCSTR>(2));
@@ -288,12 +238,6 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::SaveDispatch (ret 0xc) - pick the per-bit-depth file writer by the
-// surface's raw bit depth m_bitDepth (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
-// forwarding all three pass-through args; any other depth returns 0. Case bodies in
-// retail .text order (24, 16, 8); the near case labels lower to MSVC's compare
-// ladder.
 RVA(0x00144350, 0x5f)
 i32 CDDSurface::SaveDispatch(char* a1, void* a2, void* a3) {
     switch (m_bitDepth) {
@@ -410,11 +354,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     m_8->Unlock(0);
     return 1;
 }
-
-// The live screen RGB-format unpack-shift table (file RVA 0x283ea0..0x283eb4 =
-// VA 0x683ea0..). SaveRle16 uses them to expand a screen-native 16bpp pixel into
-// an 8-bit-per-channel BGR triple (the inverse of the CLightFxRender Pack). Same
-// differently-named symbols as elsewhere; reloc-masked.
 
 // ---------------------------------------------------------------------------
 // CDDSurface::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file
@@ -717,13 +656,6 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// LoadFile - open `path`, slurp it whole into a heap buffer, and hand the
-// buffer (plus the caller's `src` descriptor + `mode`) to Decode. The local CFile
-// destructs on every exit -> /GX EH frame. Each failure (open / empty / alloc /
-// short read) returns 0; otherwise returns Decode's result. The read buffer is
-// freed after Decode (and on a short read). ret 0xc.
-// ---------------------------------------------------------------------------
 RVA(0x00144d80, 0x15b)
 i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
@@ -747,16 +679,6 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodePcx
-// `buf` is a whole .PCX file (128-byte ZSoft header, pixels at +0x80). Geometry
-// comes from the window (width = Xmax-Xmin+1 @ +8/+4, height = Ymax-Ymin+1 @
-// +0xa/+6); NPlanes @ +0x41 picks 8bpp (1 plane) or 24bpp (3 planes). Validate vs
-// the destination (m_width/m_height). When no remap is needed the planes are RLE-expanded
-// straight into the surface (DecodeRun8/DecodeRun24); when the surface bpp differs
-// the run is decoded into a scratch buffer (RunDecode1/RunDecode3) and then blit
-// through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
-// or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
 RVA(0x00144ee0, 0x225)
 void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
     if (!buf) {
@@ -855,9 +777,6 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
     return reinterpret_cast<void*>(1);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::LoadPcx
-// Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 RVA(0x00145110, 0x156)
 void* CDDSurface::LoadPcx(char* name, char* path) {
     CFile file;
@@ -886,14 +805,6 @@ void* CDDSurface::LoadPcx(char* name, char* path) {
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// The two in-surface RLE row-decoders retail compiled UNOPTIMIZED: a full ebp
-// frame with every local spilled to the stack, no register allocation or strength
-// reduction - inside this otherwise-/O2 obj. One obj = one flag set, so the old
-// per-unit /Od profile (fileimagerundecode) was structurally impossible; the
-// only period mechanism is a `#pragma optimize("", off)` island in the source
-// (VC5 supports it), modeled exactly so here. Locals are declared in retail's
-// /Od stack-slot order so the [ebp-N] displacements match.
 #pragma optimize("", off)
 
 // ---------------------------------------------------------------------------
@@ -1090,16 +1001,6 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
 
 #pragma optimize("", on)
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodePcxData
-// The low-level PID-ish run decoder shared by DecodePcxEx. `surf` is the source
-// header (flags @ +4, width @ +8, height @ +0xc, run data @ +0x20); a4 is a
-// control word whose high bits are toggled from flags&4 / flags&2; a5 the
-// transparency colour. Width must be 4-aligned. The destination plane is set up
-// via BlitSurf, then the run is expanded in place (DecodeRun8) or, when the
-// surface bpp differs, into a scratch buffer (RunDecode1) and blit through the
-// palette (built from the trailing 768-byte VGA palette when flags&0x80 is set,
-// else the surface palette). flags&1 (TRANSPARENCY) installs a5 via FillPalette.
 RVA(0x001457a0, 0x22c)
 i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
     u8* hdr = static_cast<u8*>(buf); // the source PID/PCX header
@@ -1188,11 +1089,6 @@ i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
     return 1;
 }
 
-// ===========================================================================
-// CDDSurface::DecodePcxEx
-//
-// Opens a PCX file, reads data, calls DecodePcxData.
-// ===========================================================================
 RVA(0x001459d0, 0x135)
 i32 CDDSurface::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
     CFile file;
@@ -1217,18 +1113,6 @@ i32 CDDSurface::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::DecodePid
-// `buf` is a .PID payload (libwap32 layout: flags @ +4, width @ +8, height @
-// +0xc, run data @ +0x20). Width must be 4-aligned and the geometry must match
-// the destination surface (this->m_width / m_height). `surf` is the palette context
-// (the CDDrawPtrCollections display manager: m_palBpp bpp / m_palette palette /
-// m_hasPalette have-palette). When flags&0x80
-// (EMBEDDED_PALETTE) the trailing 768-byte VGA palette is expanded into
-// s_palPidData; otherwise the surface palette is used. The 8bpp run is expanded
-// in place (DecodeRun8) or, when the surface bpp differs, into a scratch buffer
-// (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
-// transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
 RVA(0x00145b10, 0x1b5)
 void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
     CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
@@ -1312,11 +1196,6 @@ void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
     return reinterpret_cast<void*>(1);
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::LoadPid
-// Like LoadBmp/LoadPcx, but: (1) it does NOT guard length==0 - it allocates the
-// buffer for whatever GetLength() returns and only null-checks the allocation;
-// (2) the decoder takes a fourth pass-through arg (a3).
 RVA(0x00145cd0, 0x130)
 void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
     CFile file;
@@ -1341,15 +1220,9 @@ void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
     return result;
 }
 
-// ===========================================================================
-// Class-metadata annotations (EOF-hosted). CFileImageInfo was folded into
-// CDDSurface (it is a 2nd CDDSurface instance passed as `info`).
-// ===========================================================================
-// --- shared CDDSurface (Image.h) header classes ---
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CFileImagePal);
 SIZE_UNKNOWN(CDDSurface);
-// --- header data-record structs (Image.h / CFileImageRecords.h; annotated here) ---
 SIZE_UNKNOWN(DecodeSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
 SIZE_UNKNOWN(BmpFileHeader);

@@ -1,44 +1,5 @@
-// FontConfig.cpp - the font/dialog-text TU (C:\Proj\Gruntz), interval
-// 0x0218e0-0x022a3a (+ the out-of-band dtor stray). ONE original TU per
-// docs/exe-map/interval-dossiers.md #3: our fontconfig + drawtext units were
-// slices of this single file - the drawtext hosts ARE CFontConfig by member-
-// layout identity (m4::PwdHost +0x1c edit-text CString + +0x38 control HFONT ==
-// CFontConfig::m_inputText/m_arialFont), the renderers render the very string
-// TypeChar accumulates, and the single fontconfig init-frag run @0x21610
-// immediately precedes the interval.
-//
-// CFontConfig HOLDS a CPtrList (+0x00) of font-config "items" (FontItem records,
-// each {int type; int data; CString name;}) plus a CString scratch member (+0x1c),
-// five scroll/threshold ints (+0x20..+0x30), and the three cached GDI HFONTs
-// (+0x38/+0x3c/+0x40) built by LoadFontConfig. It does NOT derive from CPtrList -
-// see the proof in FontConfig.h; the list is reached through its PUBLIC inline API
-// (GetHeadPosition/GetNext/GetCount/GetAt/FindIndex), which emits the same loads a
-// raw node-walk would.
-//
-//   LoadFontConfig - builds three GDI HFONTs (the ARIAL UI font fixed at 12x8
-//     bold; the TrainingFont; the MessageFont) via CreateFontA, dims/faces read
-//     from the global CButeMgr "Font" config group (butemgr getters).
-//   FreeNodes      - walks the list freeing each FontItem (its CString @+8 +
-//     operator delete), then RemoveAll + Empty(m_inputText) + m_inputActive=0.
-//   Reset          - FreeNodes + Empty(m_inputText) + DeleteObject the three HFONTs.
-//   AddItem        - new FontItem, fill name/type/data, AddHead or AddTail
-//     (head when type&2); optionally clears the list first (when type&4).
-//   Scroll         - advance the running offset by a delta; when it crosses the
-//     active threshold, RemoveHead the oldest FontItem and reset the offset.
-//   ~CFontConfig   - Reset + ~CString(m_inputText) + the m_list member dtor.
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing (campaign doctrine). The m_list member (CPtrList, sizeof 0x1c at +0x00)
-// supplies the RemoveAll/RemoveHead/AddHead/AddTail out-of-line NAFXCW calls; its
-// non-trivial dtor is what forces the /GX EH frame on AddItem and ~CFontConfig.
-// ---------------------------------------------------------------------------
-// <Mfc.h> brings <windows.h> (GDI32: CreateFontA / DeleteObject; USER32
-// DrawTextA) and the MFC CPtrList / CString collection types from <afxcoll.h>.
 #include <Mfc.h>
 #include <EmptyString.h> // g_emptyString
-// Real MFC CDC / CPen / CGdiObject (the caret stroke below). Skip the afxwin*.inl
-// bodies for the CLANG LABEL STEP only (implicit-int inlines clang rejects); wine cl
-// keeps the inlines. docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -49,82 +10,17 @@
 #include <Bute/ButeMgr.h>
 #include <string.h> // strlen (the m4 draw helpers)
 
-// The global empty C string the input-reset assigns into m_inputText (0x6293f4).
-
-// The global CButeMgr instance (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) comes from
-// <Bute/ButeMgr.h>; its `mov ecx, offset g_buteMgr` loads reloc-match the engine.
-
-// The font config strings - the original source literals (the "Font" tag-group
-// + per-font keys). objdiff matches these relocations by value against the
-// target's .data string constants.
-
-// ---------------------------------------------------------------------------
-// The m4 draw-helper hosts (DrawHost / PwdHost / TextHost) ARE CFontConfig by
-// member-layout identity (their +0x1c is m_inputText, +0x38/+0x3c/+0x40 are the
-// three cached HFONTs). Their four methods are real CFontConfig methods
-// (<Gruntz/FontConfig.h>).
-//
-// Two more views went with them:
-//   PwdStr  -> ::CString. Its ctor/dtor/SetAt are the NAFXCW library routines
-//              ??0CString@@QAE@ABV0@@Z (0x1b9ba3) / ??1CString@@QAE@XZ (0x1b9cde) /
-//              ?SetAt@CString@@QAEXHD@Z (0x1ba282) - config/library_labels.csv, all
-//              HIGH-confidence. It was never anything but an MFC CString.
-//   RectSrc -> DELETED, it was a FICTION. Same ctor rva (the CString copy ctor) but
-//              its "RECT* m_rect" re-read the copied string's data pointer as a rect.
-//              See MeasureLabel's note: retail passes the RECT in as arg2.
-//
-// The caret scratch classes are the REAL MFC GDI classes
-// (<afxwin.h>, statically-linked NAFXCW): the caret scratch pen IS a stack ::CPen
-// (ctor 0x1c6a72 == ??0CPen@@QAE@HHK@Z, HIGH FID; its destruction is the standard
-// MSVC inlined ~CPen chain - vptr restamps to ??_7CGdiObject @0x1e8cd4 then
-// ??_7CObject @0x1e8cb4, both already in config/vtable_names.csv, around a direct
-// call to 0x1c6a5c == ?DeleteObject@CGdiObject@@QAEHXZ, whose body is the exact
-// `if (!m_hObject) return 0; ::DeleteObject(Detach())` shape - the old
-// "CImageList::DeleteImageList" FID row was the AMBIG GDI/ImageList twin, as
-// Dialogs.cpp / GameMode.h already concluded). The device context IS a ::CDC:
-// 0x1c56ef == ?FromHandle@CDC@@SGPAV1@PAUHDC__@@@Z (body walks the HDC handle map),
-// 0x1c58ea == ?SelectObject@CDC@@QAEPAVCPen@@PAV2@@Z (HIGH FID), 0x1c6059 ==
-// ?MoveTo@CDC@@QAE?AVCPoint@@HH@Z (body: MoveToEx on both m_hDC/m_hAttribDC
-// returning the old CPoint through the hidden slot; the old "SetViewportOrg" row
-// was the AMBIG twin - SetViewportOrg would call SetViewportOrgEx), and 0x1c60a5 ==
-// ?LineTo@CDC@@QAEHHH@Z (the MFC shape: MoveToEx(m_hAttribDC,..,NULL) then
-// ::LineTo(m_hDC,..)). All five real names verified present in NAFXCWD.LIB; the
-// three wrong library_labels.csv rows are corrected in the same change. The fake
-// SevWorker2<-ImgHolder2<-DrawScratch virtual-dtor hierarchy (a fabricated vtable
-// chain) is deleted outright - MFC's real CObject -> CGdiObject -> CPen supplies
-// the true one.
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// This TU's own file-scope globals - homed here because this is the only TU that
-// touches them, bound to their RVAs.
-//
-// They were four `extern` declarations inside a `namespace m4 {}` with NO DATA()
-// anywhere, which is three defects at once: (a) an extern with no definition in the
-// whole tree is an unresolvable symbol at link; (b) with no DATA() the delinker has no
-// retail address to bind the references to; and (c) the C++ namespace MANGLED them
-// (?g_caretOffsetX@m4@@3HA) into names retail never had. All three are gone: real definitions,
-// real bindings, extern "C" linkage, and names that say what they do.
-//
-// Names are evidenced by the two functions that use them (MeasureLabel 0x21f20 and
-// RenderInputText 0x22160 - the chat/edit text layer):
 DATA(0x0022b434)
 i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
-                                    // to the provided rect; the caret's x offset reads it
 DATA(0x0022b438)
 i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
-                                   // delta is subtracted each render, and on reaching 0 it
-                                   // re-arms to 200 (0xc8) and toggles g_caretBlinkOn
 DATA(0x0022b43c)
 i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
 DATA(0x0020c7a8)
 i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
-// The shared frame-delta clock (defined in its own owner TU; one extern, no DATA here).
 extern "C" i32 g_frameDelta; // 0x00645584 elapsed-time delta (ms)
 
-// ---------------------------------------------------------------------------
-// CFontConfig::LoadFontConfig
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
     m_lowScrollThreshold = lowScrollThreshold;
@@ -223,8 +119,6 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::Reset - tear down the list + scratch string + the three HFONTs.
 RVA(0x00021b60, 0x4d)
 void CFontConfig::Reset() {
     FreeNodes();
@@ -243,8 +137,6 @@ void CFontConfig::Reset() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::FreeNodes - delete every FontItem in the list, then clear it.
 RVA(0x00021bd0, 0x45)
 void CFontConfig::FreeNodes() {
     POSITION pos = m_list.GetHeadPosition();
@@ -259,16 +151,9 @@ void CFontConfig::FreeNodes() {
     m_inputActive = 0;
 }
 
-// ---------------------------------------------------------------------------
-// FontItem::~FontItem (0x21c40) - the out-of-line record dtor: destroy the +8
-// CString name member (add ecx,8; jmp ~CString). Referenced by FreeNodes/AddItem's
-// `delete item` and Scroll's explicit `item->FontItem::~FontItem()`.
-// ---------------------------------------------------------------------------
 RVA(0x00021c40, 0x8)
 FontItem::~FontItem() {}
 
-// ---------------------------------------------------------------------------
-// CFontConfig::AddItem - append/prepend a new FontItem; optionally clear first.
 RVA(0x00021c60, 0xde)
 i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
     if (!str) {
@@ -299,10 +184,6 @@ i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::Scroll - advance the running offset; drop the head FontItem when
-// the offset crosses the active threshold (m_highScrollThreshold above 3 items,
-// else m_lowScrollThreshold).
 RVA(0x00021d80, 0x79)
 void CFontConfig::Scroll(i32 delta) {
     if (m_inputActive) {
@@ -389,8 +270,6 @@ i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CFontConfig::EndInput - cancel accumulation: clear the flag and empty m_inputText.
 RVA(0x00021ef0, 0x17)
 void CFontConfig::EndInput() {
     if (m_inputActive != 0) {
@@ -515,14 +394,11 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     return 1;
 }
 
-// item->type bit flags (the two DrawTextLines reads).
 typedef enum FontItemFlag {
     FONTITEM_COLORED = 0x10, // item->data is a TextColorId palette index
     FONTITEM_SHADOW = 0x20,  // stroke a 1px black drop shadow first
 } FontItemFlag;
 
-// The type&0x10 text palette: item->data indexes it. Retail's 0x00422654 jump
-// table maps these 17 ids to the COLORREFs below; id 7 / out-of-range -> black.
 typedef enum TextColorId {
     TEXTCOLOR_ORANGE = 0,
     TEXTCOLOR_GREEN = 1,
@@ -543,7 +419,6 @@ typedef enum TextColorId {
     TEXTCOLOR_WHITE = 16,
 } TextColorId;
 
-// The COLORREF (0x00BBGGRR) each TextColorId strokes glyphs in.
 typedef enum TextColorRef {
     TCLR_ORANGE = 0x0080ff,
     TCLR_GREEN = 0x00ff00,
@@ -713,10 +588,6 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CFontConfig::DrawWithFont (0x22770): draw a plain C string with the ARIAL UI
-// font. Null-guard hdc/text/rect, select m_arialFont (saving the prior), DrawTextA
-// the strlen(text) into rect with the caller's format, then restore the font. ret 1.
 RVA(0x00022770, 0x7d)
 i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == 0) {

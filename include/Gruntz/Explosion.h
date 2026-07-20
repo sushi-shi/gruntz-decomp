@@ -29,14 +29,8 @@ public:
 VTBL(CExplosion, 0x1e766c);
 SIZE(CExplosion, 0x54);
 
-// The class's activation-dispatch table (CLogicActTable @0x6447f8); filled by
-// RegisterXLogic_6447f8 (LogicActReg.cpp), read by FireActivation. Owner (DATA
-// binding) is LogicActReg.cpp; declared extern here so the loads reloc-mask.
 extern CLogicActTable g_logicActReg_6447f8;
 
-// A dispatch-table entry: its first dword is the class activation handler, stored
-// by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a 4-byte
-// single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
 typedef i32 (CUserLogic::*ExplosionActHandler)();
 struct CExplosionActEntry {
     ExplosionActHandler m_fn;

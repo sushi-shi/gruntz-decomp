@@ -3,18 +3,6 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <rva.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
-// CImage.cpp - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, primary
-// vftable @0x5eaa2c), a surface-backed image element in the DDrawMgr
-// image family and a sibling of CDDrawSurfacePair. Three methods (retail-RVA
-// order): the cleanup virtual FreeAll (0x153260, slot 7), the /GX destructor
-// ~CImage (0x0d5e80), and RenderFrame (0x153790) - the sprite-frame draw that
-// resolves a clip rectangle through a shared CResolveNode singleton then dispatches
-// the +0x38 render virtual.
-//
-// See include/Image/CImage.h for the layout + the loader-CImage naming note.
-// Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
-// The TU carries a destructible base subobject -> /GX EH frame (flags="eh").
-// ---------------------------------------------------------------------------
 
 #include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
 #include <Image/CImage.h>
@@ -26,19 +14,8 @@
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
-// The engine heap free is the NAFXCW global operator delete (??3@YAXPAX@Z @0x1b9b82,
-// declared by <Mfc.h>); reloc-masked rel32.
-
-// The per-frame draw-delta mirror (BSS @0x6bf3bc) the RenderImage animate path
-// consumes to advance/wrap the request's m_44 counter. Canonical binding in
-// Projectile.cpp; declared address-pinned here (reloc-masked).
 extern "C" u32 g_engineFrameDelta;
 
-// The image-source format tag (CParseSource::GetTag, a packed 3-char fourcc) that
-// both Resolve and Reload dispatch on to pick the format loader index (1..4). Named
-// by the literal tag bytes (low byte first); PMB/XCP are the reversed extension
-// (-> BMP / PCX loaders). Same immediates as the bare literals -> matching-neutral;
-// the switch key stays (u32) so the compare keeps its unsigned ja/je codegen.
 enum ImageFormatTag {
     IMGTAG_PMB = 0x424d50, // "PMB" -> BMP loader (index 1)
     IMGTAG_XCP = 0x504358, // "XCP" -> PCX loader (index 2)
@@ -94,48 +71,25 @@ i32 Gap_0d5c10(void) {
 // obj emits both halves of the pair). Was the fabricated `CDDrawSubMgrFar :
 // CObject` view with four body-less placeholder virtuals - dissolved.
 
-// ---------------------------------------------------------------------------
-// CWapObj::IsLoaded (slot 5, 0x0d5dc0) - the SHARED base default the whole
-// CWapObj family inherits unless it overrides: the first derived field (@+0x10 -
-// a count/size) is nonzero. CImage inherits it unchanged (its m_width lands at
-// +0x10). Emitted in this (CImage) TU, its sole non-overriding user. `mov edx,
-// [ecx+0x10]; xor eax,eax; test edx,edx; setg al; ret`.
 RVA(0x000d5dc0, 0xb)
 i32 CWapObj::IsLoaded() {
     return *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x10)) > 0;
 }
 
-// ---------------------------------------------------------------------------
-// CImage::GetClassId (slot 8, 0x0d5de0): the class type tag - CImage returns 10.
 RVA(0x000d5de0, 0x6)
 i32 CImage::GetClassId() {
     return 10;
 }
 
-// ---------------------------------------------------------------------------
-// CImage::Slot16 (slot 16, 0x0d5e00): a no-op sink (Slot17 forwards its arg here
-// and to Slot15). __thiscall, one arg, ret 4.
 RVA(0x000d5e00, 0x3)
 void CImage::FlipHorizontal(void*) {}
 
-// ---------------------------------------------------------------------------
-// slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
-// (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from
-// src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable
-// slot-17 thunk 0x1d1b jmps here, so this IS CImage's slot-17 virtual.
 RVA(0x000d5e20, 0x1b)
 void CImage::FlipBoth(void* arg) {
     FlipVertical(arg);
     FlipHorizontal(arg);
 }
 
-// ---------------------------------------------------------------------------
-// The virtual destructor. MSVC stamps this class's own vtable
-// (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
-// then the CObject base subobject dtor folds in (sets m_status=-1, zeroes
-// m_08/m_parent, stamps the grand-base dtor vtable). Both vptr stamps are
-// compiler-implicit now, so they land in the retail "stamp-first" order. The /GX EH
-// frame falls out of the non-trivial CObject subobject.
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();
@@ -186,16 +140,6 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// (vtable slot 11): Resolve. Read the source's 3-char format tag, map it
-// to a format index (BMP=1, "CPX"=2, "RID"=3, "PID"=4), prime the source, then
-// dispatch the +0x28 load virtual (LoadDispatch) with (resolved, index, src->m_length,
-// arg); finally release the source and return the load result. __thiscall, ret 8.
-//
-// The tag compare lowers to MSVC's unsigned binary-search switch tree
-// (cmp;ja/je against the fourcc constants) -> the key must be unsigned (the source
-// returns the tag as a u32). docs/patterns/switch-key-unsigned-ja-vs-jg.md.
-// ---------------------------------------------------------------------------
 RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CParseSource* src, i32 arg) {
     i32 index;
@@ -287,13 +231,6 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// (vtable slot 9): Create24. Allocate a surface from the parent pool's
-// Create24 variant (CreateB @0x1423c0) for (desc, mode, NULL, capArg, flagsArg) -
-// where flagsArg = keyed ? g_surfaceColorKey : -1 and capArg = g_resourceInstallActive ?
-// 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the
-// m_originX/m_originY origin. __thiscall, ret 0xc (3 stack args).
-// ---------------------------------------------------------------------------
 RVA(0x001530e0, 0x92)
 i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
@@ -364,11 +301,6 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// The cleanup virtual (vtable slot 7). Remove the held surface (m_surface)
-// from the parent collection's surface pool (m_parent->m_1c), then destroy + free the
-// owned +0x30 object; both handles cleared. m_width/m_height zeroed up front.
-// ---------------------------------------------------------------------------
 RVA(0x00153260, 0x41)
 void CImage::FreeAll() {
     m_width = 0;
@@ -385,16 +317,6 @@ void CImage::FreeAll() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CopyFrom - clone another image's surface into this one. Fails unless
-// both images own a held surface (m_surface) and neither carries an owned object (m_owned),
-// and the two geometries match (m_width/m_height). On a match it Prepares the held surface
-// (Prepare(0)) then Blts the other image's surface into it, returning whether the
-// blit succeeded. __thiscall, ret 4.
-//
-// The five reject paths each emit the bare `xor eax,eax; pop; pop; ret 4` epilogue
-// inline -> SIBLING guards, not nesting (docs/patterns/redundant-sibling-guard-retest).
-// ---------------------------------------------------------------------------
 RVA(0x001532b0, 0x80)
 i32 CImage::CopyFrom(CImage* other) {
     if (other == 0) {
@@ -420,11 +342,6 @@ i32 CImage::CopyFrom(CImage* other) {
     return ok != 0;
 }
 
-// ---------------------------------------------------------------------------
-// SetOrigin (0x153330, __thiscall, ret 8). For frame modes 3 and 4 copy the
-// descriptor's +0x10/+0x14 origin into the image (m_originX/m_originY); for any
-// other mode zero them. Always returns 1.
-// ---------------------------------------------------------------------------
 RVA(0x00153330, 0x36)
 i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
     if (mode == 4 || mode == 3) {
@@ -439,24 +356,6 @@ i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x153380 (vtable slot 13): Reload - refresh the held surface from its parse
-// source. If there is no held surface, succeed. If the surface's source sub-object
-// (m_surface->m_08) reports still-clean (IsClean, vtbl[0x60]), succeed. Else if it still
-// has a live source descriptor (HasSource, vtbl[0x6c]), re-run FreeAll + Resolve
-// (the slot-7 + slot-11 virtuals) with the caller's args. Otherwise parse the new
-// source directly: read its 3-char tag (BMP=1/CPX=2/RID=3/PID=4), prime it, then
-// rebuild the held surface via the pool's Reload (0x13e550) with the resolved
-// index/source/install-flag. __thiscall, ret 8.
-//
-// The tag switch is the same unsigned binary-search tree as Resolve (key u32, the
-// ja/je fourcc compares); docs/patterns/switch-key-unsigned-ja-vs-jg.md.
-//
-// The FreeAll (slot 7, +0x1c) + Resolve (slot 11, +0x2c) re-runs are ordinary virtual
-// dispatches on `this` now (CImage declares them virtual), so `this->FreeAll()` /
-// `this->Resolve(...)` lower to `call [vptr+0x1c]` / `[vptr+0x2c]`. The parse-source
-// clean/has-source probes are virtual calls on the CImageSurfaceSrc sub-object.
-// ---------------------------------------------------------------------------
 RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CParseSource* src, i32 arg) {
     if (m_surface == 0) {
@@ -656,14 +555,6 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     info->m_outRect.bottom = dbottom;
 }
 
-// ---------------------------------------------------------------------------
-// 0x153790: render a sprite frame. Resolve a clip context through a shared
-// CResolveNode singleton (a function-local static, built once via MSVC5's guarded
-// magic-static init), feeding it the parent collection (m_parent) and the (b,c,d)
-// geometry; on success dispatch the +0x38 render virtual passing the clip context
-// and the first arg. __thiscall, ret 0x10 (4 stack args).
-// ---------------------------------------------------------------------------
-
 // The shared clip/resolve singleton is the canonical CResolveNode (class in
 // <Gruntz/ResolveNode.h>). Its default ctor (0x1549d0) + Init (0x1647e0) are external
 // engine __thiscall callees; the magic-static init + the Init call reloc-mask, and the
@@ -699,27 +590,10 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x153810: render a sprite frame into a caller-supplied clip rect. Same shape as
-// RenderFrame (resolve through a shared CResolveNode singleton, then dispatch the
-// +0x38 render virtual) but with a second magic-static singleton (guard @0x6bf29c,
-// object @0x6bf228) and an extra `rect` arg whose 4 ints are stashed into a static
-// clip rect (@0x6bf28c) before the dispatch. __thiscall, ret 0x14 (5 stack args).
-// ---------------------------------------------------------------------------
-
-// The static clip rect updated each call (4 consecutive ints @0x2bf28c .bss);
-// DATA-bound so the four DIR32 stores pair to the retail address. reloc-masked.
 DATA(0x002bf28c)
 i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
-// The 25-int BltEx fx block ([1] = blend-mode word) + the surface color-key value
-// (keyed blits pass it as the fx flags arg). Shared with CDDrawWorkerRegistry /
-// GruntzMgr; homed to this image TU (.bss zero-init). Reference externs stay in
-// <Globals.h>. (REHOME DD-Drain-1)
 DATA(0x002bf318)
 i32 g_bltFxScratch[25] = {0}; // 0x2bf318
-// The resource-install gate - DEFINED here beside its sibling g_surfaceColorKey (the two
-// are declared as a pair in <Image/CImage.h> and gate the same CreateA call: cap 0x800 /
-// the flags arg). 10 TUs referenced it and none defined it. .bss, zero-init.
 DATA(0x002bf37c)
 i32 g_resourceInstallActive = 0; // 0x2bf37c
 DATA(0x002bf380)
@@ -739,17 +613,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
     }
 }
 
-// ===========================================================================
-// The five CImage sprite blit/clip routines (0x1538c0..0x154750), merged from
-// ImageSpriteBlit.cpp (same class, same obj - wave4-L C block).
-// ===========================================================================
 #include <Globals.h> // g_bltFxScratch (the shared BltEx fx block)
-
-// The 25-int g_bltFxScratch block (shared with CDDrawWorkerRegistry); [1] carries
-// the BltEx blend-mode word, the base is the DDBLTFX-style fx pointer.
-
-// The blit backends (CDDSurface::BltEx @0x13eef0, CDDrawShadeBlit::Blit @0x1497f0)
-// come from the canonical shared headers above; reloc-masked rel32 call symbols.
 
 // ---------------------------------------------------------------------------
 // No flip, surface blit (BltEx, blend mode 6).
@@ -1388,21 +1252,9 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     info->m_outHeight = h;
     info->m_result = 0;
 }
-// Class-metadata annotations (EOF-hosted, /O2 sprite-blit TU).
 SIZE_UNKNOWN(CBlitXform);
 SIZE_UNKNOWN(CBlitInfo);
 
-// ===========================================================================
-// Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
-// Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
-// typedefs after the last function). VTBL skips (logged): the CObject base
-// vtable is the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CParseSource is
-// flagged [virtual] only via its polymorphic Gruntz def, not this view. The held surface
-// (CDDSurface) and owned sprite (CDDrawShadeBlit) are annotated in their own headers.
-// CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted from the real
-// virtuals declared in CImage.h).
-// ===========================================================================
-// --- CImage.h header classes ---
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
 SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
 SIZE_UNKNOWN(CBlitClipOwner);
@@ -1410,5 +1262,4 @@ SIZE_UNKNOWN(CImageParent);
 SIZE_UNKNOWN(CImageFrameDesc);
 SIZE_UNKNOWN(CImage);     // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
 VTBL(CImage, 0x001eaa2c); // vtable_names -> code (RTTI game class)
-// --- CImage.cpp local views ---
 SIZE_UNKNOWN(CResolveNode);

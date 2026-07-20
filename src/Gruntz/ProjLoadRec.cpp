@@ -1,11 +1,3 @@
-// ProjLoadRec.cpp - CProjLoadRec::Load (0x0e0d40), carved out of the conflated
-// StreamRecordLoaders.cpp (operation REHOME, package D8). A CProjectile/CTimeBomb-
-// family dual-mode record loader; its retail .text sits at 0x0e0d40 - far from the
-// CEventLoadRec main block (0x09c650) - a separate obj. Interleaver home (RVA-
-// neighbour caller unit): src/Gruntz/Projectile.cpp (the projectile family owns
-// g_coordPool.m_freeHead + g_gameReg); homing there is deferred (cross-TU class decl).
-//
-// Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -22,44 +14,7 @@
 #include <Gruntz/ProjLoadRec.h> // canonical CProjLoadRec (proven CProjectile; fold deferred)
 #include <string.h>           // inline strlen / strcpy over the scratch buffer
 
-// The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
-
-// The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
-// string field read.
-
-// The g_coordPool.m_freeHead node allocator (?g_coordPool.m_freeHead@@3PAXA): the head is a node whose first
-// dword is the next pointer; a non-empty pop advances the head and yields node+4.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-
-// ===========================================================================
-// CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
-// loader. A __thiscall(reader, mode, a2, a3), ret 0x10, bailing (0) when the
-// registry sub-object (g_gameReg->m_world) is absent. Mode 7 = READ: a fixed run
-// of raw fields, a 7-entry name-ref loop (CMapStringToPtr::Lookup x1b8438 through
-// reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
-// gated on the looked-up object's type code (virtual +0x20 == 5), then a g_coordPool.m_freeHead
-// node-splice loop appending 8-byte payloads onto m_204 (CPtrList::AddTail @0x1b4991).
-// Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
-// writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
-// embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
-// through a3->m_7c->OwnerMgr()->m_animRegistry). Names are placeholders; offsets + bytes load-bearing.
-// ===========================================================================
-
-// g_gameReg->m_world IS the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>):
-// this loader reaches its projectile-object factory (m_8, a CDDrawChildGroup whose
-// embedded key->object map m_map48 @+0x48 has Lookup @0x1b8760) and its name-leaf
-// registry (m_animRegistry @+0x2c, the canonical CDDrawSubMgrLeaf serialize
-// facet - m_10 name map + KeyOfValue_152d30). Both keyed values ARE created game
-// objects (the same map CTriggerMgr::Load resolves, with the `slot-8 GetTypeId()==5`
-// gate at +0x20), so the out-param is CGameObject*. (Were the .cpp-local CProjObjReg
-// + CProjRegSub30 views.)
-
-// One spliced freelist node is the canonical CoordPoolNode (read: link @+0, inline
-// {x,y} payload @+4) / CoordNode (write list m_208: link @+0, Coord* payload @+8) -
-// <Gruntz/CoordNode.h> / FreeNodePool.h. Was the .cpp-local CProjNode view.
 
 // The +0x204 list the read path appends payloads to (CPtrList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.

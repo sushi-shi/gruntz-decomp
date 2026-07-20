@@ -1,29 +1,9 @@
-// GameObjectFactory.cpp - RegisterGameObjectTypes (RVA 0x000a3b0).
-//
-// The level/object-type factory registrar: walks one uniform list registering
-// each named game-object type with the type registry (the world's +0x14
-// m_workerCache, virtual slot 9 / +0x24) under a class-id flag, and (for most
-// types) calls a per-type follow-up registration helper. Frameless __cdecl. Only
-// offsets + code bytes are load-bearing; every create-fn / follow-up helper is a
-// reloc-masked external (an unnamed ILT jmp-thunk to the real ctor/helper).
-//
-// IDENTITY (the ex "GameObjFactoryCtx"/"GameObjTypeRegistry" views, dissolved
-// 2026-07-16): the ctx is the world CDDrawSurfaceMgr itself - the one caller
-// (CGruntzMgr::Run, RezSync.cpp) passes the freshly-new'd world manager - and the
-// "+0x14 registry" is its m_workerCache, the canonical CDDrawWorkerCache
-// (<DDrawMgr/DDrawWorkerCache.h>). The "RegisterType" slot is CreateWorker: SAME
-// vtable slot (9, +0x24), SAME 3-arg shape, and the body (0x1652c0,
-// DDrawSurfacePair.cpp) consumes a1 as the factory fn-ptr (w->Init((GameObjNotifyFn)
-// a1, a3)) keyed by the type name - exactly what the tile-logic registrars
-// (LogicTypeTable.cpp / UserLogicCtorEmit.cpp) already dispatch on the same member.
 #include <Gruntz/GameObjectFactory.h> // the shared RegisterGameObjectTypes decl
 #include <rva.h>
 #include <Gruntz/ObjTypeRegistrars.h>  // real per-type registrar entry points (reloc fidelity)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
 #include <DDrawMgr/DDrawWorkerCache.h> // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
 
-// Reloc-masked externals: per-type object create-fns (ILT thunks to the real
-// ctors) and the per-type follow-up registration helpers (by ILT-thunk RVA).
 extern "C" {
     i32 CreateAniCycle(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
     i32 CreateDoNothingNormal(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
@@ -197,7 +177,6 @@ extern "C" {
 // (SAXXZ), so the retail this-less `call rel32` binds to its exact RVA with no
 // `mov ecx` inserted (the bodies never touch `this`). Reloc-fidelity CORRECT.
 
-// @source: string-xref
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateAniCycle, "AniCycle", 2);

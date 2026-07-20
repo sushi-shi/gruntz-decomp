@@ -1,17 +1,3 @@
-// ChatBox.cpp - a two-row scrolling on-screen text/chat display (C:\Proj\Gruntz).
-//
-// Trace-discovered as Region_182ab0. Two text rows, each with a CString font key
-// (m_row0Key / m_row1Key), a "current message/animation record" pointer
-// (m_row0Anim / m_row1Anim) and per-row frame-animation state (current frame
-// handle + reload period + countdown timer + draw offset + frame index). Owns a
-// CPtrList of message nodes (m_nodeList) whose stored payloads it frees on
-// Reset/teardown; a parent/page back pointer (m_page); and a queued/active node
-// slot (m_activeNode).
-//
-// Field names are recovered from the member writes; only offsets + code bytes are
-// load-bearing (rename is /O2 name-independent). The message-node accessor methods
-// (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
-// externs so their calls are reloc-masked.
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Image/CImage.h>
@@ -19,9 +5,6 @@
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
-// The menu-drive methods (0x182c70..0x183150) forward to the owned menu page
-// (m_activeNode, a CMenuPage - the same class the node-walks dispatch into) and
-// blit the menu surface set (CDDSurface) hung off the owner.
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_page->m_drawTarget: front/back/overlay CDDrawSurfacePair
 #include <DDrawMgr/DDrawSurfacePair.h> // each pair's +0x2c CDDSurface + +0x1c src RECT
@@ -29,69 +12,8 @@
 #include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_page) + CSndHost + LeafCue
 #include <Gruntz/MenuPage.h>
 
-// ---------------------------------------------------------------------------
-// External engine callees / globals (modeled with no body -> reloc-masked).
-// ---------------------------------------------------------------------------
-
-// The message-node class the rows dispatch into IS CMenuPage (MenuPage.h): the node
-// accessors (dtor 0x183250, ReleaseAll 0x183990, RestoreFocus 0x1839d0, Click
-// 0x1840a0, SelectForward 0x1843f0, SelectBackward 0x1844d0, SelectFwd2 0x184230,
-// SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs. __thiscall.
-//
-// The owner reached through m_page is the canonical CDDrawSurfaceMgr
-// (GameRegistry.h). Its three facets this box drives are all real engine classes
-// (the ex CChatPage/CMenuRenderSet/CChatCatalog/CChatRoster/CChatAnim/CChatListNode
-// views are DISSOLVED, 2026-07-14):
-//   +0x04 m_drawTarget : CDDrawSubMgrPages   - the menu surface set (Flip/BltFast in Post).
-//                   Its +0x10/+0x14/+0x18 are front/back/overlay CDDrawSurfacePair,
-//                   each carrying a CDDSurface @+0x2c and the source's src RECT @+0x1c.
-//   +0x10 m_10    : CImageRegistry (== CDDrawWorkerRegistry) - the key->record catalog.
-//                   Its +0x10 map is a CMapStringToOb (Lookup 0x1b8008, disasm-proven -
-//                   NOT the 0x1b8438 CMapStringToPtr the ex-view guessed), whose values
-//                   are CImageSet animation records (m_frames @+0x14, index range
-//                   [m_minIndex @+0x64, m_maxIndex @+0x68]).
-//   +0x28 m_28    : CSndHost (== CDDrawSubMgrLeafScan) - the scroll-cue roster. Its +0x10
-//                   map is a CMapStringToPtr (Lookup 0x1b8438) of LeafCue timers, gated on
-//                   the +0x30 emit/busy word; each LeafCue carries the pooled
-//                   DSoundCloneInst (m_10), a last-play clock (m_14) and cooldown (m_18).
-//
-// The CPtrList node list (m_nodeList) is walked with the PUBLIC MFC accessors
-// GetHeadPosition()/GetNext(POSITION&) (both inline; GetNext advances the POSITION
-// then returns the void* payload) - byte-identical to the raw CNode chain walk and
-// with no need to reach the protected CPtrList::CNode.
-
-// DISSOLVED (Fable A2, 2026-07-14): the "CChatSprite" arg WAS the canonical
-// CMenuItem (<Gruntz/MenuItem.h>, via MenuPage.h): its "+0x44/+0x48 anchor with
-// the 0xeeeeeeee sentinel" is exactly m_fixedX/m_fixedY ("use the caller's
-// coords" placement override), and the "Measure" virtual at slot 5 (+0x14) is
-// GetFrameWidth (0x185520) - Draw centers each row's frame on the item.
-
-// The horizontal-scroll edge state read by the two scroll-step methods.
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
-// ===========================================================================
-// CChatBox
-// ===========================================================================
-
-// CChatBox::Init (0xa0280) is NOT in this TU's block: it sits inside the menu
-// state's contiguous 0x9fe50..0xa0d80 run, so it is homed in
-// src/Gruntz/MenuState.cpp (the obj that contributes that byte).
-
-// ---------------------------------------------------------------------------
-// The menu-region seeder (0x0182ab0). The three SOURCE-side views are gone: the retail
-// call proves the arg chain is entirely canonical classes -
-//   arg1 = CMenuState::m_c            -> CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>)
-//          holder->m_drawTarget       -> CDDrawSubMgrPages          (<Gruntz/ResMgr.h>)
-//          drawTarget->m_10           -> CDDrawSubMgrPages::SurfaceA (its +0x10/+0x14 pixel
-//                                        extent is now named there; see the disasm cited
-//                                        in ResMgr.h) - the default RECT is (0,0,w-1,h-1).
-//   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (CGameWnd +0x04).
-//
-// The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
-// before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands
-// on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_headGap/m_rowSpacing/m_wrapFlag/m_activeNode);
-// the three ex-blockers (m_page CChatPage->CDDrawSurfaceMgr, m_pad8->RECT, m_wrapFlag
-// char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
 RVA(0x00182ab0, 0x7b)
 i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f) {
     if (!src) {
@@ -114,10 +36,6 @@ i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e
     return 1;
 }
 
-// destructor lives in ChatBoxDtor.cpp (the /GX EH-frame TU; it is the
-// only method here that needs the frame, so the rest stay frameless under base).
-
-// free the node list, re-zero both rows.
 RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
@@ -152,7 +70,6 @@ void CChatBox::Clear() {
     m_activeNode = 0;
 }
 
-// append a node to the list; first node also becomes the active one.
 RVA(0x00182ba0, 0x35)
 i32 CChatBox::AddNode(void* node) {
     if (!node) {
@@ -190,15 +107,6 @@ i32 CChatBox::Find(const char* s) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// The front-end menu drive (CMenuState::Render fires these on its m_1b4 CChatBox).
-// Each guards on the owned menu page (m_activeNode, a CMenuPage) and forwards one
-// navigation; the page methods are reloc-masked rel32 callees (MenuPage.cpp).
-// ---------------------------------------------------------------------------
-
-// notify the page of the per-frame delta, then run the inner scroll
-// Step (0x182ed0). The dt arg is u32 (Render passes g_frameDelta); the inner Step
-// takes i32, so this is the Step(u32) overload that calls Step(i32).
 RVA(0x00182c70, 0x38)
 i32 CChatBox::Step(u32 dt) {
     if (!m_activeNode) {
@@ -210,7 +118,6 @@ i32 CChatBox::Step(u32 dt) {
     return Step(static_cast<i32>(dt)) != 0;
 }
 
-// lay out the page using the owner's first surface holder as the ctx.
 RVA(0x00182cb0, 0x26)
 i32 CChatBox::Pre() {
     if (!m_activeNode) {
@@ -223,7 +130,6 @@ i32 CChatBox::Pre() {
     return m_activeNode->Layout(ctx) != 0;
 }
 
-// flip the menu back buffer, then blit the source onto the target.
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
     CDDrawSubMgrPages* s = m_page->m_drawTarget;
@@ -233,7 +139,6 @@ i32 CChatBox::Post() {
     return 1;
 }
 
-// entity-flag 0x40000000 scan -> advance the page focus.
 RVA(0x00182d20, 0x16)
 i32 CChatBox::OnFlag40000000() {
     if (!m_activeNode) {
@@ -242,7 +147,6 @@ i32 CChatBox::OnFlag40000000() {
     return m_activeNode->FocusNext() != 0;
 }
 
-// entity-flag 0x80000000 scan -> retreat the page focus.
 RVA(0x00182d40, 0x16)
 i32 CChatBox::OnFlag80000000() {
     if (!m_activeNode) {
@@ -251,7 +155,6 @@ i32 CChatBox::OnFlag80000000() {
     return m_activeNode->FocusPrev() != 0;
 }
 
-// entity-flag 0x00000003 scan -> activate the focused item.
 RVA(0x00182d60, 0x16)
 i32 CChatBox::OnFlag00000003() {
     if (!m_activeNode) {
@@ -260,7 +163,6 @@ i32 CChatBox::OnFlag00000003() {
     return m_activeNode->Activate() != 0;
 }
 
-// entity-flag 0x00000100 scan -> switch the page (refocus).
 RVA(0x00182d80, 0x18)
 i32 CChatBox::OnFlag00000100() {
     if (!m_activeNode) {
@@ -269,7 +171,6 @@ i32 CChatBox::OnFlag00000100() {
     return m_activeNode->Switch(1) != 0;
 }
 
-// entity-flag 0x10000000 scan -> step the focus back N nodes.
 RVA(0x00183130, 0x16)
 i32 CChatBox::OnFlag10000000() {
     if (!m_activeNode) {
@@ -278,7 +179,6 @@ i32 CChatBox::OnFlag10000000() {
     return m_activeNode->FocusBackwardN() != 0;
 }
 
-// entity-flag 0x20000000 scan -> step the focus forward N nodes.
 RVA(0x00183150, 0x16)
 i32 CChatBox::OnFlag20000000() {
     if (!m_activeNode) {
@@ -287,7 +187,6 @@ i32 CChatBox::OnFlag20000000() {
     return m_activeNode->FocusForwardN() != 0;
 }
 
-// mouse focus+select -> forward (x,y) to the owned menu page's FocusAndSelect.
 RVA(0x00183170, 0x24)
 i32 CChatBox::FocusSelect(i32 x, i32 y) {
     if (!m_activeNode) {
@@ -296,7 +195,6 @@ i32 CChatBox::FocusSelect(i32 x, i32 y) {
     return m_activeNode->FocusAndSelect(x, y) != 0;
 }
 
-// make `n` the active node (detach + rebuild it).
 RVA(0x00182da0, 0x2a)
 i32 CChatBox::AttachNode(void* n) {
     if (!n) {
@@ -308,7 +206,6 @@ i32 CChatBox::AttachNode(void* n) {
     return 1;
 }
 
-// find a node by key and make it active.
 RVA(0x00182dd0, 0x19)
 i32 CChatBox::ReplaceNode(void* n) {
     return AttachNode(reinterpret_cast<void*>(Find(static_cast<const char*>(n))));
@@ -517,7 +414,6 @@ i32 CChatBox::ScrollRow1() {
     return 0;
 }
 
-// forward a hit-test to the active node (slot 0x1840a0).
 RVA(0x001831a0, 0x24)
 i32 CChatBox::HitTest0(i32 x, i32 y) {
     CMenuPage* n = m_activeNode;
@@ -527,7 +423,6 @@ i32 CChatBox::HitTest0(i32 x, i32 y) {
     return n->Click(x, y) != 0;
 }
 
-// forward a hit-test to the active node (slot 0x1843f0).
 RVA(0x00183210, 0x16)
 i32 CChatBox::HitTest1() {
     CMenuPage* n = m_activeNode;
@@ -537,7 +432,6 @@ i32 CChatBox::HitTest1() {
     return n->SelectForward() != 0;
 }
 
-// forward a hit-test to the active node (slot 0x1844d0).
 RVA(0x00183230, 0x16)
 i32 CChatBox::HitTest2() {
     CMenuPage* n = m_activeNode;
@@ -547,7 +441,6 @@ i32 CChatBox::HitTest2() {
     return n->SelectBackward() != 0;
 }
 
-// forward a query to the active node (callee 0x184230); bool-normalize.
 RVA(0x001831d0, 0x16)
 i32 CChatBox::HitTest3() {
     CMenuPage* n = m_activeNode;
@@ -557,7 +450,6 @@ i32 CChatBox::HitTest3() {
     return n->SelectFwd2() != 0;
 }
 
-// forward a query to the active node (callee 0x184310); bool-normalize.
 RVA(0x001831f0, 0x16)
 i32 CChatBox::HitTest4() {
     CMenuPage* n = m_activeNode;
@@ -566,8 +458,3 @@ i32 CChatBox::HitTest4() {
     }
     return n->SelectBack2() != 0;
 }
-
-// All the .cpp-local engine views are DISSOLVED onto their canonical classes
-// (CDDrawSurfaceMgr / CDDrawSubMgrPages / CDDrawSurfacePair / CImageRegistry /
-// CImageSet / CSndHost / LeafCue), which carry their own SIZE metadata in their
-// headers. CChatBox itself lives in ChatBox.h.

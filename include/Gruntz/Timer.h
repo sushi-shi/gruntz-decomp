@@ -1,14 +1,3 @@
-// Timer.h - CTimer, the on-screen game timer (C:\Proj\Gruntz). ONE canonical
-// definition shared by SpriteLoaders.cpp (the method bodies: Init/LoadTimerSprite/
-// Reset/Tick/Draw/SetTime/AddTime/HandleEvent/Serialize) and the CPlay family
-// (CPlay::m_frameMarker at +0x3f4 IS this object: PlaySync's serialize entry is
-// HandleEvent, and HandleCommand's 0x8107 timer cheat zeroes the accum/running/
-// current block directly). Extracted from the former SpriteLoaders.cpp-local def.
-//
-// Holds the looked-up digit/colon sprite frames (m_frameMinTens..m_frameColon),
-// the 64-bit base (m_baseTimeLo/m_baseTimeHi) and accumulated (m_accumLo/m_accumHi)
-// clock times, a running flag (m_running) and the decoded current value
-// (m_currentMs).
 #ifndef GRUNTZ_GRUNTZ_TIMER_H
 #define GRUNTZ_GRUNTZ_TIMER_H
 
@@ -18,9 +7,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (HandleEvent/Serialize stream)
 #include <Gruntz/Sprite.h>        // CSprite (the looked-up "GAME_TIMER" sprite set)
 
-// The drawable timer-frame object (one cached animation frame). Its draw entry
-// (RenderFrame, RVA 0x153790, external/__thiscall) blits the frame at a screen
-// position. Modeled with no body so its call reloc-masks.
 SIZE_UNKNOWN(CTimer);
 class CTimer {
 public:

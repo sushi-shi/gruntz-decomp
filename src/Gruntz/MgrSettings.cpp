@@ -1,9 +1,3 @@
-// MgrSettings.cpp - CMgrSettings::Serialize (C:\Proj\Gruntz).
-//
-// UN-MERGED back to its own TU (2026-07-13); see WarpStoneFly.cpp. This one also had a
-// DIFFERENT COMPILER FLAG SET than the TU it was merged into: units.toml had it as
-// flags="base" while SBI_RectOnly.cpp is flags="eh" (/GX). A TU is compiled with ONE
-// flag set, so a "base" obj cannot live inside an "eh" TU without changing its codegen.
 #include <Mfc.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegMfcPtr.h>
@@ -17,7 +11,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (ex CMgrActiveHolder view)
 #include <Gruntz/Sprite.h> // CSprite - the looked-up, index-gated record (ex CMgrLookupRec view)
 #include <string.h>        // strlen / memset (inlined to repne scasb / rep stos)
-
 
 // @early-stop
 // 89.1% - logic byte-faithful: the mode-4/7 dispatch, the eight scalar Read/Write

@@ -1,67 +1,16 @@
-// Hash.h - CHash, the WAP32 engine string/int-keyed hash table embedded in
-// CSymTab at +0x38 (child scopes) and +0x40 (leaf symbols). 8 bytes:
-// { u32 m_count; CHashSlot* m_buckets; }.
-//
-// Shape recovered from the call graph (callers all in the 0x139../0x13a.. ButeMgr
-// parser region): a NON-TEMPLATE base with the key-agnostic slot machinery
-// (Lookup 0x184b40, Remove 0x184ab0, RemoveAll 0x184a40 - ONE physical copy each,
-// called by both instances) and a TEMPLATE CHash<T> adding the key-typed lookups
-// (HashStr/Walk/FindInt). CHash<T> is instantiated twice: the leaf-symbol table
-// (T="_a": HashStr 0x13c240, Walk 0x13c270, HashInt 0x13c350, FindInt 0x13c360)
-// and the child-scope table (T="_b": HashStr 0x13c3c0, Walk 0x13c3f0). The two
-// instantiations are byte-identical code at distinct RVAs; because the pipeline
-// binds each retail RVA to a concrete mangled symbol, they are modeled as the
-// base CHashBase + two concrete derived classes CHash / CHashB (names are
-// placeholders - campaign doctrine - so this is matching-neutral). See SymTab.h.
-//
-// Bucket array: m_buckets points just past a 4-byte count cookie (RezAlloc'd as
-// CHashSlot[count]); each CHashSlot is 16 bytes { pad, CHashSlotList } - the
-// intrusive doubly-linked chain head at slot+8/+0xc. A stored record embeds a
-// CHashElement (the vtable-bearing key-hash prefix); the chain threads the
-// element's link at element+4, so the chain pointer IS &element->m_link and the
-// engine recovers the element via container_of (link - 4). The element carries the
-// owning table @+0xc, the computed bucket @+0x10 and the (key,value) record @+0x14.
 #ifndef SRC_BUTE_HASH_H
 #define SRC_BUTE_HASH_H
 
 #include <Ints.h>
 #include <rva.h>
 #include <string.h> // _strcmpi (0x11fdf0) / strcmp (/Oi intrinsic byte-loop) - the
-                    // case-(in)sensitive compares the Hash.cpp lookups emit
 
-// The Rez heap alloc/free (0x1b9b46 _RezAlloc = operator new / 0x1b9b82 _RezFree,
-// both __cdecl); reloc-masked.
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
-// (The `'eh vector destructor iterator'` (0x11f640 = ??_M) used to be declared here as a
-// hand-rolled `Tm_DestroyArray`, on the belief that ??_M is "un-spellable". It is not: it
-// is what cl emits for a plain `delete[]` of an object array, and ??_M@YGXPAXIHP6EX0@Z@Z
-// is in the CRT libs. ?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z, by contrast, was defined nowhere
-// - a guaranteed unresolved external. CHashBase::RemoveAll now says `delete[] m_buckets`
-// and CWwdGrid::FreeBuckets `delete[] m_buckets`; both lower to retail's exact bytes.)
-
-// (The `'eh vector constructor iterator'` (0x11f5a0 = ??_P) was likewise hand-declared as
-// `Tm_ConstructArray`, with the CHashSlot ctor/dtor passed to it as bare `void()` fn-ptrs
-// named CHashSlot_Ctor / CHashSlot_Dtor. All three were fabricated symbols. CHashBase::
-// Construct is simply `m_buckets = new CHashSlot[count]`: cl emits the ??_P call, both
-// element ctor/dtor addresses and the /GX EH frame by itself. 0x184a20 is
-// CHashSlot::CHashSlot and 0x184a30 is CHashSlot::~CHashSlot - see the class below.)
-
-// The intrusive doubly-linked chain node threaded through each stored element at
-// element+0x04 (next@+0, prev@+4), and the {head,tail} chain-head embedded at
-// each bucket slot's +0x08 (also standalone as CSymParser::m_nodes), are the ONE
-// shared WAP32 intrusive list - DSoundLink / DSoundList
-// (<Dsndmgr/SoundVoiceList.h>, which owns the RVA claims: InsertHead 0x1390e0,
-// Unlink 0x1391e0). The former Bute-local CHashLink/CHashSlotList twins were
-// fake views of it (their Link/Unlink decls resolved to nothing while every
-// retail call lands on the DSoundList bodies). Chains store &element->m_link;
-// the element is recovered via container_of (link - 4).
 #include <Dsndmgr/SoundVoiceList.h>
 
 class CHashBase;
 
-// A 16-byte bucket slot: two opaque words then the intrusive chain head. Its
-// per-element destructor (0x584a30) is a bare `ret` (the slot owns nothing).
 struct CHashSlot {
     // ctor (0x184a20): zero the intrusive {head,tail} chain head; the two opaque
     // words at +0x00 are left uninitialised (RezAlloc'd array).
@@ -79,21 +28,6 @@ struct CHashSlot {
 };
 SIZE(CHashSlot, 0x10);
 
-// ---------------------------------------------------------------------------
-// CHashBase - the key-agnostic slot machinery (one physical copy of each method,
-// shared by both CHash<T> instantiations).
-// ---------------------------------------------------------------------------
-
-// A stored record's hash-element prefix: the vtable-bearing key-hash node the
-// engine splices into a bucket chain. Records EMBED one as a member (CSymRec::
-// m_symNode @+0x04, CParseSource::m_node1c @+0x1c). Its slot-0 virtual
-// returns the bucket index for the element's key; Insert dispatches it and stamps
-// the owning table (+0xc) and computed bucket (+0x10); the payload sits at +0x14.
-// Hash() is left DECLARED-but-undefined (not pure) so the class is embeddable AND
-// polymorphic - the real vtable is stamped by the record's own (external) engine
-// ctor, and cl never constructs a CHashElement here (the containing records are
-// RezAlloc'd, never C++-default-constructed), so no spurious ??_7CHashElement
-// vtable is emitted.
 class CHashElement {
 public:
     virtual u32 Hash(); // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)
@@ -152,9 +86,6 @@ public:
 };
 SIZE(CHashBase, 0x8);
 
-// ---------------------------------------------------------------------------
-// CHash - the leaf-symbol instantiation ("_a").
-// ---------------------------------------------------------------------------
 class CHash : public CHashBase {
 public:
     // The default (empty-table) ctor (0x184950): zero count+buckets. OUT-OF-LINE
@@ -182,10 +113,6 @@ public:
 };
 SIZE(CHash, 0x8);
 
-// ---------------------------------------------------------------------------
-// CHashB - the child-scope instantiation ("_b"): identical HashStr/Walk source,
-// distinct RVAs (only internal rel32s differ).
-// ---------------------------------------------------------------------------
 class CHashB : public CHashBase {
 public:
     // The child-scope table is always sized (m_subTabs(subN)); its sized ctor
@@ -202,7 +129,5 @@ public:
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };
 SIZE(CHashB, 0x8);
-
-// --- vtable catalog ---
 
 #endif // SRC_BUTE_HASH_H

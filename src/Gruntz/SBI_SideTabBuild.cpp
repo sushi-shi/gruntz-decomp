@@ -1,9 +1,3 @@
-// SBI_SideTabBuild.cpp - CStatusBarMgr::BuildSideTabs (C:\Proj\Gruntz), the STATZ side-tab
-// builder (ex the CStatzTabBuilder view - the 'builder' WAS the mgr: gate==m_position,
-// geometry==m_10/m_rect14.m_4, child list==m_tabLists[0], keys==m_statFlags, slots==m_hitRects).
-//
-// UN-MERGED back to its own TU (2026-07-13); see WarpStoneFly.cpp. Like MgrSettings this
-// obj was flags="base" (no /GX) while SBI_RectOnly.cpp is flags="eh".
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
@@ -12,7 +6,6 @@
 #include <Gruntz/SbiSideTabBuildViews.h> // (the settings view; the builder IS CStatusBarMgr)
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>            // the *0x24556c singleton (CGruntzMgr)
-
 
 // @early-stop
 // this/newobj callee-saved register-pinning wall (docs/patterns/

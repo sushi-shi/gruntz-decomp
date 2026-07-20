@@ -1,21 +1,8 @@
-// MgrListFind.cpp - a g_gameReg list scan (0xf0db0): walk the world command grid's base
-// object-list (CTriggerMgr::m_baseList) for a live candidate whose grid pair (m_gridX,
-// m_gridY) matches the two query coordinates. Self-contained; g_gameReg is a reloc-masked
-// DATA load.
-//
-// onto the canonicals (xref-proven, byte-identical shape):
-//   * MgrFindPayload IS CGruntPuddle (<Gruntz/TriggerMgr.h>) - m_54/m_58/m_5c ARE
-//     m_gridX/m_gridY/m_occupied at the same offsets;
-//   * MgrFindNode IS the CPtrList node CTmRecNode (<Gruntz/TriggerMgrViews.h>) -
-//     next@+0, CGruntPuddle* obj@+8;
-//   * MgrFindList IS CTriggerMgr::m_baseList (the +0 CPtrList) - its GetHeadPosition()
-//     reads m_pNodeHead @+4, byte-identical to the old (MgrFindList*)cmdGrid->m_4 read.
 #include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmRecNode (MFC-first)
 #include <Gruntz/GruntPuddle.h>      // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
-
 
 // ---------------------------------------------------------------------------
 // 0xf0db0 (__cdecl) - true if a live (m_occupied==0) candidate matches (a1,a2).

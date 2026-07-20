@@ -1,7 +1,3 @@
-// ChatBoxOwner.h - the on-screen chat/text-box owner (C:\Proj\Gruntz). The page
-// object that positions the chat box from the active viewport, latches the source
-// registry + text host, and hit-tests the cursor against the box rectangle. Only
-// offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 #define GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 
@@ -12,15 +8,8 @@
 
 class CDDrawSurfaceMgr; // the world holder latched at m_18 (<Gruntz/GameRegistry.h>)
 
-// The text host at m_14 IS the canonical CFontConfig (the ex-CChatBoxTextHost view is
-// DISSOLVED, 2026-07-13): TypeChar/GetInputText/ClearInput already ran on it, its +0x34
-// is CFontConfig::m_34 (the dirty/redraw flag Configure raises), and its "StampText"
-// @0x1cd0 is CFontConfig::RenderInputText. Full def in <Gruntz/FontConfig.h> (the deref
-// TUs include it); forward-declared here so this header stays lean.
 class CFontConfig;
 
-// SIZE proven by the alloc sites (operator-new ground truth): CPlay::LoadGameAssetNamespaces @0xc7f7f
-// and CMulti::LoadGameAssetNamespaces (slot 1) @0xb583d both `push 0x1c; call RezAlloc`.
 SIZE(CChatBoxOwner, 0x1c);
 class CChatBoxOwner {
 public:

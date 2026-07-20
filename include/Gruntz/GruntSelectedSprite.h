@@ -1,9 +1,3 @@
-// GruntSelectedSprite.h - the "grunt is selected" indicator sprite, a
-// CUserLogic-derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor
-// folds the bare CUserLogic teardown (the leaf-dtor archetype); SetCell stores
-// the (x,y) grunt cell; Update tracks the selected grunt's screen position.
-//
-// Field names are placeholders; only the OFFSETS + code bytes are load-bearing.
 #ifndef GRUNTZ_CGRUNTSELECTEDSPRITE_H
 #define GRUNTZ_CGRUNTSELECTEDSPRITE_H
 
@@ -36,8 +30,6 @@ public:
 };
 VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class)
 
-// The class registry entry: its first dword receives the Update handler PMF (a
-// 4-byte code pointer on this complete single-inheritance class).
 typedef i32 (CUserLogic::*SelectedActHandler)();
 SIZE_UNKNOWN(CSelectedActEntry);
 struct CSelectedActEntry {

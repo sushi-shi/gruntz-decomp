@@ -1,16 +1,3 @@
-// GameLevel.h - CGameLevel, the WWD level-load orchestrator (a.k.a. CDDrawLevelData).
-//
-// LoadWwd is vtable slot 0x38 on this class. It validates the in-memory
-// WWD header, copies the 1524-byte (0x17d-dword) header into the level object,
-// optionally inflates the compressed main block, then walks the planes (calling
-// WwdFile::ReadPlane per plane) and the image-set descriptors before
-// computing the scaled start coordinates on the main plane.
-//
-// Only the members LoadWwd touches are pinned. The on-disk WWD header/plane
-// layout is validated inline by the loaders (WwdFile::IsValidWwd / this LoadWwd:
-// 0x5F4 header signature, 0xA0 plane stride). The plane object (CPlane) + the per-plane block reader
-// + the image-set factory + the coord-recompute helper are UNMATCHED engine code,
-// modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
 #include <rva.h>
@@ -19,23 +6,6 @@
 
 #include <Wwd/WwdFile.h> // CPlane, WwdHeader, operator new, uncompress
 
-// The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
-// The ctor builds three MFC arrays at +0x20/+0x34/+0x48; the retail ctor/dtor
-// construct/destroy all three via the SAME out-of-line array ctor/dtor.
-//
-// ALL THREE ARE ::CObArray (mfc_class, 2026-07-12 - this OVERTURNS the earlier
-// "genuine CDWordArray" reading).  The ctor @0x15ccd0 is `lea ecx,[esi+0x20] / call
-// 0x1b55e9`, then +0x34, then +0x48 - the SAME callee three times; the dtor @0x1611e0
-// calls 0x1b561c three times.  0x1b55e9's body DIR32s ??_7CObArray@@6B@ (0x1ed494) -
-// CObArray's own vtable - so 0x1b55e9 IS ??0CObArray@@QAE@XZ.  CDWordArray's ctor is
-// 0x1b4b43 (vtable 0x1ec29c), CByteArray's is 0x1b527e (0x1ed28c), CPtrArray's is
-// 0x1b4f0b (0x1ec2dc); retail calls NONE of them here.  The four array classes are
-// byte-identical, so every FID row in that region is AMBIG and the earlier
-// CTypedPtrArray<CPtrArray> experiment (which dropped the ctor 89.5% -> 72%) only
-// proved the array was not CPtrArray - not that it was CDWordArray.  The (CObject*)
-// casts at the use sites are the devs' own: CObArray stores CObject*, and CLevelPlane
-// /CTileImageSet are not CObject-derived.  Ask the binary:
-//     python -m gruntz.analysis.mfc_class 0x1b55e9
 #include <Mfc.h> // CObArray (afxcoll)
 
 // The tile collision-kind codes CTileImageSet::GetCollisionAt returns (and the
@@ -54,21 +24,9 @@ typedef enum {
     kTileSpecial = 4,  // special (folds the target's 0x400000 flag)
 } TileCollision;
 
-// LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
-// (no tile placed); -1 is the explicit "clear" marker. (Consolidated here from
-// per-TU copies in GameLevel.cpp / GameLevelMove.cpp, like the enum above.)
 static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
-// PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270, defined in
-// GameLevel.cpp). Written as a do/while macro so each of the (up to four) copies in a
-// single function schedules locally, exactly like the retail copy-paste
-// (docs/patterns/x87-copypaste-vs-inline-fp-block.md). ONE definition here for both
-// expander TUs (GameLevel.cpp / GameLevelMove.cpp); expands only inside CGameLevel
-// methods (it reads the implicit this->m_imageSets).
-// Clamps (X,Y) into the plane's tile grid, splits each into a tile index + sub-offset
-// via the +0x8c/+0x90 shift, fetches the tile id, and (unless the empty/clear
-// sentinel) dispatches the image set's slot +0x20 with the sub-offsets.
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
         i32 px_ = (X);                                                                             \
@@ -105,38 +63,6 @@ static const i32 TILE_CLEAR = -1;
         }                                                                                          \
     } while (0)
 
-// ---------------------------------------------------------------------------
-// CTileImageSet - the per-tile COLLISION-DESCRIPTOR record the level builds from the
-// WWD tile-description block. A dispatch-only base: never instantiated (the factory
-// CGameLevel::ReadImageSet switches on the record kind and `new`s one of the three
-// real variants CImageSet1/2/3 - 0x10 / 0x24 / 0x18 bytes, <Gruntz/ImageSets.h>,
-// whose ??_7 are VTBL-bound in GameLevel.cpp), so cl emits no vtable for it.
-// Slot +0x14 (Parse) is invoked with the record pointer; on a 0 result slot +0x04
-// (Release) frees the object. Slot +0x20 (GetCollisionAt) is the per-pixel
-// collision-kind query the tile probes drive; slot +0x24 (GetStride) returns the
-// record byte length (cursor advance). dummy0/2/3/4/6/7 are the CObject-family +
-// unused engine slots (never called by the level; roles unrecovered).
-//
-// NAME SPLIT (was `CImageSet`): this class and <Image/ImageSet.h>'s CImageSet are two
-// UNRELATED engine classes that were both carrying that one placeholder name - and the
-// old definition here was a CONFLATION of the two, grafting the frame collection's
-// m_frames/+0x14, m_count/+0x18, m_minIndex/+0x64, m_maxIndex/+0x68, GetAt() and its
-// three SetAll* walkers onto this 0x10/0x24/0x18-byte collision record (which has none
-// of them - they would not even fit). The two never met in one TU only BECAUSE the name
-// collided; splitting it lets a TU include both headers, and the members now sit on the
-// class that actually owns them:
-//   CTileImageSet (here) - the tile collision descriptor. Users: GameLevel.cpp,
-//       GameLevelMove.cpp (Parse / Release / GetCollisionAt / GetStride / m_width).
-//   CImageSet (<Image/ImageSet.h>) - the 0x6c sparse CImage-frame collection (vtable
-//       0x1efbe8; the named sprite sets the registry resolves). Users: everyone else,
-//       incl. CPlaneRender::SetTileSizeFromImageSet (m_count + GetAt) in LevelPlane.cpp.
-// ---------------------------------------------------------------------------
-// CObject base: every concrete variant's vtable carries the CObject family bodies at
-// slots 0-4 (0x1bef01 / the ??_G / 0x0028ec / 0x00106e / 0x004034 - the per-slot maps
-// of CImageSet1/2/3, `vtable_hierarchy --class CImageSetN`), so the base supplies them
-// and the first new virtual (Parse) lands at slot 5 (+0x14) with NO dummy padding.
-// The former "Release(1)" +0x04 slot IS the inherited virtual scalar-deleting dtor -
-// the release sites spell it `delete set` now (same +0x04 flag-1 dispatch).
 class CTileImageSet : public CObject {
 public:
     virtual i32 Parse(void* record); // slot 5 (+0x14)  init from the WWD record
@@ -152,77 +78,10 @@ public:
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
 };
 
-// The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
-// to the level-load/edit methods. Used as a half-open tile-bounds box
-// [minX,maxX) x [minY,maxY) (PointInBounds) and as the shared plane-read context
-// (LoadWwd's 3rd arg). minX==0x80000000 is the "unset" sentinel the ctor writes.
-// (LevelCoordRect now lives in <DDrawMgr/DDrawWorkerHost.h> - the plane embeds one
-// at +0x50 - and arrives here through the <Wwd/WwdFile.h> include above.)
-
-// ---------------------------------------------------------------------------
-// CLevelPlane - CGameLevel's full, typed view of the per-plane object (the real
-// engine plane, CPlane in WwdFile.h; CPlaneRender is its render facet). The tile
-// probes, the coord-recompute and the per-plane visit/build helpers all reach the
-// SAME object through these named members. It is a gamelevel-local view because the
-// canonical CPlane cannot be widened in the shared WwdFile.h without disturbing the
-// wwdfile TU's codegen (MSVC leaks scheduling across a modified class). The scalar-
-// deleting dtor (+0x04) is the array-release slot; Build/Sync/Refresh/Query*/Notify
-// and RecomputePlaneCoords are the engine __thiscall leaves the level drives per
-// plane (RecomputePlaneCoords is matched in GameLevel.cpp; the rest reloc-mask).
-// (The CLevelPlane level-facet class that stood here - the geometry/probe view over
-// (<DDrawMgr/DDrawWorkerHost.h>, via the WwdFile.h include above); CLevelPlane is a
-// typedef of it. Its duplicate method names for already-defined bodies (Sync ==
-// Draw @0x162010, Refresh == ResolveColorKey @0x163670, QueryA/B == CenterScrollA/B
-// Build/RecomputePlaneCoords/ValidateTiles/InitGeometry_1619f0 and all the member
-// names carried over (m_originX/... became the canonical m_originX/... family;
-// its +0x84/+0x88 "integer snapped scaledX/Y" pair is m_snappedX/m_snappedY).
-
-// The parse-source object passed to LoadFromSource: the canonical CParseSource
-// (include/Gruntz/ParseSource.h); only the pointer type appears here so a
-// forward decl suffices. Declared `struct` (matching its definition) so MSVC
-// mangles the two CParseSource-taking methods as PAU, matching retail (a `class`
-// fwd decl mangled them PAV, diverging from the retail/clang PAU and dropping the
-// SetCoordsAndLoad3C / LoadFromSource labels).
 struct CParseSource;
 
-// CGameLevel::GetClassId (slot 8) type tag: the canonical LoadableClassId enum
-// (CLASSID_GAMELEVEL = 0x19). Pulled from <Gruntz/Loadable.h> now that the former
-// (B)-form CLoadable mirror here is gone (the local mirror enum ODR-clashed the
-// canonical one once a TU included both headers - e.g. LevelPlane.cpp via
-// <DDrawMgr/DDrawWorkerHost.h>).
 #include <Gruntz/Loadable.h>
 
-// CGameLevel's CLoadable base (fields m_04/m_08/m_0c + the two-phase vptr schedule)
-// is MERGED INLINE into CGameLevel below (it derives CObject directly and carries the
-// three base words itself), so there is no local `class CLoadable` here - the former
-// (B)-form duplicate was dead (never derived) and is removed. The canonical CLoadable
-// lives in <Gruntz/Loadable.h>.
-
-// ---------------------------------------------------------------------------
-// CGameLevel - the level container. Member offsets pinned from LoadWwd:
-//   +0x00 vtable           (slot 0x44 = the pre-load reset, slot 0x38 = LoadWwd)
-//   +0x08 m_08             = WwdHeader::flags
-//   +0x10 m_planeCtx       &m_planeCtx -> CPlane::Read 3rd arg (the shared ctx)
-//   +0x34 m_planes         CArray<CPlane*>  (m_data@+0x38, m_size@+0x3c)
-//   +0x3c m_planeCount     == m_planes.m_size (the running plane count/index)
-//   +0x48 m_imageSets      CArray<CTileImageSet*>
-//   +0x5c m_mainPlane      CPlane*  (the MAIN plane, cached by ReadPlane)
-//   +0x60 m_mainIndex      index of the MAIN plane
-//   +0x6c m_levelName      char[] copy of WwdHeader::levelName
-//   +0xac m_checksum       = WwdHeader::checksum
-//   +0xe0 m_header         WwdHeader copy (1524 B == 0x17d dwords)
-// ---------------------------------------------------------------------------
-// The movement/collision target of the DispatchMove/MoveStep cluster is the
-// canonical CGameObject (<Gruntz/UserLogic.h>) - the level steps its
-// m_screenX/m_screenY through the tile probes. CDDrawChildGroup is its world
-// object-chain owner. Only pointers appear below, so fwd decls suffice.
-//
-// EditDispatch's `sink` is a cross-TU polymorphic serializer whose concrete view
-// (EditSink, GetName/SetName @ +0x2c/+0x30) lives in GameLevel.cpp; it is passed
-// as a generic void* here (same authentic cross-TU-payload handling the collapse
-// keeps for BeginParse's handle) so this shared header stays at two fwd decls -
-// a third one perturbs the /O2 register schedule of an unrelated GruntzMgr.h
-// includer (CSBI_MenuItem::DecCounter's RenderFrame arg block; see report).
 struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
 class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.h>)
@@ -507,15 +366,6 @@ public:
     WwdHeader m_header;         // +0xE0  (1524 B copy)
 };
 
-// ApplyMove (@0x00167130): the move applier the DispatchMove/MoveToward drivers
-// tail into when the level runs in the m_08&4 mode. Steps the object's
-// m_moveMode machine (mode 7 = direct position set; 1..2 fan to
-// MoveKindDispatch12) and folds the state flags. __stdcall (callee-cleans its 4
-// stack args: ret 0x10). A free helper, not a CGameLevel member: it is a
-// __stdcall callee (the ecx trace's class owner is stale for those) and
-// DispatchMove calls it with an explicit object, not a `this` dispatch.
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

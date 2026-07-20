@@ -1,20 +1,3 @@
-// BootyCheatState.cpp - the STATEZ_BOOTY cheat-screen game-state asset loader
-// (0x18830), a /GX (eh) unit: the five destructible CString locals of the first-run
-// cheat-table build give it the MSVC exception frame.
-//
-// The method chains the base-class asset loader, then on the FIRST activation
-// (guarded by g_bootyCheatBuilt) builds the 25-entry cheat table at g_cheatTable
-// (stride 0xa0): each entry reads its de-obfuscated "Text"/"Desc" from the
-// [Cheat<id>] group whose id comes from BootyCheatz/"A<a>C<c>". The common path
-// (both runs) registers the STATEZ_BOOTY/GAME/GRUNTZ namespaces, installs the
-// BOOTY/GRUNTZ_WANDGRUNT sound + image sets, hides the cursor, pumps a message
-// burst, then runs the five-stage init chain and stamps the mode fields.
-//
-// Only offsets / code bytes are load-bearing; the CButeMgr getters + CString
-// library come from the real headers, every engine helper is a reloc-masked
-// external (no body). Field names are placeholders (m_<hexoffset>).
-// <Bute/ButeMgr.h> pulls <Mfc.h> (afx-first windows.h) - MUST precede any other
-// header that reaches windows.h, so it comes first.
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
 
@@ -31,47 +14,11 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
 
-// BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath (canonical <Bute/SymParser.h>).
-
-// The global CButeMgr instance the cheat table reads from (0x6453d8, from <Bute/ButeMgr.h>).
-// The engine empty C-string the default text/desc temp copies from (0x6293f4).
-// The hardware-cursor hide fn-ptr (?::ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
-// `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
-// The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0) + its end
-// sentinel g_cheatTableEnd (0x62aef0). .bss (built at runtime); DEFINED here (owner
-// TU), reference externs stay in <Globals.h>. (REHOME DD-G)
 char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
 char g_cheatTableEnd[4];  // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
-// First-run guard (DAT_0062af10): 0 until the cheat table is built. DEFINED here
-// (owner TU); a plain `extern` stays in Globals.h.
 DATA(0x0022af10)
 i32 g_bootyCheatBuilt = 0; // 0x22af10
-// The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0). The
-// loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
-// The +0x1c0 mode-record seed (_g_645588).
 extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
-
-// (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
-//    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is
-//                     really CGruntzMgr::RestoreVideoMode (0x8ddd0) - a real method.
-//    BcPumpHost    -> CGruntzMgr's +0x04 == the CGameWnd it inherits from CGameMgr
-//                     (m_gameWnd), and its "Pump" is CGameWnd::PumpMessages (0x13d4e0).
-//    BcRegSet      -> CState::m_8 is CBankMgr*; its Register @0x13c030 IS
-//                     CSymParser::ResolvePath.
-//    BcAssetRoot   -> CState::m_c is CDDrawSurfaceMgr*, whose +0x08/+0x10/+0x28 are
-//    BcAssetCore /  the sprite factory, the CImageRegistry and the CSndHost.
-//    BcSoundRegistry
-// The casts that remain below are the honest ones: those three CDDrawSurfaceMgr slots
-// are genuinely multi-faceted (the header already documents the render facet reaching m_8
-// as CRenderer and m_28 as CDDrawSubMgrLeafScan), and CBankMgr-vs-CSymParser is unproven.)
-
-// (the CBootyCheatState `this`-view is GONE - it WAS CBootyState, and "CBootyCheatState"
-// is not a type at all: 0x18830 is DATA-REFERENCED at ??_7CBootyState@@6B@+0x4, i.e. it is
-// CBootyState's own vtable SLOT 1 (LoadGameAssetNamespaces, the asset/state loader). Every field the
-// view modeled is a CState or CBootyState member at the same offset - m_4/m_8/m_c are
-// CState's own +0x04/+0x08/+0x0c (CGruntzMgr / CBankMgr / CDDrawSurfaceMgr), m_2c/m_30/
-// m_34 its three bank slots, and m_1b8 / m_1c0..m_1cc land in CBootyState pads. The whole
-// Bc* sub-view nest went with it. See <Gruntz/GameMode.h> for the proof.)
 
 // @source: string-xref
 // @early-stop

@@ -1,20 +1,9 @@
-// DroppedObjectShadow.h - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
-// a CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@). The /GX leaf dtor + the
-// 1-arg ctor (0xc7490) are reconstructed here. NOTE: 0xc62e0 (Ghidra-labeled
-// "LoadAttributes@CDroppedObjectShadow") was a trace mis-attribution - it is
-// really CObjectDropper::Update (a LARGER sibling class); reconstructed byte-exact
-// in src/Gruntz/ObjectDropper.cpp. Offsets + code bytes are the load-bearing
-// facts; field names are placeholders.
 #ifndef GRUNTZ_CDROPPEDOBJECTSHADOW_H
 #define GRUNTZ_CDROPPEDOBJECTSHADOW_H
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
@@ -44,9 +33,6 @@ public:
 VTBL(CDroppedObjectShadow, 0x1e787c);
 SIZE(CDroppedObjectShadow, 0x54);
 
-// The shadow's activation entry: its first dword is the registered handler,
-// dispatched __thiscall on `this` (4-byte single-inheritance PMF; CDroppedObjectShadow
-// is complete above so the PMF stays 4 bytes). Was the .cpp-local CShadowActEntry view.
 struct CShadowActEntry {
     i32 (CUserLogic::*m_fn)();
 };

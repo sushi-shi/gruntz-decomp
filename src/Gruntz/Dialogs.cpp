@@ -1,24 +1,3 @@
-// Dialogs.cpp - the Battlez multiplayer setup dialog retail .obj (one contiguous
-// .text block, 0x14b30..0x18086): CBattlezDlg / CBattlezDlgCustom /
-// CBattlezDlgColors, plus the MFC CObject/CGdiObject/CBrush COMDAT pool this TU
-// first-instantiated (OnDrawItem's stack CDC/CBrush). Each ctor chains the NAFXCW CDialog(UINT, CWnd*) base ctor
-// (reloc-masked), stores its own derived vftable, default-constructs its embedded
-// MFC members, and zero/inits the scalar members it touches.
-//
-// The other dialog classes that used to share this aggregate TU were split out
-// (matcher-1 de-fragmentation) into their own single-region units: CCheckpointDlg
-// -> CheckpointDlg.cpp; CMultiStartDlg core -> MultiStartDlg.cpp; CNetMgr::
-// ShowMultiStartDlg + ~CMultiStartDlg -> ShowMultiDlg.cpp; CLatencyList::SelectItem
-// -> SlotComboFill.cpp.
-//
-// Built /GX: three of the four ctors construct embedded MFC C++ objects (CString /
-// CObList) and so carry an fs:0 EH frame (push -1 / push handler / mov fs:0,esp) to
-// unwind a half-built object if a member ctor throws. (CBattlezDlgColors has NO
-// embedded C++ member, so its body carries no EH frame even under /GX.)
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code bytes
-// are load-bearing (campaign doctrine).
-// ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <EmptyString.h> // g_emptyString
@@ -28,27 +7,11 @@
 #include <Globals.h>
 #include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
 
-// The game-manager view of the 0x64556c singleton (== g_gameReg); the battlez-setup
-// option handlers persist per-slot dropdowns into its m_options array.
-
-// (The old "CImgHolder image-list holder hierarchy" here was a fake-view nest,
-// RTTI-refuted: 0x1e8cb4/0x1e8cd4/0x1e8cf4 carry RTTI .?AVCObject@@/.?AVCGdiObject@@/
-// .?AVCBrush@@ - they are the real MFC vtables, COMDAT-kept from THIS game TU (the
-// first CBrush user in link order; MSVC5 keeps the first COMDAT per name). The
-// "DeleteImageList" callee 0x1c6a5c is CGdiObject::DeleteObject - its Detach
-// (0x1c6a32) calls afxMapHGDIOBJ (0x1c697f, FID HIGH) and the indirect call goes
-// through the GDI32.dll DeleteObject IAT slot (0x2c3ec0), not comctl32. The FID
-// row ?DeleteImageList@CImageList (AMBIG) was the GDI/ImageList twin collision.)
-
-// ---------------------------------------------------------------------------
-// 0x14b10 (first fn in the TU): a message-map handler that runs MFC's default
-// processing - `return Default();` tail-jmps to CWnd::Default (reloc-masked).
 RVA(0x00014b10, 0x5)
 long CBattlezDlg::DoDefault() {
     return Default();
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_slots = a0;
@@ -114,7 +77,6 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 // been reunited here, so this obj emits the ??_G/??_7 pair as retail's did.)
 // @rva-symbol: ??_GCBrush@@UAEPAXI@Z 0x000164d0 0x1e
 
-// ---------------------------------------------------------------------------
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
@@ -127,16 +89,9 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // ShowCustomDlg inlines (~92.9%).
 // @rva-symbol: ??1CBattlezDlgCustom@@UAE@XZ 0x00017140 0x47
 
-// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-// The saved original window-proc of the edit child this subclass wraps (reloc-masked
-// DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
-// g_savedMultiWndProc.
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
 
-// WndProc_15a10 (0x15a10) - the subclass window-proc installed on a read-only combo
-// edit child (twin of WndProc_c1a10): swallow an empty WM_SETTEXT (keeps the shown
-// selection text) and chain everything else to the saved original proc (g_savedDlgWndProc).
 RVA(0x00015a10, 0x70)
 extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
@@ -183,7 +138,6 @@ void CBattlezDlg::ShowCustomDlg() {
     }
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
@@ -192,10 +146,6 @@ CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pPare
     m_pickedColor = 0;
     m_68 = a2;
 }
-
-// The game's SendMessageA fn-ptr global (reloc-masked indirect call). Bound via
-// DATA(0x006c44a4) later in this TU (CopyComboSelToChild); declared here so the
-// earlier DoDataExchange can reach it.
 
 // CBattlezDlgColors::DoDataExchange (0x179b0): the MFC DDX for the colour-picker
 // listbox (control 0x515). SAVE (m_bSaveAndValidate): read the selected item's
@@ -242,14 +192,11 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     }
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
     return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlgColors); // msgmap global still a placeholder type
 }
 
-// CBattlezDlgColors::OnMeasureItem (0x17ae0): the owner-draw colour-swatch list
-// measures each item at 200x30, then chains the base CWnd::OnMeasureItem (0x1bbf18).
 RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     lpmis->itemWidth = 0xc8;
@@ -357,11 +304,6 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     return result;
 }
 
-// Listbox helpers over the GetCtrlA/GetCtrlC control families (0x15cc0/d00/d30/
-// d70): each resolves its control via a sibling GetCtrl (ecx=this is preserved
-// across the call, so no reload is emitted - same shape as SetCtrlBText) then
-// drives its listbox via SendMessageA (LB_GETCURSEL 0x147 / LB_SETCURSEL 0x14e).
-// SetCurSelA/C set the selection; Query015d00/Query015d30 read it.
 RVA(0x00015cc0, 0x23)
 i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
     CWnd* c = GetCtrlA(id);
@@ -386,18 +328,12 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
     return ::SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
 }
 
-// SetSlotValue (0x17460) - store val into slot[index].field@0x158; returns TRUE.
-// Homed out-of-line (matcher-5).
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
     m_slots->m_options[index].m_008 = val;
     return 1;
 }
 
-// SaveOptionCombo0..3 (0x17560/175a0/175e0/17620): read control N's combobox
-// selection (CB_GETCURSEL via GetCtrlC) and persist it (+1) into the game
-// registry's option slot N. g_gameReg is the CGruntzMgr view of the 0x64556c
-// singleton (folds the +0x150 options base + 0x228 into the mov displacement).
 RVA(0x00017560, 0x28)
 i32 CBattlezDlg::SaveOptionCombo0() {
     CWnd* c = GetCtrlC(0);
@@ -427,25 +363,14 @@ i32 CBattlezDlg::SaveOptionCombo3() {
     return v;
 }
 
-// SetCtrlBText - resolve control `index` via GetCtrlB (through the thunk) and
-// push `text` into it via CWnd::SetWindowTextA (both NAFXCW, reloc-masked).
 RVA(0x00015db0, 0x19)
 void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
     CWnd* w = GetCtrlB(index);
     w->SetWindowTextA(text);
 }
 
-// Sub0173e0 (0x173e0) is the CBattlezDlg dialog-refresh helper the ApplyOption
-// handlers call - a 1-byte `ret` no-op in retail (the "__fpclear" FID row at 0x173e0
-// was a LOW false positive). Defined here so the ApplyOption calls bind to it.
 RVA(0x000173e0, 0x1)
 void CBattlezDlg::Sub0173e0() {}
-//
-// ApplyOption0..3 (0x15de0/15e60/15ee0/15f60): set the active option N, refresh
-// the dialog, then enable IDOK (GetDlgItem(1)) when any of slots 1..3 is occupied
-// (the short-circuit `||` reuses the failed-probe's zero in eax on the false path).
-// The ToggleRow/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
-// homed as RVA stubs in src/Stub/ApiCallers.cpp).
 RVA(0x00015de0, 0x5f)
 void CBattlezDlg::ApplyOption0() {
     ToggleRow(0);
@@ -520,7 +445,6 @@ void CBattlezDlg::ApplyColorSlot0() {
     }
 }
 
-// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016dc0, 0x97)
 void CBattlezDlg::ApplyColorSlot1() {
     CBattlezDlgColors dlg(m_slots, 1, 0, 0);
@@ -532,7 +456,6 @@ void CBattlezDlg::ApplyColorSlot1() {
     }
 }
 
-// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016e90, 0x98)
 void CBattlezDlg::ApplyColorSlot2() {
     CBattlezDlgColors dlg(m_slots, 2, 0, 0);
@@ -544,7 +467,6 @@ void CBattlezDlg::ApplyColorSlot2() {
     }
 }
 
-// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016f60, 0x98)
 void CBattlezDlg::ApplyColorSlot3() {
     CBattlezDlgColors dlg(m_slots, 3, 0, 0);
@@ -586,8 +508,6 @@ void CBattlezDlg::CopyComboSelToChild() {
     }
 }
 
-// CBattlezDlg::SetSlotValue (0x00017460) is now an inline member in the header.
-
 // ReadCtrlBText (0x17340): read the `index` control's text into a local CString via
 // GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH
 // frame guards the half-built local CString.
@@ -604,20 +524,12 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
     GetCtrlB(index)->GetWindowText(s);
 }
 
-// ---------------------------------------------------------------------------
-// CBattlezDlg MFC message-map + dialog-frame handlers (referenced by the MFC
-// message-map data, external to code here; each emits standalone at its RVA).
-// ---------------------------------------------------------------------------
-// OnInitDialog (vtable slot 49, 0x160d0): chain the base CDialog::OnInitDialog,
-// then return TRUE (keep the dialog's default control focus).
 RVA(0x000160d0, 0xb)
 i32 CBattlezDlg::OnInitDialog() {
     CDialog::OnInitDialog();
     return 1;
 }
 
-// Advance the shared LCG one step (lazily seeded); returns 15-bit value.
-// Retail inlines this three times per colour, so force it inline.
 static __inline i32 GameRand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
@@ -684,22 +596,10 @@ void CBattlezDlg::FlashCtrlD() {
     }
 }
 
-// WM_MEASUREITEM (0x16570): forward (nIDCtl, lpmis) to the CWnd default owner-draw
-// measure handler (no swatch sizing of its own, unlike CBattlezDlgColors').
 RVA(0x00016570, 0x10)
 void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
-
-// The owner-draw swatch fill uses the REAL MFC classes (afxwin.h, already pulled
-// by <Gruntz/Dialogs.h>): a stack CDC Attach()ed to the DRAWITEMSTRUCT hDC (ctor
-// 0x1c563b / Attach 0x1c5705 / Detach 0x1c573c / ~CDC 0x1c5783, all NAFXCW,
-// reloc-masked), a stack CBrush built from the COLORREF (??0CBrush@@QAE@K@Z
-// 0x1c6b18), and a direct ::FillRect import call (FF15 through the IAT). Passing
-// `brush` to the HBRUSH parameter runs the inline CBrush::operator HBRUSH() -
-// MFC's `this == NULL ? NULL : m_hObject` guard is exactly retail's neg/sbb/and
-// select (the real classes make this TU emit the real CBrush/
-// CGdiObject/CObject COMDAT families pinned above).
 
 // CBattlezDlg::OnDrawItem (0x165a0): owner-draw the four team-color swatch static
 // controls (0x501/0x503/0x505/0x507). Each maps to slot index 0..3; if the
@@ -990,14 +890,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
-// Unused message-map handler (0x17440): `xor eax,eax; ret` (returns 0).
 RVA(0x00017440, 0x3)
 i32 CBattlezDlg::UnusedMsgHandler() {
     return 0;
 }
 
-// Four button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards its
-// fixed index 0..3 to ReadCtrlBText (0x17340; the retail reloc target).
 RVA(0x000172c0, 0x8)
 void CBattlezDlg::OnActionBtn0() {
     ReadCtrlBText(0);
@@ -1015,15 +912,11 @@ void CBattlezDlg::OnActionBtn3() {
     ReadCtrlBText(3);
 }
 
-// OnOK (vtable slot 51, 0x174a0): forward to the base CDialog::OnOK (tail-jmp to
-// ?OnOK@CDialog@@MAEXXZ @0x1bacc3, the NAFXCW protected virtual - reloc-masked/exempt).
 RVA(0x000174a0, 0x5)
 void CBattlezDlg::OnOK() {
     CDialog::OnOK();
 }
 
-// Four button trampolines (0x174c0/0x174e0/0x17500/0x17520): each forwards its
-// fixed index 0..3 to the shared do-nothing StubBtnHandler.
 RVA(0x000174c0, 0x8)
 void CBattlezDlg::OnStubBtn0() {
     StubBtnHandler(0);
@@ -1040,12 +933,9 @@ RVA(0x00017520, 0x8)
 void CBattlezDlg::OnStubBtn3() {
     StubBtnHandler(3);
 }
-// The shared button handler (0x17540): a no-op that just cleans its index arg (ret 4).
 RVA(0x00017540, 0x3)
 void CBattlezDlg::StubBtnHandler(i32) {}
 
-// IDOK command trampoline (0x17d40): virtual-dispatch OnOK through this's vtable
-// (slot 51 / +0xcc) - `mov eax,[ecx]; jmp [eax+0xcc]`.
 RVA(0x00017d40, 0x8)
 void CBattlezDlg::OnOkCommand() {
     OnOK();

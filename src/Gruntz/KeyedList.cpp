@@ -1,17 +1,6 @@
-// KeyedList.cpp - the real keyed-list container (COMDATs @0x379a0 / 0x379f0 /
-// 0x37a70). CKeyedList HOLDS a CPtrList member (the +0x00 subobject is built by the
-// CPtrList ctor 0x1b4867 and carries CPtrList's vtable 0x5eb054; see KeyedList.h for
-// the no-stamp proof that rules out derivation); Clear walks the member's node list
-// freeing each node's owned payload, then RemoveAll's it and zeros the mode.
-// The shared class def lives in <Net/KeyedList.h> so the fake `CLatencyList : CPtrList`
-// view folds onto it (CLatencyList : CKeyedList). Placeholder names; only OFFSETS +
-// code bytes are load-bearing.
 #include <Net/KeyedList.h>
 #include <rva.h>
 
-// 0x379f0: CNode destructor - the body empties the key + zeros the payload, then
-// the compiler appends the m_key member ~CString. /GX EH-framed (state 0 -> -1
-// around the destructible CString member at +0).
 RVA(0x000379f0, 0x57)
 CKeyedNode::~CKeyedNode() {
     m_key.Empty();
@@ -19,8 +8,6 @@ CKeyedNode::~CKeyedNode() {
     m_8 = 0;
 }
 
-// 0x379a0: delete every node's owned payload, then RemoveAll
-// the backing CPtrList and zero the mode.
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
     // The inline POSITION walk (GetHeadPosition/GetNext) lowers to the same

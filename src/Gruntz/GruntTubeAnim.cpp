@@ -1,20 +1,3 @@
-// GruntTubeAnim.cpp - CGrunt::SetupTubeAnim (0x050a50, __thiscall ret 4). The
-// "toob" (pipe) grunt entrance-anim setup: resets the +0x290/+0x2a0 rect blocks,
-// latches the kind flag at +0x234, picks the TOOBGRUNT / TOOBWATERGRUNT anim-set
-// name into m_animSetName (+0x1c0), registers it through the settings manager,
-// runs three reset helpers, conditionally re-inits the entrance gate, clears the
-// shared type-name registry array (g_typeColl/g_typeColl.m_alloc/g_typeColl.m_grown), and - when
-// the resolved type name is "D" - caches the first entrance frame into the +0x154
-// player and stamps its +0x1a0 blit param + +0x15c descriptor.
-//
-// This IS a CGrunt method on the canonical CGrunt (<Gruntz/Grunt.h>): the offset-
-// m_154 is CEntranceAnimPlayer, m_1c0 is m_animSetName, m_394 is m_poseWalk, m_43c is
-// m_entranceCell (GruntEntranceCell), m_470 is the m_cells[9] entrance-record table
-// (the record's +8 CString is m_walk). The four reset helpers were reloc-masked thunk
-// callees; XREF (sema xref) proved their real identities: Reset30ee = ReadConfigFromButeMgr
-// (0x48400), Reset1677 = LoadCellAnimNames (0x48470), Reset160e = LoadAnimNameTable
-// (0x49c60), ResetGate136b = ResetEntranceAnimation (0x62e10). The +0x154 anim player's
-// type node resolves to a CAnimNameRecord (<Gruntz/TypeKeyColl.h>).
 #include <Mfc.h> // afx-first: CString + <windows.h>; keep before any Win32 header
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -30,10 +13,6 @@
 
 #include <Wap32/ZVec.h> // _zvec
 #include <string.h>     // intrinsic strcmp ("D")
-
-// The settings singleton (0x64556c) viewed for its +0x2c manager.
-
-// The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).
 
 // @early-stop
 // const-materialize-into-reg wall (docs/patterns/const-materialize-into-reg-vs-

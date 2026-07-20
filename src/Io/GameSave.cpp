@@ -1,9 +1,3 @@
-// GameSave.cpp - the top-level Gruntz save-game entry (C:\Proj\Gruntz).
-//
-// SaveGame validates the host + name, resets the serialize sequence counter and
-// the snapshot scratch buffer, then drives the recursive surface-mgr serializer
-// (CDDrawSurfaceMgr::SnapshotChildren) over the "Gruntz Save Game" stream. Field
-// names are placeholders; only OFFSETS + code bytes matter.
 #include <rva.h>
 #include <Gruntz/SerialCounter.h>     // g_serialCounter
 #include <string.h>                   // strlen / memset inline to repne scasb / rep stos
@@ -22,17 +16,9 @@
 extern i32 __cdecl
 SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
 
-// CGameSaveHost (the g_gameReg/CGruntzMgr save-host facet, +0x30 surface mgr) is
-// declared in <Io/GameSave.h> (included above).
-
-// The 0x24-dword snapshot scratch buffer (zeroed each save) + the serialize
-// sequence counter (shared with Grunt.cpp's per-record counter).
 DATA(0x00229930) // extern "C": C++ array-global mangling diverges clang vs MSVC5 (as g_mapCurve)
 extern "C" i32 g_saveBuf[0x24]; // 0x229930
 
-// SaveGame(host, name) - bail on a null host/name or an empty name; reset the
-// sequence counter + scratch buffer (buf[0]=1 marks it live); then, when the host
-// has a bound surface mgr, run the recursive snapshot and return whether it succeeded.
 RVA(0x0000d170, 0x74)
 i32 SaveGame(CGameSaveHost* host, char* name) {
     if (host == 0) {

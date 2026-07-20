@@ -1,23 +1,7 @@
-// ImageRotate.cpp - the rotated-blit transform setup (0x145f60). __cdecl, 9 args.
-// Reads the source rect dims, resolves the four pivot corners (explicit pivot arg,
-// else the centered default box), rotates each centered corner by `rot` (x87
-// sin/cos over the deg->rad constant at 0x5efb14) and scales by `scale`, assembles
-// a four-vertex ClipVtx transform matrix on the stack - screen x/y from the
-// rotation, texel a/b from the source quad - then hands it to the rotated
-// rasterizer RotateRasterize @0x146550 with the clip-default (-1) tail. Field names
-// are placeholders; offsets + code bytes are the load-bearing fact.
-//
-// Signature recovered from the retail callee (fld [esp+0x128]=arg6 deg->rad,
-// fmul [esp+0x12c]=arg7 scale; last arg ref = arg9) and its three real callers
-// CDDSurface::RotateBlit/ScaleBlit/RotateScaleBlit (0x141040/0x141200/0x141240),
-// which each push 9 args: (int,int,int*,void*,void*,float,float,int,int).
 #include <Ints.h>
 #include <math.h>            // sin/cos -> fsin/fcos intrinsics at /O2 /Oi
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl
 #include <rva.h>
-
-// The source image arg: RotateSrcImage (width @+0x18, height @+0x1c), the shared
-// rotate-blit source geometry in <Image/RasterVtx.h> (same view PolyClipRaster uses).
 
 // @early-stop
 // regalloc + x87-schedule wall (~36%, complete + correct - signature and structure

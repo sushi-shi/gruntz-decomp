@@ -1,16 +1,3 @@
-// PathHazard.cpp - the path-following hazard game object (C:\Proj\Gruntz).
-//
-// Four trace-discovered CPathHazard methods, defined in ascending retail-RVA
-// order:
-//   ~CPathHazard   @0x013340 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   Tick          @0x0b4020 - the per-frame movement-integrator driver (vslot 16).
-//   BeginLeg      @0x0b47e0 - seed the unit vector toward the waypoint (vslot 19).
-//   ForwardTick   @0x0b5070 - a thin non-virtual forwarder to vslot 16 (Tick).
-//
-// CPathHazard : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>);
-// the hazard reads the bound CGameObject (m_10/m_38) directly. Only offsets /
-// code bytes are load-bearing; names are placeholders for the recovered engine
-// identities.
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
@@ -28,69 +15,10 @@
 #include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
-// CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
-// (`this->Tick/Arrive/BeginLeg/HitTest()`): CUserLogic is modeled at its full 16
-// slots (UserLogic.h), so CPathHazard's five added virtuals land at their true
-// retail slots 16..20 (+0x40 Tick, +0x48 Arrive, +0x4c BeginLeg, +0x50 HitTest) -
-// the former base-vtable slot-count wall (14-slot base -> Tick mis-placed at slot
-// 14) is lifted, and the manual CPathHazardVtbl offset-view is gone. (CLightningHazard
-// below still reads the same slots RAW via CLightVtbl: it cannot derive CPathHazard -
-// its /GX leaf dtor must fold the bare-CUserLogic teardown, which an out-of-line
-// CPathHazard base dtor would block - so its raw view is retained.)
-
-// ---------------------------------------------------------------------------
-// A sibling timed/striking path-hazard (the CRainCloud/CUFO family; proximity-
-// attributed to CPathHazard). It shares CPathHazard's layout + vtable (Tick reads
-// the same slots) and the bare-CUserLogic leaf dtor, adding a strike-window timer
-// pair: m_118 the strike-armed gate, the (m_120,m_124) i64 strike deadline and
-// (m_128,m_12c) i64 window. Only offsets / code bytes are load-bearing.
-// ---------------------------------------------------------------------------
-// (The CLightningHazard class is GONE: the vtable-owner probe proves it IS CPathHazard -
-// its dtor 0x13280 is dispatched from ??_7CPathHazard @0x1e7394 slot 0 (via the sdd
-// 0x13250), and its SiblingTick 0xb43f0 is that same vtable's slot 17. It was a duplicate
-// view of the canonical class; its methods are folded onto CPathHazard, which also fixes
-// the layout - the leg/strike timers are real i64s, not split i32 lo/hi pairs.)
-
-// The strike-clock + threshold globals the timer windows poll.
-//
-// 0x645588 is the running accumulated frame time (the game clock). It has exactly ONE
-// definition in the tree - `extern "C" u32 g_frameTime` in Projectile.cpp - so that is the
-// only name for it that LINKS. This TU used to declare it twice more under C++ linkage
-// (`g_strikeClock` here, `g_pathLegTag` in PathHazard.h): two extra mangled symbols
-// (?g_strikeClock@@3HA / ?g_pathLegTag@@3HA) that nothing defines. Both were guaranteed
-// unresolved externals; objdiff masked the reloc so they scored 100%.
 extern "C" u32 g_frameTime; // 0x645588  running game clock (strike/leg deadlines poll it)
-// g_timer200 (0x245598, signed-compared to 0x64) comes from <Rez/FrameClock.h>.
 
-// The sibling hazard reads its bound CGameObject (m_10) directly: the draw trio
-// (+0x4c sprite-ref / +0x50 state / +0x58 active), screen pos (+0x5c/+0x60), the
-// +0x144 query-rect base and the +0x198 layer descriptor - all on CGameObject.
-// g_gameReg's +0x78 ref-index table holds the strike sprite-frame selectors; its
-// +0x118/+0x134 are the window-mode gates.
-// The positional-sound cue idiom (shared with the menu-select handler, see
-// <Gruntz/SoundCue.h>): ArmStrike looks up "LEVEL_CLOUDHAZARDKILL" -> an emitter
-// (m_10 the DSoundCloneInst play-object, m_14 last-play clock, m_18 cooldown), then
-// plays it through the cue manager when the per-emitter cooldown has elapsed.
-
-// FABRICATED-SYMBOL FIX: this was a C++-linkage alias (?g_gameReg@@3PAUCGameRegistry@@A)
-// of the SAME datum the tree already binds as the extern-"C" g_gameReg - nothing defined it.
-
-// Strike config globals: the bute window source + the sound-enable flag / cue tag
-// pair the positional emit polls, plus the kill-cue clock.
-// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, butemgr unit) comes from <Bute/ButeMgr.h>.
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
-// The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
-
-// --- CPathHazard no-arg ctor (0x013170) --- the deserialize-path ctor: base
-// prologue + link + leaf vptr stamp, then zero the eight leg/strike i64 lo/hi
-// fields (+0x108..+0x12c). Re-homed from the UserLogic.cpp-local view.
-// @interleaver CPathHazard ctor/dtor COMDAT pool - KEEP (own-class, correctly placed)
-// (REHOME D10: flag_outliers marks 0x13170 a lone outlier, but that is a dtor-exclusion
-// ARTIFACT: it heads pathhazard's OWN low ctor/dtor COMDAT block - CLightningHazard::~
-// @0x13280 + ~CPathHazard @0x13340 (both pathhazard) sit immediately after. pathhazard's
-// class methods legitimately span two objs (this ctor/dtor pool + the 0xb35a0 logic block);
-// the pool is linker-COMDAT-separated, NOT foreign conflation. Rule (a): leave in place.)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_legDeadline = 0;
@@ -110,16 +38,8 @@ CPathHazard::CPathHazard() {
 // assigned by proximity instead of by the vtable that dispatches them.
 // @rva-symbol: ??1CPathHazard@@UAE@XZ 0x00013280 0x44
 
-// CPathHazard::GetTypeTag (0x000132f0) is now an inline member in the class header.
-
 // (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the
 // TU that constructs it - so its @rva-symbol pin lives in RainCloud.cpp, not here.)
-
-// the bound object is the canonical CGameObject (screen pos m_screenX/Y, z-key
-// m_sortKey, flags m_flags; the WWD record stores the raw waypoint tile
-// coords in the extent/area/m_154.. slots - a per-kind ROLE of the same fields)
-// and its +0x7c the canonical AnimWorkerObj (per-tile time m_bc, the two +0xf0/
-// +0x100 coord quads).)
 
 // CPathHazard::CPathHazard @0xb35a0 - fold the shared CUserLogic(obj) init, then
 // build the hazard's waypoint path: snap the bound object's screen position to the
@@ -215,21 +135,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// CPathHazard's activation-dispatch registry (the untyped .data CActReg @0x646250,
-// declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask).
 extern CActReg g_actReg_646250; // 0x646250
-// CPathHazard::RunAct @0x0b3b60 - the class's vtable slot-4 (UserLogicVfunc2) body
-// (shared by CUFO / CRainCloud via inheritance): resolve the registry entry for id
-// and, if a handler is bound, re-resolve and run it as a PMF on this, else return
-// the entry pointer. Same archetype as CAniCycle::RunAct (ResolveEntry inlined
-// twice). NOTE: this IS CPathHazard's real slot-4 override (data-ref
-// ??_7CPathHazard@@6B@+0x10 / CUFO / CRainCloud), but the fat base models slot 4
-// with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
-// spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
-// @interleaver CPathHazard::RunAct emitted-in <boundary: PathHazardActReg.cpp
-// ConstructActRange_646250 @0xb3ae0 (before) + PathHazardActReg.cpp RegisterActs_646250
-// @0xb3cc0 (after)>. A /Gy first-use COMDAT the linker placed inside PathHazardActReg's
-// block, not this TU's body run.
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
     CPathHazardActEntry* e = reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id));
@@ -341,20 +247,6 @@ i32 CPathHazard::Tick() {
     m_object->m_screenY = newY;
     return 0;
 }
-
-// ---------------------------------------------------------------------------
-// 0xb4350: CRainCloud::Tick (vtable slot 16, origin CPathHazard). IDENTITY
-// RESOLVED (2026-07-16, ex the `CStrikeEffect` placeholder): its ILT thunk
-// 0x36a2 is referenced ONLY from ??_7CRainCloud@@6B@+0x40 (slot 16), and every
-// viewed field is the canonical CPathHazard strike state - m_118 IS
-// m_strikeArmed, +0x120/+0x128 ARE m_strikeDeadline/m_strikeWindow, +0x10 IS
-// CUserLogic::m_object (the bound CGameObject, whose +0x4c/+0x50/+0x58 are the
-// draw-fill triple). The trailing "helper" thunk 0x2914 IS the base
-// ?Tick@CPathHazard@@ @0xb4020 - the same base chain CUFO::Tick makes.
-// The lightning-strike flash: while armed, pick flash frame 5 (or 0 once the
-// g_timer200 threshold passes) unless the strike window elapsed (disarm), seed
-// the bound object's draw-fill, then run the base Tick; returns 0.
-// g_timer200 (0x245598 countdown timer, compared to 0x64) comes from <Rez/FrameClock.h>.
 
 // @early-stop
 // 98.94%: every opcode/offset/branch is byte-identical. The lone residual is a
@@ -519,9 +411,6 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     return 1;
 }
 
-// CPathHazard::Arrive @0x0b47a0 (virtual slot 18) - advance to the next waypoint,
-// wrapping the index back to 0 once the path length (m_wpCount) is reached.
-// Returns 1.
 RVA(0x000b47a0, 0x27)
 i32 CPathHazard::Arrive() {
     i32 next = m_wpIndex + 1;
@@ -580,23 +469,13 @@ i32 CPathHazard::BeginLeg() {
     return 1;
 }
 
-// ForwardTick (0x0b5070): thin non-virtual forwarder that tail-jumps virtual
-// slot 16 (Tick). Out-of-line (retail emits it standalone; the inline member
-// folded into its callers and never emitted).
-// @interleaver CPathHazard::ForwardTick emitted-in <boundary: Ufo.cpp Method_b4cb0
-// @0xb4cb0 (before) + Multi.cpp ConstructFileIOGlobal @0xb5400 (after)>. A /Gy first-use
-// COMDAT the linker scattered between OTHER units, not this TU's body run.
 RVA(0x000b5070, 0x5)
 void CPathHazard::ForwardTick() {
     Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CPathEntity);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);
 SIZE_UNKNOWN(CPathHazardActEntry);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

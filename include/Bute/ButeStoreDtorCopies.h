@@ -33,7 +33,6 @@
 #include <Bute/ButeStore.h> // the canonical CButeStore (== zPTree; real bases + inline dtor/Reset)
 #include <rva.h>
 
-// 0x212a0 - the butestoreclear copy of CButeStore::Reset (body in ButeStoreClear.cpp).
 struct CButeStoreResetCopyClear : public CButeStore {
     void ResetCopy(); // 0x212a0
 };

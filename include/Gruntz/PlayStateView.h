@@ -13,14 +13,12 @@
 #include <rva.h>
 #include <Ints.h>
 
-// One player-status slot in the PLAY state's 4-entry status array (each 0x64 bytes).
 struct PlayStatusSlot {
     char m_pad0[0x20];
     i32 m_status; // +0x20  (3 == won/done)
     char m_pad24[0x64 - 0x24];
 };
 
-// A view of the live PLAY state exposing the +0x520 status-array base.
 struct CPlayStateView {
     char m_pad0[0x520];
     PlayStatusSlot* m_520; // +0x520

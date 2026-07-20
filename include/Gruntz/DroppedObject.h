@@ -1,30 +1,9 @@
-// DroppedObject.h - a dropped game-object (C:\Proj\Gruntz).
-//
-// CDroppedObject : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CTimeBomb (proven by its dtor @0x0125b0 stamping the CUserLogic
-// vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down the +0x18
-// link via the embedded ~EngStr at 0x16d2a0 - byte-identical in shape to
-// ~CTimeBomb @0x012a70). The leaf adds no destructible members beyond
-// CUserLogic, so its dtor folds the bare CUserLogic teardown (the /GX leaf-dtor
-// archetype).
-//
-// FireActivation (0x0c6bd0) is the SAME per-coordinate activation-registry
-// dispatcher archetype as CTimeBomb::FireActivation (0x0e1830), but a DIFFERENT
-// registry instance (CDroppedObject's, at 0x64bed8 vs the timebomb's at
-// 0x64c780).
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CDROPPEDOBJECT_H
 #define GRUNTZ_CDROPPEDOBJECT_H
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDroppedObject : CUserLogic)
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
@@ -53,10 +32,6 @@ public:
 };
 VTBL(CDroppedObject, 0x1e78d4);
 
-// CDroppedObject's activation entry: its first dword is the registered handler,
-// dispatched __thiscall on `this` (4-byte single-inheritance PMF -> `mov ecx,this;
-// call [entry]`; CDroppedObject is complete above so the PMF stays 4 bytes). Was the
-// .cpp-local CDropEntry view.
 typedef void (CUserLogic::*DropHandler)();
 struct CDropEntry {
     DropHandler m_fn; // [entry]

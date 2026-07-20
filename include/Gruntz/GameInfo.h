@@ -1,15 +1,3 @@
-// GameInfo.h - the saved-game info record CGameInfo (C:\Proj\Gruntz). A non-virtual
-// record (no RTTI vtable) whose FormatGameInfoString (0x1183b0, GameInfoString.cpp)
-// builds the URL/POST query string and Check1 (0x1182f0) is the ready/dirty gate
-// (`return m_8 == 1`). The time sub-object lives at this+0xb8.
-//
-// The NameRecord.cpp method cluster (SetNames 0x118040, CopyBody 0x118130, Update
-// 0x1181d0, CopyIfLarger 0x118260) is UNIFIED here (2026-07-14): the former CNameRecord/
-// C1181d0/CBoundsCopy118 views were all facets of THIS record - they share the +0x08
-// ready flag, the +0xb8 CGameInfoTime sub-object and the +0xd4 Type, and BuildGameDate's
-// own only-caller is Update (proving Update's +0xb8 box IS CGameInfoTime). SetNames writes
-// Name (m_14) + the secondary/Location string (m_36); Update/CopyIfLarger set the time box
-// (m_b8) + Type (m_d4). Only offsets / code bytes are load-bearing.
 #ifndef GRUNTZ_GAMEINFO_H
 #define GRUNTZ_GAMEINFO_H
 
@@ -49,8 +37,6 @@ public:
     u32 m_d4;               // +0xd4  Type (%i)
 };
 
-// Fill a CGameInfoTime's calendar date (Month/Day/Year) from the current local time
-// (GameInfoString.cpp); Update calls it after storing a newer (S, timestamp) pair.
 i32 BuildGameDate(CGameInfoTime* out); // 0x118330
 
 #endif // GRUNTZ_GAMEINFO_H

@@ -11,62 +11,11 @@
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level: planeCtx bar rect + main plane)
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
 
-// ActionOptionsMenuBar.cpp - CActionOptionsMenuBar, the in-game action/option
-// menu bar (C:\Proj\Gruntz). It caches four named sprites at LoadAssets and then
-// positions / refreshes / hit-tests / serializes a two-button bar (plus three
-// option chips) keyed off the grunt under the cursor.
-//
-// Only offsets / code bytes are load-bearing; field names are placeholders.
-// The engine objects reached through g_gameReg are modelled minimally (the same
-// WwdGameReg singleton SpriteLoaders.cpp / KitchenSlime.cpp tap); every
-// cross-class callee is declared NO-body so its `call`/`mov ds:` reloc-masks.
-
-// ---------------------------------------------------------------------------
-// Engine objects reached through the game-manager singleton (g_gameReg).
-// CSprite (frame-data) + CMapStringToOb come from <Gruntz/Sprite.h>; the
-// resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
-// ---------------------------------------------------------------------------
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (world->screen transform)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
-
-// (The 5th local CDDrawWorkerRegistry duplicate is GONE - the canonical class comes in
-// via <Gruntz/ResMgr.h> -> <DDrawMgr/DDrawWorkerRegistry.h>, and this view's
-// "Method_155630" is its AnyValueMatches_155630 at the SAME rva.)
-
-// CPlaneRender (world->screen transform, g_gameReg->m_world->m_level->m_5c) is the shared
-// <Wwd/WwdFile.h> class: m_wrapW (+0x30) clamps the bar position;
-// WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
-// (WwdFile::WwdFile_00a000).
-
-// The level/view object (g_gameReg->m_world->m_level) is the canonical CGameLevel
-// (<Gruntz/GameLevel.h>): +0x10 the m_planeCtx rect (read as the on-screen bar RECT),
-// +0x5c the main plane (the world->screen transform base).
-// CDDrawSubMgrPages + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
-
-// The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
-// the bar polls a handful of its fields to pick which mode-chip to light.
-// The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
-// (+0x30, typed CDDrawSurfaceMgr) is reached without a cast; the grid object
-// table (+0x68) is a genuinely reused slot cast locally (see below).
-
-// The menu-bar frame (this->m_frame) IS the canonical CImage drawable that paints the
-// bar/chips; its clipped blit is CImage::RenderFrameClipped (0x153810), reloc-masked.
-
-// Per-serialize round counter the CString archive helpers bump (g_serialCounter).
-
-// The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10,
-// <Gruntz/ResMgr.h>); the former CStrReader view is gone (wave 3).
-
-// ---------------------------------------------------------------------------
-// CActionOptionsMenuBar
-// ---------------------------------------------------------------------------
-
-// ===========================================================================
-// Definitions in ascending retail-RVA order.
-// ===========================================================================
 
 // @early-stop
 // MSVC5 emits a two-zero-register (ecx+edx) esi-base paired-store form for the

@@ -5,56 +5,10 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h> // CWapObj : CObject - the shared grand-base (slots 0..6)
 
-// ---------------------------------------------------------------------------
-// CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr image
-// family (own vtable ??_7CDDrawSurfacePair@@6B@ @0x5eff30, 15 slots). It owns ONE
-// held DDraw surface (a CFileImageSurface, the CDDSurface wrapper) borrowed from the
-// parent CDirectDrawMgr's surface pool, plus a cached pixel geometry (width @+0x10
-// / height @+0x14 / bpp @+0x18) and an x/y offset window @+0x1c.
-//
-// THE single-source shape. It is the polymorphic surface element the pages manager
-// holds at +0x10/+0x14/+0x18 (m_frontPair/m_backPair/m_overlayPair, see
-// DDrawSubMgrPages.h) and dispatches through the vptr; the flat readers (LevelPreview,
-// SoundFxEmitter) touch only its +0x2c channel surface. Every consumer includes
-// this header instead of re-declaring a per-TU view.
-//
-// The 15-slot own vtable @0x5eff30 (base slots 0..6 from CObject + CWapObj):
-//   slot 1  (@0x04)  ~scalar-deleting dtor  (0x1590d0/0x1590f0)
-//   slot 5  (@0x14)  IsLoaded               (0x159090)  "surface ready?" predicate
-//   slot 6  (@0x18)  IsReady                (0x001c08)  inherited CWapObj default
-//   slot 7  (@0x1c)  TeardownSurface        (0x163e20)  remove from pool, zero m_surface
-//   slot 8  (@0x20)  Slot08                 (0x1590c0)
-//   slot 9  (@0x24)  SetGeometry            (0x158fd0)  {w,h,bpp} cache
-//   slot 10 (@0x28)  SetGeom                (0x164250)  geometry setter (3 args)
-//   slot 11 (@0x2c)  InitFromSurface        (0x163db0)
-//   slot 12 (@0x30)  Create                 (0x163c90)
-//   slot 13 (@0x34)  LoadImage              (0x163e50)  BMP/PCX/DIR/DIP magic dispatch
-//   slot 14 (@0x38)  ResolveImage           (0x163ee0)
-// Only the dtor, TeardownSurface, and Create are reconstructed (in the owner TU
-// DDrawSurfacePair.cpp); the rest are declared-only virtuals so through-vptr
-// dispatch in the consumer TUs lowers exactly (their bodies live in unmatched TUs,
-// which is why the owner-TU ??_7 is a vtable-realization plateau, not a source lever).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine). CDDSurface / CDDrawSurfaceMgr are
-// pointer members here, so a forward decl keeps the DirectDraw + surface-manager
-// chains out of this widely-included header (the owner TU includes their full defs).
-// ---------------------------------------------------------------------------
-
 class CDDSurface;       // +0x2c held surface (CFileImageSurface); <DDrawMgr/DDSurface.h>
 class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 struct CParseSource;    // LoadImage_163e50 arg (the 0x139xxx byte-reader)
 
-// ---------------------------------------------------------------------------
-// CSurfacePairBase - the polymorphic CWapObj-derived base. Slots 0..4 come from
-// CObject (the 5-slot grand-base thunks + scalar-deleting dtor), slot 6
-// (IsReady default @0x001c08) from CWapObj; the base declares only its slot-5
-// override (IsLoaded @0x159090). The base subobject dtor is EMPTY so cl folds the
-// implicit grand-base re-stamp (masks 0x5e8cb4) LAST into the leaf ~CDDrawSurfacePair;
-// the base-field resets (m_status/m_flags/m_mgr) move into the DERIVED dtor body so
-// they precede the grand-base fold (eh-dtor-implicit-vptr-stamp-first.md sub-case 2).
-// The destructible base subobject supplies the leaf dtor's /GX EH frame.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CSurfacePairBase);
 class CSurfacePairBase : public CWapObj {
 public:
@@ -67,8 +21,6 @@ public:
     CDDrawSurfaceMgr* m_mgr; // +0x0c  parent manager (its surface pool at +0x1c)
 };
 
-// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (0x5e8cb4),
-// folded into the leaf dtor as the last store.
 inline CSurfacePairBase::~CSurfacePairBase() {}
 
 SIZE(CDDrawSurfacePair, 0x34); // new-size from CDDrawSubMgrPages::CreateChildren

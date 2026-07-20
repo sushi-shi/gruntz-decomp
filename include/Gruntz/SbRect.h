@@ -1,9 +1,3 @@
-// SbRect.h - the status-bar geometry rectangle passed by value into the item
-// "configure"/"setup" virtuals. Built as base + per-item offsets
-// (left/top/right/bottom = origin.x + dx / origin.y + dy). The 4-arg ctor is the
-// inline-temp construction the tabz/menu builders use (sub esp,0x10 + four
-// stores per call); the empty default ctor keeps `SbRect r; r.left = ...;` sites
-// zero-code. One shape shared across the status-bar builders.
 #ifndef GRUNTZ_GRUNTZ_SBRECT_H
 #define GRUNTZ_GRUNTZ_SBRECT_H
 

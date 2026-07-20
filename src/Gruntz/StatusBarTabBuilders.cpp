@@ -1,14 +1,3 @@
-// StatusBarTabBuilders.cpp - the status-bar tab file: the CSbTab "Build*" builders
-// + the tab item classes they build (C:\Proj\Gruntz) - ONE original /GX TU
-// (interval dossier 0x0e8a70-0x0ea3ea: the builders weave with CSBI_GruntMachine /
-// CSBI_SideTab / CSbConfigItem fn-by-fn; single 9-frag sbi_sidetab init run
-// @0xe9e20 inside the interval). Merged wave1-E (absorbed SBI_GruntMachine.cpp +
-// SBI_SideTab.cpp + the SetDirection/SetDirectionAlt seam pair from
-// StatusBarMgr.cpp), strict retail-RVA order.
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
-// load-bearing. The engine callees / globals are reloc-masked (modeled with NO
-// body / by-address DATA externs).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <Mfc.h>       // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_cmdGrid) + CTmCell (the placed grid grunt)
@@ -32,19 +21,12 @@
 #include <Gruntz/SBI_ImageSetAni.h> // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
 
-// The name maps are the real MFC CMapStringToOb (Lookup x1b8008 - mfc_class names that
-// band CMapStringToOb; the ex-note here had the Ob/Ptr pairing inverted). No local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // (tombstone - the views are dissolved)
 #include <Image/ImageSet.h> // canonical CImageSet (SetAllTypes/SetAllFormats; the config record)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialCounter.h> // g_serialCounter (bumped once per string field)
 #include <string.h> // inline strlen/strcpy/memset over the serialize scratch buffer
 
-// The g_gameReg singleton (VA 0x64556c), shared by the CSBI_GruntMachine /
-// CSBI_SideTab methods below: the render chain m_world (+0x30, CDDrawSurfaceMgr) ->
-// m_drawTarget (+0x04) -> m_14 surface context, and the side-tab unit table
-// m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
-// the builders' namespace-scoped CGameRegistry decl below is its own symbol).
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 
@@ -165,9 +147,6 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     return val != 0;
 }
 
-// ---------------------------------------------------------------------------
-// vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved frame
-// records (also the destructor's member teardown). Homed out-of-line (matcher-5).
 RVA(0x000e8c70, 0xc)
 void CSBI_GruntMachine::Reset() {
     m_34 = 0;
@@ -234,8 +213,6 @@ i32 CSBI_GruntMachine::Render() {
     return 1;
 }
 
-// 0xe8dc0 (__thiscall, ret 8): prime the two frame indices (each gated by != -1) and
-// arm the countdown (m_28 = 2). Homed out-of-line (matcher-5).
 RVA(0x000e8dc0, 0x22)
 void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     if (idxA != -1) {
@@ -504,17 +481,12 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_SideTab::Reset (0xe9800): drop the resolved config + frame. Out-of-line (matcher-5).
 RVA(0x000e9800, 0x9)
 void CSBI_SideTab::Reset() {
     m_topFrame = 0;
     m_bottomFrame = 0;
 }
 
-// vslot 4: (re)build the +0x58 draw gate from a sibling builder (BuildHandle, now
-// co-named in this TU). The single stack arg is unused (the `ret 4` discards it);
-// the slot returns int 0 (the trailing `xor eax,eax`).
 RVA(0x000e9820, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
     m_58 = BuildHandle();
@@ -613,18 +585,6 @@ i32 CSBI_SideTab::Render() {
     return 1;
 }
 
-// ===========================================================================
-// CSBI_SideTab::SerializeFields (0x0e9a30) - ??_7CSBI_SideTab (0x1eae3c) slot 1
-// (thunk 0x1ef1); the side-tab dual-mode serialize leg. __thiscall (stream, mode,
-// a2, a3), ret 0x10; bails 0 when the stream or g_gameReg->m_world is absent.
-//
-// Mode 7 (read): the two frames m_topFrame/m_bottomFrame as name+index registry
-// refs gated to rec->m_frames[idx], then the raw field run m_38/m_3c/m_40/m_44,
-// the m_48+m_4c draw-origin PAIR as one 8-byte read, and m_50/m_54/m_58. Mode 4
-// (write): each frame reverse-looks-up its name+index (AnyValueMatches_155630),
-// then the same raw run. Both arms tail-chain the QUALIFIED
-// CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
-// ===========================================================================
 RVA(0x000e9a30, 0x31e)
 i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
@@ -731,17 +691,6 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
 }
 
-// ===========================================================================
-// CSBI_StatzTabArrow::SetDirection  (0x0ea0f0) - re-homed from StatusBarMgr.cpp
-// (interval dossier seam: positioned between the side-tab block and
-// BuildMultiplayerTabStatusBar; the config-item setters used by the builders).
-// ===========================================================================
-// Two boolean selectors (a,b) pick one of four frame-window tuples, forwarded to the
-// slot-14 virtual. That slot is SetRange (thunk 0x3bde -> jmp 0xe7c30), introduced by
-// CSBI_ImageSetAni; the owner is the ARROW because LoadTabSprites calls both setters on
-// a freshly `new CSBI_StatzTabArrow` (Statz per-grunt row). They used to be members of
-// the fabricated 15-slot CSbConfigItem, forwarding to a body-less `ApplyDir` placeholder.
-// Reached via thunk 0x1573 from LoadTabSprites + FUN_00504f90.
 RVA(0x000ea0f0, 0x5c)
 void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
     if (a == 0) {
@@ -759,9 +708,6 @@ void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x0ea170: the mirror sibling of SetDirection: the same four SetRange tuples, re-keyed
-// on (a1,a2).
 RVA(0x000ea170, 0x5c)
 void CSBI_StatzTabArrow::SetDirectionAlt(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -908,25 +854,11 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_GruntMachine (0x104ce0): the /GX chain destructor - stamp
-// ??_7CSBI_GruntMachine, run Reset (the slot-3 teardown above, 0xe8c70), then
-// MSVC folds the inline ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. COMDAT-at-usage: retail emits
-// it inside the 0x104d60 SBI_RectOnly obj (the deleting user); the class's file
-// is this TU, so the definition lives here.
 RVA(0x00104ce0, 0x55)
 CSBI_GruntMachine::~CSBI_GruntMachine() {
     Reset();
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_SideTab (0x105200): the /GX chain destructor - stamp ??_7CSBI_SideTab,
-// run Reset (the slot-3 teardown above, 0xe9800), then MSVC folds the inline
-// ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the SBI_DTOR_CHAIN
-// device) behind the /GX SEH frame. COMDAT-at-usage: retail emits it inside the
-// 0x104d60 SBI_RectOnly obj (per the dossier: leave, not a re-home); the class's
-// file is this TU, so the definition lives here.
 RVA(0x00105200, 0x55)
 CSBI_SideTab::~CSBI_SideTab() {
     Reset();

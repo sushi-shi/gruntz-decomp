@@ -1,13 +1,3 @@
-// Demo.h - CDemo, the CPlay-derived DEMO/attract-playback game-state (RTTI
-// .?AVCDemo@@, vtable @0x5e9f0c, 43 slots; 7 own overrides). It reuses the whole
-// CPlay per-frame spine (its slot-2 vtable entry 0x3c010 is a jmp-thunk to CPlay's
-// own ReleaseResources body 0xc8700) plus two words at +0x520.
-//
-// CANONICAL: this was previously dual-viewed as a `.cpp`-local `struct CDemo :
-// CPlay` in BOTH GruntzMgr.cpp (dtor host) and GruntzMgrTransition.cpp (ctor +
-// vtable host). Unified here so the one shape drives the vtable emission, the
-// /GX dtor fold, and the slot-1/slot-21 overrides. Only OFFSETS + code shape are
-// load-bearing (field names placeholders).
 #ifndef GRUNTZ_GRUNTZ_CDEMO_H
 #define GRUNTZ_GRUNTZ_CDEMO_H
 
@@ -42,9 +32,6 @@ public:
     i32 m_524; // +0x524
 };
 
-// The CW/CCW rotation-transition .rdata tables owned by Demo.cpp (each DATA()-bound
-// there). Declared here (C linkage) so the definitions can drop `extern "C"` while
-// keeping the exact symbol + binding. Emit no code -> matching-neutral.
 extern "C" const i32 g_rotTableA_60d008[27]; // 0x60d008  CW transitions
 extern "C" const i32 g_rotTableB_60d078[27]; // 0x60d078  CCW transitions
 

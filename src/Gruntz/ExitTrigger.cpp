@@ -1,12 +1,3 @@
-// ExitTrigger.cpp - the level-exit trigger tile-logic game-object (C:\Proj\Gruntz).
-//
-// Two CExitTrigger methods, defined in ascending retail-RVA order:
-//   GetTypeTag     @0x010870 - the 6-byte per-class logic-type id accessor (0x3f7).
-//   ~CExitTrigger  @0x0108c0 - the /GX leaf dtor (folds the CUserLogic teardown).
-//
-// CExitTrigger : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/Grunt.h> // complete CGrunt: the CUserLogic downcast is static
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -22,11 +13,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 
-// The per-serialize round counter the archive helpers bump (DAT_00629ad0); the
-// DATA label is owned by spriteloaders - reference-only here.
-
-// CExitTrigger::GetTypeTag (0x00010870) is now an inline member in the class header.
-
 // CExitTrigger::~CExitTrigger @0x0108c0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
@@ -39,33 +25,10 @@
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CExitTrigger@@UAE@XZ 0x000108c0 0x44
 
-// The global bute store the leaf interns "A" into (g_buteTree @0x6bf620; Find
-// 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
 #include <Bute/ButeMgr.h>
 
-// The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
-// HUD only for the active area.
-
-// The level-exit "Warlord" entity is a fresh CDDrawChildGroup::CreateSprite result
-// (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_childGroup; the former
-// "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
-// screen pos). The created instance is the shared CGameObject: +0x7c AnimWorkerObj
-// carries the Init driver (+0x10, the finalize fn-ptr here) and the per-class
-// setup slot m_18 the ctor snapshots raw as the warlord id; m_124 the area/owner
-// index, m_188 the object id stored back into the focus slot.
-
-// The focused-warlord cue slot is CFocusSlot, the g_gameReg->m_options[]
-// element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
-// m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
-
-// the "+0x68 cue receiver" IS the CTriggerMgr at m_cmdGrid, and its +0x2a0 IS
-// the canonical m_pendingFx tracked-grunt-logic slot (multi-writer: the fx
-// deserializer stores the spawned fx sprite's m_7c->m_logic there; this ctor
-// stores the current player's WARLORD logic - one retail cell, one field).)
 #include <Gruntz/TriggerMgr.h>
 
-// The game registry singleton (g_gameReg @0x64556c): +0x30 the probe-sink
-// holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
 SIZE_UNKNOWN(CGameRegistry);
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the

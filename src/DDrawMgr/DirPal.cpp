@@ -1,26 +1,3 @@
-// DirPal.cpp - CDDPalette + the system-palette helpers.
-// original TU: C:\Proj\DDrawMgr\DIRPAL.CPP
-//
-// The whole __FILE__-anchored DIRPAL.CPP obj (0x147390-0x148837), rebuilt from the
-// former ddpalette+dirpal+palettelerp units + the PalLoad_1479e0 stray (wave3-J):
-// TU_MIGRATION.md's calibration case "ddpalette+dirpal = ONE (DIRPAL.CPP)" plus the
-// MOVE rows sending 0x1479e0/0x1480a0 into the 0x147390 interval. The PalCtx /
-// DirPal / PaletteLerp / PalLoad_1479e0 per-TU views were all RVA-proven slices of
-// CDDPalette (Install@0x147aa0==SetAndNotify, Teardown/Finish@0x148250==Flush,
-// Finalize@0x1480a0==Tick, Apply@0x147390==Create) and are folded onto the ONE
-// canonical class (include/DDrawMgr/DirectDrawMgr.h); PaletteLerp's semantic field
-// names (m_targetPalette/m_sourcePalette/m_fixedR..B/m_durationMs/...) migrated to
-// the canonical layout (name-preserving fold).
-//
-// The palette loaders open files through the engine's MFC-derived CFileIO, so
-// DIRPAL.CPP was compiled /GX (the "eh" profile; FLAGS row 0x147390-0x148837 = 3 EH
-// sites): LoadBmp/LoadPcx/LoadPal carry real C++ EH frames for their stack CFileIO.
-// <Io/FileStream.h> pulls <Mfc.h> first (afx brings <windows.h> the controlled way)
-// before <ddraw.h>. CDDPalette's ctor is inline in DDrawPtrCollections.cpp
-// (emission anchor).
-//
-// Locals are placeholders; the switch/loader dispatch, the DIRPAL.CPP line numbers
-// in the GetErrorString (file, line, hr) tuples, and the code bytes are load-bearing.
 #include <Io/FileStream.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -33,25 +10,8 @@
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
-// The engine heap is the NAFXCW global operator new/delete (??2@YAPAXI@Z @0x1b9b46,
-// ??3@YAXPAX@Z @0x1b9b82), declared by <Mfc.h> via FileStream.h. reloc-masked rel32.
-
-// The cached frame-clock fn-ptr (retail _g_pTimeGetTime @ 0x6c4650, DATA-bound in
-// cplay/globals); FadeRange/Tick time through `call ds:[0x6c4650]`, NOT the WINMM
-// import. StartFadeToColor/StartFadeToPalette DO stamp through the real import.
-
-// The app HINSTANCE used as the resource module (DAT_00683ee0; DATA-bound in
-// ResourceLoaders.cpp). LoadDefault resolves "PALETTE" resources against it.
 extern HINSTANCE g_resModule;
 
-// The LoadFromFile dispatcher strcmpi-ladders over the three file-extension string
-// LITERALS (??_C@ .rdata constants, pooled + shared with the Image.cpp / ImagePool.cpp
-// loaders at 0x21a0e4/0x21a0dc/0x21aadc; reloc-masked, so the `push OFFSET` pairs).
-
-
-// CDDPalette::Create (__thiscall, ret 0xc => 3 args). Caches a copy of the
-// PALETTEENTRY array (m_cacheA), allocates a second cache (m_cacheB), then creates the
-// DirectDraw palette via IDirectDraw::CreatePalette into m_palette.
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     m_cacheA = static_cast<u8*>(::operator new(0x400));
@@ -70,12 +30,6 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     return 0;
 }
 
-// CDDPalette::LoadFromFile (__thiscall, ret 0xc => 3 args). Pick the palette
-// loader by file extension: take ext = strrchr(filename,'.') then a stricmp
-// ladder on .BMP/.PCX/.PAL, forwarding (dd, filename, flags) verbatim to the
-// matching loader; no/unresolved extension -> LoadDefault. Same idiom as
-// CImage::LoadFromRez. Each branch re-tests `ext != 0` (the target's per-case
-// `test esi; je default`).
 RVA(0x00147410, 0xbc)
 i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     char* ext = strrchr(filename, '.');
@@ -89,9 +43,6 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     return LoadDefault(dd, filename, flags);
 }
 
-// CDDPalette::CreateRGB (__thiscall, ret 0xc => 3 args). Takes a packed 256x3
-// RGB-triplet array, expands it on the stack into PALETTEENTRY[256] (peFlags=0),
-// then forwards to Create. The 0x400-byte stack buffer drives `sub esp,0x400`.
 RVA(0x001474d0, 0x60)
 i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
     u8 entries[0x400];
@@ -106,9 +57,6 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
     return Create(dd, entries, flags);
 }
 
-// CDDPalette::Destroy (__thiscall, no args). Nulls m_pos/m_palette/m_8, frees the three
-// owned buffers (m_cacheA/m_cacheB/m_sourcePalette) via operator delete, clears
-// m_active. m_palette is only nulled (not Released) here.
 RVA(0x00147530, 0x54)
 void CDDPalette::Destroy() {
     m_pos = 0;
@@ -263,11 +211,6 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pe, flags);
 }
 
-// CDDPalette::LoadDefault (__thiscall, ret 0xc => 3 args). The no-extension /
-// unresolved-extension fallback loader: resolve `filename` as a named "PALETTE"
-// resource in the app module (g_resModule), expand its 256 packed RGB triples to
-// a stack PALETTEENTRY[256] (peFlags=0), and Create. Re-homed from
-// ResourceLoaders.cpp (the PalLoad_1479e0 view; its Apply@0x147390 IS Create).
 RVA(0x001479e0, 0xbb)
 i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pal[256];
@@ -316,9 +259,6 @@ i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
     return m_palette->SetEntries(0, start, count, reinterpret_cast<LPPALETTEENTRY>(data));
 }
 
-// CDDPalette::SetEntriesQuad (0x147b10, __thiscall, ret 0x10 => 4 args). Allocate
-// a count*4 working buffer, expand `count` RGBQUAD entries (R/B swapped, as in
-// LoadBmp) into PALETTEENTRY, SetAndNotify the range, free, return the HRESULT.
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
     u8* buf = static_cast<u8*>(::operator new(count * 4));
@@ -363,8 +303,6 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
     return hr;
 }
 
-// CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
-// readback cache (m_cacheB), then reads all 256 entries; reports a bad HRESULT.
 RVA(0x00147c30, 0x4d)
 i32 CDDPalette::GetEntries() {
     // Lazily allocates the readback cache, then reads all 256 entries; reports a
@@ -411,7 +349,6 @@ void CDDPalette::Apply(i32 a1) {
     m_palette->SetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(readback));
 }
 
-// CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
 RVA(0x00147cd0, 0x78)
 i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     for (i32 i = start; i < start + count; i++) {
@@ -469,11 +406,6 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     ::operator delete(snapshot);
 }
 
-// CDDPalette::StartFadeToColor (0x147f30, __thiscall (start,count,r,g,b,durationMs);
-// the ex-PalCtx::Setup6 view). Arm the NON-blocking per-frame fade: flush any
-// pending fade, snapshot the live DirectDraw palette into m_cacheA, cache the fixed
-// target color + range + duration, timestamp, lazily clone m_cacheA into
-// m_sourcePalette, mark active, then run the first Tick.
 RVA(0x00147f30, 0xbe)
 void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs) {
     if (m_active) {
@@ -502,9 +434,6 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     Tick();
 }
 
-// CDDPalette::StartFadeToPalette (0x147ff0, __thiscall (start,count,target,
-// durationMs); the ex-PalCtx::Setup4 view). Same as StartFadeToColor but toward a
-// whole target PALETTEENTRY buffer (stored in m_targetPalette; the 0x34b log line).
 RVA(0x00147ff0, 0xa9)
 void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durationMs) {
     if (m_active) {
@@ -530,11 +459,6 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durati
     Tick();
 }
 
-// CDDPalette::Tick (0x1480a0, __thiscall; the ex-PaletteLerp::Tick view). The
-// per-frame fade step: lerp the live palette (m_cacheA) from the captured source
-// (m_sourcePalette) toward either the target palette (m_targetPalette) or the
-// fixed RGB, proportionally to elapsed/duration, then push the changed range via
-// SetEntries. Elapsed past the duration finishes the fade through Flush.
 RVA(0x001480a0, 0x1a7)
 i32 CDDPalette::Tick() {
     if (m_active == 0) {
@@ -607,14 +531,6 @@ i32 CDDPalette::Tick() {
     return 1;
 }
 
-// ===========================================================================
-// CDDPalette::Flush (0x148250, re-homed from BoundaryTail) - finish a pending
-// fade: if nothing pending (m_active==0) return; clear the pending flag; when a
-// target palette is set snap to it via SetAndNotify(first,count,target,0) and
-// clear it; otherwise snap to the fixed color via SetRange passing m_fixedR plus
-// its byte-shifted views (the engine re-reads the packed color at +1/+2 byte
-// offsets through an 8-byte stack temp). __thiscall.
-// ===========================================================================
 RVA(0x00148250, 0x61)
 void CDDPalette::Flush() {
     if (m_active == 0) {
@@ -723,10 +639,6 @@ i32 CDDPalette::CaptureSystemPalette() {
     }
     return 1;
 }
-
-// The engine's cached GDI/USER fn-ptr table (0x6c3e18..0x6c4408): the palette
-// blackout reaches GDI through these globals (`call ds:[0x6c44xx]`), not through
-// the import thunks. DATA arg = retail VA - image base (0x400000).
 
 // BlackoutSystemPalette (0x148720, __cdecl) - build an all-black 256-entry
 // PC_NOCOLLAPSE logical palette, select+realize it into the screen DC (driving

@@ -1,7 +1,3 @@
-// RegistryHelper.cpp - Utils::RegistryHelper, the engine's registry/config wrapper
-// over ADVAPI32!Reg*: opens a chain of nested subkeys (Open/InitializeLastKey),
-// reads/writes values from the deepest one (GetValue*/SetValue*), and closes the
-// chain (Close). GetRegistryKey is the shared create-or-open primitive.
 #include <Utils/RegistryHelper.h>
 #include <EmptyString.h> // g_emptyString
 #include <rva.h>

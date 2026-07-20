@@ -1,20 +1,3 @@
-// Teleporter.h - the teleporter tile-logic game object (C:\Proj\Gruntz).
-//
-// CTeleporter : CUserLogic (RTTI: .?AVCTeleporter@@ at 0x609598). A tile-logic
-// leaf in the same game-object hierarchy as CGruntPuddle / CPathHazard, proven
-// by its dtor (0x10dd0) stamping the CUserLogic vftable 0x5e705c then the
-// CUserBase vftable 0x5e70b4, tearing down the +0x18 link via the embedded
-// ~EngStr at 0x16d2a0 (the /GX leaf-dtor archetype). It adds no destructible
-// members beyond CUserLogic, so the dtor folds the bare teardown.
-//
-// Begin (0x419e0) is the per-frame/initial bring-up: advance the +0x1a0 anim
-// sub-mgr to the current draw-delta, and once it is idle, snapshot the bound
-// object's geometry, apply the "GAME_TELEPORTER" lookup-geometry, and swap the
-// +0x14 sub-object's "B" bute node - the SAME archetype as CGruntPuddle::Place's
-// finalize block.
-//
-// Field names are placeholders; only the OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CTELEPORTER_H
 #define GRUNTZ_CTELEPORTER_H
 
@@ -23,17 +6,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
 
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-// The +0x1a0 animation sub-mgr the bring-up advances once each frame (Advance
-// 0x15c360, __thiscall ret 4, takes the g_engineFrameDelta draw-delta). Its +0x20/+0x28
-// int fields gate the one-shot finalize (run once, when +0x28==0 && +0x20!=0).
-// The SAME engine sub-mgr CPathHazard/CSimpleAnimation drive; modeled NO-body so
-// the call reloc-masks.
 struct CTeleAnimSink {
     char m_pad00[0x20];
     i32 m_20; // +0x20 idle-state flag
@@ -41,29 +16,12 @@ struct CTeleAnimSink {
     i32 m_28; // +0x28 active flag
 };
 
-// The per-frame draw-delta mirror (BSS @0x6bf3bc) the sub-mgr Advance consumes.
-// Already named g_engineFrameDelta in Projectile.cpp; re-declared here, address-pinned.
 extern "C" u32 g_engineFrameDelta;
 
-// The lookup-geometry key "GAME_TELEPORTER" (VA 0x60bd38) the finalize applies to
-// the bound object via CGameObject::ApplyLookupGeometry (0x1505b0).
-
-// The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
-// The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's s_actKeyB;
-// reuse the identical declaration so the reloc pairs.
-
-// g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
-// reached here transitively via <Bute/ButeMgr.h>.
 #include <Bute/ButeMgr.h>
 
-// ---------------------------------------------------------------------------
-// CTeleporter : CUserLogic - the teleporter tile-logic leaf. The inherited
-// m_10/m_38 (CUserLogic) hold the bound CGameObject; the leaf adds its bring-up
-// state at +0x40 (CUserLogic ends at +0x40). The CUserLogic base gives the +0x18
-// destructible link, so the dtor folds the shared teardown.
-// ---------------------------------------------------------------------------
 class CTeleporter : public CUserLogic, public CWapX {
 public:
 public:
@@ -123,10 +81,6 @@ public:
 };
 SIZE(CTeleporter, 0x70);
 
-// The registry entry FireActivation dispatches: its first dword is the registered
-// handler (stored as a free-fn ptr by CTeleporter_RegisterActs, dispatched on
-// `this` -> modeled as a 4-byte single-inheritance PMF so the call lowers to
-// `mov ecx,this; call [entry]`).
 typedef i32 (CUserLogic::*TeleporterHandler)();
 struct CTeleporterActEntry {
     TeleporterHandler m_fn;

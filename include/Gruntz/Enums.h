@@ -1,30 +1,8 @@
-// Enums.h - Gruntz game-taxonomy enums. This is the authoritative home (the old
-// comprehension header src/Stub/types/enums.h has been consumed into here and
-// axed). Lifting the enum definitions into a real include/ header is matching-NEUTRAL: enumerator
-// names do not change /O2 codegen. Where an enumerator's INTEGER value is recovered
-// (Resolution, LaunchModeCode, Commands, GruntType), the reconstructed src/ may use the
-// name in place of the magic constant; for the rosters whose binary numbering is still
-// unverified (Tool/Toy/...), only the NAME set is authoritative - do NOT rely on the
-// implicit 0..N values for matching until verified against the binary. GruntType is now
-// recovered: grunt kinds ARE object-type ids (the shared PickupType space in
-// <Gruntz/PickupType.h>), so its values are the real id space (see below).
 #ifndef GRUNTZ_GRUNTZ_ENUMS_H
 #define GRUNTZ_GRUNTZ_ENUMS_H
 
 #include <Ints.h>
 
-/* ------------------------------------------------------------------ *
- * GruntType - the playable-grunt roster (sprite namespace GRUNTZ_<TYPE>).
- * A grunt "kind" IS an object type: CGrunt::m_gruntKind (+0x258) holds a value
- * from the shared PickupType id space (<Gruntz/PickupType.h>). So GruntType is
- * numbered in that real id space, NOT the old 0-based roster guess:
- *   - toys  0x17..0x20 VERIFIED (CGruntCmdObj::LoadVehicleGruntSprites loads
- *           "<NAME>GRUNT" at the toy pickup id, e.g. 0x17 = BABYWALKERGRUNT);
- *   - tools 1..22 + NORMAL=0 INFERRED from the same identity (PickupType's
- *           alphabetical tool band; m_gruntKind==0 is the unarmed default), and
- *           consistent with the powerup kinds m_gruntKind takes (0x36 GHOST,
- *           0x37 SUPERSPEED, 0x38 INVULNERABILITY, 0x39/0x3a CONVERSION/DEATHTOUCH).
- * ------------------------------------------------------------------ */
 enum GruntType {
     GRUNT_NORMAL = 0, // NORMALGRUNT      (unarmed; m_gruntKind default 0)
     // Tool grunts (== PickupType tool band 1..22, alphabetical)
@@ -77,33 +55,17 @@ enum GruntType {
     // unnumbered rather than fabricate an id that would collide with the space above.
 };
 
-/* ------------------------------------------------------------------ *
- * GruntDeathKind - the grunt death/exit kind (CGrunt::m_deathType +0x360, the
- * last LoadGruntDeathAnimations kind). Only the recovered id is enumerated -
- * do NOT fill the range with guesses.
- * ------------------------------------------------------------------ */
 typedef enum GruntDeathKind {
     // Warped out: StepWarpExit (@0x64540) posts the secret-level switch
     // ("WORLDZ\LEVEL%i", level+100) only on this kind.
     GRUNT_DEATH_WARPOUT = 0xc,
 } GruntDeathKind;
 
-/* ------------------------------------------------------------------ *
- * RezTypeTag - the multichar resource-TYPE tags the bute/rez symbol-table calls
- * (CSymTab::ResolveQualified / the CVariantSlot::Insert flags arg) pass through
- * their void* tag argument. Retail immediates; MSVC multichar literals
- * ('WWD' == 0x575744). Proven: 0x575744 at the level lookups ("WORLDZ\LEVEL%i"
- * - the .WWD world files; LevelRezPath's Insert flags), 0x574156 at the
- * voice-sample lookup (VoiceSoundList - the .WAV samples).
- * ------------------------------------------------------------------ */
 typedef enum RezTypeTag {
     REZ_TAG_WWD = 0x575744, // 'WWD' - level world-data file
     REZ_TAG_WAV = 0x574156, // 'WAV' - sound sample file
 } RezTypeTag;
 
-/* ------------------------------------------------------------------ *
- * Tool - 22 Toolz. Sprite namespace TOOLZ_<NAME>.
- * ------------------------------------------------------------------ */
 enum Tool {
     TOOL_BOMBZ,        // TOOLZ_BOMBZ
     TOOL_BOOMERANGZ,   // TOOLZ_BOOMERANGZ
@@ -131,9 +93,6 @@ enum Tool {
     // (unverified) exact integer values / ordering unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * Toy - 10 Toyz. Sprite namespace TOYZ_<NAME>.
- * ------------------------------------------------------------------ */
 enum Toy {
     TOY_BABYWALKERZ,   // TOYZ_BABYWALKERZ
     TOY_BEACHBALLZ,    // TOYZ_BEACHBALLZ
@@ -149,9 +108,6 @@ enum Toy {
     // (unverified) exact integer values / ordering unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * Warlord - 4 enemy bosses. Sprite namespace WARLORDZ_<NAME>.
- * ------------------------------------------------------------------ */
 enum Warlord {
     WARLORD_KING,     // WARLORDZ_KING     = 0
     WARLORD_NAPOLEAN, // WARLORDZ_NAPOLEAN = 1  (sic - spelled this way in the binary)
@@ -161,9 +117,6 @@ enum Warlord {
     // VERIFIED: ordering matches CFortressFlag's m_124 switch (GAME_FORTRESSFLAGZ_*).
 };
 
-/* ------------------------------------------------------------------ *
- * Powerup - 5 powerupz. Sprite namespace POWERUPZ_<NAME>.
- * ------------------------------------------------------------------ */
 enum Powerup {
     POWERUP_COIN,       // POWERUPZ_COIN
     POWERUP_GHOST,      // POWERUPZ_GHOST
@@ -174,10 +127,6 @@ enum Powerup {
     // (unverified) exact integer values / ordering unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * ColorTint - ~17 ownership-tint colors applied to tool/toy sprites.
- * Used as <COLOR>_{TOOL,TOY}.
- * ------------------------------------------------------------------ */
 enum ColorTint {
     TINT_BLACK,    // BLACK
     TINT_BLUE,     // BLUE
@@ -200,10 +149,6 @@ enum ColorTint {
     // (unverified) exact integer values / ordering unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * Direction - 8-way movement. The CGrunt debug dump prints [dir=%d].
- * Ordering below is a GUESS (clockwise from North); TODO verify.
- * ------------------------------------------------------------------ */
 enum Direction {
     DIR_NORTH,     // NORTH
     DIR_NORTHEAST, // NORTH-EAST
@@ -217,10 +162,6 @@ enum Direction {
     // (unverified) numbering/winding order unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * Statez - game state-machine state ids (STATEZ_*). Drives CState and its
- * subclasses (CSplashState, CMenuState, ...).
- * ------------------------------------------------------------------ */
 enum Statez {
     STATEZ_SPLASH,  // STATEZ_SPLASH    -> CSplashState
     STATEZ_MENU,    // STATEZ_MENU      -> CMenuState
@@ -234,11 +175,6 @@ enum Statez {
     // (unverified) exact integer values / ordering unverified against the binary
 };
 
-/* ------------------------------------------------------------------ *
- * LaunchMode - WinMain command-line dispatch tokens (verbatim).
- * LOAD: takes an argument (LOAD:<name>). These are parsed as strings; the enum
- * is our convenience mapping.
- * ------------------------------------------------------------------ */
 enum LaunchMode {
     LAUNCH_PLAY,        // "PLAY"        single-player launch
     LAUNCH_MULTI,       // "MULTI"       multiplayer launch
@@ -259,11 +195,6 @@ enum LaunchMode {
     //       sequential enum in the binary - TODO confirm representation.
 };
 
-/* ------------------------------------------------------------------ *
- * LaunchModeCode - the INTEGER mode code the binary actually stores after
- * parsing the command line (the internal "unnamedMode"), distinct from the string
- * LaunchMode tokens above. Recovered from the dispatch (version-independent).
- * ------------------------------------------------------------------ */
 enum LaunchModeCode {
     LAUNCHCODE_DEFAULT = 2, // no recognized launch token
     LAUNCHCODE_PLAY = 3,    // "PLAY"
@@ -273,20 +204,12 @@ enum LaunchModeCode {
     // (unverified) codes for the remaining tokens (ATTRACT/HOST/JOIN/...) not recovered
 };
 
-/* ------------------------------------------------------------------ *
- * Resolution - the "Resolution" registry value decoded by
- * CGruntzMgr::DecodeResolution() into width x height (16bpp). Default = 1
- * (640x480), which is also the DirectDraw init mode.
- * ------------------------------------------------------------------ */
 enum Resolution {
     RES_640x480 = 1, // 640 x 480  (default; the only mode the engine inits)
     RES_800x600 = 2, // 800 x 600
     RES_1024x768 = 3 // 1024 x 768
 };
 
-/* ------------------------------------------------------------------ *
- * Commands - WM_COMMAND notification codes posted by the app.
- * ------------------------------------------------------------------ */
 enum Commands {
     // Go to level <lParam>: the AREAS menu posts it with the stage's level index
     // (MainMenuBuilder), StepWarpExit with the secret-level index (level+100);
@@ -296,15 +219,6 @@ enum Commands {
     LOBBYLAUNCH = 0x80B7
 };
 
-/* ------------------------------------------------------------------ *
- * GruntzVolumeAttenuation - the 101-entry volume->attenuation lookup table the
- * audio code uses to convert a 0..100 volume into a DirectSound attenuation
- * (hundredths of a dB). Generated by:
- *     table[i] = (int)( -1000.0 * log2(100.0 / i) )    for i = 1..100
- *     table[0]   = -10000   (silence floor)
- *     table[100] = 0        (full volume)
- * Modeled here as the generating spec, not the 101 literals.
- * ------------------------------------------------------------------ */
 struct GruntzVolumeAttenuation {
     // In-class enum constants (MSVC 5.0 rejects `static const T x = N;` initializers).
     enum {

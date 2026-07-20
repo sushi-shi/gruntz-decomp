@@ -29,37 +29,17 @@
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
 #include <Globals.h>
 
-// The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2 (its body stays in
-// Random.cpp - a foreign inline-COMDAT exile hole in this obj's span).
 namespace Rng {
     i32 Next2();
 }
 
-// g_sndEnabled (0x61ab20) is declared in the included <Globals.h> - no per-TU extern.
-// g_sndPanScale (0x5eff2c) + g_aniCueItem (0x61ab24, == <Globals.h>'s g_sndCueTag - same
-// address, name conflict) still need homing to Globals.h (deferred globals-consolidation).
 extern float g_sndPanScale; // 0x5eff2c
 extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 
-// onto the real CAniElement (<Gruntz/AniElement.h>): its "+0x0c elements/+0x10
-// count" are m_records.m_pData/m_nSize and its +0x20 the same float m_scale.)
 #include <Gruntz/AniElement.h>
 
-// The +0x2c label sub-object IS the real CDDrawSubMgrLeaf (<DDrawMgr/DDrawSubMgrLeaf.h>):
-// its GetLabel method is PROVEN to be ?KeyOfValue_152d30@CDDrawSubMgrLeaf@@ (the 0x152d30
-// mangled name, returns CString from a CObject* value), and its +0x10 label map is that
-// class's own CMapStringToPtr m_10 (Deserialize_15ca70's Lookup is `call 0x1b8438` =
-// CMapStringToPtr - disasm-confirmed; the ex-CDDrawBlitLabelSource view mistyped it as
-// CMapStringToOb @0x1b8008, a WRONG reloc that this fold corrects).
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
-
-// The manager held at the cursor's +0x0c owner slot (CLoadable::m_0c, a generic i32 owner
-// handle) IS the canonical CDDrawSurfaceMgr: the +0x2c label sub-object the blit-param
-// serialize reaches is CDDrawSurfaceMgr::m_animRegistry (a CDDrawSubMgrLeaf, KeyOfValue_152d30 /
-// +0x10 map). The m_animRegistry@+0x2c layout is unique to the CDDrawSurfaceMgr family, and fold #1
-// this wave typed CDDrawSurfaceMgr::m_animRegistry as CDDrawSubMgrLeaf*, so the former per-TU
-// to the real class, exactly as WwdObjMgr / WwdGameObjectRender already do.
 
 // ---------------------------------------------------------------------------
 // 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
@@ -104,10 +84,6 @@ AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_178 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// AnimWorkerObj::Consume (0x15b340, __thiscall; was CLogicRecord::). Draw `amount` from the
-// remaining-count at m_20: returns 1 with the balance debited while it covers the
-// request, else clamps to 0 and returns 0.
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
     i32 remaining = m_20;
@@ -207,12 +183,6 @@ void CGameObject::Notify_15b650(void* p) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x15b6d0 - CAniAdvanceCursor::~CAniAdvanceCursor (the out-of-line base ??1): stamp the
-// derived ??_7CAniAdvanceCursor (0x5f0128, bound), run the CLoadable slot-7 Unload/Reset
-// (0x15c2c0; the (CDDrawBlitParam*) cast reloc-masks CAniAdvanceCursor's own Reset there),
-// reset the CLoadable header (m_04/m_08/m_0c), then fold the grand base (??_7CObject
-// onto the real class so the vptr stamp binds to ??_7CAniAdvanceCursor@@6B@ (was RELOC_VTBL).
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
     Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
@@ -257,9 +227,6 @@ CWwdGameObjectA::~CWwdGameObjectA() {
     // then ~E folds (second worker pass + ~CString + the CResolveNode tail).
 }
 
-// ---------------------------------------------------------------------------
-// Init (0x15b940): zero +0x19c, construct the +0x1a0 command map, then Setup.
-// ---------------------------------------------------------------------------
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
@@ -278,7 +245,6 @@ CWwdGameObjectF::~CWwdGameObjectF() {
     Unload(); // devirtualized -> the inline F pass (the E release copy)
 }
 
-// CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line.
 RVA(0x0015bc30, 0x16)
 i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
     return CGameObject::Setup(0, 0, a3, a4);
@@ -301,8 +267,6 @@ CWwdGameObject::~CWwdGameObject() {
     // to `call 0x15b5d0` and the bottom keeps the 0x5efbc0 stamp + `call 0x429b`).
 }
 
-// 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
-// a.right >= b.left, a.top <= b.bottom, a.bottom >= b.top. __stdcall, 2 args.
 RVA(0x0015bfb0, 0x4a)
 i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
     if (a->left > b->right) {
@@ -329,7 +293,6 @@ CWwdGameObjectC::~CWwdGameObjectC() {
     Unload(); // devirtualized -> the inline C pass (byte clear + E release)
 }
 
-// CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
     m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
@@ -353,8 +316,6 @@ void CAniAdvanceCursor::Construct(void* srcv) {
     m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34)) & 0x40;
 }
 
-// CAniAdvanceCursor::Unload (0x15c2c0, vtable slot 7; the ex Reset_15c2c0):
-// clear the bound source refs. Returns 0 (retail xor eax,eax).
 RVA(0x0015c2c0, 0xc)
 i32 CAniAdvanceCursor::Unload() {
     m_10 = 0;
@@ -363,7 +324,6 @@ i32 CAniAdvanceCursor::Unload() {
     return 0;
 }
 
-// 0x15c2d0: blit-param setup from a worker source.
 RVA(0x0015c2d0, 0x45)
 void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
     CAniDesc* e;
@@ -390,9 +350,6 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
     }
 }
 
-// 0x15c320: recompute the blit-param from the already-stored m_srcRef source (the
-// Setup twin that keeps m_srcRef, fixes the scale to 1.0f, and only clears m_20
-// when `a1` is set).
 RVA(0x0015c320, 0x40)
 void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
     CAniElement* src = m_14;
@@ -941,9 +898,6 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     return 1;
 }
 
-// CSprite::GetFrame (0x15cc30): the frame handle for index n (in [m_firstFrame,
-// m_lastFrame]), or 0. Position-homed exile (a CSprite inline getter kept at this
-// obj; the CSprite frame methods live in the S1 obj, WwdGameObject.cpp).
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {

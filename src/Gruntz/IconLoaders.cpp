@@ -9,39 +9,8 @@
 #include <Bute/ButeMgr.h>
 
 #include <stdlib.h> // rand (reloc-masked CRT PRNG)
-// IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
-// sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
-// global HUD sprite factory (g_gameReg->m_world->m_childGroup->CreateSprite) for the sprite,
-// then caches/forwards something off it through the shared sprite-resource leaves
-// (CGruntSprite::CacheFirstFrame, CGruntAnimPlayer::ApplyLookupGeometry - both in
-// the spriteresource unit, reloc-masked). Only offsets / code bytes are
-// load-bearing; names are placeholders for the recovered engine identities.
 
-// ---------------------------------------------------------------------------
-// Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
-// ---------------------------------------------------------------------------
-// CDDrawChildGroup + CDDrawGroupNode live in the shared <DDrawMgr/DDrawChildGroup.h>; the
-// created sprite is the shared CGameObject (<Gruntz/UserLogic.h>, included above).
-
-// The four sprite loaders formerly here (LoadCameraSprite 0x78960,
-// LoadToyBoxIcon 0x7a3f0, LoadExplosionSprites 0x7b330, LoadPowerupIconSprites
-// 0x7c620) are merged into src/Gruntz/TriggerMgr.cpp - the iconloaders unit's
-// fns in [0x77f80..0x7d7ca] belong to that ONE original TU (dossier 10b,
-// docs/exe-map/interval-dossiers.md). All four are ::CTriggerMgr methods (the
-// ex-`EngineLabelBacklog` holder view + IconLoaderViews.h are dissolved).
 #include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
-
-// The game-manager singleton (g_gameReg, *0x64556c), canonical view.
-
-// The attribute manager (butemgr unit): g_buteMgr singleton from <Bute/ButeMgr.h>.
-
-// ===========================================================================
-// BuildBootyPerfectAnimation @0x01c070
-// ===========================================================================
-//
-// Builds the "BOOTY_PERFECT" celebration animation: CreateSprite a SimpleAnimation
-// at a fixed screen position, cache its first frame, then resolve its cycle
-// geometry. __thiscall (this @ esi). Stores the sprite at this+0x2f8.
 
 RVA(0x0001c070, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {

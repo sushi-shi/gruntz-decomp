@@ -1,19 +1,3 @@
-// BootyMessages.cpp - the booty/secret-state HUD message overlays. These are
-// __thiscall methods on the booty game-state
-// object (`this` carries the HUD message sink at +0xc, the secret gate at +0x1d4,
-// the per-slot flag arrays at +0x284/+0x2a4, the level/secret gates at
-// +0x200/+0x2f4). Each overlay builds one or more MFC CString temps (their dtors
-// give the /GX exception frame) and hands each to the shared HUD message-sprite
-// helper ShowHudMessage (0x1154b0, __cdecl(sink, &text, &rect, dur, ...)).
-//
-// IDENTITY recovered by string-xref (the "Level/World Completed!", "WARP letterz",
-// "Secret Bonus" / "The Secret of Secretz:" message literals). The booty-state
-// class, g_gameReg sub-objects and every callee are unmatched engine code
-// reached by reloc-masked external thunks; only the offsets / code bytes are
-// load-bearing (campaign doctrine). The Bz* object graph is the shared
-// <Gruntz/BzState.h>; modeled with real <Mfc.h> CString so cl emits the same EH
-// frame.
-
 #include <Ints.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntzMgr.h>
@@ -28,11 +12,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-// Per-player idle-sprite id table (0x5e9068) + the trailing 4-sprite geometry
-// table (0x5e8fe4, {y, x} pairs - onscreen coordinates), and the wand-cue ambient sound tag.
-// BzGeomPair is declared in <Gruntz/GameMode.h> (included above).
-// Owner-TU definition, TRANSCRIBED from the retail .rdata bytes @0x5e8fe4
-// ({0,472} {101,525} {98,474} {146,525} - the four idle-sprite onscreen spots).
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {
     {0, 472},
@@ -40,14 +19,9 @@ BzGeomPair g_idleGeom[4] = {
     {98, 474},
     {146, 525},
 };
-// The secret-bonus group-ratio scale (0x5e93b0, .rdata const 100.0); DEFINED here
-// (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
 DATA(0x001e93b0)
 float g_secretRatioScale = 100.0f; // 0x5e93b0
 
-// The 8 level-complete message templates (global CString array at 0x629ef8, .bss;
-// the CRT default-constructs the elements at startup) and the two parallel RECT
-// arrays they are drawn into. Owner-TU definition.
 DATA(0x00229ef8)
 CString g_levelMsgStrings[8]; // 0x629ef8
 DATA(0x0020b838)
@@ -73,22 +47,11 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 
-// The secret-bonus message tables: a "+0x3d"-encoded buffer pair (decoded in place
-// by the SetAt cipher) for the single-record banner, plus the per-row table indexed
-// by (rowBase*3 + row), each row a 0xa0-byte record carrying two encoded strings.
-// Owner-TU definition (.bss, runtime-filled). Row count CODE+DOMAIN-PROVEN, not
-// gap-guessed: idx = rowBase*3 + j with j in 0..2 and rowBase = (levelIndex-1)/4,
-// levelIndex <= 32 (8 worldz x 4 levelz) -> rowBase <= 7 -> 24 rows.
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
-// The single-record banner's encoded string pair (.bss, decoded in place at runtime),
-// laid DIRECTLY AFTER the row table (0x629f30+0xf00 = 0x62ae30/0x62ae50); DEFINED
-// here (owner TU), reference externs stay in <Globals.h>. (DD-G)
 char g_secretMsgA[0x20]; // 0x62ae30  encoded line A
 char g_secretMsgB[0x80]; // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
 
-// The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
-// text sprite carrying `text` into `rect` with the given duration/colour flags.
 void ShowHudMessage(
     void* sink,
     CString* text,
@@ -100,11 +63,6 @@ void ShowHudMessage(
     i32 d,
     i32 e
 ); // 0x1154b0
-
-// The booty HUD message sink IS the inherited CState::m_c holder (the canonical
-// CDDrawSurfaceMgr): m_drawTarget (+0x04) the page sub-manager, m_8 (+0x08) the
-// object-group render broadcaster, m_28 (+0x28) the cue host whose m_2c is the
-// held SoundStream. (The former BzSink view + its BzSink8 placeholder vtable are
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,

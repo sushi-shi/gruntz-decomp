@@ -1,25 +1,3 @@
-// MovingLogic.cpp - CMovingLogic : CUserLogic, the moving-object motion-state
-// logic base (parent of CProjectile). One dev TU, formerly split across
-// MovingLogic{Ctor,Dtor,Update,Serial}.cpp. Methods in ascending retail-RVA
-// order:
-//   CMovingLogic::CMovingLogic       @0x013940 - standalone out-of-line ctor (COMDAT)
-//   CMovingLogic::~CMovingLogic      @0x013bd0 - /GX leaf dtor (also the vftable anchor)
-//   WriteCurve                       @0x16cdd0 - the bute-text curve writer
-//   CUserLogic::SerializeMove        @0x16e7f0 - the base-class bute round-trip (slot 1)
-//   CMovingLogic::MovingSlot16             @0x16ea90 - the per-frame scroll/position pump
-//   CMovingLogic::Serialize          @0x16f4a0 - the derived bute round-trip
-//
-// All /GX (eh profile): the ctor's throwing CUserBaseLink base + the dtor's
-// destructible +0x18 link force the EH frame; Update / WriteCurve / the two
-// Serialize round-trips carry no destructible C++ object so /GX is a no-op for
-// them (byte-verified under eh). Merged per docs/tu-topology-plan.md (Phase 1);
-// the ctor 0x13940 (a standalone COMDAT copy) + the dtor 0x13bd0 (COMDAT-pooled)
-// land in the game-code band while the run methods sit in the engine band - a
-// COMDAT-placement artifact, not a separate dev TU.
-//
-// CMOVINGLOGIC_STANDALONE_CTOR drops <Gruntz/MovingLogic.h>'s inline no-arg ctor
-// so this TU hangs the byte-exact out-of-line COMDAT copy (0x13940) instead - the
-// engine emits both an inlined copy (folded into leaves) and this standalone.
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -29,7 +7,6 @@
 #include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
 #include <rva.h>
 
-// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_frameTime * g_motionTimeScale.
 DATA(0x001f04f0)
 const double g_motionTimeScale = 0.001; // 0x5f04f0
 
@@ -94,22 +71,9 @@ CMovingLogic::CMovingLogic() {
     m_138 = g_movingLogicMax;
 }
 
-// CMovingLogic::~CMovingLogic @0x00013bd0 - the most-derived vptr store is
-// dead-eliminated at /O2, so the dtor folds the bare CUserLogic teardown: store
-// the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame.
 RVA(0x00013bd0, 0x44)
 CMovingLogic::~CMovingLogic() {}
 
-// (0x16be60 is NOT a game method: it is the CRT iostream insertion operator
-// ostream::operator<<(const char*) - its callees are ostream::opfx (0x16bd10) /
-// writepad (0x16c2d0) / osfx (0x16bd90), and its siblings ostream::operator<<(int)
-// @0x191d20 / (double) @0x191df0 are library-carved. Carved to config/library_labels.csv
-// (LIBCIMT, ??6ostream@@QAEAAV0@PBD@Z), not reconstructed - game-not-CRT policy.)
-
-// 0x16cdd0 - WriteCurve(accum, curve): stream 29 doubles + 1 int into the ostream
-// accumulator (the library ostream::operator<< overloads), returning accum.
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_00;
@@ -209,23 +173,6 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     return 1;
 }
-
-// The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
-// read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
-// g_motionNegHalf (0x5f04f8, -0.5) comes via MotionState.h (canonical include).
-// The running game clock g_frameTime comes via <Gruntz/MovingLogic.h>.
-
-// The bound object is the canonical CGameObject (UserLogic.h, via MovingLogic.h):
-// the former MlBoundObject/MlScrollWorker/MlHolder/MlLevel reduced views are
-// COLLAPSED into it - m_flags bit4 = riding, m_carrier = the latched carrier
-// object (its m_deltaX/m_deltaY are the per-frame ride deltas; CGameLevel::
-// StepAxisAlt latches it), m_moveMode drives the level's DispatchMove. The level
-// hop is m_object->m_0c (CDDrawSurfaceMgr) -> m_level -> MoveToward (0x15de40); the
-// m_0c cast is language-forced (the base stores the owner as a generic i32).
-
-// CMovingLogic is the shared canonical (<Gruntz/MovingLogic.h>): its +0x38
-// CMotionState band is reached through Motion(); m_10 is the bound CGameObject.
-// m_140/m_144/m_148/m_14c are the base's trailing ints.
 
 // ---------------------------------------------------------------------------
 // @early-stop

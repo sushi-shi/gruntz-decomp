@@ -1,12 +1,3 @@
-// SingleAnimation.cpp - a single-shot eyecandy animation game-object
-// (C:\Proj\Gruntz).
-//
-// One trace-discovered CSingleAnimation method:
-//   ~CSingleAnimation @0x010540 - the /GX leaf dtor (folds the CUserLogic teardown).
-//
-// CSingleAnimation : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -14,21 +5,11 @@
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
-// The class's activation-coordinate registry singleton (@0x645f70), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). CSingleAnimActReg
-// is the shared <Gruntz/ActReg.h> CActReg archetype (declared there among the
-// concrete per-registry instances); keeps its placeholder name so the DATA-pinned
-// global symbol is unchanged.
 DATA(0x00245f70)
 extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
-// The per-frame draw-delta mirror (_g_6bf3bc) the advance hands the sink; declared
-// extern "C" so the value-load reloc-masks against the already-matched symbol.
 extern "C" u32 g_engineFrameDelta;
 
-// CSingleAnimation::Serialize @0x104a0 - the vtable slot-1 override: chain the shared
-// CUserLogic serialize helper on `this`, then (only on success) the +0x34 sub-object's
-// chain. Returns the second chain's success normalized to a bool.
 RVA(0x000104a0, 0x47)
 i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -49,8 +30,6 @@ i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CSingleAnimation@@UAE@XZ 0x00010540 0x44
 
-// --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c --- the ctor anchors the
-// ??_7CSingleAnimation vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -58,18 +37,11 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-// CSingleAnimation::InitActReg @0x0ae9a0 - construct the class's activation-
-// coordinate registry singleton (g_singleAnimActReg @0x645f70) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ae9a0, 0x15)
 void CSingleAnimation::InitActReg() {
     g_singleAnimActReg.Construct(2000, 2010);
 }
 
-// CSingleAnimation::RunAct @0x0aea20 - resolve the registry entry for id; if a
-// handler is bound, re-resolve and invoke it as a PMF on this, else return the entry
-// pointer. ResolveEntry is inlined twice (side-effectful; no CSE). Same archetype as
-// CAniCycle::RunAct.
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CSingleAnimActEntry* e = reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id));
@@ -110,10 +82,6 @@ void CSingleAnimation::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
-// CSingleAnimation::AdvanceAnim @0x0aed80 - advance the bound object's +0x1a0 anim
-// cursor by the frame counter, then, if the anim sub-mgr is active (m_1c8) and its
-// idle flag is clear (m_1c0 == 0), mark the object dirty (m_flags |= 0x10000).
-// Returns 0. (Sibling of CMenuSparkle::AdvanceAnim without the flicker countdown.)
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -123,8 +91,6 @@ i32 CSingleAnimation::AdvanceAnim() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

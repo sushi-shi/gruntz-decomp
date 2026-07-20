@@ -1,18 +1,3 @@
-// DDrawWorker.h - an owned-collection node of the DDrawMgr "DDraw worker"
-// family (placeholder name; engine "tomalla-35"). Non-RTTI engine class; its
-// own primary vtable is at RVA 0x1efbe8 (g_ddrawWorkerVtbl). It derives from a
-// CLoadable-shaped base subobject (m_04/m_08/m_0c reset on teardown, then the
-// CObject-like grand-base dtor vtable g_wapObjectDtorVtbl @0x5e8cb4 restored).
-//
-// Layout recovered from the dtor (0x1557a0) + DeleteAll helper (0x151eb0):
-//   +0x00 vptr (CLoadable)
-//   +0x04 m_04  (reset to -1 on teardown)
-//   +0x08 m_08  (reset to 0)
-//   +0x0c m_0c  (reset to 0)
-//   +0x10 m_items  CObArray of owned CObject* (vtbl 0x5ed494; m_pData@+0x14, m_nSize@+0x18)
-//   +0x64 m_64  cached-index sentinel (DeleteAll seeds it to 99999 = 0x1869f)
-//   +0x68 m_68  (reset to 0 by DeleteAll)
-// Only the offsets + emitted bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CDDRAWWORKER_H
 #define GRUNTZ_CDDRAWWORKER_H
 #include <rva.h>
@@ -20,28 +5,8 @@
 #include <Ints.h>
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 
-// DISSOLVED (Fable A2, 2026-07-14): the former "CWorkerElement" 14-slot shell WAS
-// the canonical CImage (<Image/CImage.h>, ??_7 @0x5eaa2c, 18 slots): the elements
-// of m_items are built by CSprite::InsertFrame as `new CImage(n, m_c)`, walked as
-// CImage* by CImageSet::GetMemoryUsage, and the shell's two live dispatches map
-// slot-for-slot - "Delete(1)" = the slot-1 scalar-deleting dtor (`delete el`),
-// "Query34(rec, flag)" (+0x34, slot 13) = CImage::Reload(CParseSource*, i32)
-// @0x153380. The consumers (WwdGameObject.cpp) now use CImage directly.
 class CImage; // <Image/CImage.h>
 
-// (CWorkerObArray is GONE: the +0x10 owned-pointer array IS MFC ::CObArray.  PROVEN from
-//  the binary - its ctor 0x1b55e9 stamps vtable 0x1ed494, whose MFC CRuntimeClass names it
-//  "CObArray".  The old view reached SetSize 0x1b5653 / SetAtGrow 0x1b5822 by casting to
-//  CDWordArray*, which bound those relocs to the WRONG library symbol - CDWordArray lives
-//  at [0x1b4b43, 0x1b4f0b), while both of those addresses are in the CObArray band.)
-
-// The grand-base (CObject-like) dtor vtable, restamped manually by CWwdSpatialMgr's
-// teardown (CDDrawWorkerHost.h). Same datum as ??_7CObject @0x5e8cb4.
-
-// The "DDraw worker" base subobject is the canonical CLoadable (m_04/m_08/m_0c +
-// the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
-// ~CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
-// vptr schedule + the destructible-base /GX frame.
 class CSymTab;      // Bute/SymTab.h - the name->record table slots 10/15 iterate
 class CImageParent; // the +0x0c owning parent handed to each frame (== CImage::m_parent)
 
@@ -130,7 +95,5 @@ public:
     i32 m_maxIndex;           // +0x68
 };
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 #endif // GRUNTZ_CDDRAWWORKER_H

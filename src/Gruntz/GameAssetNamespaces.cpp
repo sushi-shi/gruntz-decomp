@@ -1,27 +1,3 @@
-// GameAssetNamespaces.cpp - load the per-area GAME asset namespaces (RVA
-// 0xf9ea0). Resolves AREA%i, then lazily scans the GAME image/sound/aniz trees
-// into the worker registries, builds the tool/toy colour table and the two 64x64
-// scratch pools. Field names are placeholders; only offsets + code bytes are
-// load-bearing.
-//
-// FOLDED (2026-07-15): the three .cpp-local views are GONE, dissolved onto the
-// canonicals they always were:
-//   CAssetLoader  == the CState BASE the method runs on (it IS a CState method;
-//       m_mgr@+0x04 == m_4, m_symParser@+0x08 == m_8, m_workerHolder@+0x0c == m_c,
-//       m_10 == m_faderMgr, m_areaArg@+0x1c == m_levelIndex, m_areaIndex@+0x20 ==
-//       m_levelType (the AREA terrain class), m_areaNode@+0x28 == m_levelBank,
-//       m_loaded@+0x3c == m_ready, m_versionString@+0x4c == m_versionString,
-//       m_scratch0/1@+0x160/+0x164 == m_160/m_164 - the same two surfaces
-//       CState::ReleaseResources releases back to the pool. The +0x10..+0x164 scratch fields
-//       are CState members now (State.h).
-//   AssetMgr      == the CGruntzMgr singleton (m_workerHolder@+0x30 == m_world,
-//       m_symParser@+0x34 == m_symParser (ex m_recolorSurface), m_40 == m_40,
-//       m_spriteRefTable@+0x74 == m_spriteFactory).
-//   WorkerHolder  == CDDrawSurfaceMgr (m_imageReg@+0x10 == m_10 CImageRegistry,
-//       m_ptrCollections@+0x1c == m_ptrColl, m_soundScan@+0x28 == m_28 (CSndHost ==
-//       CDDrawSubMgrLeafScan, one typedef), m_aniScan@+0x2c == m_animRegistry -
-//       the canonical CDDrawSubMgrLeaf ANI set (HasKeyPrefix_152c50/ScanTree_152ad0;
-//       the ex CAnimRegistry/CDDrawSubMgrAni views are dissolved onto it).
 #include <Mfc.h> // afx-first umbrella (GruntzMgr.h/ResMgr.h need the MFC classes)
 #include <rva.h>
 #include <Image/CImage.h> // g_resourceInstallActive
@@ -38,7 +14,6 @@
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
 #include <Globals.h>
 
-// The build number the version string embeds (owner-TU def; .bss, VA 0x651614).
 DATA(0x00251614)
 i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 

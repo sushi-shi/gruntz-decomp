@@ -1,34 +1,7 @@
-// GruntIndicatorWorkerHandlers.cpp - the anim-worker message-handler cluster for the
-// grunt-HUD indicator sprites (selected-highlight / health / toy / stamina / toy-time /
-// wingz-time / powerup). One contiguous retail /Gy object (0x7db20..0x7e2a0), split out
-// of AnimWorkerHandlers.cpp.
-//
-// It now uses the REAL leaf classes. The size-views it used to need
-// (AnimWorkerSpriteLeaves.h) are deleted, and the wall that justified them - "the canonical
-// class headers pull the Grunt.h world, which cannot coexist with the canonical UserLogic.h
-// this pump TU uses" - was FALSE. Grunt.h and UserLogic.h define no class in common, the
-// canonical leaf headers compile together with UserLogic.h under the real MSVC 5.0, and each
-// leaf computes exactly the retail operator-new immediate (compile-time size assertions).
-// The remaining reason this TU is separate is only the /Gy object boundary, not any wall.
-//
-// Each handler is a __cdecl FREE function byte-identical to the trigger/point handlers
-// in AnimWorkerHandlers.cpp bar the CUserLogic leaf it `new`s on worker-state 0 (the
-// `new` size immediate + ctor symbol). The switch key worker->m_1c is UNSIGNED (u32) so
-// MSVC5 emits the range checks as unsigned ja/jbe, matching retail byte-for-byte (a
-// signed i32 key emits jg/jle and caps each at 97.86%; see
-// docs/patterns/switch-key-unsigned-ja-vs-jg.md).
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes are
-// load-bearing (campaign doctrine).
 #include <rva.h>
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/UserLogic.h>  // CUserLogic 16-slot vtable the pump dispatches
-// The REAL sprite-leaf classes (the AnimWorkerSpriteLeaves.h size-views are dissolved).
-// The "canonical headers cannot coexist with UserLogic.h" wall was FALSE: they compile
-// together under the real MSVC 5.0, and each computes exactly the retail operator-new
-// immediate the views recorded (0x5c / 0x60 / 0x64 / 0x60) - proven with compile-time
-// size assertions, so the `new T(owner)` size + ctor target are unchanged.
 #include <Gruntz/GruntSelectedSprite.h>  // 0x5c
 #include <Gruntz/GruntToySprite.h>       // 0x60
 #include <Gruntz/GruntHealthSprite.h>    // 0x64
@@ -37,8 +10,6 @@
 #include <Gruntz/GruntWingzTimeSprite.h> // 0x64
 #include <Gruntz/GruntPowerupSprite.h>   // 0x60
 
-// The 0x7dc60.. handlers are byte-identical to the two written out below bar the leaf
-// TYPE `new`d on state 0 (the size + ctor target); shared as a macro.
 #define ANIM_WORKER_PUMP(LEAF)                                                                     \
     AnimWorkerObj* rec = owner->m_7c;                                                                     \
     switch (reinterpret_cast<u32>(rec->m_1c)) {                                                                           \

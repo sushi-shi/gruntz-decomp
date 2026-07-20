@@ -25,26 +25,9 @@
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Wwd/WwdGameObjCtor.h>        // CWwdGameObjBaseCtor - the shared 0x15b390 base-object ctor
 
-// The render context RenderDot (0x1660f0) plots into IS the real CDDrawSurfacePair
-// (<DDrawMgr/DDrawSurfacePair.h>, already included): its clip extent m_10/m_14 ARE
-// CDDrawSurfacePair::m_width/m_height and its destination surface m_2c IS m_surface.
-// The former WwdRenderCtx view is dissolved onto it (offset-exact: +0x10/+0x14/+0x2c).
-
 inline void* operator new(u32, void* p) {
     return p;
 } // placement (factory base-object ctor)
-
-// Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
-
-// The factory pair CreateObject_166640/CreateNamed_166780 are CWwdGameObject methods
-// (the former CWwdObjMgrL view is DISSOLVED onto the family class). PROVEN: `this`
-// reads only +0x0c (the CLoadable owner int handle = the CDDrawSurfaceMgr) and the
-// +0x1dc child CObList (CWwdGameObject::m_1dc) - the exact two members CWwdGameObject
-// already owns for AddChild_1667e0 / Clear_166810 / WalkChildWorkers_166880; CreateObject
-// builds a child CWwdGameObjectA (the 0x1dc size table's new-site) via the family Build
-// dispatch (slot 10 Setup) + the virtual slot-1 dtor, and publishes it into that same
-// list. m_0c is cast to the CDDrawSurfaceMgr the render TU already includes (its
-// m_workerCache->m_10 name map = the `[this+0xc]->[+0x14]->+0x10->call 0x1b8438` lookup).
 
 // ---------------------------------------------------------------------------
 // RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single
@@ -255,13 +238,6 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
     }
 }
 
-// ---------------------------------------------------------------------------
-// ResetAndSetup (0x1665e0): delete every owned MFC CObject in the +0x1dc CObList
-// (walked with the real CObList::GetHeadPosition/GetNext + `delete`), empty the
-// list, then re-run Setup with the four forwarded args. Returns Setup() != 0.
-// EXACT: modeling the list as a real CObList of MFC CObject payloads reproduced
-// retail's register schedule.
-// ---------------------------------------------------------------------------
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     POSITION pos = m_1dc.GetHeadPosition();
@@ -353,10 +329,6 @@ CWwdGameObject::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* n
     return CreateObject_166640(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
 }
 
-// ---------------------------------------------------------------------------
-// 0x1667e0: link `child` into the broadcast child list (CObList::AddTail) and cache
-// its returned POSITION in child->m_78. Rejects a null child or a failed insert.
-// __thiscall, 1 arg (ret 4).
 RVA(0x001667e0, 0x2f)
 i32 CWwdGameObject::AddChild_1667e0(CGameObject* child) {
     if (child == 0) {
@@ -370,11 +342,6 @@ i32 CWwdGameObject::AddChild_1667e0(CGameObject* child) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CWwdGameObject::Clear_166810 (0x166810): walk the +0x1dc CObList's raw nodes
-// (m_listHead = its m_pNodeHead), scalar-delete each node's owned CDDrawGroupChild,
-// then RemoveAll the list. Called by ~CWwdGameObject + CWwdFactoryObject::Reset.
-// ---------------------------------------------------------------------------
 RVA(0x00166810, 0x32)
 void CWwdGameObject::Clear_166810() {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
@@ -388,10 +355,6 @@ void CWwdGameObject::Clear_166810() {
     m_1dc.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// 0x166850: unlink `child` from the broadcast child list at its cached POSITION
-// (CObList::RemoveAt). Rejects a null child or an unlinked one (m_78 == 0).
-// __thiscall, 1 arg (ret 4).
 RVA(0x00166850, 0x29)
 i32 CWwdGameObject::RemoveChild_166850(CGameObject* child) {
     if (child == 0) {
@@ -405,11 +368,6 @@ i32 CWwdGameObject::RemoveChild_166850(CGameObject* child) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x166880 (__thiscall, ret): walk the broadcast child list (m_listHead), invoke
-// each child's worker fire callback (child->m_7c->m_notify(child), __cdecl), and
-// return the number of children visited. Advances to the next node BEFORE the
-// callback (so a callback that unlinks the child is safe).
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers_166880() {
     i32 count = 0;
@@ -423,10 +381,6 @@ i32 CWwdGameObject::WalkChildWorkers_166880() {
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// CWwdGameObject broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
-// the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
-// forwarded args. No post-loop dispatch. __thiscall.
 RVA(0x001668b0, 0x26)
 void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());

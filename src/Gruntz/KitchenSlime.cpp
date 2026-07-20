@@ -21,100 +21,23 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-// KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
-// kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
-// probes up to four tiles in the slime's current travel direction (m_10->m_124),
-// stopping at the first in-bounds, walkable, on-screen tile; rotates the travel
-// direction when blocked; then sets the movement vector + direction sprite, the
-// per-tile timing (Hazardz/KitchenSlimeTimePerTile butemgr default), and caches
-// the new direction sprite's first frame. Only offsets / code bytes are
-// load-bearing; names are placeholders for the recovered engine identities.
-// CButeMgr g_buteMgr / the CUserLogic base hierarchy come from <Gruntz/UserLogic.h>.
 
-// CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
-
-// The slime's bound object (Level() == m_object, Anim() == m_38) IS the canonical
-// CGameObject; the ex CSlimeLevel / CSlimeAnimPlayer / CSlimeTiming views are
-// (+0x5c/+0x60), m_124 (travel dir), m_12c (lock-dir), m_extent.left..m_extent.bottom
-// (+0x134..+0x140, the on-screen tile window), m_area.left (+0x144, the cue-gate rect
-// base), and m_7c->m_bc (the AnimWorkerObj per-tile-time override) - all cast-free.
-// The anim facet reaches the leaf-embedded +0x1a0 CAniAdvanceCursor (Advance
-// @0x15c360) by documented address and the +0x190.. frame cache through the
-// m_194/m_198 role-union CGameObject already models (frame-cache reinterpret).
-
-// The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
-// (<Gruntz/TileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
-// (row[gy][gx*7] is the tile-flags word).
-// The on-screen object reached as g_gameReg->m_cmdGrid (the +0x68 CTriggerMgr slot,
-// the visibility/cue gate): FindGruntAt @0x75c60 resolves the entity under the slime's
-// screen rect and CellDispatch posts a scroll - both real CTriggerMgr methods, called
-// cast-free (<Gruntz/TriggerMgr.h>).
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindGruntAt @0x75c60, CellDispatch)
 
-// The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
-// (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
-
-// The entity FindGruntAt returns IS a CGrunt (retail signature
-// ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@..., returns CGrunt*; the header still
-// types it CTmCell* pending the deferred cross-lane retype, so cast at the site).
-// Its +0x258 is CGrunt::m_gruntKind (the object-kind id); 0x38 is the slime's own
-// the canonical CGrunt (<Gruntz/Grunt.h>), exactly as SpotLightCtor does.
 #include <Gruntz/Grunt.h>
 
-// 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
-
-// Per-frame scroll/scale factor (.data int) Tick multiplies into m_speed to get the
-// per-frame pixel step.
-// g_slimeFrameScale was a SECOND NAME for g_frameDelta (0x245584 per-frame delta) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" u32 g_frameDelta;
 
-// 0.0 (the velocity-sign comparand for the movement integrator).
 DATA(0x001ea400)
 const double g_slimeZero = 0.0;
 
-// A frame/tick counter (BSS) the anim sub-mgr Advance consumes.
-// g_slimeTick was a SECOND NAME for g_engineFrameDelta (0x2bf3bc per-frame delta (wwd)) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 extern "C" u32 g_engineFrameDelta;
 
-// CKitchenSlime : CUserLogic is modeled in <Gruntz/KitchenSlime.h> (canonical
-// header, included below). The CUserLogic base gives the +0x18 destructible link,
-// so ~CKitchenSlime folds the shared teardown (the /GX leaf-dtor archetype, see
 #include <Gruntz/KitchenSlime.h>
 
-// ---------------------------------------------------------------------------
-// The per-coordinate activation registry CKitchenSlime::FireActivation
-// (0x0b2940) dispatches through - the SAME archetype as
-// CSecretTeleporterTrigger::FireActivation (0x042150, see UserLogic.cpp), but a
-// DIFFERENT registry instance (the slime's, at 0x646228 vs the trigger's at
-// 0x244688). A coordinate maps to an Entry* either directly (when within the
-// fast [g_kslimeLo,g_kslimeHi] range) via g_kslimeBase + (coord-lo)*stride, or
-// by a slow Find in the collection (0x16da80, __thiscall ret 8), which on miss
-// rebuilds (GetRetAddr 0x16d990 -> g_projActCache, Insert 0x16d850 __thiscall ret
-// 0xc) and yields g_kslimeCur. The entry's first dword is a fn-ptr; a nonzero
-// entry's handler is called __thiscall on `this`. All globals are unnamed BSS
-// (DATA-pinned so the loads reloc-mask); the collection methods are
-// external/no-body (shared with the trigger registry's engine functions). The
-// alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
-// SAME shared global both registries write.
-
-// SHREDDED-OBJECT FIX: g_kslimeColl is ONE 0x24-byte CActReg object, not eight globals -
-// 0x64622c..0x646248 are its INTERIOR FIELDS (m_coll2/m_lo/m_hi/m_base/m_cur/m_stride/
-// m_scratch), which this TU used to declare as seven separate DATA()-pinned scalars, and
-// the hand-inlined KSlimeLookup over them was CActReg::ResolveEntry spelled out.
-// DEFINED here (owner TU) as zero-init .bss with NO ctor - what retail has: the CRT
-// dynamic-init table (30 entries @0x2096e4) has no initializer for 0x646228, and the
-// address is past .data's raw extent, so the loader zero-fills it. Construct (0x408710)
-// ctors it in place at runtime; hence the (_zvec*) cast at the engine call sites.
 DATA(0x00246228)
 extern CActReg g_kslimeColl;
 
-// The entry record (KSlimeHandler/CKSlimeEntry, the PMF slot) is defined in
-// <Gruntz/KitchenSlime.h> after the complete class.
-
-// The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
-// inline, typed to this registry's entry.
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     return reinterpret_cast<CKSlimeEntry*>(g_kslimeColl.ResolveEntry(coord));
 }
@@ -130,15 +53,6 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CKitchenSlime@@UAE@XZ 0x00013100 0x44
-
-// The global bute store the ctor binds the "A" node through (g_buteTree @0x6bf620;
-// Find 0x16d190). Declared here so the ctor's lookup reloc-masks.
-
-// The bound object the ctor reads IS the canonical CGameObject (m_object == m_38):
-// the screen position m_screenX/m_screenY (+0x5c/+0x60), the layer key
-// m_sortKey (+0x74), the flags m_flags (+0x08), the on-screen travel window
-// m_extent.left..m_extent.bottom (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
-// the direction name at m_194+0x24, and the re-seeded rect m_area.left..m_area.bottom
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
 // snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
@@ -215,25 +129,9 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_area.bottom = 0;
 }
 
-// ---------------------------------------------------------------------------
-// The shared game-object type-name registry (R1, @0x6bf650) the level-object
-// registration funnels through, keyed by the per-type id the global bute-tree
-// (g_buteTree @0x6bf620) assigns to a class name. Same fast-range/slow-Find/
-// rebuild lookup shape as the per-class activation table (KSlimeLookup); a fresh
-// type-id is allocated by inserting the class name into the bute-tree, recording
-// it into R1's entry (after freeing any CString nodes the slot held), and bumping
-// the global type counter. All globals are BSS (DATA-pinned so the loads
-// reloc-mask); the collection / CString helpers are external/no-body.
-
-// The global type counter (0x61aea8; retail .data init = 2000). The class-name bute
-// key is the shared "A" string literal (DAT_0060a454, the same $SG constant
-// CLightFx.cpp uses).
 DATA(0x0021aea8)
 i32 g_typeCounter = 2000;
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
-
-// R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
@@ -248,8 +146,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-// The slime's activation handler (LAB_0040180c, an ILT thunk). Referenced by
-// address so the store emits a reloc-masked DIR32 to the named symbol.
 extern "C" void KSlimeActivationHandler(); // 0x40180c
 
 // CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
@@ -287,19 +183,11 @@ void CKitchenSlime::RegisterType() {
     *reinterpret_cast<void**>(KSlimeLookup(id)) = static_cast<void*>(&KSlimeActivationHandler);
 }
 
-// CKitchenSlime::RegisterRange @0x0b28c0 - seed the slime's activation table's
-// fast-range bounds via the shared _zdvec registry ctor (RegisterRange(0x7d0,
-// 0x7da), 0x408710 through the 0x3742 ILT thunk). A static initializer; same
-// archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000b28c0, 0x15)
 void CKitchenSlime::RegisterRange() {
     g_kslimeColl.Construct(0x7d0, 0x7da);
 }
 
-// CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in
-// the slime's per-coordinate registry; if the entry has a registered handler,
-// look it up again and dispatch it __thiscall on this. Same archetype as
-// CSecretTeleporterTrigger::FireActivation (0x042150).
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::FireActivation(i32 coord) {
     CKSlimeEntry* e = KSlimeLookup(coord);
@@ -405,22 +293,6 @@ i32 CKitchenSlime::Tick() {
     return 0;
 }
 
-// The serialization stream is the shared CSerialArchive: slot +0x2c (index 11) Read
-// reads n bytes into a buffer, slot +0x30 (index 12) Write transfers n bytes (was
-// the per-TU CSlimeStream view; only the slot offsets are load-bearing, the virtual
-// call is reloc-masked, as in CStatusBarMgr::Serialize).
-
-// The +0x34 serializable sub-object the slime chains into after the shared
-// CUserLogic::SerializeMove is the shared CSerialObjRef (Chain @0x8c00 via the
-// 0x1aff thunk); same archetype as CFortressFlag::Serialize.
-
-// CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
-// read tag (7) read the seven motion quadwords (m_speed..m_88) through the stream's
-// Read slot; for the transfer tag (4) transfer them through the Transfer slot.
-// Then chain the shared CUserLogic serialize on `this` (bail on failure) and the
-// +0x34 sub-object's chain, returning whether that chain succeeded.
-// The seven 8-byte fields span the doubles m_speed..m_78 plus the (m_tileX,m_tileY) and
-// (m_stepMag,m_stepMagHi) int pairs, so they are addressed by offset (codegen-neutral here).
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     char* B = reinterpret_cast<char*>(this);
@@ -610,7 +482,5 @@ i32 CKitchenSlime::LoadSprites() {
     m_stepMagHi = 0;
     return 1;
 }
-// size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 
-// (CKSlimeEntry SIZE_UNKNOWN lives in KitchenSlime.h; CSlimeAnimPlayer/CSlimeLevel/
 SIZE_UNKNOWN(CStringNode);

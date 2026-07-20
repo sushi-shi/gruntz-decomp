@@ -1,27 +1,3 @@
-// SoundStream.cpp
-// original TU: C:\Proj\Dsndmgr\DSndMgSR.cpp
-//
-// The WHOLE DSndMgSR.cpp object, consolidated per docs/exe-map/interval-dossiers.md
-// (interval 0x1350b0-0x13848b splits at 0x137330 into DSNDMGR.CPP + DSndMgSR.cpp;
-// __FILE__-anchored at 0x137859 inside CreateStreamBuffer). One retail obj = one
-// TU, functions in retail RVA order:
-//   * SoundStream - the streaming DirectSound class (vftable 0x5ef6ec, derives
-//     SoundDevice): RIFF parse, stream-buffer creation, voice list (+0x94).
-//   * StreamVoice - the 0xb0-byte per-stream voice wrapper (vftable 0x5ef6d8 +
-//     feeder-override 0x5ef6e0), was StreamVoice.cpp.
-//   * StreamFeeder / StreamVoiceFeeder - the streaming feeder/pump embedded at
-//     StreamVoice+0x6c (vftables 0x5ef6f0/0x5ef6e0), was StreamFeeder.cpp.
-//   * SoundStream::Free (0x137740) / SoundStream::Stop (0x137a80) - the teardown
-//     pair (were the soundstreamfree/soundstreamteardown singleton units).
-//   * SoundDevice::TickSubManagers (0x137ac0) - a SoundDevice method the devs
-//     defined in the STREAM file: its body is pure stream machinery (walks the
-//     StreamVoice instance list pumping StreamFeeder). Dossier seam re-home.
-//   * ??1PureSoundElem (0x137330) - the out-of-line copy of the canonical inline
-//     dtor (<Dsndmgr/SoundVoiceList.h>) this obj's EH funclet forces. First fn of the obj.
-//   * SetDSoundReportModes + DirectSoundMgr::GetErrorString (0x138120/0x138150) -
-//     the error-reporting tail: they sit AFTER the StreamFeeder block in retail,
-//     past the 0x137330 boundary, so they belong to this obj (dossier: weak - could
-//     also be a third small reporting TU; kept here as the simplest 2-file model).
 #include <Dsndmgr/SoundStream.h>
 #include <EmptyString.h>          // g_emptyString
 #include <Dsndmgr/StreamVoice.h>  // canonical StreamVoice + StreamVoiceFeeder
@@ -34,14 +10,8 @@
 #include <stdio.h>  // engine sprintf (reloc-masked) in GetErrorString
 #include <string.h> // memset (rep stos) in FillBuffer; inline strcpy in GetErrorString
 
-// The __FILE__ string DSndMgSR.cpp passes to GetErrorString (the $SG pooled
-// constant 0x619f1c).
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-// Reporting-mode globals (.data): g_ssLogEnabled -> OutputDebugStringA, g_ssMsgBoxEnabled
-// -> MessageBox, g_ssBeepEnabled -> startup beep, g_ssThirdEnabled -> "any output" gate.
-// (Bound here with the GetErrorString/SetDSoundReportModes pair that owns them.)
-// Owner-TU definitions (.bss zero), RVA-ascending; C linkage.
 extern "C" {
     DATA(0x00253c4c)
     i32 g_ssLogEnabled; // 0x653c4c -> OutputDebugStringA
@@ -52,18 +22,6 @@ extern "C" {
     DATA(0x00253c58)
     i32 g_ssThirdEnabled; // 0x653c58 -> "any output" gate
 }
-
-// Empty mutable string in .data copied into the working buffer up front.
-
-// The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
-// WINMM import; TickSubManagers reaches the clock through PurgeVoiceList's sibling
-// indirection - do NOT swap for timeGetTime.
-
-// ALL-VTABLES phase: the stream vftable (0x5ef6ec) is cl-emitted as
-// ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
-// dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
-// ~SoundDevice. cl also auto-emits the ??_G scalar-deleting dtor at 0x1376f0 (was
-// the hand-declared scalar-dtor) - now a compiler artifact with no source symbol.
 
 // ---------------------------------------------------------------------------
 // 0x137330 - ??1PureSoundElem, the standalone out-of-line COMDAT copy of the
@@ -77,9 +35,6 @@ extern "C" {
 // (RELOC_VTBL alias) - dissolved onto the real class.
 // @rva-symbol: ??1PureSoundElem@@QAE@XZ 0x00137330 0x7
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window
-// (source + offset + length) over the stream, then prime via Tick(-1).
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
     if (src == 0) {
@@ -94,13 +49,6 @@ i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoiceFeeder::Feed (was CopyWindow) - the derived voice-feeder's slot-0
-// override (__thiscall, 6 args - two (dst, n, *got) triples). Stream-copy up to `n`
-// bytes into each destination region from the running window cursor (m_sourceOffset),
-// reporting the byte count read in *got, and looping back to the window start
-// (m_windowStart) at the end when the loop flag (m_loop) is set. Each chunk is read
-// through CParseSource::Read (0x139af0) at the source back-pointer (m_source).
 RVA(0x00137380, 0x10e)
 i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
     if (dst1 != 0 && n1 > 0) {
@@ -140,11 +88,6 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoiceFeeder::FeedData (slot 1 override, 0x137490): rewind the window -
-// reset the running cursor to the window start and recompute the window end.
-// (Was a declared-only "body external" slot falsely eaten by a FID __fpclear/
-// charNode row; the body is this TU's.)
 RVA(0x00137490, 0x14)
 i32 StreamVoiceFeeder::FeedData() {
     m_sourceOffset = m_windowStart;
@@ -152,15 +95,9 @@ i32 StreamVoiceFeeder::FeedData() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoiceFeeder::OnDrain (slot 2 override, 0x1374b0): no-op.
 RVA(0x001374b0, 0x1)
 void StreamVoiceFeeder::OnDrain() {}
 
-// ---------------------------------------------------------------------------
-// StreamVoice::SetSource (__thiscall, 1 arg). Ask the owning
-// SoundStream (m_owner) to parse the RIFF/WAVE source into a scratch
-// WAVEFORMATEX + data (off, len), then arm the embedded feeder's window over it.
 RVA(0x001374c0, 0x5d)
 i32 StreamVoice::SetSource(CParseSource* src) {
     if (src == 0) {
@@ -179,11 +116,6 @@ i32 StreamVoice::SetSource(CParseSource* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoice::Configure (__thiscall, 4 args). Apply the cached
-// volume/pan/frequency indices through the DirectSoundMgr base setters, stash the
-// loop flag in m_feeder.m_loop, then resume the embedded feeder - ANDing every step's
-// success into the returned flag.
 RVA(0x00137520, 0x6e)
 i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (m_owner->m_initialized == 0) {
@@ -209,22 +141,11 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     return ok;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoice::ComputeRatio (__thiscall, no args).
-// m_feeder.m_windowLength * 1000 / m_sampleRate (a position->time ratio; the
-// *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
     return m_feeder.m_windowLength * 1000 / m_sampleRate;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoice::StreamVoice (__thiscall, /GX EH frame). Chain the real
-// DSoundCloneInst base ctor (0x135b10), cl constructs the embedded feeder
-// (0x137cd0 + the 0x5ef6e0 derived stamp), then cache the two ctor args
-// (a->+0x60, b->+0x64) and clear the active latch (+0x68). The /GX
-// ctor-in-flight frame (EH state 0 = base constructed) falls out of the real
-// base subobject.
 RVA(0x001375b0, 0x77)
 StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b)
     : DSoundCloneInst(buf, owner) {
@@ -234,12 +155,6 @@ StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32
     m_active = 0;
 }
 
-// ---------------------------------------------------------------------------
-// StreamVoice::~StreamVoice (__thiscall, /GX EH frame). Reset the embedded
-// feeder; cl then destroys m_feeder (~StreamFeeder 0x137cf0, EH state 0) and
-// chains the base ~DSoundCloneInst (0x135bb0, state -1), re-stamping the vptr to
-// ??_7StreamVoice at entry - the retail state machine (1 -> 0 -> -1) is the
-// compiler's member+base teardown, not hand-written calls.
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
     m_feeder.FeederReset(0);
@@ -277,9 +192,6 @@ SoundStream::SoundStream() {
 // ??_7SoundStream @0x5ef6ec). Was a FID ??_G__non_rtti_object false positive.
 // @rva-symbol: ??_GSoundStream@@UAEPAXI@Z 0x001376f0 0x1e
 
-// ---------------------------------------------------------------------------
-// SoundStream::~SoundStream (__thiscall). Empty body: cl resets the vptr to
-// ??_7SoundStream@@6B@ (0x5ef6ec) then chains ~SoundDevice (the teardown).
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
@@ -299,10 +211,6 @@ i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
     return PlaySound3_136550(reinterpret_cast<i32>(hWnd), flag, 0);
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::Free (0x137740) - drain the owned per-stream voice list (DestroyVoice
-// pops the head each pass, so m_voices.m_head is re-read every iteration), then run
-// the inherited SoundDevice::Shutdown. (Was the soundstreamfree singleton unit.)
 RVA(0x00137740, 0x3e)
 void SoundStream::Free() {
     for (StreamVoice* p = elemOf<StreamVoice>(m_voices.m_head); p != 0;
@@ -421,10 +329,6 @@ StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, 
     return voice;
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::DestroyVoice (__thiscall, 1 arg). Reset the voice's
-// feeder, reap its queued channel voices, release its IDirectSoundBuffer, unlink
-// it from the +0x94 list, then run its scalar-deleting destructor (vtable slot 0).
 RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
@@ -441,10 +345,6 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::PlayStream (__thiscall, ret 0x10 => 4 args, 0x137a30). Open a streaming
-// voice for `src` (auto-priming: OpenStream p4=0/p5=1), resume its feeder; on success
-// return the voice, else destroy it and return 0.
 RVA(0x00137a30, 0x4b)
 StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4) {
     StreamVoice* voice = OpenStream(src, a2, a3, a4, 0, 1);
@@ -458,10 +358,6 @@ StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4) 
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// SoundStream::Stop (0x137a80) - stop streaming without a full free: Pause every
-// voice's embedded feeder down the instance list, then run the inherited
-// SoundDevice::StopAll. (Was the soundstreamteardown singleton unit.)
 RVA(0x00137a80, 0x3d)
 void SoundStream::Stop() {
     StreamVoice* node = elemOf<StreamVoice>(m_voices.m_head);
@@ -472,15 +368,6 @@ void SoundStream::Stop() {
     StopAll();
 }
 
-// -------------------------------------------------------------------------
-// SoundStream::TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the
-// instance list (m_voices.m_head threads StreamVoice+4 links); per voice: pump the
-// embedded feeder (StreamFeeder::Tick @0x137e30), poll the per-stream buffer
-// wrapper's IsPlaying (feeder->m_buffer, i.e. voice+0x74); when it just went idle,
-// reprime the feeder (TickPump(-1) @0x1380d0) if m_stopWhenIdle and/or retire the
-// voice (DestroyVoice) if m_retireWhenIdle; latch the IsPlaying result into m_active.
-// A SoundStream method (its `this` calls the SoundStream-only DestroyVoice directly);
-// the DSndMgSR.cpp obj holds its body (pure stream machinery).
 RVA(0x00137ac0, 0xa2)
 i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
@@ -577,9 +464,6 @@ i32 SoundStream::ParseWave(
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::StreamFeeder (__thiscall). Stamp the vptr, zero the
-// buffer/cursor/flag fields. cl auto-emits ??_7StreamFeeder@@6B@ (0x5ef6f0).
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
     // cl auto-stamps ??_7StreamFeeder@@6B@ (0x5ef6f0) here.
@@ -590,11 +474,6 @@ StreamFeeder::StreamFeeder() {
     m_lastTickMs = 0;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::~StreamFeeder (__thiscall - the REAL non-virtual dtor; was the
-// `Cleanup()` placeholder). cl re-stamps ??_7StreamFeeder (0x5ef6f0) at entry,
-// then the body tears down the armed buffer and clears m_buffer. ~StreamVoice's
-// EH state machine calls this as the m_feeder member dtor (state 0).
 RVA(0x00137cf0, 0x20)
 StreamFeeder::~StreamFeeder() {
     if (m_armed != 0) {
@@ -652,10 +531,6 @@ i32 StreamFeeder::FeederStart(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::FeederReset (__thiscall, 1 arg). If armed, drain
-// (Pause if drained, then the OnDrain virtual), optionally reap the buffer from
-// the owner, and disarm.
 RVA(0x00137dc0, 0x43)
 void StreamFeeder::FeederReset(i32 doStop) {
     if (m_armed != 0) {
@@ -673,25 +548,14 @@ void StreamFeeder::FeederReset(i32 doStop) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::FeedData (slot 1 base default, 0x137e10): nothing to arm -
-// return success. (Was a declared-only "body external" slot falsely eaten by a
-// FID charNode row; the body is this TU's.)
 RVA(0x00137e10, 0x6)
 i32 StreamFeeder::FeedData() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::OnDrain (slot 2 base default, 0x137e20): no-op.
 RVA(0x00137e20, 0x1)
 void StreamFeeder::OnDrain() {}
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::Tick (0x137e30, __thiscall). The per-frame throttled pump
-// SoundDevice::TickSubManagers drives: gate on m_drained, 100ms-throttle via
-// m_lastTickMs, read the buffer play position and FillBuffer-refill the consumed
-// span.
 RVA(0x00137e30, 0x98)
 i32 StreamFeeder::Tick(i32 timestamp) {
     if (!m_drained) {
@@ -722,9 +586,6 @@ i32 StreamFeeder::Tick(i32 timestamp) {
     return FillBuffer(m_bufferCursor, v) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::Resume (__thiscall). If not already drained, resume
-// the buffer (SetField3(1)) and, if it reports playing, mark drained (m_drained=1).
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
     if (m_drained != 0) {
@@ -738,9 +599,6 @@ i32 StreamFeeder::Resume() {
     return r; // fall-through keeps the Play result in eax (no re-zero)
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::Pause (__thiscall). If drained, stop+rewind the
-// buffer and clear the drained flag; else nothing.
 RVA(0x00137f00, 0x26)
 i32 StreamFeeder::Pause() {
     if (m_drained == 0) {
@@ -810,10 +668,6 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StreamFeeder::TickPump (0x1380d0, __thiscall). The reset-and-reprime pump
-// (TickSubManagers fires it with -1 on idle+stop): zero the read cursor, rewind
-// the buffer, and FillBuffer the whole window.
 RVA(0x001380d0, 0x4e)
 i32 StreamFeeder::TickPump(i32 now) {
     i32 t = (now == -1) ? static_cast<i32>(timeGetTime()) : now;
@@ -826,10 +680,6 @@ i32 StreamFeeder::TickPump(i32 now) {
     return FillBuffer(m_bufferCursor, m_bufferLength) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x138120 - set the four GetErrorString reporting-mode flags (log / message-box /
-// beep / third) from the four args. __cdecl free helper (sibling of DDraw's / DInput's).
-// (Dossier: sits past the StreamFeeder block -> this obj's error-reporting tail.)
 RVA(0x00138120, 0x27)
 void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ssLogEnabled = log;
@@ -838,10 +688,6 @@ void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ssThirdEnabled = third;
 }
 
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::GetErrorString (0x138150) - map a DSound HRESULT to a string +
-// beep/log/MessageBox per the reporting globals (switch VALUES + DSERR_*/
-// "DirectSoundMgr" strings are load-bearing). LAST function of the DSndMgSR.cpp obj.
 RVA(0x00138150, 0x33b)
 void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // error-code name

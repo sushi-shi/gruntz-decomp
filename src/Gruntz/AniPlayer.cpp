@@ -19,23 +19,8 @@
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
 #include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CImageSet (the resolved record)
 
-// The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
-
-// The running game clock the timed-play start is stamped from (DAT_00645588).
 extern "C" u32 g_frameTime;
 
-// ===========================================================================
-// CAniPlayer::Start (0x0e5ad0) - seed the item (forward all 14 args to the base
-// CSBI_ImageSetAni::Init); on success record the timed-play window (start clock
-// @+0x58 = g_frameTime, duration @+0x60 = the play interval m_3c), then return 1.
-// Returns 0 if Init fails.
-//
-// The rect IS by value. This function's own residual said so: retail groups the four rect
-// args into a 16-byte stack block (`sub esp,0x10; mov [eax+N]`), which "strongly implies
-// Init/Start's real signature takes a by-VALUE 4-int rect struct there rather than four
-// scalars" - and it was parked because re-modeling Init was a cross-function change. The
-// CSbConfigItem fold did exactly that re-model (the fabricated base's ConfigureEx took the
-// rect by value all along, and it IS this Init, slot 13), so Start now forwards it whole.
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,

@@ -13,7 +13,6 @@
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
 #include <Gruntz/ParseSource.h> // CParseSource (GetEntryTag) - keep BEFORE any
-// header that fwd-declares `class CParseSource` (MSVC5 default-access quirk)
 #include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
@@ -30,29 +29,9 @@
 // @data-symbol: ?g_fmtPathJoin@@3PBDB 0x0021ab18
 extern const char g_fmtPathJoin[];
 
-// Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
-// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free IS the global
-// operator delete (FID-verified library label) - the scalar-deleting dtor AND the
-// explicit path-buffer free at the walker tail both call it.
 void operator delete(void*);
 
-// The 0x28-byte animation element is the ONE canonical CAniElement
-// (<Gruntz/AniElement.h>, primary vftable ??_7CAniElement @0x5efba8, 5 slots;
-// slot 1 = the cl-auto ??_G scalar-deleting dtor @0x152e10). Its inline ctor
-// reproduces retail's ctor-in-flight EH shape at the factory new-sites (the
-// +0x08 m_records CObArray member's potentially-throwing NAFXCW ctor @0x1b55e9).
-// (The former ctor-shape view pair CAniElemSub + CAniElementObj is dissolved
-// onto the canonical - one class, one def, one vtable.)
-
-// (The ex `CDDrawSubMgrAni` twin class is MERGED onto CDDrawSubMgrLeaf - one
-// receiver, one TU, one layout; proof in <DDrawMgr/DDrawSubMgrLeaf.h>. The ANI
-// factory reads the owner's +0x28 m_soundRegistry as the element Configure ctx - a
-// real typed hop now, not the ex raw-offset AniMgrSubObject helper.)
-
-// ---------------------------------------------------------------------------
-// Look up `key` in the map; return the found value (or null), ignoring the bool.
-// COMDAT-at-usage exile kept at the 0x6bxxx obj (file-head position).
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
     void* val = 0;
@@ -60,7 +39,6 @@ CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
     return static_cast<CObject*>(val);
 }
 
-// The leaf vtable slots 6/7 (S2-resident tiny virtuals, out-of-line like retail).
 RVA(0x00152640, 0x6)
 i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;
@@ -209,12 +187,6 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* ent
     return el;
 }
 
-// ---------------------------------------------------------------------------
-// 0x152ad0: recursive CSymTab directory walker. Allocate a 0x100-byte path buffer
-// (return 0 on failure), then for each child scope build the joined path and
-// recurse, summing the count; then for each leaf entry, for each 'ANI'-tagged
-// record not yet cached, build its path and create the element, counting
-// successes. Frees the buffer and returns the count. 3 stack args (ret 0xc).
 RVA(0x00152ad0, 0x17f)
 i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
@@ -257,8 +229,6 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// Return 1 if any key strncmp-equals `str` over strlen(str), else 0.
 RVA(0x00152c50, 0xdc)
 i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
     i32 len = strlen(str);
@@ -274,10 +244,6 @@ i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// Reverse lookup: return (by value) the key of the entry whose value pointer ==
-// `target`; an empty key for target==0 or no match. The map-scan idiom (top-tested
-// while + real GetStartPosition, key.Empty() before the final return key) closes it.
 RVA(0x00152d30, 0xd4)
 CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
     CString key;

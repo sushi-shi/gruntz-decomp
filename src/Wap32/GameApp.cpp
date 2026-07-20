@@ -1,61 +1,25 @@
-// GameApp.cpp - WAP32 CGameApp (Brian Goble's engine).
-// Matched: CGameApp::CGameApp (byte-exact code; the instance
-// counter is a file-scope global here - same store sequence, the
-// reloc just names a different symbol than the Ghidra DAT_ at that address).
 #include <Wap32/Wap32.h>
 #include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
 #include <Globals.h>
-// timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
-// 0x13ddc0-0x13df00 are CGameMgr's own - declared in <Wap32/Wap32.h>,
-// defined below inside CGameMgr's contiguous retail method block. 0x13ddc0 is the
-// base PerFrameTick: retail ??_7CGameMgr @0x5e9b8c slot 4 holds it directly.)
-
-// Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
-
-// Instance counter (bumped per ctor). Canonical DATA binding (0x253c6c) lives in
-// src/Globals.cpp (declared via <Globals.h>, included above) - it is the retail
-// global the placeholder g_instCount653c6c named; referenced here, reloc-masked.
-
-// -------------------------------------------------------------------------
-// CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward
-// to the virtual Init using `szName` for BOTH the window name and the game
-// identifier, an empty command line, no flags, and default (CW_USEDEFAULT) size.
 
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
     return Init(hInstance, szName, szName, g_emptyString, 0, static_cast<i32>(0x80000000), static_cast<i32>(0x80000000));
 }
 
-// CGameApp::HasWindowAndManager (vtbl +0x14, slot 5) - readiness gate: nonzero
-// only when both the game window and game manager are constructed.
 RVA(0x00080d60, 0x18)
 i32 CGameApp::HasWindowAndManager() {
     return m_gameWnd != 0 && m_gameMgr != 0;
 }
 
-// CGameApp::HandleCommand (vtbl +0x28, slot 10) - the default WM_COMMAND
-// handler: unhandled, returns 0. (CGruntzApp overrides it at 0x080aa0.)
 RVA(0x00080d90, 0x5)
 i32 CGameApp::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-// (0x133380 used to live here as a fake `CGameMgr::vector_deleting_destructor`
-// over a fabricated `deviceConfigRootTable` global and a local CInputDevRoot view. It is
-// neither: it is CInputDevRoot's SCALAR-DELETING DESTRUCTOR `??_GCInputDevRoot@@UAEPAXI@Z`
-// - the vptr it stamps, 0x1ef670, IS ??_7CInputDevRoot@@6B@, and retail emits the COMDAT
-// inside DirectInputMgr2's block. cl already auto-emits that ??_G into directinputmgr2's
-// obj, so nothing had to be written at all - it just had to be NAMED there. The label now
-// lives in DinMgr2.cpp (an rva-symbol pin on that ??_G, next to VTBL(CInputDevRoot)), which
-// also homes the function to its real TU. The fake global + view + method decl are gone.)
-
-// -------------------------------------------------------------------------
-// CGameApp::CGameApp()
-// Zeroes the resource/window/manager pointers and the error-state fields,
-// then bumps the file-scope instance counter.
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_gameWnd = 0;
@@ -69,11 +33,6 @@ CGameApp::CGameApp() {
     g_gameAppInstanceCount++;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitInstance
-// The Run/Init orchestration: validate the GameInfo, copy it into the member,
-// resolve hInstance, build the class+window names, register the class, create
-// the window via CGameWnd::CreateAndShow, then bring up the game manager.
 RVA(0x0013d5d0, 0x1d3)
 i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,
@@ -157,12 +116,6 @@ Fail:
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::Init
-// Builds a GameInfo descriptor on the stack from the launch parameters, then
-// hands it to InitInstance (vtable +0x4) to register+create.
-// hInstance is required (null -> 0). The three name strings are conditionally
-// strcpy'd (inline rep movs at /O2/Oi).
 RVA(0x0013d7b0, 0x105)
 i32 CGameApp::Init(
     HINSTANCE hInstance,
@@ -198,9 +151,6 @@ i32 CGameApp::Init(
     return InitInstance(&gi, 0, 0);
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::CloseResources
-// Frees the accelerator table then deletes the two resource objects.
 RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
     if (m_hAccel) {
@@ -217,14 +167,6 @@ void CGameApp::CloseResources() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
-// dispatches here). Reads the OS HWND off m_gameWnd->m_hwnd; if there is no
-// window, return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
-// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
-// (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
-// (return ignored); always TranslateMessage + DispatchMessageA; when the queue
-// is empty, call the idle virtual (vtbl +0x20) and loop.
 RVA(0x0013d910, 0x9f)
 i32 CGameApp::RunMessageLoop() {
     MSG msg;
@@ -251,9 +193,6 @@ i32 CGameApp::RunMessageLoop() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitializeDefaultWindowClass
-// Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
 RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
     i32 i;
@@ -278,12 +217,6 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.lpszClassName = m_gameInfo.szWindowClassName;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitializeDefaultCreateStruct
-// Fills the embedded CREATESTRUCTA (m_createStruct @ +0x210) with default
-// window geometry/style derived from the GameInfo windowClassFlags:
-//   bit1 (Windowed) -> a "Gruntz" menu, gameInfo width/height, overlapped or
-//   caption style; otherwise -> fullscreen popup at the screen metrics.
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
     i32 i;
@@ -346,33 +279,16 @@ void CGameApp::InitializeDefaultCreateStruct() {
     m_createStruct.dwExStyle = exStyle;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitializeGameWindow
-// `return new CGameWnd;` - operator new(0x10) then the CGameWnd ctor under a
-// C++ EH frame (so this TU is built with /GX). The push-ecx at entry is MSVC
-// reserving one dword of locals for the new pointer / EH-tracked object;
-// `this` (the CGameApp) is never touched - this is the CGameWnd-allocation
-// analog of CGruntzApp::InitializeGameManager, and it sits in the CGameApp
-// address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
-// game-app-specific >=0x254 fields).
 RVA(0x0013db60, 0x57)
 CGameWnd* CGameApp::InitializeGameWindow() {
     return new CGameWnd;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitializeGameManager (vtbl +0x38) - the base engine's manager
-// factory: `return new CGameMgr;` (operator new(0x2c) then the CGameMgr
-// ctor at 0x13dd10, under the C++ EH frame). The CGameMgr-allocation analog of
-// InitializeGameWindow; CGruntzApp overrides it (new CGruntzMgr) in GruntzApp.cpp.
 RVA(0x0013dbc0, 0x57)
 CGameMgr* CGameApp::InitializeGameManager() {
     return new CGameMgr;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::InitializeAccelerators
-// Reloads the accelerator table; returns whether it loaded.
 RVA(0x0013dc20, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
@@ -386,14 +302,6 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::OnIdle - vtbl slot +0x20.
-// The per-frame idle virtual the message pump calls on an empty queue
-// (RunMessageLoop dispatches `call [vtbl+0x20]`). When the app is active -
-// both gate words m_appActive and m_running set - it tail-calls the game manager's
-// per-frame tick (m_8->vtbl +0x10, the 5th vtable slot). The tail call emits
-// `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
-// neither gate-load disturbs a callee-saved reg).
 RVA(0x0013dc70, 0x1d)
 void CGameApp::OnIdle() {
     if (m_appActive && m_running) {
@@ -401,11 +309,6 @@ void CGameApp::OnIdle() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::FreeGameManager - vtbl slot +0x24.
-// `delete m_8; m_8 = 0;` - frees the game manager via its scalar-deleting
-// dtor (slot 0, `push 1; call [vtbl]`) and clears the slot. `this` is spilled
-// to esi at entry; the null-check skips both when m_8 is already 0.
 RVA(0x0013dc90, 0x19)
 void CGameApp::FreeGameManager() {
     if (m_gameMgr) {
@@ -414,15 +317,6 @@ void CGameApp::FreeGameManager() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::ReportError (vtbl +0x1c, slot 7; 0x13dcb0) - the engine's report-once
-// error latch. It is a CGameApp base virtual: the SAME body pointer sits at
-// ??_7CGameApp@@6B@+0x1c AND ??_7CGruntzApp@@6B@+0x1c (CGruntzApp inherits, no override).
-// Guarded by m_errorReported: the first call latches it and - when the game window is up
-// and not already closing (m_closeGuard == 0) - posts WM_CLOSE to it; then clears the run
-// gate and stashes the (code, detail) pair ShowError later reads. __thiscall(2).
-// The cached PostMessageA fn-ptr @0x6c44c8 (extern "C" so the reloc emits the canonical
-// _g_pPostMessageA - the single name bound there).
 RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     if (m_errorReported != 0) {
@@ -438,25 +332,6 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     m_errorDetail = lParam;
 }
 
-// ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
-// still emitted in this TU (the vtable's scalar-deleting dtor references it).
-
-// (the three "CGameMgr vtable anchor" stubs that used to sit here are GONE. They were not
-// anchors, they were a SECOND definition of functions this tree already reconstructs at
-// their retail rvas in src/Gruntz/GruntzMgr.cpp - IsActive @0x85560,
-// PerFrameTick, HandleCommand @0x85580 - and the IsActive stub was WRONG: it returned a
-// constant 0 where retail returns `m_gameWnd != 0` (`mov edx,[ecx+4]; xor eax,eax;
-// test edx,edx; setne al; ret`). One mangled name, two byte-shapes, and MSVC5 keeps exactly
-// one COMDAT - so the linker could have handed every caller in this tree the stub that says
-// "no game window is ever bound". Declared-only in <Wap32/Wap32.h> is all this TU needs:
-// the vtable slot's reloc binds to the real body at link.)
-
-// -------------------------------------------------------------------------
-// CGameMgr::CGameMgr()  (__thiscall, returns this in EAX; vftable @0x5e9b8c)
-// Seeds the sound/music-on flags (m_soundEnabled/m_musicEnabled = 1), zeroes the owned pointers, then
-// initialises the frame clock via the two time helpers. The optimiser hoists
-// the m_soundEnabled/m_musicEnabled stores (and the InitTimeFields `reset=1` argument push) above
-// the vptr store.
 RVA(0x0013dd10, 0x35)
 CGameMgr::CGameMgr() {
     m_soundEnabled = 1;
@@ -469,13 +344,6 @@ CGameMgr::CGameMgr() {
     InitializeTimeGlobal();
 }
 
-// The WAP32 frame-timing / app-instance state owned by CGameApp/CGameMgr (.bss,
-// zero-init), RVA-ascending. g_gameAppInstanceCount is the CGameApp instance counter
-// (bumped in the ctor above); g_wap32Now/g_wap32FrameDelta the canonical frame clock +
-// delta this TU's UpdateTimeGlobal writes; g_wap32ClockReset the timeGetTime latch
-// InitializeTimeGlobal reseeds; g_wap32Run7c/g_wap32Run80 the run-timing countdown + its
-// reload value (primed to 100 here). Referenced by RezMgr/GruntzMgr/GruntzApp/... too;
-// reference externs stay in <Globals.h> (included above). (REHOME DD-Drain-1 / DD-D)
 DATA(0x00253c6c)
 i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
 DATA(0x00253c70)
@@ -489,11 +357,6 @@ i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
 DATA(0x00253c80)
 i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
 
-// -------------------------------------------------------------------------
-// CGameMgr::Run  (__thiscall; vtable +0x04, the engine-start entry).
-// Binds the manager to the game window (records the window + its owner app),
-// reseeds the frame clock, and primes the two run-timing globals to 100.
-// Bails (returning 0) if there is no window, or the window has no OS HWND yet.
 RVA(0x0013dd50, 0x54)
 i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
@@ -513,36 +376,12 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGameMgr::Close  (vtable +0x08)
-// Clears the two manager-owned pointers/handles.
 RVA(0x0013ddb0, 0x9)
 void CGameMgr::Close() {
     m_gameWnd = 0;
     m_owner = 0;
 }
 
-// The frame clock. Retail does NOT call the WINMM import thunk directly; it caches
-// timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
-// in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
-// canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
-
-// -------------------------------------------------------------------------
-// CGameMgr::PerFrameTick() (0x13ddc0; vtable +0x10 idx4 - retail ??_7CGameMgr
-// @0x5e9b8c slot 4 holds this body DIRECTLY, byte-verified) - the base per-frame
-// tick. Sample timeGetTime, derive the per-frame delta into the canonical
-// g_wap32Now/g_wap32FrameDelta cells, run down the run-state countdown, then
-// (when the pacing gate m_pacingGate is armed) busy-wait to the ms budget and,
-// every ~2s window, fold the frame count into m_fps and rearm the window.
-// CGruntzMgr overrides it (its slot 4 = thunk 0x1c7b -> 0x8b740, the game tick
-// in src/Rez/RezMgr.cpp) and calls this base body first - the direct
-// `call 0x13ddc0` there is the qualified base-call.
-//
-// RVA interleave inside CGameMgr's contiguous method block, field-for-field slot
-// identity at +0x18..+0x28, and the CGameRegistry third view - lives on in the
-// <Wap32/Wap32.h> member comments. Its own duplicate `InitTimeFields` decl is long
-// deleted; the call below is a plain same-class member call that binds to the
-// real ?InitTimeFields@CGameMgr@WAP32@@ at 0x13de70.)
 RVA(0x0013ddc0, 0xaa)
 i32 CGameMgr::PerFrameTick() {
     // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
@@ -580,9 +419,6 @@ i32 CGameMgr::PerFrameTick() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
-// Zeroes the frame counter, samples the fps-window start tick, and (when reset) arms m_fps.
 RVA(0x0013de70, 0x23)
 void CGameMgr::InitTimeFields(i32 reset) {
     m_frameCounter = 0;
@@ -592,9 +428,6 @@ void CGameMgr::InitTimeFields(i32 reset) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameMgr::InitializeTimeGlobal
-// Seeds the frame clock from timeGetTime and clears its deltas.
 RVA(0x0013dea0, 0x18)
 void CGameMgr::InitializeTimeGlobal() {
     g_wap32Now = timeGetTime();
@@ -624,10 +457,6 @@ void CGameMgr::SpinWaitUntil(i32 ms) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CGameMgr::SetFrameRate(fps) (0x13dee0; ex RezMgr::): store the frame rate in
-// the pacing gate (m_pacingGate @+0x1c) and, when positive, derive the per-frame
-// budget (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg.
 RVA(0x0013dee0, 0x1b)
 void CGameMgr::SetFrameRate(i32 fps) {
     m_pacingGate = fps;
@@ -636,10 +465,6 @@ void CGameMgr::SetFrameRate(i32 fps) {
     }
 }
 
-// CGameMgr::TrySetFrameRate(fps) (0x13df00; ex RezMgr::): install the rate only
-// when pacing is not already active (m_pacingGate > 0 -> clear it via
-// SetFrameRate(0) and fail with 0); otherwise configure to fps and succeed
-// (return 1). __thiscall, 1 arg.
 RVA(0x0013df00, 0x25)
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
     if (m_pacingGate > 0) {
@@ -687,15 +512,6 @@ void WaitKeyEdge(int vk, int timeoutMs) {
     }
 }
 
-// CGameApp::GameWindowProc (the static WNDPROC) is reconstructed in GameWnd.cpp:
-// its code lives in the CGameWnd address cluster and dispatches to the active
-// CGameWnd singleton (s_activeWnd). This TU only references it (the WNDCLASS
-// store in InitializeDefaultWindowClass).
-
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-
 // CGameApp::scalar-dtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
 // ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
 // qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
@@ -718,13 +534,8 @@ void ForceEmitCGameAppDtor() {
 }
 #pragma inline_depth()
 
-// size 0x2c recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGameMgr, 0x2c);
 
-// Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
-// engine header stays untouched; EOF append is line-/parse-shift-neutral).
-// The real polymorphic CGameApp emits ??_7CGameApp@@6B@ from this TU; bind its
-// retail vtable RVA here (moved from the deleted src/Stub/BoundaryLowerThunks.cpp).
 VTBL(CGameApp, 0x001e9b0c);
 SIZE(
     CGameApp,

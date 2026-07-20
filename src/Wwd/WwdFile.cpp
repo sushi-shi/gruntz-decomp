@@ -1,22 +1,3 @@
-// WwdFile.cpp - the far-flung CPlaneRender strays (3 leaves, strictly
-// RVA-ascending; each sits OUTSIDE the level-load region and awaits its own
-// birth-position attribution):
-//   CDDrawWorkerHost::WrapCoord        0x0000a000
-//   CDDrawWorkerHost::SnapToTileCenter 0x000311e0
-//   CDDrawWorkerHost::GetTileHandle    0x000d53a0
-//
-// WwdFile::ValidateMainBlock (0x3b470) + GetMapBaseName (0x3bb50) re-homed to
-// CustomWorldDialog.cpp (dossier #16: their birth positions are woven into the
-// custom-world obj).
-//
-// The level-load core was re-homed by retail .text birth position (interval
-// dossier 0x15ccd0, wave1-C): IsValidWwd/CheckHeader/InflateMainBlock/
-// CompressMainBlock + CGameLevel::ReadPlane/ReadObjectPlane are GameLevel.cpp
-// content (the wwdfile pockets inside [0x15ccd0..0x161322]); the plane/render
-// bodies (SetTileSize(FromImageSet)/Draw/CenterScrollA+B/InitScrollRects/
-// ValidateTiles/ResolveColorKey/Save/Load/RebuildPlanes/ReadPlaneObjects + the
-// serialize dispatcher) live in the plane TU, src/Gruntz/LevelPlane.cpp
-// ([0x161350..0x163a00]). The shared class declarations stay in <Wwd/WwdFile.h>.
 #include <Wwd/WwdFile.h>
 #include <rva.h>
 
@@ -93,15 +74,6 @@ void CDDrawWorkerHost::SnapToTileCenter(i32* out, i32 x, i32 y) {
     out[1] = ry;
 }
 
-// GetTileHandle (0x0d53a0): index the tile-handle grid by (row, col) -
-// m_tileGrid[m_colOffsets[col] + row]. Out-of-line (retail emits it standalone;
-// the inline member folded into its callers and never emitted).
-// @interleaver CDDrawWorkerHost::GetTileHandle emitted-in <boundary: unreconstructed>
-// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are leveltilevalidation
-// CLevelValidator::ValidateLevelTiles @0xd2dd0 (before) + playplanescan CPlay::ScanBuildTiles
-// @0xd53d0 (after), NOT one reconstructed host both sides. Home hint play is a scattered
-// god-TU (proximity only, not locally adjacent). One of WwdFile.cpp's 3 CPlaneRender strays;
-// leave + flag until the 0xd53xx obj boundary is pinned.)
 RVA(0x000d53a0, 0x19)
 i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];

@@ -1,14 +1,3 @@
-// CBrickz.h - the CBrickz game-object (C:\Proj\Gruntz).
-//
-// CBrickz : CUserLogic (RTTI; most-derived vftable 0x5e7c54). The "Brickz" puzzle
-// tile-logic object - the standard tile-logic game-object family (the same shape
-// as CTimeBomb / CStaticHazard / the CTileTrigger leaves), built by the 1-arg
-// ctor (0x10e800) off a CGameObject. Its own pathfinding grid is a SEPARATE
-// self-contained container sub-object (the placeholder "CBrickz" in
-// <Gruntz/Brickz.h> - a DIFFERENT class, reached through a different `this`).
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CBRICKZ_H
 #define GRUNTZ_CBRICKZ_H
 
@@ -56,10 +45,6 @@ public:
 VTBL(CBrickz, 0x001e7c54);
 SIZE(CBrickz, 0x54); // CUserLogic (0x34) + CWapX (0x20)
 
-// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
-// Ex CCheckpointActEntry (the shift-by-one re-attribution). The PMF is typed on the
-// single-inheritance CUserLogic base: CBrickz itself is MI (CUserLogic + CWapX), so a
-// PMF to it would not be a 4-byte code ptr.
 typedef i32 (CUserLogic::*BrickzHandler)();
 struct CBrickzActEntry {
     BrickzHandler m_fn;

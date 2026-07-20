@@ -1,16 +1,3 @@
-// MenuPage.cpp - a named menu/list page node (C:\Proj\Gruntz).
-//
-// Recovered from the tomalla-45 trace cluster (0x183250..0x1844d0): the
-// per-page object the main-menu builder fills with named items and the menu host
-// drives with Draw + focus navigation. It owns three CStrings (name/key/label),
-// a CPtrList of child items (m_items, head @+0x18), a flag byte (+0x30), layout
-// scalars, a sub-page/name-cache pointer (+0x60) and a current-focus item (+0x64).
-//
-// The child-item class (0x5c bytes, vtable 0x5f08c0, methods 0x184670+) lives in
-// another TU; here it is opaque (CMenuItem) and its accessors are no-body,
-// reloc-masked rel32 callees. Only offsets + code bytes are load-bearing; field
-// names are placeholders. The /GX EH frame on the dtor + the FindByName helpers
-// comes from the destructible CString temps.
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Gruntz/ChatBox.h>
@@ -23,61 +10,20 @@
 #include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // CImageRegistry (== CDDrawWorkerRegistry): its m_10map catalog
 
-// The engine heap allocator (0x1b9b46), reached as the item's `operator new`.
-// Declared locally (not via RezMgr.h) to keep this TU's include set minimal.
-
-// Placement new (MSVC5's <new.h> predates the standard declaration).
 inline void* operator new(size_t, void* p) {
     return p;
 }
 
-// ---------------------------------------------------------------------------
-// External engine callees / globals (no body -> reloc-masked rel32).
-// ---------------------------------------------------------------------------
-
-// The name->page catalog is reached cast-free through the canonicals (the former
-// it is now the real CDDrawWorkerRegistry typedef in ResMgr.h):
-//   * m_owner IS CDDrawSurfaceMgr (== CState::m_c / CChatBox::m_page; GameRegistry.h);
-//   * m_owner->m_10 IS CImageRegistry (the image/name registry @+0x10);
-//   * CImageRegistry->m_10map IS the name->page CMapStringToOb (@+0x10; Lookup @0x1b8008,
-//     mfc_class-verified). Configure disasm (0x1832f0): `mov edx,[this]` (m_owner @+0) ->
-//     `mov ecx,[edx+0x10]` (m_10) -> `add ecx,0x10` (&m_10map) -> call 0x1b8008.
-
-// Sibling-page helpers (other TUs), reached by name:
 extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
 extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
 
-// The host (m_host) the page renders selected items through and asks to switch
-// pages IS the owning CChatBox (<Gruntz/ChatBox.h>, __thiscall Draw/ReplaceNode/
-// ScrollRow1); its +0x20 byte (CChatBox::m_wrapFlag) gates focus-wrapping. The
-// former CMenuRenderHost fake view is gone - m_host is the real class now.
-// The sub-page's current item placer (0x153790, __thiscall on the head item).
 SIZE_UNKNOWN(CMenuPlacer);
 
-// The leaf ctor CMenuItem() (default-construct the six CStrings, implicit vptr
-// stamp, zero the scalar fields, set the sentinels) is inline in MenuItem.h; the
-// page's AddItem/AddSubItem construct it with placement new so MSVC inlines it (and
-// the implicit `mov [item],&??_7CMenuItem@@6B@` stamp reloc-masks against retail).
-
-// ===========================================================================
-
-// The destructor is inline in MenuPage.h (retail inlines it at the builder's
-// `delete page` sites); its standalone COMDAT copy @0x183250 is emitted by and
-// pinned in ChatBox.cpp (CChatBox::Clear, the one non-inlined caller). NB it
-// calls 0x1833a0 InitDefaults, not 0x1833c0 Clear (reloc_fidelity MISBOUND
-// fix, wave5-R8).
-
-// CMenuPage::GetKey (0x1832d0) - return the page key CString by value.
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {
     return m_key;
 }
 
-// configure this page from the owning chat/menu box (a1 IS the CChatBox -
-// Configure stores it whole into m_host, its +0x00 m_page into m_owner, block-
-// copies its +0x08 region RECT into m_rect and reads its +0x18/+0x1c layout
-// scalars), then resolve the catalog slot via m_owner->m_imageRegistry->m_10map
-// CMapStringToOb::Lookup. The string args are const char* (label/key/parent).
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
     CChatBox* host,
@@ -106,7 +52,6 @@ i32 CMenuPage::Configure(
     return slot != 0;
 }
 
-// reset to defaults: Clear() then zero link/back/focus/cache/flags.
 RVA(0x001833a0, 0x1a)
 void CMenuPage::InitDefaults() {
     Clear();
@@ -117,7 +62,6 @@ void CMenuPage::InitDefaults() {
     m_flags = 0;
 }
 
-// free every child item (its deleting dtor), then RemoveAll the list.
 RVA(0x001833c0, 0x2b)
 void CMenuPage::Clear() {
     CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
@@ -148,7 +92,6 @@ i32 CMenuPage::ResolveSubPage(const char* key) {
     return slot != 0;
 }
 
-// append an item to the list; cache its POSITION at item+0x2c.
 RVA(0x00183430, 0x24)
 void* CMenuPage::Append(CMenuItem* item) {
     if (!item) {
@@ -158,7 +101,6 @@ void* CMenuPage::Append(CMenuItem* item) {
     return reinterpret_cast<void*>(1);
 }
 
-// release the current focus item, then detach every child item.
 RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
     if (m_focus) {
@@ -224,7 +166,6 @@ i32 CMenuPage::RestoreFocus() {
     return 0;
 }
 
-// make `item` the focused item (release the prior, Configure/notify the new).
 RVA(0x00183ad0, 0x57)
 i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     if (!item) {
@@ -244,7 +185,6 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     return item->Configure(reinterpret_cast<void*>(notify)) != 0;
 }
 
-// notify every child item.
 RVA(0x00183b30, 0x2c)
 i32 CMenuPage::NotifyAll(void* arg) {
     CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
@@ -430,7 +370,6 @@ i32 CMenuPage::Layout(i32 ctx) {
     return 1;
 }
 
-// activate (trigger) the focused item.
 RVA(0x00183dd0, 0x16)
 i32 CMenuPage::Activate() {
     if (!m_focus) {
@@ -439,8 +378,6 @@ i32 CMenuPage::Activate() {
     return m_focus->Trigger() != 0;
 }
 
-// if the page key (m_switchKey) is non-empty, ask the host to switch to it;
-// on success (and if refocus requested) notify the host.
 RVA(0x00183df0, 0x3d)
 i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
@@ -529,8 +466,6 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     return 1;
 }
 
-// step focus forward by m_rowsPerCol list nodes from the focused item, then
-// focus the landed (focusable) item.
 RVA(0x00183f70, 0x74)
 i32 CMenuPage::FocusForwardN() {
     CMenuItem* cur = m_focus;
@@ -571,7 +506,6 @@ i32 CMenuPage::FocusForwardN() {
     return SetFocus(found, 1) != 0;
 }
 
-// mirror of FocusForwardN walking node->prev (m_rowsPerCol nodes backward).
 RVA(0x00183ff0, 0x75)
 i32 CMenuPage::FocusBackwardN() {
     CMenuItem* cur = m_focus;
@@ -612,7 +546,6 @@ i32 CMenuPage::FocusBackwardN() {
     return SetFocus(found, 1) != 0;
 }
 
-// hit-test at (a0,a1) and focus the item there.
 RVA(0x00184070, 0x30)
 i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
     CMenuItem* hit = HitTest(a0, a1);
@@ -622,7 +555,6 @@ i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
     return SetFocus(hit, 1) != 0;
 }
 
-// click at (a0,a1): hit-test, focus, activate, then re-focus.
 RVA(0x001840a0, 0x57)
 i32 CMenuPage::Click(i32 a0, i32 a1) {
     CMenuItem* hit = HitTest(a0, a1);
@@ -639,7 +571,6 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
     return 1;
 }
 
-// hit-test: first child item whose own Hit(x,y) returns true.
 RVA(0x00184100, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
     CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
@@ -784,11 +715,6 @@ i32 CMenuPage::SelectBackward() {
     return FocusPrev();
 }
 
-// `new CMenuItem()` (the throwing global operator new IS RezAlloc 0x1b9b46) - the
-// idiomatic new-expression the decompiler split into RezAlloc(0x5c) + a null-guarded
-// placement-new. Folding it back lets cl inline the 6-CString child ctor + raise the
-// retail /GX EH frame (push -1/fs:0 + descending trylevel writes) that the raw
-// placement form could not emit: EXACT.
 RVA(0x00183460, 0x13d)
 CMenuItem*
 CMenuPage::AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags) {
@@ -804,8 +730,6 @@ CMenuPage::AddItem(const char* label, const char* spriteKey, i32 cmdId, const ch
     return Append(item) ? item : 0;
 }
 
-// like AddItem, but also links the new item to its parent context. `new CMenuItem()`
-// folded from the split RezAlloc+placement-new (see AddItem); ~exact (entropy tail).
 RVA(0x001835a0, 0x14b)
 CMenuItem* CMenuPage::AddSubItem(
     const char* label,

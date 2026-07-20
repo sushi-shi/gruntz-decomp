@@ -1,16 +1,3 @@
-// QueueDrainHost.cpp - CQueueDrainHost::Drain (0x31250), carved out of the conflated
-// DDrawSubMgr.cpp (operation REHOME, package D8). FOREIGN to the DDraw submgr obj it
-// was parked in; its retail .text sits at 0x31250, ~1.2 MB before that block - a
-// separate obj. Interleaver home (RVA-neighbour caller unit): BattlezMapConfig.cpp.
-//
-// The class is the LEVEL's game-object collection - see <Gruntz/QueueDrainHost.h>,
-// which is now the ONE shared shape (the three .cpp-local views here - CQueueDrainHost
-// / CQueueProbeNode / CQueueProbeData - were the same object BattlezMapConfig.cpp
-// re-modeled as SceneColl / SceneNode / SceneObj; all dissolved). The payload is a
-// real ::CGameObject, so the "+0x20 probe" is its slot-8 GetTypeId() virtual.
-//
-// Pops each head node off the m_scan cursor; returns the first node payload whose
-// GetTypeId() yields 5. Empty/exhausted -> 0. __thiscall, no args.
 #include <rva.h>
 #include <Gruntz/QueueDrainHost.h>
 #include <Gruntz/UserLogic.h> // ::CGameObject (the payload; GetTypeId is vtable slot 8)

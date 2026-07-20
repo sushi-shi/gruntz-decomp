@@ -1,23 +1,6 @@
-// SaveGame.cpp - CSaveGame, the WAP32 save-game / saved-slot roster manager.
-// See SaveGame.h for the layout and the provenance note (these were mislabeled
-// "CFileIO" by the this/ecx tracer; they are the OWNER class that USES CFileIO).
-//
-// Each file-touching method (Load/Save) builds a stack-local CFileIO and drives
-// Open/Read/Write/Close/~CFileIO on it; the CString member + the CFileIO temp's
-// dtor put a C++ EH frame on those methods -> /GX (the `mfc` /O1 profile, matching
-// FileStream.cpp). The leaf accessors are frameless register-frame functions.
-//
-// All cross-class callees (CFileIO, CString, CGameRegistry, the CRT _strncpy, the
-// MFC wait-cursor helpers) are modeled as external/no-body so their reloc
-// operands are masked in objdiff.
 #include <Io/SaveGame.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/FontConfig.h>
-// The level-preview / save-menu dialog half of this TU (ex LevelInfoDlg.cpp +
-// SaveGameMenu.cpp, merged wave3-J - the 0x0e3690-0x0e579e interval's text is an
-// L-S-L-S sandwich (levelinfodlg x3 | savegame x3 | ... | levelinfodlg x2 |
-// savegame x23), impossible for two first-link objs; the private initialized-
-// .data extents are contiguous 0x213ac8..0x213c10 across both).
 #include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (BuildLevelTitleString arg3)
 #include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr)
 #include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
@@ -29,52 +12,22 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-// The save dialog's per-slot labeller (0x0e3e80): labels one CSaveGame::GetSlot()
-// record into four dialog controls. Forward-declared here (the FillSaveDialog caller
-// precedes it in retail-RVA order), DEFINED at the end. The slot pointer flows in as
-// the real Io/SaveGame.h SaveSlot* GetSlot() returns. All reloc-masked.
-// (The GAME_INFO-dialog twin FillGameInfoDialog @0x9e0b0 + LabelGameInfoSlot @0x9e2d0
-// were re-homed to src/Gruntz/LoadGameMenu.cpp - they sit inside the loadgamemenu
-// .text obj block, between GruntzLoadGameDlgProc @0x9dff0 and LoadGameCommand @0x9e390,
-// and are called by both; REHOME package D7.)
-// The slot-occupancy probe IS TempFileExists_e5700 (0x2694 jmp-thunk -> 0xe5700,
-// defined below): it reads the canonical SaveSlot directly (m_type@0 = the flag word,
-// m_savePath@0x35 = the temp path) - the former SaveTempRec view is dissolved onto it.
-// All reloc-masked.
 int TempFileExists_e5700(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
-// --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
-// The 8-entry area-name pointer table (.bss, runtime-filled). DEFINED here (owner
-// TU), reference extern stays in <Globals.h>. (REHOME DD-G)
 char* g_areaNames[8]; // 0x6454e8
-// g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
-// GruntzMgr.cpp); g_gameReg is the CGruntzMgr view of the SAME 0x24556c datum.
-// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
-// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
-// (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
-// extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;
-// The level-preview image pool + previewed DIB (.bss). DEFINED here (owner TU),
-// reference externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x0024c814)
 CImagePool* g_previewMgr; // 0x64c814
-// The last-selected save record @0x24c864: read as an i32 SaveSlot* handle in the
-// selection code and as a char*/SaveSlot* (its leading bytes) in the save-confirm
-// info dialog - ONE datum, so the ex `g_dlgInfoText` char* view folds onto g_slotState
-// (the tree winner; the C++-mangled g_dlgInfoText lost the per-rva dedup).
 DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
 void* g_previewImage;                           // 0x64c868  (CRezImage* previewed DIB)
 i32 __stdcall CloseTempFile_e5550(SaveSlot* r); // defined below (0x0e5550)
-// The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
-// FUN_00002e05 (thunk): per-slot delete driver (reloc-masked).
 void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
-// The three dialog sub-proc thunks passed as callbacks (reloc-masked code ptrs).
 extern "C" void SaveInfoProc();
 extern "C" void SaveDeleteProc();
 extern "C" void SaveOverwriteProc();
@@ -200,10 +153,6 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// 0x0e3a40. __stdcall dialog
-// proc: OK closes; Cancel runs the save-confirm sub-object (CloseTempFile then
-// CSaveGame::Save); WM_INITDIALOG fills the info line via the 0x0e4850 helper.
 RVA(0x000e3a40, 0xb0)
 i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -230,10 +179,6 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// 0x0e3b20.
-// __stdcall dialog proc: WM_INITDIALOG fills the info line via the 0x0e4850 helper;
-// WM_COMMAND OK/Cancel just close the dialog (no save-confirm sub-object).
 RVA(0x000e3b20, 0x86)
 i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -258,9 +203,6 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x0e3be0. __stdcall dialog
-// proc: WM_COMMAND OK/Cancel end the dialog; self-contained (no info line).
 RVA(0x000e3be0, 0x52)
 i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -280,10 +222,6 @@ i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// FillSaveDialog  (0x000e3c60): walk the ten save slots of `sg`, labelling each
-// into its row of four dialog controls (base IDs 0x435 / 0x490 / 0x49a / 0x4a4 +
-// slot index). __cdecl(HWND, CSaveGame*); both pointers null-checked up front.
 RVA(0x000e3c60, 0x1a3)
 void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     if (hWnd == 0 || sg == 0) {
@@ -520,13 +458,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     return 1;
 }
 
-// The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
-// indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
-
-// The preview-image loader singleton g_previewMgr is the canonical CImagePool
-// (<Image/ImagePool.h>); the former CPreviewMgr view is gone (wave 3). The preview
-// blit goes through CImagePool::AddSurfaceOp @0x1751f0.
-
 // @early-stop  (94.46% - logic/frame/branches all faithful)
 // Residual is three documented walls, not logic:
 //   (1) prologue order + callee-save shrink-wrap: retail emits `push -1` before
@@ -612,9 +543,6 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
     }
 }
 
-// -------------------------------------------------------------------------
-// 0x0e4850. __cdecl helper:
-// SetDlgItemTextA(hWnd, 0x40d, &item->text) when all three pointers are non-null.
 RVA(0x000e4850, 0x29)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
     if (hWnd && gate && item) {
@@ -622,26 +550,11 @@ void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
     }
 }
 
-// (FillGameInfoDialog @0x0009e0b0 re-homed to src/Gruntz/LoadGameMenu.cpp - see the
-// labeller note at the top of this file.)
-
-// ---------------------------------------------------------------------------
-// CSaveGame::~CSaveGame  (0x00085b50)
-// Reset() then the two CString members destruct in reverse declaration order
-// (m_name @+4, then m_str0 @+0) under the EH unwind frame.
 RVA(0x00085b50, 0x56)
 CSaveGame::~CSaveGame() {
     Reset();
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::SaveGameFile
-// Seed the roster from a directory: m_str0 = dir, m_name = dir +
-// "Gruntz.sav", zero the 0xa1c header, Init() + Load() the roster, then for each
-// of the ten slots that exists format its per-slot file path dir + "Slot" +
-// (i+1) + ".sav" into the slot record at +0x35 (wsprintfA hoists the IAT pointer
-// into ebx across the loop). The chained CString operator+ temps + the assigned
-// CString member force the /GX EH frame.
 RVA(0x000e4b60, 0x158)
 i32 CSaveGame::SaveGameFile(const char* dir) {
     if (dir == 0) {
@@ -663,18 +576,12 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Reset  (0x000e4d20)
-// Init() the slots, then empty the file-name CString.
 RVA(0x000e4d20, 0x12)
 void CSaveGame::Reset() {
     Init();
     m_name.Empty();
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Init  (0x000e4d50)
-// Header field @+0x18 = 0x25, then zero all ten 0x100-byte slot records.
 RVA(0x000e4d50, 0x2f)
 void CSaveGame::Init() {
     m_maxLevel = 0x25;
@@ -688,9 +595,6 @@ void CSaveGame::Init() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Load  (0x000e4d90)
-// Open(m_name) read-only, read the 0xa1c header then the 0xa00 slot block, close.
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
     CFileIO file;
@@ -751,9 +655,6 @@ void CSaveGame::ComputeAll() {
     *reinterpret_cast<i32*>(&m_header[0xc]) = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::Verify  (0x000e50f0)
-// Re-decode every slot, sum, compare to the stored checksum @ (this+0x18).
 RVA(0x000e50f0, 0x2f)
 i32 CSaveGame::Verify() {
     i32 sum = 0;
@@ -763,13 +664,6 @@ i32 CSaveGame::Verify() {
     return *reinterpret_cast<i32*>(&m_header[8]) == sum;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::FillSlot  (0x000e5130)
-// `src` is the live game-state object being captured; only two of its members are
-// probed here (a level ptr @+0x2c whose +0x1c is the level id, and a world ptr
-// @+0x44 whose +0x124 flags a custom world). That object's class is not modeled in
-// this TU, so the two fields are read as binary-proven pointer arithmetic (the same
-// forced opaque cross-class read the doctrine allows for un-recovered externs).
 RVA(0x000e5130, 0x78)
 i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
     if (dst == 0) {
@@ -790,8 +684,6 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::CopySlot  (0x000e51d0)
 RVA(0x000e51d0, 0x49)
 i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
     if (dst == 0) {
@@ -809,8 +701,6 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::FillSlot2  (0x000e5240)
 RVA(0x000e5240, 0x54)
 i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
     if (dst == 0) {
@@ -937,9 +827,6 @@ i32 CSaveGame::Decode(u8* buf) {
     return acc;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::GetSlot  (0x000e54b0)
-// Bounds-checked accessor into the +0xa24 record array.
 RVA(0x000e54b0, 0x1f)
 SaveSlot* CSaveGame::GetSlot(i32 i) {
     if (i < 0 || i >= 10) {
@@ -948,8 +835,6 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
     return &m_slots[i];
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::FillSlotByIndex  (0x000e54e0)
 RVA(0x000e54e0, 0x25)
 i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     // retail forwards to FillSlot (0xe5130, the const char* name-string variant), not
@@ -957,24 +842,11 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     return FillSlot(GetSlot(idx), reinterpret_cast<const char*>(name), src);
 }
 
-// CSaveGame::StoreSlot  (0x000e5520) - copy `src` into the slot at index `idx`.
 RVA(0x000e5520, 0x20)
 i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
     return CopySlot(GetSlot(idx), src);
 }
 
-// The two temp-file helpers below probe the canonical SaveSlot directly: its m_type
-// @+0x00 doubles as the "has a temp file" flag word (bit0; cleared to 0 by the
-// closer) and m_savePath @+0x35 is the temp-file path. Only these two offsets are
-// touched here (the former SaveTempRec view is dissolved).
-
-// The temp-file delete at 0x1bf559 is the static MFC CFile::Remove (NAFXCW library;
-// library_labels ?Remove@CFile@@SGXPBD@Z) - call it by its real name (reloc-masked).
-
-// ---------------------------------------------------------------------------
-// CloseTempFile  (0x000e5550) - if the record's temp file opens (read), close
-// and delete it, then clear the record's flag. Returns 1 once the record was
-// processed (0 only for a null record). Free __stdcall helper (callee-cleans).
 RVA(0x000e5550, 0x9a)
 int __stdcall CloseTempFile_e5550(SaveSlot* p) {
     if (p == 0) {
@@ -1017,9 +889,6 @@ void CSaveGame::SetMaxLevel(i32 v) {
     m_maxLevel = v;
 }
 
-// SetCurLevel (0x0e5660): clamped update of the current level; re-stamp the save
-// magic at level 0x20. Out-of-line (retail emits it standalone; the inline member
-// folded away).
 RVA(0x000e5660, 0x1e)
 void CSaveGame::SetCurLevel(i32 v) {
     if (v >= 0x21) {
@@ -1034,27 +903,17 @@ void CSaveGame::SetCurLevel(i32 v) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::CheckMagic  (0x000e5690)
 RVA(0x000e5690, 0xf)
 i32 CSaveGame::CheckMagic() {
     i32 v = m_magic;
     return v == 0x42a;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::SetMagic  (0x000e56b0) - stamp the save-header magic 0x42a at +0x20.
-// Spatially re-homed from src/Stub/BoundaryLowerThunks.cpp (was CSettere56b0::Set);
-// dissolved onto CSaveGame (m_magic@+0x20 is the field CheckMagic reads).
 RVA(0x000e56b0, 0x8)
 void CSaveGame::SetMagic() {
     m_magic = 0x42a;
 }
 
-// ---------------------------------------------------------------------------
-// TempFileExists  (0x000e5700) - probe whether the record's flagged temp file
-// can be opened for read: if bit0 is set and the path opens, close it and return
-// 1, else 0. Free __cdecl helper (caller cleans the argument).
 RVA(0x000e5700, 0x9e)
 int TempFileExists_e5700(SaveSlot* p) {
     if (p != 0 && (p->m_type & 1)) {
@@ -1067,13 +926,6 @@ int TempFileExists_e5700(SaveSlot* p) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// LabelSaveSlot (0xe3e80, save dialog variant, re-homed from src/Stub/ApiCallers.cpp -
-// it walks this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
-// label the slot's short name (m_name) into id3, "(Empty)" when IsSlotOccupied (0x2694 ->
-// 0xe5700 slot-occupancy probe) fails; then set the four control enables. Here the first
-// two enables are unconditional, the last two track occupancy. (Its GAME_INFO twin
-// LabelGameInfoSlot @0x9e2d0 moved to LoadGameMenu.cpp - REHOME package D7.)
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
@@ -1090,14 +942,5 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
 
-// ---------------------------------------------------------------------------
-// (The `BlitHost`/`BlitDrawOwner`/`BlitRectSrc` interleaver views are DISSOLVED,
-// 2026-07-15: 0x0d00a0 was CPlay::PostSetup - vtable slot 37 (+0x94), the NEW virtual
-// bound at that slot in ??_7CPlay / ??_7CDemo / ??_7CMulti. The body is now a real
-// CPlay method homed to Play.cpp; `this` is a CPlay* (m_c -> CGameLevel::m_planeCtx
-// rect, m_4 -> CGruntzMgr::m_chatLog CFontConfig draw sink). This `play` interleaver no longer
-// lives in the savegame TU.)
-
-// Class-metadata annotations (EOF-hosted).
 SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
 SIZE_UNKNOWN(CSaveGame); // fully modeled but tail not proven; owner may upgrade

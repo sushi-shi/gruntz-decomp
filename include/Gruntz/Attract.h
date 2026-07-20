@@ -1,13 +1,3 @@
-// Attract.h - CAttract, the attract/title-screen game-state (RTTI
-// .?AVCAttract@@, vtable @0x5ea194). A CState leaf (RTTI base list:
-// CAttract -> CState): it overrides the slot-2 resource release, the slot-7
-// paint/host poll, the slot-10 per-frame poll, and carries the EH-framed `??1`.
-// On top of the CState spine it drives the attract sequence (random TITLE state,
-// the title fade, the menu-brightness sink chain, the cursor-visible loop).
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing. The owner/view/menu sub-objects are modeled under TU-local names
-// (the offsets are the ctor ground truth).
 #ifndef GRUNTZ_GRUNTZ_CATTRACT_H
 #define GRUNTZ_GRUNTZ_CATTRACT_H
 
@@ -17,18 +7,8 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (the flip/render target)
 
-// The attract-title-index divisor (0x645534; DATA home + producer src/Rez/RezSync.cpp).
-// `g_gameReg->m_numRuns % g_attractStateCount + 1` picks the attract/title screen.
-// Declared here so the attract states reference it from this header, not per-TU externs.
 extern "C" i32 g_attractStateCount;
 
-// ---------------------------------------------------------------------------
-// The video-mode sub-object at CAttract+0x4 (== CState::m_4 re-typed). Its first
-// method (engine FUN_0048ddd0, __thiscall ret 4 - the RestoreVideoMode shape,
-// called with 0) re-asserts the display mode when (re)entering the attract scene.
-// The sub-object also carries a scene/scheduler handle at +0x48 on which
-// RefreshTitle drives a reset pair.
-// ---------------------------------------------------------------------------
 class CAttractSceneSlot {
 public:
     // PrimeScene @? IS CGruntzSoundZ::IsPlaying; cast at the call.
@@ -41,57 +21,21 @@ public:
     CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
 };
 
-// The attract "state machine" at CAttract+0x8 (== CState::m_8 re-typed) is the
-// shared ButeMgr parser CSymParser: LookupState == CSymParser::ResolvePath
-// (0x13c030), which resolves a named scope. The resolved scope it returns (stashed
-// in m_2c) is a CSymTab; the slot-1 loader (ex "EnterAttractMode") loads its "SOUNDZ" set via
-// CSymTab::FindSub (0x13a230). Both real classes come from <Bute/SymParser.h>.
 class CSymParser; // <Bute/SymParser.h> (ResolvePath 0x13c030); m_8 re-typed
-// CSymTab is forward-declared in <Gruntz/State.h> (m_2c's ResolvePath/FindSub facet).
 
-// ---------------------------------------------------------------------------
-// The menu/brightness sink chain rooted at CAttract+0xc (== CState::m_c). The
-// page's +0x14/+0x18 holders carry the brightness targets (their m_2c) that take
-// the CButeMgr value; m_04 drives the page enter/exit transitions.
-// (The title-roll view cluster is GONE - every class was canon:
-//   CMenuBrightnessTarget == CDDSurface       (SetBrightness was ShadeRect; Reset was Fill @0x13e760)
-//   CMenuBrightnessHolder == CDDrawSurfacePair (+0x2c m_surface)
-//   CMenuRenderM10        == CDDrawSurfacePair (the front pair; +0x2c ->Flip)
-//   the local "CMenuPage"  == CDDrawSubMgrPages (IsLoaded/TransEnter/TransTitle/
-//                             TransExit/BlitPage @0x158bc0..0x158ee0 - its own methods)
-//   CMenuBrightnessReset  == CDDSurface        (Fill(0) - the blackout preset).)
-
-// The m_1b8 sound/host sub-object the per-frame poll drives: its +0x10 voice is
-// queried (IsPlaying), (re)started, and the registrar's pooled resource is
-// stopped on the way out. The +0x10 voice IS the real DirectSoundMgr (its
-// IsPlaying/CloneAndPlay/ApplyAndPlay/m_durationMs are driven directly); the ex
-// empty CAttractVoice placeholder that stood here was a fake view of it.
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> (full def at the call sites)
 struct CAttractHost {
     char m_pad00[0x10];
     DirectSoundMgr* m_10; // +0x10  voice/host object (the real DirectSoundMgr)
 };
 
-// The game-manager owner facet (m_4). Forward-declared here so the typed slot
-// accessors can name it (cast to an incomplete pointer type is well-formed; the
-// call sites in CAttract.cpp see the full CGruntzMgr type from <Gruntz/GruntzMgr.h>).
 class CGruntzMgr;
 
-// The m_2c fade-screen-resolver facet: CState::m_2c (a CResSource) re-typed. Its
-// ResolveScreen maps a "\SCREENZ\<name>" path + a screen-type tag to a fade page.
-// (State.h forward-declares this for the shared screenObj() accessor; the full
-// model lives here in the owning module's header, not in a .cpp view.)
 class CAttractScreenObj {
 public:
     void* ResolveScreen(char* path, void* tag); // 0x120120
 };
 
-// ---------------------------------------------------------------------------
-// CAttract - the attract/title state. Derives from CState (RTTI ground truth);
-// the few slots it implements are overridden, the rest inherited. Member offsets
-// are reached through typed accessors that re-type CState's m_4/m_8/m_c/m_2c to
-// the attract facets that share those slots (codegen-neutral inline).
-// ---------------------------------------------------------------------------
 class CAttract : public CState {
 public:
     // slot 1  0x013fb0 (AttractState.cpp; retail ??_7CAttract slot 1 = ILT

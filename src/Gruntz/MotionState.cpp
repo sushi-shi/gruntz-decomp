@@ -1,15 +1,8 @@
-// MotionState.cpp - CMotionState, the 3-axis kinematic subobject embedded at
-// CMovingLogic+0x38 (see include/Gruntz/MotionState.h). Standalone helper: a
-// plain ctor (no vptr), two parameter setters, and a per-frame easing integrator.
 #include <Gruntz/MotionState.h>
 #include <math.h>
 #include <rva.h>
 #include <Globals.h>
 
-// The shared .rdata bound/easing doubles the methods read by plain dword loads.
-// The [MIN,MAX] box (0x1f04b0 / 0x1f04b8) is the SAME .rdata pair CMovingLogic's
-// ctor seeds - the tree winner is g_movingLogicMin/g_movingLogicMax (defined in
-// projectile, declared in <Gruntz/MovingLogic.h>); bind to it, not a dup local view.
 extern const double g_movingLogicMin; // 0x1f04b0 (-2147483647.0)
 extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 DATA(0x001f0500)
@@ -17,9 +10,6 @@ extern const double g_motionZero;
 DATA(0x001f0508)
 const double g_motionNegTwo = -2.0; // 0x5f0508  discriminant term (owner-TU def)
 
-// ---------------------------------------------------------------------------
-// @interleaver CMotionState - own-class out-of-line COMDAT in the 0x13xxx leaf-ctor
-// pool (main block sits at 0x16ecd0+); RVA-placement artifact, kept in its class file.
 RVA(0x000136d0, 0x184)
 CMotionState::CMotionState() {
     m_40 = 0.0;
@@ -51,9 +41,6 @@ CMotionState::CMotionState() {
     m_100 = g_movingLogicMax;
 }
 
-// ---------------------------------------------------------------------------
-// @interleaver CMotionState - own-class out-of-line COMDAT pair (SetParams @0x58bc0 +
-// SetZ @0x58ca0) pooled far from the main block @0x16ecd0+; RVA-placement artifact.
 RVA(0x00058bc0, 0xa1)
 i32 CMotionState::SetParams(
     double a0,
@@ -82,7 +69,6 @@ i32 CMotionState::SetParams(
     return 1;
 }
 
-// SetZ (0x58ca0) - set the z motion component into m_d8/m_e0/m_e8.
 RVA(0x00058ca0, 0x19)
 void CMotionState::SetZ(double z) {
     m_d8 = z;
@@ -90,16 +76,6 @@ void CMotionState::SetZ(double z) {
     m_e8 = z;
 }
 
-// ---------------------------------------------------------------------------
-// STEP_AXIS - the per-axis uniformly-accelerated 1D integrator, copy-pasted 3x
-// down the X/Y/Z columns (the retail body is three literal blocks, each with a
-// shallow x87 stack carrying `dt`). Per axis:
-//   v = velocity (m_28/30/38), a = acceleration (m_10/18/20),
-//   s = displacement (m_40/48/50) accumulated by the half-step `(v+0.5*dt*a)*dt`,
-//   vmax = velocity-magnitude clamp (m_d8/e0/e8), [loBand,hiBand] = displacement
-//   band (m_70/78/80, m_88/90/98), posClamp = max velocity (m_f0/f8/100),
-//   scr = output scratch (m_a0/a8/b0). When the half-step or the running
-//   displacement leaves its band the velocity is re-solved from v^2 = v0^2 + 2*a*ds.
 #define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
     do {                                                                                           \
         double step0 = dt * a;                                                                     \
@@ -167,10 +143,6 @@ void CMotionState::Step(double dt) {
     STEP_AXIS(m_38, m_20, m_50, m_e8, m_80, m_98, m_100, m_b0);
 }
 
-// ---------------------------------------------------------------------------
-// Per-axis arrival-velocity solve: with zero rate the current X velocity is
-// returned unchanged; otherwise v_final = signed sqrt(v^2 + 2*a*ds) where
-// ds = target - m_40 (same v^2 = v0^2 + 2*a*ds root used inside STEP_AXIS).
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
     if (m_10 == 0.0) {
@@ -184,7 +156,6 @@ double CMotionState::ArrivalVelX(double target) {
     return (m_28 > 0.0) ? r : -r;
 }
 
-// ---------------------------------------------------------------------------
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
     if (m_18 == 0.0) {

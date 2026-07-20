@@ -1,23 +1,3 @@
-// AniElement.h - the 0x28-byte 'ANI' animation element (primary vftable
-// @0x5efba8 = ??_7CAniElementObj) cataloged by the CDDrawSubMgrLeaf ANI set. It owns a
-// CObArray of 0x34-byte frame records (real class CAniRecord, vtable @0x5f02c0)
-// plus a name buffer and a scale.
-//
-// ONE class, ONE header (folded from the former CAniElement.h + CAniElementCollection.h
-// dual-def). vtable_hierarchy confirms CAniElementObj : CObject vtbl@0x1efba8 (5 slots,
-// slot1 dtor override 0x152e10) - a REAL polymorphic CObject-derived class. The
-// frameless-leaf methods (AtChecked/Build/Configure) live in CAniElement.cpp, the /GX
-// LoadFile in CAniElementEh.cpp, and the /GX teardown (~CAniElement/DeleteAll) in
-// CAniElementCollection.cpp - a deliberate frameless/EH TU split, not two objects.
-//
-// Layout (offsets/sizes load-bearing; field NAMES are placeholders):
-//   +0x00  vptr (CObject grand-base; auto-stamped by cl in the ctor/dtor)
-//   +0x04  m_flags   i32 flags/tag word
-//   +0x08  m_records CObArray of CObject* frame records (0x14 bytes, +0x08..+0x1b)
-//   +0x1c  m_name    char* name buffer (RezAlloc'd len+2, RezFree'd on teardown)
-//   +0x20  m_scale   float, set to 1.0f
-//   +0x24  m_total   i32 accumulated frame-size total
-// size = 0x28
 #ifndef GRUNTZ_CANIELEMENT_H
 #define GRUNTZ_CANIELEMENT_H
 
@@ -27,16 +7,8 @@
 #include <Gruntz/AniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
 #include <rva.h>                  // OVERRIDE
 
-// The per-element frame-record array IS the plain engine CObArray (@+0x08, vtbl
-// 0x5ed494). The old CAniRecordArray derived it purely to reach the protected
-// m_pData/m_nSize; the PUBLIC inline API (GetSize/GetAt) lowers to the identical
-// loads (the KeyedList lesson), so the derived shell - and the phantom
-// ??_7CAniRecordArray its ctor stamped, which needed a RELOC_VTBL alias - is
-// dissolved (2026-07-19).
 typedef CObArray CAniRecordArray;
 
-// arg2 of the builder: a parsed-source descriptor. m_flags @+0x08, m_count @+0x0c,
-// m_namelen @+0x10, then the name bytes + record stream start at +0x20.
 struct CAniSource {
     char m_pad00[0x8];
     i32 m_flags;   // +0x08 flags (or'd into the element's m_flags)
@@ -45,10 +17,6 @@ struct CAniSource {
     char m_pad14[0xc];
     char m_data[1]; // +0x20 name bytes followed by the record stream
 };
-
-// The 0x34-byte frame record (vtable @0x5f02c0) the builder catalogs is the real
-// CAniRecord (src/Gruntz/AniRecord.cpp); callers dispatch through the shared minimal
-// polymorphic CAniRecordView (include/Gruntz/AniRecordView.h).
 
 class CAniElement : public CObject {
 public:
@@ -75,7 +43,5 @@ public:
 }; // size = 0x28
 SIZE(CAniElement, 0x28);
 VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 #endif // GRUNTZ_CANIELEMENT_H

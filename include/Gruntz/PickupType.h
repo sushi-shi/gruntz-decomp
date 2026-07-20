@@ -1,18 +1,3 @@
-// PickupType.h - the shared object / pickup / grunt-kind type id space.
-//
-// ONE id space drives every loader that dispatches on an object type, all
-// VERIFIED against the retail MSVC switch jump tables to AGREE byte-for-byte:
-//   - CGrunt::LoadPickupSprites        @0x65e80  (entrance cue, GRUNTZ_PICKUPS_*)
-//   - CTriggerMgr::LoadPowerupIconSprites  @0x7c620  (map icon, GAME_INGAMEICONZ_*)
-//   - CGrunt::LoadVehicleGruntSprites @0x50ce0 (toy-grunt sprite, <NAME>GRUNT)
-// The same id is stored in CGrunt::m_gruntKind (+0x258): a grunt "kind" IS an object
-// type - VERIFIED 0x37=SUPERSPEED halves TimePerTile, 0x36=GHOST, and
-// 0x38=INVULNERABILITY / 0x39=CONVERSION / 0x3a=DEATHTOUCH gate combat/tile logic.
-//
-// Graduated to one header so every user shares a single definition (the loaders had
-// previously drifted - an icon<->pickup HEALTH1/HEALTH3 + INVULNERABILITY/REACTIVEARMOR
-// transposition, reconciled from the retail jump tables). Enumerator names are
-// matching-neutral: each is the same immediate as the bare literal.
 #ifndef GRUNTZ_GRUNTZ_PICKUPTYPE_H
 #define GRUNTZ_GRUNTZ_PICKUPTYPE_H
 

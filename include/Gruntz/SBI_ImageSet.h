@@ -1,19 +1,3 @@
-// SBI_ImageSet.h - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the FRAMELESS method view.
-// RTTI .?AVCSBI_ImageSet@@; most-derived of the SBI image chain
-//   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem   (vtable 0x5eac4c).
-//
-// One canonical spelling of the class's non-dtor methods: the slot-1 Serialize
-// (0xe74f0, defined in SBI_ImageSet.cpp) + its base BaseSerialize (0xe6e40). This
-// is the FRAMELESS view (size 0x3c). Its deliberate counterparts (SAME retail
-// class, never co-included - see the two-view-split note atop SbiDtorChain.h /
-// StatusBarItem.h):
-//   * <Gruntz/SbiDtorChain.h>  - the CHAIN view: the polymorphic /GX destructor
-//     chain (grand-base 0x60) the *Eh.cpp dtor TUs fold.
-//   * the builder TUs (CStatusBarMgr.cpp / StatusBarGameMenu.cpp /
-//     SBI_TabzDialogEh.cpp) model the concrete widget as a tiny tag-4 ctor over
-//     their local frameless status-bar-item base.
-// Field names are placeholders; the offsets + total 0x3c size are the load-bearing
-// fact (fields are name-independent at /O2).
 #ifndef GRUNTZ_SBI_IMAGESET_H
 #define GRUNTZ_SBI_IMAGESET_H
 
@@ -23,18 +7,10 @@
 
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 
-// (The ex `CImageSetStream` 13-slot view of the Serialize arg is DISSOLVED: it
-// IS the one engine stream, CSerialArchive == CFileMemBase - Read @slot 11
-// +0x2c / Write @slot 12 +0x30, exactly the two slots it modeled. The name
-// stays as a typedef so the SBI Serialize signatures keep their spelling;
-// dispatching TUs include <Io/FileMem.h> for the complete type.)
 #include <Gruntz/SerialArchive.h>
 typedef CSerialArchive CImageSetStream;
 
-// CSBI_ImageSet - adds the slot-1 serialize override (save/load of the config id +
-// name) on top of CSBI_Image (its real RTTI base). Offsets are load-bearing.
 class CSBI_ImageSet : public CSBI_Image {
 public:
     // tag 4 + the resolved-record slot cleared (the `new CSBI_ImageSet` ctor leg the tab
@@ -78,12 +54,8 @@ public:
 };
 SIZE(CSBI_ImageSet, 0x3c);
 
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CSBI_ImageSet, 0x001eac4c);
 
-// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
-// /GX leaf TUs; SBI_OWN_IMAGESET_DTOR marks the TU that owns the out-of-line ??1
-// (SBI_ImageSet.cpp, RVA 0x102000).
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESET_DTOR)
 inline CSBI_ImageSet::~CSBI_ImageSet() {
     ResetCounters();

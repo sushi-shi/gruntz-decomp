@@ -1,29 +1,3 @@
-// Attract.cpp - the attract state-services interval TU at retail .text
-// [0x0fa1f0 .. 0x0fb328]: one WOVEN original obj (weave
-// 0.36) that interleaves function-by-function the CAttract title/fade services
-// (FadeInTitle/RunTitle/RunTitleSeq), the CSoundFxEmitter screen-transition
-// emitters, the CState draw/shade/paint helpers (Vslot17/Vslot07/ShadeScreen) and
-// the CMgrPersistObj serialize family. SaveRecord (0xfaff0)'s Load is the read-side
-// twin of Save @0xfb1c0.
-//
-// REHOME/holding-TU drain (D5): the CAttract state-machine CORE obj (the 0x13fb0
-// band of CState vtable-slot overrides + the ??1 dtor @0x08cd90) was a SEPARATE
-// original obj and moved to AttractState.cpp (proven by the CAttract vtable). The
-// 0x13fb0 band never truly "lived here" - it was conflated. Owner attribution:
-// `sema class CAttract` (slot RVAs) for the core; `sema xref --tree` .rdata refs
-// for the foreign fragments below.
-//
-// TEMPORARILY retained here (Phase-2 fold to their PROVEN owners is pending; each
-// is a foreign obj's method mis-attributed to CAttract - matches only because the
-// sibling CState leaves share the layout):
-//   RefreshTitle    0x039160  -> CCreditsState slot 10 (??_7CCreditsState@@6B@+0x28)
-//   LoadTitleConfig 0x0a03f0  -> CMenuState    slot 9  (??_7CMenuState@@6B@+0x24)
-//   Activate        0x0a0a30  -> CMenuState    slot 6  (??_7CMenuState@@6B@+0x18)
-//
-// NB: CPreviewState::LoadScreen (0xfab90) also belongs to this interval but
-// stays in LevelPreview.cpp for now - moving it needs CPreviewState homed into
-// a shared header first (it is that TU's local class); deferred.
-// Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -51,76 +25,12 @@
 
 #include <stdio.h>  // sprintf (the "\SCREENZ\%s" path formatter)
 #include <string.h> // inline /Oi strlen (repnz scasb) for the Vslot17 TextOutA
-// DirectSoundMgr (IsPlaying/CloneAndPlay) + SoundDevice (PurgeVoiceList) now come from the
-// real <Dsndmgr/SoundDevice.h>, pulled through <Gruntz/SoundCue.h> (via GameRegistry.h).
 
-// The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
-// ---------------------------------------------------------------------------
-// External engine globals (reloc-masked DATA symbols).
-// ---------------------------------------------------------------------------
-
-// The CButeMgr text-config singleton g_buteMgr (0x6453d8) comes from <Bute/ButeMgr.h>.
-
-// The game registry singleton (canonical CGameRegistry, <Gruntz/GameRegistry.h>): its
-// +0x80 launch counter (m_numRuns, "Num_Runs") selects the TITLE state. The retail
-// reads it off the canonical g_gameReg pointer at ds:0x64556c (verified in InputVirtual/
-// Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]). Canonical DATA at
-// 0x24556c (the CMgrPersistObj::Save m_world gate is the same object).
-
-// The attract-state count divisor (DAT_00645534) is declared in <Gruntz/Attract.h>
-// (included above); DATA home + producer is src/Rez/RezSync.cpp.
-
-// The "Disable Fades" [Config] gate the CSoundFxEmitter methods poll (0x2455c4).
-// DEFINED in src/Rez/RezSync.cpp (owner); declared in <Globals.h>.
-
-// The present-suppress latch (DAT_0064e360), private to the attract loop; DEFINED
-// here (owner TU), a plain `extern` stays in Globals.h.
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
 
-// ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
-
-// Source string literals (objdiff matches these .data relocations by value).
-
-// FadeInTitle's resolved-state object (m_2c re-typed) is the CAttractScreenObj
-// facet (full model in <Gruntz/Attract.h>); its ResolveScreen (FUN_00520120) maps
-// the "\SCREENZ\%s" path + a screen-type tag to a fade page.
-// The screen-type tag (DAT_00504358) ResolveScreen keys off.
-
-// The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
-// title fade, returning non-zero when the fade is still in progress. Named to retail
-// (?Method_158b40@CDDrawSubMgrPages) so the call pairs exactly. See CDDrawSubMgrPages.h.
-
-// ---------------------------------------------------------------------------
-// FramePoll (0x143e0) sub-object models.
-// ---------------------------------------------------------------------------
-
-// The render-busy check dispatches IDirectDrawSurface::IsLost (slot 24, +0x60,
-// __stdcall self-on-stack) on the flip surface's held DirectDraw COM interface
-// (CDDSurface::m_8) to see whether the page still needs a restore.
-
-// AttractActor / AttractActorList (the per-frame g_actorList view) live in the
-// shared <Gruntz/AttractActor.h> (also used by CDemo/CHelpState).
-
-// (The band-A-only externs - g_frameDelta, g_pPostMessageA, s_dat60b5bc,
-// g_emptyString, g_sndEnabled, g_pTimeGetTime, g_pwsprintfA, the AttractWndHolder
-// view + s_ATTRACT_TITLE_s - moved with the CAttract core to AttractState.cpp.)
-
-// ===========================================================================
-// The CAttract title/menu foreign fragments (temporarily retained here pending
-// the Phase-2 fold to their proven owners): RefreshTitle @0x39160 is CCreditsState
-// vtable slot 10 (??_7CCreditsState@@6B@+0x28), LoadTitleConfig @0xa03f0 is
-// CMenuState slot 9 (+0x24) and Activate @0xa0a30 is CMenuState slot 6 (+0x18).
-// The CAttract state-machine CORE band [0x13fb0..0x14819] + the ??1 dtor moved to
-// AttractState.cpp (its true separate obj). See the file header + report.
-// ===========================================================================
-
-// CAttract::RefreshTitle - re-prime the attract title scene. Resets the scene
-// slot off m_4->m_48 (PrimeScene then RestoreScene), re-resolves the
-// "STATEZ_ATTRACT" state into m_2c, runs the title sequence with the bare "TITLE"
-// tag, and returns 1.
 RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
     (reinterpret_cast<CGruntzSoundZ*>(video()->m_48))->IsPlaying();
@@ -236,10 +146,6 @@ i32 CAttract::Activate() {
     return 1;
 }
 
-// ===========================================================================
-// The state-services interval [0x0fa1f0 .. 0x0fb328].
-// ===========================================================================
-
 // CState::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
 // "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
 // worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
@@ -307,9 +213,6 @@ i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return 1;
 }
 
-// CState::RunTitleSeq(name, a, b, c, d) (0x0fa350, 5 args, ret 0x14): the title-roll
-// entry. Bail (0) if the menu root/state-machine/active-state is null; FadeInTitle the
-// screen (mode 0); on success return RunTitle() != 0.
 RVA(0x000fa350, 0x84)
 i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_c) {
@@ -327,16 +230,6 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     return RunTitle(reinterpret_cast<i32>(name), a, b, c, d) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSoundFxEmitter - five sibling sound-effect/screen-transition emitters
-// (0xfa410, 0xfa550, 0xfa790, 0xfa8f0, 0xfaa60). See CSoundFxEmitter.h for the
-// recovered class/chain layout. Each: gate on the resource chain, fill a
-// CFxModeT2/T3 transition descriptor on the stack, register it with the CFaderMgr,
-// then - per g_disableFades - apply the channel op now or defer it through the new
-// fader, and finally Remove the fader. All callees are reloc-masked externs.
-// ---------------------------------------------------------------------------
-
-// 0xfa410: single-channel type-2 emitter (4 args).
 RVA(0x000fa410, 0xf5)
 i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFaderMgr* mgr = m_faderMgr;
@@ -421,14 +314,6 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CState::Vslot17 (0x0fa6b0, vtable slot 23 / +0x5c, inherited by every state):
-// the frame-surface GDI text overlay - draw `str` at (x,y) onto the frame
-// surface via GDI (GetDC on the IDirectDrawSurface, SetBkMode/SetTextColor,
-// TextOutA(x,y,str), ReleaseDC). Bails (0) on a null string, a missing frame
-// surface, or a failed GetDC; returns 1 on success. Inline /Oi strlen (repnz
-// scasb) feeds TextOutA's length. All states inherit this one body.
-// ---------------------------------------------------------------------------
 RVA(0x000fa6b0, 0xa7)
 i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
@@ -553,7 +438,6 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     return 1;
 }
 
-// 0xfaa60: single-channel type-3 emitter (3 args).
 RVA(0x000faa60, 0xed)
 i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     CFaderMgr* mgr = m_faderMgr;
@@ -590,18 +474,6 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// (CPreviewState::LoadScreen @0x0fab90 belongs here; parked in LevelPreview.cpp
-// until CPreviewState is homed into a shared header - see the file comment.)
-
-// ---------------------------------------------------------------------------
-// CState::Vslot07 (slot 7 / +0x1c, 0x0fac70): the base-state top-window paint poll.
-// Its .rdata data-ref is ??_7CState@@6B@+0x1c, and CCreditsState/CSplashState/CHelpState/
-// CDemo/CMulti/CPlay all inherit this slot; the callers CAttract::Vslot07 (0x147b0),
-// CMultiBootyState::ReadyAndPaint (0x1ce30) and CGuardedDispatch::Run (0x1f870) each
-// call CState::Vslot07() on their own `this`. If the owner's game window is present, it
-// runs a null Begin/EndPaint cycle and returns 1. Declared in <Gruntz/State.h>; its
-// out-of-line COMDAT lands here (retail sited it inside the state-services TU).
-// ---------------------------------------------------------------------------
 RVA(0x000fac70, 0x4c)
 i32 CState::Vslot07() {
     if (!m_4) {
@@ -616,29 +488,8 @@ i32 CState::Vslot07() {
     return 1;
 }
 
-// ===========================================================================
-// CMgrPersistObj - the persisted game-mgr object. Its Save/Load stream the
-// fields through the shared WAP32 CSerialArchive slots (Read @+0x2c / Write
-// @+0x30); Init drives the "loading imagez" splash + GAME_IMAGEZ load. Offsets
-// + code bytes are load-bearing; field/class names are best-guess placeholders.
-// ===========================================================================
-
 DATA(0x0024e35c)
 i32 g_playActive;
-
-// (The former CMgrImageSet 20-slot fake-vtable view is GONE: the +0x10 object the
-// GAME_IMAGEZ load dispatches into is the REAL CImageRegistry (<Gruntz/ResMgr.h>,
-// included above) - the same world+0x10 registry CWorldZ models - and its "Load at
-// slot 19 (+0x4c)" IS CImageRegistry::LoadNamespace, the very slot the game-state
-// activators (CBootyState/CMenuState/CPlay slot-8 loaders) already reach.)
-
-// CLevelData / CDisplayMgr are the canonical classes: m_levelData IS the canonical
-// CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>; its +0x04 CDDrawSubMgrPages worker ==
-// the old m_ready, its +0x10 CImageRegistry == the old m_imageSet) and m_displayMgr IS
-// the canonical CGruntzMgr (<Gruntz/GruntzMgr.h>; its +0x8c/+0x90 m_modeW/m_modeH ==
-// the old m_8c/m_90 video mode). Both are the CState m_c / m_4 prefix. The persisted
-// object (CMgrPersistObj) + SplashParams + EngStr_DrawText now live in the shared
-// <Gruntz/MgrPersist.h> (included above), not as .cpp-local views.
 
 // @early-stop
 // /GX frame-packing artifact (~96%): the instruction stream is byte-faithful, but
@@ -703,23 +554,6 @@ i32 CMgrPersistObj::Init() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// 0x0faec0. Per-frame
-// present/refresh of the bound view: if the suppress latch is set, clear it and
-// return; else Refresh the back pair, ShadeRect the back surface with arg0, Flip
-// the front surface, then Refresh again. @orphan: reached from CGruntzMgr::
-// RunModalDialog/ExitModalUI on an unidentified modal-UI presenter object.
-// (g_suppress_64e360 - the present-suppress latch - comes from <Globals.h>.)
-// IT IS CState::Present, and the xrefs say so with no ambiguity. 0xfaec0 has exactly two
-// callers: CGruntzMgr::RunModalDialog (0x90260) invokes it as `mov ecx,[esi+0x2c]; call
-// 0x1ec9` - and CGruntzMgr+0x2c is m_curState, a CState* (<Gruntz/GruntzMgr.h>) - while
-// CPlay::Vslot23 (0xcfef0) invokes it on its OWN `this`, and CPlay IS a CState. One receiver
-// type, reached two ways. The call is a direct rel32 through an ILT thunk, so it is a plain
-// non-virtual - the same CState-level helper shape as RetireScene (0xfa8f0) and
-// LoadGameAssetNamespaces (0xf9ea0) next door, which this unit already owns.
-// The "Mid_faec0" it hung off is the canonical FxResource (<Gruntz/SoundFxEmitter.h>):
-// CState::m_c reinterpreted as the emitter resource chain, +0x04 = the shared
-// CDDrawSubMgrPages worker - the exact shape, already reachable through CState::fxRes().
 RVA(0x000faec0, 0x67)
 void CState::Present(i32 arg0) {
     if (g_suppress_64e360 != 0) {
@@ -732,8 +566,6 @@ void CState::Present(i32 arg0) {
     fxRes()->m_worker->BlitPage(fxRes()->m_worker->m_backPair);
 }
 
-// CState::ShadeScreen (0x0faf50): consume the g_suppress latch (return its old value)
-// on the frame it is armed; otherwise shade the whole draw surface `pct` percent.
 RVA(0x000faf50, 0x31)
 i32 CState::ShadeScreen(i32 pct) {
     i32 v = g_suppress_64e360;
@@ -744,10 +576,6 @@ i32 CState::ShadeScreen(i32 pct) {
     return m_c->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
 }
 
-// -------------------------------------------------------------------------
-// 0x0fafa0. __stdcall(4)
-// validity gate: returns 0 if arg0 is null; for kind 4 / 7 validates arg0 through
-// a per-kind checker (return 0 on fail); otherwise (and on success) returns 1.
 i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
 i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
 // @early-stop
@@ -783,10 +611,6 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     return 1;
 }
 
-// CMgrPersistObj::Load (0x0faff0, ex SaveRecord::Load - the second view of this
-// object, now folded): gate on the archive + the +0x0c level-data slot, then
-// stream the same persisted fields through the archive's +0x30 slot (the m_1b0
-// tail word is NOT part of this pass).
 RVA(0x000faff0, 0x163)
 i32 CMgrPersistObj::Load(CSerialArchive* s) {
     if (!s) {
@@ -818,8 +642,6 @@ i32 CMgrPersistObj::Load(CSerialArchive* s) {
     return 1;
 }
 
-// CMgrPersistObj::Save: gate on the writer + the settings singleton, then
-// stream every persisted field through the writer's Read(buf,len) virtual.
 RVA(0x000fb1c0, 0x168)
 i32 CMgrPersistObj::Save(CSerialArchive* w) {
     if (w == 0) {
@@ -867,5 +689,3 @@ SIZE_UNKNOWN(FxResource);
 SIZE_UNKNOWN(CMgrPersistObj);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

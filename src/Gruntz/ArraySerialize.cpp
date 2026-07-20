@@ -26,6 +26,4 @@
 
 #include <Io/MoviePlayer.h> // CMoviePlaylist typedef + the full PLAYLISTINFOSTRUCT
 
-// Instantiate every member of the playlist CArray (MSVC5 emits each as a COMDAT;
-// the linker-kept retail copies are the pinned rvas above).
 template class CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>;

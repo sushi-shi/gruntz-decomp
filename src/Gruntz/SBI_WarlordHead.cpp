@@ -12,28 +12,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)           // CDDrawSubMgrPages (m_world->m_drawTarget->m_backPair)
-// SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
-// methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
-// chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
-// CStatusBarItem. Vtable @0x5ead24. The 5-level /GX chain destructor (0x104a00)
-// is defined below - the former SBI_WarlordHeadEh.cpp companion split is collapsed
-// (retail's one TU was /GX).
-//
-// These are concrete virtual-slot methods (slots 5 and 11) plus two non-virtual
-// helpers, modeled with the SBI family's manual-vtable-stamp device (no real
-// `virtual`); sibling/engine callees are ILT/vtable-reloc-masked.
-
-// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
-// game-manager chain Render reads is modeled.
-
-// ---------------------------------------------------------------------------
-
-// (0xe7cd0 re-attributed: the six-int slot-1 serialize was MIS-NAMED here as
-// CSBI_WarlordHead::Serialize. Vtable proof (gruntz sema class): CSBI_WarlordHead
-// slot 1 = thunk 0x3cd8 -> 0xeb970 (the REAL warlord Serialize, defined at the tail
-// of this file), while 0xe7cd0 (thunk 0x2829) is CSBI_ImageSetAni/CSBI_StatzTabArrow
-// slot 1 -> moved to src/Gruntz/SBI_ImageSetAni.cpp. Warlord keeps only its single
-// m_3c direction; the six ints m_3c..m_50 belonged to the ANI conveyor leaf.)
 
 // vtable slot 11 (0xeb6b0): forward all 11 setup args to the ImageSet base setup
 // (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
@@ -106,7 +84,6 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
     return 1;
 }
 
-// 0xeb830: latch the direction + derived state. dir 0/1 => state 1; else => state 2.
 RVA(0x000eb830, 0x31)
 i32 CSBI_WarlordHead::SetState(i32 dir) {
     if (dir == 0 || dir == 1) {
@@ -194,13 +171,6 @@ i32 CSBI_WarlordHead::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_WarlordHead (0x104a00): the /GX chain destructor - stamp
-// ??_7CSBI_WarlordHead, run the inherited ResetCounters (0xe7400), then MSVC folds
-// the four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. The folded ImageSet level calls
-// ResetCounters AGAIN, so retail shows two `call 0xe7400` here (@0x2c and @0x41).
-// Collapsed from SBI_WarlordHeadEh.cpp.
 RVA(0x00104a00, 0x94)
 CSBI_WarlordHead::~CSBI_WarlordHead() {
     ResetCounters();

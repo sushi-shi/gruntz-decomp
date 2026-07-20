@@ -1,22 +1,3 @@
-// TileTriggerSwitchLogic.cpp - the tile-trigger logic TU (C:\Proj\Gruntz): the
-// WOVEN original obj at retail .text [0x110430 .. 0x1140e2]. The four former units tileswitchlogic /
-// tiletriggerderivedctors / tilegridcommand / tileactionevent interleave
-// function-by-function throughout the interval - impossible across objs at
-// first link => ONE original TU (+ the tiletriggerlogic /
-// tiletriggerload singletons and Gate113860, whose RVAs sit inside this
-// interval). Classes: CTileTriggerSwitchLogic + the 8 derived *Logic /
-// *SwitchLogic leaves, base CTileTriggerLogic, CTileTriggerLogic,
-// CTileActionEvent, the CTileTriggerData record and the Gate113860 mode gate.
-//
-// NOT one TU with the 0x115b60 container interval: the between-space
-// [0x1140e2 .. 0x115b60] is solid foreign code (the ToobSpikez TU, Fonts,
-// EngStr, SaveScreenshot), so first-link contiguity forces TWO adjacent objs.
-// The CTileTriggerSwitchLogic methods at [0x115f00 .. 0x117ec0] are therefore
-// defined in TileTriggerContainer.cpp (the devs split the class across the two
-// files). Definitions below are in strict ascending retail-RVA order.
-//
-// Flags: eh (/GX) - the interval carries EH-registration evidence
-// (0x110430-0x1140e2, 1 EH site).
 #include <string.h>            // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
@@ -39,22 +20,6 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/Grunt.h>
 
-// CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
-// header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
-// `*(void**)this = &g_...Vtbl` struct stamp is gone. The target-side vtable name
-// ??_7CTileTriggerSwitchLogic@@6B@ is derived AUTOMATICALLY by the build: the EXE
-// has no debug symbols, so labels.py applies config/vtable_names.csv (generated
-// from RTTI by gruntz.analysis.vtable_scan) whenever the base obj emits the
-// ??_7. No source annotation is needed - naming is a byproduct of the inventory.
-
-// (The former `__stdcall TileSwitchCheckType4/7(void*)` free-function externs are gone:
-// they are CTileTriggerLogic::Serialize / ::Deserialize, __thiscall on `this` - see
-// ValidateByType below.)
-
-// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites
-// (0x7c620), LoadExplosionSprites (0x7b330) is its sibling. Both declared on the real
-// CTriggerMgr (<Gruntz/TriggerMgr.h>), so the calls run cast-free on m_cmdGrid.)
-
 // TileActionEvent.cpp - the per-tile game-action event record (trace placeholder
 // tomalla-108). Methods in ascending retail-RVA order. The record shape comes from
 // <Gruntz/TileActionEvent.h>; the serializer is the shared CSerialArchive; the game
@@ -72,93 +37,6 @@
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
 // ---------------------------------------------------------------------------
 
-// g_gameReg->m_world is the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>),
-// whose m_8 is the CDDrawChildGroup, m_24 the CGameLevel and m_28 the CSndHost. The one
-// live read - the impact-sound gate - is g_gameReg->m_world->m_soundRegistry->m_emitGate (CSndHost
-// +0x30). The CTileEventSink placeholder was dead - deleted.)
-
-// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed). Declared at the REAL class: its
-// ReportError (@0x8dc60) then emits a DEFINED symbol instead of the unlinkable phantom
-// ?ReportError@CGameRegistry@@QAEXHH@Z. The sub-object chain reads through the real
-// classes too - CWorldZ::m_24 is the CGameLevel whose +0x5c IS m_mainPlane (the field the
-// fake view called `m_5c`; it was there all along, under its real name).
-
-// The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /
-// active-slot index into m_playerFlags[]; declared in <Gruntz/TileTriggerLogic.h>
-// (included above).
-
-// The impact-sound sink param (DAT_0061ab24): Process plays the impact one-shot
-// through it (Play(sink, 0,0,0)). Already named g_sndCueTag by the chatbox unit;
-// reuse that name so the DIR32 reloc pairs by symbol (no competing DATA - chatbox
-// owns the address; Process is deferred so its pairing is non-critical anyway).
-
-// runs after stamping a tile is CMapMgr::ComputeCellFlags(x, y, code) @0x77790 - a
-// 3-arg terrain cell-flag recompute on g_gameReg->m_tileGrid (CGruntzMapMgr : CMapMgr),
-// NOT a 0-arg "RefreshTile". The RVA neighbour ComputeCellFlags calls confirm it.)
-
-// grid CELL, and CTmCell IS CGrunt (proven, <Gruntz/TriggerMgr.h>). It reaches beyond
-// +0x1f0 (m_1e4/m_1ec), so it can only be the large CGrunt (0x8d8); the touched offsets
-// ARE CGrunt members - LoadGruntTypeTable is the inherited CUserLogic method, m_1e4 is
-// m_entranceActive, m_1ec is m_tileOwnerHi (the owning player id, indexing m_playerFlags).)
-
-// The spawned brick-break sprite (CreateSprite result) is the shared CGameObject:
-// ApplyLookupGeometry (0x1505b0) selects the break animation by name, ApplyName
-// (0x150540) caches its first frame, m_flags the retire bit, m_layer the
-// cache-state gate. (The former CBreakSprite view also mislaid m_8/m_198 at
-// offsets 0/4 - the canonical layout fixes that.)
-
-// The impact-sound lookup by name is the canonical name->cue lookup on the world
-// CSndHost (g_gameReg->m_world->m_soundRegistry): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
-// returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed
-// plays it. (The ex CImpactSound view + the fake `Eng_FindSound` free-function extern
-
-// TileGridCommand.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
-//
-// A tile-grid command object (type tag @ +0x04, coords @ +0x08/+0x0c, container
-// back-pointer @ +0x20, game-clock snapshot @ +0x24).  RecordMove captures the
-// game clock and hands the command back to its container; Serialize streams the
-// command's fields through a CSerialStream; Classify drives the on/off duty cycle
-// off the game clock; BumpCell / ApplyMove edit the active tile layer's cell.
-//
-// The dynamic this-tracer originally lumped these RVAs under
-// CTileTriggerSwitchLogic; they are a DIFFERENT shape (verified by the +0x20
-// container back-pointer and the +0x04 type tag, not the switch-logic layout).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine).
-
-// TileTriggerLoad.cpp - the version-4 deserialize handler (0x1138b0) for a tile
-// trigger-data record. Reached through the per-version Load dispatcher (0x513860,
-// sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed
-// run of dword fields off the archive (virtual Read @ vtable byte 0x30) once the
-// game registry's m_30 sub-manager is live.
-// The `CTileTriggerData` record is CTileTriggerSwitchLogic itself.
-// 0x1138b0 streams the EXACT field list
-// LoadState (0x1139a0) reads back - m_08, m_key0c, m_key1, m_linkGate, m_18,
-// m_1c, m_20, m_28, then m_block[24] from +0x2c, skipping the +0x24 owner - so
-// it is the WRITE mirror, now CTileTriggerSwitchLogic::SaveState (the mode-4 arm
-// its own ValidateByType @0x113860 dispatches).
-
-// TileTriggerDerivedCtors.cpp - the 18-byte derived tile-trigger logic ctors
-// (C:\Proj\Gruntz), homed from src/Stub/. Each is the canonical logic-ctor
-// archetype: chain to the (engine, NOT matched) base ctor - an external no-body
-// call so its rel32 reloc-masks - then re-stamp the derived vftable into [this].
-//
-// Each derived class is now modeled over its REAL RTTI base: the 1-virtual
-// CTileTriggerLogic (vtable 0x5eaea4) for the "logic" family and the 4-virtual
-// CTileTriggerSwitchLogic (vtable 0x5eae8c) for the "switch" family (both fully
-// modeled in their own headers). cl emits the leaf ??_7 (1 slot / 4 slots, matching
-// retail) + the implicit ctor vptr-stamp, and the build's RTTI auto-namer names the
-// leaf vtable. The base ctor is defined in a DIFFERENT TU (TileTriggerLogic.cpp /
-// TileTriggerSwitchLogic.cpp), so its call stays external and the rel32 masks. The
-// fabricated per-class `*Base` stand-ins are gone. Definitions are in retail-RVA
-// order.
-
-// ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::CTileTriggerSwitchLogic()
-// Constructor: stamps the vtable, zeroes the 24-dword m_block at +0x2c
-// (rep stosd), then clears m_20 (+0x20).
-// ---------------------------------------------------------------------------
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     // vptr stamp is now IMPLICIT (real polymorphic class) - cl prepends
@@ -170,23 +48,6 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     m_20 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::BuildSmall (slot 1, 0x110460) - the BASE builder that
-// CCheckpointTriggerSwitchLogic::BuildSmall (0x112a50) overrides. Gate on the m_20
-// one-shot, reject a type-4 build with an empty record, copy the caller's 24-dword
-// record into m_block (+0x2c, `rep movsd` ecx=0x18), then chain the slot-0 build
-// virtual with the remaining 8 args.
-//
-// RE-HOMED from src/Stub-era VtblForward.cpp, where it lived as "CVtEmitRecv::Accept" on a
-// placeholder receiver. That name occurs nowhere in GRUNTZ.EXE, and the note there said the
-// owner was "not recoverable from the xref graph" - true, because it is reached ONLY through
-// the vtable, never by a rel32 call. The VTABLE is what recovers it:
-// ??_7CTileTriggerSwitchLogic@@6B@ (0x1eae8c) slot 1 == 0x110460, and the checkpoint class's
-// vtable overrides that same slot with 0x112a50. The placeholder's shape maps exactly onto
-// this class: its "busy gate @+0x20" is m_20, its "0x60-byte record sink @+0x2c" is
-// m_block[24], and its "virtual Dispatch slot 0" is Setup - which independently confirms the
-// 9-arg slot-1 signature recovered from the checkpoint override.
-// ---------------------------------------------------------------------------
 RVA(0x00110460, 0x64)
 i32 CTileTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
@@ -209,17 +70,6 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     return Setup(owner, a2, a3, a4, a5, a7, a8, a9);
 }
 
-// SwitchDown/SwitchUp stay DECLARED-ONLY on the base (bodies live in unmatched engine TUs); cl still
-// emits the ??_7 vftable (the ctor references it) with those slots as external
-// refs. Setup (slot 0, thunk 0x1749) IS reconstructed below.
-
-// ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::Setup (slot 0) - the one-shot Setup virtual (0x1104f0,
-// shared as slot 0 across the whole *TriggerSwitchLogic family). If already set up
-// (m_20 non-zero) returns 0; else scatters the 8 args into the object fields, sets
-// the init guard (m_20=1) + clears m_1c, returns 1.
-// (xref: vtable slot +0x0 via thunk 0x1749).
-// ---------------------------------------------------------------------------
 RVA(0x001104f0, 0x56)
 i32 CTileTriggerSwitchLogic::Setup(
     CTileTriggerContainer* owner,
@@ -247,13 +97,6 @@ i32 CTileTriggerSwitchLogic::Setup(
     return 1;
 }
 
-// TileTriggerLogic.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
-// The constructor is matched byte-exact.
-
-// ---------------------------------------------------------------------------
-// CTileTriggerLogic::CTileTriggerLogic()
-// Zeroes the 24-dword m_block array (rep stosl) then m_1c, reusing the zero
-// register for the trailing +0x1c store.
 RVA(0x001107f0, 0x1c)
 CTileTriggerLogic::CTileTriggerLogic() {
     // m_block initialised before m_1c so the optimiser emits the rep stosl
@@ -264,23 +107,6 @@ CTileTriggerLogic::CTileTriggerLogic() {
     m_1c = 0;
 }
 
-// The single slot-0 virtual (0x110c10, reached via ILT thunk 0x402072) is Tick -
-// DEFINED BELOW in this TU (0x110c10 sits inside THIS interval). The derived logic classes
-// (TileTriggerDerivedCtors.cpp) inherit this one slot.
-// (No virtual destructor: retail's derived vtables share this slot value, proving it
-// is a normal inherited virtual, not a per-class ??_G.)
-
-// ---------------------------------------------------------------------------
-// CTileTriggerLogic::FindIndexByKey
-// Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
-//
-// RE-HOMED from CTileTriggerSwitchLogic (which is 0x8c and cannot hold this): retail is
-// `add ecx,0x3c` + 24 iterations = this+0x3c..+0x9b, exactly CTileTriggerLogic::m_block.
-// ---------------------------------------------------------------------------
-// @interleaver CTileTriggerLogic::FindIndexByKey emitted-in <boundary:
-// StatusBarUpdaters.cpp LoadSwitchUpSprite @0x1106b0 (before) + BridgeMoveSprites.cpp
-// LoadBridgeMove @0x110860 (after)>. A /Gy first-use COMDAT the linker scattered
-// between two OTHER units inside this woven interval.
 RVA(0x00110820, 0x23)
 i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
@@ -291,35 +117,6 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
     return 0;
 }
 
-// ===========================================================================
-// CTileTriggerLogic::Tick (0x0110c10) - the slot-0 virtual: the pyramid/bridge
-// tile-TRANSITION dispatcher, run on the trigger's OWN tile coords.
-//
-// RECEIVER SETTLED: `this` IS the CTileTriggerLogic. The
-// binary proof: (a) 0x110c10 is the one slot of ??_7CTileTriggerLogic (0x5eaea4,
-// ILT 0x402072) and every in-tree caller (Classify @0x112970, Broadcast
-// @0x112080) invokes it `mov ecx,<logic>; call [vtbl+0]` with NO args pushed;
-// (b) the body ends in a plain `ret` (0-arg __thiscall) - the former
-// `LoadPyramidBridge(i32 spriteType)` parameter was FABRICATED: the switch key
-// is the [esp+0x18] LOCAL holding the resolved cell id (0x110d42 reloads it, and
-// the per-arm up/down compares run on esi = that same local); (c) the only
-// `this` reads are [edi+0x8]/[edi+0xc] == m_08/m_0c, this class's tile coords.
-//
-// It: resolve the cell id at (m_08, m_0c); when the tile center is in the view
-// rect (and the id is not 0x67/0x68) spawn the TileTriggerTransition sprite and
-// latch its logic handle; then dispatch the 0x66-entry sprite-key jump table
-// (pyramid colors -> GAME_*PYRAMIDZ + UP/DOWN, bridges -> LEVEL_*BRIDGE*).
-// ===========================================================================
-// ("TileTriggerTransition" was NOT a global: it is the .rdata STRING LITERAL
-//  "TileTriggerTransition" - the CreateSprite lookup key - which a previous pass
-//  re-declared as an extern char[] that nothing defines. Written as the literal at
-//  its use site now; cl emits the same reloc-masked $SG entry.)
-
-// Resolve a tile-cell id at (x, y): clamp into the main plane's tile grid, index
-// the column-offset table into the tile array, read the tile id, and (unless the
-// empty/clear sentinel) query the image set's collision kind at its origin.
-// Retail emits this block inline at the head of Tick (typed on the canonical
-// CGameLevel/CLevelPlane; the sentinels come from GameLevel.h).
 static i32 PbResolveCell(CGameLevel* level, i32 x, i32 y) {
     CLevelPlane* plane = level->m_mainPlane;
     if (x < 0) {
@@ -421,10 +218,6 @@ i32 CTileTriggerLogic::Tick() {
     return 0;
 }
 
-// --- CTileTriggerSwitchLogic family (base = 4 virtuals) --------------------
-// The five derived switch logics now live in <Gruntz/TileTriggerSwitchLogic.h> (they were
-// .cpp-local views; CCheckpointTriggerSwitchLogic has to be shared with CheckpointSwitchBuild.cpp,
-// and all five are allocated at 0x8c = sizeof(base), so none adds a data member).
 RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
@@ -549,9 +342,6 @@ i32 CTileTriggerSwitchLogic::Broadcast() {
     return 1;
 }
 
-// --- CTileTriggerLogic family (base = 1 virtual) ---------------------------
-// Class shapes now live in <Gruntz/TileTriggerLogic.h> (shared with the AddLogic
-// factory in TileTriggerContainer.cpp that news them); the ctor bodies stay here.
 RVA(0x00112210, 0x12)
 CGiantRockLogic::CGiantRockLogic() {}
 
@@ -561,35 +351,7 @@ CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
-// ---------------------------------------------------------------------------
-// BuildRockBreakInGameText - the rock-break tile-effect loader (RVA 0x1122a0).
-//
-// `this` is the 0xc8 CGiantRockLogic - the
-// +0x8/+0xc tile (x, y) are its m_08/m_0c coords, the +0x9c 9-cell value block is
-// its m_matrix[9], +0xc0/+0xc4 its m_c0/m_c4 - every touched offset is a
-// CGiantRockLogic member, and the receiver TriggerMgr's rock-break driver passes is
-// the ScanNeighborhood(tag 0x16 == giant rock) hit. The old CTileTriggerSwitchLogic
-// filing was a Ghidra rtti-vptr guess (an 0x8c object cannot even hold +0x9c).
-// It: (1) gates on whether the tile center sits inside the view rect;
-// (2) walks the 3x3 neighborhood writing each saved cell value back into the level
-// plane + notifying the tile grid (and, when in-rect, spawning a Particlez/
-// LEVEL_ROCKBREAK sprite per cell); (3) fires the command-grid effect at the tile
-// center; (4) when +0xc4 is set spawns an InGameText sprite carrying it; (5) if the
-// tile is on-screen with no active override, plays the LEVEL_ROCKBREAK cue (rate-
-// limited by the kill-cue clock).
-// ---------------------------------------------------------------------------
-
-// Kill-cue clock + sound flags (named so the DIR32 datum reloc-masks).
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
-
-// The sound-cue registry (g->m_world->m_soundRegistry) + its Lookup result (the LeafCue cue
-// record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are
-// the canonical CSndHost/CSndFinder/LeafCue/DSoundCloneInst from <Gruntz/SoundCue.h>
-// (included above).
-
-// `this` stays in esi; the tile coords are re-read from m_08/m_0c at each use
-// (retail caches neither, so caching them in locals would spill the frame from
-// 0x14 to 0x38) - direct member reads reproduce exactly that.
 
 // @early-stop
 // loop-body regalloc wall (~69%): complete + correct reconstruction - the frame
@@ -757,7 +519,6 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
 RVA(0x00112760, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 
-// --- CTileTriggerSwitchLogic family (base = 4 virtuals), upper RVAs --------
 RVA(0x00112790, 0x12)
 CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
@@ -767,40 +528,21 @@ CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
 
-// The leaf slot overrides forward to the BASE slot-2/slot-3 virtuals (called
-// non-virtually on `this`) and normalize the int result to a bool. thunk 0x2e0f ==
-// CTileTriggerSwitchLogic::SwitchDown @0x110570; thunk 0x37e2 == SwitchUp @0x1106b0 (both defined
-// in StatusBarUpdaters.cpp, reloc-masked to this TU).
-
-// CTileSecretTriggerSwitchLogic::SwitchDown (slot 2 override, 0x112820) - `return base::SwitchDown() != 0`
-// (int->bool neg/sbb/neg normalize).
 RVA(0x00112820, 0xc)
 i32 CTileSecretTriggerSwitchLogic::SwitchDown() {
     return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTimeTriggerSwitchLogic::SwitchDown (slot 2 override, 0x112840) - `return base::SwitchDown() != 0`
-// (the int->bool neg/sbb/neg normalize). Re-homed from ReconBatch2;
-// xref: ??_7CTileTimeTriggerSwitchLogic@@6B@+0x8 via thunk 0x2464.
-// ---------------------------------------------------------------------------
 RVA(0x00112840, 0xc)
 i32 CTileTimeTriggerSwitchLogic::SwitchDown() {
     return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
-// CTileTimeTriggerSwitchLogic::SwitchUp (slot 3 override, 0x112860) - `return base::SwitchUp() != 0`
-// against the base slot-3 virtual.
 RVA(0x00112860, 0xc)
 i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
     return CTileTriggerSwitchLogic::SwitchUp() != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerLogic::RecordMove
-// Captures the running game clock into +0x24, then hands this command to its
-// owning container (m_20->MoveList1ToList2(this)).
-// ---------------------------------------------------------------------------
 RVA(0x00112880, 0x12)
 void CTileTriggerLogic::RecordMove() {
     m_24 = g_frameTime;
@@ -910,26 +652,6 @@ ret1:
     return 1;
 }
 
-// ===========================================================================
-// The checkpoint switch-logic's slot-2 / slot-3 overrides (the "bump cell" /
-// "decrement cell" pair). BOTH were misattributed; the retail VTABLE settles it.
-// Reading ??_7CCheckpointTriggerSwitchLogic@@6B@ (0x1eaf54) straight out of the image:
-//     slot 0 -> 0x1104f0  Setup        (inherited from CTileTriggerSwitchLogic)
-//     slot 1 -> 0x112a50  BuildSmall (override)
-//     slot 2 -> 0x112b70  <-- THIS   (override)
-//     slot 3 -> 0x112bf0  <-- THIS   (override)
-// So `this` is a CCheckpointTriggerSwitchLogic (0x8c, CTileTriggerSwitchLogic base) - NOT
-// the 0x9c CTileTriggerLogic, and NOT an orphan "CDecrementCellHost" (a name that does not
-// occur anywhere in GRUNTZ.EXE). The +0x08/+0x0c/+0x14 fields they touch exist in BOTH
-// class families at the same offsets, which is exactly why the offsets alone never
-// disambiguated them and the vtable had to.
-//
-// The fields are dual-role on this class: +0x08/+0x0c are the tile column/row here, while
-// the switch-logic key paths (FindByField0C / FindChild) read +0x0c/+0x10 as lookup keys -
-// consistent, since a cell key IS (x << 8) + y. Names stay as the base declares them; only
-// the offsets are load-bearing.
-// ===========================================================================
-
 // Slot 2: reads the active tile layer's cell at (col,row), stores value+1 back, republishes
 // it through the tile grid, and SETS the +0x14 flag.  Returns 1.
 // @early-stop
@@ -1027,24 +749,11 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     return 0;
 }
 
-// ??0CTileActionEvent (0x112d80): the constructor - zero the m_10 live flag.
-// Was misread as a "ResetFlag" method: its only retail callers are the three
-// new-sites in TileTriggerContainer.cpp (AddToList3 / AddToList3Switch /
-// Serialize op-7), each with the compiler's guarded-ctor `alloc ? ctor : 0`
-// shape, and it returns this in eax exactly as a __thiscall ctor does.
 RVA(0x00112d80, 0xa)
 CTileActionEvent::CTileActionEvent() {
     m_10 = 0;
 }
 
-// ===========================================================================
-// CTileActionEvent::SetActionCode  (0x112da0) - __thiscall, ret 4
-// ===========================================================================
-// Stamp the action code into m_actionCode, fold it to a canonical kind (0x12f/0x130/0x131)
-// via the dense byte-mapped remap switch unless this player's slot is already
-// active, then write it into the action grid cell (g->m_30->m_24->m_5c flat cell
-// = m_20[ m_24[y] + x ]); return 0 if the cell already held the code (no-op), else
-// stamp it + run the grid-manager RefreshTile and return 1.
 RVA(0x00112da0, 0x9e)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
@@ -1300,24 +1009,6 @@ i32 CTileActionEvent::Process(i32 arg) {
     return newCode == 0x12d;
 }
 
-// ===========================================================================
-// CTileActionEvent::MorphByTool  (0x113420) - __thiscall, ret 8
-// ===========================================================================
-// Apply a tool/key (toolId 0x22..0x26 - the five brick-painting tools) to the
-// current action code m_actionCode: an `if/else-if` chain on toolId, each branch a dense
-// jump-table switch(m_actionCode) over the 0x12f..0x149 brick-code range that advances m_actionCode
-// to the tool's next code (table mappings recovered from the five byte-indexed
-// switch tables at 0x513650/0x513694/0x5136d8/0x51371c/0x513760). A switch default
-// (no transition for this tool+code) returns 0; any other unmatched toolId falls
-// straight through to the shared tail. The tail zeroes the 4-slot per-player flag
-// array (m_playerFlags[0..3]), marks this player's slot (or all four when playerSlot==5),
-// then re-commits the new code via SetActionCode and returns 1.
-//
-// Code byte-exact (objdiff fuzzy == base, same as the banked sibling SetActionCode);
-// the only residual is the inline .rdata jump-table scoring artifact (the five dense
-// switch tables' DIR32 base relocs pair against $L labels vs the self-symbol, and the
-// SetActionCode call goes through the ILT thunk) - docs/patterns/jumptable-data-overlap.md.
-// No code divergence; the metric undercount is the documented tooling wall.
 RVA(0x00113420, 0x1f2)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == 0x22) {
@@ -1477,13 +1168,6 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     return 1;
 }
 
-// 0x113860 - CTileTriggerSwitchLogic::ValidateByType: the 0x8c family's save/load
-// dispatcher (mode 4 -> SaveState @0x1138b0, 7 -> LoadState @0x1139a0), the exact
-// twin of CTileTriggerLogic::ValidateByType below. __thiscall, ret 0x10.
-// Retail's callers (SerializeApplyA 0x117630, LoadElement 0x117800) do
-// `mov ecx,<element>` before `call 0x277f`, and the body passes ecx UNTOUCHED
-// through to the two __thiscall state helpers (it loads the archive arg into eax,
-// never ecx) - i.e. `this` is the element, the first stack arg the archive.
 RVA(0x00113860, 0x3b)
 i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
@@ -1504,13 +1188,6 @@ i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3,
     return 1;
 }
 
-// ===========================================================================
-// 0x1138b0 - CTileTriggerSwitchLogic::SaveState: the write mirror of LoadState
-// (0x1139a0) - the SAME eight scalar fields (skipping the +0x24 owner) then the
-// 24-dword m_block run, through the archive's +0x30 (write) slot. Bails if the
-// archive is null or the registry sub-manager (m_30) is not yet live.
-// (Was the "CTileTriggerData::LoadV4" view - a second model of this class.)
-// ===========================================================================
 RVA(0x001138b0, 0xb4)
 i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
     if (ar == 0) {
@@ -1536,12 +1213,6 @@ i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::LoadState - 0x1139a0. Network deserialize: gate on a
-// non-null stream + the registry active-game flag, then read the eight scalar
-// fields (skipping m_owner at +0x24) and the 24-dword m_block via the stream's
-// read slot (+0x2c). Returns 1 (or 0 when gated off).
-// ---------------------------------------------------------------------------
 RVA(0x001139a0, 0xb4)
 i32 CTileTriggerSwitchLogic::LoadState(CSerialArchive* s) {
     if (s == 0) {
@@ -1641,12 +1312,6 @@ i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerLogic::Deserialize  (the type-7 load ValidateByType dispatches to)
-// The read counterpart of Serialize: same null/registry guard, same field list,
-// but each transfer goes through the stream's read slot (+0x2c) instead of the
-// write slot (+0x30). Reads the 12 scalar fields then the 24-dword m_block.
-// ---------------------------------------------------------------------------
 RVA(0x00113c10, 0xe8)
 i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
     if (s == 0) {
@@ -1675,14 +1340,6 @@ i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGiantRockLogic::ApplyByType - the giant rock's save/load dispatcher: run the base
-// (0x9c) family's ValidateByType first, then stream this leaf's own +0x9c..+0xc4 tail.
-//
-// RE-HOMED from CTileTriggerSwitchLogic (0x8c). CTileTriggerFactory::Build proves the owner:
-//   117b49: push 0xc8 / call ??2 / mov ecx,eax / call ??0CGiantRockLogic / mov esi,eax
-//   117b7b: mov ecx,esi / call 0x1d39    <- THIS function, on the fresh 0xc8 rock
-// ---------------------------------------------------------------------------
 RVA(0x00113d40, 0x6f)
 i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
     if (archive == 0) {
@@ -1768,12 +1425,6 @@ i32 CGiantRockLogic::DeserializeMatrix(CSerialArchive* s) {
     return 1;
 }
 
-// ===========================================================================
-// CTileActionEvent::Serialize  (0x113f10) - __thiscall, ret 0x10
-// ===========================================================================
-// The dispatcher: mode 4 writes the record fields, mode 7 reads them back; any
-// other mode (or a null archive arg) is a no-op returning 1. The two field-stream
-// helpers share the (edi=this record, esi=archive) shape.
 RVA(0x00113f10, 0x3b)
 i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
     if (ar == 0) {
@@ -1794,12 +1445,6 @@ i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
-// ===========================================================================
-// CTileActionEvent::SerializeFields  (0x113f60) - __thiscall, ret 4
-// ===========================================================================
-// Stream the 9 record fields (m_actionCode,m_tileX,m_tileY,m_c,m_10,m_playerFlags[0..3] - m_14 is
-// skipped) through the archive ar's vtable slot +0x30 (write, 4 bytes each).
-// Returns 0 if ar or the registry's +0x30 sub-object is null, else 1.
 RVA(0x00113f60, 0xa2)
 i32 CTileActionEvent::SerializeFields(void* ar) {
     CSerialArchive* a = static_cast<CSerialArchive*>(ar);
@@ -1821,13 +1466,6 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     return 1;
 }
 
-// ===========================================================================
-// CTileActionEvent::DeserializeFields  (0x114040) - __thiscall, ret 4
-// ===========================================================================
-// The mode-7 read counterpart of SerializeFields: read the same 9 record fields
-// (m_actionCode,m_tileX,m_tileY,m_c,m_10,m_playerFlags[0..3] - m_14 skipped) back through the archive
-// ar's vtable slot +0x2c (read, 4 bytes each). Returns 0 if ar or the registry's
-// +0x30 sub-object is null, else 1.
 RVA(0x00114040, 0xa2)
 i32 CTileActionEvent::DeserializeFields(void* ar) {
     CSerialArchive* a = static_cast<CSerialArchive*>(ar);

@@ -45,10 +45,6 @@
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
 #include <stdlib.h>              // engine rand (0x11fee0)
 
-// The reason(m_170)->priority map, inlined at each of the 6 candidate-compare sites
-// (12 jump tables). Case bodies emit the priority constants 2..0x17 in value order
-// (retail's block layout); the jump table carries the reason permutation. reason 20
-// and every out-of-range reason fall to the default 0x17.
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
         case 1:                                                                                    \
@@ -119,8 +115,6 @@
             break;                                                                                 \
     }
 
-
-// __cdecl board rect predicate (0x401127): point-in-board-rect (the visible CCueRect).
 extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127
 
 RVA(0x000f42f0, 0x1193)

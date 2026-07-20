@@ -1,22 +1,6 @@
-// GruntSpawnConfig.cpp - the grunt spawn/voice configuration manager.
-//
-// Ten __thiscall methods reconstructed in ascending-RVA order. The dtor (0x85df0)
-// lives in the 0x85xxx text region (next to ~CGruntzMapMgr) but is this class's
-// teardown; the other nine sit in the spawn-config family at 0x11axxx-0x11cxxx.
-// The class is a plain value bag (no vtable): a CDWordArray (m_18) of voice/spawn
-// entries plus the percent/priority/voice config seeded from g_buteMgr / g_gameReg.
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing. Engine callees / globals are reloc-masked (no body). See the
-// header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/GruntSpawnConfig.h>
-// StreamVoice is the REAL <Dsndmgr/StreamVoice.h> class (reached transitively via
-// SoundCue.h -> SoundStream.h): the local 2-method twin that stood here declared the
-// SAME SetSource (0x1374c0) / Configure (0x137520) rvas. Dissolved.
 #include <Dsndmgr/StreamVoice.h>
-// DirectSoundMgr (SetVolumeByIndex) now comes from the real <Dsndmgr/SoundDevice.h>,
-// pulled through <Gruntz/SoundCue.h> (via GameRegistry.h below).
 #include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
@@ -24,19 +8,10 @@
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef)
 #include <rva.h>
 
-// ===========================================================================
-// CGruntSpawnConfig::~CGruntSpawnConfig  (0x85df0)
-// ===========================================================================
-// Clear() the array then run ~CDWordArray on m_18. The destructible m_18 forces
-// the /GX EH frame. The empty body folds the inline teardown.
 RVA(0x00085df0, 0x4a)
 CGruntSpawnConfig::~CGruntSpawnConfig() {
     Clear();
 }
-
-// (0x99ca0 ~CSpawnList + 0x9a450 CSpawnList::DeleteAllEntries re-homed to
-// src/Gruntz/AreaMgr.cpp - their retail TU band - so the dtor inline-folds into
-// ~CAreaMgr exactly as retail. Clear() below keeps the retail extern-call shape.)
 
 // ===========================================================================
 // CGruntSpawnConfig::Init  (0x11adc0)
@@ -107,13 +82,6 @@ void CGruntSpawnConfig::Clear() {
     m_stream1 = 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::LoadGruntVoices  (0x11af00)
-// ===========================================================================
-// Build two sprites from the "GruntVoice" descriptor and stash them in the
-// sprite-pair (m_08/m_0c). For each of the two iterations: get the source object
-// (m_04->m_08), make a sprite via CreateSprite, call its slot-0x10 method, then
-// read the sprite's m_7c->m_18 into the pair slot; bail with 0 on a null result.
 RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
@@ -145,9 +113,6 @@ void CGruntSpawnConfig::ClearSprites() {
     m_voice1 = 0;
 }
 
-// The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
-// bute TU, declared extern in <Bute/ButeMgr.h> so `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
-
 // ===========================================================================
 // CGruntSpawnConfig::LoadGruntSpawnConfig  (0x11afb0)
 // ===========================================================================
@@ -173,9 +138,6 @@ void CGruntSpawnConfig::ClearSprites() {
 // voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
 // Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c).
 // (OpenStream lives on the unified CSpawnRemoveColl at m_04->m_20; see the header.)
-
-// The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
-// another TU, but a fresh decl here is byte-neutral - the reference is by address).
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
@@ -415,11 +377,6 @@ i32 CGruntSpawnConfig::PickWeighted(i32 index, i32 seed) {
     return 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::BuildVoiceList  (0x11c1a0)
-// ===========================================================================
-// Size the array empty, then fill 0x4af entries: for i in [1, 0x4b0) grow the
-// array with BuildVoiceSoundList(i). Returns 1.
 RVA(0x0011c1a0, 0x46)
 BOOL CGruntSpawnConfig::BuildVoiceList() {
     m_voiceLists.SetSize(0, -1);
@@ -430,16 +387,6 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
     return 1;
 }
 
-// ===========================================================================
-// CSpawnList::AddVoiceSound  (0x11c560)
-// ===========================================================================
-// Allocate a record (operator new 0xc), construct it from the (by-value) name
-// CString AND the `flag` arg (CSpawnEntry's 2nd ctor param, stored at m_data),
-// and append it to the list (AddTail). The by-value CString param + the inner
-// copy construct the /GX frame. EXACT once the flag is passed through (the
-// earlier "frame-size wall" was really the dropped 2nd ctor arg - a `push flag`).
-// The list is a CPtrList (retail calls 0x1b4867/0x1b4991, the CPtrList band - see
-// SpawnList.h), so AddTail takes the record straight - no `(CObject*)` cast needed.
 RVA(0x0011c560, 0x91)
 void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     CSpawnEntry* node = new CSpawnEntry(s, flag);
@@ -448,12 +395,6 @@ void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::AnyVoicePlaying (0x11c6c0) / VoicePlaying (0x11c700)
-// ===========================================================================
-// Poll the two voice slots (m_08/m_0c) for a live play request: a slot is playing
-// when it is set and its play-flag word (+0x6c, CGruntVoice::m_playFlags) is
-// non-zero. AnyVoicePlaying walks both; VoicePlaying tests slot i.
 RVA(0x0011c6c0, 0x27)
 i32 CGruntSpawnConfig::AnyVoicePlaying() {
     i32 i = 0;
@@ -475,13 +416,6 @@ i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
     return 0;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::StopVoice  (0x11c730)
-// ===========================================================================
-// Selective per-id teardown: of the two voice slots (m_08, m_0c), find the one
-// whose voice id (m_68) matches `id`. For that slot: if its paired object
-// (m_10/m_14) is set, release the sub-sprite at +0x6c; then if the voice itself
-// (m_08/m_0c) is set, reset it. Both ->m_68 are read eagerly (no null guard).
 RVA(0x0011c730, 0x5c)
 void CGruntSpawnConfig::StopVoice(i32 id) {
     i32 tag08 = m_voice0->m_source;
@@ -503,12 +437,6 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::DtorBody  (0x11c7b0)
-// ===========================================================================
-// The 2-iteration sprite-pair teardown over (m_08,m_10) then (m_0c,m_14): if the
-// paired object (m_10/m_14) is set, release its sub-sprite (+0x6c); if the sprite
-// (m_08/m_0c) is set, reset it (CGruntVoice::Reset @0x11a870).
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::DtorBody() {
     void** p = reinterpret_cast<void**>(&m_voice0);
@@ -523,11 +451,6 @@ void CGruntSpawnConfig::DtorBody() {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::ResetPicks  (0x11c7f0)
-// ===========================================================================
-// Run the sprite-pair teardown (DtorBody @0x11c7b0), then walk the m_18 voice-list
-// array and reset every non-null list's last-picked index (+0x20) to -1.
 RVA(0x0011c7f0, 0x2b)
 void CGruntSpawnConfig::ResetPicks() {
     DtorBody();
@@ -539,9 +462,6 @@ void CGruntSpawnConfig::ResetPicks() {
     }
 }
 
-// IsReady (0x11c830): the owner "ready" probe - m_00->m_100 != 0. Out-of-line
-// (retail emits it standalone and calls it via thunk; the inline member folded
-// into its callers and never emitted).
 RVA(0x0011c830, 0x12)
 BOOL CGruntSpawnConfig::IsReady() {
     return m_owner->m_100 != 0;

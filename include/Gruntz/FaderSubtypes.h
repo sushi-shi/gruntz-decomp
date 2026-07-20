@@ -1,67 +1,15 @@
-// FaderSubtypes.h - the six concrete CFader screen-fader subtypes the
-// CFaderMgr::Add factory allocates. Each is a real polymorphic CFader subclass
-// (: public CFader): its ctor chains ??0CFader, stamps its own vftable, and zeroes
-// its subtype fields; its two motion virtuals (RenderFrame/GetFrameCount) override the CFader pure
-// virtuals (slots 1/2). The ctor/dtor bodies live in CFader.cpp; this header is the
-// single owner of the declarations so CFaderMgr.cpp can `new` the real subtype and
-// call the inherited CFader::SetTimers/Set2c directly (no (CFaderImpl*) cross-cast,
-// no (CFader*) upcast).
-//
-// nFaderType (0..5) -> subtype / pInit type-id / operator-new size:
-//   0 -> CFaderShape (id 1, 0x494)   3 -> CFaderRadial (id 4, 0x5c)
-//   1 -> CFaderLight (id 2, 0x206c)  4 -> CFaderFlat    (id 5, 0x50)
-//   2 -> CFaderSine   (id 3, 0x7d5c)  5 -> CFaderMesh  (id 6, 0x6c)
-//
-// Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. The per-subtype `operator new` returns the exact retail allocation
-// size so `new CFaderXxx` emits `push <size>; call operator new` without padding the
-// modeled (partial) layout. The default-init builder (CFaderInit::BuildXxx) and the
-// apply/copy method (CFaderXxx::ApplyInit) are external/reloc-masked engine methods.
 #ifndef GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 #define GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 
 #include <Mfc.h> // afx-first: CFaderInit embeds a CString (breakable-MFC-wall; all 3
-                 // includers already pull <Mfc.h>, so this is matching-neutral)
 #include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/Fader.h>        // the polymorphic base (SetTimers/Set2c/virtual dtor)
 #include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
-// The default-init descriptor built on the CFaderMgr::Add stack when pInit is null:
-// an embedded CString (~CString on every exit forces the /GX frame) plus the
-// subtype's default parameters. Each subtype's ApplyInit consumes it; when pInit is
-// supplied instead, the same engine method is reached through CopyFrom(CFader*)
-// (pInit is a CFxMode transition descriptor the caller passes through CFader*).
-// Defined in CFaderMgr.cpp.
-// The default-init descriptor CFaderMgr::Add builds on its stack when pInit is null:
-// nine int parameter words + an embedded CString (the destructible member that forces
-// the /GX frame), filled by one of the six reloc-masked default builders (one per
-// fader type 0..5). Each subtype's ApplyInit reads a different subset of the int words
-// (they overlay the same bytes): CFaderSine reads m_04(src)/m_08(alt)/m_0c(count)/
-// m_10(intensity); CFaderMesh casts to its local FxTransDesc view of the same offsets.
-// +0x00 is the type discriminator. Was a per-TU FxDesc_17fe00 view + a FaderMgr.cpp-
-// local blob; folded to this one canonical shape.
-// (the ex-`CFaderInit` view is GONE. Its six "BuildDefaultInit0..5" PHANTOMs were fake
-// names for the CONSTRUCTORS of six REAL classes THAT ARE ALREADY IN THE TREE, matched,
-// at exactly those addresses:
-//   BuildDefaultInit0 0x17e7c0 -> ??0CFxModeT1@@QAE@XZ   (100% EXACT in `fader`)
-//   BuildDefaultInit1 0x17e840 -> ??0CFxModeT2@@QAE@XZ
-//   BuildDefaultInit2 0x17e880 -> ??0CFxModeT3@@QAE@XZ   (100% EXACT)
-//   BuildDefaultInit3 0x17e8b0 -> ??0CFxModeT4@@QAE@XZ   (100% EXACT)
-//   BuildDefaultInit4 0x17e8e0 -> ??0CFxModeT5@@QAE@XZ   (100% EXACT)
-//   BuildDefaultInit5 0x17e910 -> ??0CFxModeT6@@QAE@XZ   (100% EXACT)
-// Fader.cpp's own comment already said so ("CFaderMgr builds via CFxModeT6::CFxModeT6
-// (0x17e910) / CFaderInit::BuildDefaultInit5") - the alias was documented and never
-// dissolved. CFaderInit was a fabricated SUPERSET of the six variants: its layout
-// (m_00..m_20 + a CString at +0x24) is literally CFxModeT1 (SIZE 0x2c). So
-// `CFaderInit init; init.BuildDefaultInitN();` is just `CFxModeT<N+1> init;` - the ctor
-// IS the builder. The descriptor the ApplyInit methods take is the shared base,
-// CFxModeDesc; the subtypes that need more downcast to their variant.)
 #include <Gruntz/FxModeDesc.h>
 
-// Animation frame source (the CFaderSine/Flat active src/dst box): +0x18 the frame
-// count, +0x1c the per-frame element count. Was FxSrc_17fe00 / a Fader.cpp-local view.
 SIZE_UNKNOWN(FaderSrc);
 struct FaderSrc {
     char pad00[0x18];
@@ -70,12 +18,7 @@ struct FaderSrc {
 };
 class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
 struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
-                   // base the shade-table builders take) - <DDrawMgr/DirectDrawMgr.h>
 
-// The 16-byte radial fade cell (CFaderRadial::m_cells[]): the precomputed per-pixel
-// displacement + fade threshold + source pixel. ApplyInit fills one per source pixel;
-// RenderFrame plots the cells whose (fade - frame) still exceeds 1.0. The first three are FLOATS
-// (RenderFrame reads them with fld/fcomp).
 struct CFaderRadialCell {
     float m_vx;   // +0x00  x displacement
     float m_vy;   // +0x04  y displacement
@@ -83,25 +26,6 @@ struct CFaderRadialCell {
     i32 m_pixel;  // +0x0c source pixel (byte)
 };
 SIZE(CFaderRadialCell, 0x10);
-
-// ---------------------------------------------------------------------------
-// THE SHARED CFader BASE SLOTS (why the subtype bodies cast them).
-// CFaderMgr::Add primes every subtype through the base's SetTimers(a,b)/Set2c(v),
-// which store three raw DWORDS at +0x24/+0x28/+0x2c; each subtype then REINTERPRETS
-// them for its own effect (source box, default surface, default palette, the overlay
-// pool). Likewise +0x1c (m_table) holds whatever CShadeTable the subtype's ApplyInit
-// built through the embedded m_cache, and +0x30 (m_flag) is the "we own it" gate the
-// base dtor tests before FindRemove-ing it. So the `(CDDSurface*)m_timerA`-style casts
-// in the ApplyInit bodies are AUTHENTIC dev code (the base slot really is a dword),
-// not a fake view - the six subtypes genuinely disagree about what lives there.
-// ---------------------------------------------------------------------------
-
-// ===========================================================================
-// CFaderMesh (ctor 0x17e940, size 0x6c): embeds the REAL growable mesh buffer
-// CRezBufferObject at +0x58 (its own vftable ??_7CRezBufferObject @0x1f07d8; the
-// CObArray-of-RezElem40 from <Rez/RezBufferObject.h>). See Fader.cpp for the
-// ctor/member-order notes. (The former CFaderMeshSub member view is dissolved.)
-// ===========================================================================
 
 SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
@@ -136,9 +60,6 @@ public:
     CRezBufferObject m_meshBuf; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
 };
 
-// ===========================================================================
-// CFaderSine (ctor 0x17fdb0, size 0x7d5c): motion virtuals 0x17ff30 / 0x180400.
-// ===========================================================================
 SIZE(CFaderSine, 0x7d5c);
 VTBL(CFaderSine, 0x001f0848);
 class CFaderSine : public CFader {
@@ -171,9 +92,6 @@ public:
     i32 m_arr3[2000];         // +0x5e1c  scattered, handed to ScatterSamples
 };
 
-// ===========================================================================
-// CFaderFlat (ctor 0x17f530, size 0x50): motion virtuals 0x17f660 / 0x17f950.
-// ===========================================================================
 SIZE(CFaderFlat, 0x50);
 VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
@@ -201,9 +119,6 @@ public:
     i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
 
-// ===========================================================================
-// CFaderLight (ctor 0x180410, size 0x206c): motion virtuals 0x180640 / 0x1814f0.
-// ===========================================================================
 SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
@@ -253,9 +168,6 @@ public:
     i32 m_surfHeight;       // +0x2068  active-surface height
 };
 
-// ===========================================================================
-// CFaderRadial (ctor 0x17f9a0, size 0x5c): motion virtuals 0x17fc60 / 0x17fda0.
-// ===========================================================================
 SIZE(CFaderRadial, 0x5c);
 VTBL(CFaderRadial, 0x001f0810);
 class CFaderRadial : public CFader {
@@ -292,9 +204,6 @@ public:
     i32 m_centerY;             // +0x58
 };
 
-// ===========================================================================
-// CFaderShape (ctor 0x1816c0, size 0x494): motion virtuals 0x181b00 / 0x182900.
-// ===========================================================================
 SIZE(CFaderShape, 0x494);
 VTBL(CFaderShape, 0x001f0890);
 class CFaderShape : public CFader {
@@ -353,7 +262,5 @@ public:
     // with a placeholder name so the SIZE is honest; do not invent a meaning for it.
     i32 m_490; // +0x490
 };
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 #endif // GRUNTZ_GRUNTZ_CFADERSUBTYPES_H

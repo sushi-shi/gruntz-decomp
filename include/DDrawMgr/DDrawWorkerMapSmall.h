@@ -1,35 +1,15 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H
 
-// DDrawWorkerMapSmall.h - CDDrawWorkerMapSmall, the 3-map keyed worker factory of
-// the DDraw surface-manager family (13-slot vtable ??_7CDDrawWorkerMapSmall
-// @0x1efcc8). Hoisted from DDrawWorkerMapSmall.cpp (wave4-L): the
-// IsReady/Slot06/GetStateId/dtor quartet lives in the G obj (DDrawSubMgr.cpp),
-// the factory/teardown meat in the T obj (DDrawSurfacePair.cpp).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
-
 #include <Ints.h>
 #include <rva.h>
 #include <Wap32/Object.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/MapStringToOb.h>
-// The keyed "map worker" the factories allocate IS the canonical CAniRecordBase2
-// (14-slot vtable @0x1f02d8; 0x14-byte allocation). The former local view pair
-// CDDrawMapWorker (RELOC_VTBL alias) + CDDrawMapWorkerObj is dissolved onto it.
 #include <DDrawMgr/AniRecordBase2.h>
 
-// (CParseSource is GONE - the factories' source arg IS the CParseSource
-// leaf record ResolveQualified returns; the bodies already cast every use.)
 #include <Gruntz/ParseSource.h> // the real parse-source record
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent
-// handle), m_1c (a CMapStringToOb-internal field of map1) and the three maps.
-// The leaf vtable (13 slots) is declared in slot order so cl lays the emitted
-// vtable out byte-for-byte.
-// ---------------------------------------------------------------------------
 class CDDrawWorkerMapSmall : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)

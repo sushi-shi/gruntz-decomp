@@ -1,44 +1,14 @@
-// StatusBarItem.cpp - labeling stand-in for the standalone complete-object ctor.
-//
-// CStatusBarItem is ONE class, defined canonically in <Gruntz/StatusBarItem.h>
-// with an INLINE ctor (so the derived CSBI_RectOnly folds it - see SBI_RectOnly.cpp).
-// Retail emits that same inline ctor out-of-line as a COMDAT (the complete-object
-// ctor at 0x1005d0) wherever a bare CStatusBarItem is constructed. MSVC 5.0,
-// however, inlines this tiny ctor at every instantiation we can synthesize, so it
-// will not emit a labelable standalone ??0 from the canonical inline form.
-//
-// To keep the 0x1005d0 byte-match, this TU takes the canonical class from
-// <Gruntz/StatusBarItem.h> but #defines SBI_ITEM_OWN_CTOR first: that flips the
-// header's inline ctor to an out-of-line DECLARATION, so MSVC emits a standalone ??0
-// this TU labels with the RVA-keyed body below. Same one class, out-of-line-ctor
-// facet; a tooling workaround for the inline-ctor COMDAT, NOT a second class.
 #include <rva.h>
 
 #define SBI_ITEM_OWN_CTOR
 #define SBI_DTOR_CHAIN // emit the retail inline base-dtor (stamp vptr + DtorStatus), so this
-                       // TU's ??1/??_GCStatusBarItem match retail (0x100780/0x100620) and the
-                       // SBI leaf TUs - not the empty-stub form (was a cross-obj DIVERGENT).
 #include <Gruntz/StatusBarItem.h>
 
-// ---------------------------------------------------------------------------
-// CStatusBarItem::SetSubtype (0x1005b0) - vtable slot 10 (+0x28): arm the countdown.
-//
-// Re-homed here from SBI_MenuItem.cpp, where it was declared `CSBI_MenuItem::SetSubtype`
-// (a non-virtual, shadowing this class's `virtual void SetSubtype()` at slot 10). It is
-// the BASE's body, not the leaf's: CStatusBarItem / CSBI_Image / CSBI_MenuItem /
-// CSBI_StatzTabGruntBar ALL resolve their slot 10 to this one RVA, so nobody overrides
-// it - an inherited slot cannot be a leaf's method. It touches only m_28 (+0x28), which
-// this class owns, and 0x1005b0 sits directly below this TU's band (0x1005d0..0x100660),
-// so it is first here by RVA order.
 RVA(0x001005b0, 0x8)
 void CStatusBarItem::SetSubtype() {
     m_28 = 2;
 }
 
-// ---------------------------------------------------------------------------
-// CStatusBarItem::CStatusBarItem()
-// Out-of-line complete-object ctor: zeroes m_4/m_8/m_24/m_28 after the vftable
-// is installed. Byte-identical to the COMDAT copy of the header's inline ctor.
 RVA(0x001005d0, 0x17)
 CStatusBarItem::CStatusBarItem() {
     m_enabled = 0;
@@ -59,8 +29,6 @@ CStatusBarItem::CStatusBarItem() {
 // and forces the COMDAT out in this TU.)
 // @rva-symbol: ??_GCStatusBarItem@@UAEPAXI@Z 0x00100620 0x24
 
-// CStatusBarItem vtable RVA binding (moved from the deleted
-// src/Stub/BoundaryLowerThunks.cpp vtable catalog).
 VTBL(CStatusBarItem, 0x001eabcc);
 
 // ---------------------------------------------------------------------------

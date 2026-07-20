@@ -1,19 +1,3 @@
-// SBI_WellGoo.h - Gruntz CSBI_WellGoo (C:\Proj\Gruntz).
-// RTTI .?AVCSBI_WellGoo@@; the most-derived leaf of the SBI image chain
-//   CSBI_WellGoo : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// Vtable @0x5eadfc. The 4-level /GX-framed scalar destructor (0x104bb0) lives in
-// SBI_WellGooEh.cpp.
-//
-// This leaf adds, over CSBI_Image, the per-frame Tick (0xe6380, vtable slot 5):
-// a countdown-gated animation step that draws the well's goo level - a base anim
-// frame, a clamped shade-blit fill whose height tracks (m_20 - m_18) progress, and
-// a foreground frame.
-//
-// Fields are placeholders; the offsets + code bytes are the load-bearing fact (the
-// mangled ?<method>@CSBI_WellGoo@@... names are layout-independent). The class is
-// modeled with the SBI family's manual-vtable-stamp device (no real `virtual`), so
-// the frameless Tick matches without forcing a divergent compiler vtable;
-// sibling/engine callees are ILT/vtable-reloc-masked.
 #ifndef SBI_WELLGOO_H
 #define SBI_WELLGOO_H
 
@@ -21,32 +5,13 @@
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // CSBI_Image base
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-// ---------------------------------------------------------------------------
-// The per-frame draw handles (m_40/m_3c) ARE the RTTI CImage (CImage::RenderFrame
-// @0x153790); the owned blitter m_38 IS the CDDrawShadeBlit (CDDrawShadeBlit::Blit
-// @0x1497f0); the goo source m_34 + the back-buffer are CDDSurface (CDDSurface::
-// BltEx @0x13eef0). Full defs are pulled in the .cpp; only pointer types are needed
-// here, so forward-declare the unified classes (was CGooFrame/CGooShadeBlit/
-// CGooSurface placeholder views).
 class CImage;
 class CDDSurface;
 class CDDrawShadeBlit;
 
-// (The five "goo view" structs are GONE - every one was a canonical class:
-//   CGooGameReg    == CGruntzMgr      (m_gameMgr@+0x30==m_world, m_refTable@+0x74==m_spriteFactory)
-//   CGooGameMgr    == CDDrawSurfaceMgr (drawable@+0x04==m_drawTarget, registry@+0x10==m_imageRegistry,
-//                                       pool@+0x1c==m_ptrColl)
-//   CGooDrawable   == CDDrawSubMgrPages (renderCtx@+0x14==m_backPair)
-//   CGooRenderCtx  == CDDrawSurfacePair (backBuffer@+0x2c==m_surface)
-//   CSbiFrameSet   == CImageSet (the FIFTH view of the 0x6c CDDrawWorker frame shape)
-// and the "+0x158 selector table" was m_options[g_curPlayer].m_008 all along.)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -54,12 +19,6 @@ class CDDrawShadeBlit;
 #include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE frame-set class)
 #include <Gruntz/SpriteRefTable.h>
 
-// ---------------------------------------------------------------------------
-// CSBI_WellGoo - the well-goo status-bar item. Real RTTI base is CSBI_Image (see
-// top comment); kept FLAT (frameless method-view) because Tick reads base-region
-// storage (m_fillBase/m_fillTop/m_countdown) under goo-specific names that
-// CStatusBarItem models as the m_rect14 aggregate - deriving it would erase those
-// recovered semantics.
 class CSBI_WellGoo : public CSBI_Image {
 public:
     // tag 7 (the Gruntz-tab WELLGOO widget).

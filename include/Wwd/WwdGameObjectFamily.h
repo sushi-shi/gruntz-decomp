@@ -1,42 +1,6 @@
 #ifndef GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 #define GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 
-// WwdGameObjectFamily.h - the wide game-object family: ONE real hierarchy, one
-// class per retail ??_7 (the 2026-07-14 megafold; the former parallel WwdB*
-// chain + WwdEdgeA/WwdEdgeB/WwdName/WwdSub/WwdSubA scaffolding are DISSOLVED):
-//
-//   CLoadable : CWapObj : CObject                 (Loadable.h)
-//   CResolveNode : CLoadable        ??_7 @0x1efbc0  (ResolveNode.h; ex WwdBResolve dup)
-//   CGameObject : CResolveNode      ??_7 @0x1f0020  (the shared base; the ex-flat
-//                                                    UserLogic.h struct + ex WwdBMid)
-//   CWwdGameObjectA : CGameObject   ??_7 @0x1f00a8  (0x1dc created-sprite kind)
-//   CWwdGameObject  : A             ??_7 @0x1f00e8  (0x1fc broadcast-group kind; slot 15
-//                                                    inherited from A proves it in the table)
-//   CWwdGameObjectF : CGameObject   ??_7 @0x1f0060  (0x18c deferred kind)
-//   CWwdGameObjectC : CGameObject   ??_7 @0x1effd0  (0x190 dot-marker kind)
-//
-// Retail slot maps (raw table dumps, 2026-07-13): every slot 5..18 body below is
-// the table's ground truth; slots 0-4 come from CObject, slot 6 (IsReady 0x1c08)
-// from CWapObj, slot 8 (GetClassId 0x154a00 default) from CLoadable, slot 9
-// (SetPosition 0x164790) from CResolveNode - all INHERITED where not overridden,
-// never redeclared.
-//
-// The teardown chain is REAL inheritance: each kind's dtor is `{ Unload(); }`
-// (devirtualized in the dtor to its own override) + the member/base folds -
-// ~CString (0x1b9cde) on m_dc, ~CAniAdvanceCursor inline on A's m_1a0 (the
-// 0x5f0128 stamp in retail ~A/~B), ~CObList on B's m_1dc, inline ~CResolveNode
-// (the 0x5efbc0 stamp retail keeps alive in ~B before `call 0x429b`, DSE'd in
-// the fully-inline ~E/~A/~F/~C tails), inline ~CLoadable, and the single CObject
-// grand-base restamp. The per-kind Unload bodies (0x15b5d0/0x15b980/0x15bf00/
-// 0x15bc50/0x15c200) are INLINE here so the same-TU dtors fold their content
-// exactly as retail does (their out-of-line copies emit where the vtables do).
-//
-// Method-set TUs (wave4-L dossier #15): the 0x150xxx live methods
-// (src/Wwd/WwdGameObject.cpp), the 0x15b2c0-0x15ccc8 lifecycle obj
-// (src/Wwd/WwdFactoryObject.cpp), the 0x1660f0+ render block
-// (src/Wwd/WwdGameObjectRender.cpp). Field names are placeholders; only offsets
-// + code bytes are load-bearing.
-
 #include <Ints.h>
 #include <Mfc.h> // CString (+0xdc) / CObList (+0x1dc)
 #include <rva.h>
@@ -47,10 +11,7 @@
 
 class
     CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)
-                       // (slot 11's ctx WAS the WwdRenderCtx view - offset-exact m_width/
-                       //  m_height/m_surface, now the real class)
 class CWwdGameObject;  // the flat dispatch model (CWwdGameObject factory pair return type)
-// A-tail cached-resource types (pointer members only -> fwd/typedef suffice).
 class CDDrawWorker;             // CSprite/CImageSet ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
 typedef CDDrawWorker CSprite;   // (repeats Sprite.h's identical typedef - legal)
 typedef CDDrawWorker CImageSet; // (repeats ImageSet.h's - the +0x194 union's other role)
@@ -58,7 +19,6 @@ class CImage;      // the cached frame element (<Image/CImage.h>)
 struct LeafCue;    // the leaf-scan cache value (<Gruntz/LeafCue.h>)
 class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.h>)
 
-// Manual scalar-delete of an owned worker pointer (the retail idiom).
 #define WORKER_FREE(p)                                                                             \
     do {                                                                                           \
         if (p) {                                                                                   \
@@ -67,13 +27,6 @@ class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.
         }                                                                                          \
     } while (0)
 
-// ---------------------------------------------------------------------------
-// CGameObject - the shared wide-object base (vtable 0x5f0020, 16 slots).
-// Owns +0x68..+0x18b: the four polymorphic workers, the +0x9c region node + the
-// +0xb8 shadow dirty-rect block (as raw ranges here; their factory-ctor record
-// views live below), the CString name (+0xdc), and the serialized state block.
-// Abstract (Render/BltDirty* are pure -> retail's __purecall @0x11fec0 slots).
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGameObject); // base subobject; the concrete kinds carry the sizes
 struct CGameObject : public CResolveNode {
 public:
@@ -137,9 +90,6 @@ public:
     void AddLogicBump(char* key);                // 0x151110
     i32 NotifyHooked_151d20(void* arg);          // 0x151d20  hooked notify via the +0x7c aux
 
-    
-    
-    
     i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup stores a3;
                          //         CDDrawChildGroup::InsertSorted orders the list by it)
     i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
@@ -234,11 +184,6 @@ public:
                         //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
 
-// ---------------------------------------------------------------------------
-// CWwdGameObjectA - the 0x1dc "created sprite" kind (vtable 0x5f00a8; the
-// CDDrawChildGroup/CreateSprite instance class). Adds the +0x18c geometry cache +
-// the embedded +0x1a0 CAniAdvanceCursor.
-// ---------------------------------------------------------------------------
 class CWwdGameObjectA : public CGameObject {
 public:
     virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790 (out-of-line, I obj)
@@ -299,10 +244,6 @@ public:
                              //  retail 0x5f0128 member restamp)
 };
 
-// ---------------------------------------------------------------------------
-// CWwdGameObject - the 0x1fc broadcast-group kind (vtable 0x5f00e8) ON TOP OF A
-// (retail slot 15 = 0x150a70 = A's Play, inherited). Adds the child CObList.
-// ---------------------------------------------------------------------------
 class CWwdGameObject : public CWwdGameObjectA {
 public:
     virtual ~CWwdGameObject() OVERRIDE; // 0x15bd10 (out-of-line, I obj)
@@ -346,10 +287,6 @@ public:
     i32 m_1f8;     // +0x1f8
 };
 
-// ---------------------------------------------------------------------------
-// CWwdGameObjectF - the 0x18c deferred kind (vtable 0x5f0060, 17 slots): E plus
-// the 2-arg build at new slot 16. Adds no data.
-// ---------------------------------------------------------------------------
 class CWwdGameObjectF : public CGameObject {
 public:
     virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0 (out-of-line, I obj)
@@ -372,10 +309,6 @@ public:
     virtual i32 SetupDeferred(i32 a3, i32 a4); // slot 16 @0x15bc30 (new)
 };
 
-// ---------------------------------------------------------------------------
-// CWwdGameObjectC - the 0x190 dot-marker kind (vtable 0x5effd0, 19 slots): E plus
-// the 5-arg build + the dot-color byte accessors at new slots 16-18.
-// ---------------------------------------------------------------------------
 class CWwdGameObjectC : public CGameObject {
 public:
     virtual ~CWwdGameObjectC() OVERRIDE; // slot 1  0x15c070 (out-of-line, I obj)
@@ -405,17 +338,6 @@ public:
     char _p18d[0x190 - 0x18d];
 };
 
-// ---------------------------------------------------------------------------
-// The embedded sub-object records the CDDrawChildGroup factories placement-construct
-// (ctor bodies at 0x15b270/0x15b2a0/0x15b2b0 in WwdObjMgr.cpp). CWwdShadowRec is the
-// E-level SHADOW dirty-rect block at +0xb8: its m_8 (abs +0xc0) seeds the INT_MIN
-// sentinel the family dtors re-clear as m_c0, and its m_20 (abs +0xd8) the -1
-// disarm flag (m_d8). The +0x9c pair (CWwdSlot9c for the C/F kinds, CWwdSlot9cA
-// for the A kind) is the sibling record at +0x9c.. (== the WwdGridNode region).
-// Kept as placement-ctor record views of E's member ranges: folding them into E
-// as real members requires inline member-ctor modeling of the 0x15b390 ctor
-// (deferred with that ctor's CWwdGameObjBaseCtor view).
-// ---------------------------------------------------------------------------
 class CWwdSlot9c {
 public:
     char m_pad00[0x08]; // +0x00..0x07
@@ -446,14 +368,10 @@ public:
 };
 SIZE_UNKNOWN(CWwdSlot9cA);
 
-// Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
-// A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
-// E is the shared base subobject, not directly allocated -> size unresolved.
 SIZE(CWwdGameObjectA, 0x1dc);
 SIZE(CWwdGameObject, 0x1fc);
 SIZE(CWwdGameObjectC, 0x190);
 SIZE(CWwdGameObjectF, 0x18c);
-// Per-variant game-object vtables (slot RVAs = each table's ground truth).
 VTBL(CGameObject, 0x001f0020); // ??_7 (base, 16 slots)
 VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (16 slots)
 VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)

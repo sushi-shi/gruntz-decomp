@@ -1,15 +1,3 @@
-// LightFxMgr.cpp - CLightFxMgr, the light-FX / translucency shade-table manager
-// hung off the game registry at g_gameReg->m_78 (tracer placeholder
-// tomalla-3). Init builds the engine's pre-computed RGB565 color tables out
-// of the shade-table cache (reg->m_50): one identity "grey" remap, one additive
-// glow table, and eight subtractive color tables (one per fixed effect color),
-// then registers the grey table globally (key 9). Reset zeroes the slots. Push
-// applies a chosen table to an image-set's frames.
-//
-// Methods in ascending retail-RVA order. Field names are placeholders; offsets +
-// code bytes are load-bearing. The CShadeTableCache builders, the global-table
-// registrar (0x14dcf0), and the CImageSet frame accessors are external/no-body so
-// their calls reloc-mask. No destructible stack locals -> plain /O2 (base flags).
 #include <Gruntz/GruntzMgr.h> // the one manager type
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/GameRegistry.h> // the singleton Init binds (m_world/m_shadeCache)
@@ -20,21 +8,9 @@
 
 #include <string.h> // memset -> inline rep stosd in Reset
 
-// The registry fields Init reads are the canonical CGameRegistry members:
-// m_world (+0x30, the loaded world/resource holder) and m_shadeCache (+0x50).
-// (The ex "LfxReg" tiny view of the same singleton is dissolved.)
-// The global shade-descriptor setter (SetShadeDescr @0x14dcf0, __cdecl, defined in
-// DDrawMgr/ShadeDescrTable.cpp): store `v` into one of the seven global ShadeDescr*
-// slots keyed by `mode` (key 9 = g_blendDescr). External/no-body -> reloc-masked.
-// The grey CShadeTable is registered into the descriptor slot (a retail cross-type
-// store), so the call casts the CShadeTable* to the bound ShadeDescr* param type.
 struct ShadeDescr;
 void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 
-// ===========================================================================
-// Init: bind to the registry, fetch the shade cache, build the grey +
-// additive + eight subtractive color tables, and register the grey table (key 9).
-// ===========================================================================
 RVA(0x0009dad0, 0x14a)
 i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     if (!reg) {
@@ -98,9 +74,6 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     return 1;
 }
 
-// ===========================================================================
-// Reset: zero the bound pointers and all 10 table slots.
-// ===========================================================================
 RVA(0x0009dc80, 0x1d)
 void CLightFxMgr::Reset() {
     m_reg = 0;
@@ -110,11 +83,6 @@ void CLightFxMgr::Reset() {
     memset(m_tables, 0, sizeof(m_tables));
 }
 
-// ===========================================================================
-// Push: apply the shade table chosen by `anchor` (clamped to [0,10)) to
-// every frame of `imgSet`: re-type the frames (slot), then write the table's
-// resolved format word.
-// ===========================================================================
 RVA(0x0009dcb0, 0x41)
 i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     if (!imgSet) {
@@ -130,4 +98,3 @@ i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     imgSet->SetAllFormats(reinterpret_cast<i32>(table));
     return 1;
 }
-

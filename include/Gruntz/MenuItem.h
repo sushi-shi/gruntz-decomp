@@ -1,38 +1,3 @@
-// MenuItem.h - the polymorphic menu-item leaf (C:\Proj\Gruntz).
-//
-// The 0x5c-byte child-item object a CMenuPage owns (a CPtrList of these) and
-// drives through its vtable (0x5f08c0). The page's main-menu builder constructs
-// one per named entry (six CStrings: name/key/label + three more), Init()s it
-// from a template + key/label strings, and dispatches Place / Notify / Trigger /
-// Hit through the vtable. Recovered from the 0x1845b0..0x185700 cluster.
-//
-// CMenuItem is a REAL polymorphic class (vftable @0x5f08c0, 14 slots): declaring
-// the 14 virtuals in slot order makes MSVC emit ??_7CMenuItem@@6B@ + the scalar
-// deleting destructor (slot 0) + the implicit vptr stamp in the ctor/dtor. VTBL()
-// (in MenuItem.cpp) catalogs the 0x1f08c0 datum (was vtbl-placeholders
-// vtbl-cluster-74 / g_menuItemVtbl); the slot relocs + the stamp
-// reloc-mask against the (differently-named) retail symbols. No manual g_*Vtbl
-// stamp needed. The eight game slots without a reconstructed body (4/5/6/7/8/10/
-// 11/13) are declared-only virtuals -> external reloc-masked references.
-//
-// Layout (offsets + code bytes are load-bearing; recovered from usage):
-//   +0x00 vptr        -> 0x5f08c0
-//   +0x04 m_owner     - template->[0] (the owner / catalog host)
-//   +0x08 m_host      - template->[4] (the on-screen chatbox host)
-//   +0x0c m_template  - the template pointer itself
-//   +0x10 m_name      - CString (item name; GetName)
-//   +0x14 m_key       - CString (the key string Init stores; Trigger payload)
-//   +0x18 m_cmdId     - i32 primary WM_COMMAND id (NotifyCmd wParam)
-//   +0x1c m_1c        - i32 secondary cmd / sub-index (role dual; left placeholder)
-//   +0x20 m_flags     - i32 flags (Init arg a5; bit0 -> disabled, 0x10000 -> loop)
-//   +0x24 m_state     - i32 visual state (1 normal, 2 selected, 3 disabled)
-//   +0x28 m_sprite    - resolved sprite/placer (catalog Lookup result)
-//   +0x2c m_listPos   - cached AddTail POSITION (set by the page)
-//   +0x30 m_cmdParam  - i32 WM_COMMAND lParam
-//   +0x34..+0x40 - placed hit rect (m_hitLeft/Top/Right/Bottom; m_hitLeft sentinel 0xeeeeeeee)
-//   +0x44 m_fixedX    - i32 placement x override (sentinel 0xeeeeeeee = use arg)
-//   +0x48 m_fixedY    - i32 placement y override
-//   +0x4c..+0x58 - CString m_navFwdName/m_navBackName/m_54/m_58
 #ifndef GRUNTZ_MENUITEM_H
 #define GRUNTZ_MENUITEM_H
 
@@ -43,15 +8,9 @@
 
 class CMenuItem;
 
-// The sub-page row placer reached through m_28 (CMenuItem::Place at 0x153790).
 struct CMenuItemPlacer {};
 SIZE_UNKNOWN(CMenuItemPlacer);
 
-// (CMenuItemHost is GONE - the "+0x08 chatbox host" IS the CChatBox itself: same
-// +0x04 command-target HWND, and the Scroll/ReplaceNode calls were already cast to it.)
-
-// The string->item catalog reached through m_4->m_10->m_10 (CMapStringToOb::Lookup,
-// 0x1b8008) - the same two-hop the page uses (m_0 -> +0x10 ptr -> +0x10 map base).
 struct CMenuItemCatalog {
     char pad0[0x10];
     // ::CMapStringToOb - retail's Lookup here is 0x1b8008, which lies in
@@ -66,7 +25,6 @@ struct CMenuItemHostOwner {
 };
 SIZE_UNKNOWN(CMenuItemHostOwner);
 
-// The template Init reads (its [0] is the catalog host, [4] the chatbox host).
 struct CMenuItemTemplate {
     CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
     class CChatBox* m_4;     // +0x04 -> the chatbox
@@ -151,9 +109,6 @@ public:
     CString m_58;                  // +0x58  (GetField58 only; role unproven)
 };
 
-// The leaf ctor MSVC inlines into the page's AddItem/AddSubItem: the six CString
-// members + implicit vptr stamp fall out of the ctor prologue; the body zeroes the
-// scalar fields, sets the two sentinels, and clears the four trailing CStrings.
 inline CMenuItem::CMenuItem() {
     m_host = 0;
     m_template = 0;

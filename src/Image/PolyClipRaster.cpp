@@ -1,21 +1,6 @@
-// PolyClipRaster.cpp - the rotated-image polygon clip + rasterize entry (0x146550).
-// __cdecl, called from CFileImage::DecodeRun24 (0x140c50) and the rotated-blit
-// transform setup ImageRotateBlit (0x145f60). Sutherland-Hodgman clips the source
-// quad (`verts`, n vertices of seven floats) against an axis-aligned box - four
-// passes (x>=lo, x<lo+w, y>=lo, y<lo+h) ping-ponging between two global vertex
-// scratch buffers (g_rasterVtxA / g_rasterVtxB) - then, if the clipped polygon is non-empty,
-// hands it to the span rasterizer at 0x146a20. When the clip arg is -1 the box
-// defaults to the source image's own w/h (img->m_18/m_1c). Field names are
-// placeholders; offsets + code bytes are the load-bearing fact.
 #include <Ints.h>
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
 #include <rva.h>
-
-// The source image (clip-default box, RotateSrcImage: width @+0x18, height @+0x1c),
-// the two ping-pong clip scratch buffers (g_rasterVtxA/g_rasterVtxB), and the span
-// rasterizer WarpTextureBlit (0x146a20) the clipped polygon is handed to (a4 is the
-// dst/src surface) all live in the shared spine header <Image/RasterVtx.h>. The DATA()
-// bindings for the scratch buffers are owned by ImagePolyClip.cpp.
 
 // @early-stop
 // x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old

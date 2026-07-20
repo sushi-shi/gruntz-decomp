@@ -9,32 +9,7 @@
 #include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_level) -> m_mainPlane tile grid
 #include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 
-// StatusBarUpdaters.cpp - the switch-tile sprite loaders (C:\Proj\Gruntz). The five
-// in-game status-bar updaters that used to live here (UpdateGruntOven/DestructButton/
-// ChipGrinder/WarpStone + LoadStatzTabToggleSprite, RVAs 0x104e60-0x10b320) moved to
-// src/Gruntz/SBI_RectOnly.cpp in the wave1-E one-TU merge (interval dossier
-// 0x104d60-0x10bc14); the two fns left (0x110570/0x1106b0) sit in the 0x110430
-// tiletriggerderivedctors interval and await their own re-home.
-//
-// They live on the big in-game game-mode object (the EngineLabelBacklog placeholder
-// the rest of the backlog hangs off) and share the engine's "advance status-bar tab"
-// tail: a named-sprite Lookup through the global status-bar mgr
-// (g_gameReg->m_world->m_statusBar->m_10 -> CSndFinder::Lookup), a draw-clock window
-// check (g_killCueClock - t->m_drawClock >= t->m_window), and a
-// CStatusBarMgr::ConfigureItem push (the shared 0x1360d0 helper, reloc-masked).
-//
-// Only offsets / code bytes are load-bearing; names are placeholders.
-
-// The draw-clock mirror global (canonical in CPlay.h / surfacemgr).
 extern "C" u32 g_killCueClock; // draw-clock mirror
-
-// The two paired status-bar globals the advance tail reads (external delinked
-// DATA symbols, reloc-masked): g_sndEnabled gates the push, g_sndCueTag is the value.
-
-// The canonical CGameRegistry view of the singleton (*0x24556c). The resource
-// holder (+0x30) is the typed CDDrawSurfaceMgr (GameRegistry.h); the tile
-// notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
-// cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
 
 // ===========================================================================
 // CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)

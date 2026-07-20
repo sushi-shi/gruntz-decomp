@@ -1,13 +1,3 @@
-// FrontCandyAni.cpp - a front-candy eyecandy animation game-object
-// (C:\Proj\Gruntz). The mirror of CBehindCandyAni, sharing the per-class
-// activation-registry archetype:
-//   FireActivation @0x0ad1b0 - the per-coordinate activation-registry dispatcher.
-//   RegisterActs   @0x0ad310 - bind the per-frame handler to the "A" key.
-//   AdvanceAnim    @0x0ad510 - the per-frame animation-advance (ret 0).
-//
-// CFrontCandyAni : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
@@ -18,16 +8,10 @@
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
 
-// The global the advance handlers hand the sink (_g_6bf3bc; the per-frame
-// draw-delta mirror). Declared extern "C" so the value-load reloc-masks.
 extern "C" u32 g_engineFrameDelta;
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
-// CFrontCandy::Serialize @0x00fa60 - the vtable slot-1 body (??_7CFrontCandy slot 1,
-// via thunk 0x2e46). Was MIS-ATTRIBUTED to CFrontCandyAni; the retail vtable read proves
-// 0xfa60's data-ref is ??_7CFrontCandy+0x4 (CFrontCandyAni's slot-1 is 0xfdf0). Same
-// two-chain body: base CUserLogic chain + the +0x34 sub-object chain.
 RVA(0x0000fa60, 0x47)
 i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -44,8 +28,6 @@ i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CFrontCandy@@UAE@XZ 0x0000fb00 0x44
 
-// CFrontCandyAni::Serialize @0xfdf0 - the vtable slot-1 two-chain body (??_7CFrontCandyAni
-// slot 1, via thunk 0x19a6): base CUserLogic chain + the +0x34 sub-object chain.
 RVA(0x0000fdf0, 0x47)
 i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -62,13 +44,6 @@ i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CFrontCandyAni@@UAE@XZ 0x0000fe90 0x44
 
-// CEyeCandyAni::GetTypeTag (0x0000ff00) is now an inline member in the class header.
-
-// CEyeCandyAni::Serialize @0x00ff20 - the vtable slot-1 override: chain the shared
-// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
-// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
-// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
-// save the two call displacements.
 RVA(0x0000ff20, 0x47)
 i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -85,10 +60,6 @@ i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CEyeCandyAni@@UAE@XZ 0x0000ffc0 0x44
 
-// --- CFrontCandy (0x0abfa0), vptr 0x5e84ec --- CFrontCandy's Serialize (0xfa60) +
-// dtor (0xfb00) already live in this TU; the ctor anchors GetTypeTag @0xfa40 + the
-// ??_7CFrontCandy vtable here, reuniting the whole class. Folds the inline
-// CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (m_object->m_sortKey != 0xf4240) {
@@ -108,24 +79,6 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 }
-
-// ===========================================================================
-// CEyeCandyAni (ex EyeCandyAni.cpp, merged wave3-J): the 0x0abfa0-0x0ad527
-// interval is ONE original TU - the text is an F-E-F sandwich (front @0xabfa0 |
-// eye 0xac870..0xacf10 | front 0xacf40..0xad510) and the frontcandyani init
-// frag @0xad110 sits in the front tail. Same shared ActNameRegistry/ActReg
-// archetype; the sibling registry at 0x646060.
-// ===========================================================================
-
-// CEyeCandyAni's activation-coordinate registry singleton (@0x646060): the SAME cell
-// pinned in LogicDispatchInit.cpp as g_eyeCandyDispatch (built over the fixed
-// [2000,2010] range there via the shared _zdvec dispatch-table ctor). That is its
-// one canonical DATA-bound symbol; here we reference it through its CActReg activation
-// facet (ResolveEntry) so the loads reloc-mask against the correctly-bound 0x246060.
-// Declared in <Gruntz/LogicFnTable.h> (included above).
-
-// The activation registry entry (CEyeCandyActEntry, PMF holder) lives in
-// <Gruntz/EyeCandyAni.h> now (hoisted out of this .cpp).
 
 // CEyeCandyAni::CEyeCandyAni (0xac870) - fold the shared CUserLogic(obj) init, bind
 // the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp
@@ -163,10 +116,6 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// CEyeCandyAni::RunAct @0x0acbb0 - resolve the registry entry for id; if a handler
-// is bound, re-resolve and invoke it as a PMF on this, else return the entry
-// pointer. Same archetype as CAniCycle::RunAct (g_eyeCandyDispatch @0x646060
-// viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
     CEyeCandyActEntry* e = reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id));
@@ -208,17 +157,12 @@ void CEyeCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
-// CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
-// sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and return 0.
-// Byte-identical to CFrontCandyAni::AdvanceAnim (0x0ad510) save the call displacement.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 
-// --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 --- the ctor anchors the
-// ??_7CFrontCandyAni vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -233,28 +177,14 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// The activation registry entry (CFrontCandyActEntry, PMF holder) lives in
-// <Gruntz/FrontCandyAni.h> now (hoisted out of this .cpp).
-
-// The class's activation-coordinate registry singleton (@0x6460b0), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). It IS the shared
-// CActReg (<Gruntz/ActReg.h>); the ex empty CFrontCandyActReg : CActReg subclass was a
-// naming-only alias (the variable name makes the mangled symbol unique + DATA() rebinds
 DATA(0x002460b0)
 extern CActReg g_frontCandyActReg; // 0x6460b0
 
-// CFrontCandyAni::InitActReg @0x0ad130 - construct the class's activation-
-// coordinate registry singleton (g_frontCandyActReg @0x6460b0) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad130, 0x15)
 void CFrontCandyAni::InitActReg() {
     g_frontCandyActReg.Construct(2000, 2010);
 }
 
-// CFrontCandyAni::FireActivation @0x0ad1b0 - look the activation coordinate up in
-// the registry; if the entry has a registered handler, look it up again and
-// dispatch it __thiscall on this. Byte-identical archetype to
-// CParticlez::FireActivation (0x046d30).
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
     CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
@@ -296,9 +226,6 @@ void CFrontCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
-// CFrontCandyAni::AdvanceAnim @0x0ad510 - re-target the bound object's animation
-// sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and return 0.
-// Byte-identical to CBehindCandyAni::AdvanceAnim save the call displacement.
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

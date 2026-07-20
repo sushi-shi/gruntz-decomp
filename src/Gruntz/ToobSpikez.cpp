@@ -1,13 +1,3 @@
-// ToobSpikez.cpp - the toob-spikez hazard game-object (C:\Proj\Gruntz).
-//
-// Two trace-discovered CToobSpikez methods, defined in ascending retail-RVA
-// order:
-//   ~CToobSpikez      @0x012c60 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   FireActivation    @0x114860 - the per-coordinate activation-registry dispatcher.
-//
-// CToobSpikez : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
@@ -17,40 +7,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 #include <Globals.h>
 
-// ===========================================================================
-// CToobSpikez logic dispatcher (0x114480) - the __cdecl per-object message pump
-// the activation engine calls each phase. The bound CGameObject carries its
-// logic record at +0x7c; that record's phase code (+0x1c) selects which CUserLogic
-// virtual to run on the live CToobSpikez instance (+0x18). Phase 0 instantiates
-// the CToobSpikez (operator new(0x54) + ctor under the /GX ctor-in-flight frame),
-// runs its slot-6 init, latches it, and arms the idle sentinel (0x3e8). The phase
-// codes 0x1d/0x1e/0x50-0x53 map to the CUserLogic vtable slots; the idle sentinel
-// is a no-op; any other code falls to the shared logic-error reporter. The instance
-// is the real CToobSpikez (0x54 bytes, <Gruntz/ToobSpikez.h>); the phase handlers
-// are its inherited CUserLogic virtuals (real polymorphic dispatch, external ctor).
-// ===========================================================================
-// The bound object's logic record at CGameObject+0x7c: the live CToobSpikez instance
-// (+0x18) and the current phase code (+0x1c). The dispatched phase handlers ARE
-// CToobSpikez's inherited CUserLogic virtual slots (real polymorphic dispatch on the
-// real class - no PMF vtable view):
-//   phase 0    -> Activate        (slot 6,  +0x18)  the fresh instance's init
-//   phase 0x1e -> UserLogicVfunc8 (slot 10, +0x28)
-//   phase 0x1d -> UserLogicVfunc9 (slot 11, +0x2c)
-//   phase 0x52 -> UserLogicVfuncA (slot 12, +0x30)
-//   phase 0x51 -> UserLogicVfuncB (slot 13, +0x34)
-//   phase 0x50 -> UserLogicVfuncC (slot 14, +0x38)
-//   phase 0x53 -> UserLogicVfuncD (slot 15, +0x3c)
-// The record is the game object's +0x7c sub-object (canonical AnimWorkerObj): m_logic
-// is its bound logic leaf (typed CUserLogic*, so the shared virtual slots dispatch
-// cast-free) and m_1c the phase code (a generic int|ptr slot - here a phase int; the
-// int reinterpret at the site is authentic, cf. the field note in UserLogic.h).
-
-// The unresolved-phase fallback is the shared 0x16e4f0 handler, bound as
-// ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z (a generic __cdecl per-object handler many
-// logic pumps funnel through; <Gruntz/XferArchive.h>). The old "ToobLogicError"
-// decl was an unbound alias of it.
-
-// 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
@@ -89,54 +45,13 @@ i32 ToobSpikezLogic(CGameObject* obj) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// The per-coordinate activation registry CToobSpikez::FireActivation
-// (0x114860) dispatches through - the SAME archetype as CTimeBomb::FireActivation
-// (0x0e1830), but CToobSpikez's OWN registry instance at 0x64e978. A
-// coordinate maps to an Entry* either directly (when within the fast
-// [g_toobLo, g_toobHi] range) via g_toobBase + (coord-lo)*stride, or by a slow
-// Find in the collection (0x16da80, __thiscall ret 8), which on miss rebuilds
-// (GetRetAddr 0x16d990 -> g_projActCache, Insert 0x16d850 __thiscall ret 0xc) and
-// yields g_toobCur. The entry's first dword is a fn-ptr; a nonzero entry's
-// handler is called __thiscall on `this`. All globals are unnamed BSS
-// (DATA-pinned so the loads reloc-mask); the collection methods are
-// external/no-body (the SAME shared engine functions every registry calls). The
-// alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
-// shared global every registry writes (already named by KitchenSlime.cpp -
-// re-declared here, address-pinned).
-// CToobSpikez's OWN activation-coordinate registry (0x24e978) IS the shared CActReg
-// archetype (<Gruntz/ActReg.h>): the seven ex-`g_toob*` field globals
-// (m_coll2/m_lo/m_hi/m_base/m_cur/m_stride/m_scratch at +0x04..+0x20) were its members,
-// and the old inline `ToobLookup` was a verbatim copy of CActReg::ResolveEntry. One
-// object, one definition; the fast-range + slow Find/GetRetAddr/Insert rebuild lookup is
-// CActReg::ResolveEntry now. (Construct @0x8710 == CZDArrayDerived::Construct; cast at call.)
 DATA(0x0024e978)
 extern CActReg g_toobColl;
 
-// The registry slot stores a pointer-to-member-function of CToobSpikez (single
-// inheritance -> 4-byte code pointer); FireActivation invokes it on `this`, emitting
-// `mov ecx,this; call [entry]`. CToobSpikez is defined COMPLETE in the header above so
-// the PMF stays 4 bytes (pmf-complete-class-4byte). ResolveEntry returns the raw slot,
-// reinterpreted as the PMF pointer (no entry-struct view needed).
 typedef void (CUserLogic::*ToobHandler)();
 
-// ---------------------------------------------------------------------------
-// The shared activation-NAME registry CToobSpikez::RegisterActs (0x1149c0) interns
-// the key "A" into g_buteTree (Find returns the id, 0 == absent); on a fresh id it
-// records the key in the shared scratch name registry (g_typeColl @0x6bf650) and bumps
-// g_typeCounter. Then it resolves id->Entry in CToobSpikez's OWN registry (g_toobColl
-// via ResolveEntry, the SAME instance FireActivation uses) and stores the logic handler
-// (the ILT to the logic method @0x114bc0). g_buteTree/g_typeCounter/s_codeA/g_typeColl
-// and the shared id->name-slot resolve ActNameLookup all come from <Gruntz/ActNameRegistry.h>
-// (included above) - the SAME shared name registry every per-class RegisterActs uses; the
-// ---------------------------------------------------------------------------
-
-// The logic handler bound into the registry slot (the ILT to the toob-spikez logic
-// method @0x114bc0); referenced by address so the DIR32 operand reloc-masks.
 extern i32 ToobLogic_114bc0();
 
-// --- CToobSpikez (0x1145c0), vptr 0x5e7774 --- the ctor anchors GetTypeTag @0x12ba0
-// + the ??_7CToobSpikez vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
@@ -152,19 +67,11 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// CToobSpikez::Register_1147e0 @0x1147e0 - reserve this class's activation
-// coordinate range [0x7d0, 0x7da] in its registry (g_toobColl).  A trivial
-// forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
 RVA(0x001147e0, 0x15)
 void CToobSpikez::Register_1147e0() {
     g_toobColl.Construct(0x7d0, 0x7da);
 }
 
-// CToobSpikez::GetTypeTag (0x00012ba0) is now an inline member in the class header.
-
-// CToobSpikez::Serialize @0x012bc0 - vtable slot 1: chain the shared CUserLogic
-// serialize helper on `this`, then (on success) the +0x34 sub-object's chain,
-// normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
 RVA(0x00012bc0, 0x47)
 i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
@@ -185,10 +92,6 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CToobSpikez@@UAE@XZ 0x00012c60 0x44
 
-// CToobSpikez::FireActivation @0x114860 - look the activation coordinate up in
-// the registry; if the entry has a registered handler, look it up again and
-// dispatch it __thiscall on this. Same archetype as CTimeBomb::FireActivation
-// (0x0e1830).
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
     ToobHandler* e = reinterpret_cast<ToobHandler*>(g_toobColl.ResolveEntry(coord));
@@ -228,8 +131,6 @@ void CToobSpikez::RegisterActs() {
     *reinterpret_cast<void**>(g_toobColl.ResolveEntry(id)) = static_cast<void*>(&ToobLogic_114bc0);
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

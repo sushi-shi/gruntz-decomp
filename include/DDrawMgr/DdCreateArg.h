@@ -12,8 +12,6 @@
 #include <rva.h>
 #include <Win32.h> // STDMETHOD / PURE / HRESULT (COM-style interface)
 
-// The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the two
-// out params. Reloc-masked __stdcall. STDMETHOD form == virtual HRESULT __stdcall.
 struct CDdDescSrc {
     STDMETHOD(v00)() PURE;
     STDMETHOD(v01)() PURE;

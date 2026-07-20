@@ -1,17 +1,3 @@
-// SpotLightCtor.cpp - the 1-arg CSpotLight constructor (0xb1200), re-homed from
-// src/Stub/SpotLight.cpp (C:\Proj\Gruntz).
-//
-// CSpotLight : CUserLogic (vftable 0x5e75bc). The ctor folds the shared inline
-// CUserLogic(CGameObject*) base init (link + RegisterLogicTypesOnce + the three
-// AddLogic* + the m_04..m_3c stores), stamps its own vptr, re-resolves the bute
-// "A" node into the bound object's aux, snaps the object's screen position onto the
-// 0x20 grid and seeds the rotation offsets (m_70/m_78/m_60/m_68/m_80/m_88), then
-// reads the SpotLightTime / settings-table tuning and seeds the per-tick state.
-//
-// The standalone ctor lives in its OWN TU so the existing flat CSpotLight carcass +
-// the matched Update (src/Gruntz/SpotLight.cpp) are untouched. Field names are
-// placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
-// CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -32,24 +18,11 @@
 #include <math.h>         // sin / cos (the Tick rotation)
 #include <rva.h>
 
-// The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
-// Find @0x16d190); declared extern so the call reloc-masks (the Stub TU owns it).
-
-// The two .rdata scale doubles the per-tick rate folds in (0x5ea3f0 numerator /
-// 0x5ea3f8 multiplier). Reloc-masked; the literal value is irrelevant to the match.
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0; // 0x5ea3f8
 
-// The per-frame light-color table is the canonical CLightFxMgr (g_gameReg->m_logicPump,
-// +0x78; <Gruntz/LightFxMgr.h>): the ctor indexes its m_tables[10] shade-table array
-// (+0x14) by m_object->m_11c and stores the CShadeTable* as the draw-fill arg; the
-// alpha-blend gate is the registry's m_134 discriminator. (The ex CSpotMgrTable view
-
-// CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
-// included below). The light eyecandy logic: own fields begin past the CUserLogic
-// base (+0x40) - the rotation/offset doubles + the per-tick state ints.
 #include <Gruntz/SpotLight.h>
 
 // CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
@@ -128,19 +101,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// CSpotLight's activation-dispatch registry (the untyped .data CActReg @0x646188,
-// declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask). Its
-// entries hold the per-id handler (a code ptr dispatched __thiscall on this).
 extern CActReg g_actReg_646188; // 0x646188
-// (The handler-entry record CSpotActEntry lives with the class in <Gruntz/SpotLight.h>.)
 
-// CSpotLight::RunAct @0x0b1630 - the class's vtable slot-4 (UserLogicVfunc2) body:
-// resolve the registry entry for id and, if a handler is bound, re-resolve and run
-// it as a PMF on this, else return the entry pointer. Same archetype as
-// CAniCycle::RunAct (ResolveEntry inlined twice). NOTE: this IS CSpotLight's real
-// slot-4 override (data-ref ??_7CSpotLight@@6B@+0x10), but the fat base models slot
-// 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
-// spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
     CSpotActEntry* e = reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id));
@@ -148,15 +110,6 @@ void CSpotLight::FireActivation(i32 id) {
         (this->*(reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id)))->m_fn)();
     }
 }
-
-// SerializeMove's +0x98 focus slot (m_focus) holds a serialized object reference: a
-// REAL CGameObject (<Gruntz/UserLogic.h>). The Read path resolves the id through the
-// world sprite factory's embedded id->object map (g_gameReg->m_world->m_childGroup->m_map48,
-// the canonical GruntObjMap @+0x48, Lookup @0x1b8760), keeping the object only when
-// its GetTypeId() (slot 8, +0x20) is 5 - the SAME map+GetClassId==5 probe Play.cpp's
-// serialize Read uses. The Write path stores the object's id (CGameObject::m_188).
-// The per-serialize round counter g_serialCounter bumps each pass. (The ex CSpotFocus
-// was CGameObject's slot-8 GetTypeId and its +0x188 the object's archive-cue id;
 
 // CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
 // object-reference, then transfer the light's own state through the archive keyed on
@@ -245,34 +198,14 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     return 1;
 }
 
-// The per-tick laser-update externs (all reloc-masked): the hit/spawn probe (0x32ce,
-// the ILT thunk to CTriggerMgr::FindGruntAt @0x75c60 -> CGrunt*), the per-cell
-// sound-cue emitter (0x2e96, __thiscall on g_gameReg->m_68), the grunt's activate
-// (0x4322, __thiscall on the probed CGrunt), and the sound-play (0x1360d0).
 extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
 extern "C" void Activate_4322(void* target, i32 f);
 extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
-// The per-cell sound-cue emitter is CTriggerMgr::CellDispatch (0x6bcb0, reached
-// through the ILT thunk 0x2e96) on the registry's +0x68 command grid
-// (g_gameReg->m_cmdGrid); see <Gruntz/GameRegistry.h> / <Gruntz/TriggerMgr.h>.
-// The seeded PRNG (inline LCG) the laser id draws from: seed once from timeGetTime.
 extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
 extern "C" u32 g_frameDelta;           // frame-time delta
-// The activation-key "B" the update re-resolves through the bute tree.
-// The laser-sound format string + the sound-play gate globals.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
-// The probe result IS a real CGrunt (<Gruntz/Grunt.h>): xref proves it -
-// Probe_32ce is the ILT thunk to CTriggerMgr::FindGruntAt @0x75c60, whose mangled
-// signature ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@... returns CGrunt*. The tag
-// the Tick checks (!= 0x38) is CGrunt::m_gruntKind (+0x258); +0x10 is the grunt's
-// bound geometry source (a game object with screen coords at +0x5c/+0x60, undeclared
-// base padding on CGrunt so reached by documented offset). The ex CSpotTarget view
-// onto CGameObject: its +0x5c/+0x60 "move-delta" are m_screenX/m_screenY.)
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
@@ -352,6 +285,4 @@ i32 CSpotLight::Tick_0b1af0() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotActEntry);

@@ -58,12 +58,6 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// (The per-TU `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` is GONE. It
-// existed only for the phantom `CBrickzGrid::Serialize` @0x9356c deleted below, and it
-// never bound: extern "C" mangles `_MapSerializeCurve`, while the real definition in
-// MapLogic.cpp is C++-mangled. The one true declaration lives in the owner's header,
-// <Gruntz/MapLogic.h>; this TU has no call site for it.)
-
 // ---------------------------------------------------------------------------
 // CBrickzGrid::SearchEdge (0x081e10) - run a Search between two adjacent cells with
 // their edge state temporarily punched open, then restore. Bounds-check both
@@ -178,12 +172,6 @@ i32 CBrickzGrid::UpdateDiagonals(i32 unused) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::LineIsClear (0x082250) - DDA line-of-sight probe between (x0,y0)
-// and (x1,y1). Pick the major axis (larger absolute delta), step the minor axis
-// with a 16.16 fixed-point slope, and bail out with 0 the moment any traversed
-// cell's terrain flags are non-zero; a clear line (or a zero-length segment)
-// returns 1.
 RVA(0x00082250, 0x17c)
 i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {
@@ -231,10 +219,6 @@ i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::IsCellClear (0x0853f0) - in-bounds cell probe: return whether the
-// cell at (x,y) is inside the grid AND has zero terrain flags. Out-of-bounds is
-// treated as occupied (occ=1), so the shared `return occ == 0` tail is duplicated.
 RVA(0x000853f0, 0x46)
 i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
     i32 occ;

@@ -1,6 +1,3 @@
-// CheckpointTrigger.h - the checkpoint-trigger tile-logic object (C:\Proj\Gruntz),
-// a CUserLogic leaf (vftables 0x5e705c / 0x5e70b4). Only the /GX leaf dtor is
-// reconstructed here; offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_CCHECKPOINTTRIGGER_H
 #define GRUNTZ_CCHECKPOINTTRIGGER_H
 
@@ -30,7 +27,6 @@ public:
 VTBL(CCheckpointTrigger, 0x1e7ebc);
 SIZE(CCheckpointTrigger, 0x94);
 
-// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
 struct CCheckpointActEntry {
     i32 (CUserLogic::*m_fn)();
 };

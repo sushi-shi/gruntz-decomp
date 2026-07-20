@@ -1,22 +1,7 @@
-// SoundBankLoad.cpp - CGruntzSoundInnerZ::Load (vtable slot 6, +0x18; retail RVA
-// 0x138aa0), the load-a-file setup of an inner sound bank (Dsndmgr module,
-// C:\Proj\Dsndmgr\, the 0x138xxx AIL/DirectSound region). Load(name, arg) either
-// forwards to the special-name handler (slot 15, LoadSpecial) when `name` is the pooled
-// ".." token, or opens `name` as a file, slurps it whole into the owned m_loadBuffer
-// (operator new), and hands it to the one-time decode setup (slot 5, DecodeBuf). The
-// destructible stack CFile forces the /GX EH frame.
 #include <Dsndmgr/GruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
 #include <string.h> // strstr (0x120090)
 
-// (Global scalar operator new - the NAFXCW allocator at 0x1b9b46 - comes from the
-// real <Mfc.h> via CGruntzSoundZ.h; no local forward-decl needed.)
-
-// The extension-dot probe token (0x120090 strstr, __cdecl 2-arg; _mbscmp).
-// Reloc-masked rel32; the "." is the shared constant @0x5ee8ec the ButeMgr parser
-// and SymTab's directory walk also reference, so reach it by symbol so the DIR32
-// pairs. (It was misnamed g_dotDot: the retail bytes are "." - the ".." literal is
-// the separate 0x60cf90 datum, CustomWorldDialog.cpp.)
 DATA(0x001ee8ec)
 char g_dot[] = "."; // 0x5ee8ec
 

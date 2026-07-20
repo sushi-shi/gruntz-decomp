@@ -1,8 +1,3 @@
-// SoundFont.h - the SFMAN32.DLL soundfont device entries (owners:
-// src/Gruntz/SFSelectDevice.cpp + src/Gruntz/SoundFontPath.cpp).
-// CGruntzMgr::Run's boot audio path drives all three:
-//   if (SFManager_SelectBestDevice())
-//       if (!BuildSoundFontPath(GetGruntzDriveLetter())) CloseSoundFontDevice();
 #ifndef GRUNTZ_GRUNTZ_SOUNDFONT_H
 #define GRUNTZ_GRUNTZ_SOUNDFONT_H
 

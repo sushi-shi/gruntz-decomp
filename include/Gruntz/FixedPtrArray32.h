@@ -1,9 +1,3 @@
-// FixedPtrArray32.h - a fixed-capacity (32-slot) pointer array, embedded by
-// value in its owner. Layout: a flag/tag at +0x00, a count at +0x04, and the
-// 32-entry pointer table at +0x08 (0x80 bytes). Add appends until full; the
-// FillFrom helper resets the object and bulk-appends a source list, skipping
-// null entries. Non-polymorphic (no vtable); names are placeholders, offsets +
-// code bytes are load-bearing.
 #ifndef GRUNTZ_CFIXEDPTRARRAY32_H
 #define GRUNTZ_CFIXEDPTRARRAY32_H
 

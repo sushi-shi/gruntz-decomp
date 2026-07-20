@@ -1,26 +1,3 @@
-// SaveGame.h - CSaveGame, the WAP32 save-game / saved-slot roster manager. Loads
-// and writes a fixed-layout progress file through a stack-local CFileIO (the
-// KERNEL32 file wrapper in FileStream.cpp): a 0xa1c-byte header blob followed by
-// ten 0x100-byte slot records, each XOR-checksummed and registered into the
-// global CGameRegistry (g_gameReg).
-//
-// NOTE ON PROVENANCE: the dynamic this/ecx tracer grouped these 18 methods under
-// "CFileIO" because every file-touching method constructs a CFileIO temporary on
-// its stack. They are NOT CFileIO methods - this is the OWNER class that *uses*
-// CFileIO. Modeled here as its own class (the devs' true shape) per the
-// correctness-over-artifacts doctrine; the build pairs objects by unit name, so
-// the separate TU is matching-neutral.
-//
-// Fields are named from usage (roles inferred from the accessors); only the
-// OFFSETS + code bytes are load-bearing (campaign doctrine). Layout recovered from
-// the ctor-less leaf accessors (Init zeroes [this+0x18]; GetSlot returns
-// this+0xa24+i*0x100).
-//
-//   +0x00  m_str0   : CString (destroyed last in the dtor)
-//   +0x04  m_name   : CString - the file name passed to CFileIO::Open
-//   +0x08  m_header : 0xa1c-byte header blob (Read target). Named fields live
-//                     INSIDE it: this+0x18 == m_header+0x10, etc.
-//   +0xa24 m_slots  : 10 x 0x100-byte slot records (Read target #2).
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
 #include <rva.h>
@@ -31,16 +8,8 @@
 
 #include <Io/FileStream.h> // CFileIO (the stack-local file wrapper)
 
-// External CGameRegistry singleton (g_gameReg) referenced through a typed global so
-// the `mov ecx,ds:g_gameReg; call <slot>` falls out as in retail. BuildLevelRezPath
-// is the __thiscall method invoked from Register() (reloc-masked no-body callee).
-
-// The shared empty C string global (RVA 0x2293f4 / VA 0x6293f4), referenced by
-// Register's name-fallback path (reloc-masked DIR32).
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
-// ---------------------------------------------------------------------------
-// A single 0x100-byte saved-game slot record.
 struct SaveSlot {
     i32 m_type;             // +0x00  (1 = normal, 3 = custom-world)
     i32 m_levelId;          // +0x04  level id (BuildLevelRezPath id arg)

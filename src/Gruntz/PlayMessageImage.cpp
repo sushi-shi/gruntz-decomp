@@ -1,17 +1,3 @@
-// PlayMessageImage.cpp - the two CPlay "GAME_MESSAGEZ" overlay renderers.
-//
-// Both look up the GAME_MESSAGEZ image set in the image registry
-// (m_c->m_imageRegistry->m_10map, an MFC CMapStringToOb name->object map), pull a frame out
-// of the set by a signed index, and blit it centered:
-//   * DrawMessageFrame (0x0d1650, non-virtual): index + useFront are caller args;
-//     the frame is blit into the active viewport via the shared 0x115300 layer
-//     blit helper (LayerBlitFrame, glyphstr), centered on the viewport rect.
-//   * Vslot23 (0x0cfef0, vtable slot 35): presents the state's message screen -
-//     Present(0x3c), pick frame 3 (or 4 when Update()==7), CImage::RenderFrame it
-//     centered on the draw surface, then Flip.
-//
-// Kept in its own TU so the CImageSet/CImage/CDDSurface includes do not perturb the
-// matched Play.cpp regalloc. Only offsets + code bytes are load-bearing.
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Play.h>
@@ -22,17 +8,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <Globals.h>                   // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
-// The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
-// blit a CImage frame into the active draw-target layer. `m_c` is a CDDrawSurfaceMgr,
-// the same real class ResMgr.h models as CDDrawSurfaceMgr (the helper's host param), so the cast
-// documents that conflation; `frame` is a CImage (passed as-is).
 i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
-
-// (the PresentHost_faec0 placeholder is GONE - identity RECOVERED. 0xfaec0 is
-// CState::Present (declared in <Gruntz/State.h>, defined in Attract.cpp): its only other
-// caller, CGruntzMgr::RunModalDialog, invokes it as `mov ecx,[esi+0x2c]; call 0x1ec9` and
-// CGruntzMgr+0x2c is m_curState, a CState* - so the receiver Vslot23 was casting `this` to
-// was simply CState, which CPlay already IS. The cast fell out with the placeholder.)
 
 // ===========================================================================
 // CPlay::DrawMessageFrame (0x0d1650) - draw the GAME_MESSAGEZ image `index`

@@ -40,13 +40,7 @@
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
-// The *0x24556c singleton, typed as the REAL class (CGruntzMgr): the +0x70 board is the real
-// CGruntzMapMgr, the +0x6c sub-manager the real CGruntzCmdMgr, the +0x7c HUD the real
-// CBattlezData - so every deref below is cast-free and ReportError binds to CGruntzMgr::
-// ReportError @0x08dc60 (it used to emit ?ReportError@CTmGameReg@@, which nothing defines).
 
-// 0x6b640: SetLevel - store the supplied world holder at +0x22c, clear m_armed +
-// m_pendingFx and raise m_countdownActive; returns 1 (0 when arg is null).
 RVA(0x0006b640, 0x2f)
 i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     if (lvl == 0) {
@@ -59,9 +53,6 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     return 1;
 }
 
-// 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present, then
-// drain the record and selection lists. The overlay's Clear runs the in-place dtor,
-// then __cdecl operator delete frees it.
 RVA(0x0006b680, 0x39)
 void CTriggerMgr::Cleanup() {
     CActionOptionsMenuBar* ov = m_overlay;
@@ -165,9 +156,6 @@ i32 CTriggerMgr::PlaceObject(
     return free;
 }
 
-// 0x6bc20: DispatchCellForObject(obj, startRow, kind, arg) - scan the placed-object
-// grid (+0x1c) for the cell whose pointer == `obj` (startRow, or rows 0..3 when
-// startRow==5) and hand it to CellDispatch(row,col,kind,arg); ret 0 when not found.
 RVA(0x0006bc20, 0x6f)
 i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg) {
     i32 last;
@@ -188,9 +176,6 @@ i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32
     return 0;
 }
 
-// 0x6bcb0: CellDispatch(row, col, kind, arg) - look up grid[row*15+col] (+0x1c);
-// if it has a notify hook run NotifyCell(row,col,0) (ret 0); else route the cell by
-// `kind` (0xd => ExitGrid, else Route(kind,arg)) and ret 1; ret 0 when no cell.
 RVA(0x0006bcb0, 0x6a)
 i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     CTmCell* cell = m_grid[row * TM_GRID_COLS + col];
@@ -376,23 +361,6 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     return cell->CommitArrival();
 }
 
-// ===========================================================================
-// CTriggerMgr::WireTileSwitchLogic (0x6c130; the documented SEAM: by first-link contiguity
-// it belongs to THIS obj, sitting between ResetCell (0x6bfd0) and ApplySwitch
-// (0x6d300)). The tile-switch/plate "wire" dispatcher.
-// ecx = [grunt+0x260] == CGrunt::m_tileMgr == THIS CTriggerMgr, and the view's
-// m_level@+0x22c IS m_level (the head is the same inlined LookupTileType walk as
-// the sibling ApplySwitch). The view's "m_triggerContainer @+0x2e4" was a
-// MIS-BASED read: retail reads +0x2e4 off the spilled g_gameReg->m_curState
-// (CPlay::m_beginMarker, the CTileTriggerContainer ModeObjInit 0xc7ec0 builds) -
-// NOT off `this` (where +0x2e4 would collide with m_selLists[0]).
-// CString diagnostic temps -> /GX frame. Callees reloc-masked; thunk proof:
-// 0x1c21 -> ?FindChild@CTileTriggerContainer@@ @0x116ee0, 0x1fa5 ->
-// ?FindIndexByKey@CTileTriggerLogic@@ @0x110820, 0x19dd -> ?RecordMove@
-// CTileTriggerLogic@@ @0x112880, 0x417e -> ?EnterModalUI@CGruntzMgr@@ @0x8ef10,
-// 0x346d -> ?ReportError@CGruntzMgr@@ @0x8dc60.
-// ===========================================================================
-
 // @early-stop
 // /GX branchy nested-jump-table megafunction wall (~10%): validated top reconstructed
 // (prologue, grid clamp, cell-tag resolve, primary switch + first arm: FindChild(key,7),
@@ -552,21 +520,12 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     return 1;
 }
 
-// ===========================================================================
-// The two tiny grid-action wrappers (0x6da60 / 0x6daa0) + the tile-fx spawner
-// (0x79ea0), proximity-attributed to CTriggerMgr but really FREE __stdcall thunks
-// (no `this`): each drives the game registry's spawn/fx sub-managers.
-// ===========================================================================
-
-// 0x6da60: GridAction6(a, b) - dispatch the spawn sub-mgr's action with kind 6.
-// __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
 RVA(0x0006da60, 0x27)
 i32 __stdcall GridAction6(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
     return 0;
 }
 
-// 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
 RVA(0x0006daa0, 0x27)
 i32 __stdcall GridAction7(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
@@ -640,10 +599,6 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     return r != 0 ? 1 : 0;
 }
 
-// 0x6e7e0: CGruntTileMgr::FindAtPixel(x, y) - the HUD/pixel grunt probe stub: always
-// returns null (the live-grunt scan was compiled out in retail - `xor eax,eax; ret 8`).
-// A real 5-byte leaf sitting in this grid obj's band; binds CGrunt's HudRect caller
-// (0x4a9f0) which reads m_tileMgr->FindAtPixel(m_10->m_5c, m_10->m_60).
 RVA(0x0006e7e0, 0x5)
 CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
     return 0;

@@ -11,11 +11,6 @@
 #include <Gruntz/GruntPuddle.h>
 #include <rva.h>
 
-// ===========================================================================
-// CGruntPuddle::SetBute  (0x07d810)
-// ===========================================================================
-// Swap the +0x14 sub-object's bute node for the one keyed by `key`, stashing the
-// previous node in CUserLogic::m_prevAnimSetNode. The shared tail of Place's bute re-bind.
 RVA(0x0007d810, 0x25)
 void CGruntPuddle::SetBute(char* key) {
     m_prevAnimSetNode = m_objAux->m_1c;

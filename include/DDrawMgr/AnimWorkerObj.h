@@ -1,60 +1,19 @@
 #ifndef GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H
 #define GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H
 
-// AnimWorkerObj.h - THE 0x17c-byte per-object logic/anim worker record (vtable
-// ??_7AnimWorkerObj @0x1efb80 / VA 0x5efb80). ONE class: the 2026-07-13 worker
-//   CLogicRecord      (LogicRecord.h)       - the kill-cue/serialize record API
-//   CGameObjAux       (UserLogic.h)         - the gameplay "+0x7c aux" view
-//   CDDrawChildWorker (DDrawChildGroup.h)   - the walk-broadcast callback view
-//   CWwdWorker        (WwdWorker.h)         - the factory Ctor/Kick view (Kick was
-//                                             a WRONG vtbl-dispatch shape: retail
-//                                             fires the +0x10 FN POINTER)
-//   CWwdNotifier      (WwdFactoryObject.h)  - the +0x80/+0x88 notifier view
-//   WwdAnimWorkerInit (WwdGameObjCtor.h)    - the ctor-inline-construction view
-//   CSpriteInner      (Grunt.h)             - GruntObjEntry's +0x7c inner view
-// Same 0x17c size, same vtable, same +0x10 callback + +0x18 logic leaf in every
-// view; the merged layout below carries the union of the proven field knowledge.
-//
-// Every game object owns one at +0x7c (built by the CDDrawChildGroup factories /
-// CWwdGameObj ctor 0x15b390) and lazily builds three more at +0x80/+0x88/+0x90
-// (EnsureWorker80/88/90 - the Hit/Attack/Bump logic handlers).
-//
-// Field names are placeholders (m_<hexoffset>) where the role is unproven; only
-// the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
-
 #include <Ints.h>
 #include <Wap32/Object.h>
 #include <rva.h>
 
-// The worker's +0x18 owned sub-object IS the bound logic leaf - a CUserBase/
-// CUserLogic (<Gruntz/UserLogic.h>). Its "slot-0 Destroy(1)" teardown is the
-// CUserBase virtual scalar-deleting dtor (slot 0), i.e. plain `delete`; its
-// "slot-1 Step(a,mode,c,d)" is CUserBase::SerializeMove. The former
 class CUserLogic;
 class CFileMemBase; // the serialize stream (CSerialArchive == CFileMemBase)
 typedef CFileMemBase CSerialArchive;
 struct CGameObject; // the owning wide game object (<Gruntz/UserLogic.h>)
 
-// The worker's fire/notify callback held at +0x10 - a plain __cdecl fn ptr
-// taking the OWNING game object, dispatched as `mov edx,[w+0x10]; push obj;
-// call edx; add esp,4` (NEVER a vtable slot - proven at 0x151150 Play /
-// 0x151c00 WriteSnapshot / 0x159250 the C factory / 0x15f0xx BroadPhase).
-// Fired on three occasions, same slot each time: post-create activation (the
-// creators' `spr->m_7c->m_notify(spr)`), the play-state dance (m_1c = 0x50..
-// 0x53 around the call), and kill-cue expiry (CDDrawChildGroup::TickKillCues).
-// Zero = "no callback".
 typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
-// m_0c owner context IS the CDDrawSurfaceMgr (== the owning object's m_0c, now
-// typed in <Gruntz/UserLogic.h>). Its "+0x08 grid/key-table with the id->object
-// resolver map at +0x48" is the canonical m_childGroup (CDDrawChildGroup) with
-// its m_map48 (CMapPtrToPtr, Lookup @0x1b8760) - the SAME map Play's case 8
-// reaches. LogicRecord.cpp reads the typed path.)
 class CDDrawSurfaceMgr;
 
-// Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
-// (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
-// vptr store (ALL-VTABLES mandate).
 struct AnimWorkerObj : public CObject {
     // slot 1 deleting dtor ??_G @0x151d80; body @0x151da0 (was ~CLogicRecord):
     // free the m_14 payload, `delete` the bound logic leaf, zero the live fields.

@@ -1,13 +1,3 @@
-// GameInfoString.cpp - CGameInfo::FormatGameInfoString (0x1183b0), re-homed from
-// src/Stub/Backlog.cpp. Builds a URL/POST query string describing a saved game into
-// the global accumulator g_infoMaster, by sprintf'ing each piece into g_infoScratch
-// and strcat-appending it, then URL-encodes spaces to '+'. Frameless __thiscall on
-// the save-info record; the time sub-object lives at this+0xb8. CGameInfo is the
-// recovered/placeholder identity (no RTTI vtable; a non-virtual record - Ghidra shows
-// no static callers, the class is inferred from its self-consistent field/method set).
-// Only offsets / code bytes are load-bearing; sprintf/strcat/strlen/memset are
-// reloc-masked CRT intrinsics and Check1/Validate/DecodeGameTime are reloc-masked
-// engine helpers.
 #include <Mfc.h>  // real MFC CTime (GetCurrentTime / GetLocalTm) - the BuildGameDate clock
 #include <time.h> // struct tm (GetLocalTm's return record)
 #include <rva.h>
@@ -15,30 +5,18 @@
 #include <string.h>          // strlen/strcat/memset (inlined /O2)
 #include <Gruntz/GameInfo.h> // the shared CGameInfo / CGameInfoTime record (NameRecord shares it)
 
-// FUN_00118310 __cdecl(&time) -> validity flag; the real 0x119210 is the shared
-// TimeSplit helper ?SplitMillisToHMS@@YAXIPAI00@Z (src/Utils/TimeSplit.cpp) which
-// decomposes a ms timestamp into unsigned hh/mm/ss out-values (was the DecodeGameTime view).
 i32 ValidateGameTime(CGameInfoTime* t);                  // 0x118310
 void SplitMillisToHMS(u32 n, u32* hh, u32* mm, u32* ss); // 0x119210
-// The two query buffers DEFINED here (owner TU gameinfostring.obj's .bss, zero-init)
-// - REHOME DD-D: extern-only (only FormatGameInfoString references them). RVA-ascending.
 DATA(0x0024ebf8)
 char g_infoScratch[0x100] = {0}; // 0x64ebf8  per-piece scratch
 DATA(0x0024ecf8)
 char g_infoMaster[0x800] = {0}; // 0x64ecf8  query accumulator
 
-// ---------------------------------------------------------------------------
-// CGameInfo::Check1 (0x1182f0; RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the
-// ready/dirty gate FormatGameInfoString polls before emitting: `return m_8 == 1`.
-// __thiscall.
 RVA(0x001182f0, 0xc)
 i32 CGameInfo::Check1() {
     return m_8 == 1;
 }
 
-// ValidateGameTime (0x118310; RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the
-// time-record validity flag: `return t != 0` (a null-check; on failure the caller
-// zeroes the record). __cdecl, 1 stack arg.
 RVA(0x00118310, 0xc)
 i32 ValidateGameTime(CGameInfoTime* t) {
     return t != 0;

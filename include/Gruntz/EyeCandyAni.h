@@ -1,8 +1,3 @@
-// EyeCandyAni.h - the animated eyecandy game-object (C:\Proj\Gruntz), a
-// CUserLogic leaf (RTTI .?AVCEyeCandyAni@@). The 1-arg ctor (0xac870) folds the
-// shared CUserLogic(obj) prologue, binds the "A" bute node + cycle geometry, then
-// runs the shared eyecandy z-clamp/BigActHeight tail (cf. CEyeCandy / CBehindCandyAni
-// in UserLogic.cpp). Offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_CEYECANDYANI_H
 #define GRUNTZ_CEYECANDYANI_H
 
@@ -38,10 +33,6 @@ public:
 VTBL(CEyeCandyAni, 0x001e8334);
 SIZE(CEyeCandyAni, 0x54);
 
-// The per-coordinate activation registry entry (g_eyeCandyDispatch's element): its
-// first dword receives the per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this
-// single-inheritance class). RunAct/RegisterActs cast the CActReg entry to this. A
-// faithful 4-byte PMF record, hoisted out of FrontCandyAni.cpp.
 typedef i32 (CUserLogic::*EyeCandyHandler)();
 struct CEyeCandyActEntry {
     EyeCandyHandler m_fn;

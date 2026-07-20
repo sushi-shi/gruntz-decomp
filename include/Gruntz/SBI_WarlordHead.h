@@ -1,19 +1,3 @@
-// SBI_WarlordHead.h - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz).
-// RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image chain
-//   CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// Vtable @0x5ead24 (RTTI meta 0x5f4f40). The 5-level /GX-framed scalar destructor
-// (0x104a00) lives in SBI_WarlordHeadEh.cpp.
-//
-// This leaf adds, over CSBI_ImageSet:
-//   slot 5  (0xeb880)  the per-frame Render override (countdown-driven two-frame draw)
-//   slot 11 (0xeb6b0)  the SetupImage override (forwards to the ImageSet base + latches state)
-// plus two non-virtual helpers (0xeb740 ShowFrames, 0xeb830 SetState).
-//
-// Fields are placeholders; the offsets + code bytes are the load-bearing fact (the
-// mangled ?<method>@CSBI_WarlordHead@@... names are layout-independent). The class
-// is modeled with the SBI family's manual-vtable-stamp device (no real `virtual`),
-// so each frameless method matches without forcing a divergent compiler vtable;
-// sibling/engine callees are ILT/vtable-reloc-masked.
 #ifndef SBI_WARLORDHEAD_H
 #define SBI_WARLORDHEAD_H
 
@@ -25,30 +9,6 @@
 
 struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
 
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only the touched members/methods are
-// load-bearing; every call through them is reloc-masked).
-
-// The frame record (an element of the config record's m_14 frame table) is the
-// RTTI-confirmed CImage: a draw-offset pair at m_18/m_1c, an owned sprite/anim
-// object at m_30 (a CImageOwned whose m_1c ShowFrames latches), drawn by
-// CImage::RenderFrame (0x153790, __thiscall). Modeled by <Image/CImage.h>.
-
-// (The ex CWhConfig view of the resolved config record m_34 is DISSOLVED onto the
-// real CImageSet - the member is already typed CImageSet* on the CSBI_ImageSet
-// base; the view's m_64/m_68 gate comments even had lo/hi swapped. Frame table
-// m_frames @+0x14, gates m_minIndex/m_maxIndex @+0x64/+0x68.)
-
-// The active surface context Render passes into RenderFrame is reached through the
-// canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
-// m_drawTarget (CDDrawSubMgrPages, +0x04) -> m_drawContext (+0x14). Modeled by the shared
-// <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
-// per-TU game-manager facet is kept.
-
-// The base ImageSet SetupImage (CSBI_ImageSet vtable slot 11, 0xe72f0): same
-// 11-arg shape (id, host, a3, a4, then the four rect ints, key, a10, a11). The
-// rect block is forwarded as a by-value 4-int aggregate so MSVC stages it in a
-// temp on the caller stack exactly as retail does.
 struct CWhRect {
     i32 m_0;
     i32 m_4;
@@ -57,16 +17,6 @@ struct CWhRect {
 };
 SIZE_UNKNOWN(CWhRect);
 
-// The serialization stream (Serialize arg1) + the immediate base CSBI_ImageSet
-// (0xe74f0 vtable slot 1) come from the canonical <Gruntz/SBI_ImageSet.h> above.
-// The base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external,
-// whose reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
-
-// ---------------------------------------------------------------------------
-// CSBI_WarlordHead - the warlord-head status-bar item. Real RTTI base is
-// CSBI_ImageSet (see top comment); kept FLAT (frameless method-view) because the
-// render/serialize methods read base-region storage (m_14/m_18/m_28/m_30/m_34/m_38)
-// under head-specific names spanning all four base levels.
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     // tag 0xb (the multiplayer WARLORDHEAD slot).
@@ -128,7 +78,6 @@ public:
 SIZE_UNKNOWN(CSBI_WarlordHead);
 VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 
-// The frame sprite show/hide notifier (0x14dd90, __stdcall, ret 8).
 void WhShowItem(i32 handle, i32 flag);
 
 #endif // SBI_WARLORDHEAD_H

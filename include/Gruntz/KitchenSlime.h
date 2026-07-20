@@ -1,9 +1,3 @@
-// KitchenSlime.h - the kitchen-slime hazard game-object (C:\Proj\Gruntz), a
-// CUserLogic leaf. The bound CGameObject is held at the inherited m_10/m_38
-// (CUserLogic sets m_10==m_38==obj); the slime views it as CSlimeLevel /
-// CSlimeAnimPlayer (a typed reinterpret of the same object - the bodies cast
-// m_10/m_38 at each use, codegen-neutral). The leaf adds the movement-integrator
-// state at +0x58. Only offsets / code bytes are load-bearing.
 #ifndef GRUNTZ_CKITCHENSLIME_H
 #define GRUNTZ_CKITCHENSLIME_H
 

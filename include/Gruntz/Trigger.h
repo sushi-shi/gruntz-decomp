@@ -1,17 +1,8 @@
-// Trigger.h - the trigger object the point-probe (0x75af0, g_gameReg->m_68->Probe)
-// returns. One class, two views recovered from different call sites:
-//   +0x10  the bound HUD sprite (read by the teleporter spawn in UserLogic.cpp)
-//   +0x170 the required level id (the secret-level trigger match in CSecretLevelTrigger.cpp)
-//   +0x198 the required layer id
-// Only offsets + code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_GRUNTZ_CTRIGGER_H
 #define GRUNTZ_GRUNTZ_CTRIGGER_H
 
 #include <rva.h>
 
-// The bound HUD sprite is the shared engine game object (CGameObject, from
-// <Gruntz/UserLogic.h>). Only the trigger's +0x10 pointer field is typed against
-// it, so a forward declaration suffices.
 struct CGameObject;
 
 struct CTrigger {

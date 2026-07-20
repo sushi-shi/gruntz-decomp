@@ -6,22 +6,6 @@
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (vtbl 0x5e8cb4)
 #include <rva.h>
 
-// InterfaceObject - the DirectPlay service-provider group-list node (C:\Proj\NetMgr):
-// the 0x10-byte payload CNetMgr::AddGroupNode operator-new's onto the +0x1c group
-// CPtrList. Derives the shared engine grand-base CObject; whole-object vtable
-// 0x5f0748 (owned/emitted by InterfaceObject.cpp's VTBL). RTTI-proven (the COL type
-// descriptor is `.?AVInterfaceObject@@` per vtable_hierarchy). Its five GUID predicates
-// (IsInterface1-5, external __thiscall thunks) classify the provider class
-// (IPX/TcpIp/Modem/Serial/...) that CNetMgr::Find / DetectConnectionConfig select.
-//
-// Declared `struct` (default-public) so CNetMgr::Find's `InterfaceObject*` return
-// mangles PAU - matching the retail ?Find@CNetMgr@@QAEPAUInterfaceObject@@H@Z symbol.
-//
-// NB: AddGroupNode's ctor-side model (CNetGroupNode, local to NetMgr.cpp) is a
-// DELIBERATELY separate class with an inline empty dtor - it IS the same retail object
-// but keeps new/delete construction inlined into AddGroupNode, whereas this class'
-// out-of-line ~InterfaceObject (0x179340) matches the standalone node destructor. A
-// required matching split, not a modeling miss.
 struct InterfaceObject : public CObject {
     i32 m_4;        // +0x04  the service-provider GUID (stored raw)
     CString m_name; // +0x08  the provider name

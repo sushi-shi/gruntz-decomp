@@ -33,8 +33,6 @@
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-                                // WERE the fake g_animScratch / g_animScratchCount
-                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (value member of the warp/decay views)
@@ -46,39 +44,19 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
-// The game-manager singleton (0x64556c), declared CGameRegistry* (InGameIcon.h's decl;
-// extern "C" cannot dual-type one symbol in one TU). CGameRegistry is the RICHER
-// reconciled view (every field this TU reads exists on it).
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
 
-// The tile-icon PlaceAt (@0x986b0, __thiscall(idx, gridBase); reloc-masked) is the
-// real CInGameIcon's (<Gruntz/InGameIcon.h>). The old `GruntTileIcon` call-shape shim
-// justified itself with "InGameIcon.h pulls <Mfc.h>" - STALE: Grunt.h itself pulls
-// <Mfc.h> (its CPtrList value members), so the real class costs nothing.
 #include <Gruntz/InGameIcon.h>
 
-// The entrance geometry-source global (0x2bf3bc) each step arms the entrance
-// sub-player with is declared with its DATA() binding below as the tree-wide
-// keep-last winner `_g_6bf3bc` (see the conflation note there).
-// g_frameTime (the running game clock) is declared by MovingLogic.h via Grunt.h.
-
-// The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
-
-// The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
 extern "C" u32 g_frameDelta; // 0x645584
-// The FP sign threshold (0.0) the overshoot clamp compares the per-cell velocity to.
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
-// The scratch-branch anim type code the position step latches on (reloc-masked).
 extern const char k_60df94[]; // 0x60df94
 
-// The ((CAnimScratchString*)g_typeColl.m_alloc)[] CString teardown the scratch-resolve reject path runs (Release
-// each non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
-// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntPosScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
@@ -91,10 +69,6 @@ static void GruntPosScratchTeardown() {
     }
 }
 
-// ==== the 13 CGrunt fns of this obj + their support decls ====
-
-// Entrance-animation globals (reloc-masked; see Grunt.h).
-// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -102,27 +76,14 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-// StartBombGruntRun (@0x68520) bute tag/key (reloc-masked).
 static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
 static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
-// The single-char anim-set keys the entrance reads/looks-up (reloc-masked
-// .rodata; DAT_0060a454 = "A" = the idle anim key, DAT_0060d7f8 = "K" =
-// BuildEntranceAnimation's latch key).
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-// The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-
-// The scratch CString teardown the GetNameRecords reject paths run (defined with the
-// dispatch-machine cluster below); forward-declared for the two entrance-step
-// methods (StepEntranceReinit / RunEntranceMove) defined earlier in RVA order.
 static void GruntScratchTeardown();
 
-// The board tile-flag helper shared by the entrance/arrival steps (the same
-// inline the GruntSteps TU carries for StepCompassMove).
-
-// Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
 static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
@@ -147,9 +108,6 @@ static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.
 
-// The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
-// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
@@ -162,69 +120,13 @@ static void GruntScratchTeardown() {
     }
 }
 
-// ===========================================================================
-// Migrated CGrunt cluster (formerly the CUserLogic_* stubs in
-// src/Stub/Discovered.cpp). A prior matcher proved this whole block is CGrunt:
-// the dtor @0xf2f0 stamps vtable 0x5e8754 over CUserLogic/CUserBase bases, and
-// the anim loader @0x49c60 builds "GRUNTZ_<type>_<POSE>" keys. Reconstructed in
-// ascending retail-RVA order. Raw-offset member access (the campaign style used
-// by ReadConfigFromButeMgr above) keeps the giant ~0x46c layout tractable.
-// ===========================================================================
-
-// The global free-list pool the name caches recycle into (head @0x645544, base
-// subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-
-// The grunt movement / anim-name dispatch state machines' reloc-masked data.
-// All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-// src/Gruntz/GameText.cpp (the pool's owner TU).
-// Only the owner defines; everyone externs.
-
-// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
-// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp).
-
-// ==== CGrunt::UserLogicVfunc7 @0x61cb0 (its private .data cell 0x20e180 HEADS this
-// TU's band) ====
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
-// The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
-// entrance sub-player with (fed to CAniAdvanceCursor::Advance). 0x2bf3bc is a
-// tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
-// keep-last DATA() winner), others as `g_slimeTick`/`g_defaultGeo` (unconfirmed
-// guesses). Bound here as the winner so all refs resolve to 0x2bf3bc (reloc-faithful).
 extern "C" i32 g_engineFrameDelta;
-// g_frameTime (the running game clock stamped into the downtime timer record) comes
-// from <Gruntz/MovingLogic.h> (extern "C" u32; Projectile.cpp owns the DATA pin).
 
-// The created eye-candy sprite is the shared CGameObject (<Gruntz/UserLogic.h>);
-// its +0x7c AnimWorkerObj control block carries the Init driver (+0x10) and the
-// per-class setup slot m_18 (+0x18) - for "Projectile"/"Boomerang"/"TimeBomb"
-// the bound setup/logic object IS a CProjectile (downcast per site; the slot is
-// generically typed on the canonical aux; proven-heterogeneous across classes).
-// The HUD sprite factory reached as g_gameReg->m_world->m_childGroup is the canonical
-// CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>).
-// The game-registry singleton (0x64556c) is the CGameRegistry-typed g_gameReg
-// (declared above) - the attack-fire paths read it natively, cast-free.
-
-// The attack target resolved from the neighbor grid cell is another CGrunt (the
-// 0x1bf9 TakeHit thunk delivers the attack; its m_entranceReason multiplexes the
-// tool kind, m_19c the fallback gate). The attacker `this` IS CGrunt - the old
-// slot-9 body (??_7CGrunt@@6B@+0x24 @0x1e8778 holds its ILT thunk 0x119f - the
-// only retail reference), i.e. the UserLogicVfunc7 override Grunt.h declares.
-// View->CGrunt member map: m_object == the CUserLogic +0x10 union arm (CGameObject),
-// m_154 == CEntranceAnimPlayer* (anim sub @+0x1a0, done-gates m_1c0/m_1c8),
-// m_toolKind == m_entranceReason, m_1c4 == m_healthSprite, m_3f0 == m_stamina
-// (reset to 0 at each impact), m_460 == m_lowStaminaCued, m_868/m_86c ==
-// m_attackDowntimeLo/Hi; ArmMode == SetMoveStateA (0x3bd9), Teardown3dd7 ==
-// FinishAttackPowered, ArmFinish == ReseedIdleReset (0x136b), Teardown22de ==
-// NotifyAttackImpact - all already declared on CGrunt.
-
-// ==== LoadWandGruntItemConfig @0x65a60 (ex GruntBehaviorLeaf.cpp; its private .data cells
-// 0x20e27c-0x20e28c sit INSIDE this TU's band, not the 0x612a0 behaviorleaf extent) ====
 #include <Gruntz/GruntBehaviorLeaf.h>
 // ---------------------------------------------------------------------------
 // CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
@@ -326,10 +228,6 @@ void CGrunt::FinalizeStep(i32 arg) {
     }
     return;
 }
-
-// The geometry sub-player's m_20/m_28 live PAST the player's own m_1b4, so they
-// are read via raw offsets off &player->m_1a0 (same as FinishEntranceMove) to keep
-// cl on one `add eax,0x1a0` base.
 
 // @early-stop
 // reloc-masked-extern plateau: instruction stream byte-exact (verified
@@ -552,22 +450,6 @@ i32 CGrunt::RearmAttackAnim2() {
     return 0;
 }
 
-// ==== CGrunt::StepWarpExit @0x64540 (ex CUserLogic::winapi_064540_PostMessageA;
-// text-contained in this obj) ====
-// The `this` is CGrunt, PROVEN two ways: (1) RegisterActs_644af0 @0x5be30 stores
-// its ILT thunk 0x13cf into the g_reg_644af0 act registry under the anim-code key
-// "C" @0x60cc90 - the registry CGrunt::RunAct dispatches as PMFs on the grunt;
-// (2) every offset is the CGrunt layout (m_154 entrance player + the identical
-// m_154->m_flags |= 0x10000 retire idiom as FinishEntranceMove, m_tileOwnerHi/Lo fed
-// to the tile-cell notify exactly as the attack step feeds CellDispatch, m_tileMgr
-// +0x260, the m_36c suppress gate FinishEntranceMove also reads). The five old
-// == CEntranceAnimPlayer, CWarpMgr == CGameRegistry (m_gameWnd +0x04 / m_curState
-// +0x2c), CWarpMgrWnd == CGameWnd (<Wap32/Wap32.h>, m_hwnd +0x04), CWarpLevelReg
-// == CState (<Gruntz/State.h>: m_levelIndex +0x1c, m_levelBank +0x28 - the level
-// asset bank the "WORLDZ\LEVEL%i" key resolves against, level+100 = the secret
-// level). CSymTab's definition here is BoundaryLowerMethodsViews.h's (the real
-// <Bute/SymTab.h> def would redefine it in this TU; same one mangled symbol).
-// The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
 extern "C" i32 g_engineFrameDelta;
 // The mgr singleton (same 0x64556c datum); the warp-dialog facet casts to CWarpMgr.
 // (The old `WarpPostFn g_pPostMessageA` fn-ptr global @0x2c44c8 is GONE: that
@@ -758,19 +640,6 @@ i32 CGrunt::StepAttackFire() {
     return 0;
 }
 
-// ===========================================================================
-// The arrival/update dispatch trio (@0x59230 / 0x5caa0 /
-// 0x62110). RTTI/this-layout IDENTIFY them as CGrunt methods, NOT CUserLogic:
-// every member offset they touch (m_arrivalState 0x2d0, m_arrivalCol/m_arrivalRow, m_arrivalPhase
-// 0x450, m_tileMgr 0x260, m_tileOwnerHi/Lo 0x1ec/0x1f0, m_14, m_154, the +0x470
-// entrance-cell record table, the +0x4b0 dir-vector table, m_health 0x3ec, ...) is
-// in the CGrunt layout above, and they call the same CGrunt this-method thunks the
-// rest of this TU does. The "CUserLogic" stub attribution was a mislabel (CUserLogic
-// is a small vptr+link base; it has no 0x2d0/0x450/0x4b0 fields - the same mislabel a
-// prior matcher found for other CGrunt stubs, RTTI vtable 0x5e8754 = .?AVCGrunt@@).
-// ===========================================================================
-
-// The "ToyTime" bute key the update step reads (reloc-masked .rodata @0x60e194).
 static char s_ToyTime[] = "ToyTime";
 
 // ---------------------------------------------------------------------------
@@ -982,22 +851,6 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     return 0;
 }
 
-// ===========================================================================
-// Chunk-2 attributed targets (RearmAttack family + entrance-move tail). Same
-// raw-offset campaign style; reconstructed in ascending retail-RVA order.
-// ===========================================================================
-// (s_CombatTimeout is defined near the top of this TU; shared with CommitNeighbor.)
-
-// ---------------------------------------------------------------------------
-// CGrunt::StepEntranceRelatchA()   @0x62840   (ret 0)
-// Advance the entrance geometry. When the sub-player is armed-but-not-running:
-// (re)create the HUD stat sprites on arrival, re-latch the "A"(idle) anim set,
-// reload the grunt type table, then (board-block-bit set) commit the arrival move,
-// else clamp the HUD scroll. When NOT armed-but-running: the toy-break timer path -
-// once the toy timer has elapsed and the entrance is unstamped and the sub-player
-// just went ready, retire the toy-time HUD sprite, drive the TOY-BREAK geometry +
-// re-stamp the cell frame, and fire the on-screen spawn cue; otherwise tick the
-// coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1137,26 +990,6 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResetEntranceAnimation(int apply, int cycle, int cue)   @0x62e10
-// The shared entrance/idle-anim reset the entrance state machine (and its two
-// callers BuildEntranceAnimation + LoadEntranceConfig) run to (re)select and
-// arm the grunt's entrance animation. __thiscall, ret 0xc (/GX - the per-cell
-// key CString temp carries a C++ EH frame).
-//
-//   * clears the "applied" flag (m_resetApplied = 0), then reverse-looks-up the current
-//     active-anim-set node's NAME and tests it against the idle key "A".
-//   * if the grunt is NOT already idle and `cycle`==0: re-anchor the idle timer
-//     (m_idleAnchorLo.. bookkeeping) off the IdleDelay config (rand window).
-//   * else dispatches on the geometry-source array m_poseIdle[0..2]: a single source
-//     (m_3b0==0) re-arms it; the 2-arg branch (cycle!=0) randomly cycles among
-//     the available sources, firing a focused-grunt on-screen "cue" (consts
-//     4/5/6 by index) when `cue`!=0 and the grunt is visible.
-//   * latches a fresh active-anim-set node into m_14->m_1c (saving the old into
-//     m_prevAnimSetNode), and finally - when something was applied or `apply`!=0 - rebuilds
-//     the per-cell entrance-position key string (CString from the m_474 cell
-//     table, indexed 3*col+row by either the per-grunt triple m_entranceCell or a preset
-//     by reason m_444) and stamps the first frame.
 static i32 s_entrancePreset0[3]; // DAT_00644aa0
 static i32 s_entrancePreset1[3]; // DAT_00644ac0
 static i32 s_entrancePreset2[3]; // DAT_00644ad0
@@ -1281,27 +1114,6 @@ latch:
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveEntranceArrival()   @0x633e0
-// The per-tick entrance-arrival resolver: once the grunt has settled on its
-// destination tile it commits the "arrival" (claims the tile, seeds the
-// per-grunt defender bookkeeping, clears the view-cull state on m_10) and, when
-// the entrance window has elapsed + the grunt is off-screen/unfocused, runs the
-// entrance reset (ResetEntranceAnimation). __thiscall, ret 0.
-//
-//   * if the entrance is active (m_entranceActive) and the grunt has not moved off its
-//     last tile (m_5c==m_lastTilePxX, m_60==m_lastTilePxY) and that tile's high occupancy bit is
-//     clear, clear m_entranceActive.
-//   * arm the entrance geometry source (m_154->m_1a0.SetGeoSourceR); gate the
-//     arrival on the elapsed-time window (clock - m_830_64 >= m_838_64) and the
-//     grunt being off-screen (registry m_134 != 1) + its focus slot live.
-//   * the arrival commit: notify the tile manager, latch m_tileClaimed, seed the
-//     defender block (m_defenderX..m_arrivalRerollWindowHi, m_arrivalState/m_defenderState/
-//     m_defenderRadius/m_arrivalCol/m_arrivalRow, m_arrivalFlags |= 0x18040402),
-//     clear m_10's view-cull rect, run the arrival hook.
-//   * tail: if the entrance anim is done (m_154->m_1a0.m_14 != m_poseIdle[0]) run
-//     ResetEntranceAnimation(0,0,0) on the lookup-miss flags; else, when the idle window has
-//     elapsed and the geometry source is ready, run ResetEntranceAnimation(0,1,1).
 RVA(0x000633e0, 0x2ca)
 void CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_10->m_screenX == m_lastTilePxX
@@ -1563,24 +1375,6 @@ i32 CGrunt::StepArrivalReroll() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::BuildEntranceAnimation(int mode)   @0x67bd0
-// Selects + loads the grunt's entrance animation (the "drop in / resurrect /
-// random arrival" sequence). Latches a fresh active-anim-set node into m_14->m_1c
-// (saving the old into m_prevAnimSetNode), seeds the entrance bookkeeping (m_entranceArmed=1, m_entranceCommitted=0,
-// m_entranceActive=1), marks the HUD geometry dirty (m_10->m_74 = 0xcf850; m_10->m_8 |=
-// 0x20000), then picks an entrance-key string by `mode`:
-//   mode==1 : a rand()%0x1e1-bucketed arrival (ENTRANCEZ_ONE / _TWO / _THREE)
-//   mode==2 : ENTRANCEZ_DROP
-//   else    : ENTRANCEZ_RESSURECT (key) / DEATHZ_MELT (base)
-// looks that sprite-set up in the entrance player's table (m_154->m_c->m_2c map),
-// fires a 6-arg on-screen "cue" when the grunt is visible/focused, copies the base
-// "GRUNTZ_ENTRANCEZ"/"GRUNTZ_DEATHZ_MELT" key into a CString, and finally either
-// runs the entrance reset (ResetEntranceAnimation(1,0,0)) on a lookup miss, or applies the
-// resolved geometry to the player's sub-player (+0x1a0) plus the first frame.
-// /GX (the CString temp carries a C++ EH frame). __thiscall, ret 4.
-//
-// `mode`-string table (reloc-masked .rodata literals):
 static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
 static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
 static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
@@ -1589,14 +1383,12 @@ static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
 static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
-// BuildGruntExitAnimation (@0x641b0) keys (reloc-masked .rodata).
 static const char s_exitKeyB[] = "B";                            // 0x60d1bc
 static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
 static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
 static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
 static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
 
-// LoadVehicleGruntAnimations (@0x63db0) vehicle-grunt looping-sound keys.
 static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
 static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
 
@@ -1714,15 +1506,6 @@ void CGrunt::LoadVehicleGruntAnimations() {
     ClearSubA();
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::BuildGruntExitAnimation()   @0x641b0   (__thiscall, ret 0)
-// Sibling of BuildEntranceAnimation: bail if the exit anim is already running
-// (m_deathAnimStarted!=0), tear down the running anim state (StepAnimDispatchB/ClearSubA/B),
-// clear the per-grunt sprite-state bit (m_10->m_40 &= ~8), retire all 7 HUD stat
-// sprites (|= 0x10000 then null the slot), drop the powered-up reset, commit the
-// struck tile, latch a fresh "B" anim-set node, then rand-bucket the EXITZ_ONE/
-// TWO/THREE variant (each: lookup sprite + on-screen cue 0x384/5/6), and finally
-// drive the exit holder + apply the "GRUNTZ_EXITZ" first-frame geometry.
 RVA(0x000641b0, 0x2c1)
 i32 CGrunt::BuildGruntExitAnimation() {
     if (m_deathAnimStarted != 0) {
@@ -2081,14 +1864,6 @@ tail:
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepArrivalCommitA()   @0x65300   (ret 0)
-// Advance the entrance geometry; once the sub-player is armed-but-not-running:
-// if the grunt is dead (m_health <= 0) clear the entrance-commit flag and set the
-// tile back, else clear the entrance-active flag and test the head tile's spawn-
-// block bit (0x80): set -> commit the arrival move; clear + (m_358==0 && m_35c!=0)
-// -> arrival-drop; else m_entranceReason==0x14 -> reset the entrance anim; else
-// reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -2129,12 +1904,6 @@ i32 CGrunt::StepArrivalCommitA() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepArrivalCommitB()   @0x654b0   (ret 0)
-// Sibling of StepArrivalCommitA: once armed-but-not-running, unconditionally snap
-// to the last tile + commit the arrival move, then the same health/board-gated
-// tail (health<=0 -> set tile back; else block-bit set -> return; else drop or
-// reset the geometry).
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)

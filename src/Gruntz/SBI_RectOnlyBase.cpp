@@ -1,10 +1,3 @@
-// SBI_RectOnlyBase.cpp - the thin RTTI CSBI_RectOnly intermediate's own retail obj
-// (dossier #16, waveM-judgment). The per-class SBI item obj sequence in
-// [0xe5ad0..0xe8733] ends with this class's slot-2 Setup body at 0xe86e0 (vtbl
-// 0x1eab8c slot [2] thunk 0x2a2c); its other slot bodies/dtor are COMDAT-pool or
-// 0x100xxx-band residents. Distinct from src/Gruntz/SBI_RectOnly.cpp, the 0x570
-// status-bar HOST that wears the same class name (the known conflation - see
-// SBI_RectOnly.h); THIS TU models the thin chain class of <Gruntz/SBI_Image.h>.
 #include <Mfc.h>
 
 #define SBI_RECTONLY_OWN_CTOR // this TU emits the out-of-line ??0CSBI_RectOnly COMDAT (0x101fa0)
@@ -12,15 +5,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// CSBI_RectOnly::CSBI_RectOnly (0x101fa0) - the thin sub-widget's ctor. Inlines the
-// CStatusBarItem base ctor (the base's dead m_8=0 store is elided by /O2), stamps
-// ??_7CSBI_RectOnly@@6B@ (0x5eab8c) and sets the subtype tag m_8 = 1.
-//
-// HOMED HERE BY THE SPLIT (2026-07-12): this ctor used to live in SBI_RectOnly.cpp,
-// the 0x630 status-bar HOST's TU, because that TU's main class wore the CSBI_RectOnly
-// name. It never belonged to the host - the host is non-polymorphic and stamps no
-// vtable. See the banner of <Gruntz/StatusBarMgr.h>.
 RVA(0x00101fa0, 0x1b)
 CSBI_RectOnly::CSBI_RectOnly() {
     m_kind = 1;
@@ -55,8 +39,5 @@ i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i
     return 1;
 }
 
-// CSBI_RectOnly::DtorRect (0xe8760) - the empty 1-byte `ret` member-teardown the
-// CHAIN-DTOR device (~CSBI_RectOnly) calls; an orphan COMDAT homed here in its owner
-// class's band (this TU models CSBI_RectOnly), binding the dtor's CALL @0x100700+0x2c.
 RVA(0x000e8760, 1)
 void CSBI_RectOnly::DtorRect() {}

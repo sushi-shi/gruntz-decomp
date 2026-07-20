@@ -1,29 +1,6 @@
 #include <rva.h>
-// ButeNode.cpp - the .bute config-tree node TU: CButeNode (the concrete config node),
-// the keyed store's destructor at 0x174d70, and the store's __cdecl per-value
-// teardown callback at 0x174df0.
-//
-// RTTI-PROVEN NAME: the whole-object vtable 0x5e94ac carries the Complete-Object-
-// Locator type descriptor `.?AVzPTree@@` (gruntz.analysis.vtable_hierarchy --class
-// zPTree). zPTree's RTTI base-class-array names its primary base `zErrHandling` with a
-// SECOND base (MI, secondary vtable @+8) - exactly our modeled shape (zErrHandling
-// @+0, CButeNodeEntry @+8). zPTree's ctors (0x16df70 / 0x16dff0) live in their retail
-// TU, the merged container obj src/Bute/TypeKeyColl.cpp; only the shapes are shared,
-// via <Bute/PTreeNode.h>, so sibling TUs derive zPTree too.
-//
-// This unit carries C++ /GX EH frames (push -1 / push handler / fs:0 save) for the
-// multiply-derived construction/teardown; flags="eh".
-//
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 
-// The zErrHandling / CButeNodeEntry / zPTree / CButeNode family shapes.
 #include <Bute/PTreeNode.h>
-// CButeValue + ButeType - the typed value record the per-value teardown frees. The one
-// canonical shape, shared with <Bute/ButeMgr.h> (not pulled in here - it is simply not
-// needed). STALE CLAIM REMOVED (2026-07-13): the old reason ("its <Bute/ButeStore.h>
-// CButeStore would clash with this TU's own store class below") is imaginary - ButeStore.h
-// is included RIGHT BELOW, and this TU's ~CButeNode (0x174d70) inlines that same canonical
-// CButeStore's dtor. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
 #include <Bute/ButeValue.h>
 #include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
 #include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
@@ -108,19 +85,6 @@ void __cdecl ButeValueTeardown(void* pValue) {
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
-// ---------------------------------------------------------------------------
-// CButeNode::~CButeNode @0x174d70 - the node's REAL destructor (ex "dtor-copy anchor").
-//
-// It is byte-identical to the ~zPTree copies in butemgr because CButeNode adds no
-// destructible state: the empty user body is just the inline ~zPTree expansion -
-// stamp zPTree's vtable pair (0x1e94ac / 0x1e949c; the derived pair's own stamps are
-// /O2 dead stores and vanish), ClearRecursive(0) (?ClearRecursive@CButeStore@@
-// 0x16e070), then fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
-// (~zErrHandling 0x16da60). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
-// CButeNode's own vtable 0x1f051c slot 0 is the sdd 0x174d50, whose ~ call targets
-// exactly 0x174d70 - the fabricated CButeStoreDtorCopyNode anchor said this body
-// stamped a vtable (0x1e94ac) that never dispatched it.
-
 // zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
 // destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
 // the ultimate polymorphic base.
@@ -129,11 +93,6 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 RVA(0x00174d70, 0x70)
 CButeNode::~CButeNode() {}
 
-// The __cdecl -> __thiscall per-value teardown adapter the CBSecStream ctor passes
-// as zPTree's free-callback (retail 0x174de0: `mov ecx,[esp+4]; jmp 0x174d70`, laid
-// directly after the dtor above - this TU's code). It used to be mis-modeled as a
-// DATA global (`u8 g_streamTag`): a FUNCTION, not a datum. The qualified dtor call
-// keeps the dispatch direct (the tail-jmp), matching retail.
 RVA(0x00174de0, 0x9)
 void ButeStoreFreeAdapter(void* p) {
     (static_cast<CButeNode*>(p))->CButeNode::~CButeNode();

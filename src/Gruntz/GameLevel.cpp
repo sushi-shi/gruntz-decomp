@@ -1,37 +1,3 @@
-// GameLevel.cpp - CGameLevel::LoadWwd, the WWD level-load orchestrator.
-//
-// Functions in this TU:
-//   CGameLevel::LoadWwd  (vtable slot 0x38)
-//
-// LoadWwd is the level-load driver. Faithful reconstruction (carcass driven toward
-// byte-exact; see header for the member layout). Flow, straight off the bytes:
-//
-//   1. Reset()                              (this->vtable[+0x44])
-//   2. if (hdr->wwdSignature > 0x5F4) return 0;
-//   3. m_header = *hdr;                      (rep movs 0x17d dwords = 1524 B)
-//   4. if (hdr->flags & COMPRESS) {          (test [hdr+8],0x2)
-//        char* block = (char*)operator new(hdr->mainBlockLength
-//                                           + hdr->wwdSignature + 0x40);
-//        if (!block) return 0;
-//        block = WwdFile_InflateMainBlock(hdr, block, size);
-//        if (!block) { operator delete(...); return 0; }   // ehAlloc tracked
-//      } else block = (char*)hdr;            (uncompressed: read in place)
-//   5. strcpy(m_levelName, hdr->levelName);  (inline strlen + rep movs)
-//      m_flags = hdr->flags; m_checksum = hdr->checksum;
-//   6. for (i = 0; i < hdr->numPlanes; ++i)  (plane cursor stride 0xA0)
-//        if (!ReadPlane(cursor, block, &m_planeCtx)) goto fail;
-//   7. if (hdr->tileDescriptionsOffset) {    (image-set descriptors)
-//        for (j = 0; j < count; ++j) {
-//          CTileImageSet* s = ReadImageSet(cursor); if (!s) goto fail;
-//          m_imageSets.SetAtGrow(j, s); cursor += s->GetStride();
-//        }
-//      }
-//   8. recompute the scaled start coords on the main plane + every plane;
-//      free the tracked inflate buffer; return 1.
-//
-// CPlane / CTileImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
-// InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
-// <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/SerialArchive.h>      // CSerialArchive (== CFileMemBase; the EditDispatch stream)
@@ -49,69 +15,10 @@
 
 #include <string.h> // strcpy, memset
 
-// The collision-relevant tile codes among the broad tile-type space CTileImageSet::
-// GetCollisionAt (and the tile probes that dispatch it) returns. NOT a closed enum:
-// CGameLevel::LookupTile hands the same result to BrickzLoad as a full tile-type code
-// switched over cases up to 113, so only these low codes carry a movement-collision
-// meaning - named from how the movement/scroll steppers below branch on them; every
-// other code is treated as passable. File-local (only the steppers here consume them),
-// so GetCollisionAt keeps its i32 return. Matching-neutral: each folds to the same int
-// immediate the retail steppers compare. The codes now live as the typed enum
-// TileCollision in <Gruntz/GameLevel.h> (consolidated from here + GameLevelMove.cpp);
-// GetCollisionAt keeps its i32 return, so nothing is mangled. (The enum DECLARATION
-// costs ~0.13% CURRENT fuzzy on this TU's BroadPhase scheduling wall - accepted, since
-// only MAX fuzzy is tracked.)
-
-// ===========================================================================
-// The CDDrawLevelData methods, merged in here as CGameLevel.
-//
-// CGameLevel is the same class the engine handles via the obfuscated name
-// CDDrawLevelData (its vtable slot 0x38 is CGameLevel::LoadWwd). The methods
-// below were reconstructed as CDDrawLevelData::* and are moved here onto
-// CGameLevel. Each touches the level's own members through their named fields
-// (m_planeCtx@+0x10, m_planes/m_imageSets, m_owner@+0x0c, m_04@+0x04, the
-// m_b0..m_dc default-extents block, m_header@+0xe0). The objects they dispatch
-// into are the real CPlane (WwdFile.h) for the per-plane objects and the
-// canonical CGameObject (<Gruntz/UserLogic.h>) for the movement/collision
-// target (formerly per-family window structs; see the IDENTITY note below).
-//
-// The shared "default extents" block at +0xb0..+0xdc is stamped with the same
-// constants by the ctor and several edit methods (StampParamBlock):
-//     +0xb0 = 500  +0xb4 = 250  +0xb8 = 1000 +0xbc = 1000
-//     +0xc0 = 250  +0xc4 = 125  +0xc8 = 1600 +0xcc = 1200
-//     +0xd0 = 2560 +0xd4 = 1920 +0xd8 = 768  +0xdc = 576
-// ===========================================================================
-
-// (LevelCoordRect - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
-
-// The parse-source object LoadFromSource drives is the canonical CParseSource
-// (included above): BeginParse (0x139960) opens/primes it and returns a handle;
-// EndParse (0x1399d0) tears it down. Both are unmatched engine leaves taking the
-// source as `this`; declared with no body so the thiscall sites reloc-mask.
-
-// The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
-// view of the engine plane, GameLevel.h), m_imageSets -> CTileImageSet*. Both carry the
-// +0x04 slot - the inherited virtual scalar-deleting dtor (`delete`). The per-plane object.s
-// tile grid, extents, coord-recompute outputs, tile->pixel shifts and name are all
-// named CLevelPlane members reached without a per-site cast off m_mainPlane.
-
-// The two-phase vptr stores are now cl-emitted: the inlined CLoadable ctor (in
-// GameLevel.h) auto-stamps the base vptr (&??_7CLoadable, orphan reloc-masked
-// against retail 0x5efc30) and the derived CGameLevel ctor auto-stamps the derived
-// vptr (&??_7CGameLevel, bound @0x5f0150 via VTBL below) after the three array
-// members are constructed. The only remaining manual vtable store is the grand-base
-// teardown vftable ~CLoadable restamps after the member dtors run (@0x5e8cb4).
-
-// The "unset" sentinel the ctor writes into the coord record's min corner; the
-// readiness predicate (IsLoaded) tests for it and Unload restores it.
 static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
 
-// The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): WalkColumnDown and
-// BroadPhase test it before treating an object's AABB as a live box.
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
-// Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
-// folds into each method exactly as the retail compiler emitted the block inline.
 static inline void StampParamBlock(CGameLevel* o) {
     o->m_pairA[0] = 500;
     o->m_pairA[1] = 250;
@@ -321,21 +228,6 @@ fail:
     return 0;
 }
 
-// ===========================================================================
-// Merged CDDrawLevelData leaves (now CGameLevel). All are plain /O2 /MT leaves:
-// NO SEH frame, NO string/global relocations (dumps report "Relocations: none") -
-// they only touch member offsets (written as raw casts on `this`), an argument
-// struct, and sibling virtuals via the object's own vtable.
-//
-// The three 184-byte siblings (variant24/28/2C) are identical except for which
-// sibling virtual they dispatch to: vtable +0x38 / +0x3c / +0x40 respectively.
-// Each loads the +0x10 record from a caller struct, stamps the param block, then
-// calls that sibling virtual with arg1; on a 0 result it invokes the +0x1c
-// virtual (a "fail/reset" hook) and returns 0, else returns 1.
-// ===========================================================================
-
-// ---------------------------------------------------------------------------
-// CGameLevel::IsLoaded (0x161190) adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
     if (m_planeCtx.left == LEVEL_COORD_UNSET) {
@@ -383,17 +275,6 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs (merged from CDDrawResolveSubMgrLayout).
-// -------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// LoadFromFile (vtable +0x40): open the named file, slurp it whole into a heap
-// buffer, and hand the buffer to the +0x38 load virtual (the same slot LoadWwd
-// dispatches). Returns 1 on success, 0 on any failure. The local CFileIO + the
-// heap buffer are both freed on every exit, which is why the TU carries the /GX EH
-// frame. NOTE: the file Read's byte count is DISCARDED (no compare to the length)
-// - only the +0x38 virtual's result decides success.
 RVA(0x0015d500, 0x127)
 i32 CGameLevel::LoadFromFile(const char* path) {
     CFileIO file;
@@ -416,12 +297,6 @@ i32 CGameLevel::LoadFromFile(const char* path) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// LoadFromSource (vtable +0x3c): drive a parse/load through `arg`. Begin it
-// (BeginParse on arg); if that fails, return 0. Else feed its handle to the +0x38
-// load virtual and finish the parse (EndParse on arg) regardless, returning the
-// +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the arg
-// object (reloc-masked thiscall).
 RVA(0x0015d630, 0x41)
 i32 CGameLevel::LoadFromSource(CParseSource* arg) {
     i32 handle = arg->BeginParse();
@@ -446,22 +321,12 @@ i32 CGameLevel::LoadFromSource(CParseSource* arg) {
 // pin it by mangled name since it has no source body.
 // @rva-symbol: ??_GCGameLevel@@UAEPAXI@Z 0x001611c0 0x1e
 
-// ---------------------------------------------------------------------------
-// Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
-// (polymorphic), then runs the level cleanup, lets the three array members destruct
-// (reverse construction order), then ~CLoadable restores the base subobject
-// (resets m_04/m_08/m_0c + the grand-base dtor vftable @0x5e8cb4). The
-// destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
     Unload(); // level cleanup (releases children, clears the header)
     // m_imageSets / m_planes / m_array20 auto-destruct here; ~CLoadable follows.
 }
 
-// ---------------------------------------------------------------------------
-// Unload: like ReleaseChildren plus resets the coord sentinel and zeroes the
-// WwdHeader buffer.
-// ---------------------------------------------------------------------------
 RVA(0x0015d1f0, 0x87)
 i32 CGameLevel::Unload() {
     i32 i;
@@ -486,10 +351,6 @@ i32 CGameLevel::Unload() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// ReleaseChildren: releases all child pointers, resets both CDWordArrays, clears
-// the main-plane fields.
-// ---------------------------------------------------------------------------
 RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
@@ -511,11 +372,6 @@ void CGameLevel::ReleaseChildren() {
     m_mainIndex = -1;
 }
 
-// CGameLevel::GetClassId (0x001611b0) is now an inline member in the header.
-
-// --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
-// ---------------------------------------------------------------------------
-// As SetCoordsAndLoad38 but dispatches the +0x40 load virtual.
 RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad40(const char* path, LevelCoordRect* coords) {
     m_planeCtx = *coords;
@@ -527,8 +383,6 @@ i32 CGameLevel::SetCoordsAndLoad40(const char* path, LevelCoordRect* coords) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// As SetCoordsAndLoad38 but dispatches the +0x3c load virtual.
 RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
@@ -540,10 +394,6 @@ i32 CGameLevel::SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Loads the +0x10 record from *coords, stamps the param block, then dispatches
-// the +0x38 load virtual with arg1. On a 0 result it runs the +0x1c hook and
-// returns 0; otherwise returns 1.
 RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords) {
     m_planeCtx = *coords;
@@ -555,30 +405,12 @@ i32 CGameLevel::SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SetCoords: loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x0015d0d0, 0x99)
 i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// CGameLevel::ReadImageSet (image-set factory) - reads one image-set descriptor
-// from `record`. The first int of the record selects one of three variants;
-// `operator new` allocates it (0x10 / 0x24 / 0x18 bytes), the matching engine
-// vftable is stamped, and the count/cursor field at +0x04 (plus +0x14 for the
-// 0x18-byte kind) is zeroed. The variant's Parse slot (+0x14) then reads the
-// record; on a 0 result the object's Release slot (+0x04) frees it and 0 is
-// returned. The three vftables are UNMATCHED engine tables, so the stamp
-// references the retail tables by address (reloc-masked DIR32). NOTE: retail
-// invokes Parse unconditionally - even when the allocation failed and the
-// pointer is null - so the deref is written without a guard, matching the bytes.
-// CImageSet1/2/3 (the WWD image-set collision-record variants) + the Rez heap
-// allocator now live in <Gruntz/ImageSets.h> (included above); their method
-// bodies are split into src/Gruntz/ImageSet{1,2,3}.cpp. ReadImageSet below still
-// `new`s each variant, so cl emits + VTBL-binds their vtables in this TU.
 
 RVA(0x0015d820, 0xa3)
 CTileImageSet* CGameLevel::ReadImageSet(void* record) {
@@ -609,25 +441,6 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     return set;
 }
 
-// ---------------------------------------------------------------------------
-// CGameLevel::ReadPlane (__thiscall ret 0xc). [The ex "CGameLevelPlanes" view is
-// dissolved: LoadWwd's this->ReadPlane call and this body are the SAME class -
-// the view's m_field0c/m_planeCtx/m_planes/m_planeCount/m_mainPlane/m_mainIndex
-// are CGameLevel's m_0c/+0x10/+0x34 CObArray (whose m_nSize IS the plane count,
-// read via the inline GetSize())/+0x5c/+0x60.]
-// Build one plane: `new CPlane(this->m_0c, plane count, 0)` (operator
-// new(0x158) under the C++ EH frame), then invoke the plane's block reader
-// (vtable +0x28) on (planeData, blockBase, &this->m_planeCtx). On reader failure,
-// delete the plane (scalar-deleting dtor, vtable +0x4) and return 0. On success,
-// append the plane to m_planes (SetAtGrow) at the pre-append count, and if it is
-// the MAIN plane (m_flags bit0) cache it as m_mainPlane with m_mainIndex =
-// (post-append count) - 1. Returns the new plane.
-//
-// m_0c is passed straight through now: the plane ctor's arg1 IS this level's
-// CDDrawSurfaceMgr world root (the ex CPlaneMapData view of it is dissolved - see
-// the cascade proof in <Wwd/WwdFile.h>), so the old bridge cast is gone.
-//
-// The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d8d0, 0xc3)
 CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
     CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
@@ -650,12 +463,6 @@ CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/
     return plane;
 }
 
-// ---------------------------------------------------------------------------
-// CGameLevel::ReadObjectPlane - the object-plane sibling of
-// ReadPlane: `new CPlane(m_0c, plane count, 0)`, then drive the plane's
-// +0x24 object-block reader with the six forwarded args, &m_planeCtx (7th), and
-// the trailing arg (8th). Append/record/delete identically to ReadPlane.
-// The CPlane ctor + virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
@@ -678,51 +485,6 @@ CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 
     return plane;
 }
 
-// ===========================================================================
-// The trace-discovered CGameLevel cluster (13 leaves). All are plain /O2 /MT
-// leaves touching only member offsets, the per-plane objects, and engine sibling
-// callees that reloc-mask (no string/global relocations except the jump tables).
-// ===========================================================================
-
-// The per-plane object stored in m_planes is CLevelPlane (GameLevel.h). CGameLevel drives
-// its Build(coords)/Sync(visitor)/Refresh() slots (unmatched engine __thiscall leaves,
-// reloc-masked call sites) and reads its tile grid / extents / name directly.
-
-// ===========================================================================
-// IDENTITY (resolved): the movement/collision "target" of every method below is
-// the canonical CGameObject (<Gruntz/UserLogic.h>). Proven by the callers:
-// CMovingLogic::Update passes its bound object (CUserLogic::m_object, a
-// CGameObject*) to MoveToward and reads the same m_moveMode/m_flags/m_carrier
-// fields; the trigger ctors initialize the same m_extent/m_area records. The
-// former per-family window structs (LevelScroll/ScrollTarget/EditTarget/ProbeObj/
-// HoldPayload/ProbeTarget/BPObj + the BP chain shells) are COLLAPSED into it; the
-// world chain (CDDrawChildGroup/CDDrawGroupNode) lives beside it in
-// UserLogic.h. The level steps each object's m_screenX/m_screenY through the tile
-// probes; m_extent.left/T/R/B are the object's per-side collision extents,
-// m_area.left/T/R its stand/activation box, m_carrier + m_deltaX/Y the platform ride.
-// ===========================================================================
-
-// ===========================================================================
-// The sibling move-leaf bodies (StepAxisLo/Hi, FreeMove, Advance{A,B},
-// StepAxisAlt, SpanCheck, + the 15fe40 stand-fit validator). All are plain
-// /O2 /MT __thiscall leaves (this=this level), NO relocations: they touch only
-// the moving object's m_extent.left..B, m_screenX/Y, m_moveMode, m_strideX/Y, the
-// level's main plane (+0x5c) tile grid, and the image-set array (+0x4c) -
-// dispatching the image set's GetCollisionAt (+0x20) to probe a tile, exactly
-// like AxisProbe (@0x161270) inlined.
-// ===========================================================================
-
-// The tile probe reads the main plane (CLevelPlane) at its probe offsets: the wrap moduli
-// m_wrapW/m_wrapH (+0x30/+0x34, clamp bounds), the log2-tile shifts m_shiftX/m_shiftY
-// (+0x8c/+0x90), the column-offset table m_colOffsets (+0x24) and the tile grid
-// m_tileGrid (+0x20).
-
-// AxisProbe - 0x161270 (__thiscall, ret 8). The standalone tile probe the editor
-// loops call as a reloc-masked leaf: clamp (coord, limit) into the main plane's tile
-// grid, split each into tile index + sub-offset, fetch the tile id, and (unless the
-// empty/clear sentinel) dispatch the image set's slot +0x20 with the sub-offsets;
-// returns the tile kind (callers gate on == 3). This IS the body the PROBE_TILE
-// macro inlines elsewhere.
 RVA(0x00161270, 0xb2)
 i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     // Same shape as PROBE_TILE, but the standalone reads the second coord only AFTER
@@ -760,22 +522,10 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-// it IS the one engine stream, CSerialArchive == CFileMemBase - its "+0x2c read a
-// name / +0x30 write a name" are the stream's Read @slot 11 / Write @slot 12.)
 typedef CSerialArchive EditSink;
 
-// Resolve a level/name to a tile id (returns nonzero on success). __stdcall. @0x163710
 extern i32 __stdcall ResolveLevelName(EditSink* sink, i32 a, i32 b, i32 c);
 
-// ---------------------------------------------------------------------------
-// PointInBounds (free cdecl): tile (x, y) inside the [minX,maxX) x [minY,maxY)
-// half-open box (LevelCoordRect minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
-// @interleaver CGameLevel::PointInBounds emitted-in <boundary: unreconstructed>
-// (REHOME D10 not-homeable: this static COMDAT sits at a BOUNDARY - retail .text
-// neighbours are ddrawsubmgrleaf @0x6b2a0 (before) and triggermgrgrid @0x6b640
-// (after), i.e. NOT surrounded by a single reconstructed host. Its true owning obj
-// is the unreconstructed run at 0x6b3xx; home hint triggermgrgrid is proximity-only,
-// not adjacent. Kept-in-place + flagged until the neighbour obj is reconstructed.)
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
@@ -784,15 +534,6 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// LookupTile: clamp (x, y) into the main plane's tile grid, fetch the tile id from
-// its row-indexed tile map, and (when not the empty/clear sentinel) dispatch the
-// referenced image set's slot +0x20 with (0, 0). ret 8.
-// @interleaver CGameLevel::LookupTile emitted-in <boundary: unreconstructed>
-// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are maplogic
-// @0x82430 (before) and gametext _$E1 @0x82990 (after), NOT a single reconstructed
-// host on both sides. Home hint gruntzapp is proximity-only (its block is 0x80850..
-// 0x80c70, not adjacent). Kept-in-place + flagged until the neighbour obj lands.)
 RVA(0x00082600, 0x73)
 i32 CGameLevel::LookupTile(i32 x, i32 y) {
     CLevelPlane* mp;
@@ -821,18 +562,6 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     return set->GetCollisionAt(0, 0); // slot +0x20, called with (0, 0)
 }
 
-// ---------------------------------------------------------------------------
-// Forwarder to a method on the main plane; no-op when none. The render leaves are
-// the canonical CPlaneRender's (its Draw/CenterScroll*/InitScrollRects/
-// ResolveColorKey own the retail RVAs) - the same object CLevelPlane views; these
-// call the real symbol (CLevelPlane's QueryA/QueryB/Notify aliases were fake decls).
-//
-// REHOME D10: the sibling forwarders CGameLevel::MainPlaneQueryA (0x000cedf0) and
-// MainPlaneQueryB (0x000cee10) were homed into src/Gruntz/Play.cpp - retail's .text
-// places both out-of-line COMDATs INSIDE CPlay's block (0x000ceae0 HandleTileClick
-// .. 0x000cee70 ForwardReady, both CPlay), i.e. a rule-(c) interleaver run of 2
-// surrounded by play on both sides. Play.cpp already declares CGameLevel
-// (<Gruntz/GameLevel.h>) + CPlaneRender (<Wwd/WwdFile.h>), so the move is unblocked.
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
@@ -840,9 +569,6 @@ void CGameLevel::MainPlaneNotify() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// ValidateAllPlanes (0x160ef0, ret 4): clear *errOut (when non-null) then run
-// ValidateTiles(errOut) on every plane; returns 1 only if all planes validated.
 RVA(0x00160ef0, 0x42)
 i32 CGameLevel::ValidateAllPlanes(char* errOut) {
     i32 ok = 1;
@@ -857,8 +583,6 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
     return ok;
 }
 
-// ---------------------------------------------------------------------------
-// BuildAllPlanes: copy *coords into m_planeCtx, then Build(coords) on every plane.
 RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
@@ -911,10 +635,6 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// SyncToMainIndex: Sync(visitor) on every plane from index 0 through m_mainIndex
-// inclusive (nothing when there is no main plane). The first half of the
-// non-origin-fixed VisitVisible path, lifted as its own helper.
 RVA(0x0015dad0, 0x2c)
 void CGameLevel::SyncToMainIndex(void* visitor) {
     i32 i = 0;
@@ -926,9 +646,6 @@ void CGameLevel::SyncToMainIndex(void* visitor) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SyncAfterMainIndex: Sync(visitor) on every plane after the main index up to the
-// plane count. The second half of the non-origin-fixed VisitVisible path.
 RVA(0x0015db00, 0x2e)
 void CGameLevel::SyncAfterMainIndex(void* visitor) {
     i32 i = m_mainIndex + 1;
@@ -1042,13 +759,6 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
     return 0;
 }
 
-// (The world object chain is the canonical CDDrawChildGroup/CDDrawGroupNode
-// (<DDrawMgr/DDrawChildGroup.h>); the chain payloads are CGameObjects. The objects'
-// +0x74 z-key is read here for the draw ordering - the canonical field is named
-// m_sortKey (historical); CheckpointTrigger derives it as
-// layer-base + screenY + bias, i.e. a cached z-order key. Rename deferred until
-// the UserLogic TU is free.)
-
 // ---------------------------------------------------------------------------
 // VisitVisible: z-ordered object render walk. When the level is origin-fixed
 // (m_08 & 1) walk ctx's object chain, Draw each object whose z-key is below the
@@ -1122,8 +832,6 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// NotifyAllPlanes: Refresh() across every plane.
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
@@ -1168,10 +876,6 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     return ResolveLevelName(s, arg2, arg2, arg3) != 0 ? 1 : 0;
 }
 
-// SaveName (0x1610a0, __thiscall ret 0x4): write the level name (m_levelName@+0x6c)
-// as a fixed 0x80-byte blob into the EditSink stream (SetName@+0x30). Standalone
-// counterpart to EditDispatch case 4. Dead code in retail (no callers / not in the
-// vtable) - homed to CGameLevel by its COMDAT placement amid the CGameLevel cluster.
 RVA(0x001610a0, 0x70)
 i32 CGameLevel::SaveName(void* sink) {
     EditSink* s = static_cast<EditSink*>(sink);
@@ -1186,9 +890,6 @@ i32 CGameLevel::SaveName(void* sink) {
     return 1;
 }
 
-// LoadName (0x161110, __thiscall ret 0x4): read a fixed 0x80-byte name blob from the
-// EditSink stream (GetName@+0x2c) back into m_levelName. Standalone counterpart to
-// EditDispatch case 7.
 RVA(0x00161110, 0x64)
 i32 CGameLevel::LoadName(void* sink) {
     EditSink* s = static_cast<EditSink*>(sink);
@@ -1282,20 +983,6 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
     }
     return eax;
 }
-
-// ===========================================================================
-// The four per-brush-kind edit handlers (MoveHandlerA..D). All are __thiscall
-// (this=this level, the scroll target passed explicitly), ret 0x10. They step the
-// target's +0x5c/+0x60 scroll one axis toward (a1, a2), advance the axis-2 cursor,
-// probe the +0x138/+0x140 axis limits via AxisProbe (a ==3 result means blocked),
-// and on a block re-clamp the span / average the [lo,hi] bracket. They commit the
-// new scroll x/y to +0x5c/+0x60 and return the accumulated state-flag word.
-//
-// All sibling callees (StepAxisLo/Hi, Advance{A,B}, ClampSpan, Hold/FreeMove,
-// StepAxisAlt, SpanCheck, AxisProbe) are UNMATCHED engine CGameLevel leaves modeled
-// with no body, so their thiscall sites reloc-mask. `(lo + hi) / 2` lowers to the
-// retail `add; cdq; sub; sar 1` signed-halve idiom.
-// ===========================================================================
 
 // ---------------------------------------------------------------------------
 // MoveHandlerA (kinds 1/2/5): axis-1 step toward a1, axis-2 advance (AdvanceA),
@@ -1522,10 +1209,6 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     t->m_screenY = cursor;
     return result;
 }
-
-// ===========================================================================
-// The sibling move leaves the MoveHandlers dispatch into (ascending RVA).
-// ===========================================================================
 
 // ---------------------------------------------------------------------------
 // StepAxisLo (@0x15e720): step the target one axis from its low bracket toward the
@@ -1800,13 +1483,6 @@ i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// StepAxisAlt (@0x15fdb0): the carrier-latch step. Only runs when a3 bit3 is set;
-// walks the world's object chain and, for each candidate of collision category
-// 0x80 (carrier/platform), runs the AltStepValidate stand-fit. The first carrier
-// that fits is latched (t->m_carrier, mode 1, flags bit4 = riding) and returns 1;
-// an exhausted chain returns 0. (CMovingLogic::Update then advances the rider by
-// the carrier's m_deltaX/Y each frame.)
 RVA(0x0015fdb0, 0x8a)
 i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
     if ((a3 & 8) == 0) {
@@ -1949,12 +1625,6 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 a1, i32 a2, i32 a3
     return hi == boxT - 1;
 }
 
-// ---------------------------------------------------------------------------
-// ClampSpan (@0x15ffe0): clamp (x, y) into the main plane's tile grid, fetch the
-// tile there, and report the tile's column span: *outLo = the tile-aligned x, *outHi
-// = that + the image set's width (+0x04) - 1. Returns 1 (0 for an empty/clear tile).
-// An inlined tile probe that, unlike AxisProbe, keeps the tile-aligned coord and
-// reads the image set's width field instead of dispatching slot +0x20. ret 0x10.
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
@@ -2008,16 +1678,6 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     return result == kTileSoft;
 }
 
-// ---------------------------------------------------------------------------
-// WwdLevelInfoSrc::IsValidWwd (0x160530) - the world's level-info source validates a
-// selected .WWD: Open(name) -> Read(headerBuf, 0x5F4) -> require read == 0x5F4 and first
-// u32 (the header signature) <= 0x5F4. The two null guards return BEFORE the stream is
-// constructed (no destructor on those paths); the stream's ctor runs only after both
-// guards, so its dtor unwinds the remaining exits. The method IGNORES its `this` (reads
-// only the two args), so it is byte-identical to a __stdcall free fn - the caller
-// (CustomWorldInfoDlgProc, `m_world->m_level->IsValidWwd(...)`) still loads ecx=this
-// (the R57 "thiscall-ignoring-this"). Modeled as the real WwdLevelInfoSrc method (not a
-// SYMBOL-renamed free-fn view) so the caller's mangled reference binds naturally.
 RVA(0x00160530, 0x125)
 i32 WwdLevelInfoSrc::IsValidWwd(const char* name, void* headerBuf) {
     if (name == 0) {
@@ -2044,12 +1704,6 @@ i32 WwdLevelInfoSrc::IsValidWwd(const char* name, void* headerBuf) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// WwdFile::CheckHeader
-// Same validation as IsValidWwd but reads into a PRIVATE 0x5F4 stack buffer,
-// then copies the header out to the caller (an inline strlen+rep-movs copy of
-// the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
-// i.e. a strcpy of the header buffer into the caller's output).
 RVA(0x00160660, 0x12b)
 i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
     char header[0x5f4];
@@ -2129,13 +1783,6 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
     return outLen == src->mainBlockLength ? reinterpret_cast<i32>(dest) : 0;
 }
 
-// ===========================================================================
-// WwdFile_CompressMainBlock (0x160870, __stdcall, ret 0x10) - the deflate
-// counterpart of InflateMainBlock: WAP-compress src[srcLen] into dest[destCap]
-// (via WapUncompress, which despite its name is the compress/deflate side) and
-// return the produced compressed length, or 0 on a null buffer / deflate failure.
-// ===========================================================================
-// WapUncompress (0x1853b0, __cdecl) - the engine deflate helper; reloc-masked.
 int WapUncompress(
     unsigned char* dest,
     unsigned long* pDestLen,
@@ -2242,18 +1889,6 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     return 1;
 }
 
-// ===========================================================================
-// Level-management + tile-scan cluster (reconstructed from the CGameLevel .text
-// block; RVA-adjacent to the LoadWwd/plane methods above). All are __thiscall
-// (this=level), indirect-dispatch helpers (no rel32 caller). The tile-scan
-// members drive the same inlined PROBE_TILE tile probe as the move steppers.
-// ===========================================================================
-
-// ---------------------------------------------------------------------------
-// ReadImageSets (@0x15d790): the image-set descriptor loop (LoadWwd step 7). For
-// each of the dir[2] records, ReadImageSet(cursor) builds a CTileImageSet variant,
-// SetAtGrow it into m_imageSets, and advance the cursor by the record's GetStride.
-// Returns the count read; -1 on a null cursor/dir or a failed record.
 RVA(0x0015d790, 0x8b)
 i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     if (cursor == 0) {
@@ -2275,11 +1910,6 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     return n;
 }
 
-// ---------------------------------------------------------------------------
-// RemovePlane (@0x15db30): delete the plane at `index` (scalar-deleting dtor +
-// CDWordArray::RemoveAt). If it was the MAIN plane, promote the last remaining
-// plane: clear every plane's MAIN bit, then set m_mainIndex/m_mainPlane to the
-// last plane and stamp its MAIN bit. 0 on an invalid index/null plane, else 1.
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
     CLevelPlane* p = (index >= 0 && index < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[index]) : 0;
@@ -2307,11 +1937,6 @@ i32 CGameLevel::RemovePlane(i32 index) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15dbe0: MovePlane - move the plane at index `from` to index `to` in the plane
-// array (RemoveAt then InsertAt). Rejects a negative `from` or an out-of-range `to`;
-// a no-op move (from==to) or missing element returns without touching the array. When
-// the moved plane is the MAIN plane, retarget m_mainIndex to `to`. 2 args (ret 8).
 RVA(0x0015dbe0, 0xa3)
 i32 CGameLevel::MovePlane(i32 from, i32 to) {
     if (from >= 0 && to < m_planes.GetSize()) {
@@ -2407,12 +2032,6 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// ProbeSpanHard (@0x15f470): hard-block test across the object's vertical span at
-// column x. Probe the tile at the top edge (m_extent.top + off - 1); if it is hard-
-// blocking (== kTileHard) succeed. Otherwise probe the bottom edge (m_extent.bottom +
-// off + 1) and return whether IT is hard-blocking. Two inlined PROBE_TILE copies
-// (the top row succeeds early); x is re-clamped for each. ret 0xc.
 RVA(0x0015f470, 0x193)
 i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
     i32 py2 = t->m_extent.bottom + off + 1;
@@ -2672,10 +2291,6 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     return rf != kTileSoft;
 }
 
-// --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /
-// g_imageSet1/2/3Vtbl manual stamps + vtbl-placeholders placeholders). cl now emits
-// each ??_7 (18 slots), matched slots pointing at the real methods (RVA-bound), the
-// base-thunk/engine slots reloc-masked declared-only externs. -------------------
 VTBL(CGameLevel, 0x001f0150); // ??_7CGameLevel (was g_gameLevelVtbl)
 VTBL(CImageSet1, 0x001f0198); // ??_7CImageSet1 (was g_imageSet1Vtbl)
 VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
@@ -2683,21 +2298,5 @@ VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
 SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
 SIZE(CImageSet3, 0x18); // ReadImageSet's `new CImageSet3` (push 0x18)
-// Size PROVEN from the allocation site (push 0x6d4; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CGameLevel, 0x6d4);
 SIZE_UNKNOWN(CTileImageSet);
-// NO VTBL: the tile-descriptor CTileImageSet (<Gruntz/GameLevel.h>) is a DISPATCH-ONLY
-// base - never instantiated (ReadImageSet `new`s CImageSet1/2/3, whose own vtables
-// are VTBL'd above), so cl emits no ??_7CTileImageSet in ANY form (verified with llvm-nm
-// over every base obj) and the class owns no vtable datum. The old
-// RELOC_VTBL(CImageSet, 0x001eaa2c) was a FALSE claim on two counts: 0x1eaa2c carries
-// RTTI .?AVCImage@@ (it is CImage's 18-slot vtable, VTBL'd in <Image/CImage.h>), and
-// nothing here reloc-masks it.
-// NAME CONFLATION RESOLVED: this class used to be called `CImageSet`, colliding with the
-// UNRELATED <Image/ImageSet.h> CImageSet (the 0x6c sparse CImage-frame collection, vtable
-// 0x1efbe8 == CDDrawWorker) - and it had that class's m_frames/m_count/m_minIndex/
-// m_maxIndex/GetAt/SetAll* grafted onto it, which cannot even fit in a 0x10/0x18/0x24-byte
-// collision record. Renamed CTileImageSet + stripped; the two headers are now co-includable.
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

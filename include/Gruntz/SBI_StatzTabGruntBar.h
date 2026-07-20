@@ -1,19 +1,3 @@
-// SBI_StatzTabGruntBar.h - Gruntz CSBI_StatzTabGruntBar (C:\Proj\Gruntz).
-// RTTI .?AVCSBI_StatzTabGruntBar@@; a sibling leaf of the SBI family
-//   CSBI_StatzTabGruntBar : CStatusBarItem  (RTTI hierarchy:
-//   {CSBI_StatzTabGruntBar, CStatusBarItem}).
-// Vtable @0x5eace4 (RTTI meta 0x5f4ed0). The /GX-framed scalar destructor (0x104b00)
-// lives in SBI_StatzTabGruntBarEh.cpp.
-//
-// This item is the per-grunt "Statz" tab: each Update it samples the selected
-// grunt's record (health/state/abilities/selection/timer) from the game registry,
-// and when any of the five tracked values changes it resolves a glyph for it and
-// flags the item dirty (return 1) so the next vfunc-10 redraw repaints. Modeled with
-// the SBI family's manual-vtable-stamp device (no real `virtual`); sibling/engine
-// callees are ILT/reloc-masked.
-//
-// Fields are placeholders; the offsets + code bytes are the load-bearing fact, the
-// mangled (?<method>@CSBI_StatzTabGruntBar@@...) name is layout-independent.
 #ifndef SBI_STATZTABGRUNTBAR_H
 #define SBI_STATZTABGRUNTBAR_H
 
@@ -23,18 +7,9 @@
 #include <Gruntz/SbRect.h>        // BuildMultiplayerTabStatusBar's by-value geometry rect
 #include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
 
-// BuildMultiplayerTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only the touched members/methods are
-// load-bearing; every call/datum through them is reloc-masked).
-
-// The selected grunt's record (an element of the registry's unit table at
-// WwdGameReg+0x68). Update reads stat fields out of it; the deep offsets (0x170/
-// 0x194/0x198/0x19c ability block, 0x1d8 alive gate, 0x3ec health) are the
-// load-bearing facts.
 struct CStatzGruntRec {
     char m_pad0[0x170];
     i32 m_abilityLevel; // +0x170  ability level
@@ -49,15 +24,9 @@ struct CStatzGruntRec {
 };
 SIZE_UNKNOWN(CStatzGruntRec);
 
-// The CTriggerMgr-style selection host: the unit-table base (WwdGameReg+0x68)
-// doubles as the selection-list owner. SelectionListFind(key, y) resolves the
-// selection glyph (__thiscall, ret 8).
 struct CStatzSelHost {};
 SIZE_UNKNOWN(CStatzSelHost);
 
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 is the render
-// context (the RenderFrame arg the Blit passes through). Same chain SBI_WellGoo's
-// Tick uses (g_gameReg->m_30->m_4->m_14).
 struct CStatzDrawable {
     char m_pad0[0x14];
     void* m_14; // +0x14  render context (RenderFrame arg0)
@@ -69,9 +38,6 @@ struct CStatzGameMgr {
 SIZE_UNKNOWN(CStatzDrawable);
 SIZE_UNKNOWN(CStatzGameMgr);
 
-// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). The
-// +0x30 render-mgr chain (Blit's target) and the +0x68 unit-table base the Statz
-// tab samples are modeled (rows of 15 dwords).
 struct CStatzGameReg {
     char m_pad0[0x30];
     CStatzGameMgr* m_30; // +0x30  active game-mode/renderer
@@ -80,20 +46,9 @@ struct CStatzGameReg {
 };
 SIZE_UNKNOWN(CStatzGameReg);
 
-
-// The glyph maps (m_glyphMap for the first four values, m_timerGlyphMap for the
-// timer value) ARE the engine frame-data sprite CSprite (<Gruntz/Sprite.h>): each
-// changed value resolves through the [m_firstFrame..m_lastFrame]-gated frame table
-// m_frames.m_pData - the same (name -> Lookup -> gated index -> frame) idiom
-// CSBI_Image::SerializeFields runs. (The ex CStatzGlyphMap view is dissolved;
-// fwd-decl only - consumers that deref include <Gruntz/Sprite.h> themselves.)
 class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
-                              // and keeps this header pointer-only/include-light.
 
-// ---------------------------------------------------------------------------
-// CSBI_StatzTabGruntBar - the per-grunt stat tab. Derives directly from
-// CStatusBarItem (vtable @0x5eace4).
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
     // tag 6 (the Statz/Multiplayer per-grunt stat bar). The four tracked values start
@@ -193,7 +148,6 @@ public:
 };
 SIZE_UNKNOWN(CSBI_StatzTabGruntBar);
 
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 
 #endif // SBI_STATZTABGRUNTBAR_H

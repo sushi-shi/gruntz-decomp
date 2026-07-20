@@ -1,21 +1,3 @@
-// DirectSoundMgr.h - the WAP32 DirectSound per-buffer wrapper (Dsndmgr module,
-// C:\Proj\Dsndmgr\). Surfaces the layout + COM interface shapes needed to
-// byte-match DirectSoundMgr's DSNDMGR.CPP method run: the HRESULT->error-string
-// diagnostic formatter GetErrorString (the DSound sibling of
-// CDirectDrawMgr::GetErrorString) and the thin IDirectSound / IDirectSoundBuffer
-// wrapper thunks that, on a nonzero HRESULT, route through GetErrorString.
-//
-// DirectSoundMgr is the per-buffer wrapper BASE (retail vtable 0x5ef6b8, size
-// 0x44): it holds one IDirectSoundBuffer (m_buffer) plus its owning device
-// (m_owner, a SoundDevice) and the cached caps/state. Two concrete leaves derive
-// it (both in DirectSoundMgr.cpp): DSoundBaseSub (0x5ef6c0, 0x58 - the clone
-// object Clone() news) and DSoundCloneInst (0x5ef6bc, 0x60 - the leaf that owns a
-// clone list). The device-level bring-up (Create/SetCooperativeLevel/
-// CreatePrimaryBuffer/ReacquireViaCallback) lives on SoundDevice.
-//
-// Each COM interface is a real abstract class (__stdcall virtuals), so a wrapper's
-// `iface->Method(args...)` lowers to the retail `mov eax,[iface]; call [eax+slot]`
-// COM dispatch; only the called slots carry meaningful signatures, the rest pad.
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
@@ -23,65 +5,16 @@
 #include <stdio.h>                  // FILE (LoadFromFile stream arg)
 #include <Dsndmgr/SoundVoiceList.h> // DSoundLink / DSoundList intrusive list primitive
 
-// DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
-// The ctor reads dwFlags into m_caps and ignores the rest.
-
-// DSBUFFERDESC - the 0x14-byte sound-buffer descriptor passed to
-// IDirectSound::CreateSoundBuffer (dwSize, dwFlags, dwBufferBytes, dwReserved,
-// lpwfxFormat). Only dwSize/dwFlags are stamped here; the rest is zeroed.
-
 struct IDirectSound;       // forward-decl: real dsound.h interface (dispatched in the .cpp)
 struct IDirectSoundBuffer; // forward-decl: CreateSoundBuffer's out-param type
 class SoundDevice;         // owning device (m_owner); full def in SoundDevice.h
 class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
 
-// A clone-list node: a self-referential doubly-linked node whose m_inst back-points
-// at the buffer that owns it. Each buffer embeds one (m_cloneNode) by which it hangs in
-// its parent's clone list; the list threads through these nodes directly, so
-// iteration reads node->m_inst with no container-of arithmetic.
-// The clone-chain node IS a DSoundLink-headed record (the CloneNode->DSoundLink
-// casts at the list ops were the proof; layout identical). 2026-07-19.
 struct CloneNode : public DSoundLink {
     DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
 };
 SIZE(CloneNode, 0xc); // {link.next, link.prev, inst}
 
-// ---------------------------------------------------------------------------
-// IDirectSound (DSOUND) - the device interface DirectSoundCreate returns. Only
-// the slots the manager calls are pinned. COM convention => __stdcall virtuals with
-// the interface pointer as the hidden `this`; the manager invokes them as
-// iface->Method(...).
-//   +0x0c (slot 3)  CreateSoundBuffer  (LPCDSBUFFERDESC, LPDIRECTSOUNDBUFFER*, LPUNKNOWN)
-//   +0x18 (slot 6)  SetCooperativeLevel(HWND, DWORD)
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// IDirectSoundBuffer (DSOUND) - the buffer interface the per-buffer wrappers
-// drive. Slots pinned to their retail vtable offsets:
-//   +0x08 (slot 2)  Release             ()
-//   +0x10 (slot 4)  GetCurrentPosition  (LPDWORD, LPDWORD)
-//   +0x14 (slot 5)  GetFormat           (LPWAVEFORMATEX, DWORD, LPDWORD)
-//   +0x18 (slot 6)  GetVolume           (LPLONG)
-//   +0x1c (slot 7)  GetPan              (LPLONG)
-//   +0x24 (slot 9)  GetStatus           (LPDWORD)
-//   +0x2c (slot 11) Lock                (DWORD, DWORD, LPVOID*, LPDWORD, LPVOID*, LPDWORD, DWORD)
-//   +0x34 (slot 13) SetCurrentPosition  (DWORD)
-//   +0x3c (slot 15) SetVolume           (LONG)
-//   +0x40 (slot 16) SetPan              (LONG)
-//   +0x44 (slot 17) SetFrequency        (DWORD)
-//   +0x48 (slot 18) Stop                ()
-//   +0x4c (slot 19) Unlock              (LPVOID, DWORD, LPVOID, DWORD)
-//   +0x50 (slot 20) Restore             ()
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// DirectSoundMgr - the per-buffer sound-buffer wrapper BASE (vtable 0x5ef6b8,
-// size 0x58). A concrete buffer is a DSoundCloneInst (0x60) whose base subobject
-// is this class; a duplicated clone is a DSoundBaseSub (0x58, adds no fields). Every
-// wrapper method lives here; only the clone-list ownership (Clone/RemoveClone/
-// StopAllClones + its m_cloneList) belongs to the derived leaf. Field names are
-// placeholders; the offsets + the COM slot dispatch are the load-bearing facts.
-// ---------------------------------------------------------------------------
 class DirectSoundMgr {
 public:
     DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x1351d0 ctor
@@ -156,20 +89,8 @@ public:
 SIZE(DirectSoundMgr, 0x58);       // per-buffer wrapper base (fields end at +0x58)
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 
-// ---------------------------------------------------------------------------
-// The DirectSoundMgr clone hierarchy (real 3-level polymorphic): the fields + methods
-// live on the base above, the two leaves add only their own vtable/dtor (+ the clone
-// list on the concrete leaf). Bodies live in DirectSoundMgr.cpp; the definitions live
-// here so the device (SoundDevice.cpp) + the feeder (StreamFeeder.cpp) can name the
-// concrete leaf DSoundCloneInst that its buffer list actually threads.
-
-// Clone list {head,tail}; InsertHead/Unlink are shared engine helpers (0x1390e0/0x1391e0).
-// The clone list IS the one DSoundList (identical {head,tail}; the CloneList->
-// DSoundList casts at the Insert/Remove calls were the proof). 2026-07-19.
 typedef DSoundList CloneList;
 
-// DSoundBaseSub - clone/duplicate wrapper Clone() news (vtable 0x5ef6c0, 0x58B, no new
-// fields). dtor 0x136260 resets the vptr + chains ~DirectSoundMgr.
 class DSoundBaseSub : public DirectSoundMgr {
 public:
     DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x136230
@@ -185,9 +106,6 @@ public:
 SIZE(DSoundBaseSub, 0x58);       // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
 VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 
-// DSoundCloneInst - concrete per-buffer leaf owning a clone list (vtable 0x5ef6bc,
-// 0x60B); dtor 0x135bb0 drains the clone list. This is the object SoundDevice mints in
-// CreateBuffer (RezAlloc(0x60)), threads on its buffer list, and reaps in RemoveBuffer.
 class DSoundCloneInst : public DSoundBaseSub {
 public:
     DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10

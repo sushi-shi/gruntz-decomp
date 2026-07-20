@@ -1,23 +1,12 @@
 #ifndef GRUNTZ_WWD_WWDGAMEOBJCTOR_H
 #define GRUNTZ_WWD_WWDGAMEOBJCTOR_H
 
-// WwdGameObjCtor.h - the shared CWwdGameObject base-object ctor cluster (hoisted
-// from WwdObjMgrFactories.cpp, wave4-L): the CResolveNode-shaped inline ctor base
-// (WwdCtorBase), the 0x15b390 /GX base-object ctor class (CWwdGameObjBaseCtor), and
-// the +0x7c anim worker's inline-construction view (WwdAnimWorker). The factories
-// (H obj, src/Wwd/WwdObjMgr.cpp) placement-construct these; the ctor body itself
-// (0x15b390) lives in the I obj (src/Wwd/WwdFactoryObject.cpp).
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
-
 #include <Ints.h>
 #include <Mfc.h> // CString (the +0xdc label member)
 #include <rva.h>
 
 struct AnimWorkerObj; // <DDrawMgr/AnimWorkerObj.h> - the owned +0x7c worker (canonical
-                      // WwdGameObjectFamily.h types m_7c as AnimWorkerObj*)
 
-// The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
 struct WwdCtorBase {
     WwdCtorBase(int a, int b, int c) {
         m_08 = c;
@@ -75,10 +64,6 @@ struct CWwdGameObjBaseCtor : public WwdCtorBase {
 };
 SIZE_UNKNOWN(CWwdGameObjBaseCtor); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 
-// (The former WwdAnimWorkerInit inline-construction view of the +0x7c worker is
-// DISSOLVED onto the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): the
-// 0x15b390 ctor's `new` folds the real class's inline 2-arg ctor - the same
-// stores, on the one 0x17c class.)
 #include <DDrawMgr/AnimWorkerObj.h>
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJCTOR_H

@@ -1,46 +1,3 @@
-// BattlezMapConfig.cpp - CBattlezMapConfig, the Battlez (multiplayer) per-team
-// spawn/board manager. One dev TU: the config-phase loader LoadConfig @0x25020
-// (formerly a separate battlezmapconfig unit) + the ~40 run-phase spawn state-
-// machine methods (ctor / dtor / FreeArrays + the rest, formerly the artifact-named
-// UnknownClassArrays.cpp). All CBattlezMapConfig, all /GX (eh profile): LoadConfig
-// carries no destructible stack object so /GX is a no-op for it (verified byte-exact
-// under eh). Merged per docs/tu-topology-plan.md (Phase 1).
-//
-// The run-phase methods (ctor / dtor / FreeArrays + the ~40 spawn state-
-// machine methods). Formerly hedged CBattlezSpawnMgr_or_CGruntSpawnMgr; disambiguated
-// to the real RTTI class CBattlezMapConfig by the this/ecx trace (its LoadConfig
-// @0x25020 runs on the same objects; see <Gruntz/BattlezMapConfig.h>). The class owns
-// four growable MFC arrays - two CPtrArray (+0xdc / +0xf0) and two CDWordArray
-// (+0x104 / +0x118) - and a block of scalar config fields. See
-// <Gruntz/BattlezMapConfig.h> for the (dual phase-view) layout + the array type
-// derivation from the retail RTTI/vtable records.
-//
-//   ctor       @0x024dc0 (0x158 B)  - /GX EH frame: member-constructs the four
-//                                      arrays (try-level advances per member),
-//                                      then seeds ~40 scalar fields with magic
-//                                      startup constants.
-//   dtor       @0x024f80 (0x7d  B)  - /GX: calls FreeArrays(), then auto-destructs
-//                                      the four arrays in reverse (try-level 3..-1).
-//   FreeArrays @0x025ca0 (0xbf  B)  - recycles the two CPtrArrays' element pointers
-//                                      onto the global intrusive freelist, then
-//                                      SetSize(0,-1) on all four arrays.
-//
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
-//
-// AUTHENTIC-FLOOR NOTE (cast audit): this is a deliberate raw-offset reconstruction
-// of the Battlez grid/spawn state machine, so nearly every (char*) cast is intentional
-// and NOT reducible without re-modeling engine sub-objects that are only stride-walked:
-//   * freelist recycle - `(void**)((char*)coord - g_coordPool.m_linkOffset)`: the global
-//     intrusive coord-node freelist (bias to the list-link header). Authentic.
-//   * grid-record stride - `(char*)m_ctx + cell * 0x238 (+field)`: m_ctx fronts the
-//     0x238-byte CGruntSpawnLevel record array; index*stride is raw byte arithmetic.
-//   * board-row stride - `(i32*)((char*)row + ((x * 7) << 2))`: a 7-tile row of i32.
-//   * tiny-helper-over-`this` - `((ElementRefresher/Kind4Validator/CGrunt/SelfCommit*)
-//     this)->M()`: an external __thiscall engine method (own RVA) fired on this object;
-//     modeled as a helper method so `mov ecx,this; call` falls out (reloc-masked).
-//   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
-// numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
-// ---------------------------------------------------------------------------
 #include <Gruntz/Play.h> // complete CPlay (the m_10 spawn-info holder is the play state)
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -81,143 +38,15 @@
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord)
 #include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (FindInLists12 0x116f20)
 
-// The coord-list walk step @0x29a30 is the free __stdcall ListNodeAdvance(void**).
 void* __stdcall ListNodeAdvance(void** pos);
 
-// The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
-// fronts an array of per-level records (0x238-byte stride = the
-// CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
-// are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
-
-// Method_02bfc0's `obj` argument IS the shared CSerialArchive stream (<Gruntz/
-// SerialArchive.h>, included below): the two slots it dispatches - +0x2c (index 11)
-// and +0x30 (index 12) - are exactly that interface's Read (mode 7) / Write (mode 4),
-// and the two kind validators it gates on are this class's own Deserialize_02b950
-// (kind 7) / Serialize_02b420 (kind 4). The former `CSerialArchive` view (11 nameless filler
-
-// The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real AnimWorkerObj
-// (<Gruntz/UserLogic.h>): its +0x1c is the anim-name index g_typeColl resolves. The
-
-// The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above). The CGrunt fields it
-// reach sit at the IDENTICAL offset (m_entranceReason +0x170,
-// m_entrancePxX/Y +0x174/+0x178, m_lastTilePxX/Y +0x17c/+0x180, m_tileOwnerHi/Lo
-// +0x1ec/+0x1f0, m_gruntKind +0x258, m_defenderState +0x2d4, m_arrivalCol/Row
-// +0x2f0/+0x2f4, and the occupied-coord list at +0x31c), and its +0x10/+0x14 "level
-// geometry"/"anim" sub-objects are CUserLogic::m_object (CGameObject) / m_objAux
-// (m_31c/m_320/m_324/m_coordCount) are the INTERIOR of CGrunt's real MFC CPtrList
-// m_31c, so they are gone: this TU now reads the list through the real member and
-// through main's inline accessors (CoordHead/CoordTail/CoordCount).
-//
-// The level's CTriggerMgr is likewise the canonical class (<Gruntz/TriggerMgr.h>): the
-// view's "m_objListHead @+0x04" is m_baseList's head slot (an MFC CPtrList is
-// {vptr, pHead@+4, pTail@+8, count@+0xc, ...}) and its "m_grid[0x3c] @+0x1c" is
-// m_grid. Its candidate payloads are CGruntPuddle (promoted to TriggerMgr.h).
-
-// The {x,y} pair is the canonical Coord (<Gruntz/CoordNode.h>); the tile record is
-// the canonical BrickzCell (<Gruntz/Brickz.h>, the 0x1c-byte cell: m_0 flags word,
-// m_10 bute type code). The four identical local pair views (Coord / Candidate /
-//
-// The trigger-mgr's candidate list is m_baseList - a real MFC CPtrList (RTTI-proven:
-// the [0x1b4867, 0x1b4b43) band's ctor stamps ??_7CPtrList@@6B@). Its cells are walked
-// with GetHeadPosition()/GetNext() (both _AFXCOLL_INLINE - the identical
-// `mov eax,pos; mov pos,[eax]; mov eax,[eax+8]` the raw node view emitted), and the
-// payloads are CGruntPuddle (<Gruntz/TriggerMgr.h>).
-
-// The board/tile map held at this->m_board is the canonical CBrickzGrid
-// (<Gruntz/Brickz.h>). m_rows is a row-pointer table; a row is a BrickzCell array indexed
-// by x. m_width / m_height are the in-bounds limits, m_originX.. is the board dirty
-// rect (left/top/right/bottom) recomputed by the IntersectRect-clamp idiom, with the
-// derived span at m_gridW / m_gridH. FindPath and Clip are its real methods, dispatched
-// __thiscall on m_board; CBrickzGrid::Clip (0x02b340) lives in src/Gruntz/Brickz.cpp.
-
-// A CGrunt __thiscall helper (RVA 0x029a50, thunk 0x036c0) that copies the
-// unit's level geometry (m_object->m_5c, m_object->m_60) into an out coord pair.
-// Modeled as a method on CGrunt so the `mov ecx,unit; push &out; call` lowers
-// cleanly. External, reloc-masked (no body).
-// The coord-node free pool (0x645540): an intrusive-list allocator whose
-// Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
-// freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>; DEFINED in
-// src/Gruntz/GameText.cpp (whose obj tail holds its reset/clear pair).
-
-// The coord-list node-advance helper (RVA 0x29a30) is the free __stdcall
-// ListNodeAdvance declared at the top (the empty `CoordListWalk` shell that used to
-// wrap it is gone).
-
-// The shared rect-init helper (RVA 0x029ac0, thunk 0x034a4): a __thiscall that
-// fills a RECT (left/top/right/bottom from the four args) and returns it. Ghidra/
-// FID attests ??0CRect@@QAE@HHHH@Z; it IS the engine CRect(l,t,r,b) direct-store
-// ctor (out-of-line, so the board-clamp idiom below CALLs it rather than inlining
-// four stores). Modeled by the canonical CRect (<Wap32/Rect.h>). External, reloc-masked.
-
-// A coord-occupancy query (RVA 0x051850, thunk 0x03c4c): a __thiscall on a unit
-// taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
-// state-machines below. External, reloc-masked (no body).
-// The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
-// CGrunt taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
-// External, reloc-masked (no body).
-// Place @0x04b320 (thunk 0x1640) is CGrunt::TileSwitch - __thiscall on the grunt (6 args: x/y = tile
-// coords); the unit receiver is loaded into ecx but ignored, so it is dropped at each site.
-
-// The level itself: `m_ctx` (CBattlezMapConfig+0x04) IS the CLevelInfo LoadConfig was
-// handed - retail Method_035210 walks `[this+4] -> [+0x68] -> [+0x4]`, i.e.
-// ctx->m_triggerMgr->m_baseList, reaching the SAME CTriggerMgr the ctor caches at
-// +0x08. So the `CLevelInfo` view was a second model of CLevelInfo; its +0x30
-// "scene" is CLevelInfo::m_objList (CLevelList: m_coll = the walked object collection,
-// m_view->m_5c = the world->screen mapper), and its +0x10 is the level's active
-// CGameObject. All modeled in <Gruntz/LevelInfo.h>.
-
-// ---- Reloc-masked engine globals --------------------------------------------
-// The intrusive freelist head: a singly-linked list of recycled coord-pair nodes
-// (node->next at +0). Shared with CBattlezMapConfig's allocator (which pulls nodes
-// off it); FreeArrays pushes them back. Referenced as data (DIR32).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool, which are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
-// The element<->node bias subtracted from a stored element pointer to recover its
-// freelist node header (the allocator hands out node + bias; recycle reverses it).
-
-// The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-
-// A render-context object the cell-probe call site passes through (DAT_00644ca4 @
-// VA 0x644ca4). Reloc-masked DATA.
-
-// One animation-name record: its first dword is the C-string name (record->m_0).
-// The animation-name resolver singleton (DAT_006bf650 @ VA 0x6bf650). Lookup
-// (RVA 0x0310f0, thunk 0x0437c) is a __thiscall(int index)->CAnimNameRecord*, and
-// Lookup2 (RVA 0x0312a0, thunk 0x03864) resolves into the g_typeColl.m_alloc CString
-// array. Probe (0x016da80) / Reserve (0x034960, thunk 0x02685) back the second
-// dispatch. External, reloc-masked (no body).
-
-// The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
-// the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,
-// g_6bf664 fallback record, g_6bf464 a default record). Reloc-masked DATA.
-
-// CString::Release-style teardown (RVA 0x1b9b93), a __thiscall on a CString slot.
-// A CString is a single char* (4 B), so the scratch walk strides by 4. External,
-// reloc-masked.
-
-// The per-tick advance delta added to the bundle's timers each step
-// (DAT_00645584 @ VA 0x645584). Reloc-masked DATA.
 extern "C" i32 g_frameDelta;
 
-// The unit-side state mutator (RVA 0x065e80, thunk 0x03c6a): a __thiscall on a
-// CGrunt taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
-// The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
-// 0x5e96ec; owner-TU def). Read by the fild/fmul spawn-budget computation.
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f; // 0x5e96ec
 
-// The two runtime-config globals the spawn state machine copies into the unit's
-// m_250/m_254 slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-
-// masked DATA (VA - 0x400000). The per-level records are the shared m_ctx-indexed
-// 0x238-stride block (the m_ctx-indexed 0x238-stride records); the fields the spawn state
-// machine reaches (+0x170/+0x174 ready-flags, +0x188 edge sub-object, +0x258/+0x25c
-// queued point, record+0x280 re-route gate) are read by raw offset like the siblings.
-// Owner-TU definitions, RVA-ascending per section. g_step*/g_diffTier carry canonical
-// externs in <Globals.h>; g_spawnCfg/g_spawnState are TU-private.
 DATA(0x0020ccc0)
 i32 g_spawnCfg = 0x98f; // .data (map-config seed 2447)
 DATA(0x0022b6dc)
@@ -231,74 +60,14 @@ i32 g_diffTier;
 DATA(0x0022b7ec)
 i32 g_spawnState;
 
-// The global step timer (?g_frameTime, DAT_00645588 @ VA 0x645588): the 32-bit
-// tick counter the m_390 latch debounces against the bundle's m_scratch78..m_084 pair.
-
-// The scene-hit dispatcher reached via g_gameReg->m_cueSink (RVA 0x11b3b0, thunk
-// 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
-// masked (no body); modeled as a method on a tiny object (the same idiom as
-// CGrunt/CGrunt) so `mov ecx,[reg+0x60]; call` falls out.
-
-// ===========================================================================
-// The remaining cluster giants - logic NOT yet reconstructed. Each owns its RVA
-// here and links so its sibling callers resolve; the
-// bodies are placeholders for the final sweep. They share the I/G/L/P/J/C/R
-// anim-name dispatch (g_typeColl) + the g_coordPool.m_freeHead/coord recycling +
-// FindPath/CPtrList path-swap idioms already modeled above.
-// ===========================================================================
-
-// ===========================================================================
-// CBattlezMapConfig::LoadConfig  @0x025020  (config phase; /GX-neutral)
-// The Battlez map-config loader, formerly the separate battlezmapconfig unit.
-// Reads the [Battlez] tag-group of g_buteMgr into this, walks the level object
-// tree for the start markers, applies the per-difficulty rescale, and seeds the
-// per-item spawn-budget totals. Plain /O2 (no stack C++ object) -> /GX is a no-op.
-// ===========================================================================
-
-// The global CButeMgr text-config tree (the singleton), reloc-masked through the
-// already-matched CButeMgr getters (butemgr unit).
-// g_buteMgr (canonical CButeMgr getters, butemgr unit) comes from <Bute/ButeMgr.h>.
-
-// The per-map start-coord array's SetAtGrow appender (callee-cleanup engine free
-// fn; 2 args). The marker pair node is appended to the array handle (arr->m_8).
 extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
-// The three engine RTTI type-descriptor records the marker filters key off. Each
-// loop's type test is `obj->m_7c->m_notify == (void (*)(CGameObject*)) (typeId)`, where the engine encodes the
-// type id as `descriptor_address + 5`: the compiled `cmp $5, [rtti+0x10]` carries a
-// DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
-// RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
-// are never dereferenced - only their address rides the immediate.
-
-// The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
-// .data; fmuls reads it). Reloc-masked const datum.
-
-// The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
-
-// ---------------------------------------------------------------------------
-// The three marker loops walk the level's game-object collection
-// (mgr->m_world->m_childGroup, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
-// {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
-// +0x5c/+0x60, m_7c the AnimWorkerObj whose +0x10 holds the object's FACTORY fn-ptr -
-// the type key the filters compare - and m_124 the per-map id). CBrickzGrid's +0xc is m_width.
-// ---------------------------------------------------------------------------
-// The +0x7c aux's +0x10 slot holds the object type's registered FACTORY function
-// pointer (RegisterType stores the create-fn there), so each marker loop's type test is
-// `obj->m_7c->m_notify == &Create<Type>` - a DIR32 on the ILT thunk.
 extern "C" {
     void* CreateGruntCreationPoint(); // ILT thunk 0x17e4 (GameObjectFactory.cpp)
     void* CreateExitTrigger();        // ILT thunk 0x192e
     void* CreateWayPoint();           // ILT thunk 0x1087
 }
 
-// The coord-pair node LoadConfig pops off the pool freelist is the pool's own
-// CoordPoolNode (<Gruntz/FreeNodePool.h>): {next@+0x00, {x,y}@+0x04} - which is why
-// the pool's m_linkOffset is 4 and the handed-out slot is &node->m_coord.
-
-// The list GetFirst/GetNext cursor idiom the three marker loops share, on the level's
-// game-object collection (<Gruntz/QueueDrainHost.h>). GetFirst seeds the +0x64 cursor
-// from the head (+0x14) and returns the first payload; GetNext advances it. Both return
-// 0 at the end. Marked inline so the bodies fold into each loop.
 static inline CGameObject* ListGetFirst(CQueueDrainHost* list) {
     CQueueProbeNode* n = list->m_head;
     list->m_cursor = n;
@@ -317,10 +86,6 @@ static inline CGameObject* ListGetNext(CQueueDrainHost* list) {
     list->m_cursor = n->m_next;
     return n->m_data;
 }
-
-// CBattlezMapConfig is defined once in <Gruntz/BattlezMapConfig.h> (included above).
-// LoadConfig references the config-phase field view; the run-phase spawn methods
-// (the BattlezMapConfig RUN-phase unit) reference the run view of the same bytes.
 
 // ===========================================================================
 // CBattlezMapConfig::CBattlezMapConfig  @0x024dc0
@@ -342,11 +107,6 @@ static inline CGameObject* ListGetNext(CQueueDrainHost* list) {
 // declaration order; reordering declarations would break the offsets). Final sweep.
 RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
-    // The four 0x78..0x87 fields are member-init-list initializations (NOT body
-    // assignments): the /GX compiler schedules them into the array-construction
-    // region (some land before the first array ctor), which is what retail does -
-    // modeling them as body stores drops the ctor ~28%. VC5 emits the init list in
-    // DECLARATION order regardless of the order written here.
     : m_scratch78(0), m_scratch7c(0), m_scratch80(0), m_scratch84(0) {
     m_curCell = 0;
     m_01c = 1;
@@ -384,20 +144,11 @@ CBattlezMapConfig::CBattlezMapConfig()
     m_budgetMul = 0x19;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::~CBattlezMapConfig  @0x024f80
-// Calls FreeArrays() (covered by the full unwind, try-level 3), then the compiler
-// auto-destructs the four arrays in reverse construction order (+0x118, +0x104,
-// +0xf0, +0xdc), lowering the try-level after each.
-// ===========================================================================
 RVA(0x00024f80, 0x7d)
 CBattlezMapConfig::~CBattlezMapConfig() {
     FreeArrays();
 }
 
-// ===========================================================================
-// CBattlezMapConfig::LoadConfig
-// ===========================================================================
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     // --- prologue: zero the scratch fields, copy the level-info handles. ---
@@ -570,11 +321,6 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_025c20  @0x025c20
-// If the current level's CGameRegistry record is not-yet-loaded but active, refresh
-// every element of the first CPtrArray (m_candArray). Returns 1 unconditionally.
-// ===========================================================================
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::Method_025c20() {
     if (g_gameReg->m_options[m_curCell].m_014 == 0
@@ -586,13 +332,6 @@ i32 CBattlezMapConfig::Method_025c20() {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::FreeArrays  @0x025ca0
-// For each non-null element of the two CPtrArrays (+0xdc, +0xf0), recover its
-// freelist node (element - bias), push it onto g_coordPool.m_freeHead. Loop 1 guards on a
-// non-null element; loop 2 does not (the retail asymmetry). Then SetSize(0,-1)
-// empties all four arrays and m_13c is cleared.
-// ===========================================================================
 RVA(0x00025ca0, 0xbf)
 void CBattlezMapConfig::FreeArrays() {
     i32 i;
@@ -967,11 +706,6 @@ i32 CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x29a30 (RVA-homed from src/Stub/DiscoveredSmall.cpp) - a list iterator advance:
-// read the current node (*it), step the cursor to its link (*cur), return a pointer
-// into the current node's payload (cur+8). __stdcall, 1 stack arg.
-// ---------------------------------------------------------------------------
 RVA(0x00029a30, 0x10)
 void* __stdcall ListNodeAdvance(void** it) {
     char* cur = static_cast<char*>(*it);
@@ -979,22 +713,6 @@ void* __stdcall ListNodeAdvance(void** it) {
     return cur + 8;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_029b40  @0x029b40  (faithful two-scratch reconstruction)
-// The per-unit tile/coord cleanup+dispatch step. Recover the unit's first occupied
-// coord + its live screen cell; if they have drifted >= 2 cells apart, recycle the
-// unit's coord nodes and bail. Otherwise fetch TWO 7-dword tile records into stack
-// scratch (scratchA = the unit's stored coord cell = the MAIN flags word; scratchB =
-// the live screen cell = a secondary gate) and run the flag dispatch: the scratchB
-// 0x4 FindChild reroute (-> mode 0xb), the prim==0x11 two-coord ApplyTriggerB arm,
-// the scratchA 0x8000 commit / Method_030530 hand-off, and the main scratchA bit
-// dispatch (0x200/0x8/0x20/0x40/0x2/0x20000000) with per-arm anim-mode guards +
-// Method_02c0a0 transitions, the Method_030b20 hand-off, and the kind-7 grid-
-// candidate scan (RectContains -> ApplyTriggerB + recycle + spawn-timer advance).
-// Returns 1 on a handled transition. See the marker above the RVA for the residual.
-// ===========================================================================
-// GetScreenPos (0x29a50) / IsAtSavedScreenPos (0x29a80) - CUserLogic leaf accessors
-// (declared in <Gruntz/UserLogic.h>); physically compiled in this TU.
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(ScreenPoint* out) {
     CWwdGameObjectA* o = m_object;
@@ -1380,13 +1098,6 @@ recycleBail:
     return 0;
 }
 
-// The board-step run flag + the result cell it records (the (col,row) of the cell
-// that satisfied the step). Reloc-masked DATA; the recursive flood-fill clears
-// g_stepRun and stamps g_stepCol / g_stepRow when it commits.
-
-// The query object held at this->m_objAux: ResolveCell (RVA 0x011171d0... thunk
-// 0x02838) maps a packed (col<<8|row) to its cell record. __thiscall, reloc-masked.
-
 // ===========================================================================
 // CBattlezMapConfig::winapi_02a570_IntersectRect  @0x02a570  (/GX EH frame)
 // The reserved-tile scatter reroute. For a unit that holds occupied coords, clamp
@@ -1620,8 +1331,6 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
     return reinterpret_cast<i32>(best);
 }
 
-// CBattlezMapConfig::Clear_02ade0 (0x0002ade0) is now an inline member in the header.
-
 // ===========================================================================
 // CBattlezMapConfig::Method_02ad40  @0x02ad40
 // Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
@@ -1657,8 +1366,6 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
     }
     return 0;
 }
-
-// CBattlezMapConfig::Method_02c080 (0x0002c080) is now an inline member in the header.
 
 // The gated point-in-rect test on a unit (RVA 0x051a20, RectContainsGated): a
 // __thiscall taking the other unit's level coord. External, reloc-masked.
@@ -1790,13 +1497,6 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Serialize_02b420  @0x02b420
-// Stream every config scalar (then the four growable arrays + the inline 4-dword
-// block) into the archive via its Write(buf, count) vtable slot. Each array
-// section writes the element count first, then each element (the two CPtrArrays'
-// elements are 8-byte payloads; the two CDWordArrays' are 4-byte dwords).
-// ===========================================================================
 RVA(0x0002b420, 0x419)
 i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
     CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
@@ -2036,16 +1736,6 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_02bfc0  @0x02bfc0
-// Validate an CSerialArchive by kind (4 or 7): the kind's validator must return NONZERO to
-// proceed (zero => bail with 0). On a valid arg, dispatch through the arg's vtable to
-// emit a {x,y} pair into the bundle's m_scratch78/m_scratch80 scratch via slot +0x30
-// (kind 4) or +0x2c (kind 7). Two 2-sparse-case switches (NOT if-ladders): MSVC5 emits
-// each as a `cmp 4; je L4; cmp 7; jne skip` compare chain (no jump table) with the
-// case-7 body INLINE and case-4 OUT OF LINE - retail's exact block layout. (An if-else
-// ladder inlines the FIRST arm instead, and the wrong `!= 0` validate sense emitted
-// `je;xor eax,eax` in place of retail's `jne emit`, together capping it at ~81%.)
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     CSerialArchive* obj = reinterpret_cast<CSerialArchive*>(objArg);
@@ -2078,13 +1768,6 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_02c0a0  @0x02c0a0
-// Mark a unit as "state 3" with a value, then count how many OTHER units in the
-// current cell-row are also state 3 and record that count on the unit.
-//   grid row = m_triggerMgr->m_grid[m_curCell*15 .. +15) (the CTriggerMgr 4x15 cell grid).
-// ===========================================================================
-// Method_02c080 (0x2c080) - always returns 1.
 RVA(0x0002c080, 0x8)
 i32 CBattlezMapConfig::Method_02c080(i32) {
     return 1;
@@ -2111,16 +1794,6 @@ i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
     return 1;
 }
 
-// The scene-object collection reached via ctx->m_objList->m_coll IS the level's
-// game-object collection (<Gruntz/QueueDrainHost.h>): CQueueDrainHost, whose +0x68 scan
-// cursor Drain_031250 (RVA 0x31250) pops until a payload's GetTypeId() (vtable slot 8,
-// +0x20) yields 5; the scan restarts by stamping m_scan = m_head. Its cells are
-// CQueueProbeNode and its payloads real ::CGameObject - the CQueueDrainHost / CQueueProbeNode /
-// CGameObject / CQueueDrainHost views were four models of those three classes.
-
-// The class-identity handler (a code label at VA 0x40288d, inside 0x0267c0): a
-// scene object is the grid's kind only when its m_7c handler slot equals it.
-// Referenced as a relocated immediate (reloc-masked compare).
 extern "C" void Handler_0040288d(void);
 
 // ===========================================================================
@@ -2280,44 +1953,6 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     return 0;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
-// The flood-fill board step. While g_stepRun is set, examine the tile at
-// (col,row): a 0x800000-bit tile tries a direct CBrickzGrid::FindPath (flags 0x4903) and,
-// on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
-// (m_objAux->ResolveCell), and when the cell's anim id is in the special set
-// {0x12f..0x149} runs FindPath (flags 0x4003) twice (state 1/2), committing the
-// step (clear g_stepRun, stamp g_stepCol/g_stepRow, recycle the path). Otherwise it
-// marks the tile 0x20000-visited and RECURSES into the 8 neighbours (each gated by
-// the visited bit + a 0xc0000/0x9a passability test), then loops on g_stepRun.
-// ===========================================================================
-// ===========================================================================
-// CBattlezMapConfig::ResolveArrival (0x02c690). The grunt arrival/tile-effect resolver;
-// g_coordPool.m_freeHead / g_coordPool.m_linkOffset / g_coordPool reuse this TU's decls, CTriggerMgr is
-// this TU's local view (ApplyTriggerA added). The CArrive* sub-object views are local.
-// ===========================================================================
-// --- every object this resolver touches is a real class ---------------------
-// The arriving grunt (arg) is ::CGrunt; the board (this->m_board) is CBrickzGrid ==
-// CMapMgr (rows m_rows, extents m_width/m_height, bound rect m_originX..m_boundBottom,
-// clipped span m_gridW/m_gridH) and its cells are BrickzCell; the trigger grid
-// (this->m_triggerMgr) is CTriggerMgr; the cell-record query (this->m_cellQuery) is the
-// FindChild/FindByField0C receiver; the band index is m_curCell. That IS the head of
-// CBattlezMapConfig's run view (+0x08/+0x0c/+0x14/+0x18), so `CBattlezMapConfig` was a view of
-// THIS class - ResolveArrival is now its method and the seven CArrive* sub-views are
-
-// The former CTileTriggerRecord view conflated the TWO finders' distinct return types
-// <Gruntz/TileTriggerContainer.h>, so the casts vanish):
-//   * FindChild (0x116ee0) returns CTileTriggerSwitchLogic* - the r->m_04 read is its
-//     type-id field (identical to the existing FindChild use at ResolveArrival ~0x1129);
-//   * FindByField0C (0x1171d0) returns CTileActionEvent* - the r->m_id / r->m_flags[idx]
-//     reads ARE m_actionCode@+0 (the 0x13e/0x140/0x143 anim ids) and m_playerFlags[idx]@
-//     +0x18 (the 4-slot per-band flags at [elem+0x18+4*m_curCell]). Its +0x00 IS a dword
-//     ID (m_actionCode), which is exactly why the element could not be the polymorphic
-//     CTileTriggerSwitchLogic - it is the +0x54 list's CTileActionEvent, now typed so.
-
-// Recycle the grunt's pending-coord list onto g_coordPool (guarded by its count).
-// The occupied-coord CPtrList's head is g->CoordHead() (a GruntCoordNode); its +0x08
-// GruntCoord* is the recycled coord-node handle Drop takes (as its i32 arg).
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \
         GruntCoordNode* nd = (g)->CoordHead();                                                     \
@@ -2331,7 +1966,6 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
         (g)->m_31c.RemoveAll();                                                                    \
     }
 
-// cell flags at (col,row), out-of-bounds -> 0x01010101.
 static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width) && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
         return grid->m_rows[row][col].m_0;
@@ -3874,8 +3508,6 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 }
 
-// CBattlezMapConfig::Method_02ed90 (0x0002ed90) is now an inline member in the header.
-
 // ===========================================================================
 // CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)
 // Re-path `unit` to (gx,gy): if it is already there (its level geometry's
@@ -4039,11 +3671,6 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_030530  @0x030530
-// Returns 1 if ANY occupied coordinate of `unit` lands on a board tile whose
-// flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.
-// ===========================================================================
 RVA(0x00030530, 0x56)
 i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
@@ -4515,17 +4142,6 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     o->m_y = ry;
     return o;
 }
-
-// ===========================================================================
-// CBattlezMapConfig::Step (0x031610). The per-tick grunt move-resolution step; g_coordPool reuses
-// this TU's decl, the move-grid views are local. (Sibling 0x29af0 TileSwitch29af0
-// stays in gruntmovestep - a COMDAT leaf, out of scope this batch.)
-// ===========================================================================
-// --- all real classes: the mover IS this CBattlezMapConfig ------------------
-// `CBattlezMapConfig` named +0x08 the board-with-a-4x15-grid-at-+0x1c (that is CTriggerMgr)
-// and +0x0c the width/height grid (that is CBrickzGrid == CMapMgr) - the same two head
-// slots as CBattlezMapConfig and as this class's run view. Step is now its method; the four
-// sub-views (CGameObject = the grunt's CGameObject, Coord = Coord, CBrickzGrid =
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
@@ -5315,17 +4931,6 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     return strcmp((reinterpret_cast<CAnimNameRecord*>(sel))->m_name, "R") != 0;
 }
 
-// ===========================================================================
-// ZErrTarget::Report - the _zvec error-report wrapper  @0x034960  (__thiscall on a
-// _zvec/zErrHandling-bearing object, ret
-// 0x8 => 2 args). Capture
-// the return address into the global error token, then dispatch the error reporter
-// (((CVariantSlot*)this->m_err)->Set((void*)this, sentinel, code)). This is the inlined zvec overflow
-// path lifted out as a standalone helper.
-// ===========================================================================
-// The receiver IS zErrHandling (<Wap32/zBitVec.h>): vptr @+0x00, CVariantSlot*
-// m_errSink @+0x04 - exactly the `ZErrTarget` view's two slots, and the body is the
-// verbatim tail of the inlined grow-on-miss path (CActReg::ResolveEntry). View
 RVA(0x00034960, 0x24)
 void zErrHandling::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
@@ -5402,11 +5007,6 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
     return 1;
 }
 
-// One node of the grid object's candidate list (head at m_triggerMgr->m_4): ->next at +0,
-// the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
-// +0x5c) at +0x8. GridCandNode / CGruntPuddle are defined near the top of this TU
-// (before Method_029b40's kind-7 arm, which also walks this list).
-
 // ===========================================================================
 // CBattlezMapConfig::Method_0350d0  @0x0350d0
 // Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
@@ -5462,12 +5062,6 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     return 1;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_035210  @0x035210
-// Is there an unoccupied candidate cell at grid (x,y)? Walk the trigger-mgr's
-// candidate list (reached via m_ctx->m_cmdGrid->m_objListHead) and return 1 the
-// moment a candidate matches (x,y) and is not flagged occupied; else 0.
-// ===========================================================================
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
     CPtrList& lst = m_ctx->m_cmdGrid->m_baseList;
@@ -5481,12 +5075,6 @@ i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
     return 0;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_035550  @0x035550
-// Spend-the-reserve place: for an idle unit (m_coordCount==0) whose idle timer has
-// exceeded the reserve budget, force a tile place at its queued target coord and
-// clear the idle timer. Always returns 1.
-// ===========================================================================
 RVA(0x00035550, 0x52)
 i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
@@ -5641,5 +5229,3 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     return 1;
 }
 SIZE_UNKNOWN(CAnimNameRecord);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

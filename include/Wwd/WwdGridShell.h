@@ -1,16 +1,3 @@
-// WwdGridShell.h - CWwdGridShell (ex "CWwdGridShell"), the 0x44-byte two-phase-construction shell/grid sibling of CWwdGrid (its own 6-slot
-// vtable ??_7CWwdGridShell @0x1f0310, RTTI-less). Hoisted out of GameLevelMove.cpp
-// (where it was a .cpp-local view) because its DESTRUCTOR body lives in the WwdGrid obj:
-// the vtable-owner probe binds it - ??_7 @0x1f0310 slot 1 -> the scalar-deleting dtor
-// 0x168280 -> the ??1 at 0x1682a0.
-//
-// That body was previously misbound as CWwdGrid::~CWwdGrid, while the REAL ~CWwdGrid
-// (0x168c10, dispatched from ??_7CWwdGrid @0x1f0328 slot 1 via the sdd 0x168bf0) wore a
-// fake "duplicate COMDAT copy" placeholder. The two grids are SIBLING classes with two
-// distinct vtables, not one class with two dtor copies - MSVC5 keeps exactly one COMDAT
-// per mangled name, so a "second copy" of ~CWwdGrid could never have survived the link.
-//
-// Field names are placeholders; only the offsets + emitted bytes are load-bearing.
 #ifndef GRUNTZ_WWD_WWDGRIDSHELL_H
 #define GRUNTZ_WWD_WWDGRIDSHELL_H
 

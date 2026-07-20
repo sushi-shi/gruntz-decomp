@@ -39,15 +39,12 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: AddSwitchLogic/
-                                         // FindInLists12/AddToList3 - ex the TriggerRegistrar view)
 #include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic/CGiantRockLogic (the FindInLists12 hits)
 #include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr::InsertPtr @0x108410 (m_guts)
 
 #include <Gruntz/ChatBoxOwner.h>      // CChatBoxOwner (this->m_2e0; Configure @0x20530)
 #include <Gruntz/Play.h>              // ::CPlay - the REAL class of this TU's CLevelValidator view
-                                      // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
 #include <Gruntz/GruntzMgr.h>         // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
-                                      // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
 #include <Gruntz/UserLogic.h>         // CGameObject + AnimWorkerObj - the objects being validated
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + CDDrawGroupNode - the live-object list
 #include <Gruntz/GameLevel.h> // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
@@ -55,127 +52,17 @@
 #include <Wwd/WwdFile.h>      // CPlaneRender - the canonical plane (tile grid + transform)
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered):
-//
-//   CState::m_c            == CDDrawSurfaceMgr   (the resource holder; was `PlayMgr`)
-//     ->m_8                == CDDrawChildGroup
-//        ->m_list (head)   == CDDrawGroupNode*        (was `TileObjNode`/`StartNode`; the
-//                                                      head of the CPtrList embedded at
-//                                                      factory+0x10, head node @+0x14 - the
-//                                                      SAME list CGruntzMgr::XorLiveObjectFlags
-//                                                      / CTriggerMgr / CPlay already walk)
-//           ->m_gameObj    == CGameObject*            (was `TileLogicObj` - every offset the
-//                                                      validator touches (+0x04/+0x08/+0x5c/
-//                                                      +0x60/+0x64/+0x7c/+0x114..+0x12c/
-//                                                      +0x134/+0x144/+0x154/+0x164/+0x168) is
-//                                                      a declared CGameObject member, and the
-//                                                      list's element type says so outright)
-//              ->m_7c      == AnimWorkerObj*
-//                 ->Init   == the +0x10 FN-PTR        (was the `m_id` "identity fn-address":
-//                                                      it IS AnimWorkerObj::Init, the per-leaf
-//                                                      post-create driver the creating TUs
-//                                                      call as `spr->m_7c->Init(spr)`. The
-//                                                      constants below (0x401799, 0x4017e4,
-//                                                      0x4024a5, ...) are those leaves' Init
-//                                                      thunks - the validator dispatches on
-//                                                      WHICH leaf class built the object.)
-//     ->m_24               == CGameLevel              (was `TileGrid`: its +0x4c is the
-//                                                      m_imageSets CObArray's data pointer
-//                                                      (+0x48 array, data @+0x4c) and its
-//                                                      +0x5c is m_mainPlane)
-//        ->m_imageSets[i]  == CImageSet1              (was `TileClass` + its 8 fabricated
-//                                                      placeholder virtuals: the +0x20 slot-8
-//                                                      virtual IS CImageSet1::GetCollisionAt
-//                                                      (x, y) @0x161380 - "per-pixel
-//                                                      collision-kind query", which is exactly
-//                                                      what the (subX, subY) call asks for)
-//   CState::m_4            == CGruntzMgr              (the *0x24556c singleton itself; its
-//                                                      m_cmdGrid (+0x68) / m_cmdSubMgr (+0x6c)
-//                                                      / m_tileGrid (+0x70, a CGruntzMapMgr :
-//                                                      CMapMgr - rows @+0x08, w @+0x0c, h
-//                                                      @+0x10, i.e. the whole `WwdGameGrid`
-//                                                      view) / m_options[4] (+0x150, stride
-//                                                      0x238 - the `WwdStartPlayer` view) are
-//                                                      all canonical members)
-//
-// NOTE: CDDrawSurfaceMgr::m_24 is now typed CGameLevel* in GameRegistry.h (the former
-// CGameViewport facet was a FAKE NAME for the level - PushView IS VisitVisible @0x15dc90,
-// SetClipRect IS BuildAllPlanes @0x15da80), matching CWorldZ::m_24 in GruntzMgr.h; the
-// +0x4c/+0x5c reads here are plain member reads. Likewise
-// CLevelPlane (GameLevel.h) and CPlaneRender (WwdFile.h) are the same object under two
-// names - m_mainPlane is cast to the render facet that owns GetTileHandle.
-// ---------------------------------------------------------------------------
-// (The TriggerRegistrar / PlayfieldMgr accesses resolve onto the canonicals,
-//  every thunk chased:
-//    RegisterSwitchLogic @0x115f60 (thunk 0x1131) IS CTileTriggerContainer::
-//      AddSwitchLogic on m_beginMarker (retail: mov ecx,[this+0x2e4]);
-//    LookupKind @0x21df IS CTileTriggerContainer::FindInLists12 @0x116f20;
-//    LookupRange @0x10ff was AddLogic @0x116610 - and UNUSED here (deleted);
-//    "SpawnPuddle" @0x3580 IS CTileTriggerContainer::AddToList3 @0x116a40, ALSO
-//      on m_beginMarker (the 0x4019bf tile-event arm);
-//    PlacePuddle @0x35fd IS CTriggerMgr::PlacePuddle @0x7a240 on m_4->m_cmdGrid;
-//    "Bridge1d2f" @0x1d2f IS CStatusBarMgr::InsertPtr @0x108410 on m_guts;
-//    the 0x401b09 arm's timer call (thunk 0x2de7) IS CTimer::SetTime @0x9c090
-//      (100% EXACT) on m_frameMarker.)
-// ---------------------------------------------------------------------------
-
-// The game-manager singleton, at its RTTI-true type. The three views this TU used to
-// reach it through are all canonical members now:
-//   the coarse-cell board (`WwdGameGrid`) IS m_tileGrid, a CGruntzMapMgr : CMapMgr whose
-//     row table / width / height sit at exactly the +0x08/+0x0c/+0x10 the view described;
-//   the trigger grid (`PlaceGridMgr`)     IS m_cmdGrid   (CTriggerMgr,   PlaceObject 0x6b6d0);
-//   the command queue (`StartCmdMgr`)     IS m_cmdSubMgr (CGruntzCmdMgr, EnqueueSingle 0x23c30);
-//   the per-player start record (`WwdStartPlayer`, stride 0x238) IS m_options[k]
-//     (GruntzPlayer) - its +0x228 is the start-grunt cap this TU reads (the same field the
-//     battlez roster calls m_comboSel; one field, two readers).
-
-// The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant
-// (DAT_00644c54) the 0x4017e4 case compares against.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-// g_tileKindMagic (active-player slot index) is declared in <Gruntz/TileTriggerLogic.h>
-// (included above).
 
-// The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
 static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";
 
-// The "Could not add Grunt..." diagnostic for a failed start placement ($SG .rdata).
 static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 
-// ---------------------------------------------------------------------------
-// The level/world object: m_gameReg the game-registry back-ptr, m_playMgr the
-// play manager, m_playfieldMgr the playfield grid manager, m_triggerRegistrar
-// the trigger registrar. (m_gameReg is also viewed as an LvWorld in
-// PositionBridgeToggle - the same +0x4 pointer, a second model of that object.)
-// ---------------------------------------------------------------------------
-// The fake class CLevelValidator is GONE - it WAS ::CPlay, and all three of its methods are
-// now CPlay's (PositionBridgeToggle @0x0d5b20 landed last batch; PlaceStartGruntz @0x0d2b20 and
-// ValidateLevelTiles @0x0d2dd0 land here). The identity is proven, not assumed:
-//   - CPlay::ResetPlayState @0x0d60b0 calls PlaceStartGruntz with `mov ecx,esi` - the SAME
-//     `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
-//   - every field lines up at the same offset, and +0x2e0 is CChatBoxOwner* in BOTH models.
-// CPlay's canonical names for the slots this TU used:
-//     m_gameReg (+0x04) == CState::m_4 (CGruntzMgr*)      m_playMgr  (+0x0c)  == CState::m_c
-//     m_playfieldMgr (+0x2dc) == CPlay::m_guts (CStatusBarMgr - InsertPtr @0x108410)
-//     m_triggerRegistrar (+0x2e4) == CPlay::m_beginMarker (CTileTriggerContainer)
-//     m_bridgePoint (+0x3f4) == m_frameMarker (CTimer - SetTime @0x9c090)
-
-// The +0x24 slot of the CState::m_c resource holder IS the CGameLevel (its +0x4c image-set
-// array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h now
-// types that slot CGameLevel*, so this is a
-// plain accessor.
 static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
     return holder->m_level;
 }
 
-// The level tile-id lookup: clamp (x,y) to the plane bounds, shift to tile coords,
-// resolve the tile's image-set through the plane's cell table, and ask that image set
-// what kind of tile pixel (subX, subY) is (CImageSet1::GetCollisionAt, slot 8 / +0x20).
-// Returns 0 for an empty/out-of-range cell.
 static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CPlaneRender* g = level->m_mainPlane; // +0x5c (CLevelPlane == CPlaneRender)
     if (x < 0) {
@@ -297,9 +184,6 @@ i32 CPlay::PlaceStartGruntz() {
     return result;
 }
 
-// ===========================================================================
-// CPlay::ValidateLevelTiles  (0x0d2dd0)
-// ===========================================================================
 RVA(0x000d2dd0, 0x1de4)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0; // [esp+0x10]  count of objects validated
@@ -729,15 +613,6 @@ i32 CPlay::ValidateLevelTiles() {
 }
 
 // ===========================================================================
-// (The LvWorld / LvTimeline / LvGoal views are GONE - dead scaffolding. The body below
-// already walks the real classes: LvWorld WAS ::CGruntzMgr (+0x8c/+0x90 = m_modeW/m_modeH,
-// +0x68 = m_cmdGrid), LvTimeline WAS ::CTriggerMgr and LvGoal WAS ::CTmGoal.)
-// ---------------------------------------------------------------------------
-// The this->m_2e0 sub-object is the REAL CChatBoxOwner (<Gruntz/ChatBoxOwner.h>): the
-// three branch-calls are CChatBoxOwner::Configure(mode) @0x20530 (thunk 0x171c), NOT a
-// recursive PositionBridgeToggle.
-
-// ===========================================================================
 // CPlay::PositionBridgeToggle (0x0d5b20) - position the game-timer HUD widget at a
 // fixed inset from the screen size, with the toggle mode and the X inset selected by
 // `mode` (0 / 1 / other). If the timer (+0x3f4) is null, only the mode is set. Then,
@@ -821,5 +696,3 @@ done:
     }
     return 1;
 }
-
-// --- vtable catalog ---

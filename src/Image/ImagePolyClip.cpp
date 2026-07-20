@@ -1,22 +1,9 @@
-// ImagePolyClip.cpp - the 4-edge polygon clipper used by the CFileImage warp
-// blit (the image worker CFileImage::Run, 0x1471d0, calls it). __cdecl free
-// function: Sutherland-Hodgman clip of an n-vertex polygon against the four
-// rectangle edges (left=a2 / top=a3 / right=a4 / bottom=a5), ping-ponging between
-// two global vertex buffers (0x6a1708 <-> 0x6a21f8). Each vertex is 28 bytes
-// (x,y + 5 carried attribute floats); inside vertices are copied whole (rep movs
-// 7 dwords), edge crossings emit a new (x,y)-interpolated vertex. Returns 0 the
-// moment a pass empties the polygon, else publishes the final vertex count to
-// 0x6becf8 and returns 1. The four int clip args are converted to float in the
-// prologue (fild/fstp). Field names are placeholders; offsets + code bytes are
-// load-bearing. See <DDrawMgr/DDrawShadeBlit.h> family for the surrounding blit.
 #include <Ints.h>
 
 #include <Image/RasterVtx.h> // ClipVtx + g_rasterVtx* + ImagePolyClipRect decl
 #include <rva.h>
 #include <string.h> // inline rep-movs struct copy
 
-// The two ping-pong clip output buffers and the published result count. This TU owns
-// their DATA() bindings (shared decls in <Image/RasterVtx.h>).
 DATA(0x002a1708)
 extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
@@ -206,5 +193,3 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     g_rasterVtxCount = n4;
     return 1;
 }
-
-// ClipVtx SIZE lives with its definition owner (PolyClipRaster.cpp).

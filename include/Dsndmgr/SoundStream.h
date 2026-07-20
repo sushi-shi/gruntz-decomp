@@ -1,16 +1,3 @@
-// SoundStream.h - the WAP32 streaming DirectSound class (Dsndmgr module,
-// C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable 0x5ef6ec). It DERIVES from
-// SoundDevice (the device manager, DSNDMGR.CPP, vtable 0x5ef6c4): same +0x14
-// IDirectSound device, +0x78 "initialized" flag, per-buffer/voice sub-lists, etc.
-// - the trace conflated all three (device / buffer-wrapper / stream) as
-// "MinervaInner"; the three vftables prove they are distinct classes.
-//
-// SoundStream adds streaming-buffer creation from a parsed RIFF/WAVE source: it
-// validates a WAVEFORMATEX, asks the device's IDirectSound for a secondary
-// buffer, wraps it in a per-stream voice object (the 0xb0-byte
-// DirectSoundMgr-derived StreamVoice, ctor 0x1375b0), and threads that voice on
-// its own +0x94 voice list. Field names are placeholders; only OFFSETS + the
-// emitted code bytes are load-bearing.
 #ifndef DSNDMGR_SOUNDSTREAM_H
 #define DSNDMGR_SOUNDSTREAM_H
 
@@ -22,9 +9,6 @@
 #include <Gruntz/ParseSource.h>     // the RIFF/WAVE byte-reader (ParseWave / OpenStream)
 
 class SoundStream;
-
-// The per-stream voice object is the canonical StreamVoice (<Dsndmgr/StreamVoice.h>,
-// included above); the former StreamVoiceNode view is folded there (wave 3).
 
 class SoundStream : public SoundDevice {
 public:

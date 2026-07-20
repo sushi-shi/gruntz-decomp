@@ -1,20 +1,8 @@
-// GruntAssetLoaders.cpp - the mechanical CGrunt asset / sprite / tuning loaders
-// (re-homed from src/Stub/ApiCallers.cpp). Each (re)loads a slab of the grunt's
-// per-direction sprite-name cells, pose-index lookups, or spell-effect tuning from
-// the literal .rodata key strings + the global config (g_buteMgr / g_gameReg).
-// Class-split from Grunt.cpp purely to keep the TU small; matching-neutral. Only
-// the OFFSETS + code bytes are load-bearing (names are placeholders).
-//
-// The per-direction entrance-cell records live at CGrunt+0x470, stride 0x68, two
-// CString fields each (+0 and +4). They predate the named m_474 member, so they are
-// reached by raw offset (the documented naming-independent-codegen exception).
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620
-                                // WERE the fake g_animScratch / g_animScratchCount
-                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -26,19 +14,6 @@
 #include <string.h>
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef / GetDwordDef)
 #include <Globals.h>
-// The former per-TU CDDrawBlitParam / CAniAdvanceCursor / CDDrawSubMgrLeaf / CGruntSprite
-// / CGruntAnimPlayer facet views are folded onto the real classes: the animation player's
-// name/sprite/geometry setters are now methods of CEntranceAnimPlayer / CHudSprite
-// (<Gruntz/Grunt.h>), the geometry sub-player setter is CEntranceAnimSub::SetGeometry, and
-// the death-pose lookup is CEntranceSpriteMgr::LookupValue_06b2a0 - reached directly.
-
-// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
-
-// The wingz-duration FP constants (reloc-masked .rodata doubles).
-
-// The global running game clock (reloc-masked).
-// The global manager pointer (the object at *0x64556c; reloc-masked).
-// The scratch CString[] the ScratchResolve reject paths tear down (reloc-masked).
 
 static void GruntScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
@@ -52,21 +27,6 @@ static void GruntScratchTeardown() {
     }
 }
 
-// LoadWingzGruntSprites @0x68880 was re-homed to GruntEntranceMove.cpp and
-// LoadGruntAbilityTuning @0x57100 to GruntCombat.cpp (wave3-I): their retail
-// bodies + private .data cells sit inside the 0x67850 / 0x56f80 grunt objs.
-
-// ---------------------------------------------------------------------------
-// CGrunt::LoadGruntDeathAnimations(int deathType, int a2)   @0x60150   (ret 8)
-// The grunt death dispatch: tear down the running anim state + retire the 7 HUD
-// stat sprites, latch a fresh "C" death anim-set node, then switch on the death
-// type (0..0xf, table @0x460ee0) to resolve + apply the matching GRUNTZ_DEATHZ_*
-// sprite set, fire the on-screen death cue, and run the shared finalize/tail.
-//
-// The per-direction tile-attribute (n/t = 0x6e/0x74) splits FALL vs QUICKFALL.
-// The g->m_7c sub-object the early arrival-notify drives.
-
-// The death anim-set key (DAT_0060cc90) + the per-type GRUNTZ_DEATHZ_* keys.
 static const char s_dAnimKeyC[] = "C";
 static const char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
@@ -87,10 +47,6 @@ static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
 static const char s_dExitKeyB[] = "B";
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
-// The grunt death type LoadGruntDeathAnimations dispatches on (deathType, 0..0xf);
-// each name is confirmed by its case's GRUNTZ_DEATHZ_* sprite key above. deathType 1
-// (normal) + 13 fall through to the default NORMALGRUNT_DEATH path. Same immediates as
-// the bare labels -> naming is matching-neutral.
 enum GruntDeathType {
     DEATH_DROP = 0,        // entrance-drop; no death sprite (NotifyEntranceDrop)
     DEATH_NORMAL = 1,      // default NORMALGRUNT_DEATH (also the pathA re-fire value)
@@ -109,13 +65,11 @@ enum GruntDeathType {
     DEATH_QUICKFALL = 15,  // GRUNTZ_DEATHZ_QUICKFALL (FALL anim)
 };
 
-// Resolve the active-anim descriptor's first-element frame number.
 #define DEATH_FRAME()                                                                              \
     (m_38->m_1a0.m_14->m_records.GetSize() > 0                                                     \
          ? (reinterpret_cast<i32*>(m_38->m_1a0.m_14->m_records.GetAt(0)))[0x14 / 4]                \
          : ((i32*)0)[0x14 / 4])
 
-// Fire the on-screen death cue (CueA) when the grunt point is visible.
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGruntzMgr* _g = g_gameReg;                                                             \

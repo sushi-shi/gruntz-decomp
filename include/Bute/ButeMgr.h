@@ -1,85 +1,18 @@
-// ButeMgr.h - CButeMgr, the engine's `.att`/`.bute` attribute config-parser.
-// This is the layer the whole game reads entity stats through: a two-level
-// keyed store (tag-group -> key -> typed value) populated by a recursive-descent
-// lexer/parser over the .att text, queried by a family of typed getters.
-//
-// Minimal Monolith-faithful reconstruction sufficient to byte-match the leaf
-// getters + parser. Field names recovered from how every getter/parser body
-// reads/writes them; only the OFFSETS + code bytes are load-bearing (campaign
-// doctrine). Fields whose role stays unprovable keep the m_<hexoffset> form.
-//
-//   +0x00  m_streamBase : int  - stream base offset NextChar subtracts.
-//   +0x04  m_pos        : int  - running parse cursor position.
-//   +0x08  m_lineNo     : int  - current source line (the `%d` in error msgs).
-//   +0x0c  m_countLine  : char - bump m_lineNo on the next char (set after '\n').
-//   +0x18  m_tree       : the parsed store root (CButeTree). The getters do
-//                         `lea ecx,[this+0x18]; Find(tag)` for the tag-group,
-//                         then `Find(key)` on it for the typed value record.
-//   +0x44  m_pNode      : CButeTree* - last-created store node (a CButeNode, which
-//                         is-a keyed store; ParseAttributeFile Find/Inserts through it).
-//   +0xa4  m_pText      : ptr to a value-text accumulator host; the parser
-//                         appends to its +0xc CString (CString::operator+=).
-//   +0xa8  m_curChar    : char  - the lexer's current character.
-//   +0xaa  m_tokType    : short - the token type returned by the tokenizer.
-//   +0xac  m_lexState   : short - transition-table secondary state output.
-//   +0xae  m_token[]    : char  - the current token text buffer (indexed by the
-//                         file-scope token-length counter).
-//   +0x100 m_tagName    : CString - the active tag name (ParseTagLine copies the
-//                         token buffer here).
-//   +0x10c m_captureText: char  - gate appending value text to the accumulator.
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-// The REAL zPTree config-tree hierarchy (zErrHandling @0, zPtrColl/CButeNodeEntry @8;
-// zPTree : those; CButeTree/CButeStore/CButeNode : zPTree). RTTI-proven single model -
-// onto it (structure-recovery: CButeTree/CButeStore/CButeNode all derive zPTree).
 #include <Bute/PTreeNode.h>
 
-// CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
-// so the class below can use both. (afx.h is the period-correct windows.h path.)
 #include <Gruntz/String.h>
 
-// ButeType / CButeValue / ButeRefSmall / ButeRefLarge - the typed value record every key
-// maps to. Canonical (one shape) in <Bute/ButeValue.h>, shared with src/Bute/ButeNode.cpp
-// (which reproduces the store's __cdecl per-value teardown callback over the same type).
 #include <Bute/ButeValue.h>
 
-// The statically-linked MSVC 5.0 <iostream.h> `ios` base (RTTI `.?AVios@@`, vtable
-// 0x5f03bc) that CButeMgr embeds at +0x14 is LIBRARY code (LIBCP.LIB / LIBCMT), not
-// game scope: its ctor/dtor/streambuf-setter + the virtual-base construction thunks
-// are carved out in config/library_labels.csv and are NOT reconstructed here. The
-// parser's own ios view lives in ButeMgrParse.cpp (struct ButeIos); the one game
-// consumer, CButeMgr::ClearHelper, calls the two library entry points it needs
-// through a tiny caller-side receiver defined locally in ButeMgr.cpp.
-
-// CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
-// sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the
-// Tree()/Tree48() accessors below. Canonical definition (one shape) lives in
-// <Bute/ButeTree.h>.
 #include <Bute/ButeTree.h>
 
-// ---------------------------------------------------------------------------
-// CButeStore - one owned keyed-store sub-tree (CButeMgr's m_tree / m_tree48 /
-// m_tree74). The family (CButeStoreBase2/Node/Primary/Second/CButeStore) lives
-// verbatim in <Bute/ButeStore.h> (wave2-H extraction) so ClearRecursive's
-// defining TU can include it without this header's zPTree stand-in.
 #include <Bute/ButeStore.h>
 
-// ---------------------------------------------------------------------------
-// CBSecStream - the concrete zPTree-derived node CButeMgr's three owned sub-trees
-// (+0x18/+0x48/+0x74) really are (ex <Bute/ButeSection.h>, dissolved here). BINARY
-// PROOF the members are this class and not plain CButeStore: the mgr ctor (0x170210)
-// stamps 0x1f0510 into all three (offsets +0x44/+0x63/+0x82 of the body) - the pair
-// cl emits only when constructing a class whose most-derived vtable IS 0x1f0510.
-// The per-value teardown callback its ctor passes is ButeStoreFreeAdapter (0x174de0,
-// ButeNode.cpp): the __cdecl -> __thiscall adapter onto ~CButeNode (a section
-// stream's tree values are CButeNode subtrees).
-// Its dtor (0x21570, ButeMgr.cpp) is spelled as a user out-of-line body; retail's
-// was the compiler-generated COMDAT (~CButeMgr INLINES its expansion, our
-// out-of-line def gets CALLED there instead - the known implicit-dtor pipeline gap,
-// see ~CButeMgr's note).
 void ButeStoreFreeAdapter(void* p); // 0x174de0 (ButeNode.cpp)
 struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
@@ -90,11 +23,6 @@ VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
 // base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
 
-// The 1-byte embedded object at CButeMgr+0x10f. Its destructor (0x16f6b0) is a
-// bare `ret` (trivial teardown), but it is a NON-trivial member of the mgr (the
-// dtor schedules a trylevel slot for it). Modeled as a value member with an
-// external (no-body) member dtor so the mgr's /GX teardown emits its slot.
-// (Ex CBSecObj10f, dissolved: one +0x10f object, one class.)
 struct CButeTail {
     char m_00;      // +0x00
     CButeTail();    // 0x16f680  external ctor (`mov eax,ecx; ret`; BSecObj10fCtor.cpp)
@@ -105,32 +33,8 @@ struct CButeTail {
 };
 SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 
-// (CButeNode - the per-tag store node ParseTagLine allocates - now lives in the
-//  SHARED <Bute/PTreeNode.h>, folded with butenode's former `CButeCfgNode174d`: the
-//  two were one class all along (same pair of most-derived vtables, 0x1f051c @+0 and
-//  0x1f0518 @+8 - see the fold note there). Both TUs now emit the same ??_7CButeNode
-//  names, so the two runtime vtable data cells bind.)
-
-// A fabricated-name placeholder for CString::operator+=(char) (a real NAFXCW
-// method). Currently UNREFERENCED (no call sites), so it cannot be re-expressed as
-// `str += c` via <Mfc.h> CString. KEPT (not removed) because deleting it from this
-// widely-included header perturbs an unrelated fragile neighbor - it shaves 0.12%
-// off grunt::CGrunt_SegBoxOverlap (a cross-TU codegen leak; unit-neutral). See P0b.
 extern "C" void AfxString_AppendChar(void* pStr, char c);
 
-// ---------------------------------------------------------------------------
-// The typed-reference value structs (CButeMgr's GetTypedRef tag5-8 family).
-// These getters mirror GetString: a function-local `static T s_default;` is
-// returned by address on every error path, and `(T*)rec->pValue` on a type hit.
-// Each T's only load-bearing properties are its SIZE (the inline zero-init of
-// the static, one `mov [field],0` per DWORD) and that it carries a NON-TRIVIAL
-// destructor (so the magic-static emits the atexit dtor-thunk register, exactly
-// like GetString's empty CString). Field names are placeholders; the byte count
-// is recovered from the static's zero-init store list:
-//   tag5 -> 16 bytes (4 DWORDs), tag7 -> 24 bytes (6 DWORDs),
-//   tag6 ->  8 bytes (2 DWORDs), tag8 -> 16 bytes (4 DWORDs).
-// The default ctor zero-inits inline; the dtor is external/no-body so its thunk
-// + the `push thunk; call atexit` shape fall out reloc-masked.
 struct CButeRef5 { // 16 bytes
     CButeRef5() : a(0), b(0), c(0), d(0) {}
     ~CButeRef5();
@@ -156,31 +60,12 @@ struct CButeRef8 { // 16 bytes
 };
 SIZE(CButeRef8, 0x10);
 
-// ---------------------------------------------------------------------------
-// CString member helper - an MFC-style CString (a single char* @+0). Only the
-// engine library calls the getters/parser actually emit are modeled, with NO
-// body so their `call rel32` displacements are reloc-masked in objdiff:
-//   - operator=  (CString::operator=, NAFXCW)
-//   - the literal-ctor (CString::CString(const char*)) used by the
-//     one-shot default-string init in GetString.
-// (CString itself comes from <Gruntz/String.h>, included at the top.)
-// ---------------------------------------------------------------------------
-
-// CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
 extern "C" i32 atexit(void (*func)(void));
 
-// The optional error callback CButeMgr::ReportError fires after formatting the
-// message (cdecl, takes the formatted C string).
 typedef void(__cdecl* ErrCallback)(const char*);
 
-// The MSVC 5.0 <iostream.h> input stream (LIBCP/LIBCMT). Forward-declared for the
-// m_stream pointer member below; the complete type (via <fstream.h>) is only needed in
-// the defining TU (ButeMgr.cpp), which calls istream::get()/ios::eof() on it.
 class istream;
 
-// ---------------------------------------------------------------------------
-// CButeMgr - the attribute manager.
-// ---------------------------------------------------------------------------
 class CButeMgr {
 public:
     i32 GetIntDef(const char* tag, const char* key, i32 def);
@@ -326,27 +211,12 @@ public:
 };
 SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
-// The big attribute-file line driver (0x170750) is the ONLY method retail mangles under
-// `ButeMgr@@` (every sibling is `CButeMgr@@`), so ParseAttributeFile lives on a real `ButeMgr`
-// class that single-inherits CButeMgr at offset 0 (CButeMgr is non-polymorphic -> no vptr), so
-// `this` is a ButeMgr* == its CButeMgr* sub-object and every member is reached through
-// inheritance with no cast. Body in ButeMgr.cpp. (Was a .cpp-local decl.)
 class ButeMgr : public CButeMgr {
 public:
     bool ParseAttributeFile(); // 0x170750
 };
 SIZE(ButeMgr, 0x110); // == sizeof(CButeMgr): the single base, no added members
 
-// (The store's two vtables are zPTree's - CButeStore IS zPTree, see <Bute/ButeStore.h> -
-//  and they are pinned on their real emitted names in src/Bute/ButeNode.cpp. The old
-//  VTBL(CButeStore, 0x1e949c) here bound them to a class that no longer exists, and the
-//  0x5f04dc pin named a fabricated CButeStoreSecond base; 0x1f04dc is really an
-//  unrecovered container class, now catalogued in config/library_vtables.csv.)
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-
-// The global bute store singleton (?g_buteMgr@@3VCButeMgr@@A @0x6453d8); its getters
-// (GetInt/GetString/...) reloc-mask. Declared here so consumers include the header.
 extern CButeMgr g_buteMgr;
 
 #endif // SRC_BUTE_BUTEMGR_H

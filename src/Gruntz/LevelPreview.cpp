@@ -1,9 +1,3 @@
-// LevelPreview.cpp - the level-preview screen tick (RVA 0xde420).
-//
-// Advances the PREVIEW%i counter, resolves the next \SCREENZ\%s namespace, fades
-// its title in and (when the live surface is free) plays the teleporter-open cue;
-// on a failed fade it cancels the command. Field names are placeholders; only
-// offsets + code bytes are load-bearing.
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <Gruntz/LeafCue.h>
 #include <rva.h>
@@ -27,50 +21,10 @@
 #include <Gruntz/PreviewState.h> // canonical CPreviewState (the level-preview screen state)
 #include <Globals.h>
 
-// g_sndEnabled / g_sndCueTag are C++ globals DEFINED in GruntzMgr.cpp (the DATA pins
-// live on those definitions). Plain C++ externs here, so every reference agrees.
 extern "C" {
     extern u32 g_killCueClock;
 }
 
-// CPreviewState - the level-preview screen state (shows PREVIEW%i, fades \SCREENZ\%s).
-// A real CState leaf: proven by the shared base layout (its m_4/m_8/m_c/m_2c coincide
-// with CState's, verified vs the other screen states) and the per-frame slot-8 virtual
-// Tick dispatches. It has NO distinct vtable of its own - the CState family is RTTI-
-// complete - so the four methods below are non-virtual command handlers the game's
-// command table dispatches. The former standalone class carried a hand-rolled
-// `virtual Vf0..Vf7 + Advance` vtable: that was a FICTION invented only so the
-// [vptr+0x20] dispatch would compile (which is why it had no VTBL() to anchor). It is
-// dissolved into real CState inheritance here - no phantom vtable.
-//
-// The per-frame poll Tick dispatches through [vptr+0x20] is CState slot 8, i.e. the
-// inherited CState::InputVirtual - Tick just calls it (dispatch resolves whatever
-// override the object's runtime vtable holds). We do NOT redeclare it as a CPreviewState
-// override: whether the preview provides its own slot-8 body is UNPROVEN (its vtable is
-// unlocated). Every reconstructed sibling overrides slot 8, so it likely does too, but
-// that is an inference - not asserted here as a declared-only phantom method.
-//
-// The +0x0c holder is the typed CState CDDrawSurfaceMgr (m_c). The +0x2c slot
-// stays a dual-view (CSymTab vs
-// CResSource), reached with a view-cast at each site until that fold lands.
-//
-// FadeInTitle (0xfa1f0) and RetireScene (0xfa8f0) are SHARED CState base methods, not
-// CPreviewState's own: the retail caller graph shows 8+ CState-derived siblings
-// (CBootyState/CCreditsState/CMulti/CAttract/...) invoke each on their own `this`.
-// BOTH are on CState (<Gruntz/State.h>) and inherited here (the cast-free calls below
-// bind to them). Canonical CPreviewState def: <Gruntz/PreviewState.h>.
-
-// The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in its owner TU
-// src/Rez/RezSync.cpp (RezSync::Init loads all twelve from the .bute [Config] keys
-// that name them); the reference externs live in <Globals.h>. DATA() belongs on the
-// DEFINITION only - these used to carry a DATA() on a bare `extern`, which binds a
-// name to an rva without ever giving it storage.
-
-// CPreviewState::Enter (0x0de030) - the level-preview screen's command-entry: load
-// the game asset namespaces (bail on failure), hide the mouse cursor fully, resolve
-// the STATEZ_PREVIEW namespace into the cached asset source (bail if absent); when
-// neither menu-mode gate is set, install the screen's SOUNDZ leaf tree; then reset
-// the PREVIEW scratch string + counter and pump one window message. Returns 1.
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
@@ -120,9 +74,6 @@ void CPreviewState::ResetPreview() {
     CState::ReleaseResources();
 }
 
-// CPreviewState::NextScreenCmd (0x0de190) - the command-router "advance" entry: hide
-// the mouse cursor fully, load the next preview screen, and re-arm the +0x1b8 countdown
-// timer (60000). Returns 1. The command param is ignored.
 RVA(0x000de190, 0x35)
 i32 CPreviewState::NextScreenCmd_0de190(i32 param) {
     while (ShowCursor(FALSE) >= 0) {
@@ -163,10 +114,6 @@ i32 CPreviewState::Tick() {
     return 1;
 }
 
-// CPreviewState::Refade (0x0de2c0) - gated re-fade: only when the preview page
-// manager (m_c->m_04) reports ready (PagesReady), hide the cursor and re-run the
-// title fade-in of the current screen name, then retire the scene. Returns the fade
-// result (0 when the page gate fails).
 RVA(0x000de2c0, 0x5c)
 i32 CPreviewState::Refade_0de2c0() {
     if (m_c->m_drawTarget->PagesReady() == 0) {
@@ -179,8 +126,6 @@ i32 CPreviewState::Refade_0de2c0() {
     return r;
 }
 
-// CPreviewState::RefadeVirtual (0x0de340) - twin of Refade_0de2c0, but gated on the
-// state's own readiness virtual (CState slot 3, IsActive) instead of the page manager.
 RVA(0x000de340, 0x56)
 i32 CPreviewState::RefadeVirtual_0de340() {
     if (IsActive() == 0) {
@@ -193,8 +138,6 @@ i32 CPreviewState::RefadeVirtual_0de340() {
     return r;
 }
 
-// CPreviewState::OnKey (0x0de3c0) - the preview screen's key handler: ESC cancels,
-// SPACE or ENTER loads the next preview screen. Returns 1. The second arg is ignored.
 RVA(0x000de3c0, 0x2d)
 i32 CPreviewState::OnKey_0de3c0(i32 key, i32 param) {
     if (key == 0x1b) {
@@ -285,13 +228,6 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CPreviewState::Cancel (0x0de590), driven by LoadLevelPreviewScreen (on a failed
-// fade) and by the level-preview command router (0x4de3c0, tag 0x1b) - both invoke
-// it on the CPreviewState `this` (xref-confirmed). When the global gate (g_flag64c69c)
-// is set it delegates to the game mgr's delayed-quit (m_4 == CGruntzMgr, DelayedQuit
-// @0x8f530); otherwise it posts WM_COMMAND 0x8027 to the mgr's top window
-// (m_4->m_gameWnd->m_hwnd).
 DATA(0x0024c69c)
 i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 RVA(0x000de590, 0x2e)

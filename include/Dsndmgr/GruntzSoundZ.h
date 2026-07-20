@@ -1,17 +1,3 @@
-// GruntzSoundZ.h - a positional/zoned sound bank manager in the Dsndmgr module
-// (the 0x138xxx region, adjacent to the AIL/DirectSound subsystem).
-//
-// CGruntzSoundZ is a NON-polymorphic class CONTAINING an MFC CMapStringToOb at
-// offset 0 (binary-proven: the retail dtor 0x86040 performs NO own-vptr restamp
-// before calling ~CMapStringToOb on this+0 - a derived polymorphic class would
-// restamp; containment is the only shape that emits none). No ??_7CGruntzSoundZ
-// exists in retail. Past the 0x1c-byte map member it holds:
-//   +0x1c  m_pCurrent  - the currently-playing inner sound (vtable-dispatched)
-//   +0x20  m_digHandle - the AIL/digital driver handle (passed to inner->Play)
-//   +0x24  m_mdiHandle - the AIL MIDI driver handle (mirrored to a .data global)
-//   +0x28  m_enabled   - "sound active" flag (set by Init, gates every op)
-//
-// Field names are placeholders; offsets + emitted code bytes are load-bearing.
 #ifndef GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 #define GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 
@@ -20,27 +6,12 @@
 #include <Mfc.h>          // real MFC CMapStringToOb / CObject / CString / POSITION
 #include <Wap32/Object.h> // CObject grand-base (slots 0/2/3/4 = 0x1bef01/0x28ec/0x106e/0x4034)
 
-// The Miles Sound System XMIDI sequence handle: <mss.h>'s opaque HSEQUENCE. Forward-
-// declared here so this ~light header need not pull the 4200-line <mss.h> into every
-// includer; GruntzSoundZ.cpp gets the identical typedef from <mss.h> itself.
 typedef struct _SEQUENCE* HSEQUENCE;
 
-// The AIL XMIDI driver handle (<mss.h>'s HMDIDRIVER), same forward-declare trick.
-// _MDI_DRIVER is part of the mangled name (?g_ailMidiDriver@@3PAU_MDI_DRIVER@@A), so
-// every referencing TU must see this exact type or it emits a divergent symbol.
 typedef struct _MDI_DRIVER* HMDIDRIVER_;
 
-// The one AIL MIDI driver handle (0 = none open). DEFINED in GruntzSoundZ.cpp (owner);
-// CRezSync::Init zeroes it right before constructing the CGruntzSoundZ host, which is
-// what proves 0x653c5c is this handle and not a separate counter.
 extern HMDIDRIVER_ g_ailMidiDriver;
 
-// The inner per-bank sound object (0x60 bytes, vtable @ 0x5ef700). Derives from the
-// shared CObject grand-base: cl inherits its 5 base slots (0 GetRuntimeClass /
-// 1 dtor / 2 Serialize / 3 AssertValid / 4 Dump) and this class overrides the dtor
-// (slot 1) and adds 11 new virtuals (slots 5..15). cl auto-emits ??_7CGruntzSoundInnerZ
-// @@6B@ (0x5ef700) and stamps the vptr in the inline ctor; `new` in the create helpers
-// lowers to operator-new + the null-guarded inline ctor.
 class CGruntzSoundInnerZ : public CObject {
 public:
     // Only the dtor overrides a base (CObject slot 1); slots 5..15 are new virtuals

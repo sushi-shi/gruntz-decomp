@@ -49,35 +49,8 @@
 #include <Gruntz/SerialArchive.h>     // canonical Read@+0x2c / Write@+0x30 archive stream
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 
-// 0x0213a0 - virtual-base field getter (reads +0x04 of the virtual base whose
-// displacement lives in the vbtable's second slot).
-
-// 0x0bd450 - init: run the base ctor (0x3625) then open the "c:\gruntz.log" log.
-
-// 0x0cef50 - teardown of the +0x04 owner + inner close chain.
 SIZE_UNKNOWN(Ccef50);
 
-// (Cdb200 is GONE - 0xdb200 IS GruntzPlayer::SwapChannel, xref-proven in Multi.cpp;
-// this copy was a stale orphan of that fold.)
-
-// 0x0db2f0 - finalize: run the +0x38 teardown iff +0x14 clear, then reset +0x20.
 SIZE_UNKNOWN(Cdb2f0);
-
-// 0x0db750 is rehomed as CPlay::LoadLevelAnims (Play.cpp) on the canonical
-// CDDrawSubMgrLeaf/CSymTab.
-
-// 0x0ea170 RE-HOMED: it IS CSbConfigItem::SetDirectionAlt (<Gruntz/SBI_ImageSetAni.h>,
-// body in StatusBarTabBuilders.cpp) - the old Cea170 dispatch view is dissolved.
-
-// 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
-// the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>).
-
-// 0x10bbe0 - getter over the +0x528 gate / active-cell table.
-
-// 0x112bf0 - decrement the active grid cell (manager-owned plane) + re-publish.
-// CGridOuter/CGridHolder/CGridData/CHandler112 are per-use facet views of the
-// singleton's m_world / m_tileGrid sub-objects (not yet modeled canonically).
-
-// --- vtable catalog ---
 
 #endif // GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H

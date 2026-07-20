@@ -53,8 +53,6 @@
 #include <new>   // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
-// WERE the fake g_animScratch / g_animScratchCount
-// globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
@@ -65,28 +63,6 @@
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
-// ---------------------------------------------------------------------------
-// Animation-resolver cluster (the 5 CGrunt::Resolve*Animation methods, the
-// SECOND wave on this CGrunt TU). Each builds an animation-key string
-//   "GRUNTZ_" + this->m_typeName + "_<CATEGORY>"
-// (via the two engine global operator+ overloads -> a pair of stack CString
-// temporaries with dtors -> the unit needs /GX for the C++ EH frame), feeds the
-// resolved geometry source into the grunt's animation player (m_38), then looks
-// the key up in the global animation tree (CButeTree::Find) and
-// caches the result into m_14->m_1c. Several also fire a 5-arg on-screen "cue"
-// (via g_gameReg->m_cueSink) gated on the grunt being inside the visible view
-// rect (registry m_134==1 -> a 4-way bounds test).
-//
-//   CGrunt::ResolveMovingAnimation()    ("_MOVING", key "B")
-//   CGrunt::ResolveDeathAnimation()     ("_DEATH",  key "C")
-//   CGrunt::ResolveAnimation()          ("_JOY",    key "E")
-//   CGrunt::ResolveIdleAnimation()      ("_IDLE",   key "A")
-//   CGrunt::ResolveBattlecryAnimation() ("_BATTLECRY", key "F")
-//
-// The category suffix strings + the single-char tree keys are literal .rodata
-// (reloc-masked DIR32 operands). The geometry source member differs per category
-// (Moving m_movingGeoSrc, Death m_deathGeoSrc, generic m_joyGeoSrc, Idle m_idleGeoSrc[idx], Battlecry m_battlecryGeoSrc[idx]);
-// Idle/Battlecry pick idx via the engine LCG rand (Idle %3+1, Battlecry %3).
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 static const char s__MOVING[] = "_MOVING";
 static const char s__DEATH[] = "_DEATH";
@@ -101,25 +77,6 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
-// Entrance-animation globals (reloc-masked; see Grunt.h).
-
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
-//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((_zdvec*)((char*)this + (3*col+row+0xb)*0x68)),
-//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
-//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
-//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
-//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_coordPool.m_linkOffset / g_coordPool.m_linkOffset).
-//   * MFC CString -> char* - (char*)static_cast<const char*>(m_animSetName) for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
-//     external __thiscall engine methods.
-//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
-//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
-//     regalloc (tested-and-reverted; see the inline m_400 note).
-// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
-// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -127,14 +84,6 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-// A global enable flag the neighbor-combat gate reads when the candidate IS self
-// (DAT_006455b0, reloc-masked).
-
-// The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-
-// The scratch CString teardown the GetNameRecords reject paths run (defined with the
-// dispatch-machine cluster below); forward-declared for the two entrance-step
-// methods (StepEntranceReinit / RunEntranceMove) defined earlier in RVA order.
 static void GruntScratchTeardown();
 
 // ===========================================================================
@@ -154,9 +103,6 @@ static void GruntScratchTeardown();
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.
 
-// The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
-// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
@@ -169,33 +115,7 @@ static void GruntScratchTeardown() {
     }
 }
 
-// ==== LoadGruntAbilityTuning @0x57100 (its 8 private .data cells sit in this TU's band) ====
-// ---------------------------------------------------------------------------
-// CGrunt::LoadGruntAbilityTuning(int forced)   @0x57100   (ret 4)
-// Fire the grunt's spell-ability effect for the given (or randomly-rolled)
-// ability index: play the GAME_ATTACK launch sound (when the slot is armed),
-// then dispatch on the index to spawn the matching LightFx flash + area tuning
-// cue (FreezeRadius/HealthRadius/RessurectionRadius/ToyzRadius/TeleportRadius) or
-// the 4-direction rolling-ball sprites.
-//
-// The ability-sound resource chain (m_158 -> m_0c -> m_28) IS the canonical facet
-// ctor-proven), its m_0c the owner/world context == the CDDrawSurfaceMgr facet
-// (<Gruntz/GameRegistry.h>), whose m_28 is the CSndHost cue registry
-// (<Gruntz/SoundCue.h>: emit gate m_emitGate @+0x30, CMapStringToPtr map @+0x10,
-// Lookup_05b7e0). The map here really is CMapStringToPtr - retail's GAME_ATTACK
-// Lookup is 0x1b8438 (the Ptr band), NOT CMapStringToOb's 0x1b8008.
-
-// The launch-sound cue tag (reloc-masked global).
-// DEFINED in GruntzMgr.cpp (owner TU); plain C++ extern here.
-// (The flat `extern "C" PlayIfElapsed` alias is GONE: thunk 0x25fe IS
-// ?PlayIfElapsed@LeafCue@@ - retail loads the looked-up cue into ecx and
-// __thiscalls it; callers now call the real method on the cue.)
-
-// The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
-// strings (CreateSprite/Activate/ApplyName args) are spelled as inline literals
-// below so cl pools them into the shared read-only ??_C@ constants retail uses.
 static const char s_GAME_ATTACK[] = "GAME_ATTACK";
-// The bute config tag/keys (GetIntDef/GetDwordDef take char*).
 static char s_Spellz[] = "Spellz";
 static char s_FreezeRadius[] = "FreezeRadius";
 static char s_HealthRadius[] = "HealthRadius";
@@ -205,9 +125,6 @@ static char s_TeleportRadius[] = "TeleportRadius";
 static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
 static char s_RollingBallzTime[] = "RollingBallzTime";
 
-// The random grunt spell/ability effect LoadGruntAbilityTuning dispatches on (idx);
-// each name is confirmed by its case comment + its "Spellz" bute radius key. Same
-// immediates as the bare labels -> naming is matching-neutral.
 enum SpellzEffect {
     SPELLZ_FREEZE = 1,       // FreezeRadius
     SPELLZ_HEALTH = 2,       // HealthRadius
@@ -217,66 +134,10 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-// ==== LoadGruntCombatAnimations @0x597a0 (its 15 private .data cells + the
-// i324-i332 frag run sit in this TU) ====
-
-// (+0x260 IS Grunt.h's m_tileMgr, now canonically CTriggerMgr* (the CGruntTileMgr
-// GetHeadPosition() + the shared CoordNode (<Gruntz/CoordNode.h>).)
-
-// (CombatCue IS LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
-//  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
-//  ?PlayIfElapsed@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
-//  world holder + cue host are the canonical CDDrawSurfaceMgr / CSndHost, and
-//  the launch-sound map is CMapStringToPtr: every LK Lookup in 0x597a0 calls
-//  0x1b8438 (the Ptr band).)
-
-// (the CombatGrid view is GONE - it was a THIRD name in this one TU for the board at
-// g_gameReg+0x70, alongside CScanPlane and the GruntBoard the canonical g_gameReg already
-// hands back. Its row table at +0x08 and its dims at +0x0c/+0x10 are CMapMgr's m_8 /
-// m_width / m_height, and its 7-dword cell IS BrickzCell. The board is the real RTTI class
-// CGruntzMapMgr : CMapMgr (vtbl 0x1e9bb4) - <Gruntz/GruntzMgr.h> proves it from Close()'s
-// +0x70 teardown leg - so the pointer is typed with the canonical CBrickzGrid (== CMapMgr)
-// and every field lands on the real member.)
-
-// (CombatReg is GONE - g_gameReg's own WwdGameReg canonical carries every field
-//  the combat paths read: m_isEasyMode/m_134/m_viewOrigin* (the view-edge quad was
-//  merged into <Gruntz/WwdGameReg.h>) and the +0x70 board, reached as the
-//  canonical CBrickzGrid via a facet cast (GruntBoard == CBrickzGrid == CMapMgr,
-//  a pending unification).)
-
-// (CombatTileMgr is GONE - the CGrunt+0x260 "tile-mgr grunt board" is the real
-//  CTriggerMgr (<Gruntz/TriggerMgr.h>): its m_grid 4x15 grid at +0x1c, and its
-//  three "engine ops" are already-reconstructed CTriggerMgr
-//  methods, read off the thunks: `CheckSpawn` (ILT 0x14a1) == ?SpawnGrunt@
-//  CTriggerMgr@@ @0x7c110, `ApplyCellEffect` (ILT 0x2e96) == ?CellDispatch@
-//  CTriggerMgr@@ @0x6bcb0, `ApplySwitch` (ILT 0x26df) == ?ApplySwitch@CTriggerMgr@@
-//  @0x6d300 - the sites call the real names.)
-
-// (CombatConvCue/CombatConvLookup are GONE - retail loads the m_158->m_0c->m_28
-//  cue host into ecx and __thiscalls 0x2cca == ?Lookup_05b7e0@CDDrawSubMgrLeafScan@@
-//  (the CSndHost, defined below in this very TU), then __thiscalls the looked-up
-//  LeafCue's PlayIfElapsed. The "__cdecl lookup" was a latent-ecx flat alias.)
-
-// The active-anim-set type-name registry: g_typeColl.IndexToPtr(node) -> record whose
-// first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
-// The bute-config manager (canonical CButeMgr, g_buteMgr from <Bute/ButeMgr.h>):
-// GetDwordDef (0x1721e0) is reloc-masked __thiscall.
-
-// (CombatCoordList is GONE - the CGrunt+0x31c occupied-coord recycle list is the
-//  REAL MFC CPtrList member m_31c (Grunt.h); its AddHead/RemoveAll @0x1b4967/
-//  0x1b48a6 are the library CPtrList bodies, now bound by name.)
-// g_coordPool.m_freeHead / g_coordPool.m_linkOffset are declared above (PathScan section).
-
-// The kill-clock + sound-enable + cue-tag globals.
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
-// C++ linkage: ?g_sndEnabled@@3HA is now the ONE name bound at 0x61ab20 (defined in
-// GruntzMgr.cpp).
-// g_sndCueTag is declared above (LoadGruntAbilityTuning section).
 
-// The 8 octant direction-vector triples (16-byte stride) copied into CGrunt+0x43c.
 extern "C" i32 g_dirVec[9][4]; // DAT_00644970
 
-// The hit-type byte table [reason][a0] (row stride 23) + the octant tangent thresholds.
 extern "C" unsigned char g_hitTable[]; // DAT_005e9788
 extern "C" float g_dtScale;            // DAT_005e999c death-touch duration scale
 extern "C" float g_tanC0;              // DAT_005e99a0
@@ -284,7 +145,6 @@ extern "C" float g_tanC1;              // DAT_005e99a4
 extern "C" double g_tanC2;             // DAT_005e99a8
 extern "C" double g_tanC3;             // DAT_005e99b0
 
-// The impact/block sound-cue keys (literal .rodata; reloc-masked).
 static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
 static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
 static const char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
@@ -304,9 +164,6 @@ static const char s_typeO[] = "O";
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
-// Resolve a launch-sound cue by key into a fresh out slot (the same cast-free
-// facet chain EnsureStruckSlot/EnsureStruckVoice walk: world holder -> cue host ->
-// its CMapStringToPtr; retail Lookup 0x1b8438).
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
@@ -314,7 +171,6 @@ static const char s_gruntSec[] = "Grunt";
         cue = out;                                                                                 \
     } while (0)
 
-// Copy octant direction-vector triple k into CGrunt+0x43c; set the target tile pixel.
 #define SETDIR(k, nx, ny)                                                                          \
     do {                                                                                           \
         this->m_entranceCell.col = g_dirVec[k][0];                                                 \
@@ -380,39 +236,10 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[1] = y;
 }
 
-// ==== PathScan57db0 @0x57db0 ====
-// (g_gameReg is the WwdGameReg* view declared at the top of this TU; byte-view uses cast it)
-
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
-// --- local grid view (the tile-plane's dirty-rect view is richer than GruntBoard) ---
-// The scratch list is the REAL MFC CPtrList (a stack instance forces the /GX EH frame).
-// It was a fake `CScanList` view whose methods were declared-only -> 6 PHANTOM externals.
-// The FID library tables name every one of its RVAs with HIGH, reloc-anchored confidence:
-//   0x1b4867 ??0CPtrList@@QAE@H@Z          0x1b48c6 ??1CPtrList@@UAE@XZ
-//   0x1b48a6 ?RemoveAll@CPtrList@@QAEXXZ   0x1b4991 ?AddTail@CPtrList@@...
-//   0x1b4a03 ?RemoveHead@CPtrList@@QAEPAXXZ
-// (The CObList rows at those same RVAs are AMBIG - CObList/CPtrList are COMDAT-identical.
-//  CPtrList wins on two counts: the HIGH/reloc-anchored FID rows, and the element type -
-//  every element stored here is a raw void*/GruntCoord*, which is CPtrList's element type;
-//  CObList would force (CObject*) casts that this code does not have.)
-// Find1de8 was never a method at all: 0x1de8 is an ILT thunk to 0x29a30, the free __stdcall
-// ListNodeAdvance(void**) already defined in BattlezMapConfig.cpp.
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-// (the CScanPlane + CScanCell views and the ApiMisc::ClipHost_02b340 shell are all GONE -
-// XREF-settled, and they were one object. The board at g_gameReg+0x70 IS the CBrickzGrid /
-// CMapMgr grid: its +0x08 row table, +0x0c/+0x10 dims and +0x60..+0x74 bound-rect/extents are
-// CMapMgr's field for field, its 0x1c-byte cell IS BrickzCell, and the code already had to
-// CAST it - `((CBrickzGrid*)grid)->SearchEdge(...)` - which was the type telling the truth.
-// The two "ApiMisc" entry points were never free functions: 0x20f4 thunks to
-// CBrickzGrid::SearchEdge and 0x43ea to ?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z (0x2b340,
-// reconstructed in src/Gruntz/BrickzClip_02b340.cpp). Typing the pointer with the real class
-// dropped the views, the shell and the cast together.)
 
-// Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
 #define SCAN_BOUNDS(grid)                                                                          \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -458,11 +285,6 @@ void CGrunt::ComputeFacing(double dt) {
 SIZE_UNKNOWN(CombatItemOwner);
 SIZE_UNKNOWN(CombatTypeNode);
 
-// One unrolled per-key registration block (the shared archetype). A macro so all
-// 19 expansions are emitted literally inline (an inline helper exhausts MSVC's
-// per-function inline budget after ~6 sites and calls the rest, but retail unrolls
-// every block); the lookups outline to the shared 0x3864 helper while the node-free
-// loop stays inline.
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
         i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                                        \
@@ -662,34 +484,6 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 }
 
-// ===========================================================================
-// Migrated CGrunt cluster (formerly the CUserLogic_* stubs in
-// src/Stub/Discovered.cpp). A prior matcher proved this whole block is CGrunt:
-// the dtor @0xf2f0 stamps vtable 0x5e8754 over CUserLogic/CUserBase bases, and
-// the anim loader @0x49c60 builds "GRUNTZ_<type>_<POSE>" keys. Reconstructed in
-// ascending retail-RVA order. Raw-offset member access (the campaign style used
-// by ReadConfigFromButeMgr above) keeps the giant ~0x46c layout tractable.
-// ===========================================================================
-
-// The global free-list pool the name caches recycle into (head @0x645544, base
-// subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-
-// The grunt movement / anim-name dispatch state machines' reloc-masked data.
-// All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-// src/Gruntz/GameText.cpp (the pool's owner TU).
-// Only the owner defines; everyone externs.
-
-// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
-// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp).
-
-// ---------------------------------------------------------------------------
-// CGrunt::SelectMoveIcon(a)   @0x57800   (__thiscall, ret 4)
-// Update the move-cursor icon index (m_1f4_moveIcon). No-op if unchanged; else
-// clamp to [0, 0x11), resolve the matching sprite from the registry sprite-ref
-// table (g_gameReg->m_spriteFactory->GetSel(icon, reason>=0x17)) and stamp it onto the HUD
-// (m_10->m_4c = sprite, m_50 = 0xa, m_58 = 1).
 RVA(0x00057800, 0x64)
 void CGrunt::SelectMoveIcon(i32 a) {
     if (m_1f4_moveIcon == a) {
@@ -706,18 +500,6 @@ void CGrunt::SelectMoveIcon(i32 a) {
     h->m_drawFillArg = sel;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::BuildGruntLoseItemAnimation()   @0x57890   (__thiscall, ret 0, /GX)
-// Step the anim dispatch, then if the entrance reason is a lose-item pose
-// (0x12/0x16/0xe) spawn the one-shot "SingleAnimation" sprite, set its
-// GRUNTZ_<animSet>_LOSEITEM key (both ApplyName + ApplyLookupGeometry forms),
-// fire the on-screen spawn cue when the grunt's HUD point is in the cue rect,
-// re-run the type-table step, and clear m_entranceActive.
-//
-// 99.9% (reloc-mask tail): code bytes match incl. the /GX frame + the two
-// `s_GRUNTZ_ + m_animSetName + s__LOSEITEM` concat chains; the residual is the
-// differently-named reloc operands (ApplyName/ApplyLookupGeometry/LoadGruntTypeTable
-// resolve to the engine's own CGameObject/CUserLogic symbols) - the entropy tail.
 RVA(0x00057890, 0x19c)
 i32 CGrunt::BuildGruntLoseItemAnimation() {
     StepAnimDispatchB();
@@ -829,7 +611,6 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
-// CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
 RVA(0x00057c10, 0x1e)
 void CGrunt::ClearSubA() {
     DirectSoundMgr* p = m_424;
@@ -876,7 +657,6 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
-// CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.
 RVA(0x00057ce0, 0x1e)
 void CGrunt::ClearSubB() {
     DirectSoundMgr* p = m_428;
@@ -916,62 +696,14 @@ void CGrunt::ReapplyVoiceParams() {
     }
 }
 
-// CGrunt::DestroyAnims() @0x57d80 - the two-step anim teardown (both this-calls
-// reach engine cleanup; reloc-masked).
 RVA(0x00057d80, 0x11)
 void CGrunt::DestroyAnims() {
     ClearSubA();
     ClearSubB();
 }
 
-// ==== ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0 @0x5be30 (the i342
-// frag + both bodies are text-contained in this
-// TU, between GruntSpawnPump and RunAct/Activate) ====
-
-// The shared activation-name registry pieces (same shape <Gruntz/ActNameRegistry.h>
-// models; declared bare here because this TU's CGrunt world already carries its own
-// CString/bute decls). All reloc-masked.
-// (g_typeColl.m_grown @0x6bf670 / g_typeColl.m_alloc @0x6bf66c declared canonically above)
 DATA(0x00244af0)
 extern CLookupColl g_reg_644af0;
-
-// The 19 action-key strings (s_codeA/B above; the rest are .rdata string
-// constants named by address, declared in <Globals.h> or here).
-// k_60cca4 was a SECOND NAME for s_codeD (0x20cca4) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-// k_60d2ec was a SECOND NAME for s_codeE (0x20d2ec) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-// k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-// k_60d7f8 was a SECOND NAME for s_codeK (0x20d7f8) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-
-// The 19 per-action handler bodies are the CGrunt / CGruntBehaviorLeaf entrance /
-// arrival / decay state-step methods, already reconstructed in GruntEntranceArrival.cpp
-// / GruntEntranceMove.cpp / GruntBehaviorLeaf.cpp. Each retail `&H_<va>` reference was
-// the function's ILT jmp-thunk (e.g. H_402ac2 @0x402ac2 -> jmp 0x4633e0 ==
-// ?ResolveEntranceArrival@CGrunt@@); RegisterActs stores a 4-byte member-function
-// pointer to the real body into the entry's m_fn PMF slot (thunk-following makes the
-// reloc bind to the real symbol). Mapping (act key -> real handler, RVA):
-//   A(s_codeA)   ResolveEntranceArrival        0x633e0 (CGrunt)
-//   B(s_actKeyB) StepWarpExit                  0x64540 (CGrunt)
-//   C(k_60cc90)  LoadGruntDecayConfig          0x612a0 (CGruntBehaviorLeaf)
-//   D(s_codeD)   StepArrivalReroll             0x63b60 (CGrunt)
-//   E(s_codeE)   UpdateGruntStatus             0x617c0 (CGrunt)
-//   F(s_codeF)   DispatchVtbl24                0x6b260 (CGrunt)
-//   G(s_codeG)   StepEntranceRelatchA          0x62840 (CGrunt)
-//   H(s_codeH)   StepArrivalCommitA            0x65300 (CGrunt)
-//   I(s_codeI)   LoadWandGruntItemConfig       0x65a60 (CGruntBehaviorLeaf)
-//   J(s_codeJ)   RunEntranceMove               0x67850 (CGrunt)
-//   K(s_codeK)   LoadEntranceConfig            0x67f80 (CGrunt)
-//   L(s_codeL)   LoadVehicleGruntAnimations    0x63db0 (CGrunt)
-//   M(s_codeM)   RearmEntranceDrop             0x68370 (CGrunt)
-//   N(s_codeN)   StepEntranceRelatchB          0x65c20 (CGrunt)
-//   O(s_codeO)   StepArrivalCommitB            0x654b0 (CGrunt)
-//   P(s_codeP)   UpdateEntranceAnim            0x690a0 (CGrunt)
-//   Q(s_codeQ)   LoadFreezeSpellAssets         0x69d60 (CGrunt)
-//   (k_60bebc)   LoadGruntDecayConfig2         0x61570 (CGruntBehaviorLeaf)
-//   (k_60df94)   FinishEntranceMove            0x69fd0 (CGrunt)
 
 // @early-stop
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
@@ -2019,13 +1751,6 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::FindGridNeighbor(int validate)   @0x5b6f0
-// Resolves the grunt's stored grid-cell neighbour (the CGrunt* at
-// m_tileMgr's 15-wide cell grid indexed by the latched coords m_neighborCol/m_neighborRow), validates
-// it occupies the expected tile, runs the tile-rect predicate + commit, and
-// returns it. __thiscall, ret 4. Frameless. On any miss it clears m_neighborValid and
-// returns 0; a validate-mismatch returns 0 WITHOUT touching m_neighborValid.
 RVA(0x0005b6f0, 0xb5)
 CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     if (m_neighborCol == -1) {
@@ -2055,14 +1780,6 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// @rehomed CDDrawSubMgrLeafScan::Lookup_05b7e0 <- ddrawsubmgr (rule-(c) interleaver)
-// CDDrawSubMgrLeafScan::Lookup (0x0005b7e0) - homed here from DDrawSubMgr.cpp
-// (REHOME D10). Retail emits this own-class-out-of-line COMDAT INSIDE CGrunt's
-// gruntcombat block (0x0005b6f0 FindGridNeighbor .. 0x0005baf0 GruntSpawnPump, both
-// gruntcombat), a rule-(c) interleaver surrounded by gruntcombat on both sides.
-// Look up `key` in the +0x10 map, return the found CObject* (null if absent). The
-// class is now declared via <DDrawMgr/DDrawSubMgrLeafScan.h> (added above).
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
     void* val = 0;
@@ -2070,7 +1787,6 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
     return static_cast<CObject*>(val);
 }
 
-// ==== GruntSpawnPump @0x5baf0 (a worker-pump handler whose leaf is CGrunt) ====
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
@@ -2109,13 +1825,7 @@ i32 GruntSpawnPump(CGameObject* owner) {
     return 1;
 }
 
-// CGrunt::RunAct @0x05bcd0 - vtable slot-4 activation dispatcher. Resolve `id`'s
-// handler in the per-class registry g_reg_644af0 (the ResolveEntry fast [lo,hi]
-// range + slow GrowTo/GetRetAddr/Insert rebuild, inlined twice - side-effecting, so
-// cl re-evaluates it for the guarded call); when a handler is bound, dispatch it as
-// a PMF on `this`, else return the entry pointer. Same archetype as CPathHazard::RunAct.
 extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation registry)
-// The static initializer that builds registry 0x644af0's fast [0x7d0, 0x7da] id range.
 RVA(0x0005bc50, 0x15)
 void ConstructActRange_644af0() {
     g_reg_644af0.Construct(0x7d0, 0x7da);

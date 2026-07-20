@@ -1,15 +1,3 @@
-// SerialObjRef.cpp - CWapX::Chain (0x8c00), the serialized-object-reference
-// serializer of the CWapX second base (<Gruntz/UserLogic.h> - the former
-// CSerialObjRef view, dissolved onto the RTTI-real CWapX). Every tile-logic
-// leaf's SerializeMove override runs the inherited Chain on its CWapX subobject
-// (this+0x34); modeled here once as the real method so the reloc-masked Chain
-// calls in the caller TUs pair to it by address.
-//
-// __thiscall, ret 0x10 (4 stack args). Frameless in retail despite the write-path
-// CString temp: the temp is RVO'd straight from KeyOfValue and its only live-range
-// use (the inline strcpy = rep movs) cannot throw, so /GX elides the EH frame
-// (docs/patterns/scope-cstring-temp-to-elide-eh-frame.md). The 0x80-byte key buffer
-// + strlen/strcpy are inline CRT idioms (docs/patterns/inline-mem-ops-rep-movs.md).
 #include <Mfc.h>                      // CString (KeyOfValue temp) + CObject
 #include <Gruntz/UserLogic.h>         // CWapX (the owner class) + CGameObject
 #include <Gruntz/SerialArchive.h>     // the archive (Read/Write slots)
@@ -74,6 +62,4 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);

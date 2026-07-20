@@ -1,36 +1,15 @@
-// GruntVoiceActReg.cpp - CGruntVoice's two-key activation registrar (C:\Proj\Gruntz).
-//
-// Split out of the LogicActRegistrars.cpp holding TU (REHOME D1). Owner CRACKED:
-// the registry table @0x6514d8 is CGruntVoice's activation-dispatch registry
-// (g_vactColl @0x6514d8; GruntVoice.cpp already builds its [2000,2010] range and
-// GruntIndicatorSprite.h names it CGruntVoice's g_vactColl). RegisterActs_6514d8
-// @0x119fa0 is text-contained in CGruntVoice's obj (interleaved between
-// GruntVoice.cpp's 0x119e40 and 0x11a320 methods; its Construct already lives in
-// GruntVoice.cpp) - a deeper pass may FOLD it into GruntVoice.cpp; kept standalone
-// here (owner-TU completeness + parallel-worker scope).
-//
-// Interns two activation keys ("A" 0x60a454 and "B" 0x60d1bc) into the shared bute
-// store + name registry, then binds each key's per-frame handler into the registry.
-// Bodies are owner-independent (every global is a reloc-masked DATA extern, every
-// callee external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
 
-// The second activation key string "B" (0x60d1bc); "A" + g_typeCounter + the name
-// registry come from <Gruntz/ActNameRegistry.h>.
-
-// CGruntVoice's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x002514d8)
 extern CActReg g_actReg_6514d8; // 0x6514d8
 
-// The per-frame handler entries (ILT thunks) this registrar binds.
 extern "C" void Handler_4037bf(); // 0x4037bf
 extern "C" void Handler_402dd8(); // 0x402dd8
 
-// The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);

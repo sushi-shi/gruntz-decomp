@@ -1,61 +1,15 @@
-// BattlezMapConfig.h - the shared, single definition of CBattlezMapConfig, the
-// Battlez (multiplayer) per-team spawn/board manager. This ONE class was formerly
-// modeled twice, under two hedged/placeholder names, because two TUs reconstruct
-// two lifecycle PHASES of the same 0x1e8-byte object:
-//
-//   * BattlezMapConfig.cpp  - the LOAD phase: CBattlezMapConfig::LoadConfig reads
-//     the [Battlez] bute-config group + the level start markers into the object.
-//   * the BattlezMapConfig RUN-phase unit - the RUN phase: the ~40 spawn/board state-machine
-//     methods that drive the loaded object each tick.
-//
-// DISAMBIGUATION EVIDENCE (this/ecx Frida trace, gruntz.analysis.this_cluster):
-// the real recovered symbol ?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z
-// (RVA 0x25020) is called on the SAME objects (ecx 0x1891508/740/978/bb0, spaced
-// exactly 0x238 apart - the m_ctx per-band record stride) as every one of the
-// ~40 run-phase methods; each object is class-pure. Hence it is ONE class, not
-// the "CBattlezSpawnMgr_or_CGruntSpawnMgr" hedge (which was never a real symbol -
-// no CBattlezSpawnMgr/CGruntSpawnMgr symbol exists; those substrings only ever
-// appeared inside the hedge name itself). The exact size 0x1e8 is pinned by
-// GruntzPlayer embedding one at +0x38 (next member at +0x220).
-//
-// The two phases name the SAME offsets differently (load: bute-item percents +
-// level handles; run: spawn timers + band-threshold tables), and interpret the
-// three head pointers with phase-appropriate types. Rather than force one naming
-// (which would need casts or awkward array-index writes and lose one phase's
-// meaning), the class models the two field VIEWS as anonymous unions: both TUs
-// keep their own readable names at the same offsets, so this is a pure rename +
-// header unification - matching-neutral (identical field offsets, no body change).
-//
-// The four growable MFC arrays are shared between phases (their types are FIXED by
-// the ctor's member-construct vtable stamps):
-//   +0xdc / +0xf0   vtable s_CPtrArray  @0x5ec2dc  -> CPtrArray
-//   +0x104 / +0x118 vtable s_CDWordArray@0x5ec29c  -> CDWordArray
-// Both are the real MFC afxcoll classes (0x14 B: vptr@0, m_pData@+4, m_nSize@+8,
-// m_nMaxSize@+0xc, m_nGrowBy@+0x10). LoadConfig's per-marker SetAtGrow appends to
-// the +0xdc/+0xf0 CPtrArray inner count word (m_candArray.m_nSize / m_0f0.m_nSize).
-//
-// Field names are placeholders (m_<hexoffset> where the role is unproven); only
-// OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
 #include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (a typedef now - a fwd decl
-                           // of it would be a redefinition, C2371)
 #include <rva.h>
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
 
-// ---- The head pointers are REAL engine classes ------------------------------
-// m_ctx (+0x04) IS the CLevelInfo LoadConfig was handed: retail Method_035210 reads
-// `[this+4] -> [+0x68] -> [+0x4]`, i.e. ctx->m_triggerMgr's list head - reaching the
-// SAME CTriggerMgr the run ctor caches at +0x08. The old `GruntSpawnCtx` / `Board` /
-// `CMapDims` views are dissolved onto CLevelInfo / CTriggerMgr / CMapMgr.
 class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
 class CTileTriggerContainer;  // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
 class CGrunt;                 // <Gruntz/Grunt.h> - the grid units the spawn machine drives
-// (the LoadConfig arg AND m_ctx are the CGruntzMgr - proven by every caller passing
-// the mgr + the offset-identical field quartet; the ex-CLevelInfo view is dead here)
 class CGruntzMgr;
 class CLevelInfo;      // real level record (m_levelInfo member)
 class CLevelSpawnInfo; // spawn-info handle

@@ -1,25 +1,3 @@
-// WwdSpatialMgr.h - THE single definition of CWwdSpatialMgr, the per-level
-// object-bucket / camera worker the WWD plane owns at plane+0xb0 (CDDrawWorkerHost::
-// m_scroll). `new`-size 0xb8 (RebuildPlanes), out-of-line complete dtor 0x163a40.
-//
-// It was defined TWICE - a full canonical in WwdSpatialMgr.cpp (grids/origins/bbox/
-// iterator) and a "CPlaneScroll" scroll-rect view in the plane headers (WwdFile.h,
-// then DDrawWorkerHost.h). The two READINGS AGREE on every offset and are unified
-// here as the union of both sides' knowledge:
-//   * m_mgr @+0x00 + the three per-plane spatial grids @+0x04/+0x08/+0x0c
-//     (an object is routed by its flag bits: 0x800000 -> grid1, 0x1000000 -> grid2,
-//     else grid0).
-//   * the three per-grid world RECTS @+0x10/+0x30/+0x20 (grid0/grid1/grid2 - note
-//     the grid1/grid2 rects sit in the "swapped" order retail writes them; the
-//     matched InitScrollRects @0x163420 is the ground truth) - these filled what the
-//     canonical had as raw padding.
-//   * the per-grid scroll ORIGIN pairs @+0x40/+0x48/+0x50 (the ex-view's "centers":
-//     InitScrollRects seeds each to its grid's half-extent), the world bbox @+0x58,
-//     and the cached scroll position @+0x68 (the ex-view's "target").
-//   * the embedded CWwdGridIter cursor @+0x70 (a MEMBER, CWwdGridIter : CObject -
-//     the "+0x70 vptr" the ex-C163a40 placeholder mistook for a secondary base).
-// Field names are placeholders where the role is unproven; only offsets + emitted
-// bytes are load-bearing.
 #ifndef GRUNTZ_WWD_WWDSPATIALMGR_H
 #define GRUNTZ_WWD_WWDSPATIALMGR_H
 

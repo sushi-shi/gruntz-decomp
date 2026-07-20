@@ -1,32 +1,17 @@
 #ifndef SRC_IMAGE_CBLITINFO_H
 #define SRC_IMAGE_CBLITINFO_H
 
-// CBlitInfo - the sprite blit/draw request the DDrawMgr worker hands to the CImage
-// sprite blitters (ImageSpriteBlit.cpp) and the RenderImage vtable-slot-14 selector
-// (CImage.cpp). Single-source shared header (both TUs include it); field names are
-// placeholders, only the OFFSETS + emitted bytes are load-bearing.
-
 #include <Ints.h>
 #include <Image/CImage.h> // BlitRect (the {left,top,right,bottom} rect)
 
-// 0xa000 WrapCoord (world-coord wrap/transform); pointer-only here. CPlaneRender is a
-// typedef of the canonical plane class now, so the fwd decl names the class itself.
 class CDDrawWorkerHost;
 typedef CDDrawWorkerHost CPlaneRender;
 
-// The origin-remap target reached through info->m_xform->m_planeRender (bit 0x40000):
-// CSpritePlaneRender::WrapCoord (0xa000, via the 0x295a ILT thunk; reloc-masked).
 struct CBlitXform {
     char _00[0x5c];
     CPlaneRender* m_planeRender; // +0x5c  coordinate-wrap plane renderer
 };
 
-// The blit request the worker hands in (esi). Inputs: m_flags, m_adjustX/m_adjustY
-// (draw-position adjust), m_xform (origin transform), m_notifyArg1/m_notifyArg0/
-// m_notify (shaded pre-notify), m_drawX/m_drawY (draw position), m_clipLeft..
-// m_clipBottom (clip box / sentinel). The RenderImage selector additionally reads
-// m_mode (+0x40, the flip/shade/animate bit field) and the m_44/m_48 animation-counter
-// pair. Outputs: m_outLeft..m_result (clipped rect, dims, result code).
 class CBlitInfo {
 public:
     char _00[0x08];

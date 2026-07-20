@@ -1,13 +1,3 @@
-// ZVec.cpp - the WAP32 `_zvec`/`zDArray<T>` dynamic-vector base (C:\Proj\incs).
-// See include/Wap32/ZVec.h for the recovered layout + the RTTI-confirmed
-// hierarchy  zDArray<int (CUserLogic::*)(void)> : _zdvec : _zvec : zErrHandling.
-//
-// REAL-POLYMORPHIC now: the virtual dtor lets cl emit ??_7zDArray and auto-stamp
-// the implicit vptr at ~_zdvec entry (VTBL binds it at the retail dtor-vtable RVA).
-// The one manual store that survives is Destroy()'s re-stamp of the LIVE vtable
-// (0x5e70fc) - a NON-ctor/dtor re-stamp cl cannot express (the vtable-realization-
-// ctor-boundary wall), so it stays as an explicit `*(void**)this` store of the
-// reloc-masked live-vtable datum.
 #include <Wap32/ZVec.h>
 #include <Wap32/zBitVec.h> // GetRetAddr / g_projActCache / g_retAddrBreadcrumb (grow-fail breadcrumb)
 #include <rva.h>
@@ -19,22 +9,7 @@
 #include <stdlib.h> // realloc (0x125180), free (0x120c30)
 #include <string.h> // memcpy (0x121960), memset (rep stos)
 
-// The live zDArray<...> vtable (0x5e70fc) Destroy() re-stamps (reloc-masked address
-// operand). ~_zdvec (0x16df40) and its emitted ??_7zDArray + the VTBL binding
-// moved to the merged container TU (src/Gruntz/TypeKeyColl.cpp, wave2-H) along
-// with _zvec::GrowTo (0x16da80) - their retail home.
 extern void* const zDArrayLiveTable; // 0x5e70fc
-
-// Engine return-address capture helper that seeds the error token.
-
-// The container OOM/overflow error token the accessor passes to Set() on the
-// can't-grow path (VA 0x6bf464). Bound as ?g_projActCache@@3PAXA in <Wap32/zBitVec.h>
-// (reloc-correct); the Globals.h `g_zvecErrSentinel` is the SAME cell under a second
-// reconstruction name whose Globals.cpp DATA is mis-addressed (0x1f0464, a typo) -
-// referencing the correctly-bound g_projActCache keeps this fn's DATA reloc faithful.
-
-// Per-element relocation applied to each freshly-grown member-pointer slot
-// (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.
 
 // ---------------------------------------------------------------------------
 // _zdvec::Destroy() - re-stamp the live vtable, then run ~_zdvec. 0x8750.
@@ -54,11 +29,6 @@ i32 _zdvec::Destroy() {
     return tmp;
 }
 
-// _zdvec::IndexToPtr(i) - the base accessor plus the per-slot member-ptr fixup
-// over the freshly-grown region. 0x310f0.
-// @interleaver _zdvec::IndexToPtr emitted-in <boundary: BattlezMapConfig.cpp
-// Method_030f20 @0x30f20 (before) + FreeNodePool.cpp Push @0x311b0 (after)>. A
-// template-accessor COMDAT the /Gy linker placed by first-use between two OTHER units.
 RVA(0x000310f0, 0x8d)
 char* _zdvec::IndexToPtr(i32 i) {
     char* r;
@@ -115,7 +85,6 @@ char* _zvec::IndexToPtr(i32 idx) {
     return m_spare;
 }
 
-// ZVec.h + local class metadata (hosted at .cpp EOF; header untouched).
 SIZE_UNKNOWN(_zvec);          // dynamic-vector base (partial: no true base chain)
 SIZE_UNKNOWN(_zdvec);        // derived; adds override, no storage
 SIZE_UNKNOWN(zErrHandling);   // error-reporter subobject view

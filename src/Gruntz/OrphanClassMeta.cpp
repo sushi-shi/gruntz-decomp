@@ -1,8 +1,3 @@
-// OrphanClassMeta.cpp - class-metadata (SIZE) host for orphan include/Gruntz
-// headers that no in-scope .cpp includes (the SIZE sweep hosts a header class's
-// annotation at a .cpp that #includes it; these headers have no such owner, so
-// this functionless TU is their host). labels.py text-scans SIZE_UNKNOWN tree-wide
-// and the macro emits NO code, so this unit contributes nothing to the diff.
 #include <rva.h>
 
 #include <Gruntz/ActNameRegistry.h>
@@ -12,20 +7,14 @@
 #include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/LogicTypeTableInline.h>
 
-// ActNameRegistry.h
 SIZE_UNKNOWN(CActName);
-// CGameRegistry.h
 SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CFocusSlot, 0x238);
 SIZE_UNKNOWN(CTileGrid);
-// CState.h
 SIZE_UNKNOWN(CState);
-// Enums.h
 SIZE_UNKNOWN(GruntzVolumeAttenuation);
-// GruntIndicatorSprite.h
 SIZE_UNKNOWN(CIndicatorActReg);
 SIZE_UNKNOWN(CIndicatorSyncHelper);
-// LogicTypeTableInline.h
 SIZE_UNKNOWN(CLogicTypeBuilder);
 SIZE_UNKNOWN(CLogicTypeCtx);
 SIZE_UNKNOWN(CLogicTypeReg);

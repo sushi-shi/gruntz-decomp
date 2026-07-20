@@ -1,24 +1,8 @@
-// State.cpp - CState, the WAP32 base game-state ("mode") class (C:\Proj\Gruntz).
-//
-// CState's constructor (0x0008c750) + its slot-0 scalar-deleting dtor `??_G` (0x0008c710)
-// form one retail .obj: a 2-function block that the linker pooled into the CState/CPlay
-// vtable-emission region (bracketed by the per-class leaf slots in menustate/multi/
-// gruntzmgr). Carved out of GameMode.cpp (REHOME package D7) so the CState BASE
-// implementation - the ctor that stamps ??_7CState@@6B@ @0x005ea21c - is its own TU,
-// matching <Gruntz/State.h>. GameMode.cpp keeps
-// only the free menu/HUD helpers + CState's NON-virtual out-of-line effect-loader
-// methods (LoadGruntEffectSprites / LevelMsgHudDriver), which do not emit the vtable.
 #include <Gruntz/State.h>
 #include <rva.h>
 
-// The scalar-deleting dtor's `operator delete` (reached by the synthesized `??_G`);
-// declare it so /GX tracks the EH state.
 void operator delete(void*);
 
-// CState::CState(): store the vftable, then zero a flat list of scalar members in
-// source-declaration order, seeding four time/budget fields to 0x40. NO embedded
-// sub-object ctors and NO EH frame (plain /O2). This ctor (with the leaf dtors in the
-// per-class TUs) anchors the CState vtable + inline-virtual emission.
 RVA(0x0008c750, 0xa9)
 CState::CState() {
     m_4 = 0;
@@ -58,15 +42,3 @@ CState::CState() {
 // defined INLINE in <Gruntz/State.h> so MSVC folds it into the synth `??_G` thunk; the
 // thunk has no source body, so pin its symbol by mangled name here.
 // @rva-symbol: ??_GCState@@UAEPAXI@Z 0x0008c710 0x24
-
-// CState::Update (0x0008c4b0) / Render (0x0008c4d0) are inline members in the header.
-
-// Slots 1/2 have REAL retail default bodies elsewhere - the fabricated `return 0` /
-// `{}` anchor stubs that used to sit here are gone (slot order comes from the
-// declaration order in <Gruntz/State.h>, not from bodies; the ctor above emits
-// ??_7CState with extern relocs to them):
-//   slot 1 = ILT 0x43a9 -> 0x0f9ea0, CState::LoadGameAssetNamespaces
-//            (GameAssetNamespaces.cpp; the ex-"Vfunc1" shadow pair is unified -
-//            the virtual IS the loader, one name family-wide).
-//   slot 2 = ILT 0x3f53 -> 0x0fa150, CState::ReleaseResources
-//            (StateReleaseResources.cpp; ex "CGameModeBase::BaseCleanup").

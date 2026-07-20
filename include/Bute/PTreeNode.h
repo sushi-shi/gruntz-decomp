@@ -1,12 +1,3 @@
-// PTreeNode.h - the shared zPTree config-tree node family (Bute .bute parser).
-// zPTree is multiply-derived (zErrHandling primary @+0x00, CButeNodeEntry second
-// base @+0x08); REAL POLYMORPHIC per the ALL-VTABLES mandate (cl auto-stamps both
-// most-derived vptrs in the derived ctor). Concrete nodes derive zPTree and get
-// their own most-derived primary (+0x00) + second-base-in-derived (+0x08) vtables.
-// Ctor bodies live in src/Bute/ButeNode.cpp; only the shapes are here so sibling
-// TUs (e.g. ButeSectionCtor.cpp's CBSecStream) can derive zPTree too.
-//
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 #ifndef SRC_BUTE_PTREENODE_H
 #define SRC_BUTE_PTREENODE_H
 #include <rva.h>
@@ -17,18 +8,8 @@ extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 struct CVariantSlot;  // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
 struct CButeTreeNode; // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
 
-// zErrHandling - the container-library exception base (vptr@0, err-sink@4). RTTI names
-// zPTree's primary base `zErrHandling`; that class IS <Wap32/zBitVec.h>'s zErrHandling
-// (same ctor 0x16d9c0, same dtor 0x16da60, same one-slot vtable 0x1f04cc). The separate
-// `class zErrHandling` that used to be declared here was a THIRD model of it, and it is
-// what made every store/node destructor call a ??1zErrHandling that is defined nowhere.
-// Folded onto the canonical class; the RTTI name is kept as an alias so the library-true
-// spelling still reads in the sources that use it.
 #include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
 
-// The node subobject at zPTree+0x8 (a small keyed-store entry): zPTree's SECOND
-// polymorphic base. Ctor 0x16df70 auto-stamps ??_7CButeNodeEntry (retail 0x5f04d8)
-// @+0x00, then desc@+4, (WORD)n@+8, 0@+0xc.
 class CButeNodeEntry {
 public:
     CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*));
@@ -48,11 +29,6 @@ public:
 SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, count }
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 
-// zPTree layout (two vptrs): +0x00 zErrHandling base, +0x08 CButeNodeEntry base
-// (spans +0x08..+0x18), then the crit-bit trie / keyed-store fields (+0x18..+0x2c).
-// Ctor 0x16dff0. The concrete derived views (CButeTree the trie, CButeStore the store,
-// CButeNode/CBSecStream config nodes) share this one layout; config-node ctors just
-// zero m_root/m_lookupPending, the trie/store methods use the whole field set.
 class zPTree : public zErrHandling, public CButeNodeEntry {
 public:
     zPTree(void(__cdecl* teardown)(void*), i32 n);
@@ -93,21 +69,6 @@ SIZE(zPTree, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0
 // the pins carry the through-base names (they live in src/Bute/ButeNode.cpp - labels.py
 // reads @data-symbol from the .cpp only).
 
-// ---------------------------------------------------------------------------
-// CButeNode - the concrete .bute config-tree node: a per-tag keyed store. Both the
-// out-of-line ctor at 0x174d00 (butenode) and ParseTagLine's inlined `new
-// CButeNode(&ButeValueTeardown, 2)` (butemgr) build it, and BOTH stamp the same pair
-// of most-derived vtables - primary 0x1f051c @+0x00, second-base-in-derived 0x1f0518
-// @+0x08. That shared vtable pair is the proof that butenode's former
-// `CButeCfgNode174d` and butemgr's `CButeNode` were ONE class, split across two TUs;
-// they are folded here into the single shared definition, so both TUs emit the same
-// ??_7CButeNode symbols and the two retail vtable cells bind.
-//
-// The `desc` every node is constructed with is NOT data: it is the address of the
-// store's __cdecl per-value teardown callback (ButeValueTeardown @0x174df0), which
-// CButeStore::ClearRecursive fires on each node's value. The former `g_nodeDescriptor`
-// / `g_node174df0Tag` int/byte externs were phantoms for that function's address
-// (0x174df0 lies in .text - a CODE address that had been modeled as data).
 class CButeNode : public zPTree {
 public:
     virtual ~CButeNode() OVERRIDE; // slot 0 (zPTree dtor); external no-body

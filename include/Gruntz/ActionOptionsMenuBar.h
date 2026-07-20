@@ -1,14 +1,10 @@
 #include <rva.h>
 
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 class CImage; // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
 class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
-                              // and keeps this header pointer-only/include-light.
 
 class CActionOptionsMenuBar {
 public:

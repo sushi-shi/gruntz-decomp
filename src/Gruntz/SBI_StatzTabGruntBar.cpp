@@ -5,30 +5,11 @@
 #include <Ints.h>
 #include <Gruntz/Sprite.h> // CSprite (the glyph maps; ex CStatzGlyphMap view)
 #include <Gruntz/SBI_StatzTabGruntBar.h>
-// SBI_StatzTabGruntBar.cpp - Gruntz CSBI_StatzTabGruntBar (C:\Proj\Gruntz), the
-// frameless methods. RTTI .?AVCSBI_StatzTabGruntBar@@; a sibling leaf of the SBI
-// family CSBI_StatzTabGruntBar : CStatusBarItem. Vtable @0x5eace4. The /GX chain
-// destructor (0x104b00) is defined below - the former SBI_StatzTabGruntBarEh.cpp
-// companion split is collapsed (retail's one TU was /GX).
-//
-// The per-grunt "Statz" status tab. Modeled with the SBI family's manual-vtable-
-// stamp device (no real `virtual`); sibling/engine callees are ILT/reloc-masked.
 
-// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only
-// the +0x68 unit-table base the Statz tab samples is modeled.
 extern "C" CStatzGameReg* g_gameReg;
 
-// The running game clock (DAT_00645588; low 32 bits of the engine counter), used by
-// the timer block's 64-bit elapsed-window compare. Same datum the rest of Gruntz
-// reads as g_frameTime.
 extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
-// ---------------------------------------------------------------------------
-
-// 0xea470: drop the five tracked values' glyphs + the glyph maps (also reached by
-// the destructor as the member teardown). Zeroes both columns of glyphs (status..select)
-// and the two glyph-map pointers (m_timerGlyphMap, m_glyphMap) - the tracked VALUES and
-// the table indices survive so the next Update re-resolves them.
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
     m_statusGlyphLatched = 0;
@@ -44,9 +25,6 @@ void CSBI_StatzTabGruntBar::Reset() {
     m_timerGlyph = 0;
 }
 
-// 0xea4b0: the per-frame poll (one unused stack arg, ret 4) - resample (Update); if
-// anything changed, fire the virtual redraw (CStatusBarItem vtable slot 10) and
-// always report 1.
 RVA(0x000ea4b0, 0x1c)
 i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
     if (Update()) {
@@ -282,12 +260,6 @@ i32 CSBI_StatzTabGruntBar::Update() {
     return dirty;
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_StatzTabGruntBar (0x104b00): the /GX chain destructor - stamp
-// ??_7CSBI_StatzTabGruntBar, run Reset (the slot-3 teardown above, 0xea470), then
-// MSVC folds the inline ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
-// SBI_StatzTabGruntBarEh.cpp.
 RVA(0x00104b00, 0x55)
 CSBI_StatzTabGruntBar::~CSBI_StatzTabGruntBar() {
     Reset();

@@ -1,9 +1,3 @@
-// SecretTeleporterTrigger.h - the secret-teleporter trigger (C:\Proj\Gruntz), a
-// CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@, vftable 0x5e7564). Extracted
-// from src/Gruntz/UserLogic.cpp (which still defines the out-of-line bodies) so the
-// class can be `new`'d from the anim-worker dispatch handler. Size 0x54 proven from
-// AnimWorkerHandlers' `new CSecretTeleporterTrigger`. Offsets + code bytes are
-// load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CSECRETTELEPORTERTRIGGER_H
 #define GRUNTZ_CSECRETTELEPORTERTRIGGER_H
 
@@ -36,12 +30,6 @@ public:
 VTBL(CSecretTeleporterTrigger, 0x1e7564);
 SIZE(CSecretTeleporterTrigger, 0x54);
 
-// The activation-registry entry record: its first dword is a PMF of the trigger
-// class. Single inheritance -> a 4-byte code pointer, so the store is a single-word
-// `mov [entry],offset handler` and the dispatch is `mov ecx,this; call [entry]`.
-// FireActivation reads it as an ActHandler (void); RegisterActs stamps
-// SpawnTeleporter through the i32-returning SpawnHandler view of the same slot.
-// (Declared AFTER the complete class so the PMF stays 4 bytes.)
 typedef void (CUserLogic::*ActHandler)();
 struct CActEntry {
     ActHandler m_fn; // [entry]

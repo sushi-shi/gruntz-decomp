@@ -1,12 +1,3 @@
-// SerialObjectFactory.cpp - the game's (de)serialize object dispatch (its own dev
-// obj: the contiguous 0xd210-0xec24 .text block). Carved out of GruntzMgrCmd.cpp in
-// REHOME D9 (that file's real body is CGruntzMgr::HandleCommand @0x862f0; the
-// serialize dispatch + its ParseSerial helper are a separate obj that had been parked
-// there because HandleCommand's WM_COMMAND 0x807e path calls ParseSerial).
-//
-// Two functions, ascending retail-RVA:
-//   ParseSerial          @0x0d210 - the serial/key validator (the parse-callback front)
-//   SerialObjectFactory  @0x0d2a0 - the mode-dispatch + typeId->class object factory
 #include <Gruntz/GruntzMgr.h> // the mgr's real type
 #include <Ints.h>
 #include <string.h>
@@ -15,9 +6,6 @@
 
 #include <rva.h>
 
-// The serial/key validator's globals + callback: __cdecl (mgr, string). Takes the
-// manager through its MFC-free CGameRegistry view (the dual-view bridge cast at the
-// call site - same object as HandleCommand's `this`).
 extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
 extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
 extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)

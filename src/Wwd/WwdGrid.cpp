@@ -1,58 +1,19 @@
 #include <rva.h>
-// <Mfc.h> for the /GX EH frame helpers + CObject-style base. The grid's bucket
-// list helpers, the engine allocator, and the vector ctor/dtor iterators are all
-// reloc-masked engine externs (no bodies here).
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
 #include <Wwd/WwdGridShell.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
 #include <Gruntz/WwdGridIter.h>  // CWwdGridIter cursor - Start/Init/GetNext bodies live
-                                 // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
-                                 // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
 
-// --- reloc-masked engine externs -------------------------------------------
-
-// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free IS the global
-// operator delete (FID-verified library label).
-//
-// (There used to be a hand-rolled `void __stdcall Tm_DestroyArray(...)` declared here as
-// a stand-in for the "un-spellable" ??_M vector-dtor iterator. It IS spellable: retail's
-// FreeBuckets is a plain `delete[] m_buckets` - cl reads the count cookie at [p-4], calls
-// ??_M(p, sizeof, count, &~BucketHead), then operator delete(p-4), which is byte-for-byte
-// what 0x191800 does. ?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z was a symbol NOTHING defines,
-// while ??_M@YGXPAXIHP6EX0@Z@Z is right there in the CRT libs. Writing the real construct
-// makes cl emit the real call.)
 void operator delete(void* p);
 extern "C" double log(double);
 extern "C" double pow(double, double);
 
-// ===========================================================================
-// 0x1682a0 - ~CWwdGrid: stamp own vtable, free the bucket array; the base dtor
-// (folded inline) then restores the parent vtable. /GX frame from the base
-// subobject teardown.
-// ===========================================================================
-// Real polymorphic now: cl emits the implicit ??_7CWwdGrid own-vptr stamp in the
-// ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CObject
-// grand-base re-stamp folds in. /GX frame from the destructible base subobject.
-// (eh-dtor-implicit-vptr-stamp-first.md.)
-// CWwdGridShell::~CWwdGridShell @0x1682a0 - the SIBLING grid class's dtor (its own
-// 6-slot vtable ??_7CWwdGridShell @0x1f0310; class in <Wwd/WwdGridShell.h>). Same
-// shape as ~CWwdGrid: stamp own vptr, free the bucket array, fold the CObject grand-base.
-// IDENTITY (vtable-owner probe): ??_7 @0x1f0310 slot 1 -> the sdd 0x168280 -> THIS body.
-// It was misbound as CWwdGrid::~CWwdGrid, which pushed the REAL ~CWwdGrid (0x168c10) onto
-// a fake "second COMDAT copy" placeholder (C168c10) - an impossible story, since MSVC5
-// keeps exactly ONE COMDAT per mangled name. Two grids, two vtables, two dtors.
-// The FreeBuckets cast is the honest residue of the sibling's still-unmodelled layout
-// (it runs the same bucket-array teardown on the same offsets).
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {
     (reinterpret_cast<CWwdGrid*>(this))->FreeBuckets();
 }
 
-// 0x168c10 - the REAL CWwdGrid::~CWwdGrid: stamp ??_7CWwdGrid (0x5f0328), free the bucket
-// array, then the ~CObject grand-base re-stamp folds in. /GX frame from the destructible
-// base subobject. IDENTITY (vtable-owner probe): ??_7CWwdGrid @0x1f0328 slot 1 -> the sdd
-// 0x168bf0 -> THIS body. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00168c10, 0x46)
 CWwdGrid::~CWwdGrid() {
     FreeBuckets();
@@ -82,10 +43,6 @@ i32 Gap_191770(void) {
     return 0;
 }
 
-// ===========================================================================
-// 0x191800 - FreeBuckets: if allocated, run the vector dtor over the node array
-// and release the backing block; then clear the alloc-OK flag.
-// ===========================================================================
 RVA(0x00191800, 0x39)
 void CWwdGrid::FreeBuckets() {
     if (m_allocated) {
@@ -97,10 +54,6 @@ void CWwdGrid::FreeBuckets() {
     }
 }
 
-// ===========================================================================
-// 0x191840 - Add(region): compute the region's cell index from its pixel
-// position, cache the owning bucket, link it in, bump the count.
-// ===========================================================================
 RVA(0x00191840, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
     i32 col = (r->m_y - m_minY) >> m_shiftX;
@@ -112,9 +65,6 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     return 1;
 }
 
-// ===========================================================================
-// 0x191890 - Remove(region): unlink from its cached bucket, clear it, dec count.
-// ===========================================================================
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
     r->m_bucket->Unlink(r); // DSoundList::Unlink @0x1391e0
@@ -196,10 +146,6 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
     return fired;
 }
 
-// ===========================================================================
-// 0x191a70 - Clear: unlink and reset every bucket's list, return how many cells
-// held something; zero the count.
-// ===========================================================================
 RVA(0x00191a70, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
@@ -216,19 +162,6 @@ i32 CWwdGrid::Clear() {
     return nonEmpty;
 }
 
-// ===========================================================================
-// CWwdGridIter cursor methods (the tomalla-67 cluster) - re-homed here from
-// WwdSpatialMgr.cpp (matcher-2 D6 drain): 0x191ad0..0x191c30 sit in THIS obj's
-// contiguous .text run (right after Clear @0x191a70), not the CWwdSpatialMgr obj
-// (0x1682f0..). The cursor walks every grid cell overlapping the query rect,
-// visiting each node truly inside it (optionally unlinking it). It reads the
-// canonical CWwdGrid's bounds/shift/cols/bucket fields directly; the buckets are
-// the canonical BucketHead ({head,tail} DSoundList) so the node reads cast through
-// (WwdRegion*) exactly as CWwdGrid::Query/Clear do.
-// ===========================================================================
-
-// 0x191ad0 - Start(grid, remove): seed the cursor over the grid's ENTIRE bounds
-// rect (grid->minX..maxY passed by value) and return the first in-rect node.
 RVA(0x00191ad0, 0x34)
 WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
     // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied as a
@@ -346,12 +279,6 @@ walk:
     goto top;
 }
 
-// BucketHead::~BucketHead (0x191d10): the empty destructor - a bare 1-byte `ret` (a
-// {head,tail} DSoundList has trivial teardown). OUT-OF-LINE on purpose (declared, not
-// defined, in WwdGrid.h): that is what makes cl emit the real ??_M vector-dtor call in
-// FreeBuckets instead of proving the loop away. It was modelled as a free function
-// `BucketHead_Dtor` whose address FreeBuckets passed by hand.
-// (Ghidra's __fpclear FID label was a 1-byte-`ret` false hit.)
 RVA(0x00191d10, 1)
 BucketHead::~BucketHead() {}
 

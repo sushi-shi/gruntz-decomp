@@ -1,27 +1,3 @@
-// AniRecordView.h - the shared polymorphic view of the 0x34-byte 'ANI' frame
-// record that CAniElement (Build) `new`s and catalogs in its CObArray.
-//
-// The REAL record is CAniRecord (src/Gruntz/AniRecord.cpp): a non-polymorphic,
-// dual-base MANUAL-VTABLE record (primary CObject facet vtbl @0x5f02c0 + secondary
-// 14-slot facet vtbl @0x5f02d8) modeled non-poly so its matched leaf offsets stay
-// fixed. Because the real class is non-poly, its callers can't dispatch through it,
-// and folding a virtual interface back onto it would poly-ify an MI manual-vtable
-// record and shift those leaf offsets. So this view is the REQUIRED caller-side
-// facet (verdict: one object, required codegen-model split - NOT a dedup miss; cf.
-// [[vtable-realization-ctor-boundary]] CGameRegistry/CGruntzMgr).
-//
-// This models the record's PRIMARY 5-slot CObject facet (vtable @0x5f02c0). Callers:
-//   * `new CAniRecordView`  - the ctor stamps the vptr + seeds m_owner/m_count/
-//     m_indices; cl auto-emits ??_7CAniRecordView (reloc-masks 0x5f02c0), no manual
-//     `m_vptr = &g_aniRecordVtbl` store (the ALL-VTABLES-real model).
-//   * `rec->Parse(...)` / `rec->GetSize()` - non-virtual leaf entries.
-//   * `delete rec` - the slot-1 scalar-deleting dtor dispatched as
-//     `mov edx,[ecx]; call [edx+4]`. Modeled as an explicit named virtual (NOT a
-//     C++ `~dtor` + `delete`) precisely to emit that call WITHOUT the compiler's
-//     delete-null-check (the caller already guards `if (el != 0)`).
-//
-// Folds the former CAniElement.cpp-local `CAniRecordInit` (identical 5-slot new-site
-// view) into this single shared definition.
 #ifndef GRUNTZ_CANIRECORDVIEW_H
 #define GRUNTZ_CANIRECORDVIEW_H
 #include <rva.h>
@@ -32,11 +8,6 @@
 class CDDrawSubMgrLeafScan; // the token-map ctx (ex CAniMapOwner - its +0x10 Ptr map is m_10)
 class CDDrawSurfaceMgr;     // the record owner (ex CAniRecordOwner - m_ptrColl/m_drawTarget)
 
-// The ANI frame record. cl inherits GetRuntimeClass/Serialize/AssertValid/Dump (the
-// shared CObject defaults) and OVERRIDES only slot 1 (the real teardown dtor 0x1657a0
-// that frees m_indices). Single owning class of the primary ??_7 @0x5f02c0 (VTBL in
-// AniRecord.cpp). Holds the record data + its non-virtual leaf entries directly (no
-// separate non-poly data twin / `(CAniRecord*)this` cross-cast).
 struct CAniRecordView : public CObject {
     virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor
 

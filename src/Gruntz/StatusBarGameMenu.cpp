@@ -56,15 +56,6 @@
 #include <Gruntz/SBI_MenuItem.h>        // canonical CSBI_MenuItem (12 slots, vtbl 0x5eab4c)
 #include <Gruntz/SBI_ImageSet.h>        // canonical CSBI_ImageSet  (13 slots, vtbl 0x5eac4c)
 
-// ---------------------------------------------------------------------------
-// The builder-facet base CSBI_Image, its concrete SBI leaves (CSBI_ImageSet /
-// CSBI_MenuItem), the registry factory view CGmFactory and the CGameMenuMgr class
-// moved to <Gruntz/GameMenuMgrBuilders.h>.
-// ---------------------------------------------------------------------------
-
-// ===========================================================================
-// CGameMenuMgr::BuildGameMenu  @0x101580
-// ===========================================================================
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host

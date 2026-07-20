@@ -1,14 +1,3 @@
-// GruntPowerupSprite.cpp - the "grunt has a powerup" indicator sprite
-// (C:\Proj\Gruntz). A CUserLogic-derived game object; methods in ascending
-// retail-RVA order:
-//   ~CGruntPowerupSprite  @0x012370 - the /GX leaf dtor (CUserLogic teardown).
-//   SetCell               @0x080380 - stash the cell + powerup id, bind the bute
-//                                     sprite, return 1.
-//   Update                @0x080410 - sync + track the grunt's screen position.
-//
-// The 0x44 is a DESTRUCTOR (stamps CUserLogic 0x5e705c then CUserBase 0x5e70b4,
-// tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
-// shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -20,17 +9,8 @@
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
-// DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
-// DATA() only in TU source, not headers).
 DATA(0x00244d30)
 extern CIndicatorActReg g_powerupActReg; // 0x644d30
-
-// The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
-// @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
-
-// The serializable sub-object overlaid at CUserLogic+0x34; its own serializer is
-// reached as `lea ecx,[this+0x34]; call` through the 0x1aff thunk (the SAME helper
-// the in-game-text leaf uses). External; no body.
 
 // ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
@@ -39,8 +19,6 @@ extern CIndicatorActReg g_powerupActReg; // 0x644d30
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CGruntPowerupSprite@@UAE@XZ 0x00012370 0x44
 
-// --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 --- the ctor anchors the
-// ??_7CGruntPowerupSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
@@ -53,18 +31,11 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_38->m_stateFlags |= 1;
 }
 
-// CGruntPowerupSprite::InitActReg @0x07ffa0 - construct the class's activation-
-// coordinate registry singleton (g_powerupActReg @0x644d30) over [2000, 2010]
-// via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007ffa0, 0x15)
 void CGruntPowerupSprite::InitActReg() {
     g_powerupActReg.Construct(2000, 2010);
 }
 
-// CGruntPowerupSprite::RunAct @0x080020 - resolve the coordinate-registry entry for `id`
-// (inline CActReg::ResolveEntry) and, if it holds a registered handler PMF, re-resolve the
-// entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
-// no CSE across the guard).
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn != 0) {
@@ -103,11 +74,6 @@ void CGruntPowerupSprite::RegisterActs() {
     (reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
-// SetCell @0x080380 - stash the grunt cell (x,y) and powerup id, seed the bound
-// renderable's display fields (visible=1, state=7, bute-set record from the
-// registry's +0x78 table indexed by the powerup id), clear bit 0 of the +0x38
-// game object's flags, then point the +0x14 aux's bute node at the "A" node
-// (saving the old node into m_prevAnimSetNode). Returns 1.
 RVA(0x00080380, 0x6c)
 i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
@@ -145,10 +111,6 @@ i32 CGruntPowerupSprite::Update() {
     return 0;
 }
 
-// CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
-// CUserLogic::SerializeMove and the +0x34 sub-object, then round-trip the own state:
-// m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
-// the powerup's bute-set record (g_gameReg->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
 i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {

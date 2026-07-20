@@ -1,13 +1,6 @@
-// ImageSet1.cpp - CImageSet1 (the kind-1 WWD image-set collision record) method
-// bodies, split out of the GameLevel god-TU. The class def lives in
-// <Gruntz/ImageSets.h>; its ??_7CImageSet1 vtable is emitted + VTBL-bound in
-// GameLevel.cpp (ReadImageSet's `new CImageSet1`).
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
-// ~CImageSet1 (0x161370, vtable slot 1): the trivial derived dtor. cl stamps the
-// derived vptr then the base ~CObject stamps ??_7CObject; /O2 dead-store-elides the
-// derived stamp, leaving the single `mov [ecx], &??_7CObject; ret` (reloc-masked).
 RVA(0x00161370, 0x7)
 CImageSet1::~CImageSet1() {}
 

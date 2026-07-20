@@ -1,16 +1,3 @@
-// GruntArrivalScan.cpp - the CGrunt arrival/scan/step obj (retail Grunt.obj arrival
-// band, RVA 0xec670-0xf8240). MERGED (operation REHOME M2) from the over-split
-// GruntArrivalScan / WanderIdleStep / GruntReticle / GruntUpdateStep / GruntArrivalStep
-// / GruntPhaseStep files: they interleave in retail RVA order (ArrivalScanA...B...C
-// with WanderStep/Reticle/UpdateArrival/DefenseAlt/PhaseStep/SeekTarget between), so
-// they are pieces of ONE retail obj. All folded onto the canonical CGrunt
-// (<Gruntz/Grunt.h>), CGameRegistry singleton facet. Placeholder field names; only
-// offsets + code bytes are load-bearing. The retail obj ALSO contains the interleaved
-// helper-class bodies (Grunt::ChargeStep, CGruntScan::ScanNearestTarget, CObjectTracker,
-// the MgrListFind free fn) + CGrunt's four Grunt.cpp arrival fns (ResolveArrivalReposition,
-// ResolveArrivalNeighbor, StepArrivalDefense, StepArrivalDefenseLean) - those stay in
-// their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
-// (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
@@ -36,24 +23,7 @@
 
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
 
-// The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
-
-// Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
-// GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call
-// 0x437c -> _zdvec::IndexToPtr @0x310f0). Canonical zDArray model, no casts.
-
-// g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-
-// The former `g_dropList` was a SECOND name for 0x245540 - the same FreeNodePool the
-// rest of the tree calls g_coordPool (<Gruntz/Grunt.h>); its DATA pin here was the one
-// binding at
-// that rva, which left every `?g_coordPool@@3VFreeNodePool@@A` reference UNBOUND. Folded
-// onto g_coordPool (defined in GameText.cpp, the pool's reset/clear owner TU).
 
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 
@@ -61,14 +31,6 @@ extern "C" {
     i32 GameRand(); // 0x51fee0 (__cdecl)
 }
 
-// (CGruntPtAcc is GONE: PhaseStep's /GX-forcing point accumulator IS MFC ::CDWordArray.
-//  PROVEN from the binary - its ctor 0x1b4b43 stamps vtable 0x1ec29c, whose MFC
-//  CRuntimeClass names it "CDWordArray".  The old note "Dtor @0x1b4b76 IS
-//  CByteArray::~CByteArray" was a FID AMBIG mislabel: 0x1b4b76 is inside the CDWordArray
-//  band [0x1b4b43, 0x1b4f0b), not CByteArray's [0x1b527e, 0x1b55e9).)
-
-// Recompute the grid dirty rect (m_60) as {0,0,w,h} intersected with a copy, then
-// m_70/m_74 = the resulting size (the shared GruntTileScan dirty-rect idiom).
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -86,7 +48,6 @@ extern "C" {
         (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
     }
 
-// Recycle the visited-coord CPtrList nodes (head) back onto the shared free list.
 #define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
         GruntCoordNode* n = (head);                                                                \
@@ -102,7 +63,6 @@ extern "C" {
         }                                                                                          \
     }
 
-// Recompute the board dirty rect (m_60) as {0,0,w,h} intersected with a copy of itself.
 #define GRID_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -120,7 +80,6 @@ extern "C" {
         (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
     }
 
-// Same, but built with inline rect field stores (no Set34a4) - the box-scan exit form.
 #define GRID_RECT_INLINE(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -140,7 +99,6 @@ extern "C" {
         (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
     }
 
-// Drain the pending-coord list (recycle each node's link, then RemoveAll).
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
         GruntCoordNode* n = reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());                                \
@@ -153,7 +111,6 @@ extern "C" {
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \
     }
-
 
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveArrivalReposition()   @0xec670   (__thiscall, ret 0 -> 1)

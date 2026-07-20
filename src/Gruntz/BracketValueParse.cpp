@@ -1,18 +1,9 @@
-// BracketValueParse.cpp - 0xf9160 (__cdecl). Extract the value of a "[key:value]"
-// token out of a larger string. Build the "[key:" marker into a 256-byte stack
-// buffer (sprintf "[%s:"), find it in the source, skip past it, then copy the run
-// up to the next ']' into the caller's output buffer. Self-contained leaf; the two
-// DAT_006xxxxx are the "[%s:" / "]" $SG literals (reloc-masked), and strlen lowers
-// to the inline `repne scasb` intrinsic.
 #include <Ints.h>
 #include <rva.h>
 #include <stdio.h>  // sprintf (0x11f890)
 #include <string.h> // strstr (0x120090) + inline strlen
 #pragma intrinsic(strlen)
 
-// ---------------------------------------------------------------------------
-// 0xf9160: out <- value of "[key:value]" found in src; 1 on success, 0 if absent.
-// ---------------------------------------------------------------------------
 RVA(0x000f9160, 0xd2)
 i32 ExtractBracketValue(char* out, char* src, char* key) {
     char marker[256];

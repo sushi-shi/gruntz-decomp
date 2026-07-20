@@ -1,17 +1,3 @@
-// BrickzCellFlags_077790.cpp - the 0x077790 obj carved out of src/Gruntz/Brickz.cpp
-// (holding-TU drain, 2026-07-11): CBrickzGrid::ComputeCellFlags (0x077790),
-// CLevelPlane::SetCell (0x077dc0, ex BrickzGridDesc::SetCell - the Brickz* views
-// are dissolved onto CGameLevel/CLevelPlane/CTileImageSet, see Brickz.h), and
-// Grid_77df0::FindNearest (0x077df0) - one contiguous retail .text block, distinct
-// from the main CBrickzGrid pathfinding obj (0x081e10+ in Brickz.cpp).
-// (Grid_77df0 was CTriggerMgr - dissolved 2026-07-14, see FindNearestEnemy below.)
-//
-// IDENTITY CRACKED (2026-07-14): the 2026-07-11 xref stopped at "a per-Grunt 4x15
-// spatial-neighbour grid, does not crack from the caller set alone" - but the
-// receiver at every one of those ~15 CGrunt call sites is the grunt's +0x260
-// board slot, whose type Grunt.h had ALREADY settled as CTriggerMgr. FindNearest
-// is CTriggerMgr::FindNearestEnemy (declared in <Gruntz/TriggerMgr.h>), the twin
-// of FindNearestInRow @0x77f80 in TriggerMgr.cpp's own interval next door.
 #include <rva.h>
 #include <Gruntz/Grunt.h>      // CGrunt (== CTmCell) + CGruntHud - the grid cells
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindNearestEnemy's owner)
@@ -211,10 +197,6 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     }
 }
 
-// 0x077dc0 - flat cell setter: m_tileGrid[ m_colOffsets[y] + x ] = id (re-homed from
-// src/Stub/BoundaryLowerMethods.cpp; CTerrainTileLoader::Load reaches this via
-// level->m_24 -> m_mainPlane). __thiscall(x, y, id). Ex BrickzGridDesc::SetCell -
-// the grid descriptor IS the CLevelPlane.
 RVA(0x00077dc0, 0x1d)
 void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     m_tileGrid[m_colOffsets[y] + x] = id;

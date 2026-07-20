@@ -1,32 +1,3 @@
-// MenuPage.h - a named menu/list page node (C:\Proj\Gruntz).
-//
-// Recovered from the tomalla-45 trace cluster (0x183250..0x1844d0). The
-// main-menu builder (src/Gruntz/MainMenuBuilder.cpp, 0xa11d0) constructs one of
-// these per menu page ("MAINMENU", "SINGLEPLAYER", "MULTIPLAYER", "MOVIEZ",
-// "QUESTZ", the AREAS sub-pages) and fills it with named items; the on-screen
-// menu host (ChatBox.cpp region, 0x182ab0) drives it with Draw + focus
-// navigation (FocusNext / FocusPrev / SetFocus / Activate).
-//
-// Layout (offsets + code bytes are load-bearing):
-//   +0x00 m_owner     - owning menu system (Configure sets it from template link)
-//   +0x04 m_host      - render host (Draw/SwitchToPage; +0x20 byte gates wrapping)
-//   +0x08 m_switchKey - CString: page-switch target key (Switch)
-//   +0x0c m_key       - CString: this page/item key returned by GetKey
-//   +0x10 m_focusName - CString: saved focus item name (RestoreFocus)
-//   +0x14 m_items     - CPtrList of child items (m_pNodeHead @+0x18; node {next,prev,data@+8})
-//   +0x30 m_flags     - flag bits (0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw)
-//   +0x34..+0x54 - layout scalars: rect{L,T,R,B}, headGap, rowSpacing,
-//                  colWidth, rowsPerCol, colOffset (named)
-//   +0x58 m_offsetX   - layout x-offset (zeroed in Configure)
-//   +0x5c m_offsetY   - layout y-offset (zeroed in Configure)
-//   +0x60 m_subPage   - sub-page / name-cache pointer (CMapStringToPtr::Lookup result)
-//   +0x64 m_focus     - current focused child item
-//
-// The child-item classes (CMenuItem / CMenuItem2) are the polymorphic leaves in
-// MenuItem.h / MenuItem2.h; the page owns a CPtrList of them, reads a child's kind
-// (+0x24) and back-link (+0x1c), caches its list POSITION (+0x2c), and drives it
-// through its vtable (Init / GetWidth / Detach / Notify / Place / Configure /
-// Release / Trigger). __thiscall.
 #ifndef GRUNTZ_MENUPAGE_H
 #define GRUNTZ_MENUPAGE_H
 
@@ -38,15 +9,9 @@
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
 
-// The owning menu system (catalog holder) IS the canonical CDDrawSurfaceMgr
-// (== CState::m_c / CChatBox::m_page; GameRegistry.h): the catalog is its +0x10
-// m_10 CImageRegistry, whose +0x10 m_10map is the name->page CMapStringToOb.
 class CDDrawSurfaceMgr;
 class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
-// A view of the CPtrList node layout (CPtrList::CNode is protected): next/prev/
-// data. The page's m_items walkers cast POSITIONs to it. (Distinct from
-// GruntzMgr.cpp's CMenuNode menu-tree node; this is the list node.)
 struct CMenuListNode {
     CMenuListNode* pNext;
     CMenuListNode* pPrev;

@@ -1,21 +1,3 @@
-// FortressFlag.h - a fortress-flag game-object (C:\Proj\Gruntz).
-//
-// CFortressFlag : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CSecretTeleporterTrigger (proven by its dtor @0x010e90 stamping
-// the CUserLogic vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing
-// down the +0x18 link via the embedded ~EngStr at 0x16d2a0 - byte-identical in
-// shape to ~CSecretTeleporterTrigger @0x010ab0). The leaf adds no destructible
-// members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown (the
-// /GX leaf-dtor archetype).
-//
-// Serialize (0x046410) is the SAME chain-then-+0x34-subobject Serialize archetype
-// as CSecretTeleporterTrigger::Serialize (0x010a10), plus a per-class tail that,
-// when the serialize tag is 8 (a post-load fixup), looks the flag's sprite
-// selector up in the level's sprite-ref table and re-seeds the bound sprite's
-// state fields.
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CFORTRESSFLAG_H
 #define GRUNTZ_CFORTRESSFLAG_H
 
@@ -52,9 +34,6 @@ public:
 VTBL(CFortressFlag, 0x001e725c);
 SIZE(CFortressFlag, 0x54);
 
-// The class's activation-registry entry record: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class). Declared AFTER the complete class so the PMF stays 4 bytes.
 typedef i32 (CUserLogic::*FortressFlagHandler)();
 struct CFortressFlagActEntry {
     FortressFlagHandler m_fn;

@@ -1,16 +1,3 @@
-// Warlord.h - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
-// CUserLogic-derived leaf. This header models ONLY what the three home-TU
-// methods (~CWarlord, the slot-4 state dispatcher, and the anim re-arm) touch.
-//
-// Hierarchy (RTTI-recovered, see UserLogic.h):
-//   CUserBase  <- CUserLogic  <- CWarlord   (vftable 0x5e7404)
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
-// load-bearing. CWarlord adds, past the 0x40 CUserLogic base:
-//   m_38   (inherited CUserLogic::m_38, the anim player ptr - reused by 0x44bb0)
-//   CString m_54   the warlord's own destructible string member (drives the dtor)
-//
-// Engine callees/globals are reloc-masked (declared no-body / extern).
 #ifndef GRUNTZ_CWARLORD_H
 #define GRUNTZ_CWARLORD_H
 
@@ -22,12 +9,6 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
-// ---------------------------------------------------------------------------
-// The geometry sub-player at +0x1a0 on the bound game object (reached as
-// (char*)CUserLogic::m_38 + 0x1a0). SetGeoSourceR (engine FUN_0055c360, __thiscall
-// ret 4) re-arms it against a geometry source; the anim re-arm method also polls
-// its +0x20 / +0x28 state words. Modeled no-body so the `ecx=&sub; call` reloc-masks.
-// ---------------------------------------------------------------------------
 class CWarlordAnimSub {
 public:
     char m_pad00[0x20];
@@ -36,13 +17,8 @@ public:
     i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
 };
 
-// The global default geometry source the re-arm consumes (0x6bf3bc). Bound to the
-// canonical extern "C" _g_6bf3bc (the tree-wide keep-last winner, DATA'd in
-// tilelogicpump); the old C++-mangled g_defaultGeo alias was reloc-UNBOUND.
 extern "C" u32 g_engineFrameDelta;
 
-// The running game clock (low 32 bits of a 64-bit counter at 0x645588; the high
-// half lives in the next word, read together as __int64 in the cooldown clamp).
 extern "C" u32 g_frameTime;
 
 // ---------------------------------------------------------------------------
@@ -65,15 +41,11 @@ public:
     i32 m_2a0;    // +0x2a0  cue-active flag
 };
 
-// The registry's battle-event sink (g_gameReg->m_cueSink): fires a fort battle-cry /
-// event message. Engine __thiscall at RVA 0x11b7c0. External/no-body.
 class CRegBattleEvent {
 public:
     void PostBattleEvent(i32 id, i32 event, i32 a, i32 b, i32 c);
 };
 
-// The single-player "level done?" chain: g_gameReg->m_curState (a level/mission object)
-// -> m_3f4 (its objective tracker) -> m_4c (non-zero "complete" flag).
 struct CWarlordObjective {
     char m_pad00[0x4c];
     i32 m_4c; // +0x4c  completion flag (0 = still playing)
@@ -83,14 +55,6 @@ struct CWarlordMission {
     CWarlordObjective* m_objective; // +0x3f4  objective tracker
 };
 
-// ---------------------------------------------------------------------------
-// CGameRegistry - the big game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @
-// 0x64556c). Only the offsets the warlord's per-tick update touches are modeled.
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// CWarlord
-// ---------------------------------------------------------------------------
 class CWarlord : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1

@@ -1,52 +1,16 @@
-// Wap32.h - WAP32 engine class declarations (Brian Goble's engine; shared
-// C:\Proj\Incs\). Minimal reconstructions sufficient to byte-match the small
-// self-contained constructors. Field names are placeholders (m_<hexoffset>);
-// only the OFFSETS are load-bearing (they are what the byte-exact ctor proves).
 #ifndef WAP32_H
 #define WAP32_H
 
 #include <Ints.h>
 #include <rva.h> // VTBL
 
-// <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, CREATESTRUCTA,
-// USER32/GDI32 imports), the MFC-controlled way (afx.h first).
 #include <Mfc.h>
 
-// The game's WM_COMMAND id space (defined in <Gruntz/GruntzCommandId.h>). The two
-// base command virtuals below take it by value; the engine only needs the type
-// NAME, so this MS-style opaque forward declaration keeps the game header OUT of
-// the engine layer. MSVC 5.0 treats a forward-declared enum as int-width, so this
-// is a complete-enough type for a by-value parameter and is byte-neutral vs i32.
 enum GruntzCommand;
 
-// CGameWnd::CreateAndShow receives its 12 CreateWindowExA arguments as a
-// CREATESTRUCTA* (the <windows.h> layout, same one CGameApp stores in
-// m_createStruct): lpCreateParams@0 .. dwExStyle@0x2c. The window loads [eax+0]
-// first (the first stdcall push = the rightmost CreateWindowExA arg,
-// lpCreateParams) up through dwExStyle - the interleaved load/push idiom falls
-// straight out of reading the CREATESTRUCTA fields in that order.
 class CGameApp; // owner back-pointer (CGameWnd::m_owner)
 
-// ---------------------------------------------------------------------------
-// CGameWnd - WAP32 window wrapper.
-//   The ctor zeroes m_hwnd (+0x04) and m_closeGuard (+0x0c); vptr stored first (natural
-//   single-class form).
-//
-//   The class's window procedure (CGameApp::GameWindowProc, the static stored in
-//   WNDCLASS.lpfnWndProc) dispatches every Win32 message to the *active* CGameWnd
-//   singleton through this vtable: a per-message virtual handler for each WM_* the
-//   engine cares about. The handler returns nonzero "handled" => WndProc returns 0;
-//   zero "not handled" => WndProc falls through to DefWindowProcA. The full 22-slot
-//   vtable (0x00..0x54) is load-bearing: GameWindowProc's switch dispatches on the
-//   exact slot offsets (e.g. WM_MOVE -> +0x14, WM_COMMAND -> +0x54). Most handlers
-//   are out-of-line stubs here (vtable anchors); only the ones reconstructed in
-//   their own right (the ctor, QuitMessageLoop @ +0x34 = WM_DESTROY) carry bodies.
-// ---------------------------------------------------------------------------
 class CGameWnd;
-// Active-window singleton (DAT_00653c68): the one CGameWnd currently driving the
-// WNDPROC. Set by CreateAndShow, cleared by Destroy / ~CGameWnd. Shared so the
-// inline ~CGameWnd below (which CGruntzWnd's cross-TU dtor folds) resolves it; the
-// reloc that names it is masked in objdiff.
 extern CGameWnd* g_activeGameWnd;
 
 class CGameWnd {
@@ -109,22 +73,6 @@ public:
     i32 m_closeGuard;  // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
 
-// CGameMgr - the WAP32 game manager base class (vftable ??_7CGameMgr@@6B@ @
-// 0x5e9b8c, 6 slots). The TRUE object is 0x2c bytes (CGameApp::Initialize-
-// GameManager does `new CGameMgr` => operator new(0x2c)); the ctor seeds the
-// frame clock and a couple of run-state flags. InitInstance starts it
-// with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
-// dtor @ vtable slot 0) on failure.
-//
-// This is the GENUINE 0x2c base. Gruntz's own game manager is the derived
-// CGruntzMgr (0xa30 bytes, its own vftable @0x5e9b64; see <Gruntz/GruntzMgr.h>):
-// CGruntzApp::InitializeGameManager (@0x080a20) does `new CGruntzMgr` =>
-// `push 0xa30`, while the engine's own CGameApp::InitializeGameManager
-// (@0x13dbc0) does `new CGameMgr` => `push 0x2c`. The two managers no longer
-// share one (padded) class - the base is its true size and the derived game
-// manager carries the 0xa30 of game state.
-// (the  namespace wrapper is GONE: retail RTTI descriptor .?AVCGameMgr@@
-// proves the class is GLOBAL-namespace - docs/rtti-class-census.txt)
     class CGameMgr;
 VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
 class CGameMgr {
@@ -181,12 +129,6 @@ class CGameMgr {
         // where cl already emits that COMDAT.)
     };
 
-// CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
-
-// GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
-// +0x14 (m_gameInfo); Init builds one on the stack and hands
-// it to InitInstance, which copies it into the member and uses it to
-// register the class + create the window.
 struct GameInfo {
     i32 size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
     i32 windowClassFlags;         // +0x004  bit1=Windowed, bit2=DialogFrame
@@ -200,22 +142,6 @@ struct GameInfo {
     i32 windowHeight;             // +0x1d0
 }; // 0x1d4 bytes
 
-// ---------------------------------------------------------------------------
-// CGameApp - WAP32 application object.
-//   The ctor zeroes a handful of fields then bumps a file-scope instance
-//   counter.
-//   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
-//   source mirrors (m_hAccel initialised before m_hInstance).
-//
-//   The dispatch methods (InitInstance/03, InitializeDefaultCreate-
-//   Struct) call the other CGameApp methods through the vtable (call [vptr+N]),
-//   so the WHOLE class is virtual with the tomalla slot order; matched methods
-//   keep their bodies (virtual mangles `U`, not `Q`).
-// ---------------------------------------------------------------------------
-// CGameApp instance counter. Bumped by the
-// ctor, decremented by ~CGameApp. Shared across the gameapp / gruntzapp TUs so
-// the inline ~CGameApp below (which CGruntzApp's dtor inlines) resolves it; the
-// reloc that names it is masked in objdiff (only the load/store bytes matter).
 extern i32 g_gameAppInstanceCount;
 
 class CGameApp {

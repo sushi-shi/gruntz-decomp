@@ -1,35 +1,10 @@
-// Boomerang.h - CBoomerang : CProjectile (C:\Proj\Gruntz), the returning-projectile
-// leaf of the CUserBase/CUserLogic/CMovingLogic/CProjectile subtree.
-//
-// Hierarchy (RTTI in GRUNTZ.EXE):
-//     CProjectile : CMovingLogic   vftable 0x5e798c  (sizeof 0x228)
-//       +-- CBoomerang : CProjectile  vftable 0x5e792c  (sizeof 0x260)
-//
-// CBoomerang adds the return-trajectory state at +0x228..+0x258 (the launch origin,
-// the arc direction/origin, the phase parameter, the launched latch) over the 0x228
-// CProjectile body -> sizeof == 0x260. Proven: the ctor @0xe0650 chains
-// ??0CProjectile@@QAE@PAUCGameObject@@@Z (thunk 0x37d8) then stamps ??_7CBoomerang@@6B@;
-// LogicDispatchBoomerang @0xde9e0 `new CBoomerang` pushes 0x260. The trajectory fields
-// are touched ONLY by CBoomerang methods (StepMotion / LoadProjectileSprites /
-// SerializeMove), which is why they moved out of CProjectile.
 #ifndef GRUNTZ_BOOMERANG_H
 #define GRUNTZ_BOOMERANG_H
 
 #include <Gruntz/Projectile.h> // real CProjectile base (pulls CMovingLogic/CUserLogic, CGruntArchive, LogicTypeId)
 #include <rva.h>
 
-// CBoomerang : CProjectile - 18 slots (vftable 0x5e792c). Overrides slots
-// 0(scalar-dtor)/1(SerializeMove)/2(GetTypeTag)/16(MovingSlot16 = the boomerang motion
-// step, @0xe08b0)/17(LoadProjectileSprites, @0xe0690); the rest are inherited from
-// CProjectile/CUserLogic. cl emits ??_7CBoomerang@@6B@ from CProjectile's vtable with
-// these overrides applied (all reloc-masked); the ctor stamps the vptr implicitly.
 SIZE(CBoomerang, 0x260);
-// Do NOT add `public CWapX` here. CBoomerang's CHD @VA 0x5f2d18 lists CWapX@0x150, but
-// that is the transitive closure, not a declaration: decoding its numContainedBases
-// nesting gives exactly ONE direct base, CProjectile - which is where CWapX is declared
-// (MI1, 2026-07-17). Re-declaring it would create a second CWapX subobject. Same rule as
-// the +0x34 sub-leaves (CCoveredPowerup/CGiantRock/CTileSecretTrigger), which inherit
-// theirs through CTileTrigger.
 class CBoomerang : public CProjectile {
 public:
     CBoomerang(CGameObject* owner); // 0xe0650 (chains CProjectile(owner))
@@ -52,9 +27,6 @@ public:
 };
 VTBL(CBoomerang, 0x1e792c);
 
-// The boomerang return-trajectory .rdata constants owned by Boomerang.cpp (each DATA()-
-// bound there). Declared here (external linkage) so the definitions can drop `extern`
-// while keeping the exact symbol + binding. Emit no code -> matching-neutral.
 extern const double g_boomHalf;      // 0x5eaad8  midpoint scale
 extern const double g_boomTimeScale; // 0x5eaae0
 extern const double g_boomRetC3;     // 0x5eaaf0

@@ -1,14 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_ANIADVANCE_H
 #define GRUNTZ_DDRAWMGR_ANIADVANCE_H
 
-// AniAdvance.h - the CAniAdvanceCursor satellite advance types (wave4-L): the
-// sprite-render context the cursor drives, the animation descriptor (playlist
-// entry), and the per-frame blit/sound trigger overlay. Shared by the G obj
-// (TriggerBlit @0x1587f0, src/DDrawMgr/DDrawSubMgr.cpp) and the I obj (Advance
-// @0x15c360 + the Clamp* pair, src/Wwd/WwdFactoryObject.cpp) - dossier #15.
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
-
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -16,9 +8,6 @@
 
 class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
-// The sprite-render context the cursor drives (held at cursor+0x10). ClampFirst/
-// ClampLast (0x15cc50/0x15cc90) clamp its +0x190 cursor to the sequence ends and
-// re-resolve +0x198.
 class CAniRenderCtx {
 public:
     void ClampFirst_15cc50(); // 0x15cc50  __thiscall on the context (I obj)
@@ -42,10 +31,6 @@ public:
 };
 SIZE_UNKNOWN(CAniRenderCtx);
 
-// The animation descriptor (cursor+0x18, a playlist entry). +0x08 step-mode keys
-// the 7-way frame-step switch; +0x0c loop-mode word keys the 10-way next-descriptor
-// switch (range-checked against the 9 sentinel); +0x2c/+0x30 drive a random
-// per-frame trigger.
 class CAniDesc : public CObject { // the CObArray-stored frame record (vptr from CObject)
 public:
     unsigned char
@@ -65,8 +50,6 @@ public:
 };
 SIZE_UNKNOWN(CAniDesc);
 
-// The per-frame draw trigger (the context's +0x5c screen-X is the blit cue arg).
-// Overlaid on the cursor: +0x0c context, +0x10 sound player.
 class CAniBlitTrigger {
 public:
     i32 TriggerBlit_1587f0(

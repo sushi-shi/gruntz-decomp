@@ -1,22 +1,3 @@
-// ZVec.h - the WAP32 engine's `_zvec`/`_zdvec` dynamic-vector base and the
-// `zDArray<T>` template that derives from it (C:\Proj\incs). RTTI in GRUNTZ.EXE
-// names the most-derived instance here as
-//   .?AV?$_zdvec@P8CUserLogic@@AEHXZ@@   ==  zDArray<int (CUserLogic::*)(void)>
-// with the class hierarchy  zDArray<T> : _zdvec : _zvec : zErrHandling.
-//
-// The vector stores a contiguous element band addressed by an integer index that
-// may run negative: lower/upper bounds are tracked and the band is realloc'd
-// (and zero-filled) on demand. Layout (all dword fields, from the ctor/accessor
-// disasm):
-//   +0x00  vptr
-//   +0x04  zErrHandling* (the error-reporting subobject; receives Error())
-//   +0x08  lo            (lowest valid index)
-//   +0x0c  hi            (highest valid index)
-//   +0x10  base          (element pointer biased so base + (idx-lo)*stride works)
-//   +0x14  spare         (returned by the accessor's error path)
-//   +0x18  stride        (element size in bytes)
-//   +0x1c  alloc         (raw realloc base / per-element-fixup start)
-//   +0x20  grown         (count of freshly-grown slots, scratch)
 #ifndef GRUNTZ_WAP32_ZVEC_H
 #define GRUNTZ_WAP32_ZVEC_H
 
@@ -24,26 +5,8 @@
 #include <Wap32/zBitVec.h> // the canonical zErrHandling - _zvec's real {vptr, sink} head
 #include <rva.h>
 
-// (The empty zErrHandling placeholder that lived here - the stand-in base
-// <Bute/ButeMgr.h>'s zPTree derives - moved into ButeMgr.h itself (wave2-H), so
-// this header can coexist with the RTTI-real polymorphic zErrHandling of
-// <Bute/PTreeNode.h> inside the merged TypeKeyColl TU. The _zvec head
-// {vptr, m_err} IS that same container-error base - a pending dedup.)
-
-// The error-slot the accessor invokes on overflow: m_err points to a CVariantSlot
-// (its Set @0x16d850 is called at every overflow site). Was mis-typed as an empty
-// `zErrHandling` placeholder; typed to the real pointee here.
 struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
 
-// The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
-//
-// Its head {vptr@0, err-sink@4} IS the container-error base - RTTI spells the chain
-// `zDArray<T> : _zdvec : _zvec : zErrHandling`, and zErrHandling is the class
-// <Wap32/zBitVec.h> models as zErrHandling. _zvec used to redeclare that head itself,
-// with its own `virtual ~_zvec()` "at 0x16da60" - but 0x16da60 is ~zErrHandling, and
-// ??1_zvec was defined nowhere, so ~_zdvec's chained base-dtor call dangled. Derive the
-// real base instead: _zvec adds no destructible state, so its implicit dtor folds away
-// and ~_zdvec chains straight to ~zErrHandling - which is exactly what retail does.
 class _zvec : public zErrHandling {
 public:
     // Pass-through to the error-sink base ctor (0x16d9c0): retail's allocating ctor
@@ -65,15 +28,6 @@ public:
     i32 m_grown;   // +0x20
 };
 
-// zDArray<int (CUserLogic::*)(void)>: the derived vector whose elements are
-// member-function pointers; its accessor override fixes up freshly-grown slots.
-//
-// The former <Gruntz/TypeKeyColl.h> `CZArray2D` was a SECOND model of THIS class
-// (one class, two names - now folded): its vtable 0x1f04d4 is the datum VTBL(_zdvec)
-// binds, its ctor 0x16de30 is the allocating ctor below, and its ??1 0x16df40 is
-// ~_zdvec. Field mapping (offsets identical): m_buf==m_base, m_buf2==m_spare,
-// m_owner==zErrHandling::m_errSink. Likewise `CZArrayRoot` was a second model of
-// zErrHandling (ctor 0x16d9c0, vtable 0x1f04cc) - also folded.
 class _zdvec : public _zvec {
 public:
     // The allocating ctor (0x16de30, body in src/Bute/TypeKeyColl.cpp): records
@@ -85,7 +39,5 @@ public:
     char* IndexToPtr(i32 i);     // 0x310f0 (base accessor + per-slot member-ptr init)
     virtual ~_zdvec() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
-
-// --- vtable catalog ---
 
 #endif // GRUNTZ_WAP32_ZVEC_H

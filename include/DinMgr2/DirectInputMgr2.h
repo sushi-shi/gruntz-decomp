@@ -1,24 +1,3 @@
-// DirectInputMgr2.h - the WAP32 DirectInput managers (DinMgr2 module,
-// C:\Proj\DinMgr2\). Two cooperating classes share this TU because both funnel
-// failed HRESULTs through DirectInputMgr2::GetErrorString (the DInput sibling of
-// CDirectDrawMgr::GetErrorString):
-//
-//   * DirectInputMgr2 (DinMgr2.cpp) - the device manager. Creates the DInput
-//     object via DirectInputCreateA, then enumerates devices. GetErrorString is
-//     a static reporter (ignores `this`).
-//   * CInputDev* (InputDevice.cpp) - the created/QI'd input devices. Their thin
-//     thunks call IDirectInputDevice slots (SetDataFormat, SetProperty, Acquire,
-//     SetCooperativeLevel) and, on failure, report through
-//     DirectInputMgr2::GetErrorString. Names are placeholders; offsets + code
-//     bytes are load-bearing.
-//
-// Every wrapper does iface->Method(args...) so the retail `call *off(reg)` COM
-// dispatch falls out; only the called slots are pinned. The DINPUT interfaces are
-// modeled REAL-POLYMORPHIC (__stdcall virtuals in retail-vtable-slot order): they
-// are never constructed here (we only receive interface pointers), so cl emits no
-// ??_7 for them - just the virtual dispatch call bytes. Their byte SIZE is
-// genuinely unknown (abstract COM interfaces, never allocated here) - a documented
-// SIZE_UNKNOWN keep, exactly like the DirectSoundMgr COM views.
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
@@ -26,51 +5,15 @@
 
 #include <Ints.h> // i32 / u32 (dinput.h below brings the real COM macros via objbase.h)
 
-// The real DirectInput SDK header, for the version retail was built against: DirectX
-// 6. Supplies the genuine IDirectInputA (the DirectInputCreateA object) + the QI'd
-// IDirectInputDevice2A (the dispatched device, Poll @ slot 25), plus the DI* flag
-// constants (DIDEVTYPE_*/DISCL_*/DIEDFL_*/DIERR_*) and the DIPROP* property structs
-// the manager uses. It drags in the Win32 COM/HANDLE chain (<objbase.h>), so pull
-// <windows.h> (via <Mfc.h>, MFC-first) before it and pin the version the game
-// compiled against. <Mfc.h> (superset of <Win32.h>) also supplies the real MFC
-// CPtrList / CPtrArray the manager holds as value members (m_deviceList / m_devices).
 #define DIRECTINPUT_VERSION 0x0500
 #include <Mfc.h>
 #include <dinput.h>
 
-// The device base (defined near the bottom); the manager holds it by pointer.
 class CInputDevBase;
 
-// The DINPUT interfaces the manager drives are the real SDK ones now (above): the
-// object is IDirectInputA (CreateDevice @ slot 3 / EnumDevices @ slot 4), and each
-// device is QueryInterface'd from IDirectInputDeviceA to IDirectInputDevice2A - whose
-// dispatched slots (SetProperty @ +0x18, Acquire @ +0x1c, Unacquire @ +0x20,
-// GetDeviceState @ +0x24, SetDataFormat @ +0x2c, SetCooperativeLevel @ +0x34, Poll @
-// +0x64) match the hand-rolled ...Z view's offsets exactly (frozen across DX3/5/6).
-
-// The CInputDevice class (below) IS the 0x338-byte object InitA new's, inits inline,
-// and stamps with the cl-emitted keyboard vftable. CDeviceConfigA is the alias the
-// manager (DinMgr2.cpp) uses for it; CreateDev (0x133b50) is its bring-up. Forward
-// the alias here; the manager's InitA member is typed CInputDevice*.
 class CInputDevice;
 typedef CInputDevice CDeviceConfigA;
 
-// ---------------------------------------------------------------------------
-// The device collections are real MFC containers (afxcoll, via <Mfc.h>):
-//   m_devices    : CPtrArray (0x14) - the extra CInputDevBase* devices. Empties via
-//                  SetSize(0,-1); the dtor is ??1CPtrArray@@UAE@XZ (0x1b4f3e).
-//   m_deviceList : CPtrList  (0x1c) - the AddController device-config list. Appends
-//                  via AddTail (0x1b4991), empties via RemoveAll (0x1b48a6); dtor
-//                  ??1CPtrList@@UAE@XZ (0x1b48c6). Each element is a CDeviceListNode.
-// (Former CDevicePtrArray / CDeviceList local views dissolved onto the real MFC
-// classes - the container-method CALLs now bind to their NAFXCW library rvas.)
-//
-// CDeviceListNode - the 0x88-byte device-config element AddController allocates and
-// FreeDeviceList frees (stored in m_deviceList as a void* payload). The ctor zeroes
-// the two leading dwords (matching the retail `new`-then-init), so `new
-// CDeviceListNode` lowers to the exact operator-new + guarded field-zero the manager
-// emits; it is filled/cleared through its CFixedPtrArray32 face.
-// ---------------------------------------------------------------------------
 SIZE(CDeviceListNode, 0x88); // operator new(0x88) in AddController
 struct CDeviceListNode {
     CDeviceListNode() {
@@ -83,11 +26,6 @@ struct CDeviceListNode {
     char m_body[0x88 - 0x08]; // +0x08..0x87  element body (CFixedPtrArray32 items)
 };
 
-// ---------------------------------------------------------------------------
-// DirectInputMgr2 (DinMgr2.cpp) - the device manager. Only the touched offsets
-// are pinned. Field names are placeholders; offsets + the COM dispatch are the
-// load-bearing facts.
-// ---------------------------------------------------------------------------
 class DirectInputMgr2 {
 public:
     // Brings up the DInput object (DirectInputCreateA) into m_directInput, caches
@@ -151,30 +89,6 @@ public:
     CPtrList m_deviceList;    // +0x2c  device-config list (MFC CPtrList; head@30 tail@34)
 };
 
-// ===========================================================================
-// The DirectInput device-config class chain (InputDevice.cpp), modeled
-// REAL-POLYMORPHIC so cl emits every ??_7 and the multilevel /GX deleting-dtor
-// falls out of the language.
-//
-// Retail runs a 3-level single-inheritance hierarchy with three concrete leaves
-// (keyboard / mouse / joystick), and one shared vptr @+0x00 restamped down the
-// chain by each destructor's unwind:
-//
-//   CInputDevRoot   (vtable 0x5ef670, 4 slots)  - all shared device fields + the
-//                    raw create / release / unacquire COM helpers.
-//     ^-- CInputDevBase (vtable 0x5ef680, 6 slots) - adds the two poll slots + the
-//                    CreateDeviceWrap configure wrapper.
-//           ^-- CInputDevice   (vtable 0x5ef628) keyboard, 0x338
-//           ^-- CDeviceConfigB (vtable 0x5ef640) mouse, 0x2c8
-//           ^-- CDeviceConfigC (vtable 0x5ef658) joystick
-// ===========================================================================
-
-// The per-device DirectInput state buffer (GetDeviceState's LPVOID). It is a raw
-// device-state blob that each leaf reinterprets by device format - the doctrine's
-// "proven-heterogeneous slot", modeled as a documented union rather than a void*:
-//   keyboard -> 0x100 raw scan-code bytes
-//   mouse    -> DIMOUSESTATE (relative axes + 4 button bytes)
-//   joystick -> DIJOYSTATE2  (axes + 128 buttons, 0x110 bytes; largest variant)
 SIZE(DIMouseStateZ, 0x10); // DIMOUSESTATE
 struct DIMouseStateZ {
     i32 lX;           // +0x00
@@ -197,9 +111,6 @@ union DeviceState {
     DIJoyState2Z joy;    // joystick snapshot
 };
 
-// CInputDevRoot - the grand-base (vtable 0x5ef670, 4 slots). Owns every shared
-// device field (vptr@0, m_device@4 .. m_edgeKeys@0x2b0) and the COM create/release/
-// unacquire helpers the base destructors + all three leaves reach.
 SIZE(CInputDevRoot, 0x2b4); // grand-base subobject (derived fields start at 0x2b4)
 class CInputDevRoot {
 public:
@@ -254,8 +165,6 @@ public:
     u32 m_edgeKeys;             // +0x2b0  raw current snapshot (pre-latch)
 }; // ends at +0x2b4
 
-// CInputDevBase - the middle base (vtable 0x5ef680, 6 slots). Adds the two poll
-// slots (Poll/Update) + the CreateDeviceWrap configure wrapper (dispatches slot 5).
 SIZE(CInputDevBase, 0x2b4); // middle-base subobject (adds no fields)
 class CInputDevBase : public CInputDevRoot {
 public:
@@ -283,8 +192,6 @@ public:
 
 };
 
-// CInputDevice (keyboard, vtable 0x5ef628, 0x338) - the object InitA new's. Adds
-// the scan-code table + mode flag and all keyboard/state-buffer methods.
 SIZE(CInputDevice, 0x338);
 class CInputDevice : public CInputDevBase {
 public:
@@ -306,10 +213,6 @@ public:
     i32 m_modeFlags;      // +0x334  keyboard/mouse mode flag (bit 0 = direct/async)
 };
 
-// CDeviceConfigB (mouse, vtable 0x5ef640, 0x2c8) - InitB's device. The teardown
-// dtor 0x1334f0 is emitted here; CreateDev reaches the shared root
-// thunks (same offsets - reloc-masked). (CreateDevJoystick/SetupAxes are
-// CDeviceConfigC's - the joystick bring-up; the B decls were fake-view aliases.)
 SIZE(CDeviceConfigB, 0x2c8);
 class CDeviceConfigB : public CInputDevBase {
 public:
@@ -326,10 +229,6 @@ public:
     char m_pad2b8[0x2c8 - 0x2b8];
 };
 
-// CDeviceConfigC (joystick, vtable 0x5ef658) - constructed by the enum callback
-// (another TU); its /GX deleting-dtor 0x133460 lives here so cl emits ??_7CDeviceConfigC.
-// Its leaf teardown Free6d0 (0x1346d0) body lives elsewhere. Byte SIZE is unknown
-// here (allocated by the enum callback in another TU) - a documented keep.
 SIZE_UNKNOWN(CDeviceConfigC);
 class CDeviceConfigC : public CInputDevBase {
 public:
@@ -343,7 +242,5 @@ public:
 
     i32 m_flags; // +0x2b4
 };
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H

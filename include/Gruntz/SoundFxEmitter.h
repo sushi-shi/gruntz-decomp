@@ -1,15 +1,3 @@
-// SoundFxEmitter.h - the owning class of five sibling sound-effect/transition
-// emitter methods (0xfa410, 0xfa550, 0xfa790, 0xfa8f0, 0xfaa60). Owner class
-// unidentified by RTTI; modeled here under a placeholder name since names are
-// matching-neutral. Each method: walk the resource chain to a DirectDraw channel,
-// build a CFxModeT2/T3 transition descriptor on the stack, register it with the
-// CFaderMgr (Add), then - gated on g_disableFades - either apply the channel op
-// immediately (ActiveWait + Fill/Blt) or defer it through the fresh fader; finally
-// Remove the fader. The chain/channel and the bank-stop helpers are reloc-masked
-// engine externs reached through the recovered offsets.
-//
-// Field names are placeholders (m_<hexoffset>); only offsets + emitted code bytes
-// are load-bearing (campaign doctrine).
 #ifndef GRUNTZ_CSOUNDFXEMITTER_H
 #define GRUNTZ_CSOUNDFXEMITTER_H
 
@@ -19,54 +7,17 @@
 #include <Gruntz/FaderMgr.h>   // CFaderMgr::Add / Remove + the minimal CFader
 #include <Gruntz/FxModeDesc.h> // CFxModeT2 / CFxModeT3 transition descriptors
 
-// The "Disable Fades" [Config] gate (VA 0x6455c4): nonzero => apply the channel op
-// directly this frame; zero => defer it through the freshly-allocated fader. It is one of
-// the twelve gates RezSync::Init loads from the .bute [Config] section - DEFINED there
-// (the owner TU), declared in <Globals.h>. (This header used to carry a DATA() on the
-// bare `extern`, which the label pass ignores in a header anyway, and under a C++-linkage
-// name - ?g_fxDirectGate@@3HA - that nothing defined.)
 extern "C" i32 g_disableFades;
 
-// Reloc-masked engine externs (real mangled names so the relocs pair by symbol;
-// no body - defined in their own TUs):
-
-// The DirectDraw channel surface ops (Fill @0x13e760 / Blt @0x13ee60) come from the
-// canonical single-source CDDSurface header; reloc-masked engine callees.
 #include <DDrawMgr/DDSurface.h>
 
-// The game-manager singleton (0x64556c): the emitter's +0x04 holds the CGruntzMgr.
-// m_gameMgr is typed as the REAL class (<Gruntz/GruntzMgr.h>), NOT the Win32-safe
-// CGameRegistry view: StopBankIfActive @0x092000 / StopBank0IfActive @0x092030 are
-// CGruntzMgr methods, and calling them through the view emitted a call to a
-// ?...@CGameRegistry@@ symbol that NOTHING defines (an unbound reloc that would fail
-// at link). This header is pulled by the wide <Gruntz/State.h>, so it must stay
-// MFC-free: CGruntzMgr is named via an ELABORATED TYPE SPECIFIER at the member (see
-// the same trick in GameRegistry.h) rather than a file-scope `class CGruntzMgr;`,
-// which keeps this header's forward-decl COUNT unchanged (that count is /O2
-// type-table state - docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
-// The one TU that CALLS through m_gameMgr (Attract.cpp) includes <Gruntz/GruntzMgr.h>
-// itself and so sees the complete class.
 #include <Gruntz/GameRegistry.h>
 
-// The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
-// ready" predicate + the front/back/overlay surface pairs at +0x10/+0x14/+0x18.
 #include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
-// The engine busy-wait (plain file-scope free function; Utils/DebugTiming.cpp).
 void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 
-// CFaderMgr::Add(1|2, ..) returns the new fader as CFader* (RunFade @0x17e620 is a
-// non-virtual CFader method), so the emitter holds the result directly as CFader*
-// (no FaderRun view). The descriptor-side (CFader*)&t reinterpret is Add's API: the
-// CFxModeDesc family is a distinct non-polymorphic root, so it cannot derive CFader.
-
-// The DDraw surface pair CDDrawSubMgrPages holds at +0x10/+0x14/+0x18 (front/back/
-// overlay). Only its +0x2c channel surface (m_surface) is read here; the ONE
-// CDDrawSurfacePair shape now comes from <DDrawMgr/DDrawSurfacePair.h> above.
-
-// The resource chain reached through emitter +0x0c: the DDraw worker manager
-// (+0x04, whose surface pairs carry the channels) plus a gate flag (+0x1c).
 struct FxResource {
     char _00[0x04];
     CDDrawSubMgrPages* m_worker; // +0x04 the shared DDraw worker manager

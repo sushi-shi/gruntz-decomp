@@ -1,12 +1,3 @@
-// VoiceTrigger.h - the voice-trigger tile-logic game object (C:\Proj\Gruntz).
-//
-// CVoiceTrigger : CUserLogic - a method-only leaf (no data members beyond the
-// CUserLogic base; the bound object is the inherited m_10/m_38). Its methods are
-// split across two TUs: the no-arg ctor + GetTypeTag in src/Gruntz/UserLogic.cpp,
-// and the 1-arg ctor + Init/RegisterActs + Tick + dtor in src/Gruntz/VoiceTrigger.cpp.
-// This header unifies the two per-TU redeclarations (matching-neutral: no members,
-// only the CUserLogic dtor slot is overridden). Only offsets/code bytes are
-// load-bearing; names are placeholders.
 #ifndef GRUNTZ_CVOICETRIGGER_H
 #define GRUNTZ_CVOICETRIGGER_H
 
@@ -40,11 +31,6 @@ public:
 };
 VTBL(CVoiceTrigger, 0x001e885c);
 
-// The activation-registry Entry: its first dword is a pointer-to-member-function of
-// CVoiceTrigger (single inheritance -> a 4-byte code pointer); FireActivation invokes
-// it on `this`, emitting `mov ecx,this; call [entry]`. Mirrors GruntVoice.h's
-// CVActEntry/VActHandler; the class must be COMPLETE above so MSVC sizes the PMF as a
-// bare 4-byte code pointer (an incomplete type forces the 8-byte general PMF).
 typedef void (CUserLogic::*VTrigHandler)();
 SIZE_UNKNOWN(CVTrigEntry);
 struct CVTrigEntry {

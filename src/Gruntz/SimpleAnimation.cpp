@@ -1,13 +1,3 @@
-// SimpleAnimation.cpp - a simple eyecandy animation game-object (C:\Proj\Gruntz).
-//
-// Two trace-discovered CSimpleAnimation methods, defined in ascending retail-RVA
-// order:
-//   ~CSimpleAnimation @0x00f9d0 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   AdvanceAnim       @0x0abf70 - the per-frame animation-advance (ret 0).
-//
-// CSimpleAnimation : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
@@ -22,8 +12,6 @@
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
-// CSimpleAnimation::Serialize @0x00f930 - the vtable slot-1 override: base CUserLogic
-// chain + the +0x34 sub-object chain. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f930, 0x47)
 i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -32,9 +20,6 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
-// The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
-// mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
-// here so the value-load reloc-masks against the already-matched symbol.
 extern "C" u32 g_engineFrameDelta;
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible
@@ -49,47 +34,11 @@ extern "C" u32 g_engineFrameDelta;
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CSimpleAnimation@@UAE@XZ 0x0000f9d0 0x44
 
-// ===========================================================================
-// The file-scope CSimpleAnimation-logic registration thunks (proximity-attributed
-// to CSimpleAnimation, but really the shared CUserLogic dispatch-table
-// registration the engine emits per game-object class - the same archetype as
-// RegisterIconState (CInGameIcon.cpp) / RegisterTextLogic (CInGameText.cpp) /
-// RegisterWormholeLogic). The class-specific member-fn-ptr table is
-// g_simpleAnimDispatch (0x646038); the handler is the logic method at 0x4028b0.
-// The bute key store, running counter, scratch name-vec, key string and the error
-// globals are the SHARED registration infrastructure (same symbols every per-class
-// register thunk uses).
-// ===========================================================================
-
-// The shared registration key store (?g_buteTree@@3VCButeTree@@A @ 0x6bf620).
-
-// The running registration index (0x61aea8) bumped on each fresh insert.
-
-// The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
-// IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-
-// The zvec error globals + the capture helper the inlined accessor touches on a
-// bounds miss (the same set ZVec.cpp models). The OOM/overflow error token the
-// accessor passes to Set() is the canonical g_projActCache @0x2bf464 (retail's
-// reloc target); the Globals.h `g_zvecErrSentinel` is the SAME cell under a
-// mis-addressed (0x1f0464) reconstruction name - reference the correctly-bound
-// g_projActCache so this fn's DATA reloc stays faithful.
-
-// The logic registration key (the .data string constant @ 0x60a454, the SAME key
-// string every per-class register thunk inserts).
-
-// The CSimpleAnimation-logic dispatch table (a zDArray<int (CUserLogic::*)(void)>
-// @ 0x646038). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
-// Shared shape: <Gruntz/LogicFnTable.h>.
 DATA(0x00246038)
 extern LogicFnTable g_simpleAnimDispatch;
 
-// The handler member function loaded into the dispatch slot (LAB_004028b0).
-// Referenced by address so its DIR32 operand reloc-masks.
 extern i32 SimpleAnimLogic_4028b0();
 
-// The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
-// the freshly-grown region (the _zdvec::IndexToPtr body).
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
     v->m_grown = 0;
@@ -114,7 +63,6 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-// The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
 static inline char* ResolveSlot(_zvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
@@ -130,9 +78,6 @@ static inline char* ResolveSlot(_zvec* v, i32 idx) {
     return v->m_spare;
 }
 
-// --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 --- the ctor anchors the
-// ??_7CSimpleAnimation vtable in this TU. Folds the inline CUserLogic(obj) base +
-// the shared z-clamp tail.
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -151,27 +96,13 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-// ===========================================================================
-// InitSimpleAnimDispatch  (0x0abb90)
-// File-scope static-init thunk: construct the logic dispatch table over the index
-// band [0x7d0, 0x7da].
-// ===========================================================================
 RVA(0x000abb90, 0x15)
 void InitSimpleAnimDispatch() {
     g_simpleAnimDispatch.Construct(0x7d0, 0x7da);
 }
 
-// The stored handler is a CUserLogic member-fn-ptr (the same shape the whole
-// LogicFnTable family dispatches; see CInGameText::Dispatch).
 typedef i32 (CUserLogic::*LogicFn)();
 
-// ===========================================================================
-// CSimpleAnimation::Dispatch  (0x0abc10)
-// Index g_simpleAnimDispatch by idx; if the resolved slot holds a non-null member
-// function, invoke it on this. The bounds-check + grow of the table accessor is
-// inlined (ResolveSlot), computed once for the null-test and once for the call.
-// Same archetype as CInGameText::Dispatch.
-// ===========================================================================
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&g_simpleAnimDispatch, idx)) != 0) {
@@ -208,17 +139,11 @@ void RegisterSimpleAnimLogic() {
     *reinterpret_cast<void**>(dslot) = static_cast<void*>(&SimpleAnimLogic_4028b0);
 }
 
-// CSimpleAnimation::AdvanceAnim @0x0abf70 - re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
-// return 0. Same archetype as CGruntPuddle's remove-path notify and
-// CProjectile::DetachRenderObj's SetAnim(g_engineFrameDelta).
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

@@ -1,17 +1,3 @@
-// The net command / session TU (0xbef80-0xc1390 .text): ONE original TU implementing
-// the per-game DirectPlay session and its 0x64-byte command slots. FOLD DONE (op
-// REHOME MF-Net): the ex-unit cross-views are dissolved onto their real classes in
-// <Net/NetMgr.h> -
-//   CLobbySync / CNetSession2 / CLobbyObjB  ==  CNetSession  (the +0x520 object,
-//       `new CNetSession`, dtor @0xb6220; the command-session methods and the
-//       lobby-sync methods run on the SAME object, hence the anonymous-union
-//       command-view/sync-view field names on CNetSession).
-//   CLobbyChannel / CCluster0c / CNetSlotAux / CLobbySlot  ==  CNetCmdSlot  (the
-//       0x64-byte slot; Init@c0c20 == FullReset, ClearRange@bf120 == ClearAckFlags,
-//       M_bfc70 == SendGruntRecord, ClearList == ClearCmds, InitNeg == ResetTriple,
-//       M_c1230 == GetRange, M_c12b0 == FindCmd, M_c11b0 == RemoveCmd, M_c0c70 ==
-//       ProcessCmd, M_c00a0 == FindCmdSlot, M_c0290 == Verify(i32)).
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 #include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
@@ -24,18 +10,9 @@
 #include <rva.h>
 #include <string.h> // memcpy / memset / strcat (see #pragma intrinsic below)
 
-// ProcessCmd's memcpy / NetCmdIdToString's strcat are forced intrinsic (reloc-masked / inline).
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)
 
-// Owner-TU global DEFINITIONS (this net-command/session TU owns them). Each is
-// referenced only from this TU (data_home: private); the single reference extern
-// lives in <Globals.h>. DATA() rides the DEFINITION (reloc-masked DIR32 at the use
-// sites). Ordered ascending by RVA (all .bss / zero-init).
-//
-// The gA_*/gB_* fields are packed consecutively in retail but retail emits each as
-// its OWN disp-0 .data symbol - so they stay SEPARATE globals (a single struct would
-// emit base+disp and mis-encode the displacement bytes; see NetMgr.h chanStat note).
 char g_lobbyRecvBuf[0x800]; // 0x249858
 DATA(0x0024a058)
 unsigned char gB_flag; // 0x24a058
@@ -61,32 +38,17 @@ DATA(0x0024a8b6)
 unsigned char gA_e08; // 0x24a8b6
 DATA(0x0024a8b7)
 unsigned char gA_data; // 0x24a8b7
-// The two file-scope debug buffers NetCmdIdToString formats through: a 16-byte
-// per-id wsprintfA scratch (0x64b6a0) and the comma-joined accumulator (0x64b6b0).
 DATA(0x0024b6a0)
 char g_idScratch[0x10]; // 0x24b6a0
 DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
-// The recycled-node free pool drained at the tail of CLobbySync::Reset (real MFC
-// CPtrList from <Rez/RezMgr.h> -> <Mfc.h>; RemoveTail 0x1b4a27 / GetCount inline @+0xc).
 DATA(0x0024aca8)
 extern CPtrList g_pool; // 0x64aca8
-
-// The three id-window helpers (NetCmdIdFind/Add/Clear) are now CNetCmdSlot __thiscall
-// methods (declared in <Net/NetMgr.h>); ProcessCmd / AdvanceSeq call them as this->...
-// CNetSession / CNetCmdSlot (+ the lobby-sync helper types GruntRec / the armed CGruntzCommand map /
-// CSessionMgr / LobbyMsg / SlotInfo, and RecycleCmd / Unmatched_bf530) are the real
-// classes in <Net/NetMgr.h>; the ex-unit local views (CLobbySync/CLobbyChannel/
-// CCluster0c/CNetSlotAux) are dissolved onto them.
 
 void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 
 void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
-
-// ===========================================================================
-// Functions in retail-RVA order.
-// ===========================================================================
 
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
@@ -199,8 +161,6 @@ void CNetSession::Reset() {
     }
 }
 
-// RecycleCmd (0xbf580, __cdecl): return a finished command node to the global recycle
-// pool (g_pool.AddTail). Called by CNetCmdSlot::RemoveCmd / ClearCmds.
 RVA(0x000bf580, 0x10)
 void RecycleCmd(void* cmd) {
     g_pool.AddTail(cmd);
@@ -483,10 +443,6 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
            == 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::CreateSlot (0x0bfff0, __thiscall) - reset slot[index] and seed it
-// from the session's command-buffer array; returns the slot on success.
-// ---------------------------------------------------------------------------
 RVA(0x000bfff0, 0x5d)
 CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
     if (index < 0 || index >= 4) {
@@ -500,10 +456,6 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
     return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
-// each of the four inline command slots.
-// ---------------------------------------------------------------------------
 RVA(0x000c0070, 0x15)
 void CNetSession::ResetCmdBuffers() {
     for (i32 i = 0; i < 4; i++) {
@@ -511,10 +463,6 @@ void CNetSession::ResetCmdBuffers() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::FindCmdSlot (0xc00a0, __thiscall) - the slot whose owning player
-// (m_c[6]) matches, or null.
-// ---------------------------------------------------------------------------
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
@@ -627,11 +575,6 @@ i32 CNetSession::Verify(i32 n) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::AllSlotsReachedSeq (0xc0320, __thiscall) - 0 if any active
-// (m_state==3), unreset (m_resetGuard==0) slot's high-water m_maxSeq is still below
-// `seq`; 1 otherwise.
-// ---------------------------------------------------------------------------
 RVA(0x000c0320, 0x37)
 i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     for (i32 i = 0; i < 4; i++) {
@@ -643,10 +586,6 @@ i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::AdvanceAllSlots (0xc0370, __thiscall) - fold ack `id` into every
-// active slot's sequence window (down-counting slot cursor, no null guard).
-// ---------------------------------------------------------------------------
 RVA(0x000c0370, 0x28)
 void CNetSession::AdvanceAllSlots(i32 id) {
     CNetCmdSlot* slot = m_slots;
@@ -658,10 +597,6 @@ void CNetSession::AdvanceAllSlots(i32 id) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::RaiseAllSlotsMax (0xc03b0, __thiscall) - keep `v` as the high-water
-// sequence in every active slot.
-// ---------------------------------------------------------------------------
 RVA(0x000c03b0, 0x28)
 void CNetSession::RaiseAllSlotsMax(i32 v) {
     CNetCmdSlot* slot = m_slots;
@@ -690,10 +625,6 @@ void CNetSession::ArmSlot(void* node, i32 parity) {
     m_idMap[(m_tick + (parity & 0xff)) % 128] = static_cast<CGruntzCommand*>(node);
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::GetSlotPtr (0xc0430, __thiscall) - the id-map entry for a wrapped
-// sequence id (same signed-modulo idiom, unbiased).
-// ---------------------------------------------------------------------------
 RVA(0x000c0430, 0x1f)
 CGruntzCommand* CNetSession::GetSlotPtr(i32 v) {
     return m_idMap[(v & 0xff) % 128];
@@ -717,10 +648,6 @@ CNetCmdSlot* CNetSession::FindSlot(u32 key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::CheckLatency (0xc04a0, __thiscall) - 0 if any active (m_state==3),
-// unreset (m_resetGuard==0) slot's latency (m_latency) exceeds the cap; 1 otherwise.
-// ---------------------------------------------------------------------------
 RVA(0x000c04a0, 0x37)
 i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
@@ -733,11 +660,6 @@ i32 CNetSession::CheckLatency(i32 cap) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetSession::Verify (0xc04f0, __thiscall) - resync consistency: each active
-// slot's command (seq = m_18-2) must agree (+0x4) with the resync entry indexed
-// by (m_18-2)%128.
-// ---------------------------------------------------------------------------
 RVA(0x000c04f0, 0x7c)
 i32 CNetSession::Verify() {
     i32 seq = m_seq - 2;
@@ -975,9 +897,6 @@ void CNetCmdSlot::AdvanceSeq(i32 id) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::RaiseMax (0x0c0fa0, __thiscall) - keep the high-water sequence.
-// ---------------------------------------------------------------------------
 RVA(0x000c0fa0, 0x11)
 void CNetCmdSlot::RaiseMax(i32 v) {
     if (v > m_maxSeq) {
@@ -985,10 +904,6 @@ void CNetCmdSlot::RaiseMax(i32 v) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::NetCmdIdFind (0x0c0fd0, __thiscall; `this` unused) - is `v` one of the
-// three ids in `arr`?
-// ---------------------------------------------------------------------------
 RVA(0x000c0fd0, 0x24)
 i32 CNetCmdSlot::NetCmdIdFind(i32* arr, i32 v) {
     for (i32 i = 0; i < 3; i++) {
@@ -999,10 +914,6 @@ i32 CNetCmdSlot::NetCmdIdFind(i32* arr, i32 v) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::NetCmdIdAdd (0x0c1010, __thiscall; `this` unused) - add `v` to the first
-// free (-1) slot.
-// ---------------------------------------------------------------------------
 RVA(0x000c1010, 0x32)
 void CNetCmdSlot::NetCmdIdAdd(i32* arr, i32 v) {
     if (NetCmdIdFind(arr, v)) {
@@ -1016,10 +927,6 @@ void CNetCmdSlot::NetCmdIdAdd(i32* arr, i32 v) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::NetCmdIdClear (0x0c1060, __thiscall; `this` unused) - clear (-1) the first
-// slot equal to `v`.
-// ---------------------------------------------------------------------------
 RVA(0x000c1060, 0x29)
 void CNetCmdSlot::NetCmdIdClear(i32* arr, i32 v) {
     for (i32 i = 0; i < 3; i++) {
@@ -1067,9 +974,6 @@ char* __stdcall NetCmdIdToString(i32* arr) {
     return g_idListBuf;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::AddCmd (0x0c1170, __thiscall) - enqueue a command, deduping on seq.
-// ---------------------------------------------------------------------------
 RVA(0x000c1170, 0x26)
 void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
     if (cmd != 0 && FindCmd(cmd->m_seq) == 0) {
@@ -1077,10 +981,6 @@ void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::RemoveCmd (0x0c11b0, __thiscall) - drop the queued command with the
-// given sequence number and recycle it.
-// ---------------------------------------------------------------------------
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
     CNetCmdNode* node = reinterpret_cast<CNetCmdNode*>(m_cmds.GetHeadPosition());
@@ -1100,9 +1000,6 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::GetRange (0x0c1230, __thiscall) - min/max queued sequence.
-// ---------------------------------------------------------------------------
 RVA(0x000c1230, 0x55)
 void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     if (pMin == 0) {
@@ -1132,10 +1029,6 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     } while (node != 0);
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::FindCmd (0x0c12b0, __thiscall) - the queued command with the given
-// sequence number, or null.
-// ---------------------------------------------------------------------------
 RVA(0x000c12b0, 0x1f)
 CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
     CNetCmdNode* node = reinterpret_cast<CNetCmdNode*>(m_cmds.GetHeadPosition());
@@ -1150,9 +1043,6 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::ClearCmds (0x0c12e0, __thiscall) - drain the queue, recycling each.
-// ---------------------------------------------------------------------------
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearCmds() {
     while (m_cmds.GetCount() != 0) {
@@ -1189,9 +1079,6 @@ i32 CNetCmdSlot::Ready() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::Touch (0x0c1390, __thiscall) - latch the slot the first time it is reset.
-// ---------------------------------------------------------------------------
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::Touch() {
     if (m_resetGuard == 0) {

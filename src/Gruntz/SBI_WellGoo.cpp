@@ -15,18 +15,7 @@
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable::GetSel (Serialize mode-8)
 #include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <string.h>                       // strlen / memset (inline repne-scas / rep-stos)
-// SBI_WellGoo.cpp - Gruntz CSBI_WellGoo (C:\Proj\Gruntz), the frameless method.
-// RTTI .?AVCSBI_WellGoo@@; the most-derived leaf of the SBI image chain
-//   CSBI_WellGoo : CSBI_Image : CSBI_RectOnly : CStatusBarItem. Vtable @0x5eadfc.
-// The 4-level /GX chain destructor (0x104bb0) is defined below - the former
-// SBI_WellGooEh.cpp companion split is collapsed (retail's one TU was /GX).
-//
-// The per-frame Tick (vtable slot 5) is modeled with the SBI family's
-// manual-vtable-stamp device (no real `virtual`); sibling/engine callees are
-// ILT/vtable-reloc-masked.
 
-// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
-// game-manager chain Tick reads (surface context + back-buffer) is modeled.
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type
 #include <Gruntz/GruntzMgr.h>
 
@@ -102,9 +91,6 @@ i32 CSBI_WellGoo::Tick() {
     m_fgFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_fgTop - 2)), 0);
     return 1;
 }
-
-// The serialize record counter (bumped before each name+index frame slot) + the
-// focused-grunt sentinel keying the mode-8 selector table.
 
 // CSBI_WellGoo::Serialize (0xe64c0) - vtable slot 1. Bail on a null archive / no
 // game manager; chain the base CSBI_Image serialize; then mode 4/7 round-trip the
@@ -243,12 +229,6 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_WellGoo (0x104bb0): the /GX chain destructor - stamp ??_7CSBI_WellGoo,
-// release the owned goo source surface back to the pool (the same teardown the
-// slot-3 Free below carries, folded inline here by retail), then MSVC folds the
-// three inline base dtors in (Image/RectOnly/StatusBarItem - the SBI_DTOR_CHAIN
-// device) behind the /GX SEH frame. Collapsed from SBI_WellGooEh.cpp.
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {
@@ -257,13 +237,6 @@ CSBI_WellGoo::~CSBI_WellGoo() {
     }
 }
 
-// vtable slot 3 (0x104c80): release the owned goo source surface (+0x34) through the
-// cached manager's (+0x24) surface pool (RemoveItemA @0x142160), then clear it.
-// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was the C104c80 placeholder view);
-// the vtable slot-3 thunk 0x30b7 jmps here, so this IS CSBI_WellGoo's slot-3 override.
-// The +0x24 cache holds the CGooGameMgr (== g_gameReg->m_30); the FLAT CStatusBarItem
-// base models it as an int (Setup arg2), so reinterpret to reach its pool - a
-// heterogeneous base field (@flag: int/ptr overlay at +0x24).
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Free() {
     if (m_gooSrc != 0) {

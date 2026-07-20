@@ -1,10 +1,3 @@
-// BitArray.cpp - zBitVec::SetBit (0x193640). A small-buffer-optimized bit set:
-// the bit storage is inline (&m_words) while capacity <= 32, else on the heap
-// (m_words is the heap pointer). EnsureSize (0x1936e0, external) grows it; the
-// call is reloc-masked. This is the devs' real zBitVec (<Wap32/zBitVec.h>); the
-// former CBitArray was a per-TU view of it (its m_capacity/m_storage == zBitVec's
-// m_capacity/m_words, and Reserve IS zBitVec::EnsureSize). Field names are
-// placeholders; only offsets + code bytes matter.
 #include <Wap32/zBitVec.h>
 #include <rva.h>
 

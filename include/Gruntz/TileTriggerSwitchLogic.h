@@ -1,11 +1,3 @@
-// TileTriggerSwitchLogic.h - Gruntz CTileTriggerSwitchLogic (C:\Proj\Gruntz).
-// A tile-trigger "switch" that owns a linked list of sibling objects (anchor
-// at +0x04, singly-linked nodes with next@+0x00, data@+0x08).  Matched methods:
-//   ctor            vtable + zero m_block + m_20=0
-//   FindIndexByKey  linear scan of the 24-dword m_block
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
@@ -14,24 +6,9 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
-// The CGameRegistry singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
-// game-manager pointer) is touched by the methods here; reloc-masked DIR32.
-// g_gameReg decl dropped (convenience only; consumers include GameRegistry.h) - clashed with Grunt.h WwdGameReg* view
-
 class CTileTriggerLogic;     // the SEPARATE 0x9c logic family (not a base: 0x8c < 0x9c)
 class CTileTriggerContainer; // the owning 4-list container (m_owner back-pointer)
 
-// sizeof = 0x8c, PROVEN TWICE and independently:
-//   (1) the allocation sites - `push 0x8c; call ??2; mov ecx,eax; call ??0CTileTriggerSwitchLogic`
-//       at 0x115f96 (the AddSwitchLogic factory) and 0x11796b (CTileTriggerFactory::Build);
-//       every one of the five derived switch logics is allocated at 0x8c too, so none of
-//       them adds a data member.
-//   (2) the ctor (0x110430) zeroes exactly 24 dwords from +0x2c -> +0x2c + 0x60 = 0x8c.
-// The two agree with zero slack, so m_block is [24] and the object ENDS at 0x8c.
-//
-// This class is NOT related to CTileTriggerLogic (0x9c) by inheritance - retail keeps two
-// parallel families and stamps the owner at a DIFFERENT offset in each (Build: `mov
-// [esi+0x24],ebp` for the 0x8c switch family vs `mov [esi+0x20],ebp` for the 0x9c family).
 class CTileTriggerSwitchLogic {
 public:
     // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
@@ -138,10 +115,6 @@ public:
 SIZE(CTileTriggerSwitchLogic, 0x8c);
 VTBL(CTileTriggerSwitchLogic, 0x001eae8c); // vtable_names -> code (RTTI game class)
 
-// --- the five derived switch logics -----------------------------------------------------
-// Each is allocated at 0x8c (same as the base) at TWO independent new-sites, so NONE of them
-// adds a data member; they only override vtable slots. Homed here out of the .cpp (they were
-// .cpp-local views; CCheckpointTriggerSwitchLogic needs to be shared with CheckpointSwitchBuild.cpp).
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileMultiTriggerSwitchLogic(); // 0x111f10
@@ -174,8 +147,6 @@ public:
 SIZE(CTileTimeTriggerSwitchLogic, 0x8c);
 VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c);
 
-// The 0x60-byte block BuildSmall `rep movsd`s into this+0x2c IS the base's m_block[24]
-// (24 dwords at +0x2c) - it is not a distinct "rect" member, and the class adds nothing.
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE; // slot 2
     virtual i32 SwitchUp() OVERRIDE;   // slot 3

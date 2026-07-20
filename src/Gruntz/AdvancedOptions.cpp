@@ -1,26 +1,7 @@
-// AdvancedOptions.cpp - Gruntz "Advanced Options" modal dialog (C:\Proj\Gruntz).
-// The dialog lets the user toggle five "Disable ..." flags, persisted under the
-// HKLM\Software\Monolith Productions\Gruntz\1.0 registry key via the engine's
-// Utils::RegistryHelper wrapper (src/Utils/RegistryHelper.{cpp,h}, byte-matched).
-//
-// Matched (all byte-exact unless noted):
-//   AdvancedOptionsDialogProc - INT_PTR CALLBACK dialog proc
-//   SaveOption                - one checkbox -> RegDWORD
-//   SetDefaults               - clear all five checkboxes
-//   LoadOptions               - 5x GetValueDword -> checkbox
-//   SaveOptions               - 5x SaveOption
-//
-// Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
-// <Mfc.h> brings <windows.h> USER32 (the dialog/window API; HWND / HINSTANCE /
-// HICON / UINT; the WM_* / BST_* / SW_* / HKEY_* literals) and INT_PTR.
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 
-// Control IDs of the five "Disable ..." checkboxes and the "Defaults" button. Enum VALUES
-// lower to the same immediates in int context (the CheckDlgButton / IsDlgButtonChecked
-// control-id args and the wParam compare); the enum TYPE is never a parameter type
-// (SaveOption's controlId stays DWORD), so no signature mangling changes.
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,
     IDC_DISABLE_AUDIO = 0x46d,
@@ -39,11 +20,6 @@ typedef enum AdvancedOptionsDlgId {
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
 
-// ---------------------------------------------------------------------------
-// SaveOption
-// Reads checkbox `controlId`'s state and writes it as a REG_DWORD value.
-// __cdecl free function (ends in `ret`). pRegistryHelper->SetValueDword is
-// __thiscall (this in ECX).
 RVA(0x0000b110, 0x32)
 void SaveOption(
     HWND hWnd,
@@ -56,11 +32,6 @@ void SaveOption(
     }
 }
 
-// ---------------------------------------------------------------------------
-// SetDefaults
-// Unchecks all five "Disable ..." checkboxes. MSVC5 caches the CheckDlgButton
-// IAT slot in EDI (one `mov edi,ds:[__imp]; call edi` reused 4x for the four
-// `BST_UNCHECKED` calls).
 RVA(0x0000b160, 0x37)
 void SetDefaults(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, 0);
@@ -69,11 +40,6 @@ void SetDefaults(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, 0);
 }
 
-// ---------------------------------------------------------------------------
-// LoadOptions
-// Reads the five flags from the registry (default 0) and reflects them into the
-// checkboxes. GetValueDword is __thiscall; CheckDlgButton's IAT slot is cached
-// in EBX. Note the source loads pRegistryHelper into ESI and hWnd into EDI.
 RVA(0x0000b1b0, 0x90)
 void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     if (pRegistryHelper) {
@@ -93,11 +59,6 @@ void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SaveOptions
-// Persists all five checkboxes via SaveOption. SaveOption is reached through an
-// incremental-link thunk (call rel32 -> jmp -> body); the IAT-less 5x call
-// pattern with `add esp,0x10` after each is the __cdecl 4-arg call cleanup.
 RVA(0x0000b270, 0x75)
 void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     if (pRegistryHelper) {
@@ -109,25 +70,11 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// ResetRegistryHelper (0xaf50)
-// Zeroes g_registryHelper.m_open (the open/result gate) - marks the shared
-// AdvancedOptions registry helper as not-open without RegCloseKey'ing its keys.
-// __cdecl free function (single `mov ds:[&g_registryHelper],0; ret`); the store
-// binds to the SAME static (_g_registryHelper$S17358 @ RVA 0x2295d8) that the
-// dialog proc / LoadOptions / SaveOptions use. Rehomed here from gameobjectfactory
-// (its true obj neighbour: 0xaf50 sits just below the dialog proc at 0xafb0).
 RVA(0x0000af50, 0xb)
 void ResetRegistryHelper() {
     g_registryHelper.m_open = 0;
 }
 
-// ---------------------------------------------------------------------------
-// AdvancedOptionsDialogProc
-// INT_PTR CALLBACK (__stdcall, `ret 0x10`). On WM_INITDIALOG it (re)opens the
-// HKLM config key, loads the options, and activates the dialog window (setting
-// its icon and restoring it if iconic). WM_COMMAND handles OK (save+close),
-// Cancel (close), and the "Defaults" button.
 RVA(0x0000afb0, 0x108)
 INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {

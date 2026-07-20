@@ -1,26 +1,3 @@
-// CreditsState.cpp - CCreditsState, the credits/attract game-state (C:\Proj\Gruntz).
-// Split out of the former GameMode.cpp god-TU (per-class TU cut): CCreditsState owns
-// its full method set here (incl. SetupTitle @0x39a60, formerly hosted on the fake
-// `CCreditzOwner` this-view). The CState base implementation stays in
-// GameMode.cpp; the sibling states live in MenuState.cpp / BootyStateActivate.cpp.
-// The ~CCreditsState `??1` (with the CState ctor) is the class's vtable +
-// inline-virtual (Update) emission anchor - it stays in this TU.
-//
-// DE-VIEW PASS (2026-07-13): the 23 .cpp-local view structs this TU carried are GONE.
-// Every one of them was a per-hop shadow of a class the tree already models, and the
-// SAME FILE proved it: CCreditsState::Render already walked the real chain
-// (m_c->m_drawTarget->m_frontPair->m_surface->m_8, CDDrawSurfaceMgr -> CDDrawSubMgrPages ->
-// SurfaceA/B -> CDDSurface -> IDirectDrawSurface) while its neighbours re-modelled the
-// identical hops as CreditsScrollView/CreditsView4/CreditsView4M14/CreditsHdcProv,
-// CMenuRootA/CMenuPageA/CMenuBrightHolder and CCreditsDrawRoot/CCreditsDrawView/
-// CCreditsDrawHolder/CCreditsSurface. Likewise CCreditzOwner + CreditsScrollSelf were
-// two `this`-views of CCreditsState itself (their fields ARE the class's +0x1b4..+0x20c
-// block), CCreditzImageRoot was CState::m_4 (the CGruntzMgr owner; +0x48 == m_sound, the
-// spelling CreditzAssets.cpp already uses), CCreditzSoundMgr was CState::m_c, CCreditzRegSet
-// was CState::m_8, CCreditzRegObj/CCreditzMusicSet were the CSymTab the code already cast
-// them to, CCreditzSubEntry was CParseSource (its m_c IS m_length @+0x0c), CButeCfg was
-// the canonical CButeMgr singleton and CCreditzAttractReg was the CGruntzMgr singleton
-// (+0x80 == m_numRuns). Names are placeholders; only offsets + code bytes are load-bearing.
 #include <Bute/SymParser.h>     // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
@@ -42,67 +19,28 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <stdio.h>                     // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
-// Real MFC CRgn/CGdiObject for the credits clip region (CCreditsState::m_1e8).
-// GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
-// the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines.
-// See docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
 
-// The owning game-manager (CState::m_4, a real CGruntzMgr*) reached through the
-// gamemode-local CGMOwner reduced view (same helper the sibling state TUs use). The
-// sound-bank path does NOT go through it: m_4 is already typed CGruntzMgr*, so
-// m_4->m_sound is cast-free (the spelling CreditzAssets.cpp uses).
 static inline CGMOwner* Owner(CState* s) {
     return reinterpret_cast<CGMOwner*>(s->m_4);
 }
 
-// The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
 void operator delete(void*);
 
-// The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8 ->
-// RVA 0x2453d8) - the canonical class g_buteMgr from <Bute/ButeMgr.h>; was the CButeCfg shell.
-
-// The game-manager singleton (0x64556c). Its +0x80 launch counter (m_numRuns,
-// "Num_Runs") rotates the attract TITLE index; same object as CState::m_4. Spelled
-// CGruntzMgr* here exactly as the sibling CreditzAssets.cpp does (was CCreditzAttractReg).
-
-// The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp) is declared in
-// <Gruntz/Attract.h> (included below).
 #include <Gruntz/Attract.h>
 
-// StepVideo: the Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame);
-// ret nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.
 extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 
 DATA(0x0022bf74)
 extern "C" i32 g_clipRegionEnabled; // 0x62bf74 - gates the credits CRgn clip
 
-// The credits-scroll reseed constants (0x5e96f8 / 0x5e96f0 / 0x5e9708 in retail's
-// .rdata). They were `extern double g_5e96f8;`-style DECLARATIONS with no definition
-// anywhere - fabricated symbols, guaranteed unresolved externals. They are ordinary
-// file-scope constants: MSVC5 keeps a `const double` in memory (it does NOT fold FP
-// constant expressions the way it folds integer ones), so `kScreenH / kScrollRate`
-// still lowers to retail's `fld QWORD PTR [c1]; fdiv QWORD PTR [c2]; call __ftol`.
 static const double kScreenH = 480.0;    // 0x5e96f8  screen height
 static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate
 static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrollStep reseed)
 
-// ===========================================================================
-// CCreditsState methods, ascending retail-RVA order.
-// ===========================================================================
-
-// @confidence: high
-// @source: decomp-xref
-// CCreditsState::LoadGameAssetNamespaces (0x38d20; the slot-1 override, ex
-// "LoadCreditzStateAssets"). Byte-exact (100%). int (BOOL) return
-// like its loader siblings; the literal `return 0;` keeps the opening/Init guards as
-// `test eax,eax`. The MONOLITH block is a SIBLING `if(midiz)` so the second
-// `cmp edi,ebp; je` survives (docs/patterns/redundant-sibling-guard-retest.md). The
-// 'IMX' music tag (0x584d49) is a non-relocated immediate. The "STATEZ_CREDITZ" Register
-// is the CHelpState slot-1 source (0x13c030 == CSymParser::ResolvePath).
 RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
@@ -163,11 +101,6 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     return r;
 }
 
-// @confidence: high
-// @source: decomp-xref
-// CCreditsState::ReleaseResources() (0x38f00): if (m_c) free the pooled resource then
-// release the three named registries ("CREDITZ"); then tear down + RezFree the video
-// handle (m_videoHandle) and chain CState::ReleaseResources. m_c is re-read for each access.
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
@@ -192,8 +125,6 @@ void CCreditsState::ReleaseResources() {
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
-// CCreditsState::Vslot09 (slot 9 / +0x24, 0x39120): force the OS cursor hidden,
-// then (re)prime the attract title; returns whether InitAttractTitle succeeded.
 RVA(0x00039120, 0x2c)
 i32 CCreditsState::Vslot09(i32 /*unused*/) {
     if (ShowCursor(0) >= 0) {
@@ -203,9 +134,6 @@ i32 CCreditsState::Vslot09(i32 /*unused*/) {
     return InitAttractTitle() != 0;
 }
 
-// CCreditsState::Render(): the canonical Render spine (input poll -> input-virtual bail
-// -> cursor anim -> per-entity Update loop -> message scan -> two sub-steps -> draw ->
-// two latched one-shot FX).
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
@@ -271,10 +199,6 @@ i32 CCreditsState::Render() {
     return 1;
 }
 
-// CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -
-// the per-frame input poll: gate on the page pump (m_c->m_drawTarget, dispatched as
-// CDDrawSubMgrPages); if loaded, force the cursor hidden then prime the attract title.
-// Returns 1 (0 when not loaded).
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
     // the page pump at m_c->m_drawTarget is CDDrawSubMgrPages; the ready gate is
@@ -291,9 +215,6 @@ i32 CCreditsState::InputVirtual() {
     return 1;
 }
 
-// CCreditsState::Vslot06 (slot 6 / +0x18, 0x39400): the IsActive-gated title roll -
-// bail unless the state's ready gate (IsActive) is set, hide the cursor, then (re)prime
-// the attract title and return its result.
 RVA(0x00039400, 0x2f)
 i32 CCreditsState::Vslot06() {
     if (IsActive() == 0) {
@@ -306,9 +227,6 @@ i32 CCreditsState::Vslot06() {
     return InitAttractTitle();
 }
 
-// CCreditsState::Vslot0c (slot 12 / +0x30, 0x39440): keydown handler - on ESC/SPACE/
-// ENTER post a WM_COMMAND to the top-level window (0x8023 in active-selection mode
-// m_24==5, else 0x8027).
 RVA(0x00039440, 0x46)
 i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
@@ -523,9 +441,6 @@ i32 CCreditsState::SetupTitle() {
     return 1;
 }
 
-// @confidence: high
-// @source: decomp-xref
-// CCreditsState::FinishState() (0x39c40): clear the playing gate, return 1.
 RVA(0x00039c40, 0x10)
 i32 CCreditsState::FinishState() {
     m_videoPlaying = 0;

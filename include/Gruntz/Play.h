@@ -1,42 +1,15 @@
-// Play.h - the in-game PLAY state, the
-// concrete CState subclass whose Render() (vtable slot +0x14) is the
-// per-frame heart of the running game: input -> per-entity step -> draw -> the
-// HUD/scroll/FX overlays. See GameMode.{h,cpp} for the state hierarchy this
-// extends (CState base) and CGruntzMgr::PerFrameTick @0x8b740 (the
-// caller of m_curState->Render(), matched in `rezmgr`).
-//
-// CARCASS doctrine: only the member OFFSETS and the per-frame call/branch
-// STRUCTURE are load-bearing. Field names are placeholders (m_<hexoffset>);
-// unmatched engine callees are external no-body fns (reloc-masked `call rel32`);
-// CPlay's own helper methods + high vtable slots are modeled so the indirect
-// call shapes (`mov ecx,esi; call rel32`, `call [eax+0xNN]`) fall out. Globals
-// (the frame clock, the game-manager singleton) are file-scope and reloc-mask.
-//
-// To avoid perturbing the matched-and-shared GameMode.h (entropy), CPlay is
-// modeled here as a SELF-CONTAINED class with its own padded virtual interface
-// (CState's slots 0..5 reproduced + the high slots Render dispatches to:
-// +0x7c BeginFrameClear, +0x9c/+0xa0 the per-frame "slow/fast" virtuals).
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-// <Mfc.h> brings <windows.h> (RECT, SetRect / CopyRect / wsprintfA) and the central
-// WINMM timeGetTime decl (timeGetTime is not in <windows.h> itself).
 #include <Mfc.h>
 
-// CGameRegistry - the global game-manager singleton (*g_gameReg), shared via
-// <Gruntz/GameRegistry.h> with the CGrunt resolvers in Grunt.h.
 #include <Gruntz/GameRegistry.h>
 
-// The zoned sound-bank manager (CWorld::m_48) + its currently-playing inner sound
-// (CPlay::m_savedZonedSound). Full defs live in <Dsndmgr/GruntzSoundZ.h> (included by
-// the TUs that dispatch on them); forward-declared here so the members can be typed.
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
 class CBattlezData;  // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
 class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
-// Real classes of the retyped CWorld/CPlay slots (thunk-target proven;
-// forward-declared so this header stays lean - the deref TUs include the real headers):
 class CFontConfig;           // CWorld::m_5c  (TypeChar @0x21e20 - the chat/key text layer)
 class CWorldSoundSet;        // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0 / Retune @0xbd60)
 class CGruntSpawnConfig;     // CWorld::m_60  (ClearSprites @0x11af90 / DtorBody @0x11c7b0)
@@ -47,114 +20,33 @@ class CLightFxRender;        // CPlay::m_lightFx (+0x320; the 0x43c alloc in Loa
 class CTileTriggerContainer; // CPlay::m_beginMarker (+0x2e4; Serialize @0x117280)
 struct CGameObject; class CWwdGameObjectA; // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
 
-// The per-namespace load-notify sink passed to the GRUNTZ_* installers; its
-// OnLoaded() (0x4bc420 thiscall) posts a load-progress tick. Full def in CPlay.cpp.
 class CMulti; // notify sink (Multi.h; AckJoinFailure 0xbc420); reloc-masked
 
-// ===========================================================================
-// Sub-object layouts CPlay::Render walks through (only the offsets it reads).
-// ===========================================================================
-
-// +0x374 start-point marker element: the {x,y} center of one placed start-point
-// (FindStartPointAt walks the +-0x20 boxes; HandleMousePress the +-0x10 boxes).
 SIZE(CHitMarker, 0x8);
 struct CHitMarker {
     i32 m_0; // +0x00  center x
     i32 m_4; // +0x04  center y
 };
 
-// The CState +0x0c view/render/resource context (the canonical CDDrawSurfaceMgr) and
-// its render sub-objects (CRenderer, CDrawSurface, the placed-object warlord list)
-// now live in the shared <Gruntz/View.h> so the leaf-state TUs share the one shape.
 #include <Gruntz/View.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CImageRegistry / CDDrawSubMgrLeafScan)
-// (CWarlordCounters is GONE - the +0x7c counter block IS the canonical
-// CBattlezData (BattlezData.h m_30/m_34/m_38/m_40 band; FillRecord/Init are its
-// real methods) - the score/HUD sink, one object under two former view names.)
 
-// (CWorldDraw is GONE - a fake view of CWorldSoundSet: its "Blit(a,b) camera blit"
-// is CWorldSoundSet::Retune(pan, vol) @0xbd60 (thunk 0x1a7d) and its "Reset" is
-// CWorldSoundSet::Teardown @0xb660 (thunk 0x28ab). CWorldSub60 is GONE - a fake
-// view of CGruntSpawnConfig (Reset==ClearSprites @0x11af90, Method_11c7b0==DtorBody).
-// CWorldLayer is GONE - a fake view of CFontConfig (Forward3508==TypeChar @0x21e20,
-// the chat/key text layer). CPlayPlaneGeom is GONE - a fake view of the canonical
-// CLevelPlane (<Gruntz/GameLevel.h>: m_flags/m_scaledX/m_scaledY/m_scaleX/m_scaleY).)
-
-// (The mgr+0x04 CGameWnd (CGameMgr::m_gameWnd): its "Bind" @0x53d4e0 (RVA 0x13d4e0) IS
-// CGameWnd::PumpMessages, and CGameWnd::m_hwnd (+0x04) is the PostMessageA HWND directly
-// - retail (e.g. 0xcbb74) loads [[this+4]+4]+4: this->m_4 (the mgr) -> m_gameWnd ->
-// m_hwnd, three loads, not four.)
-
-// The mgr IS the CGruntzMgr singleton. Every field is the canonical
-// <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr), m_c==m_frameGate,
-// m_10==m_soundEnabled, m_14==m_musicEnabled, m_30==m_world, m_48==m_sound,
-// m_54==m_inputState, m_5c==m_chatLog, m_60==m_timer, m_68==m_cmdGrid,
-// m_6c==m_cmdSubMgr, m_70==m_tileGrid, m_74==m_spriteFactory, m_7c==m_scoreHud,
-// m_8c/m_90==m_modeW/m_modeH, m_94/m_98==m_savedModeW/m_savedModeH,
-// m_124==m_scrollSpeed, m_128/m_134 same names; the +0x158 "flat config array
-// (stride 0x238)" was m_options[g_curPlayer].m_008 - the per-player selected
-// sprite descriptor (GruntzPlayer.h). Consumers use CState::m_4 directly.)
-
-// ===========================================================================
-// CState (base) - the shared canonical definition (full 41-slot vftable + the
-// ctor-pinned scalar layout). CPlay's Render drives the high slots
-// (BeginFrameClear/RenderSlow/RenderFast) and reads m_c/m_4 as typed pointers.
-// ===========================================================================
 #include <Gruntz/State.h>
 
-// A {x,y} edge pair StepInputA overlays on the CState scroll/input block
-// (the flat ints at +0x188 first half, +0x198 second half).
 struct Edge {
     i32 m_0;
     i32 m_4;
 };
 
-// (CPlaySerialChild is GONE - m_beginMarker is typed as the real
-// CTileTriggerContainer: Serialize @0x117280, FilterList2 @0x1170b0 - the
-// per-frame "begin marker" - RemoveAll @0x116fa0 and the ~ teardown.)
-
-// The per-frame level timer (m_frameMarker's real class): the full canonical
-// CTimer lives in <Gruntz/Timer.h> (extracted from SpriteLoaders.cpp). Its
-// serialize entry is HandleEvent (0x9c1c0) - the reloc-masked call SyncState
-// drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
-// running/current block ("Ah, who needed that stupid timer anyway?").
 #include <Gruntz/Timer.h>
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
-// NOTE: this header deliberately does NOT declare `g_gameReg`. The *0x24556c
-// singleton is ONE object (the real CGruntzMgr); a header-level decl forces ONE
-// view's type on every includer, which is exactly what kept the CGameRegistry ==
-// CGruntzMgr fold frozen: an MFC includer that wants to call a real CGruntzMgr
-// method (ReportError @0x08dc60, ...) could not retype the pointer without an
-// extern "C" type clash against this line, so it emitted a call to a
-// ?...@CGameRegistry@@ symbol that NOTHING defines (an unbound reloc -> link
-// failure). Each TU now declares the singleton itself, with the type it actually
-// needs; MFC TUs use the real `extern "C" CGruntzMgr* g_gameReg;`.
-// The frame image class (each grid/set row is a CImage*; full class in <Image/CImage.h>).
-// Pointer-only here, so a forward decl keeps this widely-included header light.
 class CImage;
 
-// CPlay::m_grid (@+0x4cc, the level/tile frame grid the GrabTile/AdvanceTile walk drives)
-// The SAME image-registry map (m_c->m_imageRegistry->m_10map) yields both the buf80a
-// image SET (typed CImageSet*) and the buf80b GRID (typed CFrameGrid*) - a CMapStringToPtr
-// stores one value type, so they are one class - and every field lines up: m_rowTable @+0x14
-// == m_frames, m_name24 @+0x24 == m_name, m_firstRow/m_lastRow @+0x64/+0x68 == m_minIndex/
-// m_maxIndex, size 0x6c; its SetDelay/SetSprite ARE SetAllTypes/SetAllFormats. Pointer-only
-// here (consumers include ImageSet.h), so a forward decl suffices.
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 
-// ===========================================================================
-// CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
-// Render reads a large block of CPlay-specific members (camera/scroll rects,
-// message latches, per-region one-shot FX gates). Offsets pinned by Render.
-// ===========================================================================
 class CPlay : public CState {
 public:
     // Construction is inlined into CGruntzMgr::TransitionState (no standalone retail
@@ -720,11 +612,6 @@ public:
     i32 ScanShuffleQuads(); // 0x0d9290
 };
 
-// ===========================================================================
-// The frame-clock + singleton globals CPlay::Render reads each frame.
-// ===========================================================================
-// The dev/render-state singleton DispatchHudClick reads (*g_spawnConfig); its +0x18 is
-// a flags word masked with 0x20 to gate the HUD-rect post.
 struct StateMgrBZ {
     i32 m_0, m_4, m_8; // +0x00..+0x08
     char m_padc[0x10 - 0xc];

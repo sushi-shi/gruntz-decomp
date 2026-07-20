@@ -1,7 +1,3 @@
-// FrontCandy.h - a front-candy eyecandy game-object (C:\Proj\Gruntz), a CUserLogic
-// tile-logic leaf in the candy family (sibling of CBehindCandy/CEyeCandy). Extracted
-// from the former UserLogic.cpp-local view so the leaf dtor (0xfb00) homes onto the
-// real class. Only offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CFRONTCANDY_H
 #define GRUNTZ_CFRONTCANDY_H
 

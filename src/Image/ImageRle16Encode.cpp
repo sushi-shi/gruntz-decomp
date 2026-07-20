@@ -1,15 +1,3 @@
-// ImageRle16Encode.cpp - EncodeRle16 (0x1495d0, __thiscall ret 4). A two-pass
-// run-length encoder that converts an 8-bit token/count source (token stream =
-// arg0, count stream = m_rleData) into a 16bpp RLE buffer: pass 1 walks the rows to
-// size the output (m_rleLen), pass 2 RezAllocs it and emits, expanding each literal
-// run's indices through a 256-entry palette->16bpp lookup table (built from the
-// m_palette palette with the live screen RGB shift table g_rUp/g_gUp/g_rDown/g_gDown/
-// g_bDown, the same table CFileImage::SaveRle16 uses). Returns the encoded buffer.
-//
-// This is CDDrawShadeBlit::EncodeRle16 (0x1495d0), proven by its sole caller
-// CDDrawShadeBlit::Build @0x1490d0 (which passes m_rleData as the token stream and
-// uses the result as the srcBpp==2 remap). Fields map 1:1 onto CDDrawShadeBlit:
-// m_width/m_height/m_rleData(+0x0c)/m_rleLen(+0x10)/m_palette(+0x20).
 #include <rva.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
@@ -100,4 +88,3 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     }
     return out;
 }
-

@@ -51,38 +51,14 @@
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 
-// The handler entry record (RollingBallHandler/CRollingBallActEntry, the PMF slot)
-// is defined in <Gruntz/RollingBall.h> after the complete class.
-
-// The class's activation-coordinate registry singleton (@0x6461b0): the fixed
-// [2000,2010] range built by the shared registry ctor (0x408710). It is the shared
-// <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
 DATA(0x002461b0)
 extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
-                             // CActReg extent covers the interior fields
-                             // 0x2461b4..0x2461d0, bound as g_obj+offset)
 
-// ---------------------------------------------------------------------------
-// Shared singletons (named so their DIR32 datum reloc-masks).
-// ---------------------------------------------------------------------------
-// (Update reaches its sub-objects cast-free through the
-//  canonical members: m_tileGrid/m_world/m_cmdGrid +
-//  the m_viewOrigin* bounds; the deep level-plane graph
-//  stays raw-offset like the sibling ApplySwitch)
-// (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
-//  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
 extern "C" i32 g_frameDelta; // DAT_00645584 @0x645584 (frame delta ms)
-// (g_5ea3e8 was NOT a global: it is MSVC's literal-pool entry for the 1000.0 in the
-//  expression below - an fp constant a previous pass re-declared as an extern "C"
-//  symbol that NOTHING defines. The dev wrote the literal; cl emits the same
-//  reloc-masked .rdata entry and the identical fdiv.)
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
 extern "C" u32 g_engineFrameDelta; // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
-// ---------------------------------------------------------------------------
-// Engine helpers reached through reloc-masked thunks (no body).
-// ---------------------------------------------------------------------------
 void RbCacheFirst(
     void* anim,
     const char* name
@@ -98,14 +74,10 @@ double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
 extern "C" i32 __ftol(double x);                              // 0x11f570
 
-// Registry slot calls on g_gameReg sub-objects (reloc-masked __thiscall).
 i32 RbProbeRect(void* obj, i32 cx, i32 cy, RECT* rect, i32* outA, i32* outB, i32 z); // 0x32ce (the object's m_area box)
 void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
 void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
 
-// The cell -> collision-kind resolver: the table entry IS a CTileImageSet (the same
-// m_imageSets[raw & 0xffff] lookup GameLevel's own collision macro does typed), and
-// slot +0x20 is its GetCollisionAt - queried at the tile origin.
 static i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
 }
@@ -122,24 +94,6 @@ static i32 VtblResolve(void* ent) {
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CRollingBall@@UAE@XZ 0x00012f80 0x44
-
-// The direction-name match builds an MFC CString temp (static-linked helpers,
-// reloc-masked: CString() = 0x1b9b93, operator=(LPCSTR) = 0x1b9e74, ~CString() =
-// 0x1b9cde). The real CString (via <Mfc.h> from RollingBall.h) makes MSVC emit the
-// same real-CString spelling KitchenSlime's ctor uses).
-
-// The ctor's bound object (m_object == m_38) IS the canonical CGameObject and the
-// game registry IS the canonical CGameRegistry (g_gameReg, typed above): the ex
-// (+0x5c/+0x60), m_sortKey (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
-// m_118/m_124/m_12c, m_area.left..m_area.bottom (+0x144..+0x150), m_194, and the registry's
-// m_isEasyMode/m_134 all read cast-free through the canonical members.
-
-// 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
-// (?g_slimeSpeedNum@@3NB; the consolidated global is pinned via <Globals.h>, so
-// reference it as a plain extern - the same way KitchenSlime's LoadSprites does).
-
-// g_buteTree (the "A" node store) comes from <Gruntz/ActNameRegistry.h>; g_buteMgr
-// (the per-tile-time GetDwordDef) from <Bute/ButeMgr.h> via UserLogic.h.
 
 // CRollingBall::CRollingBall @0xaf820 - fold the shared CUserLogic(obj) init, bind
 // the cycle geometry + "A" bute node, snap the bound object to the tile grid + seed
@@ -229,17 +183,11 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_moveDeltaLo = 0;
 }
 
-// CRollingBall::InitActReg @0x0afd60 - construct the class's activation-coordinate
-// registry singleton (g_rollingBallActReg @0x6461b0) over the fixed range
-// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000afd60, 0x15)
 void CRollingBall::InitActReg() {
     g_rollingBallActReg.Construct(2000, 2010);
 }
 
-// CRollingBall::RunAct @0x0afde0 - resolve the registry entry for id; if a handler
-// is bound, re-resolve and invoke it as a PMF on this, else return the entry
-// pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
     CRollingBallActEntry* e = reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id));
@@ -526,15 +474,6 @@ i32 CRollingBall::Update() {
     return 0;
 }
 
-// ===========================================================================
-// CRollingBall::Serialize  (0x0b0fe0) - __thiscall, ret 0x10, vtable slot 1
-// ===========================================================================
-// The CArchive round-trip of the ball state. Chains the shared CUserLogic
-// serialize helper on `this`, then the +0x34 sub-object's chain; both gate (early
-// return 0 on failure). Then it streams the ball fields through the archive's
-// vtable: mode 4 = Write (slot +0x30, store), mode 7 = Read (slot +0x2c, load).
-// The +0x88/+0x90 explosion-timing pair is streamed first, then the move/state
-// field list (+0x58..+0x98).
 RVA(0x000b0fe0, 0x1ab)
 i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -591,5 +530,3 @@ i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-//  CGameObject/AnimWorkerObj/CString/CGameRegistry/CActReg; CRollingBallActEntry's
-//  SIZE_UNKNOWN lives in <Gruntz/RollingBall.h> beside its definition.)

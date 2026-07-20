@@ -1,14 +1,3 @@
-// GruntHealthSprite.cpp - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
-//
-// CGruntHealthSprite methods, defined in ascending retail-RVA order:
-//   ~CGruntHealthSprite @0x011fb0 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   InitActReg          @0x07ecf0 - construct the class activation registry.
-//   RegisterActs        @0x07eed0 - register the class's per-frame handler.
-//   SetHealthGlyph      @0x07f0d0 - the per-bump health-glyph resolver (ret 0xc).
-//
-// CGruntHealthSprite : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GruntHealthSprite.h>
@@ -20,20 +9,9 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
-// DATA-bind the class registry singleton here (in the main_file .cpp): labels.py
-// only scans DATA() macros in the TU source, not in included headers, so the
-// binding must live in a .cpp that references the global.
 DATA(0x00244d80)
 extern CIndicatorActReg g_healthActReg; // 0x644d80
 
-// CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
-// destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
-// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
-// (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. Kept out-of-line so its 0x11fb0 COMDAT
-// labels cleanly (an inline dtor can't hang RVA() without tagging the synthesized ??_G).
-// --- CGruntHealthSprite no-arg ctor (0x011ef0) --- the deserialize-path ctor:
-// base prologue + link + leaf vptr stamp (the empty body is enough for cl).
 RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
@@ -43,8 +21,6 @@ CGruntHealthSprite::CGruntHealthSprite() {}
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CGruntHealthSprite@@UAE@XZ 0x00011fb0 0x44
 
-// --- CGruntHealthSprite 1-arg ctor (0x07eb00), vptr 0x5e7ba4 --- the ctor anchors
-// the ??_7CGruntHealthSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
@@ -58,19 +34,11 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_60 = -0x19;
 }
 
-// CGruntHealthSprite::InitActReg @0x07ecf0 - construct the class's activation-
-// coordinate registry singleton (g_healthActReg @0x644d80) over the fixed range
-// [2000, 2010] via the shared registry ctor (FUN_00408710). A free init thunk
-// (no `this`); the ctor is reloc-masked.
 RVA(0x0007ecf0, 0x15)
 void CGruntHealthSprite::InitActReg() {
     g_healthActReg.Construct(2000, 2010);
 }
 
-// CGruntHealthSprite::RunAct @0x07ed70 - resolve the coordinate-registry entry for `id`
-// (inline CActReg::ResolveEntry) and, if it holds a registered handler PMF, re-resolve the
-// entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
-// no CSE across the guard).
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn != 0) {
@@ -120,12 +88,6 @@ void CGruntHealthSprite::RegisterActs() {
     (reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
-// CGruntHealthSprite::SetHealthGlyph @0x07f0d0 - stash the two passed coordinates
-// (m_cellX/m_cellY), round the passed health to a glyph slot (slot = 0x15 -
-// (int)(health*0.2 + 0.5); the *0.2+0.5 round emits fild/fmul[0.2]/fadd[0.5]/
-// __ftol), resolve that slot through the bound object's [m_64..m_68]-gated glyph
-// table at +0x194, publish the glyph (+0x198) and slot (+0x190) back into the
-// object, stash the health (m_health), return 1.
 RVA(0x0007f0d0, 0x6e)
 i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellX = x;
@@ -195,10 +157,6 @@ i32 CGruntHealthSprite::HealthUpdate() {
     return 0;
 }
 
-// CGruntHealthSprite::Serialize @0x07f270 - round-trip the own leaf state (m_cellX/m_cellY
-// = 8 B, m_health = 4 B, m_60 = 4 B) per mode (4 = write @+0x30, 7 = read @+0x2c), then
-// chain the base CUserLogic::SerializeMove (bail 0 on failure) and the +0x34 serialized-
-// object-reference (CSerialObjRef::Chain via the 0x1aff thunk); return whether it chained.
 RVA(0x0007f270, 0xa3)
 i32 CGruntHealthSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     switch (mode) {

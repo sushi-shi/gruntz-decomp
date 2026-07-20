@@ -27,8 +27,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TypeKeyColl.h>       // g_typeColl (folded CAnimNameResolver anim registry)
-                                      // WERE the fake g_animScratch / g_animScratchCount
-                                      // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>            // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -49,8 +47,6 @@
 #include <Gruntz/PickupType.h> // the toy/vehicle grunt-kind id band
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
 
-// Entrance-animation globals (reloc-masked; see Grunt.h).
-// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -58,24 +54,12 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-// ---------------------------------------------------------------------------
-// CGrunt::StepCompassMove()   @0x51c00   (ret 0, /GX)
-// The per-tick compass-move driver. The vehicle/move-command field on the current
-// tile (or the entrance-cell direction) selects one of 8 compass moves + a grunt-
-// voice record; the target tile is validated against board occupancy + corner-cut
-// walls; on success the move is committed (release old tile, claim new tile, fire
-// the voice cue, re-face) and the move counter advances.
-//
-// The two grunt-vehicle name -> "ToyTiles" config + the random toy-tile bag drive
-// the multi-step toy path. The destructible CString temp + the CToyTileBag local
-// force the /GX EH frame.
 static char s_ToyTiles[] = "ToyTiles";                     // s_ToyTiles_0060dbf8
 static const char s_BABYWALKERGRUNT[] = "BABYWALKERGRUNT"; // s_..._0060da6c
 static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT";     // s_..._0060da48
 static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
 static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
-// Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
@@ -83,9 +67,6 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
-// True if a move from the grunt's current tile to (moveX, moveY) is committable:
-// the target is in-bounds + unoccupied (the arrival/owner flag-word test) AND, for a
-// diagonal step, neither cardinal corner tile carries the wall bit (0x2000).
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 tx = g->m_lastTilePxX >> 5;
@@ -147,16 +128,6 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::SerializeMove(ar, mode, a3, a4)   @0x53b80   (ret 0x10)
-// The grunt move/idle-timer record (de)serializer. mode 4 = save (ar->Write,
-// vtable slot +0x30), mode 7 = load (ar->Read, slot +0x2c). It chains the head
-// anim-state serializer (0x16e7f0, external) and the +0x150/+0x43c sub-records,
-// runs a mode-specific pre-step, then streams the eight 16-byte (double-pair)
-// timer records at +0x810..+0x880 directly, and finishes through the six
-// tail sub-record serializers (+0x890/+0x8a0/+0x8b0/+0x8c0/+0x308/+0x278). The
-// per-record `if (mode==4) Write,Write; else if (mode==7) Read,Read;` inlines
-// once per record (each half is 8 bytes: p, then p+8).
 static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
     switch (mode) {
         case 4:
@@ -187,8 +158,6 @@ static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.
 
-// A grunt board-tile flag fetch (g_gameReg->m_tileGrid board, tile = row[y][x*7]); the
-// out-of-bounds path returns 1 (so any flag test passes). Shared by all five.
 static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -197,9 +166,6 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
-// CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
-// `typeId` (the inherited CUserLogic driver, thunk 0x3bd9 -> 0x4dd50) then reset the
-// move-mode pair (m_moveMode/m_1a4). Called at RunEntranceMove's tail. __thiscall.
 RVA(0x00050ca0, 0x2b)
 void CGrunt::LoadTypeTableClearMove(i32 typeId) {
     // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, SYMBOL-exported in
@@ -208,48 +174,6 @@ void CGrunt::LoadTypeTableClearMove(i32 typeId) {
     m_moveMode = -1;
     m_1a4 = 0;
 }
-
-// ===========================================================================
-// Migrated CGrunt cluster (formerly the CUserLogic_* stubs in
-// src/Stub/Discovered.cpp). A prior matcher proved this whole block is CGrunt:
-// the dtor @0xf2f0 stamps vtable 0x5e8754 over CUserLogic/CUserBase bases, and
-// the anim loader @0x49c60 builds "GRUNTZ_<type>_<POSE>" keys. Reconstructed in
-// ascending retail-RVA order. Raw-offset member access (the campaign style used
-// by ReadConfigFromButeMgr above) keeps the giant ~0x46c layout tractable.
-// ===========================================================================
-
-// The global free-list pool the name caches recycle into (head @0x645544, base
-// subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-
-// The grunt movement / anim-name dispatch state machines' reloc-masked data.
-// All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // Only the owner defines; everyone externs.
-
-// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
-// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp).
-
-// ==== LoadVehicleGruntSprites @0x50ce0 (text-contained) ====
-// The game registry singleton (*0x24556c): this TU declares it as the
-// WwdGameReg view (Grunt.cpp style); the vehicle path reads it through the
-// MFC-side CGruntzMgr view with a per-use cast (same load bytes).
-
-//  CGruntCmdObj WAS ::CGrunt: m_10 == m_10
-//  (CGameObject*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
-//  m_1a0 == m_moveMode, m_260 == m_tileMgr, m_region0/m_region1 == m_2b0../m_2c0..
-//  (the same 8-dword block RectContainsGated + the serializer already read on
-//  CGrunt). CGruntAnchor WAS CGruntHud (m_5c/m_60 == m_screenX/m_screenY - the
-//  same pair every other consumer reads). CGruntRegistrar WAS CTriggerMgr: its
-//  RegisterA/RegisterB thunks (0x26df / 0x3dfa) ARE ApplySwitch @0x6d300 /
-//  WireTileSwitchLogic @0x6c130, both CTriggerMgr methods on m_tileMgr.)
-
-// The toy/vehicle-grunt kind LoadVehicleGruntSprites dispatches on (kind, 0x17..0x20)
-// is the toy band of PickupType, the shared object/pickup/grunt-kind id space in
-// <Gruntz/PickupType.h>. Each name is confirmed by its case's "<NAME>GRUNT" sprite key;
-// the ids are byte-verified to equal PickupType's toys (BABYWALKER=0x17..YOYO=0x20).
-// Same immediates as the bare labels -> naming is matching-neutral.
 
 // @early-stop
 // ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
@@ -370,10 +294,6 @@ CGruntVoiceRec g_voiceNE;
 // @data-symbol: ?g_voiceSW@@3UCGruntVoiceRec@@A 0x00244948
 CGruntVoiceRec g_voiceSW;
 
-// CGrunt::PlayMoveSound(x, y) @0x511b0 - directional grunt-voice dispatcher.
-// Bucketize the screen vector (x,y) - (m_10->m_5c, m_10->m_60) into one of 8
-// compass directions by the slope dy/dx vs {+-2.0f, +-0.5} and fire the matching
-// 3-DWORD voice record through PlaySound(1000, rec). __thiscall, ret 8, frameless.
 RVA(0x000511b0, 0x246)
 void CGrunt::PlayMoveSound(i32 x, i32 y) {
     CWwdGameObjectA* h = m_10;
@@ -424,9 +344,6 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     }
 }
 
-// CGrunt::CanShowStamina() @0x514a0 - the stamina-bar visibility gate: shown
-// only if not powered-up (m_combatActive==0), stamina below full (m_stamina < 0x64), and not
-// mid-entrance (m_entranceActive==0).
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
     if (m_combatActive == 0 && m_stamina >= 0x64 && m_entranceActive == 0) {
@@ -435,23 +352,11 @@ i32 CGrunt::CanShowStamina() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::PlayMoveSoundAtTile(tx, ty)   @0x514e0   (__thiscall, ret 8)
-// Scale the tile coords to HUD pixel centers (tile*32 + 16) and forward to the
-// directional grunt-voice dispatcher. `this` flows straight through to
-// PlayMoveSound (both __thiscall).
 RVA(0x000514e0, 0x1e)
 void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
     PlayMoveSound(tx * 0x20 + 0x10, ty * 0x20 + 0x10);
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::SnapToLastTile(a)   @0x517b0   (__thiscall, ret 4)
-// Snap the grunt's HUD position to its last occupied tile (m_10->m_5c/m_60 =
-// m_lastTilePxX/Y), bump the entrance latched-anim id (m_10->m_74 += 0x186a0 ->
-// marks the HUD geometry dirty), commit the entrance position (SetEntrancePos(a,1)),
-// and - if an arrival is pending (m_arrivalPending) - notify the tile mgr of the
-// settled move and clear the pending latch.
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 a) {
     m_10->m_screenX = m_lastTilePxX;

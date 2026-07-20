@@ -1,21 +1,3 @@
-// MenuItem.cpp - the polymorphic menu-item leaves (C:\Proj\Gruntz): ONE original
-// TU (wave1-E; interval dossier 0x1832d0: MenuItem.cpp == [0x185460..0x185a0e],
-// CMenuItem out-of-line Init/virtuals + the derived CMenuItem2). Absorbed the
-// former MenuItem2.cpp; strict retail-RVA order. The part-1 accessor/dtor cluster
-// (0x184610-0x1848a6) is this classes' inline-in-header COMDAT-at-usage emissions
-// linked inside MenuPage's obj - their definitions stay here (the class's file).
-//
-// The 0x5c-byte child item a CMenuPage owns and dispatches through its vtable
-// (0x5f08c0). The page (src/Gruntz/MenuPage.cpp) constructs one per named menu
-// entry, Init()s it from a template + key/label strings, and drives Place /
-// Trigger / Hit / the teardown through the vtable. CMenuItem / CMenuItem2 are REAL
-// polymorphic classes (14 / 15 virtuals declared in slot order): MSVC emits
-// ??_7CMenuItem@@6B@ (@0x5f08c0) and ??_7CMenuItem2@@6B@ (@0x5f08f8) + the
-// scalar-deleting-dtor thunks + the implicit vptr stamps; the VTBL() rows below
-// catalog those retail data so the slot relocs + stamps reloc-mask (no manual
-// g_*Vtbl needed). The /GX EH frame on the dtor comes from its six destructible
-// CString members; the scalar helpers stay frameless (no destructible local), so
-// they coexist in this eh TU like MenuPage.
 #define GRUNTZ_MENUITEM_TU // own the 0x185510 Dispatch0c label (see MenuItem.h)
 #include <rva.h>
 #include <Gruntz/ChatBox.h>
@@ -27,50 +9,24 @@
 
 #include <stdio.h> // engine sprintf (reloc-masked; CMenuItem2::Init)
 
-// Own base vtable (14 slots): dtor + Init + Dispatch0c + Reset + 8 game slots +
-// Place + Trigger. cl emits ??_7CMenuItem@@6B@; VTBL pairs the 0x1f08c0 datum (was
-// vtbl-placeholders vtbl-cluster-74 / g_menuItemVtbl).
 SIZE(CMenuItem, 0x5c);
 VTBL(CMenuItem, 0x001f08c0);
 
-// Derived vtable (15 slots): the visual overrides + one new setter slot. cl emits
-// ??_7CMenuItem2@@6B@; VTBL pairs the 0x1f08f8 datum (was vtbl-cluster-75
-// / g_menuItem2Vtbl).
 SIZE(CMenuItem2, 0x74);
 VTBL(CMenuItem2, 0x001f08f8);
 
-// ===========================================================================
-
-// CMenuItem::GetName (0x001845b0) is now an inline member in the header.
-
-// CMenuItem::GetNavFwdName (0x001845d0) is now an inline member in the header.
-
-// CMenuItem::GetNavBackName (0x001845f0) is now an inline member in the header.
-
-// CMenuItem::GetField54 (0x184610) - return m_54 CString by value.
 RVA(0x00184610, 0x20)
 CString CMenuItem::GetField54() {
     return m_54;
 }
-// CMenuItem::GetField58 (0x184630) - return m_58 CString by value.
 RVA(0x00184630, 0x20)
 CString CMenuItem::GetField58() {
     return m_58;
 }
-// destructor (100%): the compiler re-stamps the vptr (mov [this],&??_7CMenuItem@@6B@),
-// then we run the slot-0xc teardown hook, then the six CString members are
-// destroyed (auto, reverse declaration order). Now that the vtable is realized
-// (VTBL binds ??_7CMenuItem@@6B@ at 0x5f08c0), the vptr-store reloc names the SAME
-// symbol on both sides -> exact (was the ~96.6% reloc-masking artifact under the
-// manual g_menuItemVtbl stamp). Marked `inline` so the derived ~CMenuItem2
-// (0x1847e0) inlines this base teardown like retail did (/Ob1 only inlines
-// inline-marked fns); MSVC still emits this out-of-line COMDAT because the derived
-// dtor odr-uses it (and slot 0's scalar-deleting thunk references it). Keep `inline`.
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
     Dispatch0c();
 }
-// reset the scalar fields and clear the four trailing CStrings.
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
     m_host = 0;
@@ -85,22 +41,10 @@ void CMenuItem::Reset() {
     m_54.Empty();
     m_58.Empty();
 }
-// CMenuItem2::SetFrame (0x1847a0, vtable slot 14): trivial frame-index setter.
-// Folded from Stub/BoundaryUpper.cpp (B_1847a0::Set - ~??_7CMenuItem2@@6B@+0x38);
-// declared in MenuItem2.h slot 14, m_70 already a CMenuItem2 field.
 RVA(0x001847a0, 0xa)
 void CMenuItem2::SetFrame(i32 v) {
     m_70 = v;
 }
-// CMenuItem2 destructor (100%): the compiler stamps the derived vtable, we run its
-// slot-0xc teardown hook, then the inlined base ~CMenuItem re-stamps the base
-// vtable, runs its own slot-0xc hook, and destroys the six CString members. Defined
-// in this TU (not menuitem2) because retail emitted it adjacent to ~CMenuItem
-// (0x184690) so MSVC could inline the base teardown; the /GX EH frame falls out of
-// the destructible CString members the base owns. Realizing both vtables (VTBL binds
-// ??_7CMenuItem2@@6B@ @0x5f08f8 and ??_7CMenuItem@@6B@ @0x5f08c0) makes the two
-// entry vptr-store relocs name the SAME symbols on both sides -> exact (was the
-// ~92.3% vptr-stamp-vs-trylevel-order plateau under the manual g_*Vtbl stamps).
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
     Dispatch0c();
@@ -108,14 +52,6 @@ CMenuItem2::~CMenuItem2() {
     // inlined here: it stamps ??_7CMenuItem@@6B@, runs its Dispatch0c hook, and
     // destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
 }
-// configure the item from a template (a0) + strings; resolve the
-// sub-page via the catalog Lookup; the post-config hook (slot 0x34) can short it.
-// The args stay i32 (with (const char*)/(template) casts) DELIBERATELY: unlike
-// CMenuPage::Configure, Init's callers forward its params with INCONSISTENT order
-// AND semantics - AddItem/AddSubItem pass a0..a5 in order, but AddItem2/AddSubItem2
-// call Init(a4,a3,a2,a1,a0,(i32)this) (reversed, with `this` landing in a5). No one
-// typed signature is correct across those call sites, so the int-model is the honest
-// shape; typing the params would just relocate the casts to the tangled callers.
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     CMenuItemTemplate* t = reinterpret_cast<CMenuItemTemplate*>(a0);
@@ -151,10 +87,6 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     return 1;
 }
-// CMenuItem::Dispatch0c (0x00185510) is an inline member in the header; this TU
-// owns its label (GRUNTZ_MENUITEM_TU above - the retail instance sits here,
-// between Init and the vfunc block).
-// slot 5 (0x185520): the m_width of the sprite's representative frame (index 2).
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
     CImageSet* s = static_cast<CImageSet*>(m_sprite);
@@ -167,8 +99,6 @@ i32 CMenuItem::GetFrameWidth() {
     }
     return f->m_width;
 }
-// slot 4 (0x185550): the m_height of the sprite's representative frame (index 2);
-// the menu-page layout uses this as each row's vertical step (y += GetWidth()/2).
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetWidth() {
     CImageSet* s = static_cast<CImageSet*>(m_sprite);
@@ -181,8 +111,6 @@ i32 CMenuItem::GetWidth() {
     }
     return f->m_height;
 }
-// notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
-// (Non-virtual internal helper called by Trigger; NOT the slot-8 virtual Notify.)
 RVA(0x00185580, 0x4a)
 i32 CMenuItem::NotifyCmd() {
     i32 id = m_cmdId;
@@ -237,7 +165,6 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     m_hitBottom = px + *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x1c));
     return 1;
 }
-// slot 10 (0x185690): scroll the host row when notified, then run the slot-6 hook.
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(void* notify) {
     if (notify) {
@@ -246,7 +173,6 @@ i32 CMenuItem::Configure(void* notify) {
     Disable(2);
     return 1;
 }
-// trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     m_host->ScrollRow1();
@@ -254,7 +180,6 @@ i32 CMenuItem::Trigger() {
     m_host->ReplaceNode(*reinterpret_cast<void**>(&m_key));
     return 1;
 }
-// hit-test: is (x,y) inside the cached placed rect?
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::Hit(i32 x, i32 y) {
     if (m_hitLeft == static_cast<i32>(0xeeeeeeee)) {
@@ -311,8 +236,6 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
     return 1;
 }
-// slot 8 (0x1858a0): the frame-cursor countdown. Decrement the pending count by
-// `arg`; when it runs out, reload it from m_70 and advance one animation frame.
 RVA(0x001858a0, 0x2b)
 i32 CMenuItem2::Notify(void* arg) {
     u32 a = reinterpret_cast<u32>(arg);
@@ -351,7 +274,6 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     m_hitBottom = px + f->m_anchorY;
     return 1;
 }
-// CMenuItem2::GetCurrentSprite (0x185950) - the sprite for the current state.
 RVA(0x00185950, 0x1b)
 CImageSet* CMenuItem2::GetCurrentSprite() {
     switch (m_state) {
@@ -384,8 +306,6 @@ CImage* CMenuItem2::GetCurrentFrame() {
     m_frameIdx = s->m_minIndex;
     return s->GetAt(m_frameIdx);
 }
-// advance the cursor one frame; when the looping flag (0x10000) is clear
-// or the sprite still has a frame, report whether a frame remains.
 RVA(0x001859c0, 0x4e)
 i32 CMenuItem2::NextFrame() {
     if (!GetCurrentFrame()) {

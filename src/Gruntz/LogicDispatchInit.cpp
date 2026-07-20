@@ -18,14 +18,10 @@
 // frontcandyani region 0xabfa0-0xad527).
 #include <Wap32/ZVec.h>          // _zdvec base
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-// LogicFnTable (zDArray<T>, ctor 0x408710 reached via the 0x3742 ILT thunk - the
-// SAME callee as InitSimpleAnimDispatch) is the shared <Gruntz/LogicFnTable.h> shape.
 
-// The per-class dispatch table (zDArray<methodptr> in .data).
 DATA(0x00246060)
 extern LogicFnTable g_eyeCandyDispatch;
 
-// construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)
 void InitLogicDispatch_646060() {
     g_eyeCandyDispatch.Construct(0x7d0, 0x7da);

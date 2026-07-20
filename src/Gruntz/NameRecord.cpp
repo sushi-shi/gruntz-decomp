@@ -1,11 +1,4 @@
 #include <rva.h>
-// NameRecord.cpp - the CGameInfo record setters (0x118040..0x1182c2). Every method
-// here operates on the ONE saved-game info record CGameInfo (<Gruntz/GameInfo.h>): the
-// former per-TU views CNameRecord / C1181d0 / CBoundsCopy118 were all facets of it (they
-// share the +0x08 ready flag, the +0xb8 CGameInfoTime sub-object and the +0xd4 Type), and
-// BuildGameDate's only caller is Update (proving Update's +0xb8 box IS CGameInfoTime), so
-// they are folded onto the canonical class. Pure /O2 /Oi inline CRT (repne scasb / rep
-// stos / rep movs); names are placeholders, the offsets + emitted bytes are load-bearing.
 #include <string.h>
 #include <Gruntz/GameInfo.h> // canonical CGameInfo / CGameInfoTime + BuildGameDate decl
 
@@ -44,14 +37,6 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     return 1;
 }
 
-// ===========================================================================
-// CGameInfo::CopyBody (0x118130) - copy a 212-byte record body into m_04..m_d7 (the
-// whole body) from an external source buffer, gated on the source's embedded name (at
-// body+0x10, i.e. the m_14 field position within the body) being 1..15 chars; then run
-// the m_8==1 ready predicate (Check1, side-effect call, discarded) and return 1. Rejects
-// a null source or an out-of-range name. Inline /Oi CRT (repnz scasb strlen + rep movsd),
-// no relocations except the near Check1 call (now cast-free - this IS a CGameInfo).
-// ===========================================================================
 RVA(0x00118130, 0x44)
 i32 CGameInfo::CopyBody(char* body) {
     if (body != 0) {
@@ -65,13 +50,6 @@ i32 CGameInfo::CopyBody(char* body) {
     return 0;
 }
 
-// ===========================================================================
-// CGameInfo::Update (0x1181d0) - store a newer (S, timestamp) pair into the time box
-// (m_b8, a CGameInfoTime) and its Type (m_d4). Reject when the new (S, timestamp) pair
-// does not exceed the current one; else store it, rebuild the calendar date (BuildGameDate
-// @0x118330, reached via the 0x3661 ILT jmp-thunk) and stash the Type. __thiscall(3).
-// (Was the C1181d0::Update view, re-homed from src/Stub/BoundaryLowerMethods.cpp.)
-// ===========================================================================
 RVA(0x001181d0, 0x70)
 i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     if (s == 0) {

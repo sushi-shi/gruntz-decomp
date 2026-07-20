@@ -17,69 +17,7 @@
 #include <Gruntz/Sprite.h>                // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/Timer.h>                 // CTimer + CImage (canonical; def was local here)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches_155630)
-// SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
-// out of the engine's string-keyed sprite-set hash table and cache individual
-// animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
-//   1. look the sprite up by class-name string through the matched sprite-set
-//      hash table (CMapStringToOb::Lookup, external);
-//   2. for each wanted frame number N, extract the frame pointer from the
-//      sprite's frame table ONLY when N lies inside the sprite's valid frame
-//      range [m_firstFrame(+0x64) .. m_lastFrame(+0x68)], else cache 0.
-//
-//   LoadTimerSprite      - the in-game TIMER
-//       sprite ("GAME_TIMER"); looked up through the game-manager singleton
-//       g_gameReg (->+0x30 ->+0x10). Caches frames 10/11 and bails to
-//       0 if any required frame is missing.
-//   LoadLoadingBarSprite - the loading-screen
-//       progress-bar sprite ("GAME_LOADINGBAR"); looked up through this->m_resMgr
-//       (->+0x10). Caches frames 1/2/3 and a loaded flag.
-//
-// Only offsets / code bytes are load-bearing; names are placeholders.
-//
-// BYTE-EXACT bodies modulo one MSVC5 scheduling coin-flip: the target SINKS the
-// lookup out-param's zero-init store (`mov [&spr],0`) to just after the two arg
-// pushes; our cl HOISTS it before the lea - the same 2-3 instructions, permuted
-// (byte-content identical). See config/units.toml. Kept wip, not strict-exact.
 
-// ---------------------------------------------------------------------------
-// The engine string-keyed sprite-set hash table. Lookup() hashes the class-name
-// key, finds the entry, and writes the found sprite pointer through *ppOut
-// (returning a found-flag). Modeled minimally so the `ecx=<map>; call <helper>`
-// shape reloc-masks against the matched lookup helper.
-// ---------------------------------------------------------------------------
-// CSprite (frame-data value) + CMapStringToOb come from <Gruntz/Sprite.h>;
-// CDDrawSurfaceMgr (image registry at m_10, key table at m_8) + CDDrawChildGroup from ResMgr.h.
-// The registry's embedded name->sprite hash table is <registry>->m_10map.
-
-// The state hung off g_gameReg->m_curState is the canonical CPlay (<Gruntz/Play.h>);
-// the former CLevelState view is gone (wave 3). On level-timer expiry the handler
-// resets the play state's AMBIENT-cue timer group (m_cueTimerLo/Hi @+0x3f8/+0x3fc,
-// m_cueInterval @+0x400, m_cueIntervalHi @+0x404) and raises the win/lose banner
-// (m_winLoseBanner @+0x4f4). It is the PLAY state, so m_curState (CState*) downcasts
-// to CPlay* (CPlay : CState single-inheritance, offset-0).
-
-// The command-grid reached off g_gameReg->m_cmdGrid (+0x68) is the canonical
-// CTriggerMgr (<Gruntz/TriggerMgr.h>); the expiry path calls its ClearRowAndRefresh
-// (0x7a510). The former CLevelNotify::Notify view is gone (wave 3).
-
-// The per-player timer slot is CFocusSlot, the g_gameReg->m_options[] element
-// (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
-// holds the level/entity key.
-
-// The loading bar reaches the resource object through this->m_resMgr (its own CDDrawSurfaceMgr).
-// The canonical CGameRegistry view of the singleton (*0x24556c). The resource mgr
-// (+0x30, typed CDDrawSurfaceMgr) is reached without a cast; its +0x08 factory
-// exposes both CreateSprite (grunt cluster) and the key-lookup facet (cast to
-// CDDrawChildGroup here). The current-state (+0x2c) is typed CState*; the notify target
-// (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
-// at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
-
-// ---------------------------------------------------------------------------
-// CPlay::LoadLoadingBarSprite (ex the `CLoadingBar` view - the receiver IS CPlay:
-// its +0x0c "own CDDrawSurfaceMgr" is CState::m_c and its +0x4bc..+0x4c8 block is exactly
-// m_revealFrame + the three m_revealCap* loading-bar frame slots BuildHelpReveal
-// (the loading-bar wipe tick) blits).
-// ---------------------------------------------------------------------------
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
@@ -99,22 +37,6 @@ i32 CPlay::LoadLoadingBarSprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer - the on-screen game timer (C:\Proj\Gruntz). Holds the looked-up
-// digit/colon sprite frames (m_frameMinTens..m_frameColon), the 64-bit base
-// (m_baseTimeLo/m_baseTimeHi) and accumulated (m_accumLo/m_accumHi) clock times, a
-// running flag (m_running) and the decoded current value (m_currentMs). Methods
-// below are in retail-RVA order.
-// ---------------------------------------------------------------------------
-
-// CTimer + CImage are the canonical <Gruntz/Timer.h> shapes now (shared
-// with CPlay::m_frameMarker / PlaySync's HandleEvent serialize entry). The
-// archive/order object passed to HandleEvent + Serialize is the shared WAP32
-// CSerialArchive (<Gruntz/SerialArchive.h>).
-
-// ---------------------------------------------------------------------------
-// CTimer::Init (0x9bab0) - zero the live state. eax=this idiom from cl.
-// ---------------------------------------------------------------------------
 RVA(0x0009bab0, 0x35)
 CTimer* CTimer::Init() {
     m_baseTimeLo = 0;
@@ -136,9 +58,6 @@ CTimer* CTimer::Init() {
     return this;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::LoadTimerSprite (0x9bb00)
-// ---------------------------------------------------------------------------
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CObject* spr_ob = 0;
@@ -182,9 +101,6 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::Reset (0x9bc70) - zero the sprite-frame cache + active flag.
-// ---------------------------------------------------------------------------
 RVA(0x0009bc70, 0x18)
 void CTimer::Reset() {
     m_sprite = 0;
@@ -195,18 +111,6 @@ void CTimer::Reset() {
     m_frameSecOnes = 0;
     m_active = 0;
 }
-
-// The clock/frame-gate globals the Tick/Draw paths read come from headers:
-// g_frameTime (running game clock) and g_timer500 (0x2455a0 draw-throttle counter).
-
-// The logic leaf the expiry / under-attack notify fires on (external, reloc-masked).
-// ResolveDeathAnimation = "time up" (a CGrunt); NotifyFortUnderAttack = "<60s
-// remaining" (a CWarlord - the fort owner). The object FindByKey returns (or the
-// raw key when not found) is a plain CGameObject; its worker's bound logic leaf
-// (m_7c->m_logic, a CUserLogic*) is the notify target, gated non-null, downcast
-// per-branch to the concrete sibling (CGrunt / CWarlord : CUserLogic, offset-0).
-// (Ex the CTimerNotifyObj/Inner .cpp-local views - they were CGameObject +
-// AnimWorkerObj at the same offsets.)
 
 // ---------------------------------------------------------------------------
 // CTimer::Tick (0x9bca0) - recompute the remaining time from the running clock,
@@ -315,10 +219,6 @@ i32 CTimer::Tick(i32 dt) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::Draw (0x9bfa0) - blit the (up to) five cached digit/colon frames at
-// the base position, fanned out around the centre by fixed pixel offsets.
-// ---------------------------------------------------------------------------
 RVA(0x0009bfa0, 0xb4)
 i32 CTimer::Draw(i32 pSurf, i32 force) {
     if (!m_running) {
@@ -350,12 +250,6 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::SetTime (0x9c090) - set the decoded current value (+0x4c) from a
-// (a<=0x63, b<=0x3b) pair: m_currentMs = (a*60 + b) * 1000 (ms). The two args are
-// clamped, scaled to the minute, and the *1000 falls out as the lea chain
-// (a*15, b+a*60, *5, *5, <<3).
-// ---------------------------------------------------------------------------
 RVA(0x0009c090, 0x37)
 void CTimer::SetTime(i32 a, i32 b) {
     u32 av = static_cast<u32>(a);
@@ -369,10 +263,6 @@ void CTimer::SetTime(i32 a, i32 b) {
     m_currentMs = static_cast<i32>(((av * 60 + bv) * 1000));
 }
 
-// ---------------------------------------------------------------------------
-// CTimer::AddTime (0x9c0e0) - add (seconds, minutes) to the accumulated 64-bit
-// clock, each clamped (sec<=0x63, min<=0x3b) with a carry-adjust on overflow.
-// ---------------------------------------------------------------------------
 RVA(0x0009c0e0, 0xa3)
 void CTimer::AddTime(i32 seconds, i32 minutes) {
     if (!m_running) {
@@ -453,12 +343,6 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
     }
     return 1;
 }
-
-// Per-serialize round counter the CString archive helpers bump (g_serialCounter,
-// = ?g_serialCounter@@3HA @0x229ad0). The frame-name reverse-lookup helper (0x155630)
-// lives on the sprite registry (g_gameReg->m_world->m_imageRegistry); modeled with NO body -> reloc-masks.
-// The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10);
-// the former CStrReader view is gone (wave 3).
 
 // ---------------------------------------------------------------------------
 // CTimer::Serialize (0x9c2e0) - write the timer through the save archive: the

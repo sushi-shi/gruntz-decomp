@@ -1,29 +1,9 @@
-// TileActionEvent.h - the per-tile game-action event record (trace placeholder
-// tomalla-108; recovered from the 5-method __thiscall cluster at 0x112d80,
-// 0x112da0, 0x112ee0, 0x113f10, 0x113f60).
-//
-// A small data record describing a game action that fires at a tile: m_actionCode
-// holds an action-type code (the 0x12d..0x149 WAP game-event range), m_tileX/m_tileY
-// the tile X/Y, and a 4-element per-player "seen/active" flag word array
-// (m_playerFlags) at +0x18. The record is
-// processed (m_0 translated, the tile effect spawned) by Process() (0x112ee0) and
-// streamed field-by-field through a CMapArchive-style serializer (0x113f10 /
-// 0x113f60), matching the archive vtable convention in MapLogic.h (slot +0x30 =
-// write, slot +0x2c = read).
-//
-// No vtable: none of the 5 methods is referenced from a vftable and the ctor
-// stamps none - these are plain __thiscall methods. Field names are placeholders;
-// only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_TILEACTIONEVENT_H
 #define GRUNTZ_TILEACTIONEVENT_H
 
 #include <rva.h>
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-
-// The CArchive-like serializer the record is streamed through is the shared WAP32
-// CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
-// <Gruntz/SerialArchive.h> - the former local `CTileActionArchive` view is folded away.
 
 class CTileTriggerContainer; // owner container (back-stamped into m_14)
 
@@ -81,8 +61,6 @@ public:
     CTileTriggerContainer* m_14;
     i32 m_playerFlags[4]; // +0x18..+0x24  per-player seen/active flags [0..3]
 };
-// 0x28: proven at all three retail new-sites (`push 0x28; call ??2` in AddToList3
-// 0x116a40 / AddToList3Switch 0x116b80 / CTileTriggerContainer::Serialize 0x117280).
 SIZE(CTileActionEvent, 0x28);
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

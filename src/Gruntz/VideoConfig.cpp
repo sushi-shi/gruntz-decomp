@@ -28,79 +28,20 @@
 #include <Globals.h>      // the g_opt_* staging globals
 #include <string.h>       // strcat (inline repnz scasb + rep movs under /O2 /Oi)
 
-// Control-ID literal (kept local, not from <windows.h>). Enum VALUE lowers to the same
-// immediate in int context (the GetDlgItem control-id arg); the enum TYPE is not used as
-// a parameter type, so mangling is unaffected.
 typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl
 } VideoConfigDlgId;
 
-// ---------------------------------------------------------------------------
-// The global selected-resolution discriminator (an int; 1=640x480, 2=800x600,
-// 3=1024x768). Save stores the combo's current selection here; Load reads it to
-// pick the resolution suffix string; the dialog commit reads it back into the
-// manager's saved mode. The reloc that names it is masked in objdiff.
-// ---------------------------------------------------------------------------
 DATA(0x0020ccc4)
 i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
-// ---------------------------------------------------------------------------
-// MFC controls reached by call-rel32 (library fns, so the call displacements
-// reloc-mask). The combo is wrapped through MFC's CWnd::FromHandle (a static
-// __stdcall permanent/temporary-map lookup that returns a CWnd*), then driven as
-// the REAL <afxcmn.h> CSliderCtrl: SetRange(min,max,redraw) is genuinely
-// OUT-OF-LINE in MFC 4.2 (not in AFXCMN.INL - retail calls the NAFXCW copy
-// @0x11e0f9), and the engine 0x405/0x400 messages are exchanged with the
-// wrapped HWND (CWnd::m_hWnd @+0x1c). The ex .cpp-local CSliderCtrl view (a CWnd
-// + 1 method shell over vtable 0x5ecb24 - the MFC lib one) is dissolved.
-// _AFX_ENABLE_INLINES is already #undef'd for the clang label step by
-// <Gruntz/Wnd.h> above, so AFXCMN.INL is skipped there like afxwin*.inl.
-// ---------------------------------------------------------------------------
 #include <afxcmn.h>
 
-// The game-manager settings singleton (g_gameReg), typed as what it IS: CGruntzMgr
-// (canonical <Gruntz/GruntzMgr.h>). It used to be typed CGameRegistry* - a second,
-// fake header view of this same object - which forced a CGruntzMgr cast at every
-// site whose method only the canonical declares, and routed the two
-// remaining ones (SetSoundVolume/SetVoiceVolume) to CGameRegistry:: declarations
-// that NOTHING defines: ?SetSoundVolume@CGameRegistry@@QAEXH@Z /
-// ?SetVoiceVolume@CGameRegistry@@QAEXH@Z were guaranteed unresolved externals, while
-// retail's calls there go to ?SetSoundVolume@CGruntzMgr@@QAEXH@Z (0x0919d0) and
-// ?SetVoiceVolume@CGruntzMgr@@QAEHH@Z (0x091a10) - which gruntzmgr already defines.
-// Typing the pointer correctly binds both calls to the real bodies and the casts fall
-// out on their own. Every member this TU touches is on CGruntzMgr or its CGameMgr
-// base at the same offsets (m_soundEnabled +0x10, m_musicEnabled +0x14, m_savedModeW/H
-// +0x94/+0x98, ...), so the swap is byte-neutral.
 extern "C" {
 }
 
-// The active dialog handle latch (@0x64557c); the proc stamps it on entry.
-// DEFINED in Net/LobbyDialogs.cpp (namespace NetLobby); the old `g_curDlg_optdlg`
-// alias symbol (nothing defined it) is gone.
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 
-// The CD-prompt result gate (@0x6455ec); DEFINED in StartUpPrompt.cpp (its writer).
-
-// Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND gate the
-// option commits. FABRICATED-SYMBOL FIX (assert_relocs --fake-targets): these were declared
-// with C++ linkage, so they mangled to ?g_disableAudio@@3HA etc. - symbols NOTHING defines
-// (the storage is the extern-"C" global the rest of the tree already binds), i.e. three
-// guaranteed `unresolved external symbol`s. extern "C" makes them the SAME datum. The old
-// hex names (g_gate_2455b4/bc/c0, Globals.h + LevelPreview.cpp) were renamed to these
-// semantic ones rather than the reverse - best name wins.
-// g_disableSound (0x2455bc) / g_disableMusic (0x2455c0) are CONSOLIDATED globals: they come
-// from <Globals.h> (included above), inside its extern-"C" block. Re-declaring them here would
-// re-proliferate them (the labels gate refuses it). Only 0x2455b4 is not consolidated.
-// The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in its owner TU
-// src/Rez/RezSync.cpp (RezSync::Init loads all twelve from the .bute [Config] keys
-// that name them); the reference externs live in <Globals.h>. DATA() belongs on the
-// DEFINITION only - these used to carry a DATA() on a bare `extern`, which binds a
-// name to an rva without ever giving it storage.
-
-// The options-dialog staging cells (0x22bd64..0x22bdd4): a snapshot of the live
-// settings LoadGameOptionsToDialog captures so IDCANCEL/Apply can restore/commit
-// them. Owned by this TU (videoconfig.obj's .bss); DEFINED here, zero-init, with the
-// reference externs kept in <Globals.h>. extern "C" (their consolidated linkage).
 extern "C" {
     DATA(0x0022bd64)
     i32 g_opt_22bd64 = 0;
@@ -124,9 +65,6 @@ extern "C" {
     i32 g_opt_22bdd4 = 0;
 }
 
-// The eight option-control HWNDs the dialog caches at init (GetDlgItem of the
-// music / voice / speech / easy / resolution-slider / and three more checkboxes).
-// Owned by this TU; DEFINED here (zero-init .bss), DATA()-pinned to their retail rvas.
 DATA(0x0022bdd8)
 HWND g_optHwndMusic = 0; // IDC 0x46d
 DATA(0x0022bddc)
@@ -143,9 +81,7 @@ DATA(0x0022bdf0)
 HWND g_optHwndCk7 = 0; // IDC 0x470
 DATA(0x0022bdf4)
 HWND g_optHwndCk8 = 0; // IDC 0x476
-// The scroll-cue throttle globals ScrollDialog's config-cue chain reads.
 
-// Forward decls for the in-TU definitions below (callers precede them in RVA order).
 void LoadGameOptionsToDialog(HWND hDlg);                           // 0x036860
 void ReadMenuOptionsDialog(HWND hDlg);                             // 0x036a30
 void OnToggleMusicOption(HWND hDlg);                               // 0x036d00
@@ -153,7 +89,6 @@ void OnToggleVoiceOption(HWND hDlg);                               // 0x036d50
 void OnToggleSpeechOption(HWND hDlg);                              // 0x036da0
 void OnToggleEasyModeOption(HWND hDlg);                            // 0x036e10
 void OnToggleCk5Option(HWND hDlg);                                 // 0x036df0 (thunk 0x19b5;
-                                                                   //  unreconstructed extern)
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x0370a0
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
@@ -165,13 +100,6 @@ namespace ApiCallerStubs {
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0
 } // namespace ApiCallerStubs
 
-// CheckDlgButton is the real USER32 import (its IAT slot @0x6c44b4); called twice in
-// DialogInit37870, cl caches the __imp__ pointer in a reg once - the exact
-// `mov edi,ds:[__imp]; call edi` idiom the ex-`p_CheckDlgButton` fn-ptr global
-// hand-modeled. Same treatment as this TU's IsDlgButtonChecked (<Win32.h>/afx).
-
-// 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
-// resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeW;
@@ -316,12 +244,6 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return FALSE;
 }
 
-// LoadGameOptionsToDialog @0x036860 - the inverse of ReadMenuOptionsDialog: snapshot
-// the live settings into the g_opt_* staging globals (so a later Cancel can
-// restore / Apply can commit them), then push each value into the options dialog's
-// checkboxes (CheckDlgButton via the cached IAT slot 0x6c44b4) and sliders
-// (winapi_0371e0). The video-resolution combo + caption go through
-// LoadVideoResolutionConfig. A free __cdecl function (no `this`); bails if no manager.
 RVA(0x00036860, 0x16f)
 void LoadGameOptionsToDialog(HWND hDlg) {
     if (g_gameReg == 0) {
@@ -460,14 +382,6 @@ void CPlay::ApplyGameOptions() {
     g_gameReg->m_scrollSpeed = g_opt_22bd68;
 }
 
-// The four per-checkbox WM_COMMAND handlers of the same options dialog: each
-// mirrors one checkbox into the CGruntzMgr settings singleton and enables the
-// paired slider/control. Free __cdecl(hWnd); no-op when the manager is not live.
-// SAME control IDs + commit set as ReadMenuOptionsDialog above (the reader's
-// per-control split-out). g_gameReg loads reloc-mask; the commit calls
-// (SetRunState/SetSoundLevelState) go through the thunks 0x492340/0x4923b0.
-
-// 0x36d00: music-enable checkbox (0x46d) -> SetRunState, enable slider 0x470.
 RVA(0x00036d00, 0x40)
 void OnToggleMusicOption(HWND hWnd) {
     if (g_gameReg) {
@@ -477,7 +391,6 @@ void OnToggleMusicOption(HWND hWnd) {
     }
 }
 
-// 0x36d50: voice-enable checkbox (0x475) -> m_isVoiceEnabled, enable ctrl 0x476.
 RVA(0x00036d50, 0x3c)
 void OnToggleVoiceOption(HWND hWnd) {
     if (g_gameReg) {
@@ -487,7 +400,6 @@ void OnToggleVoiceOption(HWND hWnd) {
     }
 }
 
-// 0x36da0: speech-enable checkbox (0x471) -> SetSoundLevelState, enable ctrl 0x472.
 RVA(0x00036da0, 0x40)
 void OnToggleSpeechOption(HWND hWnd) {
     if (g_gameReg) {
@@ -497,7 +409,6 @@ void OnToggleSpeechOption(HWND hWnd) {
     }
 }
 
-// 0x36e10: easy-mode checkbox (0x455) -> m_isEasyMode.
 RVA(0x00036e10, 0x26)
 void OnToggleEasyModeOption(HWND hWnd) {
     if (g_gameReg) {
@@ -535,18 +446,6 @@ namespace ApiCallerStubs {
     }
 } // namespace ApiCallerStubs
 
-// ---------------------------------------------------------------------------
-// LoadVideoResolutionConfig (0x036f30)
-// hDlg            - the owning dialog.
-// nIDCombo        - control ID of the resolution combo (resolved via GetDlgItem).
-// nSel            - the selection index to push into the combo / option control.
-// Resolves the engine option-control wrapper, seeds its range (1,3,1), forwards
-// nSel to the wrapped child (msg 0x405), then rebuilds the "Video Resolution
-// (WxH)" caption on the IDC_RESCAPTION static text from the global mode.
-//
-// BYTE-EXACT body modulo one MSVC5 deferred-callee-save (`push ebp`) scheduling
-// coin-flip (the target defers the ebp save past the four early-return guards;
-// our cl saves it eagerly).
 RVA(0x00036f30, 0x114)
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
     if (!hDlg) {
@@ -588,13 +487,6 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
     SetWindowTextA(hCaption, szCaption);
 }
 
-// ---------------------------------------------------------------------------
-// SaveVideoResolutionConfig (0x0370a0)
-// hDlg     - the owning dialog (for IDC_RESCAPTION).
-// hCombo   - the resolution combo HWND. (code/pos are the WM_HSCROLL params the
-//            dlgproc forwards; unused by the body - the combo is re-queried.)
-// Reads the combo's current selection (engine msg 0x400 -> the wrapped child),
-// stores it into the global mode, then rebuilds the caption (same tail as Load).
 RVA(0x000370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 /*code*/, i32 /*pos*/) {
     CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
@@ -764,9 +656,6 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     }
 }
 
-// 0x377e0: VideoOptionsDlgProc - the video-options dialog procedure. WM_INITDIALOG
-// seeds the checkboxes (DialogInit37870); WM_COMMAND/IDOK latches them
-// (SaveVideoCheckboxes) and closes with 1, IDCANCEL closes with 0.
 RVA(0x000377e0, 0x6a)
 BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

@@ -1,49 +1,15 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H
 #define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H
 
-// DDrawSubMgrLeafScan.h - THE single-source shape of CDDrawSubMgrLeafScan, the keyed-
-// asset CACHE variant of the tomalla-named CDDrawSubMgr surface-family sub-manager
-// (sibling of CDDrawSubMgrLeaf / CDDrawWorkerRegistry). Own vtable ??_7 @0x5efca0; a
-// CObject-like grand-base (LeafScanBase, vtable 0x5e8cb4) supplies the vptr + the three
-// header fields; the keyed cache map sits at +0x10, a held DSound device at +0x2c, a
-// busy/loading guard at +0x30 and a redraw arg at +0x34.
-//
-// This header is the union of the two former per-TU views (name-preserving):
-//   - DDrawSubMgrLeafScan.cpp: the full method set + the ??_7/??1 (real dtor) emission
-//   - DDrawSubMgrLeaf.cpp: the ??_G scalar-deleting dtor (0x157550, SYMBOL-pinned there)
-//     + IsReady (0x157530) + ClearMap (0x157bc0) that landed in the SIBLING TU.
-// The ??_7/??1 stay emitted ONLY in DDrawSubMgrLeafScan.cpp (the class's virtual dtor is
-// declared-only here, so a consumer that does NOT define ~ emits no competing vtable);
-// the ??_G/IsReady/ClearMap bodies stay in DDrawSubMgrLeaf.cpp. Field names are
-// placeholders; only OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
-
-// THE +0x10 MAP IS CMapStringToPtr, NOT CMapStringToOb (mfc_class --audit, 2026-07-12):
-// every map rva retail calls from these methods - Lookup 0x1b8438, RemoveKey 0x1b84de,
-// GetNextAssoc 0x1b8546, ~map 0x1b8322 - lies in [0x1b8247, 0x1b85b1), the band whose
-// ctor stamps ??_7CMapStringToPtr@@6B@ (0x1eb014).  CMapStringToOb's band is
-// [0x1b7e17, 0x1b8247) (Lookup 0x1b8008) and NOTHING here enters it.  The two classes
-// are byte-identical, so the FID rows are all AMBIG and the tree had guessed wrong;
-// `python -m gruntz.analysis.mfc_class 0x1b8438` asks the binary.  (A sibling map -
-// CDDrawWorkerRegistry::m_map - really IS CMapStringToOb, so this is per-site.)
 #include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <Ints.h>
 #include <rva.h>
 
-// Body-only dependency types (defined in the owning .cpp; only pointers/values in the
-// class declaration, so a forward decl suffices and keeps lean consumers lean).
 struct SoundStream;  // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
 struct LeafCue;      // the 0x1c cache element / map value (<Gruntz/LeafCue.h>)
 class CSymTab;       // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
 struct CParseSource; // the element's draw-source (BeginParse/EndParse; STRUCT key = the def)
 
-// ---------------------------------------------------------------------------
-// The shared CObject-like grand-base: vptr + status word at +0x04 + handle at +0x0c.
-// Modeled as a REAL polymorphic base (its 5-slot vtable is the shared grand-base
-// g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
-// (masks 0x5e8cb4) at the derived dtor's tail - no manual `*(void**)this = &g_*Vtbl`.
-// NAME-AUDIT: maps to RTTI CObject @0x1e8cb4, but KEPT as a real intermediate (carries
-// the m_04/m_08/m_0c header past the bare vptr) - NOT a bare-CObject fold.
-// ---------------------------------------------------------------------------
 class LeafScanBase : public CObject {
 public:
     virtual ~LeafScanBase()
@@ -64,10 +30,6 @@ inline LeafScanBase::~LeafScanBase() {
     m_0c = 0;
 }
 
-// ---------------------------------------------------------------------------
-// The cache sub-manager. Map at +0x10 (CMapStringToPtr, 0x1c bytes -> ends at +0x2c).
-// m_2c is the held DSound device, m_30 the busy guard, m_34 a redraw arg.
-// ---------------------------------------------------------------------------
 class CDDrawSubMgrLeafScan : public LeafScanBase {
 public:
     // 9-slot vtable (??_7CDDrawSubMgrLeafScan @0x5efca0): 5 shared LeafScanBase slots
@@ -144,7 +106,6 @@ public:
 SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(
     CDDrawSubMgrLeafScan,
     0x001efca0

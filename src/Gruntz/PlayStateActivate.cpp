@@ -1,20 +1,3 @@
-// PlayStateActivate.cpp - CPlay::OnActivate (0x0cb800), the PLAY level-state
-// activation (vtable slot 8; reached directly by CTriggerMgr::NotifyCell). Re-homed
-// from the artifact "GameLevelState" placeholder of BacklogStateLoaders.cpp: RVA
-// 0x0cb800 sits inside CPlay's method band (between CPlay::ModeCleanup @0x0cb740 and
-// CPlay::PresentAndFlush @0x0cba10), so the real owner is CPlay (<Gruntz/Play.h>).
-//
-// It chains the base activate, hides the cursor, registers the TILEZ/IMAGEZ(LEVEL)/
-// IMAGEZ(GRUNTZ) namespaces through the m_c->m_imageRegistry registrar (vtable slot +0x4c),
-// then runs the level-specific init chain (m_guts status bar, m_c sub-objects) and
-// kicks the state timer. __thiscall; every callee is a reloc-masked external.
-//
-// (2026-07-14: the former PlayActivate/GLS* view nest - PlayActivate, GLSAssetRoot,
-// GLSSubA, GLSSub14, GLSSub2c, GLSObj24, GLSNamespace, GLSMapMgr, plus the local
-// CPlay/CState/CDDrawSurfaceMgr member that already existed under its real name
-// (m_levelBank/m_gruntzBank/m_guts/m_region0Gate/m_region1Gate/m_stepCountdown; the
-// asset root's m_4/m_c/m_24 are m_drawTarget/m_workerList/m_24 with their real
-// classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Mfc.h>                          // ShowCursor (afx-first)
@@ -36,20 +19,6 @@
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Fill (0x13e760)
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (m_guts Deactivate/Load...)
 
-// 0xface0: the shared image-load activate gate = CState::InputVirtual (slot-8 base
-// virtual, SYMBOL-bound in Attract.cpp), called qualified (direct) on `this` - the same
-// spelling StateImages.cpp's CBootyState/CImageState use. 0xfa8f0 is CState::RetireScene
-// (the shared state-timer arm, inherited by CPlay - called cast-free below).
-
-// The global empty C string (0x6293f4).
-
-// The +0xc4 reset manager is the DirectInputMgr2 input singleton g_inputMgr
-// (DAT_00245570, decl in <DinMgr2/InputMgrPtr.h>): ReadAll (@0x133110) polls devices.
-// The game-manager singleton (0x64556c). Declared here (it used to arrive from
-// <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
-// real class it needs -- see the note in Play.h). Type unchanged for this TU.
-// The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
-// called with (g_gameReg, this->m_guts, this->m_region0Gate).
 class CGruntzMgr;
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag); // reloc-masked
 

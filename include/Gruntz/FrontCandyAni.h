@@ -1,15 +1,3 @@
-// FrontCandyAni.h - a front-candy eyecandy animation game-object
-// (C:\Proj\Gruntz). The sibling of CBehindCandyAni (the eyecandy that draws in
-// FRONT of the gruntz rather than behind), sharing the same CUserLogic leaf
-// archetype: a per-coordinate activation registry (g_frontCandyActReg @0x6460b0)
-// that FireActivation dispatches through, bound by RegisterActs to the per-frame
-// AdvanceAnim handler under the shared activation-name key "A".
-//
-// CANONICAL CFrontCandyAni : CUserLogic (vtable 0x1e83e4). Unifies the former
-// UserLogic.cpp-local "genuine ctor" view (ctor 0xacf40 + full vtable + m_40) with
-// the "acts" facet (InitActReg/FireActivation/RegisterActs/AdvanceAnim); the added
-// non-virtual/static methods are layout-neutral so the ctor emission is unchanged.
-// Only offsets / code bytes are load-bearing; names are placeholders.
 #ifndef GRUNTZ_CFRONTCANDYANI_H
 #define GRUNTZ_CFRONTCANDYANI_H
 
@@ -45,10 +33,6 @@ public:
 };
 VTBL(CFrontCandyAni, 0x1e83e4);
 
-// The per-coordinate activation registry entry (g_frontCandyActReg's element): its
-// first dword receives the per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on
-// this single-inheritance class). FireActivation/RegisterActs cast the CActReg entry
-// to this. A faithful 4-byte PMF record, hoisted out of FrontCandyAni.cpp.
 typedef i32 (CUserLogic::*FrontCandyHandler)();
 struct CFrontCandyActEntry {
     FrontCandyHandler m_fn;

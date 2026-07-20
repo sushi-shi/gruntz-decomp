@@ -1,20 +1,3 @@
-// TimeBomb.h - the timez-bomb pickup game-object (C:\Proj\Gruntz).
-//
-// CTimeBomb : CUserLogic - a tile-logic leaf in the same game-object hierarchy
-// as CKitchenSlime (proven by its dtor stamping the CUserLogic vftable 0x5e705c
-// then the CUserBase vftable 0x5e70b4, tearing down the +0x18 link via the
-// embedded ~EngStr at 0x16d2a0 - byte-identical in shape to ~CKitchenSlime
-// @0x013100). The leaf adds no destructible members beyond CUserLogic, so its
-// dtor folds the bare CUserLogic teardown (the /GX leaf-dtor archetype).
-//
-// FireActivation (0x0e1830) is the SAME per-coordinate activation-registry
-// dispatcher archetype as CKitchenSlime::FireActivation (0x0b2940), but a
-// DIFFERENT registry instance (CTimeBomb's, at 0x64c780 vs the slime's at
-// 0x646228). This is the archetype for the CParticlez / CStaticHazard /
-// CToobSpikez / CDroppedObject 0x102-sized FireActivation siblings.
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CTIMEBOMB_H
 #define GRUNTZ_CTIMEBOMB_H
 
@@ -43,10 +26,6 @@ public:
 VTBL(CTimeBomb, 0x1e771c);
 SIZE(CTimeBomb, 0x68);
 
-// The timebomb activation entry: its first dword is the registered handler, stored
-// as a free-fn ptr but dispatched __thiscall on `this` (4-byte single-inheritance
-// PMF -> `mov ecx,this; call [entry]`). Was the .cpp-local CTBombEntry view;
-// CTimeBomb is complete above so the PMF stays 4 bytes (pmf-complete-class-4byte).
 typedef void (CUserLogic::*TBombHandler)();
 struct CTBombEntry {
     TBombHandler m_fn; // [entry]

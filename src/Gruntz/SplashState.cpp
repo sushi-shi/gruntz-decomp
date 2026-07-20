@@ -1,23 +1,3 @@
-// SplashState.cpp - the splash-screen game state (its own TU). Re-homed from
-// src/Stub/SplashState.cpp (C:\Proj\Gruntz).
-//
-// CSplashState : public CState (RTTI .?AVCSplashState@@, vtbl@0x1e9d74) - a real
-// CState leaf. Its slot-1 loader (LoadGameAssetNamespaces @0xf9780, ex "LoadSounds")
-// reads the shared CState owner/view/bank facets cast-free
-// through their real INHERITED types:
-//   * m_4  (CGruntzMgr*)  - RestoreVideoMode (re-assert the 640x480 display mode).
-//   * m_8  (CBankMgr*)    - Lookup the "STATEZ_SPLASH" bank -> CResSource.
-//   * m_2c (CResSource*)  - the cached splash bank; LoadGroup its "SOUNDZ" set.
-//   * m_c  (CDDrawSurfaceMgr*)       - its +0x28 sound registry Install()s the loaded set.
-// The 0x48ddd0/0x53c030/0x53a230/0x557ee0 call targets are the VA form (RVA +
-// 0x400000 image base) of CGruntzMgr::RestoreVideoMode (0x08ddd0), CBankMgr::Lookup
-// (0x13c030), CResSource::LoadGroup (0x13a230) and CDDrawSubMgrLeafScan::Install
-// (0x157ee0) - the SAME engine methods the in-game CPlay resource facet
-// already models; here they are reloc-masked externals.
-//
-// The gating global g_assetRoot is the REAL MFC CString: CString::GetLength() inlines
-// to GetData()->nDataLength == m_pchData[-2], byte-identical to the load's `mov
-// eax,ds:g; mov ecx,[eax-8]; test ecx,ecx` guard.
 #include <Mfc.h>   // CString + <windows.h> (SetCursor)
 #include <ddraw.h> // IDirectDrawSurface (the frame surface's IsLost poll, m_c->...->m_2c->m_8)
 #include <Bute/SymTab.h>
@@ -39,20 +19,9 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 
-// The global empty C string the sound loader's prefix is seeded from (0x6293f4).
-
-// The global asset-root CString whose emptiness gates the load (0x64e25c;
-// declared in <Gruntz/AssetRoot.h>, DATA home NetMgrMisc.cpp).
 #include <Gruntz/AssetRoot.h>
 
-// The engine's just-refreshed per-frame clock delta (?g_wap32FrameDelta@@3HA); the
-// splash title timer counts down by it (0x653c74).
 extern i32 g_wap32FrameDelta; // 0x653c74
-
-// CSplashState (: CState, vtbl@0x1e9d74) - the shared class def now lives in
-// <Gruntz/SplashState.h> so its out-of-line dtor (0x08d000, emitted in HelpState.cpp)
-// stamps the real ??_7CSplashState. This loader TU never defines a virtual body, so
-// cl emits no ??_7CSplashState here (member-offset codegen unchanged).
 
 // @confidence: high
 // @source: decomp-xref
@@ -169,9 +138,6 @@ post:
     return 1;
 }
 
-// CSplashState::InputVirtual (0xf9a80, slot 8) - per-frame poll: gate on the page
-// manager's readiness, hide the cursor, roll the splash title sequence with the
-// current asset-root name, return its result.
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::InputVirtual() {
     if (m_c->m_drawTarget->PagesReady() == 0) {
@@ -182,8 +148,6 @@ i32 CSplashState::InputVirtual() {
     return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
-// CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
-// own readiness virtual (IsActive), hide the cursor, roll the splash title sequence.
 RVA(0x000f9af0, 0x3e)
 i32 CSplashState::Vslot06() {
     if (IsActive() == 0) {
@@ -194,8 +158,6 @@ i32 CSplashState::Vslot06() {
     return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
-// CSplashState::Vslot0c (0xf9b40, slot 12) - key handler: on ESC/SPACE/ENTER post a
-// WM_COMMAND 0x8023 to the top-level window.
 RVA(0x000f9b40, 0x37)
 i32 CSplashState::Vslot0c(i32 code, i32) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
@@ -204,8 +166,6 @@ i32 CSplashState::Vslot0c(i32 code, i32) {
     return 1;
 }
 
-// CSplashState::Vslot0e (0xf9b90, slot 14) - unconditional command post: notify the
-// top-level window with WM_COMMAND 0x8023.
 RVA(0x000f9b90, 0x24)
 i32 CSplashState::Vslot0e(i32, i32, i32) {
     PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);

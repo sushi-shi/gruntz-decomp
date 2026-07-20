@@ -1,47 +1,3 @@
-// Warlord.cpp - the ORIGINAL warlord TU (RTTI .?AVCWarlord@@), a CUserLogic-
-// derived leaf, PLUS the five anim-resolver methods currently labeled CGrunt::
-// Resolve*Animation - the retail obj spans 0x42d40-0x45cc1 and those five
-// resolvers are TEXT-WOVEN into it (wave3-I grunt-region partition):
-//   * text A-B-A: ResolveMovingAnimation @0x45100 sits BETWEEN
-//     BuildFortSplashParticles @0x44f80 and NotifyFortUnderAttack @0x45270 -
-//     impossible for separate objs at first link.
-//   * private .data weave: the warlord ctor's statics band (0x20d218-0x20d374)
-//     interleaves cell-by-cell with the resolvers' statics (0x20d220 = ctor +
-//     0x45100; 0x20d234 = ctor + 0x457b0; 0x20d22c = ctor + 0x455f0/0x48470/
-//     0x49c60; 0x20d36c/0x20d374 = 0x45960/0x45b60) ahead of the fortressflag
-//     ctor's band (0x20d384).
-//   * init frag i302 @0x445a0 (before InitActReg @0x445c0) is this obj's.
-// IDENTITY RESOLVED (2026-07-17) - the resolvers are CWarlord's, NOT CGrunt's. The old
-// note here called this "unresolved ... pending an identity pass"; the pass is done and
-// the CALLERS settle it (`python -m gruntz.analysis.xref 0x00045100 --tree`):
-//
-//   0x45100 ResolveMovingAnimation    <- ??0CWarlord@@QAE@H@Z  (the CWarlord CTOR),
-//                                        RearmMoving, RearmMoving2, LoadAttributes2,
-//                                        AdvanceMovingAnim   - all CWarlord methods
-//   0x45960 ResolveIdleAnimation      <- LoadAttributes@CWarlord
-//   0x45b60 ResolveBattlecryAnimation <- LoadAttributes@CWarlord
-//
-// with NO CGrunt caller anywhere. ??0CWarlord is decisive: a ctor can only call methods
-// of its own class or its bases, and CWarlord's RTTI ClassHierarchyDescriptor @0x5f3818
-// lists CWarlord/CUserLogic/CUserBase/CWapX - there is no CGrunt in the chain. (Warlord.h
-// claimed "the warlord `this` is a CGrunt receiver at these sites"; that was an assertion
-// with no caller behind it, and it is false.) This is the same mis-attribution Grunt.h
-// already recovered for NotifyFortUnderAttack @0x45270, which sits between them.
-//
-// BLOCKED, NOT DEFERRED-BY-CHOICE: re-declaring them on CWarlord does not compile - the
-// bodies use m_animPlayer/m_activeAnimDesc/m_animResolved/m_movingGeoSrc/m_idleGeoSrc/
-// m_battlecryGeoSrc, and NONE of those are modeled on CWarlord or CUserLogic (they exist
-// only on CGrunt, e.g. m_animPlayer @CGrunt+0x38). Landing the re-attribution therefore
-// needs CWarlord's own animation members modeled at their real offsets, which is
-// entangled with the CGrunt spine conversion Grunt.h documents as "NOT YET CONVERTED /
-// BLOCKED" (`: public CGruntMovingBase, public CWapX`, CWapX @+0x150). Attempted and
-// reverted here rather than fabricate a member model. That dependency is the whole
-// blocker; the identity itself is settled. It is also what forces this TU's 7
-// `((CGrunt*)this)->Resolve*Animation()` casts - they are the SYMPTOM of the alias and
-// must NOT be laundered away; they die when the member model lands.
-//
-// CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
-// MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -51,7 +7,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog; Lookup 0x1b8438)
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
-                                      // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>        // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
 #include <Gruntz/GruntzMgr.h>      // CGruntzMgr (the RTTI-true singleton; ReportError @0x8dc60)
@@ -62,16 +17,12 @@
 
 #include <rva.h>
 
-// The five anim-resolvers' key-string statics (this TU's own .data copies - the
-// 0x20d218-0x20d374 private band the warlord ctor shares).
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 static const char s__MOVING[] = "_MOVING";
 static const char s__DEATH[] = "_DEATH";
 static const char s__JOY[] = "_JOY";
 static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
-// The ctor's own eleven per-state anim-key suffixes + the four owner-name prefixes
-// (the same 0x20d218-0x20d374 private .data band, reloc-masked).
 static const char s__IDLE1[] = "_IDLE1";
 static const char s__IDLE2[] = "_IDLE2";
 static const char s__IDLE3[] = "_IDLE3";
@@ -119,18 +70,6 @@ static const char s_keyF[] = "F";
 //   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
 //       (global scheduling); logic identical. Deferred to the final sweep.
 
-// The Gruntz type-registry globals (.data). g_buteTree (the real shared CButeTree)
-// maps an action-key string to a 1-based type id (0 = absent, via Find/Insert);
-// g_typeColl is the parallel growable key collection; g_actionTable holds the
-// per-type action-handler pointer slots.
-
-// zDArray (SetAtGrow == grow + assign, inlined in retail) is the shared
-// <Gruntz/TypeKeyColl.h> shape.
-
-// g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
-
-// The six action-type handler entry points (reloc-masked code addresses; their
-// mid-function LAB_ addresses are stored as raw dispatch pointers).
 extern "C" void Act_A(); // 0x403ba7
 extern "C" void Act_B(); // 0x401ce9
 extern "C" void Act_C(); // 0x4024f0
@@ -138,10 +77,6 @@ extern "C" void Act_D(); // 0x403422
 extern "C" void Act_E(); // 0x40431d
 extern "C" void Act_F(); // 0x402725
 
-// Find-or-create one action-key -> handler binding. Retail INLINES all six blocks
-// (SetAtGrow is expanded to IndexToPtr + the placement-new grow loop + the CString
-// key assign); a macro forces the 6x inlining cl declines for a helper this large.
-// The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
         i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                                       \
@@ -210,22 +145,6 @@ extern "C" void Act_F(); // 0x402725
 // placeholder shell (src/Gruntz/WorldSoundSet.cpp).
 // @rva-symbol: ??1CWarlord@@UAE@XZ 0x000107f0 0x55
 
-// ===========================================================================
-// CWarlord::CWarlord(int)  (0x042d40)  - the warlord ctor
-// ===========================================================================
-// Folds the shared CUserLogic(obj) base init (base vptr, the +0x18 link, the
-// empty-string threat name, the one-shot logic-type table, the three built-in
-// handler registrations), seeds the tile-logic tail + the two cooldown timers,
-// then: snaps the bound object onto the tile grid, latches its warlord anim id,
-// resolves a per-owner sprite selector, and a 4-way switch over the owner index
-// names the warlord ("WARLORDZ_KING".."WARLORDZ_VIKING") + its battle-event tag.
-// For each of the eleven per-state keys ("GRUNTZ_<owner>_<state>") it looks the
-// handle up in the object's embedded name->handle map and stashes it (m_58..m_80).
-// Finally re-zeros the second timer and resolves the initial moving animation.
-// The +0x18 throwing link + the destructible m_54 CString drive the /GX EH frame.
-//
-// The owner index (the bound object's m_124) selects both the per-owner focus-slot
-// config row and the switch arm.
 typedef enum WarlordOwner {
     WARLORDZ_KING = 0,
     WARLORDZ_NAPOLEAN = 1,
@@ -233,7 +152,6 @@ typedef enum WarlordOwner {
     WARLORDZ_VIKING = 3,
 } WarlordOwner;
 
-// The per-owner warlord battle-event tag stored at m_ownerTag (retail 0x442..0x445).
 typedef enum WarlordBattleTag {
     WARLORD_TAG_KING = 0x442,
     WARLORD_TAG_NAPOLEAN = 0x443,
@@ -241,12 +159,6 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-// One unrolled anim-key lookup on the bound object's embedded animation
-// name->handle map: the object's typed world slot (CGameObject::m_0c, the
-// CDDrawSurfaceMgr) -> m_animRegistry (+0x2c, CDDrawSubMgrLeaf) -> its CMapStringToPtr
-// m_10 (retail Lookup 0x1b8438). Build "GRUNTZ_" + m_54 + suffix (two CString temps), look it up
-// (out-param zeroed first so a miss stores 0), stash the handle. The chain stays
-// in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
@@ -272,11 +184,6 @@ typedef enum WarlordBattleTag {
 //     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
 //     inheritance change owned by the Fable lane; left as a hand-off (see report).
 RVA(0x00042d40, 0x73e)
-// NB the arg is `int` in retail's mangling (??0CWarlord@@QAE@H@Z), not CGameObject* -
-// the 1997 dev declared the ctor `CWarlord(int)` and used the int as the bound game
-// object handle; the cast to CGameObject* reproduces that (kept i32 so the mangled
-// symbol still binds to 0x42d40). Sibling leaf ctors (CGruntVoice, ...) took a real
-// CGameObject*; this one did not.
 CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), CWapX(reinterpret_cast<CGameObject*>(arg)) {
     CGameObject* obj = reinterpret_cast<CGameObject*>(arg);
 
@@ -416,34 +323,14 @@ i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 0;
 }
 
-// The file-static per-action handler dispatch array (g_actionTable @0x644610) is
-// the shared CActReg archetype (<Gruntz/ActReg.h>): InitActReg builds it over the
-// fixed [2000, 2010] range via Construct (0x408710); CActReg::Resolve (0x464e0,
-// the standalone ResolveEntry copy) resolves a per-type slot (RegisterWarlordActions).
 DATA(0x00244610)
 extern CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
-                       // covers interior fields 0x244614..0x244630, bind as g_obj+offset)
 
-// ===========================================================================
-// CWarlord::InitActReg  (0x0445c0)
-// ===========================================================================
-// Construct the file-static per-action handler table (g_actionTable @0x644610)
-// over the fixed range [2000, 2010] via the shared registry ctor (0x408710).
-// Free init thunk; the SAME archetype as the eyecandy classes' InitActReg.
 RVA(0x000445c0, 0x15)
 void CWarlord::InitActReg() {
     g_actionTable.Construct(2000, 2010);
 }
 
-// ===========================================================================
-// CWarlord::ResolveState  (0x044640)  - slot-4 override (the animation dispatcher)
-// ===========================================================================
-// Resolve the per-state handler slot for `key` in the g_actionTable registry, and
-// if it holds a handler, dispatch it on `this`. The lookup is the shared
-// CActReg::ResolveEntry (fast [lo,hi] range -> slow Find -> Insert rebuild); it is
-// side-effecting (seeds m_scratch, the Insert breadcrumb), so cl inlines it TWICE -
-// once to test `*slot != 0`, once to fetch the slot for dispatch. When the slot is
-// empty, the ResolveEntry return pointer falls straight out in eax as the result.
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
     void** slot = reinterpret_cast<void**>(g_actionTable.ResolveEntry(key));
@@ -468,12 +355,6 @@ void RegisterWarlordActions() {
 
 #undef REGISTER_ACTION
 
-// ===========================================================================
-// CWarlord::RearmMoving  (0x044bb0)
-// ===========================================================================
-// Re-arm the geometry sub-player at m_38->m_1a0 against the global default geo
-// source (result discarded). Then, if the sub's state words say it is ready to
-// move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -484,14 +365,6 @@ i32 CWarlord::RearmMoving() {
     return 0;
 }
 
-// ===========================================================================
-// CWarlord::LoadAttributes  (0x044c00)  - the warlord's per-tick threat update
-// ===========================================================================
-// Re-arm the geometry sub-player off the global geo source (bail if not ready);
-// in multiplayer, measure the nearest-enemy distance vs the "Warlordz/PanicRadius"
-// config (default 64) and raise the fort alert when inside the radius; otherwise,
-// past the 64-bit cooldown window, randomly resolve an idle / battlecry animation.
-// Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
@@ -605,13 +478,6 @@ i32 CWarlord::AdvanceMovingAnim() {
     return 0;
 }
 
-// ===========================================================================
-// CWarlord::RearmMoving2  (0x044f30)
-// ===========================================================================
-// A second per-state moving-anim re-arm handler dispatched from the warlord
-// anim-state table; the body is byte-identical to RearmMoving (0x44bb0): re-arm
-// the +0x1a0 geo sub-player off the global geo source, then resolve the moving
-// animation when the sub's state words say it is ready. Returns 0.
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -648,12 +514,6 @@ i32 CWarlord::RearmMoving2() {
 RVA(0x00044f80, 0x127)
 void CWarlord::BuildFortSplashParticles() {}
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveMovingAnimation()  (0x045100)  [moved from Grunt.cpp - this
-// obj's text; see the file header]
-// Gate: m_animResolved == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
-// m_movingGeoSrc into the player; look up tree key "B"; then randomize the move-start time
-// (m_moveStartTime = (rand()%0x5dc1 + 0x1770)*10) and seed m_moveSeed/m_moveTimeHi/m_moveSeedHi.
 RVA(0x00045100, 0x112)
 i32 CGrunt::ResolveMovingAnimation() {
     if (m_animResolved != 0) {
@@ -675,55 +535,9 @@ i32 CGrunt::ResolveMovingAnimation() {
     return 1;
 }
 
-// ===========================================================================
-// CWarlord::NotifyFortUnderAttack  (0x045270)  - resolve the fort-panic animation
-// ===========================================================================
-// Raise the fort-under-attack alert + resolve the warlord's panic animation. A /GX
-// leaf (frame 0x14; NO SerializeMove-style frame wall). FULLY DECODED (R3), left as a
-// STUB only for budget (a >512B multi-subsystem body); the next pass can land it from
-// this decode:
-//   gate:  if (m_a8 != 0) return 0;
-//          if (strcmp(*(char**)g_typeColl.IndexToPtr(m_14->m_1c), s_codeD) == 0) return 0;
-//                                              // 0x310f0 IndexToPtr; skip if already "D"/death
-//   cue + cooldown:
-//     if (g_gameReg->m_134 == 1) {            // on-screen / single-player
-//         g_gameReg->m_cueSink->Cue(m_object->m_188, 0x436, -1,-1,-1);   // 0x11b7c0
-//         m_cooldownWindowLo = 0x7530; m_cooldownWindowHi = 0; m_cooldownStampLo = g_frameTime;
-//     } else {                                 // multiplayer
-//         if ((i64)(u32)g_frameTime - *reinterpret_cast<i64*>(&m_timer2StampLo) >= *reinterpret_cast<i64*>(&m_timer2WindowLo)
-//             && ((CRegThreatHelper*)g_gameReg->m_cmdGrid)->m_2a0 == this) {
-//             g_gameReg->m_cueSink->Cue(m_object->m_188, 0x440, -1,-1,-1);
-//             if ((g_notifyShownFlag & 1) == 0) {                        // g_6445bc, one-shot
-//                 g_notifyShownFlag |= 1;
-//                 g_notifyAlertStr = CString("ALERT - Your Fort is under attack"@0x60d340); // 0x1b9d4c @ 0x6446fc
-//                 FUN_0011f490(&LAB_004455d0);                            // 0x11f490 (queue the banner)
-//             }
-//             CString notifyMsg; g_buteMgr.GetStringDef("Warlordz","NotifyString",&notifyMsg); // 0x173180
-//             ((CFontConfig*)g_gameReg->m_5c)->AddItem(notifyMsg, ...);   // 0x21c60 HUD line
-//             m_timer2WindowLo = g_buteMgr.GetIntDef("Warlordz","NotifyTimer",0x1770); // 0x171aa0
-//             m_timer2WindowHi = 0; m_timer2StampLo = g_frameTime; m_timer2StampHi = 0;
-//         }
-//         // (MP cooldown re-arm:) m_cooldownWindowLo = (GruntRand()%0x5dc1 + 0x1770)*10; ...
-//     }
-//     m_cooldownStampHi = 0;
-//   resolve panic anim (shared tail):
-//     m_activeAnimDesc = m_38->m_1a0.m_14;
-//     m_38->m_1a0.Setup_15c2d0((i32)m_animPanic);                          // 0x15c2d0
-//     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);                       // 0x150540
-//     m_prevAnimSetNode = m_14->m_1c; m_14->m_1c = g_buteTree.Find(s_codeD);  // 0x16d190
-//     return 1;
-// New models the next pass needs (lean reloc-masked shells + externs): CFontConfig::
-// AddItem @0x21c60, FUN_0011f490, the global CString g_notifyAlertStr @0x6446fc + its
-// ctor 0x1b9d4c, the one-shot byte g_notifyShownFlag @0x6445bc, and s_codeD (shared
-// ?s_codeD@@3PADA @0x60cca4, "D"). g_typeColl/g_buteMgr/g_buteTree/cueSink are already
-// modeled. Risk: the inline strcmp gate + the two-way (SP/MP) cooldown-store schedule.
 RVA(0x00045270, 0x2a8)
 void CWarlord::NotifyFortUnderAttack() {}
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveDeathAnimation()  (0x0455f0)  [moved from Grunt.cpp]
-// Gate: m_animResolved == 0 (else return 0); then latch m_animResolved = 1. Fire the on-screen cue
-// (arg2 = m_deathCueArg), feed geometry m_deathGeoSrc then key "GRUNTZ_<type>_DEATH", look up "C".
 RVA(0x000455f0, 0x15b)
 i32 CGrunt::ResolveDeathAnimation() {
     if (m_animResolved != 0) {
@@ -754,10 +568,6 @@ i32 CGrunt::ResolveDeathAnimation() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveAnimation()  (0x0457b0, generic "_JOY")  [moved from Grunt.cpp]
-// Gate: m_animResolved == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
-// on-screen / 0x43f otherwise). Geometry m_joyGeoSrc; key "GRUNTZ_<type>_JOY"; look "E".
 RVA(0x000457b0, 0x14c)
 i32 CGrunt::ResolveAnimation() {
     if (m_animResolved != 0) {
@@ -787,12 +597,6 @@ i32 CGrunt::ResolveAnimation() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveIdleAnimation()  (0x045960)  [moved from Grunt.cpp]
-// Gate: m_animResolved == 0 (else return 0). Pick idx = rand()%3 + 1 (1..3); cue arg2 =
-// idx+0x431 / idx+0x43b; geometry m_idleGeoSrc[idx]; then read the active-anim
-// descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
-// "GRUNTZ_<type>_IDLE"; look up "A".
 RVA(0x00045960, 0x181)
 i32 CGrunt::ResolveIdleAnimation() {
     if (m_animResolved != 0) {
@@ -828,11 +632,6 @@ i32 CGrunt::ResolveIdleAnimation() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ResolveBattlecryAnimation()  (0x045b60)  [moved from Grunt.cpp]
-// Gate: m_animResolved == 0 (else return 0). Pick idx = rand()%3 (0..2); cue arg2 =
-// idx+0x42e / idx+0x438; geometry m_battlecryGeoSrc[idx]; key "GRUNTZ_<type>_BATTLECRY";
-// look up "F".
 RVA(0x00045b60, 0x161)
 i32 CGrunt::ResolveBattlecryAnimation() {
     if (m_animResolved != 0) {
@@ -864,8 +663,6 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CRegBattleEvent);
 SIZE_UNKNOWN(CRegThreatHelper);
 SIZE_UNKNOWN(CWarlordAnimSub);

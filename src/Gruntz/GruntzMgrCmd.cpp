@@ -1,32 +1,3 @@
-// GruntzMgrCmd.cpp - CGruntzMgr::HandleCommand (RVA 0x862f0): the game's
-// WM_COMMAND / accelerator + cheat-code dispatcher - the binary's single largest
-// function, defined here in its own TU (the class lives in <Gruntz/GruntzMgr.h>;
-// GruntzMgr.cpp holds the other manager methods).
-//
-// FULLY CANONICAL: the former `namespace GruntzMgrCmd` view-world (a namespaced
-// CGruntzMgr shadow + the GZ* per-TU views: GZLogic/GZBoard/GZGrunt/GZGruntLevel/
-// GZLevel/GZInput/GZSoundZ/GZMgrSettings/GZDeath*/GZPtrMap/GZSel/GZCell/GZStr/
-//   this            = ::CGruntzMgr (GruntzMgr.h; base CGameMgr gives
-//                     m_gameWnd/m_frameGate/m_soundEnabled/m_musicEnabled)
-//   m_curState      = CState (Update() slot 4 == the old vf10; Vslot15 == vf54);
-//                     downcast per proven state id: CPlay (3), CMenuState (5,
-//                     GameMode.h StopMusicChain/StartMusic), CMulti (0x11, Connect)
-//   PickPlayOrPausedState() (thunk 0x355d) yields the CPlay the cheats drive
-//                     (SetCursorFrame/Flip/OnRegion1-3/CanQuickSave/m_frameMarker)
-//   m_cmdGrid       = CTriggerMgr (ClearRowAndRefresh 0x18e3, CycleMoveIcons 0x3616,
-//                     m_grid/m_recHead/m_recCount)
-//   m_world->m_soundRegistry   = CSndHost (SoundCue.h; CueLookup @0x05b7e0 was the fake
-//                     stdcall "CueLookup" free fn - it is a real CSndHost thiscall)
-//   m_sound         = CGruntzSoundZ (Restart 0x1388c0 / StopAll 0x1388f0)
-//   m_saveSink      = the CSaveGame (Io/SaveGame.h), m_saveInfoRec = SaveInfo (SaveInfo.h)
-//   *0x64556c       = g_gameReg (CGameRegistry; the death cheat's key is
-//                     m_focusSlots[0].m_0c, its map CDDrawChildGroup::m_map48)
-// Grid cells are CGrunt (m_tileOwnerHi/Lo @+0x1ec/+0x1f0, LoadPickupSprites
-// @0x65e80, LoadGruntAbilityTuning @0x57100); the CTmCell==CGrunt retype in
-// TriggerMgr.h is deferred (owned by a parallel worker) - the two casts below
-// carry the evidence. CPlay::m_guts' concrete type is CStatusBarMgr
-// (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
-// is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -53,59 +24,23 @@
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
-// The *0x24556c game-manager singleton. Declared here (it used to arrive from
-// <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
-// real class it needs -- see the note in Play.h). Type unchanged for this TU.
-
-// node IS the MFC CPtrList CNode, and `((CTmNode*)GetHeadPosition())->m_pt` is
-// spelled with the real accessor `reinterpret_cast<CTrigPoint*>(m_recList.GetHead())` below - the
-// identical two loads (m_pNodeHead, then ->data), byte-proven.)
-
-// The game-manager singleton global comes in WwdGameReg-typed via Grunt.h
-// (WwdGameReg.h) - the grunt-facet view of the same *0x64556c object this class
-// IS. The two sites below that need the CGameRegistry facet (m_focusSlots /
-// m_modeW) bridge-cast; the WwdGameReg->CGameRegistry view unification is a
-// deferred Grunt.h-scale fold.
-// Cheat toggles (named from their own ShowToggleMessage strings; DEFINED extern "C"
-// in GruntzMgr.cpp with their .bss band).
 extern "C" u32 g_gruntDestruction; // "Grunt destruction"
 extern "C" u32 g_gruntCreation;    // "Grunt creation"
 extern "C" u32 g_gooPuddlez;       // "Goo puddlez"
 extern "C" i32 g_monologoShown;    // the MONOLITH logo is on screen (LoadMonologoSprite)
-// The CD-prompt result gate (0x6455ec; def: StartUpPrompt.cpp). The old local
-// hex-named alias ("load/quicksave-UI suppress gate") was this same cell: no CD
-// present suppresses the save/load UI.
 extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
-                                // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
 extern "C" u32 g_explosionz;    // "Explosionz"
-// the draw-clock mirror (here: the 0x8247 cue-cooldown throttle). Was a C++-mangled
-// ?g_time6bf3c0@@3HA - a divergent symbol for a cell 9 other TUs share.
 extern i32 g_isHost_648cf0;
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 
-// The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;
-// the "brick text" debug overlay renders them).
 extern CString g_brickText1;
 extern CString g_brickText2;
 
-// ParseSerial (@0x0d210) + SerialObjectFactory (@0x0d2a0) carved out to
-// src/Gruntz/SerialObjectFactory.cpp in REHOME D9 (their contiguous 0xd210-0xec24
-// .text block is a separate obj). HandleCommand's WM_COMMAND 0x807e path calls
-// ParseSerial cross-TU (declared here, defined there).
 i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
-// The screenshot dispatch chain (thunk 0x277a -> the 6-arg __cdecl forwarder
-// Fwd114ec0 @0x114ec0 -> the guarded Fwd114f00 @0x114f00 -> SaveScreenshot
-// @0x114ff0 on the front surface). Both forwarders were carved out to
-// src/Gruntz/Fwd114ec0.cpp in REHOME D9 (their 0x114ec0-0x114f3e block is a
-// separate obj); HandleCommand's WM_COMMAND 0x8070 path calls Fwd114ec0 cross-TU
-// (declared here, defined there). Params are SaveScreenshot's own tail.
 void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
 
-// Play a named cue when the world's cue host is not muted: resolve via the
-// host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
-// every retail site because the m_emitGate gate test just loaded it).
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c =                                                                              \
@@ -113,8 +48,6 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
-// Cue via the host's finder (m_10, CSndFinder) with a stack out-ptr; used by a
-// handful of cheats instead of CueLookup.
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = 0;                                                                           \
@@ -140,9 +73,6 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
             ReportError(0x8005, (ERR));                                                            \
         return 1;                                                                                  \
     }
-// Grid-select the addressed cell (m_cmdGrid), grant a brick pickup and announce.
-// The grid cells are CGrunt (CTmCell==CGrunt; TriggerMgr.h retype deferred).
-// Retail inlines the whole grid walk (no BrickPickup helper call).
 #define BRICKPICKUP(ID, MSG)                                                                       \
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
@@ -172,7 +102,6 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         AppendChatMessage(MSG);                                                                    \
         return 1;                                                                                  \
     }
-// Grid-select the addressed cell, grant an ability and announce.
 #define BRICKABILITY(N, MSG)                                                                       \
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
@@ -198,9 +127,6 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         AppendChatMessage(MSG);                                                                    \
         return 1;                                                                                  \
     }
-// Level-restart (0x8170/0x8171/0x8173): stop the menu music chain, drain cursor,
-// change state, restart music, re-raise cursor. Inlined by retail. The state==5
-// object is the CMenuState (GameMode.h).
 #define RESTART(N)                                                                                 \
     {                                                                                              \
         i32 st = m_curState->Update();                                                             \
@@ -221,7 +147,6 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         }                                                                                          \
         return 1;                                                                                  \
     }
-// Simpler restart variant (0x8172): no cursor drain.
 #define RESTART2(N)                                                                                \
     {                                                                                              \
         i32 st = m_curState->Update();                                                             \
@@ -1208,6 +1133,3 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
 #undef BRICKABILITY
 #undef RESTART
 #undef RESTART2
-
-// (Fwd114ec0 @0x114ec0 + Fwd114f00 @0x114f00 carved out to src/Gruntz/Fwd114ec0.cpp
-// in REHOME D9 - see the forward-declaration note above.)

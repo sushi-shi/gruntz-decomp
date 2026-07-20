@@ -1,24 +1,3 @@
-// CircleShadeBlit.cpp - CFaderLight::Render (0x180fb0, ghidra "Render"): the radial
-// shade-remap blit. __thiscall, ret 0x18 (6 args). Homed onto the canonical CFaderLight
-// (<Gruntz/FaderSubtypes.h>).
-//
-// IDENTITY (disasm-proven): the `this` size 0x206c is EXACTLY CFaderLight's (the only
-// fader subtype of that size - CFaderSine 0x7d5c, CFaderRadial 0x5c, CFaderShape 0x494,
-// CFaderMesh 0x6c, CFaderFlat 0x50), ghidra names 0x180fb0 "Render", and disasm confirms
-// every field offset: @0x38 (m_surface) and @0x3c (m_3c) are the two CDDSurface* blit
-// surfaces (both deref'd at +0x20 for the row pitch), @0x2060 is m_spanCount. Render runs
-// TRANSPOSED relative to ApplyInit (0x1804a0, which stores centerX@0x4c / centerY@0x50 /
-// surfWidth@0x2064 / surfHeight@0x2068): Render reads m_centerY@0x50 as its x-centre,
-// m_centerX@0x4c as its y-centre, and m_surfHeight@0x2068 as its width bound. Offsets are
-// load-bearing; the field names here are the canonical (ApplyInit-proven) ones.
-//
-// For the circular band, walk each scanline row from the top (cy - sqrt(R2 - dx^2) + 1)
-// down to the centre, compute the per-row half-length via the integer sqrt (fild/fsqrt/
-// __ftol), and remap the boundary pixels through the 2D displacement table `a3` (stride
-// m_spanCount): out = table[in_pixel * m_spanCount + clippedX]; plotting the left point +
-// its horizontal mirror and the vertical mirror rows, each gated by the dest bounds
-// (m_surfWidth / m_surfHeight). The compiler specializes the single source loop into four
-// near-identical variants by the left/right in-bounds clip + the mirror sign.
 #include <DDrawMgr/DDSurface.h>   // the real CDDSurface (m_pitch @+0x20) the blit reads
 #include <Gruntz/FaderSubtypes.h> // the canonical CFaderLight (this method's owner)
 #include <Ints.h>

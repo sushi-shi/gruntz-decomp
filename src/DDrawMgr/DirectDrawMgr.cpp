@@ -1,19 +1,3 @@
-// DirectDrawMgr.cpp - the ORIGINAL C:\Proj\DDrawMgr\DDRAWMGR.CPP TU (interval
-// dossier #14H): one obj spanning retail 0x1413d0-0x143ca4. The
-// __FILE__ assert string is referenced from both the CDirectDrawMgr methods
-// (CreateDevice/Init/SetupCaps/CreatePoolItem/GetDisplayMode) AND the former
-// ddrawptrcollections unit's fns (ComputeColorMasks/ConfigureSurface); the obj's
-// init frag (@0x141c70) + atexit companion ClearModeArray_141c80 sit at the
-// mode-array static's source position; the private cell 0x21a9f8 is shared by
-// fns of BOTH former units - one obj. The 34 in-band CDDrawPtrCollections
-// methods (pools/factories/palette installs) are folded in, in retail-RVA order,
-// plus the CFileImageSurface dtor pair (0x142340/0x142360 - the a58 pool item's
-// kept ??_G/~ COMDAT copies, emitted from this obj).
-//
-// NOTE: CDDrawPtrCollections and CDirectDrawMgr are two VIEWS of this
-// one DDRAWMGR manager class (+0x00/+0x04 device slots == m_device/m_dd1, the
-// +0x4b4 array, the +0x93c..+0x944 tail are the same cells) - flagged for a
-// canonical-class unification pass; the physical TU is already one file.
 #include <Io/FileStream.h>
 #include <EmptyString.h>         // g_emptyString
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
@@ -30,18 +14,11 @@
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
-// The process-wide CDirectDrawMgr singleton (Init installs `this`, teardown nulls it;
-// DirPal.cpp reads it). Owned by this TU; DEFINED here (.bss zero-init), reference
-// extern kept in <Globals.h>. (REHOME DD-Drain-1)
 extern "C" {
     DATA(0x002bed00)
     CDirectDrawMgr* g_DirectDrawMgr = 0; // 0x6bed00
 }
 
-// Reporting-mode globals (live in .data), consumed by SetDDrawReportModes/GetErrorString.
-// Module-distinct names (g_dd*): each engine module has its OWN copy of these debug
-// flags at a module-specific rva (DDrawMgr @0x283exx); the shared donor name
-// g_<flag>Enabled conflated four modules' cells onto one symbol.
 extern "C" {
     DATA(0x00283ec0)
     i32 g_ddBeepEnabled = 0; // 0x683ec0
@@ -53,32 +30,12 @@ extern "C" {
     i32 g_ddThirdEnabled = 0; // 0x683ec4
 }
 
-// The global "restore lost surfaces" handler slot (RelayHwnd installs it,
-// RestoreLostSurfaces_1437f0 reads it). Owned by this TU; DEFINED here (zero-init
-// .bss), DATA()-pinned; reference extern kept in <Globals.h>.
 DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0; // 0x683edc
 
-// Empty mutable string in .data copied into the working buffer up front.
-
-// DDrawLogLine (the DDrawMgr-local TRACE logger, defined below @0x141cb0) is declared
-// in <DDrawMgr/DirectDrawMgr.h> (included above).
-
-// Heap alloc/free are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82
-// (NAFXCW), declared by <Mfc.h> - reloc-masked library calls.
-
-// IID_IDirectDraw2 - the real dxguid GUID constant in .rdata, passed to QueryInterface
-// by REFIID. <ddraw.h> declares it (EXTERN_C const GUID); redeclared with DATA() to bind
-// its retail address so the `push OFFSET` reloc-masks (same idiom as DirectInputMgr2.cpp).
 DATA(0x001ef848)
 extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 
-// The process-wide DirectDraw object + the enumerated-display-mode array + the create
-// context (owner window) that produced the current g_DirectDraw object (.data).
-// g_DirectDraw + g_ddCreateCtx DEFINED here (directdrawmgr.obj's .bss, zero-init).
-// g_modeArray (0x283ec8) is a real MFC CPtrArray shared with GruntzMgr's display-bounds
-// checks; its non-trivial ctor is run explicitly by ClearModeArray_141c80, so it keeps
-// its extern binding here (defining it would emit an unwanted dynamic initializer).
 extern "C" {
     DATA(0x00283ee8)
     IDirectDraw2* g_DirectDraw = 0; // 0x683ee8
@@ -88,27 +45,10 @@ CPtrArray g_modeArray;
 DATA(0x00283ee4)
 void* g_ddCreateCtx = 0; // 0x683ee4
 
-// The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
-// the back-buffer's pixel format. DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU);
-// GruntzMgr.cpp's 16-bit pack reads the same six words. Reference externs only.
-
-// The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
-// DDSurface.cpp obj); free-fn decl so the bare `call rel32` reloc-masks.
 void BuildColorChannelTables();
 
-// The pool items' operator delete (invoked by the scalar-deleting dtors); the
-// engine free, reloc-masked rel32.
 void operator delete(void*);
 
-// The two pool lists (m_poolA/m_poolB) are real MFC CPtrLists; the drain walks read
-// the head node (GetHeadPosition) and advance element-by-element (GetNext) - the
-// afxcoll.inl inlines lower to the identical `mov reg,[list+4]` head read + node
-// pNext/data walk.
-
-// The shared pool-item base ctor + dtor, defined INLINE here (before the derived
-// classes' bodies) so each derived dtor inlines the shared teardown - retail has
-// no out-of-line base dtor in this TU; its kept COMDAT is ~CDDSurface @0x141350
-// in the DIRSURF obj. See docs/patterns/surface-pool-comdat-dtors.md.
 inline CDDSurface::CDDSurface() {
     m_8 = 0;
     m_c = 0;
@@ -121,8 +61,6 @@ inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
 
-// 0x1413d0 - set the four GetErrorString reporting-mode flags (log / message-box /
-// beep / third) from the four args. __cdecl free helper.
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ddLogEnabled = log;
@@ -131,7 +69,6 @@ void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ddThirdEnabled = third;
 }
 
-// CDirectDrawMgr::GetErrorString
 RVA(0x00141400, 0x835)
 void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // local_340 - error-code name
@@ -374,26 +311,14 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
     }
 }
 
-// Global-mode-array teardown tail-forward (0x141c80): mov ecx,&g_modeArray; jmp
-// ??0CPtrArray@@QAE@XZ (0x1b4f0b). Retail re-runs the CPtrArray CTOR in place (stamps
-// vtable + zeroes the {m_pData,m_nSize,m_nMaxSize,m_nGrowBy} block), NOT RemoveAll.
-// The MSVC5 explicit-ctor-call extension gives the clean guard-free tail-jmp (a
-// placement-new would keep the null-check) - docs/patterns/explicit-ctor-call-inplace-
-// tail-jmp.md. g_modeArray is now a real MFC CPtrArray, so the ctor reloc binds to
-// the HIGH-confidence library label ??0CPtrArray @0x1b4f0b.
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
     g_modeArray.CPtrArray::CPtrArray();
 }
 
-// The printf-style TRACE logger (0x141cb0). In the retail RELEASE build the body is
-// compiled out to a bare `ret` (1 byte); callers still push the format string + args.
 RVA(0x00141cb0, 0x1)
 void __cdecl DDrawLogLine(char*, ...) {}
 
-// ---------------------------------------------------------------------------
-// Constructor (0x141cc0).  /GX EH frame to unwind the three containers.
-// ---------------------------------------------------------------------------
 RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poolItems() {
     m_device = 0;
@@ -405,17 +330,11 @@ CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poo
     m_lastError = 0;
 }
 
-// ---------------------------------------------------------------------------
-// Destructor (0x141d50).  Clear(1), then tear down the two CPtrLists + CPtrArray
-// (reverse construction order).  /GX EH frame.
-// ---------------------------------------------------------------------------
 RVA(0x00141d50, 0x6f)
 CDDrawPtrCollections::~CDDrawPtrCollections() {
     Clear(1);
 }
 
-// CDirectDrawMgr::CreateDevice (__thiscall, ret 0x18 => 6 args; arg1 unused).
-// Brings up the DirectDraw device and caches it as the singleton.
 RVA(0x00141dc0, 0x224)
 i32 CDirectDrawMgr::CreateDevice(
     void* a1,
@@ -511,15 +430,9 @@ i32 CDirectDrawMgr::CreateDevice(
     return 1;
 }
 
-// The driver factory helper defined below (0x143880); forward-declared so Init's
-// `push OFFSET CreateDirectDrawVia` reloc-masks against the enum callback cast.
 i32 __stdcall
 CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
 
-// CDirectDrawMgr::Init (0x141ff0) - enumerate DirectDraw drivers (the supplied
-// factory becomes CreateDirectDrawVia's context, caching g_ddCreateCtx), then
-// bring the device up via CreateDevice. A null factory or a failed enum reports
-// and fails. __thiscall, ret 0x18 => 6 args.
 RVA(0x00141ff0, 0x6c)
 i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
     if (factory == 0) {
@@ -534,11 +447,6 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
     return CreateDevice(a1, g_ddCreateCtx, width, height, bpp, coop);
 }
 
-// ---------------------------------------------------------------------------
-// Clear (0x142060).  mode!=0 -> Release the cached +0x00 surface; free every entry
-// in the raw pointer array (+0x4b8/+0x4bc); RemoveAll the CPtrArray; drain both
-// pools; null g_DirectDrawMgr; Release+null both cached surfaces; zero +0x534.
-// ---------------------------------------------------------------------------
 RVA(0x00142060, 0x9d)
 void CDDrawPtrCollections::Clear(i32 mode) {
     if (mode && m_device) {
@@ -562,17 +470,11 @@ void CDDrawPtrCollections::Clear(i32 mode) {
     m_bltCaps = 0;
 }
 
-// ---------------------------------------------------------------------------
-// AddItemA (0x142100).  pool.AddTail(item); item->pos = position.
-// ---------------------------------------------------------------------------
 RVA(0x00142100, 0x18)
 void CDDrawPtrCollections::AddItemA(CDDSurface* item) {
     item->m_pos = m_poolA.AddTail(item);
 }
 
-// ---------------------------------------------------------------------------
-// EmptyPoolA (0x142120).  Walk the +0x47c list, virtual-delete each item, RemoveAll.
-// ---------------------------------------------------------------------------
 RVA(0x00142120, 0x31)
 void CDDrawPtrCollections::EmptyPoolA() {
     POSITION pos = m_poolA.GetHeadPosition();
@@ -583,9 +485,6 @@ void CDDrawPtrCollections::EmptyPoolA() {
     m_poolA.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// RemoveItemA (0x142160).  pool.RemoveAt(item->pos); virtual-delete item.
-// ---------------------------------------------------------------------------
 RVA(0x00142160, 0x24)
 void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
     m_poolA.RemoveAt(item->m_pos);
@@ -631,10 +530,6 @@ CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CFileImageSurface::ScalarDelete - the derived surface wrapper's `??_G`
-// scalar-deleting destructor (vtable slot 0 @0x5efa58). Run the teardown copy, then -
-// when the low bit of the hidden flags arg is set - RezFree the object; return this.
 RVA(0x00142340, 0x1e)
 void* CFileImageSurface::ScalarDelete(u32 flags) {
     // Qualified call -> direct (non-virtual) dispatch to the 0x142360 teardown copy,
@@ -646,15 +541,6 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
     return this;
 }
 
-// ---------------------------------------------------------------------------
-// CFileImageSurface::~CFileImageSurface - the second compiled teardown copy, byte-
-// identical to ~CDDSurface (0x141350). CFileImageSurface now genuinely derives
-// CDDSurface and adds no destructible members of its own, so the empty derived dtor
-// lowers to the /O2-inlined base teardown: MSVC5 elides the derived (0x1efa58) vptr
-// stamp and emits only the base ??_7CDDSurface (0x5ef7f0) stamp, runs the base's
-// FreeSurfaces, then destroys the inherited +0x94 CPtrArray under the /GX EH frame.
-// The dtor's vtable-stamp reloc thus binds to ??_7CDDSurface @0x1ef7f0 (reloc-fidelity;
-// was MISBOUND to this class's own 0x1efa58 when modeled standalone).
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {}
 
@@ -709,7 +595,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     return 0;
 }
 
-// The engine CRT sprintf (0x11f890) + the shared ".." $SG constant (0x5ee8ec).
 extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
 extern char g_dotDot[];                                  // 0x5ee8ec  ".."
 
@@ -775,22 +660,6 @@ CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// The shared base teardown the derived dtors inline (defined INLINE in the class
-// body above): re-stamp the base vptr (0x5ef7f0), run FreeSurfaces(), then destroy
-// the owned CByteArray member (auto).  /GX (trylevel 0 -> -1 around the member dtor).
-// cl folds the redundant derived vptr stamp (dead store), leaving the base 0x5ef7f0
-// stamp - matching retail's per-class inlined dtors.  (Base ~CDDSurface itself is
-// CFileImage::~CFileImage @0x141350 in a sibling TU; the inline definition emits no
-// out-of-line body here, so it does not collide.)
-// ---------------------------------------------------------------------------
-// ~CPoolItemA88 (0x142820).  Derived a88 non-deleting dtor - trivial body; inlines the
-// base teardown above (INLINE ~CDDSurface: implicit stamp-first, FreeSurfaces, member
-// dtor - the a88 vptr stamp folds as a dead store, leaving the base 0x5ef7f0 stamp).
-// __thiscall, ret 0x0.  Byte-identical to every other pool-item dtor (the vptr operand
-// reloc-masks to 0x5ef7f0); the OWNING class is fixed by its ??_G (0x142800, a88 vtable
-// slot 0), not the byte pattern.  Byte-exact.
-// ---------------------------------------------------------------------------
 RVA(0x00142820, 0x53)
 CPoolItemA88::~CPoolItemA88() {}
 
@@ -830,13 +699,6 @@ CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// ~CPoolItemAB8 (0x142a40).  Derived ab8 non-deleting dtor - trivial body; inlines the
-// shared base teardown (INLINE ~CDDSurface: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
-// member dtor; the ab8 vptr stamp folds as a dead store).  __thiscall, ret 0x0.  Byte-
-// identical to the other pool-item dtors; owner fixed by its ??_G (0x142a20, ab8 vtable
-// slot 0).  Was formerly mislabeled ~CDDSurface in DDSurfaceDtor.cpp.  Byte-exact.
-// ---------------------------------------------------------------------------
 RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
 
@@ -898,12 +760,6 @@ CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e,
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// ~CPoolItemAE8 (0x142d40).  Derived ae8 non-deleting dtor - trivial body; inlines the
-// shared base teardown (INLINE ~CDDSurface: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
-// member dtor).  /GX, ret 0x0.  Byte-identical codegen to ~CPoolItemA (0x142820); a
-// distinct subclass.  Byte-exact.
-// ---------------------------------------------------------------------------
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
 
@@ -924,26 +780,16 @@ CDDSurface* CDDrawPtrCollections::Createae8_1(i32 a) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// MakeAndAddB (0x142e60).  Tail-thunk into CreateB with arg2 |= 0x840.
-// ---------------------------------------------------------------------------
 RVA(0x00142e60, 0x27)
 CDDSurface* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return CreateB(a, b, c, d | 0x840, e);
 }
 
-// ---------------------------------------------------------------------------
-// AddItemB (0x142eb0).  pool.AddTail(item); item->pos = position.
-// ---------------------------------------------------------------------------
 RVA(0x00142eb0, 0x17)
 void CDDrawPtrCollections::AddItemB(CDDPalette* item) {
     item->m_pos = m_poolB.AddTail(item);
 }
 
-// ---------------------------------------------------------------------------
-// EmptyPoolB (0x142ed0).  Walk the +0x498 list, tear down + RezFree each item,
-// RemoveAll.
-// ---------------------------------------------------------------------------
 RVA(0x00142ed0, 0x3d)
 void CDDrawPtrCollections::EmptyPoolB() {
     POSITION pos = m_poolB.GetHeadPosition();
@@ -957,9 +803,6 @@ void CDDrawPtrCollections::EmptyPoolB() {
     m_poolB.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// RemoveItemB (0x142f10).  pool.RemoveAt(item->pos); tear down + RezFree item.
-// ---------------------------------------------------------------------------
 RVA(0x00142f10, 0x2b)
 void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     m_poolB.RemoveAt(item->m_pos);
@@ -969,12 +812,6 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CDDPalette, zero its
-// fields, init it via the alternate Init2 (0x147410) with (m_device, a, b); on success
-// add to pool B and return it, else tear down + RezFree and return 0.  NO EH frame
-// (no destructible local), so this matches cleanly.
-// ---------------------------------------------------------------------------
 RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
@@ -989,11 +826,6 @@ CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// MakeB (0x142fc0).  RezAlloc a 0x38-byte CDDPalette, zero its fields, init it via
-// the external Item498_Init (0x1474d0) with (vtbl-of-this, a, b); on success add to
-// pool B and return it, else tear down + RezFree and return 0.
-// ---------------------------------------------------------------------------
 RVA(0x00142fc0, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
     CDDPalette* item = new CDDPalette;
@@ -1008,11 +840,6 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// Create (0x143040).  Sibling of MakeB2: RezAlloc a 0x38-byte CDDPalette, init it
-// via CDDPalette::Create (0x147390) with (m_device, a, b); on success add to pool B
-// and return it, else tear down + RezFree and return 0.
-// ---------------------------------------------------------------------------
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
@@ -1027,12 +854,6 @@ CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     return item;
 }
 
-// ---------------------------------------------------------------------------
-// MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CDDPalette,
-// zero its fields, init it via the 3-param Init3 (0x147840) with (m_device, a, b,
-// c); on success add to pool B and return it, else tear down + RezFree and return
-// 0.  No EH frame (no destructible local) -> matches cleanly.
-// ---------------------------------------------------------------------------
 RVA(0x001430c0, 0x81)
 CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
     CDDPalette* item = new CDDPalette;
@@ -1074,20 +895,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     return MakeB(buf, z);
 }
 
-// ===========================================================================
-// CDirectDrawMgr pool-item collection helpers (DDRAWMGR.CPP).  The pool item
-// list is a CObArray at +0x4b4; SetupCaps tears the list down, re-enumerates the
-// device's display modes (rebuilding a global mode array) and re-sorts the pool;
-// CreatePoolItem builds + initialises one pool item from a descriptor source.
-// ===========================================================================
-
-// The transient global mode array EnumDisplayModes rebuilds (a real MFC CPtrArray
-// @0x683ec8; DEFINED above, near the top of this TU). The m_poolItems array (real MFC
-// CPtrArray) + the pool comparator/publisher (Compare/AddPoolItem) live on
-// CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
-
-// The EnumDisplayModes callback (0x143390); only its address is referenced.
-// (EnumDisplayModes is slot 8 / +0x20 on the IDirectDraw2 interface.)
 extern "C" void DdEnumModesCallback(); // 0x143390
 
 // @early-stop
@@ -1139,15 +946,6 @@ i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
     return 1;
 }
 
-// ===========================================================================
-// The display-mode pool comparator + searches over m_poolItems (each m_pData[i]
-// is a CDdMode*). Folded from Stub/BoundaryUpper.cpp (Compare_1433d0 + ModeArr::
-// Find*) - ModeArr IS CDirectDrawMgr (m_4b8/m_4bc = m_poolItems' m_pData/m_nSize).
-// Compare's the selection-sort predicate (used by SetupCaps above); FindFwd/FindBack
-// are reached via CGruntzMgr::CheckDisplayBoundsA/B.
-// ===========================================================================
-
-// Ordered compare: unsigned m_c then m_8, then m_54 as a 0/1 tie-break. __stdcall.
 RVA(0x001433d0, 0x4f)
 i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
     CDdMode* a = static_cast<CDdMode*>(pa);
@@ -1189,7 +987,6 @@ void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
     }
 }
 
-// >= range search from the end (last matching index), else -1.
 RVA(0x00143470, 0x47)
 i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
@@ -1202,7 +999,6 @@ i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
     return r;
 }
 
-// Exact 3-key match, else -1.
 RVA(0x001434c0, 0x45)
 i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
@@ -1322,9 +1118,6 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     return item;
 }
 
-// CDirectDrawMgr::GetDisplayMode (__thiscall, ret 0xc => 3 args). Zero a scratch
-// DDSURFACEDESC, query IDirectDraw2::GetDisplayMode and hand back width / height /
-// bit-depth through the out-pointers; on failure zero all three, report and fail.
 RVA(0x00143740, 0x93)
 i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
@@ -1348,18 +1141,11 @@ i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     return 1;
 }
 
-// 0x1437e0 - install the global "restore lost surfaces" handler: store the supplied
-// callback into g_restoreHandler (0x683edc), read back by RestoreLostSurfaces_1437f0
-// below. __cdecl. (Re-homed from src/Stub/BoundaryUpper2.cpp; the sole caller is
-// CDDrawSurfaceMgr::SetHwnd @0x155f50. Byte-exact.)
 RVA(0x001437e0, 0xa)
 void RelayHwnd(i32 (*handler)()) {
     g_restoreHandler = handler;
 }
 
-// 0x1437f0 - the "restore lost surfaces" fallback CDDSurface::RestoreLost (slot 7)
-// tail-calls when a surface's own restore callback is absent/failed: if the global
-// handler is installed, tail-jump it; else log a warning and return 0. __cdecl.
 RVA(0x001437f0, 0x1b)
 i32 RestoreLostSurfaces_1437f0() {
     if (g_restoreHandler) {
@@ -1386,8 +1172,6 @@ i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
     return m_device->GetAvailableVidMem(reinterpret_cast<LPDDSCAPS>(&caps), reinterpret_cast<LPDWORD>(total), reinterpret_cast<LPDWORD>(free)) == 0;
 }
 
-// CDDrawMgr::GetFreeVidMem (__thiscall, no args). Query the device for available
-// texture video memory; return the free-byte count on success, 0 on failure.
 RVA(0x00143840, 0x32)
 i32 CDirectDrawMgr::GetFreeVidMem() {
     DDSCAPS caps;
@@ -1398,9 +1182,6 @@ i32 CDirectDrawMgr::GetFreeVidMem() {
     return hr == 0 ? freeMem : 0;
 }
 
-// 0x143880 - create the process DirectDraw object via a supplied factory callback and,
-// on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
-// on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).
 RVA(0x00143880, 0x3b)
 i32 __stdcall
 CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32)) {
@@ -1415,8 +1196,6 @@ CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(v
     return 1;
 }
 
-// CDDrawMgr::GetGDISurface (__thiscall, no args). Ask the device for the shared
-// GDI (primary) surface; on a failed COM call TRACE the method name and return 0.
 RVA(0x001438c0, 0x31)
 IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
     IDirectDrawSurface* surf = 0;
@@ -1508,14 +1287,6 @@ void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
     m_hasPalette = 1;
 }
 
-// ---------------------------------------------------------------------------
-// Make950Trailing (0x1439f0).  Install the trailing 0x300-byte packed-RGB palette
-// from an in-memory file image: bail (return NULL) on a null buffer or a size < 0x3e8
-// (too small to hold the palette); otherwise forward (buf + size - 0x300, tag) to
-// Make950 (the sibling packed-RGB installer).  __thiscall (ecx=this passed straight
-// through to Make950), ret 0xc.
-// (RVA-adjacent to the Make950/palette family.)
-// ---------------------------------------------------------------------------
 RVA(0x001439f0, 0x35)
 CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
     if (buf == 0) {
@@ -1550,13 +1321,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     return Make950(buf, z);
 }
 
-// ---------------------------------------------------------------------------
-// ComputeColorMasks (0x143b20).  Query the device's display-mode pixel format
-// (IDirectDraw2::GetDisplayMode), and for each of the R/G/B bit masks
-// record the low set-bit position (the shift) and 8-minus-popcount (the scale)
-// into the six g_683* globals, then apply (BuildColorChannelTables @0x13f740).
-// On a failed query, report via GetErrorString and return 0.  No EH frame.
-// ---------------------------------------------------------------------------
 RVA(0x00143b20, 0xfc)
 i32 CDDrawPtrCollections::ComputeColorMasks() {
     DDSURFACEDESC desc;
@@ -1617,13 +1381,6 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// ConfigureSurface (0x143c20).  Reconfigure the display mode through the device
-// (IDirectDraw2::SetDisplayMode - five args forwarded verbatim).  On a non-zero HRESULT, report through
-// GetErrorString, latch m_lastError = 0x3ec if unset, and return the HRESULT.
-// Otherwise recompute the color masks; if that fails, latch m_lastError = 0x3ed if
-// unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
-// ---------------------------------------------------------------------------
 RVA(0x00143c20, 0x84)
 i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     i32 hr = m_device->SetDisplayMode(a0, a1, a2, a3, a4);
@@ -1645,8 +1402,4 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
 
 SIZE_UNKNOWN(CDdCreateArg);
 SIZE_UNKNOWN(CDdDescSrc);
-// Size PROVEN from the allocation site (push 0x948; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CDDrawPtrCollections, 0x948);
-
-// --- vtable catalog ---

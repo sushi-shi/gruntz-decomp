@@ -1,24 +1,3 @@
-// SymParser.h - CSymParser, the ButeMgr parser/owner that builds the CSymTab scope
-// tree (the object CSymTab::m_owner @+0x18 points back to). Recovered from the
-// ctor (0x13aa10), the /GX scalar destructor (0x13abc0), the Clear method
-// (0x13b850) and the three path-resolution thunks (0x13bff0/0x13c030/0x13c210),
-// all on a single object shape that owns a heap CSymTab at +0x44, an intrusive
-// object list at +0x10 (its own abstract sub-object vtable) and an engine hash
-// table at +0x80. Only the OFFSETS + code bytes are load-bearing (campaign
-// doctrine); unproven field roles keep m_<hex>.
-//
-//   +0x00  vtable      : primary vtable (0x5ef750), stamped by ctor/dtor.
-//   +0x04  m_ownedBuffer : char* - an owned buffer (RezFree'd in dtor).
-//   +0x08  m_08        : i32   (=1 in ctor).
-//   +0x0c  m_parseArmed : void* - guard: if non-null, dtor runs Clear(0) first.
-//   +0x10  m_list      : CObjList - the intrusive object list sub-object; its own
-//                        abstract vtable (0x5ef760, all __purecall). { vtbl@+0x10,
-//                        head@+0x14, tail@+0x18 }; m_count@+0x1c.
-//   +0x44  m_root      : CSymTab* - the heap root scope (~CSymTab + RezFree in dtor).
-//   +0x64  m_cachedSourceBuffer : void* - cached source buffer (RezFree'd).
-//   +0x80  m_hash      : CHashBase - an engine hash table (RemoveAll in dtor).
-//   +0x88  m_nodes     : CHashSlotList - a second intrusive list { head, tail };
-//                        each node owns a buffer at node+0x8.
 #ifndef SRC_BUTE_SYMPARSER_H
 #define SRC_BUTE_SYMPARSER_H
 #include <rva.h>
@@ -28,50 +7,12 @@
 #include <Bute/Hash.h>
 #include <Bute/SymTab.h> // the single full CSymTab layout (+ the CSymParser fwd-decl)
 
-// The name->key map / seed builder ParseBuffer reaches: MakeSymSeed (0x13ba70, cdecl,
-// the clock-seed builder - returns time(&t)); the PackTag/UnpackTag ext<->key helpers.
-// All declared in <Bute/SymTab.h> (included below), defined in SymParser.cpp.
-
-// The shared empty-string literal the root scope is named with (0x6293f4; homed in
-// NetMgrReportError.cpp as extern "C" - the majority convention across the tree; the
-// DATA reference reloc-masks so the C linkage is matching-neutral).
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
-// CSymParser's own primary vtable (0x5ef750) is REAL POLYMORPHIC (??_7CSymParser@@6B@,
-// 3-slot, non-virtual dtor) - see the class below. The +0x10 CObjList sub-object is
-// also real polymorphic now (??_7CObjList @0x5ef760); the ctor/dtor vptr stamps
-// reloc-mask against it.
-
-// DISSOLVED (Fable A2, 2026-07-14): the former "CSymObjNode" 8-slot reader-node
-// view WAS the canonical CRezItmBase (<Rez/RezMgr.h>) - PROVEN by the reader
-// ctors ParseBuffer calls: the text reader's ctor 0x13c940 stamps ??_7CRezDir
-// (0x5ef7a8) and the binary reader's 0x13c540 stamps ??_7CRezItm (0x5ef788),
-// both `: CRezItmBase` ({vptr,next,prev} @+0..+0xb, the same 8-slot table).
-// Slot-for-slot: "Delete(1)" = the slot-1 scalar-deleting dtor (`delete p`);
-// "ReadRaw" = Read [2]; "Slot0c" = Write [3]; the view's "Read(buf,a,b)" = Open
-// [4] (ParseBuffer OPENS the source); "Detach" = Close [5]; "Slot18" = Flush [6];
-// "Slot1c" = Check [7] (the CheckNodes probe). Forward-declared here (SymTab.cpp
-// pulls the real <Rez/RezMgr.h>).
 class CRezItmBase;
 
-// CObjListBase - the abstract list-interface base whose vtable (0x1ef760, one
-// __purecall slot) is the DESTRUCTION vtable of the +0x10 CObjList sub-object: the
-// CSymParser /GX dtor's last member-destruct stamps `mov [esi+0x10],0x5ef760`. Kept
-// as a standalone abstract class (NOT wired as CObjList's C++ base) so the delicate
-// CSymParser ctor/dtor codegen is untouched; the pair-of-vtables collapse to
-// CObjList's own single ??_7 in our model (the dtor stamp reloc-masks).
-// (Def extracted to <Bute/ObjListBase.h> so the Rez list family can derive it.)
 #include <Bute/ObjListBase.h>
 
-// The parser's list sub-object embedded at +0x10: an intrusive doubly-linked list
-// of polymorphic reader nodes, PLUS a count word. It derives the SHARED middle base
-// CObjList (<Rez/RezList.h>: {vptr,head,tail} + the one bound Remove @0x1852e0 -
-// deleting the former duplicate CObjList definition here) and adds m_count + its
-// own 1-slot vtable (retail ??_7 @0x1ef75c: [0] = the empty fn 0x13c4c0, a sibling
-// of CRezList's 0x13c4d0). The enclosing CSymParser ctor auto-stamps the member
-// vptr `mov [esi+0x10],0x5ef75c`; its /GX dtor's member-destruct inlines the dtor
-// chain, dead-store-eliminating down to the ??_7CObjListBase base stamp
-// (`mov [esi+0x10],0x5ef760`) - the retail shape.
 #include <Rez/RezList.h>
 VTBL(CParserObjList, 0x001ef75c);
 struct CParserObjList : public CObjList {
@@ -85,26 +26,14 @@ struct CParserObjList : public CObjList {
 };
 SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
 
-// The parse-slot record block CSlotNode owns is an array of n*0x3c-byte leaf-record
-// slots - the same 0x3c CParseSource record (m_node1c @+0x1c) the parser fills and
-// re-files; defined in SymTab.cpp. (A freshly-popped slot is init'd as a CParseSource
-// parse stream and later repurposed as a leaf value record - one 0x3c memory, two views.)
 struct CParseSource; // the 0x3c leaf parse record (ex 'CSymLeafBuilder')
 
-// A node owned by the +0x88 DSoundList m_nodes: its intrusive chain link is at +0x00
-// (so the list head points straight at it) and it owns a buffer at +0x08; the
-// list uses the shared DSoundList::InsertHead/Unlink (0x1390e0/0x1391e0) ops.
 struct CSlotNode {
     DSoundLink m_link;         // +0x00  intrusive chain node { next, prev }
     CParseSource* m_buffer;    // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(CSlotNode, 0xc);
 
-// The +0x80 hash member. CHashBase carries no destructor (a standalone CHashBase
-// value member in the shared hash/symtab TUs must stay trivially-destructible to
-// preserve their codegen), so the destructible flavor used as a /GX member here is
-// a thin local subclass whose teardown is RemoveAll. Same 8-byte layout (no new
-// fields); only this TU sees the destructor, so Hash.h's siblings are unaffected.
 struct CParserHash : public CHashBase {
     // The +0x80 hash-table member's 1-arg construction (0x184960) is the canonical
     // CHashBase::Construct (folded from the former CSymList::Construct view, wave5-F1),
@@ -115,16 +44,7 @@ struct CParserHash : public CHashBase {
 };
 SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 
-// ---------------------------------------------------------------------------
-// CSymParser - the ButeMgr parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
-// primary vtable ??_7CSymParser@@6B@ @0x5ef750 (3 non-dtor slots; the dtor is
-// non-virtual - not in the vtable). cl auto-stamps the vptr @+0 at the start of
-// the ctor AND the (non-virtual, but polymorphic-class) dtor - the manual
-// CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
-// manual vptr stamps (embedded-member "incorrect load into struct").
-// ---------------------------------------------------------------------------
 VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
-                              // `mov [esi],0x5ef750` at +0. Rehomed from AnalysisVtables.
 class CSymParser {
 public:
     // The three primary slots. Retail's bodies are inert defaults (the parser's

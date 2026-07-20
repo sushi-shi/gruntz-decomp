@@ -1,15 +1,3 @@
-// SFSelectDevice.cpp - SFManager::SelectBestDevice (RVA 0xf8970), the music
-// (SFMAN32.DLL soundfont) device picker. Sibling of BuildSoundFontPath /
-// SfDeviceInitKeys on the same *0x64e0b0 receiver. It dynamically loads SFMAN32.DLL,
-// resolves the exported "SFManager" factory (a pointer-to-function-pointer data
-// export), instantiates the device interface, queries every device's caps +
-// rating, traces each via sprintf, selects the highest-rated installable device
-// (retrying with that device disabled if Select fails), reads back its caps/id,
-// unpacks the 4 low-7-bit id bytes, and flags init done. All state lives in module
-// statics; frameless (FPO). Only offsets / code bytes are load-bearing; the DLL
-// imports come via <Win32.h>, sprintf via <stdio.h>, the interface slots are
-// reloc-masked __cdecl callees.
-
 #include <rva.h>
 #include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
 
@@ -22,8 +10,6 @@
 
 extern WORD g_sfDeviceId; // 0x64dd28 (best device index; shared with soundfontpath)
 
-// The 4 unpacked low-7-bit device-id bytes (0x613dff..0x613e02, .data). Owned by
-// this TU; DEFINED here (DATA()-pinned), reference externs kept in <Globals.h>.
 extern "C" {
     DATA(0x00213dff)
     char g_id0_613dff = 0;
@@ -35,35 +21,20 @@ extern "C" {
     char g_id3_613e02 = 0;
 }
 
-// The device-picker's module statics - sfselectdevice.obj's own .bss block, DEFINED
-// here (zero-init), DATA()-pinned to their retail rvas; reference externs kept in
-// <Globals.h>. Ascending retail RVA. (Were extern-only in the Globals.cpp pool.)
 DATA(0x0024da80)
 u16 g_idx_64da80 = 0; // current device index
 DATA(0x0024da84)
 u32 g_ratingRaw_64da84 = 0;
 DATA(0x0024da88)
 i32 g_factoryRc_64da88 = 0;
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
 DATA(0x0024df30)
 u16 g_caps_64df30 = 0; // caps query buffer base / size field
 DATA(0x0024df36)
 u32 g_capsFlags_64df36 = 0; // caps flags (caps + 6)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
 DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
 u32 g_id_64df9c = 0; // packed device id
-// Shared SFMAN32 device-interface state (used by BuildSoundFontPath too); homed to
-// this device-picker owner TU (.bss zero-init). Reference externs stay in
-// <Globals.h>. (REHOME DD-Drain-1)
 DATA(0x0024e0a0)
 u32 g_sfVer = 0; // build/version selector
 DATA(0x0024e0a4)

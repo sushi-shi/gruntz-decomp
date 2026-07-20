@@ -1,17 +1,3 @@
-// SBI_SideTab.h - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the FRAMELESS method view.
-// The side-tab status-bar item + the engine-referent views its slot-3/4/5 methods
-// drive. Moved here from the per-TU inline defs in SBI_SideTab.cpp so each shape
-// carries a single shared definition (matching-neutral: offsets + code bytes are
-// the load-bearing fact; the mangled ?<method>@CSBI_SideTab@@ names are
-// layout-independent).
-//
-// TWO-VIEW SPLIT: this is the FRAMELESS method view (derives CStatusBarItem, models
-// the leaf fields under side-tab names). SBI_SideTabBuild.cpp models the SAME retail
-// class as its CTOR/builder view - a standalone polymorphic 0x5c child whose real
-// virtual dtor lets `new`/`delete` auto-stamp ??_7CSBI_SideTab@@6B@ - kept in that
-// TU's own header. One MSVC5 spelling emits only one of those shapes, so the two
-// CSBI_SideTab views stay split and are NEVER co-included (see the two-view-split
-// note atop <Gruntz/StatusBarItem.h>).
 #ifndef GRUNTZ_SBI_SIDETAB_H
 #define GRUNTZ_SBI_SIDETAB_H
 
@@ -22,15 +8,6 @@
 #include <Gruntz/SbiConfig.h>         // canonical CDDrawSurfaceMgr (the configure's arg2)
 #include <Image/CImage.h> // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 
-// (The CSideTabGruntRec/CSideTabUnitTable/CSideTabGameReg view trio is FOLDED:
-// the "unit table" at g_gameReg+0x68 IS CTriggerMgr (m_cmdGrid), its +0x1c record
-// array IS m_grid (CTmCell == CGrunt), and the stat fields are CGrunt's
-// m_entranceReason (the multiplexed tool kind), m_19c, m_198 and m_health.)
-
-// CSBI_SideTab - the side-tab status-bar item. Derives directly from
-// CStatusBarItem. Fields are placeholders; the offsets + code bytes are the
-// load-bearing fact, the mangled (?<method>@CSBI_SideTab@@...) name is
-// layout-independent.
 class CStatusBarMgr; // the mgr that `new`s + configures these children (ex 'CStatzTabBuilder')
 
 class CSBI_SideTab : public CStatusBarItem {

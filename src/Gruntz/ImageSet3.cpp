@@ -1,22 +1,8 @@
-// ImageSet3.cpp - CImageSet3 (the kind-3 WWD image-set collision record, a
-// width x height tile-pixel buffer at +0x14) method bodies, split out of the
-// GameLevel god-TU. The class def lives in <Gruntz/ImageSets.h>; its
-// ??_7CImageSet3 vtable is emitted + VTBL-bound in GameLevel.cpp (ReadImageSet's
-// `new CImageSet3`). Functions in retail-RVA order.
-//
-// NOTE (identity): this is the small size-0x18 CImageSet3 (proven: ReadImageSet
-// allocates 0x18 for kind 3). It shares the src-only vtable @0x1f0228 with the
-// grid-owning class that src/Image/ImageSet3.cpp *also* calls "CImageSet3" - the
-// latter's non-virtual Prune/GetSize/Cleanup (m_b0@+0xb0) are mis-attributed
-// (they cannot fit a 0x18 object) and are a separate pre-existing identity-TODO,
-// not touched here. The two live in disjoint TUs so no symbol collides.
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
 #include <string.h> // memcpy
 
-// CImageSet3::FreePixels (0x1614b0, ??_7CImageSet3@@6B@ slot 6, +0x18): release the
-// owned pixel buffer (+0x14) and null it.
 RVA(0x001614b0, 0x1c)
 void CImageSet3::FreePixels() {
     if (m_pixels) {
@@ -58,12 +44,6 @@ i32 CImageSet3::Parse(void* record) {
     return 1;
 }
 
-// 0x166eb0 (slot 12): from the pixel at (x,y), walk UP the column (row -= 1, offset
-// -= m_width) while the pixel value stays equal to the start pixel. On the first
-// differing row, report it in *outY and its value in *outVal (1); if the top edge
-// (y reaches 0) is hit first, return 0. The vertical twin of ScanRunLeft_166e00.
-// Accessing m_pixels directly (not via a cached base) makes cl re-read it at the cold
-// found block through `this` (kept in ebx), matching retail's register schedule.
 RVA(0x00166eb0, 0x6a)
 i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;

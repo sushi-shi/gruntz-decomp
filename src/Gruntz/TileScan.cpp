@@ -1,19 +1,8 @@
-// TileScan.cpp - a 3x3 tile-region scan (orphan COMDAT @0x35f10). Gated on a
-// per-frame threshold + a tile-state probe, it walks the 3x3 tile region around the
-// argument's screen position (skipping the centre + out-of-bounds tiles), and on
-// the first neighbour tile whose grid flags request it (the inlined grid lookup =
-// the 0x75a40 archetype), notifies the argument (0x1640) and clears its latch.
-// Placeholder names; only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Ints.h>
 #include <rva.h>
-// Grunt.h pulls <Mfc.h> (the afx umbrella) - it MUST precede ScanGrid.h's <Win32.h>
-// (bare windows.h), or afxv_w32.h trips C1189 (MFC-wall; see mfc-wall-is-breakable).
 #include <Gruntz/Grunt.h>    // CGrunt (the scanned arg) + CGameRegistry/CFocusSlot (this->m_4)
 #include <Gruntz/ScanGrid.h> // CScanGrid (this->m_c tile board)
-
-// The tile-switch notify (0x1640 thunk -> 0x4b320) is CGrunt::TileSwitch - __thiscall
-// (retail loads the grunt into ecx at every site; the convention conflation is settled).
 
 // The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the
 // dwell timer compared to the threshold, m_10 the bound HUD/object (screen x/y @
@@ -22,8 +11,6 @@
 // CTileScan (the orphan-COMDAT scan owner, @identity-TODO) is declared in
 // <Gruntz/ScanGrid.h> (included above) - its shape belongs in the shared scan header.
 
-// The inlined grid lookup (the 0x75a40 archetype): the cell's first dword, or 1
-// when out of bounds.
 static inline i32 GridLookup(CScanGrid* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_c) && static_cast<u32>(y) < static_cast<u32>(g->m_10)) {
         return g->m_8[y][x].m_flags;
@@ -85,5 +72,3 @@ i32 CTileScan::Scan(CGrunt* arg) {
     }
     return 1;
 }
-
-// (SIZE_UNKNOWN(CTileScan) now travels with the struct in <Gruntz/ScanGrid.h>.)

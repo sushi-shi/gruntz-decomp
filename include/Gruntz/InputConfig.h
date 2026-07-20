@@ -1,10 +1,3 @@
-// InputConfig.h - CInputConfig, the input-device option holder.
-//
-// LoadInputDeviceConfig (0x387c0) maps the configured input device id (+0x14) to its
-// display name ("None"/"Keyboard"/"Joystick 1..4"). Only the device-id discriminator
-// at +0x14 is load-bearing. Defined in src/Gruntz/InputDeviceConfig.cpp.
-//
-// Names are placeholders; only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_INPUTCONFIG_H
 #define GRUNTZ_INPUTCONFIG_H
 

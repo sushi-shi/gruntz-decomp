@@ -1,47 +1,4 @@
-// FinalVtables.cpp - realizes the last six anonymous retail vtables that had no
-// class/stamp/name anywhere in src/ (the residual vtbl-placeholders.h placeholders).
-//
-// Each is modeled as a REAL polymorphic tracking class (CVtEmit_<rva>) whose virtual
-// slots are declared in retail-.rdata slot order (VA = RVA + 0x400000). cl auto-
-// emits `??_7CVtbl_<rva>@@6B@`; the VTBL() macro binds that name at the retail RVA
-// so the delinked datum is named. An out-of-line virtual DESTRUCTOR (slot 1 in the
-// CObject-style layout, calling an out-of-line Anchor member) is the CONSTRUCTION
-// ANCHOR that keeps cl from dead-store-eliminating the implicit vptr store, so the
-// `??_7` COMDAT is actually emitted (docs/vtable-conversion-log.md iteration-2
-// mechanism: an EMPTY dtor may be DSE'd, an out-of-line-member call survives).
-//
-// The slot virtuals are DECLARED-ONLY (no bodies): the emitted vtable references
-// their per-class mangled names, which reloc-mask against the retail slot RVAs in
-// the cosmetic `vtables` unit (VTBL naming is matching-NEUTRAL tracking, not a match
-// lever). The shared low slots 0x1bef01 / 0x0028ec / 0x00106e / 0x004034 / 0x001c08
-// are the CObject/MFC base ILT jmp-thunks -> declared-only, kept on the FUN_<VA>
-// convention (unnamed thunks; no canonical name). Slots whose RVA maps to an
-// ALREADY-MATCHED function in another TU carry that function's canonical LEAF name
-// here (traceability, matching-neutral: still a declared-only per-class virtual, the
-// reloc masks). Slots still on FUN_<VA> / Stub_<rva> are the un-reconstructed
-// final-sweep worklist. A couple of slots point at already-matched functions in
-// other TUs (e.g. CDDrawWorkerRegistry / CDDrawWorkerMapSmall / CDDrawSurfacePair)
-// and are NOT redefined here (no dup-RVA) - they stay declared-only.
 #include <Ints.h>
 #include <Wap32/Object.h> // the shared WAP CObject grand-base (slots 0/2/3/4 base thunks)
 #include <Wap32/WapObj.h> // CWapObj : CObject - adds IsLoaded(5)/IsReady(6) defaults
 #include <rva.h>
-
-// NOTE: 0x1ef7d0 is now bound by its REAL class CRezFile (<Rez/RezFile.h>, VTBL
-// there): the vtable audit + the ctor/dtor own-stamps (0x13cac0/0x13cb80) proved
-// this 8-slot vtable IS CRezFile's own ([0] 0x13cef0 Slot00, [1] ??_G 0x13cb60,
-// [2] Read, [3] Write, [4/5/7] the Open/Close/Check stubs, [6] Flush), so the
-// CVtEmit_1ef7d0 tracking shim was a redundant placeholder and is removed.
-
-// NOTE: 0x1efc58 is now bound by its REAL class CDDrawSurfaceMgr (DDrawSurfaceMgr.cpp,
-// VTBL there): the per-slot vtable audit proved this 8-slot vtable IS CDDrawSurfaceMgr's
-// own (slots 5/6/7 = IsReady/Init/Cleanup_155e20), so the CVtEmit_1efc58 tracking shim
-// was a redundant placeholder and is removed.
-
-// NOTE: the other four residual vtables (0x1efd28/0x1efd88/0x1efdc0/0x1eff70) are now
-// bound by their REAL classes and no longer need a CVtEmit_ tracking shim:
-//   0x1efd28 -> CDDrawWorkerRegistry (<DDrawMgr/DDrawWorkerRegistry.h>, all 23 slots)
-//   0x1efd88 -> CDDrawWorkerList  (DDrawWorkerList.cpp)
-//   0x1efdc0 -> CDDrawChildGroup  (<DDrawMgr/DDrawChildGroup.h>)
-//   0x1eff70 -> CDDrawSurfaceChildA (DDrawSubMgrPages.cpp, CWapObj-derived)
-// Their slot->function detail lives on those classes; the shims were redundant duplicates.

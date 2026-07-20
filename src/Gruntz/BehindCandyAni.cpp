@@ -1,14 +1,3 @@
-// BehindCandyAni.cpp - a behind-candy eyecandy animation game-object
-// (C:\Proj\Gruntz).
-//
-// Two trace-discovered CBehindCandyAni methods, defined in ascending retail-RVA
-// order:
-//   ~CBehindCandyAni @0x0100f0 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   AdvanceAnim      @0x0adbb0 - the per-frame animation-advance (ret 0).
-//
-// CBehindCandyAni : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
@@ -18,26 +7,11 @@
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
-// The class's activation-coordinate registry singleton (@0x645f98), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). CBehindCandyActReg
-// is the shared <Gruntz/ActReg.h> CActReg archetype (declared there among the
-// concrete per-registry instances); it keeps its own placeholder name so the
-// DATA-pinned global symbol is unchanged.
 DATA(0x00245f98)
 extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 
-// The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
-// mirror). Declared extern "C" here so the value-load reloc-masks against the
-// already-matched symbol.
 extern "C" u32 g_engineFrameDelta;
 
-// CBehindCandyAni::GetTypeTag (0x00010030) is now an inline member in the class header.
-
-// CBehindCandyAni::Serialize @0x010050 - the vtable slot-1 override: chain the shared
-// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
-// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
-// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
-// save the two call displacements.
 RVA(0x00010050, 0x47)
 i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -58,9 +32,6 @@ i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CBehindCandyAni@@UAE@XZ 0x000100f0 0x44
 
-// --- CBehindCandyAni (0x0ad540), vptr 0x5e838c --- the ctor anchors GetTypeTag
-// @0x10030 + the ??_7CBehindCandyAni vtable in this TU. Folds the inline
-// CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -86,17 +57,11 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     }
 }
 
-// CBehindCandyAni::InitActReg @0x0ad7d0 - construct the class's activation-
-// coordinate registry singleton (g_behindCandyActReg @0x645f98) over the fixed
-// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad7d0, 0x15)
 void CBehindCandyAni::InitActReg() {
     g_behindCandyActReg.Construct(2000, 2010);
 }
 
-// CBehindCandyAni::RunAct @0x0ad850 - resolve the registry entry for id; if a
-// handler is bound, re-resolve and invoke it as a PMF on this, else return the
-// entry pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
     CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id));
@@ -137,10 +102,6 @@ void CBehindCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 
-// CBehindCandyAni::AdvanceAnim @0x0adbb0 - re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
-// return 0. Byte-identical to CSimpleAnimation::AdvanceAnim save the call
-// displacement.
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

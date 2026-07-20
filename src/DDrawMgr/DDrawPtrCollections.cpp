@@ -1,13 +1,3 @@
-// DDrawPtrCollections.cpp - the 0x148840-0x148cd8 surface-extras pocket, an
-// ORIGINAL DDrawMgr TU (wave4-K consolidation; interval dossier #14, pocket
-// note): the WOVEN leftover second cores of the former image + ddrawptrcollections
-// + fileimageloadbyext units - CDDSurface's LoadKeyed/ResolveEx/LoadByExt/
-// UpdateOverlay extras interleaved with the CPoolItem* derived-slot bodies. One
-// obj (TU_MIGRATION row `0x148840` WOVEN 0.29); its original file name is
-// unrecovered (a fourth DDrawMgr surface file - no __FILE__ anchor). The unit
-// keeps the ddrawptrcollections name (delinker packing); the in-band 0x141cc0-
-// 0x143c20 pool/factory methods moved to DirectDrawMgr.cpp (the DDRAWMGR.CPP
-// obj, dossier #14H).
 #include <Mfc.h>                 // real MFC types (NAFXCW, reloc-masked) - afx-first
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Ints.h>
@@ -19,18 +9,8 @@
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
 #include <Globals.h>
 
-// The RGB low-bit-position / 8-minus-bitcount pair tables InstallColorFormat fills
-// (the same six .data words ComputeColorMasks in the DDRAWMGR obj writes).
-// DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU); reference externs only.
-
-// The post-mask surface-format apply (BuildColorChannelTables @0x13f740, DDSurface.cpp
-// obj); free-fn decl so the bare `call rel32` reloc-masks.
 void BuildColorChannelTables();
 
-// ---------------------------------------------------------------------------
-// CFileImageSurface::LoadKeyed (slot 11, ret 0x18) - blit a source surface in with the control word
-// forced to OR 0x40 (BlitSurf), and on success - unless the colour key is -1 -
-// install it via FillPalette. Returns 1.
 RVA(0x00148840, 0x47)
 i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
     // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
@@ -44,16 +24,6 @@ i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDSurface::ResolveEx
-// The surface-blit format dispatcher: like Resolve but for the *Data decoders
-// that blit straight into the destination surface. The control word is OR'd with
-// 0x40 up front; `type` (1=BMP, 2=PCX, 4=PID) selects DecodeBmpData/DecodePcxData2/
-// DecodePcxData, each handed (surf, buf, size, ctrl); PID also takes the
-// transparency colour. After a successful decode the transparency colour is
-// installed via FillPalette unless it is "no key" (-1) or the format already
-// handled it (PID = type 4). Returns 1 on success, else 0. The case labels lower
-// to the running-subtract chain (switch, bodies in retail .text order 4, 2, 1).
 RVA(0x00148890, 0xad)
 i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans) {
     if (size == 0) {
@@ -154,11 +124,6 @@ i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// UpdateOverlay (0x148ac0, __thiscall, ret 0x14 => 5 args). Thin passthrough to the
-// held IDirectDrawSurface::UpdateOverlay (COM slot 33 / +0x84), routing the source/
-// dest rects, the destination wrapper's own held surface, the flags + the overlay FX.
-// ---------------------------------------------------------------------------
 RVA(0x00148ac0, 0x2b)
 i32 CPoolItemA88::UpdateOverlay(
     void* srcRect,
@@ -171,13 +136,6 @@ i32 CPoolItemA88::UpdateOverlay(
         ->UpdateOverlay(static_cast<LPRECT>(srcRect), dest->m_8, static_cast<LPRECT>(destRect), flags, static_cast<LPDDOVERLAYFX>(fx));
 }
 
-// ---------------------------------------------------------------------------
-// CPoolItemAB8::Setup (0x148af0, slot 9): zero the surface's embedded 0x6c-byte
-// DDSURFACEDESC (m_ddsd), fill {dwSize, dwFlags=a3, [+0x14]=a4, ddsCaps=a2|0x200}, run
-// the base surface init (CDDSurface::Init1 @0x13e0a0, descriptor NULL => use m_ddsd); on
-// success run InstallColorFormat (slot 10) and return 1. __thiscall, 4 args. (Re-homed
-// from src/Stub/BoundaryUpper2.cpp; ImgOwnedX view dissolved onto the real CPoolItemAB8.)
-// Byte-exact.
 RVA(0x00148af0, 0x58)
 i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     memset(m_ddsd, 0, 0x6c);
@@ -192,11 +150,6 @@ i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CPoolItemAB8::Init1 (0x148b50, vtable slot 2 override): run the base
-// CDDSurface::Init1, and on success install the color format (slot 10). Folded
-// from Stub/BoundaryUpper.cpp (ImgOwned::Commit).
-// ---------------------------------------------------------------------------
 RVA(0x00148b50, 0x2c)
 i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, i32 a) {
     if (CDDSurface::Init1(h, a) == 0) {
@@ -301,13 +254,7 @@ i32 CPoolItemAE8::Blit47(
     return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CPoolItemAE8::Init1 (0x148cc0, vtable slot 2 override): boolify the base
-// CDDSurface::Init1 result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Forward).
-// ---------------------------------------------------------------------------
 RVA(0x00148cc0, 0x18)
 i32 CPoolItemAE8::Init1(CDDrawPtrCollections* h, i32 a) {
     return CDDSurface::Init1(h, a) != 0;
 }
-
-// --- vtable catalog ---

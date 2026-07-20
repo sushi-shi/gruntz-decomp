@@ -1,47 +1,3 @@
-// Fader.cpp - the CFader screen-transition family (C:\Proj\Gruntz): the CFader
-// base + its six concrete subtypes (CFaderSine / CFaderFlat / CFaderMesh /
-// CFaderRadial / CFaderLight / CFaderShape). One dev TU, formerly split across
-// Fader.cpp + Fader{Run,Radial,ElemSetup,ShapeSetup,TileRender,17e940Apply}.cpp +
-// Obj5f0890Dtor.cpp (the ~CFaderShape dtor). Merged per docs/tu-topology-plan.md
-// (Phase 1); FaderMgr.cpp stays its own TU. All in the 0x17d8f0-0x182610 engine
-// band (one link cluster).
-//
-// DE-VIEW PASS (2026-07-13): the 23 .cpp-local views are GONE. The four "flat
-// body-views" that hosted the subtypes' ApplyInit (CFaderRadialApply /
-// CFaderShapeApply / CFaderElem / CFaderLightApply) and the render view
-// (CFaderTileRender) were all VIEWS OF THE SUBTYPES THEMSELVES - each one's RVA is
-// exactly the ApplyInit that <Gruntz/FaderSubtypes.h> already declared for that class
-// (0x17fa40/0x1817e0/0x17f5e0/0x1804a0), and the two compositors' only caller
-// (sema xref) is 0x181b00 = CFaderShape's vtable slot 1. What made them look
-// un-foldable - "the body reads CFader base-region slots repurposed as surface/
-// palette/owns-flag" - is not a conflict at all: CFaderMgr::Add primes every subtype
-// through the base's SetTimers/Set2c, which store raw dwords the subtype reinterprets
-// (see the note in FaderSubtypes.h), and the +0x1c "work surface" is literally
-// CFader::m_table (its builder @0x14e830 is CShadeTableCache::HueRampTable, called on
-// the base's embedded m_cache, and the +0x30 "owns" flag is m_flag - the very gate
-// ~CFader tests before FindRemove-ing that table).
-// The five descriptor views (LightDesc / FrConfig / FInit / FaderArg / FxTransDesc)
-// are the six real CFxModeT1..T6 records, one per fader type - their defaults prove
-// it (T2's 0x140/0xf0 IS the 640x480 light centre; T1's 0x32/1 IS the ramp size +
-// mode; T5's 0x19 IS the 25% duration scale). The surface/palette/buffer views
-// (Surf / FShadeSurf / TileSurf / FxBox / PalHolder / FInitPal / FrImageSrc / TileLut /
-// FrCell / FxPoint / E40 / CArrayE40 / FxMeshBuffer) are CDDSurface / CDDPalette /
-// CShadeTable / CFaderRadialCell / RezElem40 / CRezBufferObject.
-//
-// waveM-mech absorbed the ex fxmodedesc unit (the CFxModeDesc/T1-T6 mode-descriptor
-// ctors @0x17e7b0-0x17e910, woven between CFader::Set2c and CFaderMesh) + the ex
-// lighteffectsetup unit (CFaderLightApply::Setup + CFaderLight::GetFrameCount/BeginFade/EndFade @0x1804a0-
-// 0x1816a0, woven around CFaderLight's ctor/dtor) - both frag-less but text-woven
-// (Fader brackets each), so ONE original TU. The ex-fxmodedesc's out-of-interval
-// MakeButeSectionKey@0xf9280 stays in FxModeDesc.cpp (a separate obj, ~0.44M RVA away).
-//
-// Unit flags eh: CFader's dtor + ~CFaderShape need the /GX EH frame; the run/
-// build/render helpers (RunFade / ApplyInit / Apply / Build / Setup / RenderTile /
-// RenderWarpTile) carry no destructible C++ object so /GX is a no-op for them
-// (byte-verified under eh). Functions kept in ascending retail-RVA order at the
-// per-original-TU section granularity (within-TU order is byte-neutral,
-// docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
-// original file's provenance comment.
 #include <Gruntz/Fader.h>
 #include <EmptyString.h>  // g_emptyString
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
@@ -53,7 +9,6 @@
 #include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
 #include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
-                                    // PalEntry base; was the PalHolder/FInitPal/FrImageSrc views)
 #include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight BeginFade/EndFade)
 #include <Gruntz/FxModeT1.h>              // the CString-bearing CFxModeT1 (ex fxmodedesc)
 #include <Gruntz/FxModeDesc.h>            // CFxModeDesc + T2-T6 (ex fxmodedesc)
@@ -61,48 +16,17 @@
 #include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
-// ApplyInit's two .rdata FP constants. Kept as minimal externs (not a fat
-// <Globals.h> include, which leaks regalloc into the sibling render helpers - see
-// docs on globals consolidation). Owner-TU defs; the reference extern stays in
-// <Globals.h>.
 DATA(0x001f07ec)
 float g_fxBias = -50.0f; // 0x5f07ec
 DATA(0x001f07f4)
 float g_fxEps = 1.0f; // 0x5f07f4
 
-// ============================================================================
-// section: Fader.cpp
-// ============================================================================
-// Fader.cpp - the CFaderMgr element base class + one concrete subtype's
-// destructor (tracer placeholder MallocCtor_17fdb0, keyed off the 0x17fdb0 subtype
-// ctor). CFader is the polymorphic base of the six screen-fader subtypes the
-// CFaderMgr::Add factory allocates; each fader owns a CShadeTableCache color-table
-// cache at +0x04 plus the manager-primed timing fields, and a GetTickCount
-// busy-wait helper.
-//
-// Methods in ascending retail-RVA order. Field names are placeholders; offsets +
-// code bytes are load-bearing. The CShadeTableCache ctor/dtor/FindRemove (0x14de30
-// / 0x14de50 / 0x14fb80) and operator new/delete are external/reloc-masked; the
-// fader subtype vftables are stamped as reloc-masked DIR32 data.
-
-// ===========================================================================
-// 0x17e450 - CFader::CFader(): build the cache subobject (0x14de30), stamp the
-// fader vftable, zero m_table, and arm the teardown flag.
-// ===========================================================================
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = 0;
     m_flag = 1;
 }
 
-// ===========================================================================
-// 0x17e4a0 - CFader::~CFader(): restore the fader vftable, FindRemove the cached
-// table from the cache when armed, then destruct the cache subobject (0x14de50).
-// The destructible m_cache member forces the /GX EH frame.
-// ===========================================================================
-// Real polymorphic now: cl emits the implicit ??_7CFader vptr re-stamp in the
-// ENTRY state (stamp-first, == retail), and the destructible m_cache member folds
-// in to supply the /GX frame. (eh-dtor-implicit-vptr-stamp-first.md sub-case 1.)
 RVA(0x0017e4a0, 0x69)
 CFader::~CFader() {
     if (m_table && m_flag) {
@@ -111,10 +35,6 @@ CFader::~CFader() {
     }
 }
 
-// ===========================================================================
-// 0x17e510 - CFader::Wait(delay): spin on GetTickCount() until at least `delay`
-// ms have elapsed since the call. __thiscall (ecx=this, unused by the body).
-// ===========================================================================
 RVA(0x0017e510, 0x23)
 void CFader::Wait(i32 delay) {
     DWORD target = GetTickCount() + delay;
@@ -122,34 +42,22 @@ void CFader::Wait(i32 delay) {
     }
 }
 
-// CFader::SetTimers (0x17e760) - store the two timer values.
 RVA(0x0017e760, 0x11)
 void CFader::SetTimers(i32 a, i32 b) {
     m_timerA = a;
     m_timerB = b;
 }
 
-// CFader::Set2c (0x17e780) - store the +0x2c arg.
 RVA(0x0017e780, 0xa)
 void CFader::Set2c(i32 v) {
     m_set2cArg = v;
 }
 
-// ===========================================================================
-// The mode/effect descriptor record family (ex fxmodedesc, woven here between
-// Set2c and CFaderMesh). CFxModeDesc/T1-T6 come from <Gruntz/FxModeDesc.h> /
-// <Gruntz/FxModeT1.h>; each ctor base-inits then stamps its type record.
-// ===========================================================================
-
-// 0x17e7b0 - CFxModeDesc(): zero the type discriminator.
 RVA(0x0017e7b0, 0x9)
 CFxModeDesc::CFxModeDesc() {
     m_type = 0;
 }
 
-// 0x17e7c0 - CFxModeT1(): the type-1 variant ctor (base + CString member ctor, stamp
-// type=1/m_10=0x32/m_14=1/m_18=1, assign the empty string to the +0x24 CString). The
-// destructible CString member forces the /GX frame.
 RVA(0x0017e7c0, 0x7a)
 CFxModeT1::CFxModeT1() {
     m_type = 1;
@@ -182,7 +90,6 @@ CFxModeT2::CFxModeT2() {
     m_20 = 0;
 }
 
-// 0x17e880 - CFxModeT3(): base ctor, stamp the type-3 record.
 RVA(0x0017e880, 0x28)
 CFxModeT3::CFxModeT3() {
     m_type = 3;
@@ -192,7 +99,6 @@ CFxModeT3::CFxModeT3() {
     m_10 = 0xf;
 }
 
-// 0x17e8b0 - CFxModeT4(): base ctor, stamp the type-4 record (m_0c stored last).
 RVA(0x0017e8b0, 0x27)
 CFxModeT4::CFxModeT4() {
     m_type = 4;
@@ -203,7 +109,6 @@ CFxModeT4::CFxModeT4() {
     m_0c = 1;
 }
 
-// 0x17e8e0 - CFxModeT5(): base ctor, stamp the type-5 record (m_10 stored last).
 RVA(0x0017e8e0, 0x27)
 CFxModeT5::CFxModeT5() {
     m_type = 5;
@@ -214,7 +119,6 @@ CFxModeT5::CFxModeT5() {
     m_10 = 0x19;
 }
 
-// 0x17e910 - CFxModeT6(): base ctor, stamp the type-6 record.
 RVA(0x0017e910, 0x29)
 CFxModeT6::CFxModeT6() {
     m_type = 6;
@@ -227,16 +131,6 @@ CFxModeT6::CFxModeT6() {
     m_20 = 0;
 }
 
-// ===========================================================================
-// CFaderMesh - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested
-// polymorphic sub-object at +0x58 (its own vftable 0x5f07d8 + four zeroed fields).
-// ATYPICAL vptr order: the member sub-object is constructed (its vptr + fields)
-// BEFORE the subtype's own primary vftable 0x5f07c0 is stamped -- MSVC5's ctor
-// order is base ctors, MEMBER ctors, own vptr, body (cf. CFader::CFader building
-// m_cache before its own stamp). cl inlines the member ctor, so the member vptr +
-// field zeros fall between the CFader base ctor call and the sunk own-vptr stamp.
-// (Class declaration in <Gruntz/FaderSubtypes.h>.)
-// ===========================================================================
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
@@ -329,41 +223,15 @@ void CFaderMesh::RenderFrame(i32 frame) {
     m_flipTarget->Flip(0);
 }
 
-// ===========================================================================
-// CFaderSine - the case-"3" / jump-index-2 fader subtype (CFaderMgr::Add allocates
-// 0x7d5c bytes for it). Its motion virtuals (0x17ff30 / 0x180400) override the two
-// CFader pure virtuals (slots 1/2); slots 3/4 are inherited. Real polymorphic now:
-// the empty ~CFaderSine stamps ??_7CFaderSine then tail-calls ~CFader, and cl emits
-// ??_7CFaderSine (slots reloc-mask the 0x5f0848 target). Name is descriptive.
-// ===========================================================================
-// (Class declaration in <Gruntz/FaderSubtypes.h>.)
-// ===========================================================================
-// 0x17fdb0 - CFaderSine(): chain CFader::CFader, stamp ??_7CFaderSine, zero the
-// two subtype fields. cl auto-emits the base ctor call + the implicit vptr stamp
-// (reloc-masked vs 0x5f0848); the subtype virtuals are declared (not defined
-// here) only to make the class concrete + size its vtable.
-// ===========================================================================
 RVA(0x0017fdb0, 0x1a)
 CFaderSine::CFaderSine() {
     m_elemCount = 0;
     m_frameCount = 0;
 }
 
-// ===========================================================================
-// 0x17fdf0 - ~CFaderSine(): stamp the subtype vftable, then tail-call ~CFader().
-// ===========================================================================
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
-// ===========================================================================
-// 0x17fe00 - CFaderSine::ApplyInit(desc): copy the source-box geometry out of the
-// descriptor (falling back to the shared timer fields the manager primed), range-
-// check the 0..100 intensity, compute the scaled magnitude via the FP pipeline, then
-// fill four parallel 2000-int arrays (three zeroed, one seeded with rand()%count) and
-// scatter the last one via ScatterSamples (0x182940, ScatterSamples.cpp).
-// ===========================================================================
-// The inlined game RNG (a THIRD LCG instance: own seed-flag + state, distinct from
-// the 0x6c127d/0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
 DATA(0x002c279c)
 u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
 DATA(0x002c27a8)
@@ -439,61 +307,28 @@ fail:
     return 0;
 }
 
-// ===========================================================================
-// CFaderFlat - the fader subtype whose ctor (0x17f530) only clears the +0x4c
-// per-frame work array. Its vftable is 0x5f07f8. Same modeling as CFaderSine.
-// ===========================================================================
-// (Class declaration in <Gruntz/FaderSubtypes.h>.)
-// ===========================================================================
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_frames = 0;
 }
 
-// ===========================================================================
-// CFaderLight - subtype ctor 0x180410: clears m_40. vftable 0x5f0870.
-// ===========================================================================
-// (Class declaration in <Gruntz/FaderSubtypes.h>; size 0x206c pinned from the
-// CFaderMgr::Add new(0x206c) allocation.)
-// ===========================================================================
 RVA(0x00180410, 0x19)
 CFaderLight::CFaderLight() {
     m_overlay = 0;
 }
 
-// 0x180450 - ~CFaderLight() (re-homed/folded from src/Stub/BoundaryUpperEh.cpp, the
-// C180450 placeholder): stamp the subtype vftable, run the member teardown (SubFree
-// @0x180630), then tail-call ~CFader. cl emits the /GX base-subobject unwind frame.
 RVA(0x00180450, 0x4f)
 CFaderLight::~CFaderLight() {
     SubFree180630();
 }
 
-// ===========================================================================
-// CFaderLight's shade/lighting effect setup pass (ex lighteffectsetup). The flat
-// CFaderLightApply body-view is DISSOLVED onto the real CFaderLight: 0x1804a0 is
-// exactly the ApplyInit the class declares, the view's fields are the class's
-// (its 0x2068+4 == the retail 0x206c allocation), and its "base-region slots
-// repurposed as surface/palette" are just the CFader base's generic SetTimers
-// dwords (see the note in FaderSubtypes.h). The descriptor it takes is the real
-// CFxModeT2 (fader type 1 -> pInit id 2; its m_18/m_1c defaults 0x140/0xf0 ARE the
-// 640x480 screen centre this method reads as the light centre).
-// ===========================================================================
-
-// The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
-// __CIpow intrinsic so the squarings emit `fild x; fld K; call pow`.
 DATA(0x001f0888)
 extern const double g_faderPowK = 2.0; // 2.0
 
-// SIZE annotations for the ShadeTableCache.h classes are hosted here (a neutral
-// includer) rather than in the header: shadetablecache.cpp reschedules under any
-// header-injected typedef.
 SIZE(CShadeTable, 0x10);      // array-element stride (0x10-byte buffer wrapper)
 SIZE(CShadeTableArray, 0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
 SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
 SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
-
-// PtInRect reached through a game-owned function pointer (ff 15).
 
 // CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
 // clip the centre to the surface rect (early-out if outside), fill the per-scanline span
@@ -577,12 +412,6 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     return 1;
 }
 
-// 0x180630 - CFaderLight::SubFree180630: the empty member-teardown ~CFaderLight calls,
-// a bare `ret`. The __fpclear FID row that owned 0x180630 was a false positive (that
-// 1-byte-`ret` fingerprint matched ~35 rvas at LOW confidence, incl. CFader::BeginFade/EndFade
-// @0x17e790/0x17e7a0); the retail dtor calls it thiscall (ecx=this), so it is the game
-// member, not a CRT stub. Reconstructed here (library label removed) - the dtor's call
-// binds. reloc-fidelity (R45).
 RVA(0x00180630, 0x1)
 void CFaderLight::SubFree180630() {}
 
@@ -635,8 +464,6 @@ i32 CFaderLight::GetFrameCount() {
     return r;
 }
 
-// CFaderLight::BeginFade (0x181660, vtable slot 3) - AddItem: when active, acquire a fresh
-// overlay surface from the +0x2c pool (MakeAndAddB), stash it in m_40, blit it onto m_38.
 RVA(0x00181660, 0x40)
 void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_lightGate != 0) {
@@ -647,8 +474,6 @@ void CFaderLight::BeginFade() {
     }
 }
 
-// CFaderLight::EndFade (0x1816a0, vtable slot 4) - DropItem: if an overlay surface is held,
-// release it back to the +0x2c pool (RemoveItemA) and clear the slot.
 RVA(0x001816a0, 0x1c)
 void CFaderLight::EndFade() {
     if (m_overlay) {
@@ -658,13 +483,6 @@ void CFaderLight::EndFade() {
     }
 }
 
-// ===========================================================================
-// CFaderRadial - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
-// 0x5f0810.
-// ===========================================================================
-// (Class declaration in <Gruntz/FaderSubtypes.h>; size 0x5c pinned from the
-// CFaderMgr::Add new(0x5c) allocation.)
-// ===========================================================================
 RVA(0x0017f9a0, 0x24)
 CFaderRadial::CFaderRadial() {
     m_maxRadius = 0;
@@ -673,19 +491,11 @@ CFaderRadial::CFaderRadial() {
     m_48 = 1;
 }
 
-// 0x17f9f0 - ~CFaderRadial() (re-homed/folded from src/Stub/BoundaryUpperEh.cpp, the
-// C17f9f0 placeholder): stamp the subtype vftable, free m_50 (FreeBuffer17fc40:
-// `if(m_50) RezFree(m_50)`), then tail-call ~CFader. cl emits the /GX unwind frame.
 RVA(0x0017f9f0, 0x4f)
 CFaderRadial::~CFaderRadial() {
     FreeBuffer17fc40();
 }
 
-// 0x17fc40 - CFaderRadial::FreeBuffer17fc40: release the owned +0x50 buffer (no
-// zero-out) via ::operator delete (0x1b9b82, reloc-masked). Re-homed from matcher-5's
-// BoundaryUpper re-attack; its target file (BoundaryUpperEh.cpp) was deleted by the
-// parallel fader-dtor fold, so the body lands here on the real class (the
-// ~CFaderRadial self-call proved the identity).
 RVA(0x0017fc40, 0x11)
 void CFaderRadial::FreeBuffer17fc40() {
     if (m_cells) {
@@ -693,12 +503,6 @@ void CFaderRadial::FreeBuffer17fc40() {
     }
 }
 
-// ===========================================================================
-// CFaderShape - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
-// m_488/m_48c and the CFader base field m_20. vftable 0x5f0890.
-// ===========================================================================
-// (Class declaration in <Gruntz/FaderSubtypes.h>.)
-// ===========================================================================
 RVA(0x001816c0, 0x32)
 CFaderShape::CFaderShape() {
     m_warpTable = 0;
@@ -759,33 +563,6 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
     EndFade();
 }
 
-// ============================================================================
-// section: FaderRun.cpp
-// ============================================================================
-// FaderRun.cpp - the CFader "run timed fade" driver (0x17e620), a CFader-subtype
-// method the ApiCaller stub misfiled as winapi_17e620_GetTickCount. It drives the
-// whole fade: primes frame 0, busy-waits the lead-in (Wait), then spins on
-// GetTickCount mapping elapsed/duration onto the [0..count] frame index (GetFrameCount = frame
-// count, RenderFrame = render frame N). Each newly-reached frame optionally pokes a COM-style
-// sink (m_2c) then renders; at the end it records the achieved frame rate in m_34
-// and finalizes via EndFade. Field NAMES are placeholders; offsets + bytes load-bearing.
-//
-// `this` is modelled as a standalone CFader-subtype shape (vtable + fields to +0x38)
-// rather than deriving CFader, because the recovered CFader.h fixes RenderFrame/GetFrameCount as void()
-// while this driver needs RenderFrame(int)/GetFrameCount()->int; the vtable SLOTS + call bytes are what
-// match (reloc-masked), not the names. NON-EH (base /O2) frame.
-
-// The busy-wait spinner (0x17e510): spins until GetTickCount() >= now + delay.
-// Reloc-masked rel32 callee, __thiscall (ignores its this).
-
-// The COM-style fade sink IFadeSink (P2 placeholder, <Gruntz/FadeSink.h>) is reached
-// through m_set2cArg (an IFadeSink** stored as a dword via Set2c): *sink is the
-// interface whose slot 0x58 is poked __stdcall(this, 1, 0) once per newly-reached frame.
-// (Was the standalone FaderRun view; dissolved onto the real CFader base - RunFade is a
-// CFader method @0x17e620, Wait/RenderFrame/GetFrameCount/BeginFade/EndFade are the base's, m_2c==m_set2cArg, m_34 is the
-// base's trailing frame-rate field. The RenderFrame(i32)/i32 GetFrameCount() slot signatures the driver needs
-// are now the CFader canonical, fixing the old void-signature mismodel.)
-
 // @early-stop
 // Complete + correct (~86%). Wall = the x87 loop-invariant conversion block: retail
 // batches (float)startTick + (float)dur + (float)count as fild QWORD x2 + fild DWORD
@@ -834,55 +611,6 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
     m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
     EndFade();
 }
-
-// ============================================================================
-// section: Fader17e940Apply.cpp
-// ============================================================================
-// Fader17e940Apply.cpp - CFaderMesh::ApplyInit (0x17ea00), the type-6
-// screen-fader's "apply the transition descriptor" method (the mesh builder).
-//
-// DE-VIEW NOTE (was mislabeled CFxModeT3::Build): Ghidra RTTI names 0x17ea00
-// ?Build@CFxModeT3@@QAEHPAUFxConfig@@@Z, but that attribution is WRONG. This
-// method's `this` (ecx) is the 0x6c-byte CFaderMesh (ctor 0x17e940, own vftable
-// 0x5f07c0, growable mesh buffer at +0x58), NOT the 0x14-byte CFxModeT3 mode
-// descriptor (ctor 0x17e880, fields only 0x00..0x10). Proof: 0x17e880 writes just
-// 0x14 bytes, whereas this method reads/writes +0x24/+0x28/+0x3c..+0x54 and inits a
-// buffer at +0x58, so 0x58+0x14 == 0x6c == the CFaderMesh allocation size. Its
-// only caller is CFaderMgr::Add's case-6 arm (RezAlloc(0x6c) -> ctor 0x17e940 ->
-// this method), and the descriptor argument it consumes is the CFxMode-family record
-// CFaderMgr builds via CFxModeT6::CFxModeT6 (0x17e910) / CFaderInit::BuildDefaultInit5.
-// So the real owner is CFaderMesh (canonical decl in <Gruntz/FaderSubtypes.h>),
-// the real method name is ApplyInit, and CFxModeT3 the descriptor stays modeled at
-// its true 0x14 size in <Gruntz/FxModeDesc.h>.
-//
-// It latches the descriptor into this, sizes the source/dest boxes, derives the
-// per-cell step (dx = box->h / m_50, dy = box->w / m_54) and the cell radius
-// (sqrt(dx*dx+dy*dy)), then walks an (m_54 x m_50) grid emitting one projected mesh
-// point per cell into the growable buffer at this+0x58. Each point ellipse-projects
-// the cell center: the radial distance v = sqrt((row-halfH)^2 + (col-halfW)^2)
-// drives a normalized (x,y) direction, scaled by the cell radius and accumulated via
-// OffsetRect onto two sub-rects (pt48 = src cell, pt64 = dst cell), assembled (order
-// gated on m_4c) into the 40-byte mesh record. Field names are placeholders; offsets
-// + code bytes are load-bearing. The point conversions go through the CRT __ftol; the
-// buffer grow is the inlined MFC CArray::SetAtGrow(GetSize(),&pt) (RezAlloc/RezFree).
-
-// DE-VIEW (2026-07-13): the six views this section carried are gone.
-//   FxBox        -> CDDSurface  (its +0x18/+0x1c are the DDSURFACEDESC dwHeight/dwWidth;
-//                   the view had the two names swapped - the OFFSETS are preserved below)
-//   FxTransDesc  -> CFxModeT6   (fader type 5 -> pInit id 6; the same +0x04..+0x20 words,
-//                   and CFxModeT6::CFxModeT6 @0x17e910 IS the "BuildDefaultInit5" builder)
-//   FxPoint/E40  -> RezElem40   (the 0x28-byte mesh record)
-//   CArrayE40/FxMeshBuffer -> CRezBufferObject (CFaderMesh::m_58 already IS one; SetSize
-//                   @0x17f390 is its out-of-line CArray::SetSize, moved onto the class)
-// The mesh point is assembled in a plain 10-dword local (no type) and memcpy'd into the
-// grown slot - RezElem40 has a real ctor (0x17e300), so a stack instance of it would emit
-// a ctor call retail does not make here.
-
-// The OffsetRect import (reached via the global function pointer at 0x6c4490) and
-// the two .rdata float constants the projection compares/biases against.
-
-// Rez heap for the buffer grow (reloc-masked). Param unified to i32 across the
-// merged sections (extern "C" cannot overload; 32-bit push is width-neutral).
 
 // ===========================================================================
 // 0x17ea00 - CFaderMesh::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
@@ -1105,20 +833,6 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     }
 }
 
-// ============================================================================
-// section: FaderElemSetup.cpp
-// ============================================================================
-// FaderElemSetup.cpp - CFaderFlat::ApplyInit (0x17f5e0), the flat fader's setup
-// (caller CFaderMgr::Add 0x17d9c0). Copies the descriptor's fields into the fader
-// and allocates its per-frame work array.
-//
-// DE-VIEW: the `CFaderElem` this-view is CFaderFlat (0x17f5e0 is exactly the ApplyInit
-// FaderSubtypes.h declares for it, and its m_3c/m_44 are the m_src/m_percent that
-// CFaderFlat::GetFrameCount @0x17f950 reads back); `FaderArg` is the real CFxModeT5 (fader type 4
-// -> pInit id 5, whose m_10 default 0x19 IS the 25% duration scale GetFrameCount applies).
-
-// FaderSrc is the canonical <Gruntz/FaderSubtypes.h> struct (frameCount @+0x18).
-
 // @early-stop
 // regalloc/scheduling tie (~90%): logic byte-exact; retail's ecx/edx assignment
 // for the m_src reload + s->m_10 store schedule differs from this cl's.
@@ -1146,31 +860,14 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     return 1;
 }
 
-// 0x17f950 - CFaderFlat::GetFrameCount (vtable slot 2): the flat fader's total duration - the
-// source frame count scaled up by m_percent% (signed /100 via the 0x51eb851f
-// reciprocal-multiply idiom), plus the base frame count.
 RVA(0x0017f950, 0x24)
 i32 CFaderFlat::GetFrameCount() {
     i32 n = m_src->m_frameCount;
     return n + (m_percent * n) / 100;
 }
 
-// ============================================================================
-// section: FaderRadial.cpp
-// ============================================================================
-// FaderRadial.cpp - the radial distance-field fader init (0x17fa40). __thiscall.
-// Resolves the source surface + palette from the config arg, allocates a
-// width*height*16 cell buffer, computes the center + max radius, then fills each
-// cell with sqrt(dx^2+dy^2)-derived fade values (sampling the source pixel
-// through the surface's GetRowBase + post-plot notifier when in bounds). The
-// embedded radial math is heavy x87 (fild/fsqrt + the constant pool at
-// 0x5f0828/30/38/40). Field names are placeholders; offsets + code bytes are the
-// load-bearing fact.
-
 extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
-// The radial-fade FP constants (retail .rdata): fade divisor half, the sqrt->units
-// scale, and the two -1.0 bias subtractions the per-cell fade formula applies.
 DATA(0x001f0828)
 extern const float g_faderHalf = 0.5f; // 0.5
 DATA(0x001f0830)
@@ -1181,15 +878,6 @@ DATA(0x001f0840)
 extern const float g_faderBiasFade = -1.0f; // -1.0  (fade - K == fade + 1.0)
 DATA(0x001f0844)
 extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade - frame > 1.0)
-
-// DE-VIEW (2026-07-13): FrConfig -> the real CFxModeT4 (fader type 3 -> pInit id 4);
-// FrImageSrc -> the real CDDPalette (its +0x0c m_cacheA is the 256-entry PalEntry base);
-// FrCell -> CFaderRadialCell (<Gruntz/FaderSubtypes.h>); and the CFaderRadialApply flat
-// body-view -> CFaderRadial itself. The "base slots repurposed as surface/palette/owns"
-// were never a fold blocker - they are the CFader base's generic SetTimers dwords, and
-// the +0x1c "work surface" is literally CFader::m_table: BuildSurface @0x14e830 IS
-// CShadeTableCache::HueRampTable (called on the embedded m_cache at this+0x04), and the
-// +0x30 "owns" flag is m_flag, which ~CFader tests before FindRemove-ing that very table.
 
 // @early-stop
 // Re-reconstructed 61.64%->73.70% by fixing three structural bugs the prior model
@@ -1322,25 +1010,8 @@ void CFaderRadial::RenderFrame(i32 frame) {
     RezFree(scratch);
 }
 
-// ============================================================================
-// section: Obj5f0890Dtor.cpp
-// ============================================================================
-// Obj5f0890Dtor.cpp - 0x181720, CFaderShape::~CFaderShape: the virtual destructor
-// of the screen-fader subtype whose vftable is at 0x5f0890 (== ??_7CFaderShape@@6B@,
-// confirmed by the entry vptr-stamp reloc). Stamp-first vptr, then free the six owned
-// heap buffers (m_478, m_44, m_48, m_4c, m_488, m_48c) with operator delete, then chain
-// to the CFader base destructor at 0x17e4a0. The CFader base subobject's non-trivial
-// virtual dtor gives the /GX unwind frame (state 0 -> -1 around the base-dtor call). The
-// implicit vptr stamp reloc-masks against the retail 0x5f0890 vtable; operator delete and
-// the base dtor are reloc-masked externs.
-//
-// (Was a standalone placeholder CObj5f0890 : CObj5f0890Base; folded onto the real
-// CFaderShape - identical field layout, and CObj5f0890Base was CFader (both base dtor
-// 0x17e4a0). The dtor now carries the correct ??_7CFaderShape name.)
-
 void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
 
-// ---------------------------------------------------------------------------
 RVA(0x00181720, 0xb3)
 CFaderShape::~CFaderShape() {
     if (m_warpTable) {
@@ -1363,28 +1034,7 @@ CFaderShape::~CFaderShape() {
     }
 }
 
-// ============================================================================
-// section: FaderShapeSetup.cpp
-// ============================================================================
-// FaderShapeSetup.cpp - a CFaderMgr-family screen-fader subclass init (0x1817e0).
-// __thiscall, called by CFaderMgr::Add (0x17d9c0). Resolves three equal-sized
-// source surfaces (m_surfA/m_surfB/m_surfC) from the config arg (defaulting to the fader's
-// own m_defaultSurfA/m_defaultSurfB), validates their dimensions match, builds an acos warp table
-// (m_warpTable) and a sin highlight ramp (m_highlightRamp), resolves the shade table via the
-// embedded CShadeTableCache (file/array/flash), then allocates per-column pitch
-// tables (m_pitchA/m_pitchB/m_pitchC) and a scratch line (m_scratchLine). Field names are placeholders;
-// offsets + code bytes are the load-bearing fact.
-
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
-
-// DE-VIEW (2026-07-13): FShadeSurf -> CDDSurface (its +0x18/+0x1c are the
-// DDSURFACEDESC dwHeight/dwWidth - the view had the names swapped, so the reads below
-// keep the OFFSETS and take the canonical names; +0xa8 is m_bitDepth (the "==8" palette
-// test) and +0xb0 the pixel stride); FInitPal -> CDDPalette (+0x0c m_cacheA); FInit ->
-// the real CFxModeT1 (fader type 0 -> pInit id 1: its m_10/m_14/m_18 defaults 0x32/1/1
-// ARE the ramp size + mode this method reads, and its +0x24 CString IS the table name
-// _access() probes); and the CFaderShapeApply flat body-view -> CFaderShape itself
-// (the six buffers ~CFaderShape frees are exactly the six this method allocates).
 
 // @early-stop
 // x87 scheduling wall (~40-50%): the surface resolution, the equal-dimension
@@ -1504,31 +1154,6 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_b0 * mx));
     return 1;
 }
-
-// ============================================================================
-// section: FaderTileRender.cpp
-// ============================================================================
-// FaderTileRender.cpp - the per-row tile gather/remap scanline compositors of
-// CFaderShape. __thiscall, two args (arg0 = base pixel column, arg1 = a leading width).
-// For each of m_rowCount rows it gathers a (2*m_halfWidth)-pixel source line into the
-// scratch line m_lineBuf - either straight (per-bpp 1/2/3) or through a 64-wide 2D LUT
-// (the shade table's buffer, keyed by the gathered byte and the per-pixel selector
-// m_shadeRamp) when m_useLut is set - then optionally copies/zeros a destination strip
-// (gated on m_stripCopy) and finally writes the scratch line back into the destination
-// buffer. The gather source (m_gatherBase, tapped via m_warpTable) and the
-// straight/edge-strip source (m_straightBase) are read; the assembled line is written to
-// m_dstBase - all addressed in pixel*bpp units. The per-row byte offsets come from
-// m_rowOfsC / m_rowOfsB / m_rowOfsA respectively.
-//
-// DE-VIEW (2026-07-13): the `CFaderTileRender` view IS CFaderShape - proven by sema xref
-// (both bodies have EXACTLY one caller, 0x181b00, which is CFaderShape's vtable slot 1)
-// and confirmed field-for-field against ApplyInit @0x1817e0: +0x1c the shade table, +0x38
-// the bpp source surface, +0x44/+0x48/+0x4c the three per-row offset tables, +0x50 the
-// mode, +0x58 the half-width, +0x5c the LUT gate, +0x60/+0x64 surface A's width/height,
-// +0x478 the warp/tap table, +0x488 the scratch line, +0x48c the shade ramp. (Its
-// SIZE(0x7d5c) was CFaderSine's, copy-pasted; CFaderShape is 0x494 and every field the
-// two compositors touch is below +0x490.) TileSurf -> CDDSurface (+0xb0 = m_b0, the pixel
-// stride); TileLut -> CShadeTable (+0x08 = m_data, the table buffer).
 
 // ===========================================================================
 // 0x182610 - RenderTile: assemble + write back one (2*m_halfWidth)-wide line per row.
@@ -1877,9 +1502,6 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
     }
 }
 
-// 0x182900 - CFaderShape::GetFrameCount (vtable slot 2): total frame count for the shape
-// transition. Modes 1/2 (box) run m_60-2*m_58 frames; mode 3 (diamond) halves the
-// m_60-4*m_58 span. Any other mode is a zero-length (instant) transition.
 RVA(0x00182900, 0x35)
 i32 CFaderShape::GetFrameCount() {
     i32 mode = m_mode;

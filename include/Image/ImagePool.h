@@ -1,9 +1,3 @@
-// ImagePool.h - the shared, single definition of CImagePool, the GDI surface /
-// palette node pool (RTTI CImagePool). Formerly a .cpp-local class in ImagePool.cpp
-// (+ a placeholder CPreviewMgr view in SaveGame.cpp for g_previewMgr, whose
-// LoadImage IS CImagePool::AddSurfaceOp @0x1751f0). Extracted to a header (wave 3)
-// so g_previewMgr is typed cast-free. The bodies live in ImagePool.cpp; every call
-// into the CRezImage decoders / CImagePaletteNode builders reloc-masks.
 #ifndef SRC_IMAGE_IMAGEPOOL_H
 #define SRC_IMAGE_IMAGEPOOL_H
 
@@ -12,8 +6,6 @@
 #include <rva.h>
 
 class CRezImage; // <Image/Image.h> - the pool's DIB-surface node (pointer-only here)
-// The palette list node (full def in ImagePool.cpp). Forward-declared in its
-// placeholder namespace to keep that TU's method mangling unchanged.
 namespace ApiCallerStubs {
     struct CImagePaletteNode;
 }

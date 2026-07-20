@@ -15,25 +15,6 @@
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CDDrawSurfaceMgr m_world)
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
 #include <Image/CImage.h>        // the resolved frame record (TickRenderFrame's blit)
-// SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
-// RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
-//   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// Vtable @0x5eac4c. The /GX chain destructor (0x102000) is defined below - the
-// former SBI_ImageSetEh.cpp companion split is collapsed (retail's one TU was
-// /GX). Sibling/engine callees are ILT/vtable-reloc-masked.
-
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only touched members/methods are
-// load-bearing; every call through them is reloc-masked). CSBI_ImageSet +
-// CImageSetStream now live in the canonical <Gruntz/SBI_ImageSet.h>.
-
-// The resolved config record (Lookup result) is the CSprite the image registry
-// yields; its config name string lives at record+0x24. The config map is the image
-// registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
-// shape SetupImage uses, reached as reg->m_imageRegistry->m_10map.
-
-
-// The serialize-sequence counter bumped once per non-trivial pass.
 
 // ---------------------------------------------------------------------------
 // CSBI_ImageSet::SetupImage (0xe72f0, vtable slot 11 - the CSBI_Image::SetupImage
@@ -97,10 +78,6 @@ i32 CSBI_ImageSet::SetupImage(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_ImageSet::ResetCounters (0xe7400, vtable slot 3): m_34 = m_30 = 0.
-// Re-attributed from the SBI_RectOnly host TU (dossier #16: vtbl 0x1eac4c
-// slot [3] thunk 0x2a09 -> 0xe7400).
 RVA(0x000e7400, 0x9)
 void CSBI_ImageSet::ResetCounters() {
     m_34 = 0;
@@ -191,14 +168,6 @@ i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) 
     return CSBI_Image::SerializeFields(s, mode, a3, a4) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// ~CSBI_ImageSet (0x102000): the /GX chain destructor - stamp ??_7CSBI_ImageSet,
-// run ResetCounters (0xe7400, this class's own member teardown), then MSVC folds the
-// three inline base dtors in (??_7CSBI_Image + ClearFrame, ??_7CSBI_RectOnly +
-// DtorRect, ??_7CStatusBarItem + DtorStatus - the SBI_DTOR_CHAIN device; this TU owns
-// ~CSBI_ImageSet itself via SBI_OWN_IMAGESET_DTOR) behind the /GX SEH frame with
-// 0/1/2/-1 trylevels. Collapsed from SBI_ImageSetEh.cpp (4-level case of
-// docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
 RVA(0x00102000, 0x7f)
 CSBI_ImageSet::~CSBI_ImageSet() {
     ResetCounters();

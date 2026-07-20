@@ -1,18 +1,3 @@
-// ExitTrigger.h - the level-exit trigger tile-logic game-object (C:\Proj\Gruntz).
-//
-// CExitTrigger : CUserLogic - a tile-logic leaf in the same game-object hierarchy
-// as CTimeBomb (proven by its dtor @0x0108c0 stamping the CUserLogic vftable
-// 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down the +0x18 link via
-// the embedded ~EngStr at 0x16d2a0 - byte-identical in shape to ~CTimeBomb
-// @0x012a70). The leaf adds no destructible members beyond CUserLogic, so its
-// dtor folds the bare CUserLogic teardown (the /GX leaf-dtor archetype).
-//
-// GetTypeTag (0x010870) is the per-class logic-type id accessor (returns 0x3f7),
-// the SAME 6-byte `mov eax,<id>; ret` virtual as CTileTriggerTransition::
-// GetTypeTag (0x011730, 0x405).
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CEXITTRIGGER_H
 #define GRUNTZ_CEXITTRIGGER_H
 
@@ -49,10 +34,6 @@ public:
 VTBL(CExitTrigger, 0x001e822c);
 SIZE(CExitTrigger, 0x5c);
 
-// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
-// Ex CWormholeActEntry (the act-cluster re-attribution). The PMF is typed on the
-// single-inheritance CUserLogic base: CExitTrigger itself is MI (CUserLogic + CWapX),
-// so a PMF to it would not be a 4-byte code ptr.
 typedef i32 (CUserLogic::*ExitTriggerHandler)();
 struct CExitActEntry {
     ExitTriggerHandler m_fn;

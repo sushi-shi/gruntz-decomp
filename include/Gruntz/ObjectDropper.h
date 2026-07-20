@@ -1,7 +1,3 @@
-// ObjectDropper.h - the object-dropper tile-logic object (C:\Proj\Gruntz), a
-// CUserLogic leaf (RTTI .?AVCUserLogic@@). All methods are reconstructed in the
-// merged dropped-object TU (src/Gruntz/DroppedObject.cpp, wave2-H). Offsets +
-// code bytes are load-bearing.
 #ifndef GRUNTZ_COBJECTDROPPER_H
 #define GRUNTZ_COBJECTDROPPER_H
 
@@ -10,10 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
-// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
-// silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
@@ -60,10 +52,6 @@ public:
 VTBL(CObjectDropper, 0x001e7a9c);
 SIZE(CObjectDropper, 0x98);
 
-// The dropper's activation entry: its first dword is the registered handler,
-// dispatched __thiscall on `this` (4-byte single-inheritance PMF -> `mov ecx,this;
-// call [entry]`; CObjectDropper is complete above so the PMF stays 4 bytes). Was the
-// .cpp-local CDropperActEntry view.
 struct CDropperActEntry {
     i32 (CUserLogic::*m_fn)();
 };

@@ -1,21 +1,3 @@
-// AreaMgr.cpp - Gruntz CAreaMgr: the area/spawn manager TU (C:\Proj\Gruntz),
-// retail band 0x99b60..0x9b4f0 (init frag + code + tail frag).
-//
-// ONE original TU (wave2-H merge): the former areamgr + loadobjectresources +
-// mgrtokenquery units were a WOVEN single interval (TU_MIGRATION 0x099ba0, weave
-// 0.42) - the LoadObject{Image,Sound,Anim}Resources reconcilers interleave with
-// the CSpawnList methods, and the mgrtokenquery pocket (frag @0x99b60 +
-// TokenMgrReset @0x99b80 + QueryToken @0x99d10) is PROVEN in-TU: the singleton's
-// atexit/dtor-thunk blob (0x99be0..0x99c1f) sits BETWEEN CAreaMgr's ctor
-// (0x99ba0) and dtor (0x99c20) - impossible for two first-link objs.
-//
-// The singleton at 0x6459b0 (ex "g_tokenMgr"/CTokenMgr view) IS the CAreaMgr
-// instance: its "Reset"/"Dispatch" were CAreaMgr::Reset/Dispatch by RVA, so the
-// placeholder type is folded onto the real class (TokenMgr.h deleted).
-//
-// CAreaMgr = {current-index word, embedded CSpawnList} (<Gruntz/AreaMgr.h> /
-// <Gruntz/SpawnList.h>). Field names are placeholders (m_<hexoffset>); only the
-// OFFSETS + the emitted code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
 #include <Image/CImage.h> // g_resourceInstallActive
 #include <Mfc.h>
@@ -25,47 +7,22 @@
 #include <stdio.h>  // sprintf (reloc-masked engine CRT)
 #include <string.h> // inline strcmp / strncmp
 
-// The name-match helper (__cdecl(entry-name, search-name, len), 0x120440).
 extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
-// The sound/anim object registries are the canonical DDraw/Sound sub-managers, reached
-// off the spawn entry's per-namespace registry slots (mirrors the sibling loaders
-// GameAssetNamespaces.cpp / AssetNamespacePrefixes.cpp, whose WorkerHolder is this same
-// object). Include the real class headers; the drain path's ProcessNew methods are the
-// per-family reduced-view siblings (CSoundResMap::RemoveByValue / CDDrawSubMgrLeaf::
-// RemoveValue_152660), cross-cast at the call because they describe the SAME object under
-// a different family-name (an unresolved DDrawMgr-family conflation, out of scope here).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CCatalogNode
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (the per-spawn registry holder)
 
-// ---------------------------------------------------------------------------
-// The manager singleton @0x6459b0 (ex ?g_tokenMgr@@3UCTokenMgr@@A - the
-// CTokenMgr view was a placeholder over this very class; folded). Its $E init
-// frag (0x99b60), init body (0x99b80), atexit registration (0x99be0) and dtor
-// thunk (0x99c00) are the file-scope-definition machinery of THIS TU.
-// ---------------------------------------------------------------------------
 DATA(0x002459b0)
 CAreaMgr g_areaMgr;
 
-// TokenMgrReset99b80 @0x099b80 - the singleton-init body the $E frag @0x99b60 calls:
-// retail tail-jmps the CAreaMgr ctor @0x99ba0 (through ILT 0x3bac) to re-construct
-// the singleton in place. The explicit-ctor-call form gives the clean 10-byte
-// `mov ecx,&g_areaMgr; jmp CAreaMgr::CAreaMgr` tail-jmp with NO placement-new null-guard
-// (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md), binding the jmp to the real
-// ctor @0x99ba0.
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
     g_areaMgr.CAreaMgr::CAreaMgr();
 }
 
-// ---------------------------------------------------------------------------
-// CAreaMgr::CAreaMgr  (0x099ba0)
-// The member CSpawnList's inline ctor folds in: CPtrList(block size 10), scan
-// cursor = 0, last-picked = -1; then the index word clears (body, last).
-// ---------------------------------------------------------------------------
 RVA(0x00099ba0, 0x29)
 CAreaMgr::CAreaMgr() {
     m_currentAreaIndex = 0;
@@ -92,12 +49,6 @@ void ForceEmitSpawnListDtor() {
 }
 #pragma inline_depth()
 
-// ---------------------------------------------------------------------------
-// CAreaMgr::~CAreaMgr  (0x099c20)
-// The /GX destructor: clears the current-index word (Reset, trylevel 0) then the
-// member CSpawnList's dtor inline-folds (DeleteAllEntries, trylevel 1, then the
-// member ~CPtrList, trylevel -1).
-// ---------------------------------------------------------------------------
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {
     Reset();
@@ -105,10 +56,6 @@ CAreaMgr::~CAreaMgr() {
     // /GX member teardown: the inline ~CSpawnList above folds in.
 }
 
-// QueryToken @0x099d10 - __cdecl free helper over the singleton: reset, dispatch
-// the caller's token, return whether the dispatch produced a nonzero result (the
-// int->bool neg/sbb/neg normalize). Reached from the level-load path (0x0ca200
-// via thunk 0x0039a4).
 RVA(0x00099d10, 0x20)
 i32 QueryToken(i32 arg) {
     g_areaMgr.Reset();
@@ -222,10 +169,6 @@ i32 CAreaMgr::Dispatch(i32 index) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CAreaMgr::Reset  (0x09a0b0)
-// Clear the current-index word.
-// ---------------------------------------------------------------------------
 RVA(0x0009a0b0, 0x7)
 void CAreaMgr::Reset() {
     m_currentAreaIndex = 0;
@@ -263,8 +206,6 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     return 0;
 }
 
-// CSpawnEntry::GetName (0x0009a260) is now an inline member in the header.
-
 // ---------------------------------------------------------------------------
 // CSpawnList::FindByName (0x09a290) - like FindEntry but the search key arrives
 // by reference (retail pushes the CString's ADDRESS - the old areamgr Extract
@@ -298,11 +239,6 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnList::ClearFlags  (0x09a420)
-// Walk the node chain and zero every entry's "wanted" mark (re-homed from the
-// BoundaryLowerMethods C9a420 view; the LoadObject* reconcilers' reset pass).
-// ---------------------------------------------------------------------------
 RVA(0x0009a420, 0x1c)
 void CSpawnList::ClearFlags() {
     CSpawnNode* p = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
@@ -319,13 +255,6 @@ void CSpawnList::ClearFlags() {
     } while (p != 0);
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnList::DeleteAllEntries  (0x09a450)
-// Walk the CPtrList node chain; `delete` each held CSpawnEntry (the implicit
-// ~CString + the engine operator delete = RezFree), then m_list.RemoveAll().
-// No destructible local, so no /GX frame even under eh flags. (Was
-// CSpawnEntry::EmptyVoiceList / AreaPtrList::RemoveAllNodes.)
-// ---------------------------------------------------------------------------
 RVA(0x0009a450, 0x36)
 void CSpawnList::DeleteAllEntries() {
     CSpawnNode* node = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
@@ -343,50 +272,6 @@ void CSpawnList::DeleteAllEntries() {
     m_list.RemoveAll();
 }
 
-// ===========================================================================
-// LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20) - the three
-// near-identical per-spawn-entry asset reconcilers for the OBJECTZ_ namespace
-// tree.  __thiscall(this=tree, SpawnEntry* entry, ResRegistry* src):
-//   1. ClearFlags() resets every existing child entry's +4 "wanted" flag to 0.
-//   2. Walk the source registry's CMapString map (embedded at entry->reg+0x10),
-//      and for each "OBJECTZ_"-prefixed key: FindAdd it in this tree; if it already
-//      exists mark its flag, else queue the source value in a local CPtrList of new
-//      objects.
-//   3. Drain that CPtrList, handing each new source object to the registry's
-//      ProcessNew (Image: a vtable slot; Sound/Anim: a direct method).
-//   4. Re-scan the child entries; for each still-unwanted (flag==0) one, build the
-//      "{IMAGEZ|SOUNDZ|ANIZ}_<name>" key, ResolvePath it in src, and Install it
-//      through the registry, then mark the flag.  The Image arm brackets the
-//      install with the g_resourceInstallActive tile-counter gate.
-// The local CPtrList carries a destructor -> the /GX exception frame.  Only offsets
-// / code bytes are load-bearing; helpers are reloc-masked engine externs.
-// ===========================================================================
-
-// (The old CObjResNode / CObjResListNode / CObjResBuilder / CObjResTree views
-// were folded onto the canonicals: the "child entry" is CSpawnEntry (GetSpriteName
-// == GetTail @0x9a830, GetAssetName == GetName @0x9a260, the +4 wanted flag ==
-// m_flag), the "builder" is CSpawnList (FindAdd == FindByName @0x9a290, ClearFlags
-// @0x9a420, head/cursor == m_list/m_cursor), and the "tree" is CAreaMgr itself
-// (the builder at +0x04 is m_spawnEntryList; same retail TU band). See
-// <Gruntz/SpawnList.h> for the unification proof.)
-
-// The per-spawn entry (arg1) IS the canonical CDDrawSurfaceMgr - its three
-// per-namespace asset registries are exactly the manager's members:
-//   m_imageRegistry (+0x10) = CDDrawWorkerRegistry (CMapStringToOb map @+0x10; InstallTree
-//                  slot 18, RemoveWorker slot 20 @0x155280).
-//   m_soundRegistry (+0x28) = CDDrawSubMgrLeafScan (CMapStringToPtr map @+0x10; ScanTree_157ee0
-//                  direct; ProcessNew drain = CSoundResMap::RemoveByValue @0x157b00).
-//   m_animRegistry (+0x2c) = CDDrawSubMgrLeaf (CMapStringToPtr map @+0x10; ScanTree_152ad0
-//                  direct; ProcessNew drain = RemoveValue_152660).
-// PROVEN: those three offsets/types match CDDrawSurfaceMgr exactly, and the sibling
-// GameAssetNamespaces.cpp resolved the SAME `WorkerHolder` object as CDDrawSurfaceMgr.
-
-// The resolution source (arg2): ResolvePath looks a namespaced key up, returning a
-// handle (0 if absent).
-
-// CAreaMgr::LoadObjectResources (0x9a4c0) - the composite entry that reconciles all
-// three asset namespaces for one spawn entry: gate on a null entry, then chain the
-// image/sound/anim reconcilers on `this`.
 RVA(0x0009a4c0, 0x3e)
 i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == 0) {
@@ -675,5 +560,3 @@ i32 CAreaMgr::SameGroup(i32 a) {
     i32 gc = (m_currentAreaIndex - 1) % 36 / 4 + 1;
     return gc == ga;
 }
-
-// --- vtable catalog ---

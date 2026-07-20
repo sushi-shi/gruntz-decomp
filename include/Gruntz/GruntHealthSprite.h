@@ -1,37 +1,11 @@
-// GruntHealthSprite.h - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
-//
-// CGruntHealthSprite : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CSimpleAnimation (proven by its dtor @0x011fb0 stamping the
-// CUserLogic vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down
-// the +0x18 link via the embedded ~EngStr at 0x16d2a0 - byte-identical in shape
-// to the established leaf-dtor archetype). The leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown (the /GX
-// leaf-dtor archetype).
-//
-// SetHealthGlyph (0x07f0d0) is the per-bump health-glyph resolver: stash the two
-// passed coordinates (m_cellX/m_cellY), round the passed health to a glyph slot
-// (slot = 0x15 - (int)(health*0.2 + 0.5)), resolve that slot through the bound
-// object's [m_64..m_68]-gated glyph table at +0x194 (the SAME gated-glyph-table
-// archetype as the CSprite glyph maps in SBI_StatzTabGruntBar.h), publish the glyph and
-// slot back into the object (+0x198 / +0x190), stash the health (m_health), return 1.
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CGRUNTHEALTHSPRITE_H
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-// The health glyph resolve reads its bound game object (CUserLogic::m_object) directly
-// - the object IS a CGameObject (the CGruntRenderable view was folded onto it) - through
-// its +0x194 cached CSprite (frame table @+0x14, [m_firstFrame..m_lastFrame] gate
-// - the shared gated-lookup archetype, the CSprite frame-table shape).
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg
 #include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
-// The bound grunt the slot-16 stat getter reads (a registry grunt-table slot). A pointer
-// param needs no definition; `class` (not `struct`) is required - <Gruntz/Grunt.h> defines
-// `class CGrunt`, and the keyword picks the mangling (PAVCGrunt@@ vs PAUCGrunt@@).
 class CGrunt;
 
 SIZE_UNKNOWN(CGruntHealthSprite);
@@ -72,9 +46,6 @@ public:
 };
 VTBL(CGruntHealthSprite, 0x001e7ba4);
 
-// The class registry entry: its first dword receives the handler PMF (a 4-byte
-// code pointer on this complete single-inheritance class). CGruntHealthSprite is
-// complete above so the PMF stays 4 bytes (matching `mov [entry], offset thunk`).
 typedef i32 (CUserLogic::*HealthActHandler)();
 SIZE_UNKNOWN(CHealthActEntry);
 struct CHealthActEntry {

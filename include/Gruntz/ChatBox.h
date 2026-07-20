@@ -1,16 +1,3 @@
-// ChatBox.h - a two-row scrolling on-screen text/chat display (C:\Proj\Gruntz).
-//
-// Trace-discovered as Region_182ab0; the engine identity (LoadChatBoxSprite +
-// the per-row frame-animation state + the message-node list) names it a
-// chat/marquee box. Two text rows, each with: a CString font/asset key
-// (m_row0Key / m_row1Key), a "current message node"/animation record pointer
-// (m_row0Anim / m_row1Anim), and per-row frame-animation state (current frame
-// handle + reload period + countdown timer + draw offset + frame index). Owns a
-// CPtrList of message nodes at m_nodeList, plus a parent/page back pointer at
-// m_page and a queued/active node slot at m_activeNode.
-//
-// Field names are recovered from the member writes in the ctor/methods; only the
-// offsets + code bytes are load-bearing (rename is /O2 name-independent).
 #ifndef GRUNTZ_CHATBOX_H
 #define GRUNTZ_CHATBOX_H
 
@@ -19,30 +6,14 @@
 
 #include <Mfc.h>
 
-// The active/queued node slot IS a CMenuPage (MenuPage.h): the node accessors this
-// box dispatches into (dtor 0x183250, ReleaseAll 0x183990, RestoreFocus 0x1839d0,
-// Click 0x1840a0, SelectForward 0x1843f0, SelectBackward 0x1844d0, SelectFwd2
-// 0x184230, SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs as CMenuPage's.
 class CMenuPage;
 
-// The on-screen "page"/owner object reached through m_page IS the canonical
-// CDDrawSurfaceMgr (the CState::m_c render/resource holder, <Gruntz/GameRegistry.h>):
-// its +0x04 render set (m_drawTarget, CDDrawSubMgrPages), +0x10 image registry (m_10,
-// CImageRegistry == CDDrawWorkerRegistry) and +0x28 sound/cue host (m_28, CSndHost ==
-// CDDrawSubMgrLeafScan) are exactly the render/catalog/roster facets this box drives.
-// ChatBox.cpp includes GameRegistry.h + the three facet headers.
 class CDDrawSurfaceMgr;
 
-// Per-row animation record: the canonical CImageSet (<Image/ImageSet.h>) - each advance
-// caches m_frames[m_minIndex]; Step clamps the frame index to [m_minIndex, m_maxIndex].
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 class CImage; // Image/CImage.h
 
-// ---------------------------------------------------------------------------
-// CChatBox
-// ---------------------------------------------------------------------------
 class CChatBox {
 public:
     void Init(); // 0xa0280 - re-zero the rows (no list teardown)

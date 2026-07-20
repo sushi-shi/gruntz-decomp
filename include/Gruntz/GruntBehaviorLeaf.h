@@ -12,26 +12,6 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic base + CGameObject (the +0x154 draw-state object)
 
-// slice of the created draw-state CGameObject - the SAME +0x154 object CGrunt
-// reaches as m_154: m_8 "dirty flags" == m_flags, m_40 == m_stateFlags (visible
-// bit), m_194 the CImageSet* role-union arm, and the +0x1a0 embedded
-// m_drawState below is the one real type.)
-
-// (the ex-`CDecayAnim` view is GONE. It was not an anim controller at all - it was five
-// fabricated method names standing in for functions on THREE DIFFERENT REAL CLASSES, all
-// already reconstructed in the tree. Every one of its "RVAs" was an ILT jmp-thunk; chased
-// through to the real bodies they are:
-//   Anim2a72      thunk 0x2a72 -> 0x79fb0  CTriggerMgr::NotifyCell(row,col,z)      [void]
-//   SetAnim       thunk 0x2e96 -> 0x6bcb0  CTriggerMgr::CellDispatch(row,col,k,arg)
-//   PlayAnimEx    thunk 0x3003 -> 0x7a180  CTriggerMgr::SpawnPuddle(x,y,...)
-//   DrawAnimAt    thunk 0x1073 -> 0x7b440  CTriggerMgr::BuildRockBreakParticles(...)
-//   PlayStateAnim thunk 0x3945 -> 0x75e90  CTriggerMgr::LoadTileArrivalFx(...)
-// Four of the five really return i32; the view declared them all `void`, throwing away the
-// eax retail's callers consume. The old "PROVEN-heterogeneous slot" reading of +0x260 is
-// OVERTURNED (2026-07-15): all five targets are CTriggerMgr methods - the "CRockBreakMgr"
-// and "CTileWireLogic" receivers were themselves placeholder views of CTriggerMgr (both
-// the same +0x260 board).)
-
 SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
 public:

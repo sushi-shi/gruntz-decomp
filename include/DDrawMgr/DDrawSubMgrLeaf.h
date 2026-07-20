@@ -1,32 +1,11 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H
 #define GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H
 
-// DDrawSubMgrLeaf.h - CDDrawSubMgrLeaf, the CObject-derived string-keyed catalog
-// of the DDraw surface-manager family (primary vftable @0x1efc78 / VA 0x5efc78),
-// hoisted from DDrawSubMgrLeaf.cpp for the wave4-L original-TU partition: the
-// catalog meat (0x152640-0x152d30) lives in the S2 obj (DDrawSubMgrLeaf.cpp), the
-// IsReady/dtor quartet + ClearContext/ClearMap (0x1577a0-0x157bc0) in the G
-// (submgr-family) obj (DDrawSubMgr.cpp).
-//
-// Layout (offsets/sizes load-bearing; field NAMES are placeholders):
-//   +0x00  vptr (CObject-derived)  +0x04 m_04 (-1 inactive)  +0x08 m_08
-//   +0x0c  m_0c (parent/root)      +0x10 m_10 (CMapStringToPtr, keyed by name)
-
 #include <Ints.h>
-// THE +0x10 MAP IS CMapStringToPtr, NOT CMapStringToOb (mfc_class --audit, 2026-07-12):
-// every map rva retail calls from these methods - Lookup 0x1b8438, RemoveKey 0x1b84de,
-// GetNextAssoc 0x1b8546, ~map 0x1b8322 - lies in [0x1b8247, 0x1b85b1), the band whose
-// ctor stamps ??_7CMapStringToPtr@@6B@ (0x1eb014).  CMapStringToOb's band is
-// [0x1b7e17, 0x1b8247) (Lookup 0x1b8008) and NOTHING here enters it.  The two classes
-// are byte-identical, so the FID rows are all AMBIG and the tree had guessed wrong;
-// `python -m gruntz.analysis.mfc_class 0x1b8438` asks the binary.  (A sibling map -
-// CDDrawWorkerRegistry::m_map - really IS CMapStringToOb, so this is per-site.)
 #include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <rva.h>
 #include <Wap32/Object.h>
 
-// The looked-up catalog value: only the scalar-deleting destructor slot (+0x04)
-// is load-bearing. Declarations only - never defined, so no ??_7 is emitted.
 class CCatalogNode {
 public:
     virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
@@ -34,12 +13,6 @@ public:
 };
 SIZE_UNKNOWN(CCatalogNode);
 
-// CDDrawSubMgrGrandBase - the CObject-like family grand-base (vptr + the three
-// header fields +0x04..+0x0c). Real polymorphic base (its 5-slot vtable is the
-// shared g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr
-// re-stamp at the leaf dtor's tail. NAME-AUDIT: maps to RTTI CObject @0x1e8cb4 but
-// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr. Do not rename to CObject (would ODR-clash + collapse the /GX teardown level).
 class CDDrawSubMgrGrandBase : public CObject {
 public:
     virtual ~CDDrawSubMgrGrandBase() OVERRIDE; // [1] real teardown dtor

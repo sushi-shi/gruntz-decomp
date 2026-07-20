@@ -1,16 +1,3 @@
-// StaticHazard.cpp - a static hazard game-object (C:\Proj\Gruntz).
-//
-// CStaticHazard : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Methods defined in ascending retail-RVA order:
-//   ~CStaticHazard   @0x012b30 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   CStaticHazard    @0x0fb7a0 - the 1-arg ctor (CUserLogic leaf init + the
-//                                static-hazard tail).
-//   FireActivation   @0x0fbbf0 - the per-coordinate activation-registry dispatcher.
-//   LoadAttributes2  @0x0fc0b0 - the time-gated pulse (the smaller tick variant).
-//   LoadAttributes   @0x0fc1a0 - the full periodic tick/update.
-//
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
@@ -27,90 +14,28 @@
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 #include <Globals.h>
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
-
-// The running game clock (DAT_00645588; low 32 bits of the engine counter) and
-// the draw-clock delta the per-frame animation re-target reads (DAT_006bf3bc).
 extern "C" u32 g_frameTime;
 extern "C" u32 g_engineFrameDelta;
 
-// A .data global the ctor copies into the bound object's +0x124 (DAT_0064553c).
-
-// ---------------------------------------------------------------------------
-// The bound game object is the inherited CUserLogic m_10/m_38 (both CGameObject*,
-// both point at it); the static-hazard paths use them directly (the CTeleporter
-// idiom - no per-TU view cast). CGameObject (<Gruntz/UserLogic.h>) models every
-// field/method these paths touch. Re-read m_10/m_38 per access (never cache to a
-// local) so each member load matches retail's reload.
-//
-// The one hazard-specific sub-object CGameObject does not model as a member is the
-// +0x1a0 animation sub-object; it is reached via the (char*)m_38 + 0x1a0 byte-arith
-// idiom (same as CTeleporter's CTeleAnimSink). Its +0x20/+0x28/+0x2c state flags
-// gate the "animation finished -> revert to IDLE" branch; their exact roles are
-// unproven, so they stay placeholders.
-
-// The active-anim descriptor is the resolved geometry element (m_38->m_1a0.m_14, a
-// CAniElement): the SetAnimEx idiom reads its first frame record's (CAniRecordView)
-// seed frame (m_seedFrame). Same idiom TileLogicPump uses. (The former HazAnimElem/
 #include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
 
-// ---------------------------------------------------------------------------
-// The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
-// slots ARE real modeled classes, so the static-hazard paths reach them cast-free
-//   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
-//   m_world    -> CDDrawSurfaceMgr (m_animRegistry @+0x2c is the canonical
-//                 CDDrawSubMgrLeaf, whose m_10 @+0x10 is the CMapStringToPtr the
-//                 "GO" cue resolves in - retail calls 0x1b8438, the Ptr band).
-// The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the
-// SAME value type the geometry lookup / m_value resolves to, and read here as an int
-// at +0x24 == CAniElement::m_total, the accumulated frame total used as the per-effect
-// ---------------------------------------------------------------------------
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
-// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
-// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
-// Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
-// CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
-// names) - so the read is a plain upcast, no cast needed.
 
-// ===========================================================================
-// FireActivation's per-coordinate activation registry (CStaticHazard's OWN
-// instance @0x64e3d0) - the SAME archetype as CTimeBomb::FireActivation. A
-// coordinate maps to an Entry* either directly (within [g_haznLo,g_haznHi]) or by
-// a slow Find/rebuild. All globals are unnamed BSS (DATA-pinned so the loads
-// reloc-mask); the collection methods are external/no-body.
-// ===========================================================================
 struct CHaznEntry; // an entry: first dword is the registered handler
 
 DATA(0x0024e3d0)
 extern CCoordColl g_haznColl;
 
-// ConstructHaznRange @0x0fbb70 - the static initializer that builds g_haznColl's fast
-// [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
-// src/Stub/BoundaryLowerThunks.cpp (was RegRangefbb70).
 RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
     g_haznColl.Construct(0x7d0, 0x7da);
 }
 
-// The entry's first dword is a pointer-to-member-function of CStaticHazard
-// (single inheritance -> 4-byte code pointer); FireActivation invokes it on
-// `this`, emitting `mov ecx,this; call [entry]`.
-// (The CHaznEntry/CHaznEntry2 handler-entry records live with the class in
-// <Gruntz/StaticHazard.h>.)
-
-// ---------------------------------------------------------------------------
-// RegisterActs (0x0fbd50) interns the "A" and "B" activation keys into the shared
-// bute store and records each in the shared name registry (@0x6bf650, the SAME
-// instance CTimeBomb/CDroppedObject use), then resolves the id in CStaticHazard's
-// OWN registry (HaznLookup) and stores the per-key handler PMF.
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
-// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
@@ -125,14 +50,9 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// The inlined coordinate->Entry* lookup FireActivation folds in twice: the
-// registry-archetype ResolveEntry over g_haznColl (per-field scalars reunified
-// into the one object @0x64e3d0).
 static inline CHaznEntry* HaznLookup(i32 coord) {
     return reinterpret_cast<CHaznEntry*>(g_haznColl.ResolveEntry(coord));
 }
-
-// CStaticHazard::GetTypeTag (0x00012ae0) is now an inline member in the class header.
 
 // ---------------------------------------------------------------------------
 // CStaticHazard::~CStaticHazard @0x012b30 - the leaf adds no destructible members
@@ -214,10 +134,6 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CStaticHazard::FireActivation @0x0fbbf0 - look the activation coordinate up in
-// the registry; if the entry has a registered handler, look it up again and
-// dispatch it __thiscall on this.
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
     CHaznEntry* e = HaznLookup(coord);
@@ -447,8 +363,6 @@ dispatch:
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZVec.h>
 SIZE_UNKNOWN(CHaznEntry);
@@ -456,17 +370,9 @@ SIZE_UNKNOWN(CHaznEntry2);
 SIZE_UNKNOWN(CStaticHazard);
 SIZE_UNKNOWN(HazGrid);
 SIZE_UNKNOWN(HazGridMgr);
-// Tree-wide SIZE anchor for the unified CCoordColl coordinate/activation-registry
-// archetype (<Gruntz/HaznColl.h>; the former CTBombColl/CHaznColl views, used across
-// TimeBomb/StaticHazard). Moved here from the deleted src/Stub/BoundaryLowerThunks.cpp.
 SIZE_UNKNOWN(CCoordColl);
 SIZE_UNKNOWN(WwdAnimSub);
 
-// CStaticHazard::SerializeMove (0x0fc5b0), vtable slot 1 - stream the leaf pulse
-// state (m_54..m_68, six DWORDs) through the archive first, THEN chain the shared
-// serialize helper on `this` (gate) + the +0x34 CSerialObjRef sub-object; normalize
-// the ref result to a strict bool. The RollingBall::Serialize field-streaming
-// archetype, but with the field block emitted before the chain gates.
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     CSerialArchive* arc = static_cast<CSerialArchive*>(ar);

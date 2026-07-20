@@ -1,88 +1,30 @@
-// TriggerMgr.h - CTriggerMgr, the playfield tile-object / switch-trigger grid
-// manager (trace placeholder tomalla-23, C:\Proj\Gruntz). NON-POLYMORPHIC
-// (no RTTI, no vtable): a plain __thiscall manager that owns a 15-column grid of
-// placed game-object pointers (base +0x1c, element stride 4), a per-cell undo /
-// record list (+0x244), a 10-entry array of selection lists (+0x2d0, stride 0x1c),
-// an MFC pointer list (+0x240), and a small allocated overlay sub-object (+0x25c,
-// 0x40 bytes). It reads the global game registry (g_gameReg @0x64556c) for the
-// active level/plane and drives the per-tile switch/trigger logic.
-//
-// The offsets the reconstructed methods touch are named data members below (recovered
-// from how every method reads/writes them); the gaps are opaque padding. The grid cells
-// and the level/plane objects are still full UNMATCHED engine classes, so member fields
-// typed as void*/char are cast to the file-local opaque shells at their use sites (that
-// keeps those reads / calls reloc-masked). The three embedded MFC containers (base CPtrList
-// @0, record CPtrList @0x240, byte-table CByteArray @0x260) and the ten selection lists
-// (@0x2d0) are the REAL MFC classes (<Mfc.h>) - the leaves call their methods
-// directly and ~CTriggerMgr auto-emits their member teardown (no this+offset casts).
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
 #include <rva.h>
 #include <Mfc.h>                  // CPtrList and the MFC list helpers (reloc-masked)
 #include <Gruntz/SerialArchive.h> // CSerialArchive - the Load serializer's stream (Read @ +0x2c)
 
-// The global free-list of recycled list nodes (an intrusive singly-linked stack)
-// and its node-bias constant, shared across the manager's list churn. Stored as
-// raw void*/int (the engine's real ?g_freeList@@3PAXA / ?g_freeListNodeBias@@3HA).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// g_freeList / g_freeListNodeBias were g_coordPool's interior fields
-// (+0x04 / +0x0c), not globals. The pool is DEFINED in GameText.cpp.
 extern FreeNodePool g_coordPool;
 
-// operator delete (static CRT, reloc-masked); operator new comes from <Mfc.h>.
 void operator delete(void*);
 
-// The placed-object grid geometry: m_grid/m_cellFlag are 4 rows x 15 cells
-// (0x3c pointers; every retail index is `row * 15 + col`). Matching-neutral:
-// an MSVC5 enumerator lowers to the identical immediate.
 typedef enum TmGridDim {
     TM_GRID_COLS = 15, // cells per row (the m_grid/m_cellFlag row stride)
     TM_GRID_ROWS = 4,  // rows (m_rowCount/m_rowStateB/m_rowStateC are per-row)
 } TmGridDim;
 
-// The (x,y) pair the +0x174/+0x178 origin accessor writes out IS the canonical
-// Coord (<Gruntz/CoordNode.h>, which owns the folded Set @0x75a10).
 #include <Gruntz/CoordNode.h>
 typedef Coord CTrigPoint;
 
-// The placed grid-cell game object. IDENTITY PROVEN: CTmCell IS ::CGrunt - its
-// ClearAllSprites() is ?ClearAllSprites@CGrunt@@QAEXXZ @0x0004b240 (already reconstructed
-// and 100% EXACT in src/Gruntz/Grunt.cpp; `gruntz sema rva 0x0004b240`). Calling it through
-// this view emitted ?ClearAllSprites@CTmCell@@QAEXXZ, a symbol NOTHING defines (an unbound
-// reloc -> link failure); the TriggerMgr.cpp call sites now bridge-cast to CGrunt so the
-// call binds. FOLLOW-UP FOLD (deliberately not done here): replace CTmCell with CGrunt
-// outright. It is a 94-use, 10-file fold whose .cpps (Play/GruntzMgrCmd/GruntVoice/
-// DroppedObject/TriggerMgrGrid/TriggerMgrHitTest) are owned by parallel lanes, so it needs
-// its own pass - not a wall, just cross-lane. Same for the level object, sound-channel
-// helper and the two intrusive list-node shapes - each TU completes them as it needs.
 class CGrunt;
 struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprite returns
-// CTmCell IS ::CGrunt - PROVEN, and the fold is done: this is an alias now, so every
-// `CTmCell*` here keeps compiling while every method call on one mangles to the REAL
-// ?X@CGrunt@@ body. (The "+0x120 phantom-gap layout bug" that was said to block this does
-// NOT exist: sizeof(CGrunt) is 0x8d8 - the ground truth from its allocation site,
-// `push 0x8d8; call ??2` in GruntSpawnPump @0x5baf0 - and 35 of the view's 40 fields land
-// on a CGrunt field at the IDENTICAL offset, deep ones included (0x170, 0x1e4-0x1fc,
-// 0x218-0x220, 0x248, 0x2d0, 0x308-0x314, 0x368, 0x3e4, 0x420, 0x880). Retail's
-// SelectMoveIcon @0x57800 reads [this+0x1f4] / [this+0x170] / [this+0x10] - exactly the
-// view's offsets. A +0x120 shift would have produced zero such matches.)
 typedef CGrunt CTmCell;
-// The +0x22c level object IS the world/resource holder CDDrawSurfaceMgr
-// 2026-07-15: all three of its members land on the canonical holder at the identical
-// offsets and names (m_8 CDDrawChildGroup* / m_24 the level / m_28 CSndHost*), and the
-// finish-level driver reaches the SAME +0x28 cue registry through g_gameReg->m_world.
-// The blocking "CTmLevelView vs CGameLevel" reconciliation is DONE: the view's m_10/m_14
-// were CGameLevel::m_planeCtx.minX/minY, its m_4c was m_imageSets' data pointer and its
-// m_5c is m_mainPlane (CLevelPlane == CPlaneRender == CDDrawWorkerHost, one typedef).
 class CDDrawSurfaceMgr;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
 struct CTmRecNode;
 struct CTmOverlay; // the allocated overlay sub-object (+0x25c); completed in each TU
-// The goal object (CTriggerMgr::m_goal, +0x23c). Promoted from a per-TU view into the
-// canonical header so every consumer (TriggerMgr.cpp, LevelTileValidation.cpp) shares ONE
-// shape. NOTE: +0x23c is ALSO reached as a CGameObject (LoadCameraSprite creates the
-// "DoNothing" camera sprite into it) - one object, two views, still to reconcile.
 struct CTmGoal {
     char p0[0x8];
     i32 m_8; // +0x08  flags (the 0x10000 "released" bit)
@@ -119,23 +61,6 @@ class CActionOptionsMenuBar;
 // Game semantics agree: a dead grunt leaves a goo puddle; the spawn/resurrect
 // scans walk the placed puddles. Consumers include GruntPuddle.h for the members.
 class CGruntPuddle;
-
-// The embedded MFC containers are the REAL MFC classes from <Mfc.h> (CPtrList 0x1c B,
-// CByteArray 0x14 B) - the former hand-rolled CTmObList/CTmByteArray views are GONE.
-// They were a fake-view bug with a link-fatal symptom: their decl-only methods/dtors
-// mangled as ?RemoveAll@CTmObList@@QAEXXZ / ??1CTmObList@@QAE@XZ / ??1CTmByteArray@@QAE@XZ,
-// symbols NOTHING defines, while retail calls the static-MFC bodies
-//   ?RemoveAll@CPtrList@@QAEXXZ  @0x1b48a6
-//   ??1CObList@@UAE@XZ          @0x1b48c6   (note: U == VIRTUAL dtor; the view said Q)
-//   ??1CByteArray@@UAE@XZ       @0x1b52b1
-// (all three confirmed NAFXCW library rows via `gruntz sema rva`). Using the real classes
-// binds every call to the real MFC symbol and is layout-identical.
-//
-// The raw node/count fields the leaves walk (the game recycles node payloads through a
-// shared free-list) are MFC-protected, so the leaves reach them through MFC's PUBLIC
-// accessors - GetHeadPosition() / GetCount() / GetData() / GetSize(), all _AFXCOLL_INLINE
-// (AFXCOLL.INL), so each lowers to the identical single member load, not a call. The
-// former `CTmByteArray::Place(a,b,c)` is MFC's CByteArray::InsertAt(nIndex, byte, nCount).
 
 class CTriggerMgr {
 public:
@@ -648,9 +573,6 @@ public:
 };
 SIZE_UNKNOWN(CTriggerMgr);
 
-// 0x79ea0 (thunk 0x290a; Ghidra SpawnTileFx): spawn the death/finalize tile fx at the
-// grunt's HUD point. A free __stdcall function (?SpawnTileFx@@YGHHHH@Z, body in
-// TriggerMgr.cpp), NOT a CTriggerMgr method - callers invoke it directly.
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 
 #endif

@@ -1,34 +1,3 @@
-// MovingLogic.h - the ONE canonical CMovingLogic : CTileLogic (RTTI
-// .?AVCMovingLogic@@, vftable 0x5e87ac). Replaces the former per-TU reduced-view
-// definitions - the tile-logic world now shares this single class. C:\Proj\Gruntz.
-//
-// CMovingLogic is the moving-object logic base (parent of CProjectile). It owns:
-//   * the CTileLogic base (true-0x30 CUserLogic + the 0x30-0x3c tail = 0x40 total; the
-//     vptr + the +0x18 link + back-pointers);
-//   * a 0x108-byte CMotionState kinematic band embedded at +0x38 (the real dev
-//     subobject). Because the CTileLogic base ends at +0x40, the band at +0x38
-//     overlaps the tail m_38/m_3c, so it is reached through the Motion() accessor
-//     (a `+0x38` cast) while the flat-int ctor zero-init view overlays the same
-//     bytes - the established byte-proven idiom (see Projectile.cpp);
-//   * twelve default-bound doubles the ctor seeds to the [MIN,MAX] box;
-//   * four trailing ints (+0x140..+0x14c) the per-frame Update / bute Serialize touch.
-//
-// Vtable (17 slots, per vtable_hierarchy --class CMovingLogic): all 16 inherited from
-// CUserLogic (fully modeled at 16 slots) + exactly ONE new virtual, Update
-// (slot 16 / offset 0x40, RVA 0x16ea90).
-// Serialize (0x16f4a0, slot 1 override) and the leaf dtor (slot 0, 0x13bd0) are the
-// class's own remaining methods.
-//
-// NOTE (dual-world): the CGrunt world (<Gruntz/Grunt.h>) models CMovingLogic against
-// its OWN CUserBase/CUserLogic (CGruntHud* m_10).
-//
-// STALE CLAIM REMOVED (2026-07-13): this used to add "so it cannot include this canonical
-// view - the two never coexist in a TU". False - Grunt.h #includes BOTH <Gruntz/UserLogic.h>
-// AND this header, so they already coexist in every TU that includes Grunt.h; CUserLogic has
-// exactly one definition in the tree (SIZE 0x30) and the "fat 0x40" view it warned about is
-// gone. The CUserLogic 0x30 base is UNIFIED (CTileLogic is the fat tile-logic intermediate);
-// only the remaining CGrunt ODR merge stays deferred (blocked on the inline-vs-out-of-
-// line ctor model + the i32/void vtable-signature split - see the NOTE in UserLogic.h).
 #ifndef GRUNTZ_CMOVINGLOGIC_H
 #define GRUNTZ_CMOVINGLOGIC_H
 
@@ -38,26 +7,13 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Serialize arg)
 #include <rva.h>
 
-// The default coordinate bounds the ctor copies dword-wise (retail .rdata
-// 0x5f04b0/0x5f04b8 - the same doubles MotionState.h names g_motionMin/g_motionMax;
-// a second name for the same reloc-masked cells). DATA-pinned in Projectile.cpp.
 extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
 extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 
-// The 1-arg ctor's velocity/scale seeds: g_frameTime (spawn seed int, scaled by the
-// .rdata double g_motionZScale) and g_defaultZ (the default-Z int). Read unsigned -> the
-// fild {lo,0} idiom.
 extern "C" u32 g_frameTime;         // 0x645588
 extern const double g_motionZScale; // 0x5eaa88
 extern u32 g_defaultZ;              // 0x5f04e8
 
-// (CProjBoundCfg is GONE - the "per-type bound config" IS the AnimWorkerObj aux the
-// receiver already holds typed: its m_2c/m_30/m_34/m_38 spawn-record params ARE the
-// coordinate bounds in the projectile role. Same names, same offsets, zero casts.)
-
-// ---------------------------------------------------------------------------
-// CMovingLogic : CTileLogic - moving-object motion state.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMovingLogic);
 class CMovingLogic : public CUserLogic {
 public:
@@ -128,14 +84,6 @@ public:
 };
 VTBL(CMovingLogic, 0x1e87ac);
 
-// Inline no-arg CMovingLogic init - folds into every leaf. Zeroes the +0x38..+0x10c
-// motion ints and seeds the twelve coordinate-bound doubles to the default [MIN,MAX]
-// box. MSVC schedules the zero stores in an interleaved "column" order (all .a fields
-// of the 8-byte pairs, then all .b); listed here in that retail order.
-//
-// CMovingLogicCtor.cpp defines CMOVINGLOGIC_STANDALONE_CTOR to drop this inline and
-// hang the byte-exact standalone out-of-line COMDAT copy (0x13940) instead - the
-// engine emits both an inlined copy (folded into leaves) and this standalone.
 #ifndef CMOVINGLOGIC_STANDALONE_CTOR
 inline CMovingLogic::CMovingLogic() {
     m_78 = 0;
@@ -182,11 +130,6 @@ inline CMovingLogic::CMovingLogic() {
 }
 #endif // CMOVINGLOGIC_STANDALONE_CTOR
 
-// The 1-arg CMovingLogic init (folded into CProjectile(owner)): chains the base
-// CUserLogic(owner), runs the +0x38 motion-band init out-of-line (0x136d0 via the
-// Motion() cast), seeds the four coordinate bounds from the per-type config (m_14,
-// default MIN/MAX when 0), then the 11-double coordinate setter (0x58bc0) and the
-// default-Z band.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     // (No +0x34..0x3c back-pointer stores: retail 0xdec60 does not emit them - they
     // were the fabricated ex-TILE_LOGIC_SEED. The real ones are the CWapX base's at

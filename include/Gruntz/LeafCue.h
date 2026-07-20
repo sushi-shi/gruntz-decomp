@@ -1,19 +1,3 @@
-// LeafCue.h - LeafCue, THE 0x1c keyed sound-cue element of the CDDrawSubMgrLeafScan
-// (CSndHost) cache: a CLoadable leaf wrapping one acquired DirectSound buffer
-// (m_10, the pooled DSoundCloneInst) plus a throttle gate (m_14 last-play clock /
-// m_18 cooldown interval). ONE class - the former per-TU readings of the same map
-// value (LeafElementObj / LeafScanValue / LeafScanSoundArg / the LeafSumSource
-// +0x2c reader / SoundCue.h's "folded CSndEmitter") are all THIS shape.
-//
-// Retail vtable ??_7 @0x1eff08 (9 slots) == CLoadable's scheme:
-//   [0-4] CObject   [5] IsLoaded 0x158650 (`return m_10 != 0`)
-//   [6] IsReady   (inherited CLoadable default @0x001c08 - not redeclared)
-//   [7] Unload    0x1587c0 (release the acquired buffer; the ex "Release_1587c0")
-//   [8] GetClassId (inherited CLoadable default @0x154a00 - not redeclared)
-// The ??1 @0x158680 / cl-??_G @0x158660 and the loader bodies live in
-// src/DDrawMgr/DDrawSubMgr.cpp (the G obj).
-//
-// Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
 #ifndef GRUNTZ_GRUNTZ_LEAFCUE_H
 #define GRUNTZ_GRUNTZ_LEAFCUE_H
 
@@ -57,8 +41,6 @@ struct LeafCue : public CLoadable {
     i32 m_14;              // +0x14  last draw-clock (throttle stamp)
     i32 m_18;              // +0x18  cooldown interval (seeded from the cache's m_34)
 };
-// Seed order mirrors the factory's writes: count, 0, handle (header), then the
-// zeroed tail with +0x18 before +0x14. The vptr is cl-auto-stamped (ctor prologue).
 inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_04 = count;
     m_flags = 0;

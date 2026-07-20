@@ -1,11 +1,3 @@
-// LogicRecord.cpp - the AnimWorkerObj record runtime/IO methods (ex-CLogicRecord) (the 0x164830-0x1651b0 run
-// inside the T "family-meat" obj, wave4-L dossier #15). The record's lifecycle
-// leaves live in their retail objs: ~AnimWorkerObj/Init in the S1 obj
-// (src/Wwd/WwdGameObject.cpp), Consume in the I obj (src/Wwd/WwdFactoryObject.cpp).
-// IDENTITY (dossier #15, EXECUTED 2026-07-13): the CLogicRecord view is folded onto
-// the one AnimWorkerObj class (its dtor re-stamps ??_7AnimWorkerObj @0x1efb80).
-// This file will fold into the T host (DDrawSurfacePair.cpp) when
-// that obj's assembly lands; kept as a single-block correct partial meanwhile.
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c (the owner/world root)
 #include <DDrawMgr/DDrawChildGroup.h> // m_childGroup->m_map48 (the id->object resolver)
@@ -14,10 +6,8 @@
 #include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
 #include <Io/FileMem.h> // CFileMemBase complete type (the CSerialArchive Read/Write dispatch)
 
-// Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
 
-// The global NAFXCW allocator (Save's payload alloc).
 extern void* operator new(u32 size);
 
 // ---------------------------------------------------------------------------
@@ -76,10 +66,6 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CacheTargetId (0x164920, __thiscall). The standalone Dispatch-case-3 hook:
-// refresh the cached reference id (m_174) from the resolved target's +0x188.
-// Returns 0 on a null argument, 1 otherwise.
 RVA(0x00164920, 0x35)
 i32 AnimWorkerObj::CacheTargetId(void* a) {
     if (a == 0) {
@@ -92,11 +78,6 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Load (0x164960, __thiscall). Read the flat record block back from the stream
-// (Read@slot 0x30): the tag at 0x1c, the 4-byte field run 0x20..0x164 (skipping
-// the runtime-only m_168/m_16c/m_170), the six 16-byte blocks 0xd0..0x120, the
-// trailer 0x174/0x178, then m_178 bytes of the m_14 payload when both are set.
 RVA(0x00164960, 0x41a)
 i32 AnimWorkerObj::Save(CSerialArchive* ar) {
     if (ar == 0) {
@@ -177,11 +158,6 @@ i32 AnimWorkerObj::Save(CSerialArchive* ar) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Save (0x164d80, __thiscall). The slot-0x2c (Write) counterpart of Load: the
-// same flat block transferred through the archive's Write slot. The trailer
-// allocates the m_14 payload (operator new of the m_178 byte count) before
-// transferring it (so the archive sizes/owns the block on the load pass).
 RVA(0x00164d80, 0x421)
 i32 AnimWorkerObj::Load(CSerialArchive* ar) {
     if (ar == 0) {

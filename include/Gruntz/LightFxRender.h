@@ -1,26 +1,3 @@
-// LightFxRender.h - a non-polymorphic (no vftable / no RTTI) software light /
-// glow / minimap-style overlay renderer in the lighting-effects module (between
-// CLightFx @0x49cf00 and CDoNothingNormal @0x4a9e00). The object (~0x440 bytes)
-// owns an embedded 16-bit pixel buffer at +0x4c (~500 words) that the shape
-// generators fill, a source/screen RECT pair at +0x24..+0x40, and pointers into
-// the CGruntzMgr singleton's manager family. It allocates a DirectDraw work
-// surface via the world's surface pool, fills the buffer with computed 16-bit
-// (565/555) colors using the screen RGB shift globals (0x683ea0..0x683eb4), and
-// blits.
-//
-// IDENTITY (xref-proven, 2026-07-14): the Init arg IS the CGruntzMgr singleton -
-// CPlay's install site (Play.cpp @0x0c8a90 region) passes CState::m_4 (the typed
-// CGruntzMgr* back-ptr), and the three cached pointers are the manager's own
-// +0x68/+0x70/+0x30 slots: m_cmdGrid (CTriggerMgr, the 4x15 grunt board whose
-// cells the repaint colors), m_tileGrid (CGruntzMapMgr, the tile grid walked
-// cell-by-cell) and m_world (CDDrawSurfaceMgr, whose +0x1c surface pool
-// allocs/frees the work surface). The border-draw context handed to ComputeRect/
-// DrawBorder is the draw target's back CDDrawSurfacePair (m_c->m_drawTarget->
-// m_14 at both retail call sites, CPlay::Render @0xc9255 and CMulti::PumpB).
-// The former per-TU views (LfxMgr/LfxTileBank/LfxGrid/LfxSurfMgr/LfxView/
-// LfxWorldRect/LfxTileDesc/LfxCell/LfxBorderCtx) are dissolved onto those
-// canonicals. Non-polymorphic: NONE of the method addresses appear as data
-// anywhere in the EXE (no vtable), so every method is a plain __thiscall.
 #ifndef GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
 #define GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
 
@@ -28,8 +5,6 @@
 
 #include <Win32.h> // DirectDraw / Win32 raster types (pure-engine TU, no MFC)
 
-// ---------------------------------------------------------------------------
-// A 4-int RECT (left, top, right, bottom) - the engine's plain integer rect.
 struct LfxRect {
     i32 left;
     i32 top;
@@ -37,8 +12,6 @@ struct LfxRect {
     i32 bottom;
 };
 
-// The real manager family (pointer members only - fwd decls keep this header
-// afx-neutral; the deref TUs include the canonical headers).
 class CGruntzMgr;        // the game-manager singleton (Init's arg / m_mgr)
 class CTriggerMgr;       // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)
 class CGruntzMapMgr;     // mgr->m_tileGrid: the tile grid (CMapMgr row table)

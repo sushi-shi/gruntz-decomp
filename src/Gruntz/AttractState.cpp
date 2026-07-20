@@ -1,30 +1,3 @@
-// AttractState.cpp - the CAttract state-machine CORE obj: retail .text run
-// [0x013fb0 .. 0x014819] (the out-of-line CState vtable-slot overrides) plus the
-// COMDAT-pooled EH destructor (~CAttract @0x08cd90). This is the class-identity
-// TU for CAttract (RTTI .?AVCAttract@@, vtable @0x5ea194; a CState leaf): 10 of
-// its 12 CState-slot overrides live in this one contiguous obj run, and the ??_G
-// scalar-deleting dtor + the ??1 destructor anchor the vtable emission here.
-//
-// Carved out of the conflated Attract.cpp:
-// that file wove TWO separate original objs - this CAttract state core (0x13fb0
-// band) and the attract state-services interval (0x0fa1f0 band, CAttract title/
-// fade + CSoundFxEmitter + CState helpers + CMgrPersistObj serialize), which now
-// stays in Attract.cpp. Owner proven by the CAttract vtable (sema class CAttract:
-// slots 1,2,5,6,7,8,9,10,12,14 map to this band; slot 0 ??1 -> 0x08cd90).
-//
-// CAttract slots implemented here (order anchored by CState):
-//   ~CAttract()          0x08cd90  slot 0  EH ??1 (vtable restore + base chain)
-//   LoadGameAssetNamespaces 0x013fb0  slot 1  (ex "EnterAttractMode"; ret 0xc)
-//   ReleaseResources()   0x0140d0  slot 2  resource release (Free + Release + base)
-//   Vslot09(i32)         0x014120  slot 9  title-screen entry (/GX)
-//   FrameSlot28(i32)     0x014340  slot 10 per-frame voice poll
-//   Render()             0x0143e0  slot 5  per-frame poll/draw
-//   InputVirtual()       0x014520  slot 8  random-title roll (page gate)
-//   Vslot06()            0x014630  slot 6  random-title roll (IsActive gate)
-//   Vslot0c(i32,i32)     0x014720  slot 12 keydown handler
-//   Vslot0e(i32,i32,i32) 0x014770  slot 14 post-exit command
-//   Vslot07()            0x0147b0  slot 7  host/paint poll
-// Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -41,52 +14,16 @@
 #include <rva.h>
 #include <Globals.h> // Vslot09: g_randSeeded / g_randSeed
 
-// The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl.
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
-// ---------------------------------------------------------------------------
-// External engine globals (reloc-masked DATA symbols).
-// ---------------------------------------------------------------------------
-
-// The game registry singleton (canonical CGameRegistry): its +0x80 launch counter
-// (m_numRuns) selects the TITLE state. Canonical DATA at 0x24556c.
-
-// The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
-// g_attractStateCount (0x245534) is declared in <Gruntz/Attract.h> (included above).
-
-// ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
-
-// PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
-// extern "C" so the reloc emits `_g_pPostMessageA` - the canonical name bound at
-// 0x2c44c8 (home `sbi_rectonly`).
-
-// The per-frame time delta (countdown source for m_idleTimer). C linkage so the
-// symbol pairs with the target's _g_645584 (the convention across the gamemode units).
 extern "C" {
     extern u32 g_frameDelta;
 }
 
-// The random-pick target string (DAT_0060b5bc) and the shared empty string
-// (0x6293f4) the ATTRACT_TITLE key is built from; the sound-enabled gate; the cached
-// timeGetTime / wsprintfA import fn-ptrs the title roll reaches through. All reloc-masked.
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
 extern char g_emptyString[];
 
-// Source string literals (objdiff matches these .data relocations by value).
-
-// ===========================================================================
-// The CAttract 0x13fb0 core band.
-// ===========================================================================
-
-// CAttract::LoadGameAssetNamespaces (slot 1, ex "EnterAttractMode") - enter (or
-// re-enter) the attract scene.
-// Gates on the CState::LoadGameAssetNamespaces base default; on failure returns 0.
-// Otherwise hides the cursor, re-asserts the video mode, resolves the
-// "STATEZ_ATTRACT" state (stored into m_2c), loads its "SOUNDZ" set, registers
-// the sound handle on the menu page under the "ATTRACT"/"_" tags, hides the
-// cursor again, then sets the entry flags: m_host is always cleared, m_activeFlag is
-// cleared when mode == 3 (else set to 1). Returns 1 on success, 0 on early-out.
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
@@ -131,10 +68,6 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
     return 1;
 }
 
-// CAttract::ReleaseResources() (slot 2 / +0x8, 0x0140d0): free the registrar's
-// pooled resource (if any), release the attract page ("ATTRACT"/"_"), then chain
-// the base CState resource teardown. The menu root (m_c) is re-read for the
-// Release access (retail does not cache it).
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
@@ -293,10 +226,6 @@ i32 CAttract::Render() {
     return 1;
 }
 
-// CAttract::InputVirtual (slot 8 / +0x20, 0x14520): the random-title roll gated on
-// the menu page's IsLoaded; if loaded, hide the cursor, pick a random TITLE%d index
-// off the game-reg attract counter, and run that title sequence. The CString format
-// local forces the /GX EH frame. (Render polls this slot each frame.)
 RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
     // The page "loaded?" gate is CDDrawSubMgrPages::PagesReady (0x158bc0), reached
@@ -316,8 +245,6 @@ i32 CAttract::InputVirtual() {
     return RunTitleSeq(s, 0, 0, 1, 0);
 }
 
-// CAttract::Vslot06 (slot 6 / +0x18, 0x14630): identical to the InputVirtual roll but
-// gated on the slot-3 virtual (IsActive) instead of the page IsLoaded.
 RVA(0x00014630, 0xbd)
 i32 CAttract::Vslot06() {
     if (IsActive() == 0) {
@@ -335,9 +262,6 @@ i32 CAttract::Vslot06() {
     return RunTitleSeq(s, 0, 0, 1, 0);
 }
 
-// CAttract::Vslot0c (slot 12 / +0x30, 0x14720): keydown handler - on ESC/SPACE/ENTER
-// post the exit WM_COMMAND (0x8023) to the top-level HWND. (Re-homed from ApiCallers
-// CmdHost_014720.)
 RVA(0x00014720, 0x37)
 i32 CAttract::Vslot0c(i32 code, i32 unused) {
     if (code == 0x20 || code == 0xd || code == 0x1b) {
@@ -346,18 +270,12 @@ i32 CAttract::Vslot0c(i32 code, i32 unused) {
     return 1;
 }
 
-// CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
-// (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.
 RVA(0x00014770, 0x24)
 i32 CAttract::Vslot0e(i32, i32, i32) {
     ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 
-// CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
-// slot-3 virtual (IsActive); bail if the menu root (m_c) is null; run the base
-// CState::Vslot07() paint; force the cursor hidden; flip the render target; blit
-// the title frame onto the menu page. Returns 1.
 RVA(0x000147b0, 0x6a)
 i32 CAttract::Vslot07() {
     if (!IsActive()) {
@@ -380,20 +298,11 @@ i32 CAttract::Vslot07() {
     return 1;
 }
 
-// CAttract::Update (slot 4, 0x08cd40): the state-id probe. Defined HERE rather than
-// inline in <Gruntz/Attract.h> because GruntzMgr.cpp also constructs CAttract; an RVA()
-// on an inline header body gets emitted as a COMDAT in every such TU, both claim this
-// rva, and merge_labels re-attributes the symbol away from this unit.
 RVA(0x0008cd40, 0x6)
 GameStateId CAttract::Update() {
     return GAMESTATE_ATTRACT;
 }
 
-// CAttract::~CAttract() (`??1`, 0x08cd90): the EH-framed destructor (COMDAT-pooled
-// into the 0x08cxxx dtor band). MSVC emits the CAttract-vtable restore + slot-2
-// release (ReleaseResources, statically bound) + CState-vtable restore + base
-// cleanup; the body just runs the release. This TU is the CAttract vtable-emission
-// anchor (??_7CAttract@@6B@ + the ??_G scalar-deleting dtor at 0x08cd60).
 RVA(0x0008cd90, 0x55)
 CAttract::~CAttract() {
     ReleaseResources();

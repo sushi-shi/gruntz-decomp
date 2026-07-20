@@ -1,30 +1,3 @@
-// StatusBarMgr.cpp - the in-game status-bar per-tab widget builder.
-//
-// LoadTabSprites (RVA 0x102250, __thiscall, returns int) is the giant per-tab
-// builder: it dispatches on the current tab index (m_activeTab, 1..5) and, for that
-// tab, creates each CStatusBarItem-derived widget, stamps its retail vtable +
-// type tag, configures it from a named sprite-asset key + a geometry rect (built
-// as the tab base coords m_10/m_rect14.m_0 plus per-item offsets), and appends it to the
-// tab's CPtrList. Built under a /GX EH frame (the items are EH-rolled-back if a
-// later configure fails). Owner verified by the member writes:
-//   - m_c/m_10/m_rect14.m_0 read at entry (the configure-virtual `this`/base coords)
-//   - m_activeTab the tab selector (switch over 1..5)
-//   - per-tab CPtrLists at +0x48 (Statz) / +0x64,+0x80 (Gruntz/Resource) /
-//     +0x9c (Multiplayer) / +0xb8 (Game), plus many cached item slots
-//     (+0x204..+0x520, +0x61c..+0x62c) it stashes the created widgets into.
-//   - tab keys are all GAME_STATUSBAR_TABZ_* / GAME_INGAMEICONZ_* assets.
-//
-// The created widgets are the CANONICAL polymorphic SBI classes (<Gruntz/SBI_*.h>):
-// `new CSBI_Image` makes MSVC auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c,
-// catalogued in config/vtable_names.csv), so no manual vtable-pointer stamp is needed.
-// This TU used to build them from a PARALLEL hierarchy rooted at a fabricated 15-slot base
-// (CSbConfigItem), which made cl emit 60 B vtables here against retail's 48/52 - the same
-// mangled name at two byte-lengths, one of which the linker silently discarded. See the
-// header note in <Gruntz/StatusBarMgrBuilders.h>.
-//
-// Switch case -> tab (from the jump table at VA 0x504020):
-//   m_activeTab==1 -> Statz   m_activeTab==2 -> Gruntz   m_activeTab==3 -> Resource
-//   m_activeTab==4 -> Multiplayer   m_activeTab==5 -> Game
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -39,16 +12,7 @@
 #include <Gruntz/SpriteRefTable.h>       // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
 #include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr + the canonical SBI leaves
 
-// The cmd-grid probed by the warlord-head builders is a CTriggerMgr; ByteTableHas @0x79b30.
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ByteTableHas)
-
-// The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
-// (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
-
-// CSbConfigItem::SetDirection (0x0ea0f0) / SetDirectionAlt (0x0ea170) re-homed to
-// src/Gruntz/StatusBarTabBuilders.cpp (interval dossier 0x0e8a70: the config-item
-// setters sit inside the tab-builders TU, between the side-tab block and
-// BuildMultiplayerTabStatusBar).
 
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250

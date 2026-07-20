@@ -1,19 +1,3 @@
-// SpotLight.cpp - the CSpotLight per-tick eyecandy update (0x0b1ee0). CSpotLight is
-// modeled canonically in <Gruntz/SpotLight.h> (a CUserLogic leaf, vftable 0x5e75bc,
-// size 0xa8 - the operator new(0xa8) at its new-site 0xaf210); this TU contributes
-// only the Update_0b1ee0 method. When the owner object's mode (m_object->m_114) is 1
-// it rotates the (m_80,m_88) offset by the running angle m_90 (advanced by the per-tick
-// rate m_58 scaled by the frame delta g_frameDelta), folds in the tracked target's
-// screen pos (m_focus->m_screenX/m_screenY), and advances m_90; then it (re)resolves the
-// light's "A" bute node into m_objAux->m_1c when the trigger manager's per-cell grid
-// slot (m_cmdGrid->m_grid[col + row*15]) is empty. Engine globals + CButeTree::Find are
-// external (reloc-masked). flags=base (/O2 /Oi -> fsin/fcos).
-//
-// (The former flat CSpotLight carcass here was a DOUBLE DEFINITION whose fields were all
-// +0x30 shifted - it inherited CUserLogic (0x30) AND added a pad00[0x10], so sizeof was
-// 0xd8 and every field offset was wrong, capping this fn at 56%. Dissolved onto the one
-// canonical CSpotLight (SpotLight.h). The SpotM10/SpotM14/SpotM98 views were CGameObject/
-// AnimWorkerObj/CGameObject facets and MgrObj68 was CTriggerMgr::m_grid - all dissolved.)
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>

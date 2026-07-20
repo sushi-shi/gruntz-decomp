@@ -66,18 +66,6 @@
 #include <Wwd/WwdFile.h>                 // CPlaneRender - the canonical plane (cell lookup)
 #include <rva.h>
 
-// The *0x24556c singleton. Declared here: <Gruntz/TileGridCommand.h>'s header-level decl was
-// removed so each TU picks the view/real class it needs (see the note in Play.h). Type unchanged.
-
-// ===========================================================================
-// CTriggerMgr::LoadTileArrivalFx (0x075e90) - the per-tile terrain-action loader.
-// Prologue (always run): resolve the tile cell's type id from the level grid
-// (m_level->m_level->m_mainPlane: clamp tile coords, cells[rowBase[y]+x], tile-class
-// GetCollisionAt), snap (tileX,tileY) to a pixel centre, then dispatch on
-// (reason - 3) through the 0x4771bc byte-indexed jump table. The DIRT arm
-// (reason 0xd) registers the "Particlez"/LEVEL_DIRT/GAME_DIRT eye-candy set
-// when its sub-op (sel) is 2, and clears the tile's tag-0x1a set when sel is 0x63.
-// ===========================================================================
 RVA(0x00075e90, 0x1329)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,

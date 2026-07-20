@@ -1,7 +1,3 @@
-// ChatBoxOwner.cpp - the on-screen chat/text-box owner page (C:\Proj\Gruntz):
-// place/clear/configure/hit-test/render helpers. The box origin comes from the
-// active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
-// bytes are load-bearing; helpers are reloc-masked externals.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -18,42 +14,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the real render-target class LoadChatBoxSprite's arg is
 #include <DDrawMgr/DDSurface.h> // CDDSurface (m_surface): its m_8 IDirectDrawSurface is the DC host
 
-// (The `m4::PwdHost` view is DISSOLVED: RenderInputText @0x22160 is a real CFontConfig
-// method - <Gruntz/FontConfig.h>, already included above. m_14 IS the CFontConfig - typed
-// so in
-// ChatBoxOwner.h - and its +0x34 dirty flag is CFontConfig::m_34, so the downcasts at
-// the two render sites fell out with it.)
-
-
-// ---------------------------------------------------------------------------
-// Engine views the sprite renderer (LoadChatBoxSprite, 0x20f40) reaches through.
-// Modeled minimally; every call/datum through them is reloc-masked.
-
-// The looked-up "GAME_CHATBOX" sprite set IS the canonical CSprite (<Gruntz/Sprite.h>):
-// the frame-entry table is CSprite::m_frames.m_pData (+0x14) and the two frame indices
-// gating mode!=3 / mode==3 are m_firstFrame (+0x64) / m_lastFrame (+0x68). The former
-// CChatBoxFrame .cpp-local view is dissolved onto it.
-// The m_18 chain is the WORLD HOLDER: the
-// former CChatBoxRegRoot was CDDrawSurfaceMgr (Attach receives CState::m_c,
-// the g_gameReg->m_world object), its +0x10 "registry" is
-// the holder's CImageRegistry, and the embedded +0x10 hash is
-// CImageRegistry::m_10map (::CMapStringToOb, Lookup 0x1b8008 - see mfc_class).
-// arg1->m_2c->m_8: the game's real IDirectDrawSurface (<ddraw.h>). GetDC is slot 17
-// (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the hidden
-// `this`, so `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
-// call [reg+slot]` - pointer-only, no vtable emitted in this TU.
-// (LoadChatBoxSprite's arg1 is the world holder's back draw-target, proven by the
-// CMulti::PumpB call site `arg1 = m_c->m_drawTarget->m_backPair`
-// (CDDrawSurfaceMgr::m_drawTarget is CDDrawSubMgrPages, its +0x14 m_backPair is a
-// CDDrawSurfacePair). CChatBoxCtx == CDDrawSurfacePair (its +0x2c m_surface CDDSurface
-// matches member-for-member, and CDDrawSurfacePair::DrawCount/DrawLabel run the
-// identical +0x2c->m_8 GetDC/ReleaseDC pattern), CChatBoxDcHost == CDDSurface (its +0x8
-// m_8 is the DC-capable IDirectDrawSurface). Typed with the real classes below.)
-// Attach - latch the world holder + text host, raise active, return TRUE.
-// The old "constant-materialization wall" (retail's `mov eax,1` register-materialized
-// and stored last) was a misread WRONG RETURN TYPE: eax=1 is the RETURN VALUE, live at
-// the `ret` - CPlay::LoadGameAssetNamespaces (0xc7ec0) TESTs it. `return m_c = 1;` is the retail shape
-// (materialize into a reg, store, keep it in eax).
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     m_18 = world;
@@ -61,7 +21,6 @@ i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     return m_c = 1;
 }
 
-// Deactivate (0x00020510) - lower the active flag.
 RVA(0x00020510, 0x8)
 void CChatBoxOwner::Deactivate() {
     m_c = 0;
@@ -299,6 +258,3 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     host->m_8->ReleaseDC(hdc);
     return 1;
 }
-
-// SIZE metadata for the .cpp-local engine views (CChatBoxOwner lives in
-// ChatBoxOwner.h; its SIZE 0x1c is proven by the two alloc sites).

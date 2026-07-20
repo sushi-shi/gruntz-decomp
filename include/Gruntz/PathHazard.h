@@ -1,17 +1,3 @@
-// PathHazard.h - the path-following hazard game object (C:\Proj\Gruntz).
-//
-// CPathHazard : CUserLogic (RTTI; most-derived vftable 0x5e7394, the
-// CPathHazard base ctor 0xb35a0 stamps it; CRainCloud / CUFO derive from it).
-// A hazard that walks a precomputed waypoint path each frame: BeginLeg
-// (0xb47e0, virtual slot 19) computes the unit-vector toward the current
-// waypoint, and Tick (0xb4020, virtual slot 16) integrates the sub-pixel
-// movement vector into the bound object's tile position each frame, snapping to
-// the waypoint on overshoot. The leaf dtor (0x13340) folds the bare CUserLogic
-// teardown (the /GX leaf-dtor archetype shared with CTimeBomb / CKitchenSlime).
-//
-// CUserLogic / CUserBase / EngStr / CGameObject come from <Gruntz/UserLogic.h>.
-// Only the OFFSETS + the code bytes are load-bearing; field names are
-// placeholders for the recovered engine identities.
 #ifndef GRUNTZ_CPATHHAZARD_H
 #define GRUNTZ_CPATHHAZARD_H
 
@@ -21,76 +7,36 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-// The waypoint the path array (this+0x90, 8-byte stride) stores: {x:int, y:int}.
 struct CPathWaypoint {
     i32 x; // +0x00
     i32 y; // +0x04
 };
 
-// The hazard reads its bound CGameObject (this->m_10 == this->m_38) directly:
-// screen pos (+0x5c/+0x60), the +0x7c aux (per-tile time m_7c->m_bc), leg/segment
-// count (+0x120), the on-screen rect base (+0x144, passed to QueryAt) and the
-// +0x198 layer descriptor (CGameObjLayer, its +0x18/+0x1c base offsets) - all
-// modeled on CGameObject / CGameObjLayer in <Gruntz/UserLogic.h>, no per-TU view.
-
-// The entity QueryAt returns; +0x258 is its type/state tag (0x38 == this hazard
-// itself, so its own footprint is ignored).
 struct CPathEntity {
     char m_pad00[0x258];
     i32 m_258; // +0x258
 };
 
-// The visibility / cue gate is reached cast-free as g_gameReg->m_cmdGrid (typed
-// CTriggerMgr*): QueryAt IS CTriggerMgr::FindGruntAt @0x75c60, Strike IS
-// CTriggerMgr::CellDispatch @0x6bcb0 (both via <Gruntz/TriggerMgr.h>).
-
-// The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
-// __thiscall ret 4, takes the g_engineFrameDelta frame counter as its int arg).
 struct CPathSubMgr {};
 
-// A frame/tick counter (BSS, @0x6bf3bc) the sub-mgr Advance consumes. Already
-// named g_engineFrameDelta in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
 extern "C" u32 g_engineFrameDelta;
 
-// The integer step seed the integrator scales by the per-frame speed
-// (g_frameDelta = .data int). Already used as g_slimeFrameScale in KitchenSlime.cpp.
 extern "C" i32 g_frameDelta; // VA 0x645584
 
-// (The +0x108 new-leg seed at 0x645588 is the running game clock. It used to be
-// re-declared here as `g_pathLegTag` under C++ linkage - a third name for a datum whose
-// ONE definition is Projectile.cpp's extern-"C" g_frameTime, so ?g_pathLegTag@@3HA was an
-// unresolved external. PathHazard.cpp now reads g_frameTime directly.)
-
-// 0.0 (the velocity-sign comparand). Already g_slimeZero in KitchenSlime.cpp.
 DATA(0x001ea400)
 extern const double g_pathZero; // VA 0x5ea400
 
-// 0.03125 (= 1/32, the per-tile-time -> speed reciprocal scale).
 DATA(0x001ea408)
 extern const double g_pathTimeScale; // VA 0x5ea408
 
-// 1.0 (the unit-vector numerator).
 DATA(0x001ea410)
 extern const double g_pathOne; // VA 0x5ea410
 
-// The "B" bute key the new-leg path query passes (0x60d1bc) - the SAME rdata as
-// CInGameIcon.h's s_actKeyB; reuse the identical declaration so the reloc pairs.
-
-// g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
-// reached here transitively via <Bute/ButeMgr.h>.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
-// sqrt lowers inline (d9 fa); __ftol (0x11f570) lowers the (int) casts.
 extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed)
 
-// ---------------------------------------------------------------------------
-// CPathHazard : CUserLogic - the path-following hazard. The inherited m_10/m_38
-// (CUserLogic) hold the bound CGameObject; the hazard reads it directly. The
-// leaf adds the movement-integrator state at +0x58 and the path/waypoint state
-// at +0x90.. The CUserLogic base gives the +0x18 destructible link, so the dtor
-// folds the shared teardown (the /GX leaf-dtor archetype).
-// ---------------------------------------------------------------------------
 class CPathHazard : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -159,8 +105,6 @@ public:
 SIZE(CPathHazard, 0x130);
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 
-// The activation-registry handler entry (the PMF slot RunAct resolves; defined
-// after the complete class, the FortressFlag.h record pattern).
 struct CPathHazardActEntry {
     i32 (CUserLogic::*m_fn)();
 };

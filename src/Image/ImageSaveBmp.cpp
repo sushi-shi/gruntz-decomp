@@ -1,19 +1,3 @@
-// ImageSaveBmp.cpp - CDDrawShadeBlit::DecodeFrame (0x149250): write the decoded
-// shaded-sprite (its RLE pixel buffer + palette) out to a BMP-style file.
-// __thiscall, ret 0x24: the filename is a CString passed BY VALUE (callee-destroyed),
-// followed by the 8-dword CImageFrameRebuildDesc header block written verbatim. Gated
-// on m_srcBpp == 1 (the 8bpp path), it opens the file (modeCreate|modeWrite = 0x9001),
-// writes the header, the RLE pixel buffer (m_rleData / m_rleLen), then - when header
-// word 1 bit 0x80 is set - the 256-entry RGB palette (3 of every 4 bytes); if the
-// palette flag is set but m_palette is null it FAILS (return 0). The CString + CFileIO
-// stack objects force the /GX frame; the failure paths are written as explicit
-// early-returns so MSVC lays the blocks + EH-cleanup out exactly like retail.
-//
-// (Former per-TU views dissolved: `CImageSaver` was CDDrawShadeBlit - its m_pixelBuffer/
-// m_pixelBufferLength/m_palette/m_ready were m_rleData@0xc / m_rleLen@0x10 / m_palette@0x20 /
-// m_srcBpp@0x28; the fake `?SaveBmp@CImageSaver@@` name also left CDDrawShadeBlit::Rebuild's
-// DecodeFrame call unresolved. `SaveFile` was the MFC CFile (CFileIO) - ctor 0x1befd7 =
-// ??0CFile@@QAE@XZ.)
 #include <Ints.h>
 #include <rva.h>
 

@@ -1,7 +1,3 @@
-// RezBufferObjectDtor.cpp - 0x17f330: the /GX destructor of a "DDraw worker"
-// decode object. Stamp the most-derived vtable (0x5f07d8), free the +0x4 heap
-// buffer, then (base subobject teardown) restamp the CObject base dtor vtable
-// (0x5e8cb4). The destructible base subobject forces the /GX EH frame.
 #include <Ints.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Wap32/Object.h> // CObject - the shared engine grand-base
@@ -11,15 +7,6 @@
 #include <new>                   // placement new (ConstructElements' per-element ctor)
 #include <Rez/RezBufferObject.h> // RezElem40 (the 0x28 CArray element type)
 
-// The 40-byte (0x28) mesh-record element the CObArray holds. Its default ctor
-// (0x17e300, reloc-masked, declared-only) is invoked per element by the inlined
-// ConstructElements; keeping it a real ctor makes cl emit the `if(p) p->T::T()`
-// placement-new guard the retail per-element loop shows.
-// RezElem40 (the 0x28 CArray element) is modeled in <Rez/RezBufferObject.h>.
-
-// The MFC ConstructElements<RezElem40>: zero the block, then default-construct each
-// element. Out-of-line instance is 0x17e500 (reloc-masked; called by the grow path);
-// cl inlines it into the in-place-grow path (memset + per-element ctor loop).
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
@@ -27,31 +14,6 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
     }
 }
 
-// The Rez heap alloc/free (operator new/delete): 0x1b9b46 / 0x1b9b82.
-
-// The most-derived vtable (0x5f07d8) is now the cl-emitted ??_7CRezBufferObject
-// (VTBL below); the manual g_rezBufferObjectVtbl DATA-pin is gone. The CObject base
-// dtor vtable (0x5e8cb4) is now restamped by the compiler-folded ~CObject (no
-// manual g_wapObjectDtorVtbl reference remains here - the pin lives in ReconBatch2.cpp).
-
-// The Rez heap free (0x1b9b82) the worker's +0x4 buffer is released through is the
-// engine's ::operator delete (library ??3@YAXPAX@Z); C++ linkage keeps MSVC5's
-// potentially-throwing treatment so the /GX base-subobject unwind frame stays. Was a
-// fake `RezFree` decl whose ?RezFree@@YAXPAX@Z mangling matched neither the ??3 nor
-// the _RezFree library label at 0x1b9b82, leaving the rel32 CALL reloc UNBOUND.
-
-// The CObject base subobject is CObject (Wap32/Object.h): empty dtor body; cl
-// stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
-
-// CRezBufferObject (the CObArray of 40-byte mesh records) is now the shared canonical
-// in <Rez/RezBufferObject.h>.
-
-// ---------------------------------------------------------------------------
-// 0x17f330 - ~CRezBufferObject (/GX): cl stamps the derived vptr (prologue), RezFree
-// the +0x4 buffer, then folds the base subobject (restamps the base vptr). Real
-// polymorphic hierarchy now -> the derived-vptr stamp is emitted in the prologue
-// (before the m_pData load), matching retail's "stamp first".
-// ---------------------------------------------------------------------------
 RVA(0x0017f330, 0x51)
 CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {
@@ -124,9 +86,5 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         ar.Read(m_pData, m_nSize * sizeof(RezElem40));
     }
 }
-// SIZE_UNKNOWN(CRezBufferObject) now lives with the class in <Rez/RezBufferObject.h>.
 VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
 SIZE_UNKNOWN(CObject);
-// ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, vtbl-cluster
-// entry). cl auto-emits it from the real-polymorphic CRezBufferObject; retail's
-// 5-slot datum is reloc-masked, so this VTBL is matching-neutral catalog tracking.

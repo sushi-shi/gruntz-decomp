@@ -1,11 +1,3 @@
-// SingleFrameMessage.h - a single-frame message eyecandy game-object
-// (C:\Proj\Gruntz), a CUserLogic leaf in the same animation family as
-// CSimpleAnimation / CAniCycle: a per-class activation registry
-// (g_singleFrameActReg @0x645ef0) bound by RegisterActs to a per-frame
-// AdvanceAnim handler under the shared activation-name key "A".
-//
-// CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing;
-// names are placeholders for the recovered engine identities.
 #ifndef GRUNTZ_CSINGLEFRAMEMESSAGE_H
 #define GRUNTZ_CSINGLEFRAMEMESSAGE_H
 
@@ -40,7 +32,6 @@ public:
 VTBL(CSingleFrameMessage, 0x1e864c);
 SIZE(CSingleFrameMessage, 0x54);
 
-// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
 typedef i32 (CUserLogic::*SingleFrameHandler)();
 struct CSingleFrameActEntry {
     SingleFrameHandler m_fn;

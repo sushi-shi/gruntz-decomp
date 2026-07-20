@@ -1,7 +1,3 @@
-// SpotLight.h - the spotlight eyecandy game-object (C:\Proj\Gruntz), a CUserLogic
-// leaf (vftable 0x5e75bc). Own fields begin past the CUserLogic base (+0x40): the
-// rotation/offset doubles + the per-tick state ints. Only offsets / code bytes are
-// load-bearing; names are placeholders for the recovered engine identities.
 #ifndef GRUNTZ_CSPOTLIGHT_H
 #define GRUNTZ_CSPOTLIGHT_H
 
@@ -49,7 +45,6 @@ public:
 VTBL(CSpotLight, 0x1e75bc);
 SIZE(CSpotLight, 0xa8);
 
-// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
 struct CSpotActEntry {
     i32 (CUserLogic::*m_fn)();
 };

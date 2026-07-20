@@ -1,18 +1,7 @@
-// GameChecksum.cpp - CNetSession::Checksum, the multiplayer game-state signature
-// accumulator (C:\Proj\Gruntz). Walks the level's 4x15 placed-grunt roster
-// (m_session->m_4->m_cmdGrid->m_grid, the CTriggerMgr +0x1c grid - the same chain
-// NetMgr.h documents for BuildGruntzCrcInfo) and folds a large set of each grunt's
-// fields plus the global sync salt (g_frameTime @0x645588) and a per-object switch
-// term into a running 32-bit signature. The roster entry is the real CGrunt (its
-// m_10 is the CGameObject geometry source). The ex "CGameSyncSig" .cpp-local view
-// of CNetSession is dissolved (NetMgr.h already attributed 0xc0590 == Checksum);
-// the netcmdslot snapshot path's `rec->m_checksum = Checksum()` now reloc-BINDS here.
 #include <Ints.h>
 #include <rva.h>
 #include <stdlib.h>       // rand (0x11fee0), the trailing signature component
 #include <Gruntz/Grunt.h> // the real CGrunt roster entry + its CGameObject* m_10
-// g_frameTime (the per-frame sync salt, 0x645588) comes from <Gruntz/MovingLogic.h>
-// via Grunt.h as `extern "C" u32 g_frameTime` - re-declaring it here clashed (C2371).
 #include <Gruntz/Multi.h>      // CMulti (m_session pointee; its CState base m_4)
 #include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_4 pointee; m_cmdGrid @+0x68)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid @+0x1c, the 4x15 roster)

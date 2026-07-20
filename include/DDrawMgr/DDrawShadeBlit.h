@@ -1,14 +1,3 @@
-// DDrawShadeBlit.h - the DDrawMgr software shaded-sprite blitter (tracer
-// placeholder tomalla-86). A non-polymorphic blit descriptor: the
-// CopyRect/RenderFrame path (src/Gruntz/*CopyRect*) builds one off [obj+0x30] and
-// calls Blit() (0x1497f0), which validates the destination rect, picks the
-// per-draw-type translucency LUTs, and dispatches to one of four per-mode RLE
-// blit loops. The big inner loop (0x14a200) decodes a high-bit RLE sprite stream
-// into a global scratch line (DAT_006bed08) and writes it through the 64KB blend
-// tables to a locked DirectDraw surface.
-//
-// Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. Engine callees (Lock / the sibling blit loops) are reloc-masked.
 #ifndef GRUNTZ_CDDRAWSHADEBLIT_H
 #define GRUNTZ_CDDRAWSHADEBLIT_H
 
@@ -16,36 +5,17 @@
 #include <rva.h>
 
 class CString;    // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
-                  // (fwd-decl so includers needn't choose <Mfc.h> vs <Win32.h>)
 class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDSurface.h>
 
-// The clip rectangle the blit path hands in (3rd arg of Blit): left/top/right/
-// bottom-ish (only +0x0/+0x4/+0x8/+0xc are read in the bounds check).
 SIZE_UNKNOWN(ShadeRect);
-// (a REAL RECT - identical fields; the ShadeRect->BlitRect->tagRECT casts were
-// pure twin friction. Unified 2026-07-19.)
 typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
 
-// The render-source / destination surface (2nd arg of Blit) IS the DirectDraw
-// surface wrapper CDDSurface (<DDrawMgr/DDSurface.h>): the blit loops Lock() it
-// (CDDSurface::Lock @0x13e6d0 -> locked dest bits), read its +0x20 pitch, its +0xb0
-// blend field, and Unlock via the held IDirectDrawSurface at +0x08. The former
-// ShadeSrc placeholder was that same physical struct (same offsets/methods) - unified
-// into CDDSurface so the sprite blitters pass CImage::m_surface with no facet cast.
-
-// A palette/format descriptor: m_1c on the blitter and the global g_blendDescr
-// (DAT_006bf218) both point at one; only its +0x8 (a LUT/palette base) is read
-// here. Read both as u8* (case 2/3/4/6 8-bit tables) and u16* (case 7/10 16-bit
-// palettes), so the field stays a raw base.
 SIZE_UNKNOWN(ShadeDescr);
 struct ShadeDescr {
     char m_00[0x8];
     u8* m_lut; // +0x08 LUT/palette base
 };
 
-// The CImageFrameDesc as seen by CDDrawShadeBlit::Build: a flag word at +0x04 (bits
-// 0x40/0x80/0x100/0x200 steer the decode), two ints copied to the sprite's
-// +0x04/+0x08 (width/height), a +0x18 byte, and the raw frame data starting at +0x20.
 class CImageBuildDesc {
 public:
     char _00[0x04];
@@ -58,10 +28,6 @@ public:
     u8 m_frameData[1]; // +0x20  raw frame data (palette + pixels)
 };
 
-// The 8-dword (0x20) by-value frame descriptor Rebuild builds on the stack and hands
-// to DecodeFrame: [0]=0, [1]=flags, [2]=width, [3]=height, [4]/[5]=the two int args,
-// [6]=the low byte of the color key (0 when key==-1), [7]=0. Only the layout is
-// load-bearing (passed whole via rep movs).
 struct CImageFrameRebuildDesc {
     i32 f0;
     i32 f1;
@@ -73,19 +39,6 @@ struct CImageFrameRebuildDesc {
     i32 f7;
 };
 
-// CDDrawShadeBlit IS the +0x30 owned object of the RTTI CImage (built by
-// CImage::BuildSlot13, `new CDDrawShadeBlit()` @0x148ce0, 0x3c bytes): the shaded
-// sprite. The build/decode methods (BuildRle/LoadFromFile/Build/Rebuild/...) prime
-// the decoded RLE pixel buffer (+0x0c) + palette (+0x20) and the blit-descriptor
-// defaults (draw type 1 @+0x14, light 0x80 @+0x18, src/dst bpp 1 @+0x28/+0x29, key
-// -1 @+0x24); the blit methods draw it. The former CImageOwned placeholder was that
-// same physical struct - unified so CImage::m_owned carries no facet cast.
-//
-// It is also what Image/ImageFrame.h used to model as a separate "CImageFormat" frame
-// helper: CImageSet's frame walkers (SetAllTypes / SetAllField18 / SetAllFormats /
-// GetFirstFrameState / GetMemoryUsage, 0x1523f0..0x152570) drive m_drawType (+0x14),
-// m_light (+0x18), m_palDescr (+0x1c) and m_rleLen (+0x10) on this object through
-// CImage::m_owned. The minor cheats read m_drawType and write a rand()%256 m_light.
 SIZE(CDDrawShadeBlit, 0x3c);
 class CDDrawShadeBlit {
 public:

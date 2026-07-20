@@ -1,17 +1,9 @@
-// DataBuffer.cpp - the small RezAlloc-backed serialized buffer holder
-// (tracer placeholder tomalla-4). Four self-contained methods; the only
-// externals are the Rez heap allocator/freer (RezAlloc 0x1b9b46 / RezFree
-// 0x1b9b82), modeled no-body so their `call rel32` displacements are
-// reloc-masked. Methods in ascending retail-RVA order.
 #include <Mfc.h> // CFile / CMemFile / CString (the readers slurp through MFC files)
 #include <DDrawMgr/ShadeTableCache.h> // the canonical CShadeTable (retail name; ex CDataBuffer view)
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
 
 #include <rva.h>
 
-// Rez heap allocator/freer (external, reloc-masked).
-
-// ctor: zero the valid flag, size and blob (id is left alone).
 RVA(0x00150180, 0xd)
 CShadeTable::CShadeTable() {
     m_alloc = 0;
@@ -19,8 +11,6 @@ CShadeTable::CShadeTable() {
     m_data = 0;
 }
 
-// Reset (0x150190): free the blob if loaded (tail-call to Free). Out-of-line
-// (retail emits it standalone; the inline member folded away and never emitted).
 RVA(0x00150190, 0xb)
 void CShadeTable::Reset() {
     if (m_alloc != 0) {
@@ -28,7 +18,6 @@ void CShadeTable::Reset() {
     }
 }
 
-// Set: (re)allocate a `size`-byte blob; record id on success.
 RVA(0x001501a0, 0x44)
 i32 CShadeTable::Set(u32 size, i32 id) {
     if (m_data) {
@@ -44,10 +33,6 @@ i32 CShadeTable::Set(u32 size, i32 id) {
     return 1;
 }
 
-// ReadFrom: pull a 4-byte element count out of `file` (CFile::Read,
-// vtable slot +0x3c), (re)allocate the blob via Set(count, id), then read the blob
-// bytes through the same CFile::Read. Returns Set's result; on success re-stamps the
-// valid flag + id and returns 1. __thiscall, ret 8.
 RVA(0x001501f0, 0x54)
 i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
     file->Read(&m_size, 4);
@@ -94,7 +79,6 @@ i32 CShadeTable::LoadFromMem(void* buf, u32 len, i32 id) {
     return ReadFrom(&file, id);
 }
 
-// Free: if valid, free + clear the blob and size, then clear valid.
 RVA(0x001503c0, 0x2e)
 void CShadeTable::Free() {
     if (m_alloc != 0) {
@@ -107,10 +91,6 @@ void CShadeTable::Free() {
     m_alloc = 0;
 }
 
-// SaveToFile: create `path` (modeCreate|modeWrite), write the 4-byte
-// element count then the blob, close. The by-value CString arg (destructed at exit,
-// outermost cleanup) + the local CFile -> /GX EH frame; on an Open failure the CFile
-// is destructed and 0 returned. ret 4 (the CString is one dword).
 RVA(0x001503f0, 0xdc)
 i32 CShadeTable::SaveToFile(CString path) {
     CFile file;

@@ -1,22 +1,9 @@
-// LeafCuePlay.cpp - LeafCue::PlayIfElapsed (0x1f940), carved out of the conflated
-// DDrawSubMgr.cpp (operation REHOME, package D8). LeafCue is a sound-cue leaf (a
-// throttled ConfigureItem forward), FOREIGN to the DDraw submgr worker-family obj it
-// was parked in; its retail .text sits at 0x1f940, ~1.2 MB before that block - a
-// separate obj. Interleaver home (RVA-neighbour caller unit): src/Gruntz/
-// BootyStateActivate.cpp; homing there is deferred (cross-TU class decl).
-//
-// The cue's own gated play entry: when the reentrancy gate is open AND the throttle
-// interval has elapsed since the last draw-clock, restamp the clock and tail-forward
-// the 4 caller args to the player's ConfigureItem (returning its result); otherwise
-// return 0. 4 stack args (ret 0x10). Field names are placeholders.
 #include <Ints.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <rva.h>
 #include <Gruntz/LeafCue.h>         // LeafCue (the sound-cue leaf)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 
-// The cue enable flag (0x61ab20) and the wrap-safe kill-cue draw-clock (0x6bf3c0,
-// bound by triggermgr). Reloc-masked externs.
 extern "C" u32 g_killCueClock; // 0x2bf3c0
 
 // @early-stop

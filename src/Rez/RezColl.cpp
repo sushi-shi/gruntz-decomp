@@ -28,18 +28,6 @@
 #include <Bute/Hash.h>              // CHashBase/CHashSlot/CHashElement + Tm_*Array/RezFree
 #include <Dsndmgr/SoundVoiceList.h> // DSoundList::InsertHead/Unlink (the intrusive chain ops)
 
-// The bucket stride is proven 0x10 from the iterators' `shl eax,0x4` (index * 16)
-// / `add ecx,0x10` bucket-walk in Next (0x1848d5 / 0x1848ee) and First's
-// `add edx,0x10` (0x184af7). CHashSlot (Hash.h) carries the 0x10-byte layout.
-
-// A chain link stores the address of the *successor's* +4 field (an interior
-// pointer), so recovering the owning element is container_of(link, CHashElement,
-// m_link) = (char*)link - 4. The char*/CHashElement* cast pair is the language-forced
-// container_of reinterpret (`add eax,0xfffffffc` in the disasm); it cannot be
-// expressed without a cast.
-
-// The next element: follow this element's chain link, else scan the owning table's
-// later buckets for the next occupied chain head.
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
     CHashElement* n = m_link.m_next
@@ -79,14 +67,6 @@ i32 Gap_184900(void) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CHash::CHash() (0x184950) - the default (empty-table) constructor: zero the count
-// and bucket-array pointer. OUT-OF-LINE (CSymRec's 3-arg ctor `call`s it for
-// m_keyTable). Re-homed here (was an unhomed body; wave5-F1). It lives on the
-// leaf/value instantiation CHash (the only default-constructed table); the base
-// CHashBase stays trivially-constructible so the sized tables' Construct-only
-// member-init is not preceded by a base-ctor zeroing pass.
-// ---------------------------------------------------------------------------
 RVA(0x00184950, 0x10)
 CHash::CHash() {
     m_count = 0;
@@ -136,26 +116,15 @@ i32 Gap_1849d0(void) {
     return 0;
 }
 
-// CHashSlot ctor (0x184a20): zero the {head,tail} chain head, return this.
 RVA(0x00184a20, 0xb)
 CHashSlot::CHashSlot() {
     m_chain.m_head = 0;
     m_chain.m_tail = 0;
 }
 
-// CHashSlot::~CHashSlot (0x184a30): the empty destructor - a bare 1-byte `ret` (a
-// CHashSlot has trivial teardown). OUT-OF-LINE on purpose (declared, not defined, in
-// Hash.h): that is what makes cl emit the real vector-dtor/-ctor iterator calls in
-// RemoveAll/Construct instead of proving the loop away. It was modelled as a free
-// function CHashSlot_Dtor whose address the hand-written iterator calls passed.
 RVA(0x00184a30, 1)
 CHashSlot::~CHashSlot() {}
 
-// RemoveAll (0x184a40): array-delete the bucket array. cl lowers `delete[]` to exactly
-// retail's bytes - null-check, read the array-cookie count at [m_buckets-4], call the CRT
-// `'eh vector destructor iterator'` ??_M(m_buckets, 0x10, count, &~CHashSlot) (0x11f640,
-// __stdcall/callee-clean, hence no `add esp,0x10`), then operator delete(m_buckets-4)
-// (the scalar ??3 @0x1b9b82).
 RVA(0x00184a40, 0x27)
 void CHashBase::RemoveAll() {
     delete[] m_buckets;
@@ -177,15 +146,12 @@ void CHashBase::Insert(CHashElement* node) {
     m_buckets[idx].m_chain.InsertHead(biased);
 }
 
-// Remove (0x184ab0): unlink `entry` (its chain node = &entry->m_link) from the
-// owning bucket's intrusive {head,tail} chain.
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
     DSoundLink* node = entry ? &entry->m_link : 0;
     m_buckets[entry->m_bucket].m_chain.Unlink(node);
 }
 
-// The first element: the chain head of the first occupied bucket.
 RVA(0x00184ae0, 0x24)
 CHashElement* CHashBase::First() {
     u32 i = 0;

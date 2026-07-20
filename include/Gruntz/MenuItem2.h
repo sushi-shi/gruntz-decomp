@@ -1,27 +1,3 @@
-// MenuItem2.h - the animated three-state sprite menu item (C:\Proj\Gruntz).
-//
-// CMenuItem2 derives from CMenuItem (the 0x5c-byte leaf in MenuItem.h) and adds a
-// per-state sprite trio plus a current-frame cursor. Its vtable (0x5f08f8,
-// ??_7CMenuItem2@@6B@, 15 slots) overrides the visual slots and adds one new slot:
-// Init (0x185750) resolves three CImageSet sprites by name
-// ("<key>_NORMAL/_SELECTED/_DISABLED"); the Place override (0x1858d0) draws the
-// current animation frame and caches its hit rect; the slot-14 setter (0x1847a0,
-// SetFrame) is reached by AddItem2. Three non-virtual helpers walk the frame
-// cursor. Recovered from the 0x185750..0x185a10 cluster.
-//
-// CMenuItem2 is a REAL polymorphic derived class: MSVC emits ??_7CMenuItem2@@6B@
-// (VTBL() catalogs the 0x1f08f8 datum, was vtbl-placeholders vtbl-cluster-75
-// / g_menuItem2Vtbl) and auto-stamps the derived vptr after the base ctor/dtor.
-// The overrides without a reconstructed body (Reset/GetWidth/GetFrameWidth/Disable/Notify/OnInit)
-// and the new SetFrame slot are declared-only -> reloc-masked external references.
-//
-// Layout (CMenuItem base is 0x5c; offsets + code bytes load-bearing):
-//   +0x5c m_spriteNormal   - CImageSet* NORMAL-state sprite
-//   +0x60 m_spriteSelected - CImageSet* SELECTED-state sprite
-//   +0x64 m_spriteDisabled - CImageSet* DISABLED-state sprite
-//   +0x68 m_frameIdx       - i32 current frame cursor
-//   +0x6c m_6c             - i32 (zeroed by Init; role unproven)
-//   +0x70 m_70             - i32 (Init writes 0x64; role unproven)
 #ifndef GRUNTZ_MENUITEM2_H
 #define GRUNTZ_MENUITEM2_H
 
@@ -33,13 +9,6 @@
 #include <Gruntz/MenuItem.h>
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
-// The per-frame record (a CImageSet frame) is the RTTI-confirmed CImage: a
-// draw-offset pair at m_18/m_1c, blitted by CImage::RenderFrame (0x153790,
-// __thiscall). Modeled by the shared <Image/CImage.h> definition.
-
-// (CMenuSprite is GONE - it was the FOURTH view of the 0x6c CDDrawWorker (==
-// CImageSet): same +0x14 frame table (the CObArray m_pData), same [m_minIndex,
-// m_maxIndex] gate @+0x64/+0x68, and its GetAt was byte-for-byte CImageSet::GetAt.)
 #include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE real class)
 
 class CMenuItem2 : public CMenuItem {
@@ -69,9 +38,6 @@ public:
     i32 m_70;                      // +0x70  seeded to 0x64 (role unproven)
 };
 
-// The derived ctor MSVC inlines into the page's AddItem2/AddSubItem2: the base
-// CMenuItem() ctor (base vptr + CStrings + sentinels) runs first, then the implicit
-// derived vptr stamp, then this body seeds the sprite/cursor fields.
 inline CMenuItem2::CMenuItem2() {
     m_spriteNormal = 0;
     m_spriteSelected = 0;

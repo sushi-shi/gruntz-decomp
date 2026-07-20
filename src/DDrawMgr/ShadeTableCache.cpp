@@ -1,12 +1,3 @@
-// ShadeTableCache.cpp - the DDrawMgr color/shade lookup-table cache (tracer
-// placeholder ClassUnknown_2). A CGruntzMgr member: a polymorphic owner of a
-// growable array of 0x10-byte CShadeTable buffers, each holding a 64KB RGB565 (or
-// raw-RGB) color-conversion table built from the live screen RGB-format globals.
-//
-// Methods in ascending retail-RVA order. Field names are placeholders; offsets +
-// code bytes are load-bearing. The array grow/element helpers (0x150040 /
-// 0x150180 / 0x150190 / 0x1501a0 / 0x1503c0) and operator new/delete are
-// external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/ColorHsv.h>   // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
@@ -17,47 +8,13 @@
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
 #include <Globals.h>
 
-// The live screen RGB-format shift/mask table at 0x683ea0..0x683eb4 - already
-// named by CLightFxRender.cpp / CDDrawShadeBlit.cpp. The builders gate on the
-// RGB565 magic state (rUp=10, gUp=5, rDown/gDown/bDown=3). Reloc-masked.
-
-// ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
-// vtable (0x5e8cb4) are now cl-emitted from the real CObject/CShadeTableArray
-// polymorphic hierarchy - the manual g_shadeArrayVtbl / g_wapObjectDtorVtbl stamps
-// are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
-
-// The working palette base (0x6bf224): the sort/remap builders stash the active
-// palette pointer here for their __cdecl comparators. Reloc-masked DATA.
 DATA(0x002bf224)
 PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
-// The {h,s,v} triple RgbToHsv fills is the shared ColorHSV (0x14fcc0 returns out);
-// declared in <DDrawMgr/ColorHsv.h>. The comparator and the HSV builder read .h
-// (.s/.v populated but only .h drives the hue sort).
-//
-// External helper (sibling TU, reloc-masked): 0x14fbf0 finds the nearest palette
-// index for an (r,g,b) triple (sum-of-squares). 0x14ed10 is the sibling luma
-// comparator referenced by address by the luma-sort builder.
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 
-// The engine heap is the NAFXCW global operator new/delete (??2@YAPAXI@Z @0x1b9b46,
-// ??3@YAXPAX@Z @0x1b9b82; declared by <Mfc.h>). The element-array buffer of the
-// inlined SetSize in the AddFrom* loaders is (de)allocated through it. reloc-masked.
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
-// AddFromArray builds a real MFC CString temp over the name (ctor 0x1b9ba3 ==
-// CString::CString(const char*), dtor 0x1b9cde == ~CString - confirmed via the ghidra
-// export table; both reloc-masked NAFXCW helpers). (AddFromFile builds no such temp:
-// its LoadFile -> CShadeTable::LoadFromMem wraps the raw buffer in its own CMemFile
-// internally, so no client-side CMemFile is constructed here.)
-// (Was a hand-rolled `struct CStr { char* m_p; ... }` view of exactly this CString.)
-
-// ===========================================================================
-// CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
-// fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
-// (The empty grand-base dtor CObject::~CObject - defined inline in
-// Wap32/Object.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
-// ===========================================================================
 inline CShadeTableArray::CShadeTableArray() {
     // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).
     m_pData = 0;
@@ -78,25 +35,14 @@ inline CShadeTableArray::~CShadeTableArray() {
         ::operator delete(m_pData);
     }
 }
-// Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
-// rva.h and pulls windows.h's SIZE type). CObject's grand-base vtable masks
-// ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray gets a
-// VTBL.
 SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the CObject base
 VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
-// ===========================================================================
-// 0x14de30 - ctor: array subobject ctor (stamp vtable, zero fields), then the
-// leading gate.
-// ===========================================================================
 RVA(0x0014de30, 0x1a)
 CShadeTableCache::CShadeTableCache() {
     m_initialized = 0;
 }
 
-// ===========================================================================
-// 0x14de50 - ~ : FreeNodes, then the inline array-subobject teardown. EH frame.
-// ===========================================================================
 RVA(0x0014de50, 0x6b)
 CShadeTableCache::~CShadeTableCache() {
     if (m_initialized) {
@@ -104,17 +50,12 @@ CShadeTableCache::~CShadeTableCache() {
     }
 }
 
-// Init (0x14dec0): mark the cache live and report success. Out-of-line (retail
-// emits it standalone; the inline member folded away and never emitted).
 RVA(0x0014dec0, 0xc)
 i32 CShadeTableCache::Init() {
     m_initialized = 1;
     return 1;
 }
 
-// ===========================================================================
-// 0x14ded0 - FreeNodes: destroy + free every element, then drop the array.
-// ===========================================================================
 RVA(0x0014ded0, 0x64)
 void CShadeTableCache::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
@@ -133,10 +74,6 @@ void CShadeTableCache::FreeNodes() {
     m_arr.m_nSize = 0;
 }
 
-// Luma-shift float constants at 0x5efb40..0x5efb5c (the gamma/luminance build).
-// Reloc-masked .rdata literals; named so the operands pair. The shade/luma scalar
-// consts (0x1efb40..0x1efb58) are DEFINED here (owner TU); their reference externs
-// stay in <Globals.h>. (REHOME DD-G)
 DATA(0x001efb40)
 float g_one = 1.0f; // 0x5efb40
 DATA(0x001efb44)
@@ -1060,7 +997,3 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         m_nMaxSize = nNewMax;
     }
 }
-
-// SIZE tracking for this TU's modeling-view locals (placed at EOF: any
-// mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
-// (The ex-CStr view is dissolved onto the real MFC CString - no SIZE needed.)

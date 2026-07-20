@@ -1,75 +1,3 @@
-// Grunt.cpp - the engine's CGrunt entity. Two byte-matched clusters: the 7
-// contiguous HUD sprite creators and the 5 animation
-// resolvers. Names are placeholders; only offsets + code
-// bytes are load-bearing. Built /O2 /MT /GX (the resolvers' CString temporaries
-// carry a C++ EH frame; /GX does NOT add an EH frame to the 7 creators - they
-// stay byte-exact at their original percentages).
-//
-// HUD sprite-creator cluster (7/7 logic byte-exact; 5 at 99.3%+ = reloc-masked +
-// a 2-instr edx/ecx register coin-flip, 2 at ~91.6% = the 2-arg Add* register-
-// alloc/scheduling plateau - see below):
-//   CGrunt::CreateHealthSprite()      99.31%
-//   CGrunt::CreateToySprite()         91.70%  (2-arg plateau)
-//   CGrunt::CreateStaminaSprite()     99.30%
-//   CGrunt::CreateToyTimeSprite()     99.44%
-//   CGrunt::CreateWingzTimeSprite()   99.41%
-//   CGrunt::CreatePowerupSprite(int)  99.26%
-//   CGrunt::CreateSelectedSprite()    91.54%  (2-arg plateau)
-//
-// Animation-resolver cluster (5/5 logic + CFG + member-offsets byte-exact; equal
-// instruction counts; residue = reloc-masked EH/CString/call operands + an
-// edx/ecx coin-flip on the `m_activeAnimDesc = m_38->m_1a0.m_14` store that no source lever flips,
-// plus, for Idle/Battlecry, the compiler hoisting `idx+0xNNN` into a callee-saved
-// reg early - all entropy-class):
-//   CGrunt::ResolveMovingAnimation()    91.97%
-//   CGrunt::ResolveDeathAnimation()     97.08%
-//   CGrunt::ResolveAnimation()          94.71%
-//   CGrunt::ResolveIdleAnimation()      91.38%
-//   CGrunt::ResolveBattlecryAnimation() 89.58%
-//
-// Resolver levers (the load-bearing source forms):
-//   * operator+ is AFXAPI = __stdcall (ret 0xc, callee-pops the hidden return
-//     slot + both args) - declaring it plain __cdecl emits a bogus `add esp,0xc`
-//     at each call site (caller-cleanup). +~4% across all 5.
-//   * CString needs a user-declared ~CString() so
-//     the two key-string temporaries get destruction calls under the C++ EH frame
-//     - without it MSVC emits NO EH frame at all (the temps look trivially
-//     destructible). This is what produced the fs:0 prolog/epilog. ~57%->89%.
-//   * The visible-bounds gate caches `int x = h->m_5c; int y = h->m_60;` into
-//     explicit locals so MSVC allocates the extra callee-saved regs the target
-//     uses (edx/edi/ebp) instead of re-reading m_5c/m_60 per compare - +~6% on
-//     Death. (Same "pin a local to force the 4th callee-saved reg" family as
-//     ButeMgr::ParseTagLine.)
-//
-// Every member offset, gate, the factory call, the init virtual, the failure-path
-// flag write (registrar->m_38->m_8 |= 0x10000), the slot-null, and both returns
-// are byte-exact across all 7 (equal instruction counts). The residue:
-//   * 3-arg Add (Health/Stamina/ToyTime/WingzTime/Powerup): the registrar `this`
-//     is computed via an explicit `CSpriteInner *inner = sprite->m_7c;` temp so
-//     MSVC keeps m_7c in eax (in-place reuse of the reloaded-sprite reg) and
-//     interleaves `mov edi,[eax+0x18]` between the arg pushes - exactly the target
-//     schedule (95.8% -> 99.3%). Lone residue = which of edx/ecx temporarily holds
-//     arg c (m_health/m_stamina/m_toyTime/m_wingzTime) vs arg b (m_tileOwnerLo): the push ORDER and VALUES
-//     are byte-identical, only the temp register-field differs (a pure allocator
-//     coin-flip; explicit `int c=..; int b=..;` temps did NOT flip it).
-//   * 2-arg Add (Toy/Selected): with ONLY two args MSVC hoists arg a (m_tileOwnerHi) into
-//     a reg BEFORE computing the registrar (target loads it AFTER), and puts m_7c
-//     in ecx not eax. The `inner` temp makes it WORSE here (90.7%); the plain
-//     `reg = sprite->m_7c->m_18;` form is best (91.6%). Six source forms (inner
-//     temp, sprite-local, preload-b, explicit a/b temps, full-inline, plain) all
-//     normalize to one of two valid schedules; no lever flips the 2-arg ordering.
-//     Entropy-class (the 2-arg variant has one fewer arg to pin the schedule).
-//     Logic/offsets/CFG byte-exact; left per the campaign doctrine.
-//
-// Shared shape: bail (return 0) if the target sprite slot is already populated
-// (and, for several, if a stat/flags gate is unset); else ask the global HUD
-// sprite factory (the global registry ptr -> +0x30 -> +0x8, __thiscall) to build a
-// named sprite from its class-name string + two HUD-geometry values derived from
-// this->m_10 (+0x5c, and +0x60 optionally minus a per-sprite constant); store
-// the sprite into the slot; run its slot-0x10 init virtual; register it into the
-// grunt's sprite collection (sprite->m_7c->m_18 . Add*(args)). On a failed
-// register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
-// return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
@@ -81,8 +9,6 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-                                // WERE the fake g_animScratch / g_animScratchCount
-                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/GruntHealthSprite.h> // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)
 #include <Gruntz/GruntToySprite.h>      // CGruntToySprite::SetCell
 #include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
@@ -102,14 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// CGrunt's RTTI vtable (??_7CGrunt@@6B@ @0x1e8754): catalogued here, CGrunt's real
-// home. Grunt.h omits VTBL(
-// CGrunt) because it's referenced by scored CGrunt/CSpotLight code; the binding is
-// pre-existing (moved, not new), so the catalogue state is unchanged.
 VTBL(CGrunt, 0x001e8754);
 
-// The sprite class-name string the factory is asked to build, per creator. These
-// are literal .rodata strings in the binary (the reloc-masked DIR32 operand).
 static const char s_GruntHealthSprite[] = "GruntHealthSprite";
 static const char s_GruntToySprite[] = "GruntToySprite";
 static const char s_GruntStaminaSprite[] = "GruntStaminaSprite";
@@ -118,28 +38,6 @@ static const char s_GruntWingzTimeSprite[] = "GruntWingzTimeSprite";
 static const char s_GruntPowerupSprite[] = "GruntPowerupSprite";
 static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
-// ---------------------------------------------------------------------------
-// Animation-resolver cluster (the 5 CGrunt::Resolve*Animation methods, the
-// SECOND wave on this CGrunt TU). Each builds an animation-key string
-//   "GRUNTZ_" + this->m_typeName + "_<CATEGORY>"
-// (via the two engine global operator+ overloads -> a pair of stack CString
-// temporaries with dtors -> the unit needs /GX for the C++ EH frame), feeds the
-// resolved geometry source into the grunt's animation player (m_38), then looks
-// the key up in the global animation tree (CButeTree::Find) and
-// caches the result into m_14->m_1c. Several also fire a 5-arg on-screen "cue"
-// (via g_gameReg->m_cueSink) gated on the grunt being inside the visible view
-// rect (registry m_134==1 -> a 4-way bounds test).
-//
-//   CGrunt::ResolveMovingAnimation()    ("_MOVING", key "B")
-//   CGrunt::ResolveDeathAnimation()     ("_DEATH",  key "C")
-//   CGrunt::ResolveAnimation()          ("_JOY",    key "E")
-//   CGrunt::ResolveIdleAnimation()      ("_IDLE",   key "A")
-//   CGrunt::ResolveBattlecryAnimation() ("_BATTLECRY", key "F")
-//
-// The category suffix strings + the single-char tree keys are literal .rodata
-// (reloc-masked DIR32 operands). The geometry source member differs per category
-// (Moving m_movingGeoSrc, Death m_deathGeoSrc, generic m_joyGeoSrc, Idle m_idleGeoSrc[idx], Battlecry m_battlecryGeoSrc[idx]);
-// Idle/Battlecry pick idx via the engine LCG rand (Idle %3+1, Battlecry %3).
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 static const char s__MOVING[] = "_MOVING";
 static const char s__DEATH[] = "_DEATH";
@@ -154,36 +52,10 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
-// The rand seed default (reloc-masked). The animation lookup uses the shared
-// g_buteTree registry (<Bute/ButeTree.h>), not a separate tree.
 i32 g_movingSeed;
 
-// Entrance-animation globals (reloc-masked; see Grunt.h).
 #include <Bute/ButeMgr.h>
-// The +0x1a0 geometry sub-player setters/probe are on CEntranceAnimSub / CGruntAnimSub
-// (<Gruntz/Grunt.h>), reached as state->m_1a0.SetGeometry / .Advance.
 
-// The created HUD/lose-item sprite + the entrance player reach their CGameObject-base
-// name/sprite/geometry setters directly (CHudSprite / CEntranceAnimPlayer in
-// <Gruntz/Grunt.h>).
-
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
-//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((_zdvec*)((char*)this + (3*col+row+0xb)*0x68)),
-//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
-//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
-//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
-//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_coordPool.m_linkOffset / g_coordPool.m_linkOffset).
-//   * MFC CString -> char* - (char*)static_cast<const char*>(m_animSetName) for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
-//     external __thiscall engine methods.
-//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
-//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
-//     regalloc (tested-and-reverted; see the inline m_400 note).
-// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
-// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -191,66 +63,24 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-// The death/freeze finalize key string (reloc-masked .rodata, 0x60e0f0).
 static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
-// LoadFreezeSpellAssets (@0x69d60) finalize keys + bute lookup tag/key (reloc-masked).
 static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";   // 0x60ee48
 static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE"; // 0x60ee1c
 static char s_Spellz[] = "Spellz";                                       // 0x60cca8
 static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60ee38
 
-// StartBombGruntRun (@0x68520) bute tag/key (reloc-masked).
 static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
 static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
-// A global enable flag the neighbor-combat gate reads when the candidate IS self
-// (DAT_006455b0, reloc-masked).
 DATA(0x002455b0)
 i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it too (LNK2005),
-                   // and neither definition carried an rva pin, so the symbol was unbound.
 
-// The single-char anim-set keys the entrance reads/looks-up (reloc-masked
-// .rodata; DAT_0060a454 = "A" = the idle anim key, DAT_0060d7f8 = "K" =
-// BuildEntranceAnimation's latch key).
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-// The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-
-// (the dead `extern i32 g_defaultGeo` that sat here was an unused, C++-mangled alias of
-// the 0x2bf3bc draw-delta mirror - declared, never referenced; removed)
-
-// The scratch CString teardown the GetNameRecords reject paths run (defined with the
-// dispatch-machine cluster below); forward-declared for the two entrance-step
-// methods (StepEntranceReinit / RunEntranceMove) defined earlier in RVA order.
 static void GruntScratchTeardown();
 
-// CGrunt::GetTilePos (0x00031c70) is now an inline member in the header.
-
-// The five CGrunt::Resolve*Animation methods (0x45100/0x455f0/0x457b0/0x45960/
-// 0x45b60) live in Warlord.cpp: their retail bodies are
-// text-woven into the warlord obj (0x42d40-0x45cc1) and share its private
-// .data band - see Warlord.cpp's header for the evidence.
-
-// ---------------------------------------------------------------------------
-// CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60
-// Fills the per-pose animation-name index table (m_poseWalk..m_poseItem2) by looking up
-// "GRUNTZ_" + this->m_animSetName + "_<POSE>" in the entrance player's
-// name->animset hash (m_154->OwnerMgr()->m_animRegistry->m_10map). __thiscall, ret 8 (/GX - the
-// two operator+ CString temporaries per block carry a C++ EH frame).
-//
-//   * kind==0  : load the full grunt pose set (WALK/ATTACK*/STRUCK*/IDLE1..5/
-//                ITEM*/DEATH; 14 poses).
-//   * kind!=0, toyOnly!=0 : reload only WALK + TOY-BREAK.
-//   * kind!=0, toyOnly==0 : reload the toy poses (TOY1, TOY2, TOY-BREAK) and
-//                derive the toy-swap blend percent m_toyBlendPct from the relative
-//                animation lengths (node->m_10) of TOY1 vs TOY2.
-//
-// The pose-suffix strings + "GRUNTZ_" prefix are literal .rodata (reloc-masked
-// DIR32 operands). Each `LOAD_POSE` builds the key via the two AFXAPI (__stdcall)
-// operator+ overloads -> a pair of stack CString temps -> CMapStringToOb::
-// Lookup(key, &out) (writes node->m_c on a hit; out defaults 0).
 static const char s_pose_WALK[] = "_WALK";
 static const char s_pose_ATTACK1[] = "_ATTACK1";
 static const char s_pose_ATTACK2[] = "_ATTACK2";
@@ -269,17 +99,12 @@ static const char s_pose_TOY1[] = "_TOY1";
 static const char s_pose_TOY2[] = "_TOY2";
 static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
-
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), reinterpret_cast<void*&>(_out)); \
         (dst) = _out;                                                                              \
     } while (0)
-
-// The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .data) +
-// PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
-// definitions so each `mov ds:addr` reloc-masks against retail.
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
@@ -298,8 +123,6 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.
 
-// Recycle a grunt's occupied-coord list onto the shared freelist, then empty the
-// CPtrList in place. Head = unit+0x320, count gate = unit+0x328.
 void GruntRecycleCoords(CGrunt* g) {
     GruntCoordNode* n = g->CoordHead();
     while (n != 0) {
@@ -314,9 +137,6 @@ void GruntRecycleCoords(CGrunt* g) {
     g->m_31c.RemoveAll();
 }
 
-// The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
-// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
@@ -357,25 +177,8 @@ CGrunt::~CGrunt() {
     UserLogicVfunc9();
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CGrunt(owner)  @0x47a10  (__thiscall, /GX, ret 4) - the grunt spawn
-// constructor. Structurally the CGrunt twin of CProjectile::CProjectile(owner):
-// CMovingLogic is CGrunt's true intermediate base (RTTI vftable 0x5e87ac), so the
-// ctor folds the inlined CMovingLogic(owner) init (CUserLogic base ctor, the
-// CMotionState motion band @+0x38, the four default coordinate bounds seeded from
-// m_14->{m_2c,m_34,m_30,m_38}, the 11-double SetParams + SetZ) then runs the huge
-// CGrunt field-init block + the six owned-member ctors (m_animSetName / m_31c /
-// m_338 / m_448 / m_44c / m_468[9]) and the two vptr restamps (CMovingLogic ->
-// CGrunt). All engine callees external/reloc-masked.
-// ---------------------------------------------------------------------------
-// The default entrance-cell record + the +0x438 datum the ctor copies in (the
-// CMovingLogic motion helper + bound constants are defined in Grunt.h). Reloc-masked.
 extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
-// g_frameTicks (0x24558c per-frame counter) comes from <Rez/FrameClock.h>; the ctor
-// stamps it into m_438 as the grunt's birth frame.
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
-
-// CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
 
 // @early-stop
 // lean-base vptr-stamp residue + member-init/body-split wall (~67%): logic/CFG/field
@@ -396,8 +199,6 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
 // Deferred to the final sweep.
 
-// The +0x810..+0x8cc timer band (12 x 16-byte = 24 doubles) zeroed twice; MSVC
-// schedules each 16-byte block's four dword stores in {+0,+8,+4,+c} column order.
 #define GRUNT_ZERO_TIMER_BLOCK(p, b)                                                               \
     do {                                                                                           \
         *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x0) = 0;                                                       \
@@ -552,32 +353,8 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase(static_cast<CGameObject*>(owner))
     m_390 = 1;
 }
 
-// ===========================================================================
-// Migrated CGrunt cluster (formerly the CUserLogic_* stubs in
-// src/Stub/Discovered.cpp). A prior matcher proved this whole block is CGrunt:
-// the dtor @0xf2f0 stamps vtable 0x5e8754 over CUserLogic/CUserBase bases, and
-// the anim loader @0x49c60 builds "GRUNTZ_<type>_<POSE>" keys. Reconstructed in
-// ascending retail-RVA order. Raw-offset member access (the campaign style used
-// by ReadConfigFromButeMgr above) keeps the giant ~0x46c layout tractable.
-// ===========================================================================
-
-// The global free-list pool the name caches recycle into (head @0x645544, base
-// subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-// The save-record serial counter. DEFINED here (owner TU); all five grunt TUs used to
-// define it -> five .bss objects for one global (LNK2005). The DATA() pin lives on the
-// DEFINITION, per the data-def method; GameSave.cpp now just externs it.
 DATA(0x00229ad0)
 i32 g_serialCounter;
-
-// The grunt movement / anim-name dispatch state machines' reloc-masked data.
-// All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // Only the owner defines; everyone externs.
-
-// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
-// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp).
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
@@ -624,11 +401,6 @@ i32 CGrunt::UserLogicVfunc9() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::ReadConfigFromButeMgr
-// Reads the TimePerTile tuning config from CButeMgr for this grunt's type.
-// Applies a special-case halving for grunt kind 55 (0x37).
-// ---------------------------------------------------------------------------
 RVA(0x00048400, 0x47)
 void CGrunt::ReadConfigFromButeMgr() {
     m_18c = 0;
@@ -641,17 +413,6 @@ void CGrunt::ReadConfigFromButeMgr() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::LoadCellAnimNames(kind, dirOnly)  @0x48470  (__thiscall, /GX, ret 8) - the
-// per-cell entrance sprite-name loader: for each of the 9 direction cells
-// (CGruntCellRec[9] @+0x468, five CString name fields at +0/+4/+8/+c/+10 =
-// ATTACK/STRUCK/WALK/IDLE/ITEM) build the frame key "GRUNTZ_" + m_animSetName +
-// "_<DIR>_<POSE>" via the two AFXAPI operator+ overloads and assign it. kind==0
-// loads the full pose set + the grunt-level _DEATH name (m_44c); kind!=0 loads
-// only the direction-only WALK-cell names + _BREAK (m_448) when dirOnly!=0, else
-// just "GRUNTZ_"+m_animSetName into m_448. Tail: latch the move-cursor sprite
-// (g_gameReg->m_spriteFactory->GetSel(m_1f4, kind)) into the HUD (m_10->m_4c) + mark m_58.
-// Each concat -> a pair of stack CString temps (/GX EH frame); reloc-masked.
 static const char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
 static const char s_d48_NORTH_WALK[] = "_NORTH_WALK";
 static const char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
@@ -821,12 +582,6 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 #undef LOAD_POSE
 
-// ---------------------------------------------------------------------------
-// CGrunt::winapi_04a9f0_CopyRect_OffsetRect   @0x4a9f0   (__thiscall, ret 0)
-// Resolve the grunt under this grunt's HUD center; if none, return 0. Otherwise
-// build the candidate rect = its entrance rect (m_154 + 0x144) offset by its HUD
-// origin, then probe 4 segments (each two POINTs +-1000px through this grunt's HUD
-// center): vertical, horizontal, and the two diagonals. Return 1 on the first hit.
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
     CGrunt* tgt = m_tileMgr->FindAtPixel(m_10->m_screenX, m_10->m_screenY);
@@ -1028,10 +783,6 @@ i32 CGrunt::CommitArrival() {
     return 1;
 }
 
-// CGrunt::ClearAllSprites() @0x4b240 - on death/teardown, flag each live HUD
-// sprite record (+0x8 |= 0x10000) and null its slot. The stamina/toy-time/
-// wingz-time trio is gated on m_entranceCommitted==0 (entrance not yet committed). Clears the
-// arrival gate m_arrived last.
 RVA(0x0004b240, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
@@ -1669,10 +1420,6 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateHealthSprite()
-// Gate: m_healthSprite unset AND m_health > 0. geoB = m_60 - 0x19; hint 0xdbba0.
-// Register via AddA(m_tileOwnerHi, m_tileOwnerLo, m_health).
 RVA(0x0004d130, 0xb5)
 i32 CGrunt::CreateHealthSprite() {
     if (m_healthSprite || m_health <= 0) {
@@ -1699,10 +1446,6 @@ i32 CGrunt::CreateHealthSprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateToySprite()
-// Gate: m_toySprite unset. geoB = m_60 - 0x19; hint 0xdbba0.
-// Register via AddB(m_tileOwnerHi, m_tileOwnerLo).
 RVA(0x0004d220, 0x9c)
 i32 CGrunt::CreateToySprite() {
     if (m_toySprite) {
@@ -1728,10 +1471,6 @@ i32 CGrunt::CreateToySprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateStaminaSprite()
-// Gate: m_staminaSprite unset AND m_stamina != 0x64. geoB = m_60 - 0x20; hint 0xdbba0.
-// Register via AddA(m_tileOwnerHi, m_tileOwnerLo, m_stamina).
 RVA(0x0004d2f0, 0xb4)
 i32 CGrunt::CreateStaminaSprite() {
     if (m_staminaSprite || m_stamina == 0x64) {
@@ -1758,12 +1497,6 @@ i32 CGrunt::CreateStaminaSprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateToyTimeSprite()
-// Gate: m_toyTimeSprite unset AND m_toyTime != 0. First clears the stamina sprite
-// (m_staminaSprite) and wingz-time sprite (m_wingzTimeSprite) if set (OR 0x10000 into their record's
-// +0x8, null the slot). geoB = m_60 - 0x20; hint 0xdbba0.
-// Register via AddA(m_tileOwnerHi, m_tileOwnerLo, m_toyTime).
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {
@@ -1799,11 +1532,6 @@ i32 CGrunt::CreateToyTimeSprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateWingzTimeSprite()
-// Gate: m_wingzTimeSprite unset AND m_wingzEnabled != 0 AND m_wingzTime != 0. Clears the
-// toy-time sprite (m_toyTimeSprite) if set. geoB = m_60 - 0x26; hint 0xdbba0.
-// Register via AddA(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime).
 RVA(0x0004d520, 0xe3)
 i32 CGrunt::CreateWingzTimeSprite() {
     if (m_wingzTimeSprite || m_wingzEnabled == 0 || m_wingzTime == 0) {
@@ -1835,10 +1563,6 @@ i32 CGrunt::CreateWingzTimeSprite() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreatePowerupSprite(int a)
-// Gate: m_powerupSprite unset. geoB = m_60 (no offset); hint 0x15.
-// Register via AddC(m_tileOwnerHi, m_tileOwnerLo, a).
 RVA(0x0004d650, 0xa1)
 i32 CGrunt::CreatePowerupSprite(i32 a) {
     if (m_powerupSprite) {
@@ -1865,10 +1589,6 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CGrunt::CreateSelectedSprite()
-// Gate: m_selectedSprite unset. geoB = m_60 (no offset); hint 0x14.
-// Register via AddD(m_tileOwnerHi, m_tileOwnerLo).
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {

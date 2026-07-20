@@ -1,25 +1,3 @@
-// GruntzCommandId.h - the WM_COMMAND / accelerator + cheat-code id space handled by
-// CGruntzMgr::HandleCommand (0x862f0) and offered up the two command virtuals
-// (CGameApp::HandleCommand slot 10, CGameMgr::HandleCommand slot 5).
-//
-// NOTE: `enum GruntzCommand` (this file) is the command-ID space; it is NOT the
-// unrelated command-pattern class `CGruntzCommand` in <Gruntz/GruntzCommand.h>
-// (the queued per-grunt order object). Distinct identifiers, distinct headers.
-//
-// UNSCOPED, plain enum: MSVC 5.0 has no C++11 fixed-underlying-type (`enum X : i32`
-// is a syntax error on this toolchain), but an unscoped enum is exactly what we
-// need - it is int-width (4 bytes == i32 here, so narrowing the command param from
-// i32 to GruntzCommand is byte-neutral), and it lets `switch(nID)`, `nID & 0xffff`
-// and bare `case kCmd...:` labels all compile. The engine header <Wap32/Wap32.h>
-// only needs the TYPE NAME for its two base virtual decls, so it carries a one-line
-// MS-style opaque forward declaration (`enum GruntzCommand;`) instead of including
-// this game header (engine layering). This full definition is included only by the
-// Gruntz TUs that reference the enumerators (GruntzMgrCmd.cpp et al.).
-//
-// Names are behaviour-derived (from each case body + its announce string); the
-// retail resource.h symbols are not available. kCmd* = menu/game commands (outer
-// switch); kCheat* = the God-mode-gated cheat sub-switch. Debug warp-accelerator
-// levels are named by their target level id (PassClickToPlayState(level)).
 #ifndef GRUNTZ_GRUNTZ_GRUNTZCOMMANDID_H
 #define GRUNTZ_GRUNTZ_GRUNTZCOMMANDID_H
 

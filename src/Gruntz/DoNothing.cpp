@@ -1,19 +1,3 @@
-// DoNothing.cpp - the inert "do nothing" tile-logic game-object family
-// (C:\Proj\Gruntz): CDoNothing and its sibling CDoNothingNormal.
-//
-// One dev TU, formerly split across DoNothing.cpp + DoNothingNormalDtor.cpp +
-// DoNothingNormalLogic.cpp (all /GX, all this family). Methods in ascending
-// retail-RVA order:
-//   CDoNothing::GetTypeTag         @0x00f6b0 - 6-byte logic-type id accessor (0x3ec)
-//   CDoNothing::~CDoNothing        @0x00f770 - /GX leaf dtor (CUserLogic teardown)
-//   CDoNothingNormal::~CDoNothingNormal @0x00f8a0 - /GX leaf dtor
-//   (the DoNothingNormal pump HandlerA9E00 @0x0a9e00 lives in its retail TU,
-//    LogicWorkerHandlers.cpp - wave2-H)
-//   CDoNothing::CDoNothing         @0x0ac1d0 - the ctor (BigActHeight de-prioritize)
-//
-// CDoNothing / CDoNothingNormal : CUserLogic (base hierarchy from
-// <Gruntz/UserLogic.h>). Only offsets / code bytes are load-bearing; names are
-// placeholders for the recovered engine identities.
 #include <Gruntz/DoNothing.h>
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
@@ -24,11 +8,6 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
-// CDoNothing::GetTypeTag (0x0000f6b0) is now an inline member in the class header.
-
-// CDoNothing::Serialize @0x00f6d0 - the vtable slot-1 override: chain the shared
-// CUserLogic serialize helper on `this`, then (on success) the +0x34 sub-object's
-// chain; normalize to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f6d0, 0x47)
 i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -49,8 +28,6 @@ i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CDoNothing@@UAE@XZ 0x0000f770 0x44
 
-// CDoNothingNormal::Serialize @0x00f800 - the vtable slot-1 override (same shape as
-// CDoNothing::Serialize): base CUserLogic chain + the +0x34 sub-object chain.
 RVA(0x0000f800, 0x47)
 i32 CDoNothingNormal::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -70,13 +47,6 @@ i32 CDoNothingNormal::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CDoNothingNormal@@UAE@XZ 0x0000f8a0 0x44
 
-// Realize ??_7CDoNothingNormal@@6B@ (0x1e859c): retail's dtor folds straight to the
-// CUserLogic teardown and never references the leaf vtable (so ~CDoNothingNormal only
-// emits the base ??_7CUserLogic/??_7CUserBase restamps), and the logic-worker ctor
-// stamps the leaf vtable vptr-MIDDLE - neither anchors the leaf COMDAT. A spurious
-// `new CDoNothingNormal` references the implicit vptr-FIRST leaf ctor, whose stamp
-// (the escaping object keeps it) emits ??_7CDoNothingNormal. Unpaired (no RVA) ->
-// matching-neutral; it does NOT touch the 0xf8a0 dtor codegen.
 CDoNothingNormal* RealizeCDoNothingNormal();
 CDoNothingNormal* RealizeCDoNothingNormal() {
     return new CDoNothingNormal();
@@ -105,5 +75,3 @@ CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 }
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---

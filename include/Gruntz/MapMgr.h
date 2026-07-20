@@ -1,64 +1,17 @@
-// MapMgr.h - the engine's CMapMgr (the level/map manager), self-located via its
-// RTTI vftable. Field names are placeholders
-// (m_<hexoffset>); ONLY the OFFSETS + code bytes are load-bearing (campaign
-// doctrine). The layout below is CONFIRMED from the ctor, the dtor
-// and the slot-0 cleanup/reset method.
-//
-// ---------------------------------------------------------------------------
-// CMapMgr (>= 0x60 bytes). vftable (6 virtual slots; see below). The
-// ctor runs two embedded sub-object ctors (the two small growable arrays at
-// +0x30 and +0x3c), then zeroes/seeds the scalar members:
-//   +0x00  m_vtbl   : vftable pointer.
-//   +0x04  m_4      : 0   (a heap pointer; slot-0 Reset `operator delete`s it).
-//   +0x08  m_8      : 0   (a heap pointer; slot-0 Reset `operator delete`s it).
-//   +0x0c  m_c      : 0
-//   +0x10  m_10     : 0
-//   +0x14  m_14     : (not written by the ctor)
-//   +0x18  m_18     : 0
-//   +0x1c  m_1c     : 0
-//   +0x30  m_colA   : CMapArrayA  (0x0c bytes; element stride 0x24).
-//   +0x3c  m_colB   : CMapArrayB  (0x0c bytes; element stride 0x0c).
-//   +0x4c  m_4c     : 0
-//   +0x50  m_50     : -1
-//   +0x58  m_58     : 0
-//   +0x5c  m_5c     : 1
-//
-// CMapMgr vftable (6 slots): slot0=Reset (the cleanup the dtor calls inline),
-// slots 1..4 are local methods, slot5 is a shared/base method. Slots 1..5
-// are out-of-line empty stubs here, present only to anchor the vftable
-// relocation that the ctor stores (the CGameWnd vftable-in-TU idiom).
 #ifndef SRC_GRUNTZ_MAPMGR_H
 #define SRC_GRUNTZ_MAPMGR_H
 
 #include <rva.h>
 #include <Ints.h>
 
-// The Brickz grid records (defined in <Gruntz/Brickz.h>, which includes THIS header -
-// pointers only here, so a forward declaration is all the fold needs).
 struct BrickzCell;
 struct BrickzNode;
 class CDDrawSurfaceMgr; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
 struct tagRECT;
 
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-// The arrays link their blocks in with the global ::operator new (??2@YAPAXI@Z
-// @0x1b9b46) / ::operator delete (??3@YAXPAX@Z @0x1b9b82) - the real NAFXCW CRT
-// allocators (called cast-free via <Mfc.h>); the former MapAlloc/MapFree fake
-
-// ---------------------------------------------------------------------------
-// CMapArrayA - a small growable array embedded in CMapMgr at +0x30 (0x0c bytes).
-//   +0x00  m_block : the allocated element block (set by Allocate, freed by dtor)
-//   +0x04  m_0     : a second block pointer (the array body the ctor/dtor own)
-//   +0x08  m_count : element count.
-// Element stride = 0x24 (36 bytes). Allocate(count) carves the block into a
-// doubly-linked free list (each element's +0x14/+0x10 links). Ctor zeroes the
-// three slots; dtor frees +0x04 then zeroes.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapArrayA);
 class CMapArrayA {
 public:
@@ -71,15 +24,6 @@ public:
     u32 m_count;         // +0x08
 };
 
-// ---------------------------------------------------------------------------
-// CMapArrayB - a small growable array embedded in CMapMgr at +0x3c (0x0c bytes).
-//   +0x00  m_0     : the heap block (freed by the dtor)
-//   +0x04  m_block : the allocated element block (set by Allocate)
-//   +0x08  m_count : element count.
-// Element stride = 0x0c (12 bytes). Same free-list build as CMapArrayA but a
-// 0x0c stride and the heap pointer at +0x00 (vs +0x04). Ctor zeroes the three
-// slots; dtor frees +0x00 then zeroes.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapArrayB);
 class CMapArrayB {
 public:
@@ -92,17 +36,7 @@ public:
     u32 m_count;         // +0x08
 };
 
-// ---------------------------------------------------------------------------
-// CMapMgr - the level/map manager (vftable, 6 slots). Polymorphic so
-// the vptr lands at +0x00 and the two-phase vtable store falls out.
-// ---------------------------------------------------------------------------
-// A serialized map cell: 0x1c bytes. Save/Load stream the whole cell; Load then
-// zeroes the +0x18 runtime field (not a persisted value).
 SIZE_UNKNOWN(MapCell);
-// The 0x1c-byte grid cell. MapCell and <Gruntz/Brickz.h>'s BrickzCell are the SAME
-// record (same 0x1c stride; MapCell's "+0x18 runtime field zeroed after Load" is
-// BrickzCell::m_head, the bucket-list head) - BrickzCell is the fully-fielded model.
-// @fold-TODO: delete MapCell once its ~40 MapMgr.cpp uses move to BrickzCell.
 struct MapCell {
     char m_pad0[0x18];
     i32 m_18; // +0x18  runtime field (zeroed after Load) == BrickzCell::m_head
@@ -247,28 +181,14 @@ public:
                                  //        CGameLevel; ex the BrickzAttrMgr view)
 };
 
-// CBrickzGrid IS this class - RTTI .?AVCMapMgr@@ (vtable 0x1ea3b4), proven three ways:
-// its Search (0x09eca0) and IsCellClear (0x0853f0) ARE slots 4 and 5 of that vtable; its
-// cell record is the same 0x1c-byte struct; and its "+0x30 node pool / +0x40 free list"
-// are the block pointers of the embedded CMapArrayA/CMapArrayB. The name survives as an
-// alias so the 17 consumers and every existing definition keep compiling - MSVC5 mangles
-// a member defined through the typedef as ?X@CMapMgr@@ (verified), so the symbols are the
-// real class's. @fold-TODO: rename the consumers, then drop this alias.
 typedef CMapMgr CBrickzGrid;
 
-// --- the embedded-array element records (ex MapMgr.cpp-local) -------------------
-// (MapElemA is GONE - the 0x24-byte A-pool element IS BrickzNode: m_next/m_prev
-// were its m_14/m_18 list links, same size, same alloc arithmetic.)
-
-// A 0x0c-byte element of CMapArrayB's block: data @+0x00, prev @+0x04, next @+0x08.
 struct MapElemB {
     void* m_0;        // +0x00
     MapElemB* m_prev; // +0x04
     MapElemB* m_next; // +0x08
 };
 
-// A recycled result record off the shared free-list (g_coordPool): m_0 = next-free
-// link, m_4/m_8 = the path cell (col,row) handed to the result list.
 struct BrickzFreeRec {
     i32 m_0; // +0x00  next-free link
     i32 m_4; // +0x04  path col

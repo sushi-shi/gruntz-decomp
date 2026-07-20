@@ -1,26 +1,10 @@
-// WallProject.cpp - ProjectWallQuad (0x1471d0, __cdecl, leaf, returns 1). Builds a
-// rotated/scaled quad in the static draw workspace (0x6a21f8..0x6a226c, four 0x1c-
-// byte vertex records) from a segment (p1,p2)->(p3,p4) with half-thickness p5: it
-// takes the segment angle (atan2), |dx|/|dy|, the segment length (sqrt), and the
-// sin/cos of the angle, rotates the four base corners into the workspace, then calls
-// the build helper (0x1461b0) and, on success, the draw helper (0x146fe0).
-//
-// Compiled WITHOUT the intrinsic FPU flag the retail used (/Oi), so atan2/sin/cos/
-// sqrt here lower to CRT calls rather than the inline fpatan/fsin/fcos/fsqrt of
-// retail. Modeled with offset-faithful workspace + const externs; the real home is
-// the DDraw line/wall draw family.
 #include <rva.h>
 
 #include <Ints.h>
 #include <math.h>
 #include <Globals.h>
-// The shared 28-byte-vertex workspace (g_rasterVtxB), its published clipped count
-// (g_rasterVtxCount) and the clip/fill spine (ImagePolyClipRect @0x1461b0,
-// FillPolygon @0x146fe0). ProjectWallQuad builds four ClipVtx records in g_rasterVtxB,
-// clips them, then fills; p0 is the dest surface. Owner DATA() bindings elsewhere.
 #include <Image/RasterVtx.h>
 
-// Read-only float constants the rotation uses (0x5efb10/0x5efb20/0x5efb24).
 DATA(0x001efb10)
 extern float g_c10;
 DATA(0x001efb20)

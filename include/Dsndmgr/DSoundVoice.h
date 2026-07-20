@@ -1,15 +1,3 @@
-// DSoundVoice.h - the 0x28-byte "playing voice" node of the Dsndmgr module
-// (C:\Proj\Dsndmgr\, retail vftable 0x5ef6d0). DirectSoundMgr::CloneAndPlay
-// (0x135660) new's one of these per requested play and threads its intrusive
-// anchor (m_link @ +0x04) into the owning device's voice list; the voice ctor
-// (0x136fe0) stamps the vtable + the play params.
-//
-// A voice drives a single cloned DirectSound buffer (m_buffer, a DirectSoundMgr)
-// over a volume ramp: from m_rampStartVolume -> m_rampEndVolume across
-// m_rampDurationMs ms starting at m_rampStartTime, with m_stopAndRewind a
-// "stop+rewind when finished" flag. The modeled methods are vtable slots 0
-// (Tick, 0x137060) and 1 (Stop, 0x1370d0); both drive the buffer's IsPlaying /
-// SetVolumeByIndex / StopAndRewind wrappers.
 #ifndef DSNDMGR_DSOUNDVOICE_H
 #define DSNDMGR_DSOUNDVOICE_H
 
@@ -19,10 +7,6 @@
 
 class DirectSoundMgr; // the cloned DirectSound buffer this voice drives
 
-// The 0x28-byte voice node (vtable @0x5ef6d0). A PureSoundElem-derived element:
-// slots 0/1 override the pure Tick/Stop, slot 2 is a new virtual. Layout from the
-// ctor (0x136fe0) + the Tick/Stop methods: an intrusive list-anchor at +0x04, a
-// live flag at +0x0c, the cloned buffer at +0x10, then the volume-ramp params.
 struct DSoundVoice : public PureSoundElem {
     // Slots 0/1 (Tick/Stop) are defined in DSoundVoice.cpp overriding the pure base,
     // so cl emits ??_7DSoundVoice@@6B@ (0x5ef6d0) referencing them + the external

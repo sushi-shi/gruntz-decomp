@@ -33,20 +33,9 @@
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
-// The global bute store the ctor interns "A" in (?g_buteTree@@3VCButeTree@@A @0x6bf620).
-
-// (The local CDDrawBlitParam facet view is GONE: Recompute_15c320 lives on the
-// one CAniAdvanceCursor class - the ex dual-view is a single class now.)
-
-// The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
-// g_frameDelta in Attract.cpp, g_engineFrameDelta in the pump cluster); declared extern so the
-// loads reloc-mask against the already-matched symbols.
 extern "C" u32 g_frameDelta;       // 0x645584  per-frame time delta
 extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  frame tick
 
-// --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc --- the ctor anchors the ??_7CMenuSparkle
-// vtable in this TU. Folds the inline CUserLogic(obj) base + the sparkle name/geometry
-// setup, then seeds the random flicker delay.
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("MENU_SPARKLE");
@@ -65,22 +54,11 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CMenuSparkle@@UAE@XZ 0x000101b0 0x44
 
-// ===========================================================================
-// CMenuSparkle's per-class activation registrar (dispatch table 0x646010), homed
-// from the former LogicActReg646010.cpp - see the identity proof in the header.
-// ===========================================================================
-
-// This leaf's per-class activation dispatch table (.data, DATA-pinned).
 DATA(0x00246010)
 extern CLogicActTable g_logicActReg_646010; // 0x646010
 
-// The class activation handler (ILT thunk 0x403c10 -> 0xad2a0).
 extern "C" void LogicHandler_0ad2a0();
 
-// The shared name-registry build (action key "A"), CKitchenSlime::RegisterType
-// ordering: register the action name on first use, resolve its name-table slot, free
-// the slot's old CString nodes, assign the key, bump the global counter; returns the
-// (possibly newly-allocated) action id.
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
@@ -104,33 +82,11 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-// ConstructLogicActRange_646010 @0x0adde0 - the static initializer that builds this
-// leaf's dispatch table's fast [0x7d0, 0x7da] id range. Called from the file-scope
-// static-init at 0xadd58, immediately after this TU's ctor.
 RVA(0x000adde0, 0x15)
 void ConstructLogicActRange_646010() {
     g_logicActReg_646010.Construct(0x7d0, 0x7da);
 }
 
-// CMenuSparkle::Dispatch @0x0ade60 - per-coordinate activation dispatch over this
-// leaf's table. Resolves the activation entry for `coord` (ResolveEntry, inlined
-// twice); if the entry's leading handler slot is non-null, re-resolves and invokes it
-// __thiscall on this object.
-//
-// This IS CMenuSparkle's vtable slot 4 (??_7CMenuSparkle@@6B@+0x10 -> 0xade60 via ILT
-// thunk 0x19b0; vtable_hierarchy tags slot 4 `override`, origin CUserLogic). It is
-// declared a PLAIN method rather than the OVERRIDE, because the campaign-wide
-// CUserLogic base models slot 4 with a no-arg `UserLogicVfunc2()` placeholder while
-// the real slot is int-arg - retail's own base body (thunk 0x246e -> 0x8b70) and this
-// override both `ret 4`. That is the same documented workaround ~40 sibling leaves use
-// for their RunAct/FireActivation slot-4 bodies (see Grunt.h, Projectile.h,
-// PathHazard.cpp, ActionArea.h); fixing the base arity is a tree-wide change and would
-// let every one of them become a real OVERRIDE and delete its placeholder virtual.
-// The former CProjActDispatcher .cpp-local view is DISSOLVED onto CMenuSparkle here.
-
-// The entry's leading slot is a __thiscall handler taking this object; MSVC5 rejects
-// the __thiscall keyword, so model it as a single-inheritance member pointer (a bare
-// 4-byte code address) reinterpreted from the entry word.
 typedef void (CUserLogic::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)

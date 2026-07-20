@@ -1,33 +1,16 @@
-// GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
-// Matched: CGameWnd::CGameWnd (byte-exact).
-// <Mfc.h> brings <windows.h> USER32: IsWindow / DestroyWindow / PostQuitMessage / DefWindowProcA.
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
-// -------------------------------------------------------------------------
-// CGameWnd::CGameWnd()
-// Zeroes the OS window handle (m_hwnd) and owner-state field (m_closeGuard) after the
-// base/vftable construction.
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = 0;
     m_closeGuard = 0;
 }
 
-// Active-window singleton (declared in Wap32.h so the inline ~CGameWnd resolves
-// it). Set by CreateAndShow; read by GameWindowProc to dispatch to this object.
-// Owner-TU definition (.bss, VA 0x653c68; the retail global the placeholder
-// g_singleton653c68 named); reference extern stays in <Globals.h>.
 DATA(0x00253c68)
 CGameWnd* g_activeGameWnd; // 0x653c68
 
-// -------------------------------------------------------------------------
-// CGameWnd::CreateAndShow
-// Creates the OS window from the caller's CreateWindowExA params struct,
-// installs this object as the active-window singleton, then ShowWindow(SW_
-// SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
-// already active.
 RVA(0x0013cf20, 0x8f)
 i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     if (!pParams) {
@@ -66,10 +49,6 @@ i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::Destroy
-// Destroys the OS window if it is still valid, clears owner/window state, and
-// clears the active-window singleton.
 RVA(0x0013cfb0, 0x39)
 void CGameWnd::Destroy() {
     if (m_hwnd) {
@@ -82,12 +61,6 @@ void CGameWnd::Destroy() {
     g_activeGameWnd = 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::OnCommand (WM_COMMAND handler, vtable slot 21). Splits wParam into
-// the LOWORD command id and HIWORD notification code and offers (notify, cmd,
-// lParam) in turn to the owning app's command virtual (slot 10), this window's
-// own slot-2 hook, and the game manager's HandleCommand (slot 5), returning on
-// the first one that claims the message.
 RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>((wParam >> 16));
@@ -106,9 +79,6 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
            != 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::OnClose (WM_CLOSE handler, vtable slot 4). Destroys the OS window
-// exactly once (m_closeGuard guards re-entry) and reports "handled" (1).
 RVA(0x0013d4c0, 0x1e)
 i32 CGameWnd::OnClose() {
     if (!m_closeGuard) {
@@ -118,20 +88,12 @@ i32 CGameWnd::OnClose() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::OnActivateApp (WM_ACTIVATEAPP handler, vtable slot 12). Records the
-// app-active flag (wParam) into the owning CGameApp's m_appActive and reports "not
-// handled" (0) so GameWindowProc falls through to DefWindowProcA.
 RVA(0x0013d470, 0xd)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
     m_owner->m_appActive = wParam;
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::QuitMessageLoop
-// Frees the game manager through the owning app, optionally reports the stored
-// error, then posts WM_QUIT.
 RVA(0x0013d490, 0x29)
 i32 CGameWnd::QuitMessageLoop() {
     m_owner->FreeGameManager();
@@ -142,12 +104,6 @@ i32 CGameWnd::QuitMessageLoop() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGameWnd::PumpMessages
-// Drains up to `count` queued messages for this window, every PeekMessageA
-// filtered to the single id `filterMsg` (wMsgFilterMin == wMsgFilterMax) and
-// removed (PM_REMOVE). Bails immediately on a non-positive count and stops at
-// the first empty peek; the discarded MSG lives in a stack local.
 RVA(0x0013d4e0, 0x43)
 void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     MSG msg;
@@ -158,10 +114,6 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     }
 }
 
-// CGameWnd::PumpMessagesRange - the [filterMin, filterMax] range variant of
-// PumpMessages (0x13d530). Orphan copy (inlined at every call site). The two
-// distinct filter args stay live across the loop, so /O2 hoists the PeekMessageA
-// IAT pointer into a callee-saved reg.
 RVA(0x0013d530, 0x55)
 void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
     MSG msg;
@@ -172,24 +124,6 @@ void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGameApp::GameWindowProc - the static window procedure stored into
-// WNDCLASS.lpfnWndProc (so __stdcall, the Win32 WNDPROC ABI: ret 0x10). Its code
-// lives in the CGameWnd cluster because it dispatches to the active CGameWnd
-// singleton (g_activeGameWnd, set by CreateAndShow):
-//
-//   1. If no window is active yet, DefWindowProcA passthrough.
-//   2. Give the active window a first crack via PreDispatchMessage (vtbl +0x04)
-//      for EVERY message; a nonzero return swallows it (WndProc returns 0).
-//   3. Otherwise a switch(uMsg) routes each WM_* to its own CGameWnd virtual
-//      (the slot offsets are load-bearing - see Wap32.h's vtable map). A handler
-//      returning nonzero = "handled" => return 0; returning zero falls through to
-//      DefWindowProcA. The singleton global is RE-READ in every case (the source
-//      uses g_activeGameWnd directly, not a cached local - a cached pWnd would stay
-//      in a saved register across the vtbl call instead of reloading [0x653c68]).
-//
-// Point messages (WM_MOVE / mouse) split lParam into LOWORD(x)/HIWORD(y); the
-// (int) low/high words come straight off lParam (& 0xffff / >> 16).
 RVA(0x0013cff0, 0x35c)
 LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = g_activeGameWnd;
@@ -389,8 +323,5 @@ i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
 
-// The real polymorphic CGameWnd emits ??_7CGameWnd@@6B@ from this TU; bind its
-// retail vtable RVA here (moved from the deleted src/Stub/BoundaryLowerThunks.cpp).
 VTBL(CGameWnd, 0x001ea344);
-// size 0x10 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGameWnd, 0x10);

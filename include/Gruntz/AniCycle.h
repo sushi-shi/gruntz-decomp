@@ -1,11 +1,3 @@
-// AniCycle.h - an animation-cycle eyecandy game-object (C:\Proj\Gruntz), a
-// CUserLogic leaf in the same animation family as CSimpleAnimation /
-// CSingleFrameMessage: a per-class activation registry (g_aniCycleActReg
-// @0x646088) bound by RegisterActs to a per-frame AdvanceAnim handler under the
-// shared activation-name key "A".
-//
-// CAniCycle : CUserLogic. Only offsets / code bytes are load-bearing; names are
-// placeholders for the recovered engine identities.
 #ifndef GRUNTZ_CANICYCLE_H
 #define GRUNTZ_CANICYCLE_H
 
@@ -48,7 +40,6 @@ public:
 VTBL(CAniCycle, 0x001e86a4);
 SIZE(CAniCycle, 0x54);
 
-// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
 typedef i32 (CUserLogic::*AniCycleHandler)();
 struct CAniCycleActEntry {
     AniCycleHandler m_fn;

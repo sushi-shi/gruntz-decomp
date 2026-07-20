@@ -1,27 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 
-// DDrawWorkerList.h - CDDrawWorkerList, the CObList-backed worker factory of the
-// DDraw surface-manager family (14-slot vtable ??_7CDDrawWorkerList @0x1efd88).
-// It is "renderer B": the object CDDrawSurfaceMgr::Init (0x155900) news (0x2c B,
-// base ctor 0x156cb0(mgr,0,0), CObList ctor at +0x10, vptr stamp 0x5efd88) and
-// stores at holder+0x0c (CDDrawSurfaceMgr::m_workerList). The per-frame
-// "present" the play states dispatch on it IS slot 13, PruneWorkers.
-//
-// SLOT-BODY PROOF (xref, 2026-07-13): slots 9-13 (the factories + PruneWorkers)
-// have ZERO direct rel32 callers in retail - every reference is the vtable slot
-// itself - so they are REAL VIRTUALS, not non-virtual twins (the former
-// VCreateA/VCreateB28/VCreateB2C/VCreateB30/VPrune placeholder slots shadowed
-// their own bodies). ClearWorkers (0x163c60) has 3 direct game callers and is NOT
-// in the vtable: genuinely non-virtual. Slot 7 (0x163bc0) is byte-IDENTICAL to
-// ClearWorkers (no /OPT:ICF, so this is the same source body compiled twice - the
-// virtual teardown broadcast); the real destructor is 0x156f50 (own-vtbl stamp,
-// call 0x163bc0, ~CObList, base field resets, CObject restamp), with its ??_G at
-// 0x156f30 (vtable slot 1).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
-
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -31,16 +10,6 @@
 
 class
     CDDrawWorker; // the frame-source (ex CDDrawFrameSource view) // the frame table view (def rides the workers G section)
-
-// (The former `CDDrawWorkerItem` dispatch view is DISSOLVED 2026-07-14: the real
-// CDDrawWorkerBase (<DDrawMgr/DDrawWorkerNode.h>, now : CResolveNode) carries the
-// shared slot overrides + RenderFrame [10] + m_refCount itself, so the list
-// dispatches the elements as CDDrawWorkerBase* directly. The CObList element
-// downcast at the walk sites is the authentic MFC CObject*-container idiom.)
-
-// (The former `WorkNode` raw CNode view is gone: the walks use the real MFC
-// CObList POSITION/GetHeadPosition/GetNext idiom, whose afxcoll.inl inline IS the
-// {pNext @+0x00, data @+0x08} node walk retail shows.)
 
 // The intermediate base: owns the +0x04/+0x08/+0x0c header fields and the inline
 // dtor that resets them (byte-proven from ~CDDrawWorkerList @0x156f50: after
@@ -70,7 +39,6 @@ inline WorkerListSibBase::~WorkerListSibBase() {
 }
 SIZE(WorkerListSibBase, 0x10);
 
-// 14-slot vtable 0x5efd88: slots 0-4 from the base scheme, slots 5-13 own.
 class CDDrawWorkerList : public WorkerListSibBase {
 public:
     // slot 1 - real dtor body @0x156f50 (G obj, DDrawSubMgr.cpp); ??_G @0x156f30.

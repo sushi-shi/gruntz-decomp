@@ -1,17 +1,8 @@
-// ScrollState.h - the map auto-scroll state block at 0x64cfb0 (owner TU
-// src/Gruntz/MgrAutoScroll.cpp). Declared here so the scroll consumers
-// (CmdScrollApply, MapLogic's scroll-state serializer) reference these from
-// this owner header instead of per-TU externs. DATA homes live in MgrAutoScroll.cpp.
 #ifndef GRUNTZ_GRUNTZ_SCROLLSTATE_H
 #define GRUNTZ_GRUNTZ_SCROLLSTATE_H
 
 #include <Ints.h>
 
-// The block, in address order. Every slot is a REAL, separately-referenced global -
-// MapSerializeCurve (0x0ec230) streams the whole run field by field, and each of its
-// operands is an absolute .data reference to one of these, not an offset from the head.
-// (It used to spell them `(char*)&g_scrollAccum + 0xNN`, which both reached these
-// globals behind pointer arithmetic and hid the references from reloc-fidelity.)
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit scroll accumulator; serialized block head)
 extern i64 g_scrollLimit; // 0x64cfb8 (+0x08)  UpdateMgrScroll's threshold
 extern u32 g_scrollClock; // 0x64cfc0 (+0x10)

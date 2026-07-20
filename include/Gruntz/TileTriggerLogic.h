@@ -1,6 +1,3 @@
-// TileTriggerLogic.h - Gruntz tile-trigger logic class (C:\Proj\Gruntz).
-// Reconstruction sufficient to byte-match the constructor. Offsets are the
-// load-bearing fact the match proves.
 #ifndef TILETRIGGERLOGIC_H
 #define TILETRIGGERLOGIC_H
 
@@ -11,19 +8,8 @@
 
 class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileTriggerContainer.h)
 
-// The active-player slot index the switch/validation logic reads (an index into
-// m_playerFlags[] and g_gameReg->m_options[]). Reloc-masked, no DATA home; declared
-// here so both tile-logic TUs reference it from one place, not per-TU externs.
 extern i32 g_tileKindMagic;
 
-// The tile-trigger factory/serialize type-id space: the id CTileTriggerContainer::
-// LoadElement (0x117800) switches on and stamps into the element (switch family
-// m_04 / logic family m_typeTag), re-read by the serialize dispatchers
-// (SerializeApplyA: 1..8; SerializeApplyB: 0x15..0x1a), AddLogic (0x116610:
-// 0x15..0x1a) and the container finders (FindChild id filter, FindInLists12 tag).
-// PROVEN arms only - each value's class is pinned by its `new` in the retail
-// switch. Ids 1/2/5 all build the base CTileTriggerSwitchLogic (their gameplay
-// distinction is unrecovered, so they keep numeric suffixes, not invented roles).
 typedef enum TrigLogicId {
     TRIGID_SWITCH_1 = 1,              // CTileTriggerSwitchLogic
     TRIGID_SWITCH_2 = 2,              // CTileTriggerSwitchLogic
@@ -41,19 +27,11 @@ typedef enum TrigLogicId {
     TRIGID_COVERED_POWERUP_26 = 0x1a, // CCoveredPowerupLogic (SetCell's fallback probe tag)
 } TrigLogicId;
 
-// The two CGruntzMgr::ReportError classes the trigger-link validators raise
-// (arg1 of ReportError(class, site)). PROVEN arms only: every 0x80dd site in the
-// tree reports a lookup that came back empty (FindChild key miss, the rock-scan
-// miss @TriggerMgr 0x403), every 0x80de site a resolved link that failed
-// validation (no claiming child). The wider 0x80xx space belongs to CGruntzMgr -
-// unproven arms are left unenumerated.
 typedef enum TrigErrClass {
     TRIGERR_LOOKUP_MISS = 0x80dd, // a FindChild/registry lookup returned nothing
     TRIGERR_LINK_BROKEN = 0x80de, // a link validation failed (no child claims the switch)
 } TrigErrClass;
 
-// The per-site diagnostic tags (arg2) of the trigger-link validators - one per
-// PROVEN report site.
 typedef enum TrigErrSite {
     TRIGSITE_ROCK_SCAN_MISS = 0x403,  // TriggerMgr rock-break: no giant rock around (x,y)
     TRIGSITE_LINKSB_NO_OWNER = 0x44d, // VerifyBlockLinksB: no m_list1 child claims this switch
@@ -64,24 +42,6 @@ typedef enum TrigErrSite {
     TRIGSITE_LINKS_KEY_MISS = 0x453,  // VerifyBlockLinks: block key unresolved (id-8 filter)
 } TrigErrSite;
 
-// ---------------------------------------------------------------------------
-// CTileTriggerLogic
-//   vftable (0x5eaea4, ONE slot). size 0x9c. ctor:
-//     mov edx,this; vptr@0; rep stosl zeroes 24 dwords (96 bytes) starting at
-//     +0x3c (m_block); then m_1c (+0x1c) = 0 (reusing the zero in eax, emitted
-//     AFTER the rep stosl -> the m_block array is initialised before m_1c).
-//
-// The retail vtable at 0x5eaea4 holds exactly ONE slot (0x402072 -> the regular
-// virtual at 0x110c10); the derived logic classes (CGiantRockLogic, ...) share
-// that same slot value -> it is an INHERITED regular virtual, not a per-class
-// destructor.  So CTileTriggerLogic is modeled with a single non-dtor virtual and
-// NO virtual destructor (the earlier ??_G@0x116610 label was a misattribution: that
-// function ends `ret 0x84`, a 33-arg engine fn, not a scalar-deleting dtor).
-//
-// The ctor zeroes only m_block+m_1c; the remaining fields (m_04..m_38) are filled
-// by the AddLogic factory (0x116610) after construction. The inline dtor is the one
-// the factory's failure path inlines: stamp ??_7 (auto vptr), zero m_1c, RezFree.
-// ---------------------------------------------------------------------------
 SIZE(CTileTriggerLogic, 0x9c);
 VTBL(CTileTriggerLogic, 0x001eaea4); // vtable_names -> code (RTTI game class)
 class CTileTriggerLogic {
@@ -157,20 +117,6 @@ public:
                                  //        folded view - same 24 dwords at the same offset)
 };
 
-// The per-id logic leaves of the CTileTriggerLogic family (base = 1 virtual): each is
-// 0x9c bytes and carries its own RTTI vtable. The AddLogic factory (0x116610) news the
-// four non-rock leaves; the serialize Build factory (0x117800) constructs the same set
-// via its CTrigLogic9c size-bucket. Their ctors are defined (RVA-bound) in
-// TileTriggerSwitchLogic.cpp - the header carries only the declarations so both TUs
-// share one class shape.
-// CGiantRockLogic is the ONE leaf of this family that adds data. sizeof = 0xc8, PROVEN from
-// the allocation site (CTileTriggerFactory::Build @0x117b49: `push 0xc8; call ??2; mov ecx,eax;
-// call ??0CGiantRockLogic`, and again at 0x116d10). The 0x2c it adds over the 0x9c base is
-// EXACTLY what SerializeMatrix streams, with zero slack:
-//     base 0x9c + m_matrix[9] (0x24) + m_c0 + m_c4 = 0xc8
-// Retail hands this object to ApplyByType right after that ctor (`mov ecx,esi; call 0x1d39`),
-// which is why ApplyByType/SerializeMatrix/DeserializeMatrix - reaching this+0x9c..+0xc4 -
-// belong HERE and not on the 0x8c CTileTriggerSwitchLogic they were filed under.
 class CGiantRockLogic : public CTileTriggerLogic {
 public:
     CGiantRockLogic(); // 0x112210 (ILT 0x2c3e)
@@ -197,8 +143,6 @@ class CCoveredPowerupLogic : public CTileTriggerLogic {
 public:
     CCoveredPowerupLogic(); // 0x112240 (ILT 0x2a4f)
 };
-// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CCoveredPowerupLogic, 0x9c);
 VTBL(CCoveredPowerupLogic, 0x001eaef4); // vtable_names -> code (RTTI game class)
 
@@ -206,8 +150,6 @@ class CTileTimeTriggerLogic : public CTileTriggerLogic {
 public:
     CTileTimeTriggerLogic(); // 0x112270 (ILT 0x18de)
 };
-// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CTileTimeTriggerLogic, 0x9c);
 VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 
@@ -216,8 +158,6 @@ class CTileSecretTriggerLogic : public CTileTriggerLogic {
 public:
     CTileSecretTriggerLogic(); // 0x112760 (ILT 0x310c)
 };
-// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CTileSecretTriggerLogic, 0x9c);
 VTBL(CTileSecretTriggerLogic, 0x001eaf14); // vtable_names -> code (RTTI game class)
 

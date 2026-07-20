@@ -1,11 +1,3 @@
-// HelpState.h - the canonical CHelpState (C:\Proj\Gruntz), extracted from the TU-local
-// definition in HelpState.cpp so CGruntzMgr::TransitionState can `new` the REAL class.
-//
-// It had to leave the .cpp: GruntzMgr.cpp carried a reduced local `struct CHelpState :
-// CState` twin, and because that twin declared none of the overrides below, cl emitted a
-// ??_7CHelpState@@6B@ in gruntzmgr.obj whose slots were ALL CState base slots - an
-// ODR-divergent duplicate of helpstate's real vtable. The linker keeps ONE vtable COMDAT
-// per name, so picking gruntzmgr's made every CHelpState dispatch to CState.
 #ifndef GRUNTZ_HELPSTATE_H
 #define GRUNTZ_HELPSTATE_H
 

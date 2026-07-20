@@ -28,13 +28,8 @@
 #include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
 #include <Image/CImage.h>        // CImage m_width/m_height (SetTileSizeFromImageSet)
 #include <Image/ImageSet.h> // the REAL CImageSet (0x6c frame collection): SetTileSizeFromImageSet's
-                            // arg. Was the GameLevel.h tile-descriptor class of the same NAME,
-// which had these frame fields grafted on; that class is CTileImageSet now.
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
-// The plane host's +0x0c root and the members its facets were views of: the
-// registry/cache map chains (+0x10/+0x14), the pages/pair bpp (+0x04) and the
-// worker map's palette owner (+0x18). See the cascade proof in <Wwd/WwdFile.h>.
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>  // m_imageRegistry->m_10map
 #include <DDrawMgr/DDrawWorkerCache.h>     // m_workerCache->m_10
@@ -67,18 +62,6 @@
 // conflation with the Gruntz CImageSet3 variant record" is resolved: the 0x18-byte
 // record class (<Gruntz/ImageSets.h>) cannot even hold a +0xb0 member.]
 
-// ===========================================================================
-// 0x1615a0 - CDDrawWorkerHost(a1,a2,a3): the /GX EH ctor. cl inlines the
-// CLoadable base ctor (vptr stamp -- reloc-masks the retail intermediate
-// g_loadableVtbl 0x5efc30 -- then m_04=a2/m_08=a3/m_0c=a1), constructs the
-// +0x9c ::CObArray member (0x1b55e9; its destructible-member trylevel supplies
-// the EH frame), stamps the own vftable (0x5f0270), then arms the scalar fields
-// (grid/scroll = 0, scaleX/Y = 1.0f, +0x50 = -1) and zero-fills the +0xf4 pool
-// (25 dwords) with m_pool[0] = 100. Byte-exact (100%): the retail intermediate base
-// stamp 0x5efc30 is reloc-masked, so the compiler-emitted ??_7CLoadable stamp
-// matches at the byte level; the CLoadable ctor arg-order (m_04=a2/m_08=a3/
-// m_0c=a1) + body store order reproduce the schedule exactly.
-// ===========================================================================
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
     m_04 = field04;
@@ -222,9 +205,6 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x161bf0: tear down the owned resources.  Prune the grid, then destroy + free
-// it (no null-out), then free the two RezAlloc'd buffers at +0x20/+0x24 (nulled).
 RVA(0x00161bf0, 0x5e)
 void CDDrawWorkerHost::Cleanup_161bf0() {
     if (m_scroll != 0) {
@@ -263,13 +243,6 @@ void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     m_frameSets.SetAtGrow(index, val);
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerHost::RecomputePlaneCoords - recompute one plane's scaled scroll origin
-// and visible-tile extents from its (already-scaled) float coords. __thiscall
-// with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the
-// CRT __ftol helper (the (int)float casts). X and Y are computed identically:
-// wrap (flags bit set) folds the coord modulo the tile count into [0, count);
-// else it clamps to [0, count-1].
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::RecomputePlaneCoords() {
     CLevelPlane* p = this;
@@ -425,11 +398,6 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerHost::SetTileSizeFromImageSet (0x161fa0, __thiscall, ret 0x4): linear-scan
-// the image set for the first populated frame (GetAt returns null outside
-// [minIndex, maxIndex]); on the first hit, drive SetTileSize with that frame's pixel
-// dimensions and stop. An empty set leaves the tile size unchanged.
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
@@ -441,31 +409,6 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
     }
 }
 
-// ===========================================================================
-// CDDrawWorkerHost::Draw (__thiscall, ret 0x4) - the toroidally-wrapped tile-grid
-// renderer. Takes one context arg (the blit destination owner) at +0xA8; ebp =
-// ctx->m_2c is the target CDDSurface (the BltEx/BltFast `this`). If the plane is
-// hidden (flag bit1) it returns immediately.
-//
-// It converts the plane's pixel view-rect [m_40..m_4c] into tile indices via the
-// log2 shifts (m_8c=shiftX, m_90=shiftY), computing the partial-tile pad at each
-// edge (leftPad/topPad/rightPad/botPad) and the interior tile counts
-// (interiorCols = colR-colL-1, interiorRows = rowB-rowT-1). It then walks the
-// visible grid in five phases - top-left corner, top strip, top-right corner;
-// then per interior row: left column, interior columns, right column; then the
-// bottom edge - blitting each cell. For each cell it reads the tile handle from
-// the row-major grid m_20[m_24[row] + col]: 0xEEEEEEEE (uninitialised) => a
-// clipped fill via CDDSurface::BltEx(&m_f4 blitparam); -1 => skip; else resolve
-// the frame (m_a0[handle>>16], bounds-check (handle&0xffff) against the frame's
-// [+0x64,+0x68], index its +0x14 frame table) and CDDSurface::BltFast it.
-//
-// Per-cell blit (the retail inlined this at all 9 region sites). handle==
-// 0xEEEEEEEE -> a clipped fill via BltEx(&destRect,...,&m_surface); handle==-1 ->
-// skip; else resolve the frame (m_planeArray[handle>>16], bounds-check the low
-// 16 bits against [m_lo,m_hi], index m_frames) and BltFast it. The blit's dest
-// size equals the src rect size (right-left / bottom-top), so every region only
-// differs in the src rect it passes + its screen (x,y). `dr`/`surf` are Draw's
-// locals; expanded textually to reproduce the 9 separate inlined sites.
 #define DRAW_CELL(handle, xp, yp, srcp)                                                            \
     do {                                                                                           \
         u32 h_ = static_cast<u32>(handle);                                                                    \
@@ -615,108 +558,11 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 }
 #undef DRAW_CELL
 
-// ===========================================================================
-// WwdFile::ReadPlaneObjects (__thiscall, ret 0x4; Ghidra mis-derived the
-// `QAEXXZ` void/no-arg prototype). Reads ONE object record at `src` (a pointer
-// into the inflated plane-object block) into a freshly allocated game object,
-// registers it with the level, and returns the number of source bytes consumed
-// (the caller does `src += result` to advance to the next record).
-//
-// Source record (WwdObjectRecord, wwd_object.h): a fixed 0x11C block of i32
-// fields followed by FOUR length-prefixed strings (name, logic, imageSet,
-// sound) whose lengths sit at record +0x04/+0x08/+0x0C/+0x10. ReadPlaneObjects:
-//   1. captures id (+0) and the four string lengths up front;
-//   2. `new` a 0x1DC-byte CObject-derived game object, two-phase constructs it
-//      (engine ctor + an embedded CDDrawSubMgr sub-object at +0x1A0) and stamps
-//      the two retail vtables (transitional manual stamp - those classes' vtable
-//      contents are not modeled here, so the addresses are reloc-masked DATA
-//      externs);
-//   3. copies the four trailing strings out into stack CStrings (inline
-//      rep-movs into a scratch buffer + CString(char*) ctor);
-//   4. bounds-checks the object's grid x/y against the level dims, looks the
-//      image-set name up in the level CMapStringToOb, then runs the object's
-//      vtable +0x28 "load" virtual;
-//   5. on success, applies the name/logic/imageSet strings (sprite frame cache /
-//      anim geometry / m_imageSetName assign) and scatters ~60 trailing record fields into
-//      the object and its +0x7C sub-object via an advancing cursor;
-//   6. registers the object with the level and returns bytes-consumed.
-// Every failure path destroys the object (vtable +0x04 scalar-deleting dtor) and
-// the four CStrings under the /GX unwind frame.
-//
-// All callees (engine ctor/dtor/load virtual, CDDrawSubMgr ctor, CMapStringToOb
-// Lookup, the sprite/anim helpers, the level register) are unmatched engine code
-// modeled with no body -> reloc-masked calls.
-// ===========================================================================
-
-// The level/plane loader `this`. Only the members ReadPlaneObjects touches are
-// pinned (offsets are the load-bearing thing): m_assetOwner (the map/asset owner), and
-// m_gridWidth/m_gridHeight (the grid extents the object x/y are range-checked against). m_assetOwner is
-// read both as the ctor's owner arg and for the image-set CMapStringToOb lookup.
-// (The WwdLevelLoader `this`-view is GONE: `this` IS the plane. Its m_assetOwner
-// @+0x0c is the plane's m_mapData (the same owner/context object RegisterNamed
-// resolves names through), and its "grid extents" @+0x30/+0x34 are m_wrapW/m_wrapH -
-// the TILE counts the record's tile-space x/y are range-checked against.)
-
-// WwdFile::ReadPlaneObjects deserializes each WWD plane record into a freshly
-// `operator new(0x1dc)`d shared CGameObject (<Gruntz/UserLogic.h>) - the SAME
-// 0x1dc-byte instance CDDrawChildGroup::CreateSprite builds, brought up by the same
-// engine base ctor (0x15b390). The former local `WwdGameObj` view is FOLDED AWAY:
-// CGameObject's usage-proven field names win (m_stateFlags/m_extent.left../m_strideX..,
-// slot [1] Delete / [10] Load reconciled from the ReadPlaneObjects call bytes); the
-// WWD-format-invented names (m_score/m_clipLeft/m_width..) do not survive. The +0xdc
-// CString slot CGameObject deliberately pads (a real member would inject a ctor into
-// every derived TU), so the imageSet assignment goes through the raw-offset
-// CStringAssign helper below (CString::operator=(LPCSTR), 0x1b9e74, reloc-masked).
-
-// The +0xdc name slot receives its value through the real MFC CString::operator=
-// (0x1b9e74, reloc-masked) at the call site below; there is no local helper type.
-
-// The +0x1a0 embedded sub-object is a CLoadable (base ctor 0x156cb0; the former
-// identity, see <Gruntz/Loadable.h>).
 #include <Gruntz/Loadable.h>
 inline void* operator new(u32, void* p) {
     return p;
 } // placement (embedded sub-object ctor)
 
-// sub-object is CGameObject::m_1a0, the embedded CAniAdvanceCursor; the three
-// zeroed DWORDs are its m_10/m_14/m_element source-binding fields.)
-
-// MFC CMapStringToOb::Lookup(key, &valueOut) const. __thiscall, ret 0x8.
-// authentic: reached at a COMPUTED address (m_assetOwner+0x14+0x10), not a typed
-// member, so the reloc-masked Lookup extern is modeled as a method a raw pointer
-// is cast through - there is no member to fold it into.
-// WwdStringToObMap is an MFC CMapStringToPtr (Lookup @0x1b8008); the map var is retyped directly.
-
-// Level register: append the finished object to the level (loader+0xb0 is the
-// level CObList; AddTail returns POSITION). __thiscall, ret 0x4.
-
-// The object's own vtable (transitional manual stamp; reloc-masked DATA extern).
-// The sub-object vtable is realized as ??_7CAniAdvanceCursor@@6B@ (0x5f0128) in
-// CAniAdvanceCursor.cpp; referenced here as an UNPINNED extern (the VTBL there
-// owns the 0x1f0128 datum name) so this sub-object stamp reloc-masks against it.
-
-// ---------------------------------------------------------------------------
-// RebuildPlanes (0x1628f0): tear down the old +0xb0 plane-render worker, then
-// allocate a fresh 0xb8-byte one, init it from the level header's 6 geometry
-// pairs (CGameReg->m_24->[+0xb0..+0xdc]), and run ReadPlaneObjects `count` times.
-// The throwing operator-new + partial-construct cleanup gives the /GX frame.
-// ---------------------------------------------------------------------------
-
-// (The WwdRegOwner/WwdPlaneHdr/WwdPlaneRender views are GONE: the +0xc "reg owner"
-// IS the canonical CDDrawSurfaceMgr (m_childGroup worker source, m_level geometry -
-// the ex CPlaneMapData view of it is dissolved too, see <Wwd/WwdFile.h>), the "plane
-// header" IS its CGameLevel (the six geometry pairs at +0xb0..+0xdc), and the 0xb8-byte
-// "plane-render worker" IS the CWwdSpatialMgr grid/scroll worker - its "DtorBody"
-// 0x1682f0 is FreeGrids at the SAME RVA, and the vtable it wears (0x5f02a8,
-// realized as ??_7CWwdGridIter in WwdSpatialMgr.cpp) is the +0x70 embedded list's.)
-
-// 0x5f02a8 is realized as ??_7CWwdGridIter (5 slots, dtor at slot 1) in
-// src/Gruntz/WwdSpatialMgr.cpp, which OWNS the RVA catalog name via VTBL. UNPINNED
-// here so RebuildPlanes' inline +0x70 embedded-cursor stamp reloc-masks against the
-// real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
-
-// ---------------------------------------------------------------------------
-// 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune_1628d0() {
     if (m_scroll == 0) {
@@ -1127,9 +973,6 @@ i32 CDDrawWorkerHost::CenterScrollB() {
     return scroll->SetTargetB(x, y);
 }
 
-// GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
-// (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
-// CWwdSpatialMgr::GetSize 0x168430; an inline member folds away and never emits).
 RVA(0x001633e0, 0x12)
 i32 CDDrawWorkerHost::GetSize_1633e0() {
     if (m_scroll == 0) {
@@ -1138,11 +981,6 @@ i32 CDDrawWorkerHost::GetSize_1633e0() {
     return m_scroll->GetSize();
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerHost::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
-// rects + their centers (w/2, h/2) into the scroll sub-object from the plane
-// geometry's three dimension pairs (m_mapData->m_level), then park
-// the scroll target at (-22222, -22222) so the first SetTarget always moves.
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
@@ -1188,10 +1026,6 @@ void CDDrawWorkerHost::InitScrollRects() {
     s->m_scrollX = -22222;
     s->m_scrollY = -22222;
 }
-
-// ---------------------------------------------------------------------------
-// The live screen RGB-format shift table at 0x683ea0.. (already named by
-// SpriteRef.cpp / CLightFxRender.cpp). Reloc-masked DIR32 data refs.
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::ValidateTiles (__thiscall, ret 0x4). When the plane is loaded
@@ -1312,15 +1146,6 @@ void CDDrawWorkerHost::ResolveColorKey() {
                        | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown)))));
 }
 
-// ---------------------------------------------------------------------------
-// 0x163710 - the plane-serialize op dispatcher CGameLevel::EditDispatch (0x160f70)
-// tail-calls: on kind 4 run the plane Save (0x163780), on kind 7 the plane Load
-// (0x1638c0) - failure returns 0, every other kind (3/5/6/8) returns 1. __stdcall,
-// 4 args (only the stream + kind used). The Save/Load entries are reached here via a
-// __stdcall re-decl of the same RVAs (retail relies on ecx=plane surviving from
-// EditDispatch, passing the stream as the lone stack arg - so a member call would emit
-// the wrong ecx setup). (Re-homed from src/Stub/BoundaryUpper2.cpp; physically between
-// ResolveColorKey 0x163670 and Save 0x163780 in this CPlaneRender TU.)
 extern i32 __stdcall PlaneSaveVia(void* stream); // 0x163780 == CDDrawWorkerHost::Save entry
 extern i32 __stdcall PlaneLoadVia(void* stream); // 0x1638c0 == CDDrawWorkerHost::Load entry
 // @early-stop
@@ -1348,10 +1173,6 @@ i32 __stdcall PlaneSerializeDispatch(void* stream, i32 kind, i32, i32) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerHost::Save (__thiscall, ret 0x4). Serialize the plane to a binary
-// stream: the scroll origin/dims block, the origin/extent rect, four shift/log
-// fields, the tile grid (size-prefixed), and the fixed 0x80-byte name field.
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == 0) {

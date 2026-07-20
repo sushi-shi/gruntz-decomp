@@ -55,48 +55,17 @@
 #ifndef GRUNTZ_RVA_H
 #define GRUNTZ_RVA_H
 
-// Fixed-width integer aliases (i8/u8/.../i64/u64). rva.h is included by every
-// source/header here, so this makes the aliases visible tree-wide. Additive
-// (typedefs only) -> matching-neutral.
 #include <Ints.h>
 
-// The clsmeta carriers are OPT-IN: emitted only when the label step (labels.py's
-// clang -emit-llvm pass) defines GRUNTZ_EMIT_META. clangd (the editor LSP) shares
-// the same compile_commands.json but does NOT define it, so the carriers are
-// compiled out there - clangd's preamble PCH restarts __COUNTER__ across the
-// header/main boundary, which would otherwise double-emit `gruntz_clsmeta_0` and
-// flood the editor with bogus "redefinition" errors. The real base compile (wine
-// cl, non-clang) takes the empty branch below regardless.
 #if defined(__clang__) && defined(GRUNTZ_EMIT_META)
 
 #define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))
 #define RVAU(addr) __attribute__((annotate("rva:" #addr)))
 #define SYMBOL(mangled) __attribute__((annotate("symbol:" #mangled)))
-// DATA is text-scanned (see header note); the attribute is still emitted so the
-// annotation is self-documenting in the AST. `used` is harmless on a declaration
-// (and ignored by clang there, which is exactly why DATA cannot ride the IR).
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
 
-// OVERRIDE - a compile-time-only check (emits NO code) that a method really
-// overrides a base virtual. clang enforces it (catches a wrong slot/signature in
-// the IR/label pass); MSVC 5.0 predates C++11 and has no `override`, so there it
-// compiles to nothing. Use it when modeling a matched class's vtable.
 #define OVERRIDE override
 
-// SIZE / SIZE_UNKNOWN / VTBL - class-metadata annotations written at file scope,
-// preferably DIRECTLY ATOP the class definition (uniform with RVA/DATA). Under
-// clang each expands to a `static` CARRIER variable bearing an `annotate`
-// attribute that encodes {class name, byte size or vtable rva}. clang DROPS an
-// annotate placed on a class/record from @llvm.global.annotations (MEASURED), but
-// a GLOBAL variable's annotate DOES reach the IR - hence the carrier - and `used`
-// keeps the otherwise-unreferenced carrier (and its annotation) from being
-// eliminated before it is emitted. The carrier name is __COUNTER__-uniquified so
-// many annotations in one TU never clash. EVERY call site ends in `;` (the
-// existing statement-form sites and new atop-the-class ones alike), which
-// completes the carrier declaration. The carrier is CLANG-ONLY (the MSVC branch
-// is empty), so it never reaches a matched base obj -> matching-neutral wherever
-// placed. `type` is only stringized (not required to be a complete type here);
-// gruntz.match.class_sizes / .class_vtables enforce completeness + coverage.
 #define GRUNTZ_META_CAT_(a, b) a##b
 #define GRUNTZ_META_CAT(a, b) GRUNTZ_META_CAT_(a, b)
 #define GRUNTZ_META(str)                                                                           \
@@ -104,11 +73,7 @@
         gruntz_clsmeta_,                                                                           \
         __COUNTER__                                                                                \
     ) = 0
-// SIZE(type, bytes)  - the class's exact retail byte size.
 #define SIZE(type, bytes) GRUNTZ_META("size:" #bytes " class:" #type)
-// SIZE_UNKNOWN(type) - the size-tracking sibling for a class whose exact retail
-// byte size is not yet pinned (records "size-annotated, value TBD" so the
-// completeness check counts it). Every class carries SIZE(..) xor SIZE_UNKNOWN(..).
 #define SIZE_UNKNOWN(type) GRUNTZ_META("size:unknown class:" #type)
 // VTBL(type, addr) - bind the class's virtual-table symbol ??_7<type>@@6B@ at the
 // retail RVA `addr` as a DATA symbol: the single source of truth for the vtable
@@ -122,14 +87,6 @@
 // future sweep could read VTBL from @llvm.global.annotations; the text scan is
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
-// RELOC_VTBL(type, addr) - the class is a matching-REQUIRED polymorphic placeholder/sibling
-// (an out-of-line orphan dtor host, a /GX member-teardown twin, a reduced call-site view)
-// whose cl-emitted ??_7 RELOC-MASKS the retail vtable at `addr` - which is the OWN vtable of a
-// DIFFERENT real class already bound by VTBL(). So this class has NO distinct catalogable datum
-// of its own: it must stay `virtual` (the vptr stamp needs a polymorphic class) but must NOT be
-// VTBL'd (that would collide on `addr`). This annotation records that fact so class_vtables
-// counts it catalogued; the completeness gate VERIFIES `addr` is really bound by another class's
-// VTBL (so it can never hide a genuinely-missing binding). Matching-neutral (label only).
 #define RELOC_VTBL(type, addr) GRUNTZ_META("relocvtbl:" #addr " class:" #type)
 
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
@@ -140,14 +97,6 @@
 #define DATA(addr)
 #define OVERRIDE
 
-// SIZE / SIZE_UNKNOWN / VTBL expand to NOTHING under MSVC 5.0, exactly like
-// RVA/DATA. The class-metadata is a clang-only annotation; MSVC must see zero of
-// it. The call-site trailing `;` becomes a stray file-scope semicolon, which
-// MSVC 5.0 tolerates. Emitting nothing is the WHOLE POINT: the old negative-size
-// `typedef char[sizeof(type)?1:-1]` FORCED sizeof and rescheduled an includer's
-// /O2 codegen (measured: CGrunt::StepCompassMove -0.52% when placed in a hot
-// header), so it could not be put atop a class. An empty macro is neutral
-// wherever it is placed.
 #define SIZE(type, bytes)
 #define SIZE_UNKNOWN(type)
 #define VTBL(type, addr)

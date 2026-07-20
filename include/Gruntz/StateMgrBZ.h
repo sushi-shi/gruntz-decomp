@@ -1,19 +1,3 @@
-// StateMgrBZ.h - the engine input/control state singleton (*g_spawnConfig). The game's
-// Init (0x83450) new's a 0x28 (40-byte) object, stores it in g_spawnConfig, and inits
-// it from the DirectInputMgr2 (*g_inputMgr) with control mode 6. Per frame
-// CGruntzMgr::TickStateMgrs (0x920b0) calls Flush(); CPlay/GameKeyHandler read its
-// +0x18 edge-key word (the `& 0x20` control/cheat bit).
-//
-// The class aggregates up to four input-device sources (m_device + the keyboard/
-// joystick/joystick2 trio) plus a composite device-list node (m_deviceList) and
-// OR-folds their packed key bitflags into m_edgeKeys/m_currentKeys each Flush. The
-// Build() switch (mode 0..8) selects which controller sources to wire from the
-// DirectInputMgr2's device list.
-//
-// The Sbz* view types below are local placeholders for the real DinMgr2 types
-// (DirectInputMgr2 / CInputDeviceBase / CDeviceListNode in
-// include/DinMgr2/DirectInputMgr2.h); kept separate here to avoid a cross-module
-// merge. Field names recovered from usage; offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_STATEMGRBZ_H
 #define GRUNTZ_STATEMGRBZ_H
 
@@ -23,18 +7,6 @@ class CInputDevice;    // the real DinMgr2 device (<DinMgr2/DirectInputMgr2.h>)
 #include <Ints.h>
 #include <rva.h>
 
-// The input device StateMgrBZ latches is the REAL CInputDevice (DinMgr2, 0x338 bytes,
-// ??_7CInputDevice@@6B@ @0x1ef628; the CInputDevRoot -> CInputDevBase -> CInputDevice
-// hierarchy in <DinMgr2/DirectInputMgr2.h>, which this TU already includes). The former
-// local SbzInputDevice view - a 6-slot re-declaration whose emitted ??_7 aliased
-// CInputDevice's bound vtable (RELOC_VTBL) - is DISSOLVED: the fields it pinned
-// (m_currentKeys @+0x2ac, m_edgeKeys @+0x2b0, m_keyTable @+0x2b4) and ResetState (slot 5)
-// are the canonical class's own members under the same names, so the uses bind directly.
-
-// The DirectInputMgr2's device-pointer array, as Build() reads it: a controller-
-// pointer array (m_devices @ manager+0x18). data@+4, count@+8 of the embedded
-// CPtrArray. (Unused view kept for documentation; Build reads these via the
-// manager fields below.)
 SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
     char _vft0[4];         // +0x00 foreign object vptr (reduced view; not owned/dispatched)
@@ -42,9 +14,6 @@ struct SbzControllerArray {
     i32 m_count;           // +0x08  controller count
 };
 
-// SbzDeviceList - the composite device-list node StateMgrBZ::Reset walks
-// (m_deviceList points at it; real type CDeviceListNode): count@+4, first
-// element@+8.
 SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
     char _vft0[4];            // +0x00 foreign node vptr (reduced view; not dispatched)
@@ -52,10 +21,6 @@ struct SbzDeviceList {
     CInputDevice* m_elems[1]; // +0x08.. controller pointers
 };
 
-// DirectInputMgr2 as Build()/Init() use it: the source manager (real type
-// DirectInputMgr2). m_keyboard/m_deviceB are device pointers, m_data/m_count the
-// embedded controller array, and AddControllerArr (0x133260) the node-registering
-// trampoline whose return node is cached in StateMgrBZ::m_deviceList.
 SIZE_UNKNOWN(DirectInputMgr2);
 class StateMgrBZ {
 public:
@@ -97,7 +62,5 @@ public:
     u32 m_latchedKeys;           // +0x20  snapshot of m_edgeKeys
     i32 m_suppress;              // +0x24  "suppress input" flag (clears the key words)
 };
-
-// --- vtable catalog ---
 
 #endif // GRUNTZ_STATEMGRBZ_H

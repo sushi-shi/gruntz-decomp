@@ -1,9 +1,3 @@
-// GruntDataRecord.cpp - SerializeStrings (0x56da0), the per-record string/field
-// writer the big grunt-data Serialize (0x53f90) calls over its 0x68-byte record
-// array. See include/Gruntz/GruntDataRecord.h for the record layout + the writer
-// (Write @ vtable slot +0x30). The five names are written as fixed 0x80-byte
-// zero-padded fields (memset + strcpy inline to rep stos / repne scas + rep movs
-// at /O2 /Oi); the four trailing fixed blocks are written verbatim.
 #include <Gruntz/GruntDataRecord.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
@@ -11,8 +5,6 @@
 
 #include <Mfc.h> // CString::operator= (the owned name members are CStrings)
 
-// ---------------------------------------------------------------------------
-// GruntDataRecord::SerializeStrings (0x56da0, __thiscall, 1 stdcall arg).
 RVA(0x00056da0, 0xc7)
 i32 GruntDataRecord::SerializeStrings(CSerialArchive* ar) {
     if (ar == 0) {
@@ -34,10 +26,6 @@ i32 GruntDataRecord::SerializeStrings(CSerialArchive* ar) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// GruntDataRecord::DeserializeStrings (0x56eb0, __thiscall, 1 stdcall arg). Read
-// each 0x80-byte name field into a temp and assign it to the owned CString member
-// (CString::operator= @0x1b9e74, reloc-masked), then read the four fixed blocks.
 RVA(0x00056eb0, 0x94)
 i32 GruntDataRecord::DeserializeStrings(CSerialArchive* ar) {
     if (ar == 0) {

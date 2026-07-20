@@ -1,26 +1,9 @@
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-// DDrawWorkerHost.cpp - the host's destructor (0x163af0), which retail birth-
-// positions PAST the plane/render TU boundary (0x163a00): the class's ctor
-// (0x1615a0), ReadPlaneBlock gap (0x161640) and RegisterNamed (0x161c50) are
-// woven INSIDE the plane TU and live in src/Gruntz/LevelPlane.cpp (interval
-// dossier 0x15ccd0, wave1-C). The class definition stays canonical in
-// include/DDrawMgr/DDrawWorkerHost.h.
-//
-// The dtor stamps its own vtable, shuts down + frees the +0xb0 worker (PruneCount
-// then delete), frees the two owned buffers (+0x20/+0x24), then the CWorkerObArray
-// member (+0x9c) and the CLoadable grand-base teardown fold in under the /GX frame.
 #include <Mfc.h> // /GX EH-frame helpers
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
-
-// The host's own primary vtable (0x5f0270) is now the cl-emitted
-// ??_7CDDrawWorkerHost (real-polymorphic CLoadable-derived class; VTBL at
-// EOF). The manual g_ddrawWorkerHostVtbl DATA-pin (Vtbl_1f0270 catalog) is gone.
-
-// The engine Rez heap free (_RezFree 0x1b9b82, cdecl C) used for the two owned
-// buffers (and, via CWwdSpatialMgr::operator delete, the worker).
 
 // ===========================================================================
 // 0x163af0 - ~CDDrawWorkerHost: stamp own vtable; if the worker is live run its
@@ -63,12 +46,5 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
     // vtable restore) fold here under the /GX frame.
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-// Size PROVEN from the allocation site (push 0x158; call ??2 -> the ctor), and our
-// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CDDrawWorkerHost, 0x158);
-// ??_7CDDrawWorkerHost (was g_ddrawWorkerHostVtbl @0x5f0270, Vtbl_1f0270 /
-// vtbl-cluster-56). cl auto-emits it from the real-polymorphic host;
-// retail's 12-slot datum is reloc-masked -> matching-neutral catalog tracking.
 VTBL(CDDrawWorkerHost, 0x001f0270);

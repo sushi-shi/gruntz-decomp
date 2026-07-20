@@ -1,19 +1,3 @@
-// MgrPersist.h - CMgrPersistObj, the persisted game-manager/settings object
-// whose Save/Load (0xfb1c0 / 0xfaff0, ex MgrObjSerialize.cpp + SaveRecordLoad.cpp -
-// two views of this one object, now folded) stream its fields through the shared
-// WAP32 CSerialArchive slots (Read @+0x2c / Write @+0x30). Init (0xface0) drives the
-// "loading imagez" splash + GAME_IMAGEZ load.
-//
-// Identity note: Init @0xface0 is MISATTRIBUTED here - it is genuinely
-// CState::InputVirtual (slot 8, data-ref @0x1ea23c == ??_7CState@@6B@+0x20; SYMBOL'd
-// as such in Attract.cpp so the leaf overrides' base calls bind). Its object's
-// +0x04/+0x08/+0x0c prefix (m_displayMgr/m_rezLocator/m_levelData) IS the CState
-// m_4/m_8/m_c prefix (the game-manager / bank-mgr / world-holder back-pointers),
-// which is why it reads like a CState facet. The full body-shape fold of Init onto
-// CState is DEFERRED (it needs CState's serialize-interior + m_8 type reconciled);
-// this object is modeled here as a real (placeholder-named) header type, not a
-// .cpp-local view. Save/Load are its own genuine methods. Only OFFSETS + code bytes
-// are load-bearing; field/class names are best-guess placeholders.
 #ifndef GRUNTZ_GRUNTZ_MGRPERSIST_H
 #define GRUNTZ_GRUNTZ_MGRPERSIST_H
 
@@ -21,28 +5,17 @@
 #include <rva.h>
 #include <Gruntz/String.h>        // MFC CString (SplashParams::text; the loaded caption)
 #include <Gruntz/SerialArchive.h> // CSerialArchive typedef (== CFileMemBase); NEVER fwd-decl
-                                  // it under an elaborated struct name (see that header)
 
 class CDDrawSurfaceMgr; // m_levelData @+0x0c: the world/resource holder (== CState::m_c;
-                        // its +0x04 CDDrawSubMgrPages worker + +0x10 CImageRegistry)
 class CGruntzMgr;       // m_displayMgr @+0x04: the game-manager (== CState::m_4; its
-                        // +0x8c/+0x90 live video mode feed the splash block)
 class CSymParser;       // m_rezLocator @+0x08: the rez path resolver (ResolvePath)
 
-// The on-screen splash params block built on the stack for EngStr_DrawText; its
-// leading slot is the loaded caption CString (its dtor forces Init's /GX frame).
-// (EngStr_DrawText itself: the ONE canonical lean decl in <Wap32/EngStr.h> - the
-// former (CDDrawSurfaceMgr*, SplashParams*, i32*) spelling here mangled to a
-// symbol the definition never emits, leaving the caller's reloc UNBOUND.)
 struct SplashParams {
     CString text; // +0x00
     i32 m_04;     // +0x04
     i32 m_08, m_0c, m_10, m_14;
 };
 
-// The persisted object. Only the serialized fields are named. NB the Save/Load
-// method names are recovered-symbol placeholders; the archive object drives the
-// actual transfer direction, only the +0x2c/+0x30 slot offsets are load-bearing.
 struct CMgrPersistObj {
     i32 m_00;                      // +0x00
     CGruntzMgr* m_displayMgr;      // +0x04  == CState::m_4 (m_8c/m_90 video mode)

@@ -1,9 +1,3 @@
-// WarpStoneFly.cpp - CWarpStoneFly (C:\Proj\Gruntz), the warp-stone overlay fly.
-//
-// UN-MERGED back to its own TU (2026-07-13). The wave1-E one-file merge (c62cfaf8d)
-// folded this obj into SBI_RectOnly.cpp; that merge is being undone because a TU is
-// the unit of MSVC5's /O2 budget AND of its compiler flags, so merging distinct objs
-// makes their codegen mutually dependent. Restoring the boundary gives each its own.
 #include <Mfc.h> // real MFC CByteArray (the registry tab-state array's SetAtGrow @0x1b5485)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
@@ -15,8 +9,6 @@
 #include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
 #include <Gruntz/WarpStoneFly.h>
 
-
-// 0x109bb0: constructor. Clears the sprite + owner back-pointer; returns this.
 RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
     m_sprite = 0;
@@ -78,7 +70,6 @@ i32 CWarpStoneFly::Tick(i32 dt) {
     return 1;
 }
 
-// 0x10a2f0: blit the overlay sprite at the rounded current position with flag 0.
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(

@@ -1,17 +1,4 @@
 #include <rva.h>
-// ImageOwned.cpp - the build/decode methods of the RTTI CImage's +0x30 owned
-// object, which IS a CDDrawShadeBlit (the shaded sprite; former placeholder name
-// "CImageOwned"). Methods in retail-RVA order: the ctor (0x148ce0) that primes the
-// blit-descriptor defaults, and Build (0x1490d0) - decodes one frame out of a
-// CImageBuildDesc into the decoded RLE pixel buffer (+0x0c) and a 256-entry palette
-// (+0x20), copying the desc's dimension/format metadata. Teardown (0x148d10) and the
-// palette-remap helper (0x1495d0) are external engine callees (reloc-masked). The
-// blit side of the same class lives in src/DDrawMgr/DDrawShadeBlit.cpp; see
-// <DDrawMgr/DDrawShadeBlit.h> for the shared layout.
-//
-// Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
-// No destructible stack local -> no /GX frame (flags="base").
-// ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h> // CDDSurface src arg (Lock/m_width/m_height/m_pitch/m_8)
@@ -20,14 +7,6 @@
 
 #include <string.h> // memcpy (inlined to rep movs)
 
-// The engine heap is the statically-linked NAFXCW global operator new/delete (both
-// declared by <Mfc.h> via FileStream.h): ??2@YAPAXI@Z @0x1b9b46, ??3@YAXPAX@Z
-// @0x1b9b82. reloc-masked rel32.
-
-// ---------------------------------------------------------------------------
-// The constructor. Zero the buffers/counters; prime m_drawType=1, m_light=0x80,
-// m_colorKey=-1, and both format-flag bytes m_srcBpp/m_dstBpp=1. __thiscall.
-// ---------------------------------------------------------------------------
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
     m_rleData = 0;
@@ -42,12 +21,6 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_colorKey = -1;
 }
 
-// ---------------------------------------------------------------------------
-// Teardown - free the two owned heap buffers (the decoded RLE stream m_rleData
-// and the 256-entry palette m_palette) if present. __thiscall, void. Called by
-// CImage::FreeAll (0x153260) on its owned +0x30 CDDrawShadeBlit. Re-homed from
-// src/Stub/DiscoveredSmall.cpp (was the DualBufferOwner::FreeBuffers view).
-// ---------------------------------------------------------------------------
 RVA(0x00148d10, 0x25)
 void CDDrawShadeBlit::Teardown() {
     if (m_rleData) {
@@ -57,13 +30,6 @@ void CDDrawShadeBlit::Teardown() {
         ::operator delete(m_palette);
     }
 }
-
-// The transient RLE-output buffer: an MFC CByteArray (ctor 0x1b527e, SetSize
-// 0x1b52e8, SetAtGrow 0x1b5485, ~CByteArray 0x1b52b1 - all NAFXCW, reloc-masked).
-// Layout: vptr@0, data@+4, size@+8, alloc@+0xc. Modeled as a tiny host so the
-// thiscall calls lower with callee-side cleanup and the destructible local forces
-// the /GX frame on BuildRle.
-// (CRleByteArray is GONE: it WAS MFC ::CByteArray - same NAFXCW cluster.)
 
 // ---------------------------------------------------------------------------
 // BuildRle - run-length encode the source plane into the owned pixel
@@ -162,12 +128,6 @@ i32 CDDrawShadeBlit::BuildRle(
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// BuildFromSurface - lock a source DirectDraw surface, RLE-encode its locked bits
-// (via BuildRle) using the surface's own width/height/pitch, then unlock the held
-// IDirectDrawSurface. Stamps m_colorKey = keyVal. __thiscall, ret 0xc (3 args).
-// Returns 0 if the surface is null or fails to lock, else BuildRle's result.
-// ---------------------------------------------------------------------------
 RVA(0x00148f50, 0x61)
 i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette) {
     if (surf == 0) {
@@ -183,12 +143,6 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
     return r;
 }
 
-// ---------------------------------------------------------------------------
-// LoadFromFile - open the named file, slurp it whole into a fresh
-// operator-new buffer, hand it to Build, then free the buffer + close the stream.
-// The stack CFileIO + the by-value CString name -> a /GX EH frame. __thiscall,
-// ret 8 (name + fmt). Returns Build's result, or 0 if the open failed.
-// ---------------------------------------------------------------------------
 RVA(0x00148fc0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
     CFile file;
@@ -342,12 +296,6 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     return DecodeFrame(name, desc);
 }
 
-// CDDrawShadeBlit::Decompress (0x1494b0, __thiscall, ret 4). Expand the internal
-// high-bit RLE sprite stream (m_rleData) into the flat 8-bit destination buffer,
-// one scanline at a time. Only valid for an 8-bit source (m_srcBpp==1). Each run
-// control byte: bit7 set => fill (byte-0x80) pixels with the transparent/color-key
-// fill value (m_colorKey, or 0 when unset); else copy `byte` literal pixels from
-// the stream. When the accumulated x reaches m_width the row advances. Returns 1.
 RVA(0x001494b0, 0x11a)
 i32 CDDrawShadeBlit::Decompress(void* dest) {
     if (m_srcBpp != 1) {

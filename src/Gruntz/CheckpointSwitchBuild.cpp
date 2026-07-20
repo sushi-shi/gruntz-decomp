@@ -1,25 +1,3 @@
-// CheckpointSwitchBuild.cpp - CCheckpointTriggerSwitchLogic slot-1 builder
-// (C:\Proj\Gruntz), re-homed from src/Stub/Backlog.cpp (mis-labeled there as
-// CStatzTabSmall::BuildSmall).
-//
-// Vtable-proven: 0x112a50 is slot 1 (+0x4) of ??_7CCheckpointTriggerSwitchLogic@@6B@,
-// adjacent to the class ctor at 0x1127f0.
-//
-// THE LOCAL VIEW IS GONE (2026-07-13). It used to derive from the real
-// CTileTriggerSwitchLogic and then RE-DECLARE the base's fields on top of it
-// (m_pad04 / m_20 / m_pad24 / m_2c), which appended them AFTER the 0xcc base: sizeof blew
-// out to 0x154 and every access in BuildSmall moved by 0xc8 (m_20 -> +0xe8, the rect ->
-// +0xf4). Retail says otherwise, in the bytes:
-//     mov ecx,[eax+0x20]   <- the BASE m_20 gate
-//     lea edi,[eax+0x2c]   <- the BASE m_block
-//     mov ecx,0x18 ; rep movsd
-// so the "CStatzRect60" IS m_block[24] (24 dwords at +0x2c), the class adds NO data, and
-// sizeof = 0x8c - exactly what the allocation site pushes. All three reasons the old note
-// gave for keeping the view are dead: (1) the base's slot-1 virtual carries BuildSmall's
-// signature (that is how it is recovered - `sema class` says slot 1, origin
-// CTileTriggerSwitchLogic); (2) the +0x2c region is NOT heterogeneous - both spellings are
-// the same 24 dwords; (3) the "g_gameReg collision" cannot have been real - this file
-// already includes <Gruntz/TileTriggerSwitchLogic.h>.
 #include <string.h>                   // memcpy -> the /Oi `rep movsd` that copies rect into m_block
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -27,18 +5,6 @@
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
 #include <rva.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
-
-// (CStatzRect60 is gone: the 0x60 block is the base's m_block[24] at +0x2c.)
-// The factory (m_world->m_childGroup) is the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>);
-// CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
-// configures it; the +0x7c AnimWorkerObj Init runs post-create; m_layer gates success).
-// g_statzGameReg was a SECOND NAME for g_gameReg (0x24556c the game registry) - same
-// address, so nothing ever defined it. Unified onto the canonical CGameRegistry; the
-// dead CStatzFactoryHolder/CStatzGameReg local views (m_world->m_childGroup == the canonical
-// CDDrawChildGroup) are dissolved.
-// (g_statzTabSpriteName @0x20aa34 / g_statzTabCfgTag @0x20f928 were FICTIONS: invented
-// names for cl's own folded `??_C@` string-literal COMDATs. Both rvas are the pooled
-// literal, not a named char[] global -- proven below. They are now spelled inline.)
 
 // The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
 // data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"

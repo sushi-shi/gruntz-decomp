@@ -1,18 +1,3 @@
-// FaderMgr.cpp - the Gruntz screen-fader manager (tracer placeholder
-// tomalla-48): a polymorphic owner of a growable CPtrArray of CFader*.
-// CFaderMgr::Add is a 7-way factory keyed on nFaderType (0..5): allocate the
-// concrete CFader subtype (CFaderShape/CFaderLight/CFaderSine/CFaderRadial/
-// CFaderFlat/CFaderMesh), prime it from the manager's shared timing fields
-// (SetTimers/Set2c inherited from CFader), default- or copy-init it from pInit,
-// validate, and append it - tracing "CFaderMgr::Add (...) - ..." + deleting the
-// fader on any failure.
-//
-// The subtypes derive from CFader (see <Gruntz/FaderSubtypes.h>), so the factory
-// upcasts implicitly (fader = f) and calls the inherited setters directly - no
-// (CFader*)/(CFaderImpl*) casts.
-//
-// Methods in ascending retail-RVA order. Field names are placeholders; offsets +
-// code bytes are load-bearing.
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/FxModeT1.h> // the REAL default-init descriptors (ex-CFaderInit::BuildDefaultInit*)
@@ -21,32 +6,12 @@
 #include <Mfc.h>
 #include <string.h> // memcpy/memset -> rep movs/stos in the inlined SetSize
 
-// ===========================================================================
-// Reloc-masked externals.
-// ===========================================================================
-
-// The "CFaderMgr::Add (...)" diagnostic strings (0x624e04/0x624e34/0x624e88).
-// Modeled as their real literals so the constants land in $SG and the call sites
-// match by content (reloc-masked).
 extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
 
-// The default-init descriptor built on the Add stack when pInit is null (CFaderInit,
-// embedded CString forces the /GX frame) is now the canonical <Gruntz/FaderSubtypes.h>
-// shape; its six reloc-masked default builders fill the subtype's default parameters.
-
-// pInit (when non-null) is a CFxMode transition descriptor the caller passes
-// through the retail CFader* interface; Add validates its type-id (stored at the
-// descriptor's +0) against nFaderType. Read here through the CFader* the retail
-// signature carries - a bounded interface-forced reinterpret, not a class miscast.
 static inline i32 InitTypeId(CFader* pInit) {
     return *reinterpret_cast<i32*>(pInit);
 }
 
-// ===========================================================================
-// 0x17d8f0 - CFaderMgr(): construct the embedded element-array subobject (stamp
-// its vftable + zero its bookkeeping, inlined) then zero m_active/m_0c. The shared
-// timer fields m_timerArgA/m_timerArgB/m_sharedSet2cArg are left for SetConfig. Returns this.
-// ===========================================================================
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = 0;
@@ -68,7 +33,6 @@ CFaderMgr::~CFaderMgr() {
     FreeAll();
 }
 
-// CFaderMgr::SetConfig (0x17d980) - store timer args + shared arg, arm, return 1.
 RVA(0x0017d980, 0x1f)
 i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
     m_timerArgA = a;
@@ -78,9 +42,6 @@ i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
     return 1;
 }
 
-// ===========================================================================
-// 0x17d9a0 - FreeAll: DeleteAll, then clear m_active.
-// ===========================================================================
 RVA(0x0017d9a0, 0x11)
 void CFaderMgr::FreeAll() {
     DeleteAll();
@@ -285,13 +246,6 @@ append:
 }
 
 // ===========================================================================
-// 0x17e160 - Flush: a thin forwarder that tail-jumps to the engine method
-// (0x1b9cde) on the sub-object embedded at this+0x24 (`add ecx,0x24; jmp`).
-// Returns the callee's value. The sub-object/callee is external (reloc-masked).
-// ===========================================================================
-// CFaderMgr::Flush (0x0017e160) is now an inline member in the header.
-
-// ===========================================================================
 // 0x17e170 - Remove(pFader): find pFader in the array; on hit, memmove the tail
 // down one slot, drop the count, and delete the fader (its scalar-deleting dtor).
 // __thiscall, one arg.
@@ -323,10 +277,6 @@ void CFaderMgr::Remove(CFader* pFader) {
     }
 }
 
-// ===========================================================================
-// 0x17e1d0 - DeleteAll: delete every fader (scalar-deleting dtor), free the data
-// buffer, and zero the array fields.
-// ===========================================================================
 RVA(0x0017e1d0, 0x4d)
 void CFaderMgr::DeleteAll() {
     i32 i = 0;
@@ -364,15 +314,6 @@ void CFaderMgr::DeleteAll() {
 // with no source-level duplicate and no change to the inline teardown.
 // @rva-symbol: ??1CFaderArray@@UAE@XZ 0x0017e240 0x51
 
-// ===========================================================================
-// 0x17e230 - the CString-by-value trace sink CFaderMgr::Add feeds its formatted
-// diagnostic strings to (14 call sites). The retail body is empty (a stripped
-// debug/TRACE helper), so the only emitted code is the by-value CString param's
-// destructor at exit (~CString @0x1b9cde, reloc-masked). __stdcall, ret 4. The sibling
-// of the const-char* Fader_Trace (0x1b9d4c) above. (Re-homed from
-// src/Stub/BoundaryUpper2.cpp; the DBuf17e230 placeholder view is dissolved onto the
-// real MFC CString.) Byte-exact.
-// ===========================================================================
 RVA(0x0017e230, 0xc)
 void __stdcall Fader_TraceStr(CString s) {
     static_cast<void>(s);

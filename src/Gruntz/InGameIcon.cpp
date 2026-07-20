@@ -1,14 +1,3 @@
-// InGameIcon.cpp - the in-game HUD/cursor icon (a CUserLogic-derived game
-// object). Five __thiscall methods reconstructed in ascending-RVA order:
-//   0x011d00  ~CInGameIcon   (the bare CUserLogic teardown, /GX frame)
-//   0x097680  HandleInput    (the cursor/key input handler -> game-state fields)
-//   0x0986b0  PlaceAt        (place/click the icon into a tile cell)
-//   0x098c90  Serialize      (CArchive round-trip of the icon state)
-//   0x099b10  SetField54     (CMap-lookup the +0x54 id)
-//
-// CUserLogic / CUserBase / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
-// the game-manager singleton (g_gameReg) + the icon factory/records from the
-// class header. Engine callees are reloc-masked (no body).
 #include <Mfc.h>           // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -24,12 +13,6 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
 #include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
 
-// The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
-// the indicator sprites use). External/no-body so the load reloc-masks.
-
-// The MS-CRT-style LCG rand PeekCycle inlines to roll a random peek sprite (the same
-// generator src/Globals.cpp binds + BootyWalkAnim inlines): lazy-seed from timeGetTime,
-// advance the 214013/2531011 recurrence, take the top 15 bits.
 extern "C" {}
 
 #include <rva.h>
@@ -41,77 +24,19 @@ extern "C" {}
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Globals.h>
 
-// The cmd-grid cells are CGrunts; LoadPickupSprites @0x3c6a / LoadGruntTypeTable @0x3bd9
-// are CGrunt methods.
 #include <Gruntz/Grunt.h> // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 
-// The global bute store the icon Setup queries (g_buteTree.Find). Owned by
-// another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
-
-// The bute manager singleton the builder queries for the WarpStone target
-// (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
-
-// The sprite/animation factory reached as g_gameReg->m_world->m_childGroup is the canonical
-// CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
-// builds a "SimpleAnimation" glitter sprite (returned as the created CGameObject).
-
-// The current game-state (g_gameReg->m_curState) IS the canonical CPlay during play;
-// the icon-setup path reads its level index (CState::m_levelIndex @+0x1c) and stores the
-// four WarpStone target pairs into CPlay::m_anchors[4] (@+0x384, stride 8, {m_x, m_y}).
-// of the CState* base - single inheritance, address-identical).
-
-// ===========================================================================
-// The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
-// registration thunks construct + populate. The ctor (_zdvec::Construct, the
-// 0x408710 method: stride-4 base init + the 0x5e70fc vptr stamp) reloc-masks.
-// Their static-init thunks below build each table over the index band [0x7d0,
-// 0x7da].  Shared shape: <Gruntz/LogicFnTable.h>.
-// ===========================================================================
 DATA(0x002458b0)
 extern LogicFnTable g_iconActionTable;
 DATA(0x00245928)
 extern LogicFnTable g_iconStateTable;
 
-// --- the shared registration infrastructure (mirror of CInGameText's) --------
-// The zvec error globals the inlined accessors touch on a bounds miss.
-
-// The shared alloc-scratch cache the zvec IndexToPtr slow path passes to Set: the
-// canonical g_projActCache @0x2bf464 (retail's reloc target; the old
-// g_zvecErrSentinel @0x1f0464 was a WRONG global - a real but unrelated rva).
-
-// The running game clock (0x245588). The old g_frameTime C++ name lost the
-// keep-last dedup at this rva to the canonical extern-C _g_645588; use that so
-// the drift/seed loads bind (it IS the clock, not an "icon default").
-
-// CInGameText's member-fn-ptr dispatch table (folded into this TU, wave3-J). The
-// DATA binding lives here in the .cpp (a header DATA() is not scanned by labels.py);
-// the sub-field DIR32s (base+0x4.. +0x20) reloc-mask via the base symbol + addend.
 DATA(0x00245950)
-// (g_textDispatch extern comes from <Gruntz/InGameText.h> - the CActReg registry
-// archetype; its storage/ctor form is the pending dynamic-init remodel: the 0x15
-// Init thunks ARE ??__E thunks of `CActReg g_x(lo, hi)` definitions.)
 
-// g_iconRegCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-
-// The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
-// IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-
-// The two registration key strings (.data constants).
-// s_iconKeyA was a SECOND NAME for s_codeA (0x20a454) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-// s_iconKeyB was a SECOND NAME for s_actKeyB (0x20d1bc) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-
-// The handler member functions loaded into the dispatch slots (FUN_004023d3 /
-// 0x403c06 into the action table; 0x40370b into the state table). Referenced by
-// address so the stored DIR32 operand reloc-masks.
 extern i32 IconAction_4023d3();
 extern i32 IconAction_403c06();
 extern i32 IconState_40370b();
 
-// The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
-// the freshly-grown region (the _zdvec::IndexToPtr body).
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
     v->m_grown = 0;
@@ -136,7 +61,6 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-// The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
 static inline char* ResolveSlot(_zvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
@@ -612,14 +536,6 @@ i32 CInGameIcon::HandleInput() {
     return 1;
 }
 
-// ===========================================================================
-// CInGameIcon::RunAction  (0x097880)
-// ===========================================================================
-// Resolve g_iconActionTable's slot for `id` (the inline zvec ResolveSlot fast
-// [lo,hi] range + slow GrowTo/GetRetAddr/Set rebuild) and, if it holds a registered
-// handler PMF, re-resolve the slot and dispatch the PMF on `this`. ResolveSlot has
-// side effects (m_grown=0, may grow) so cl re-evaluates it for the guarded call
-// rather than CSE-ing - hence the two inline expansions.
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
     if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&g_iconActionTable, id)) != 0) {
@@ -627,11 +543,6 @@ void CInGameIcon::FireActivation(i32 id) {
     }
 }
 
-// ===========================================================================
-// InitIconActionTable  (0x097800)
-// ===========================================================================
-// File-scope static-init thunk: construct the action dispatch table over the
-// index band [0x7d0, 0x7da].
 RVA(0x00097800, 0x15)
 void InitIconActionTable() {
     g_iconActionTable.Construct(0x7d0, 0x7da);
@@ -674,29 +585,11 @@ void RegisterIconActions() {
     *reinterpret_cast<void**>(dslotB) = static_cast<void*>(&IconAction_403c06);
 }
 
-// ===========================================================================
-// InitIconStateTable  (0x097d60)
-// ===========================================================================
-// File-scope static-init thunk: construct the state dispatch table over the
-// index band [0x7d0, 0x7da].
 RVA(0x00097d60, 0x15)
 void InitIconStateTable() {
     g_iconStateTable.Construct(0x7d0, 0x7da);
 }
 
-// ===========================================================================
-// CToyPeek::FireActivation  (0x097de0)  - CUserLogic vtable slot 4
-// ===========================================================================
-// Same dispatcher archetype as CInGameIcon::FireActivation, over g_iconStateTable:
-// resolve the slot for `id` (inline zvec ResolveSlot) and, if it holds a registered
-// handler PMF, re-resolve and dispatch the PMF on `this` (two inline ResolveSlot
-// expansions).
-//
-// This is CToyPeek's slot 4, NOT CInGameIcon's "RunState": CToyPeek's RTTI vtable
-// (0x1e7204) slot 4 holds ILT thunk 0x001e83 = `e9 58 5f 09 00` = `jmp 0x097de0`,
-// while CInGameIcon's slot 4 is the separate thunk 0x002658 -> 0x097880. See the
-// note in <Gruntz/ToyPeek.h>. The body stays in this .text run; only the owner
-// (and so the PMF's class) is corrected.
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
     if (*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&g_iconStateTable, id)) != 0) {
@@ -729,13 +622,6 @@ void RegisterIconState() {
     *reinterpret_cast<void**>(dslot) = static_cast<void*>(&IconState_40370b);
 }
 
-// ===========================================================================
-// CInGameIcon::RefreshCell  (0x098340)
-// ===========================================================================
-// If the icon's tracked position has drifted at least g_frameTime past the
-// owning object's stored position (a 64-bit signed compare of {m_driftPosHi:m_driftPos}
-// against {m_driftThreshHi:m_driftThresh}), OR the owning object's tile cell is empty/off-grid,
-// flag the +0x38 render object dirty (|= 0x10000). Returns 0.
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
@@ -836,11 +722,6 @@ i32 CInGameIcon::PeekCycle() {
     return 0;
 }
 
-// Clear the "occupied" bit (0x40000) in the tile cell the owning object stands
-// on. The grid is g_gameReg->m_tileGrid: m_8[tileY] is a row base (each row a flat
-// array of 0x1c-byte cells = 7 dwords), the cell for tileX sits at offset
-// (tileX*71)*4 ... matching retail's `eax=tileX*8-tileX` then `<<2` and the
-// `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
@@ -1069,20 +950,8 @@ i32 CInGameIcon::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
 
-// ===========================================================================
-// CInGameText (ex InGameText.cpp, merged wave3-J): the 0x095b10-0x099b46
-// interval is ONE original TU - the text is an I-T-I sandwich (icon x14 | text
-// 0x99110..0x99a30 | icon SetField54 @0x99b10) and the private initialized-
-// .data extents are contiguous (icon 0x2111b8..0x21136c, text 0x21137c). The
-// shared registration identifiers unify onto this TU's names (the ex
-// g_textRegCounter/s_textLogicKey duplicates == g_typeCounter/s_codeA).
-// ===========================================================================
-
-// The member function the text dispatch slot is loaded with (FUN_00402013, a
-// thunk to a CInGameText handler). Referenced by address so its DIR32 reloc-masks.
 extern i32 TextLogic_402013();
 
-// The member-function-pointer the text dispatch table resolves and invokes on `this`.
 typedef i32 (CUserLogic::*LogicFn)();
 
 // CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
@@ -1138,24 +1007,11 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_cachedSubId = -1;
 }
 
-// The activation-coordinate registry is the dispatch table g_textDispatch
-// (@0x645950); InitActReg builds it over the fixed [2000, 2010] range via the
-// shared CZDArrayDerived registry ctor (0x408710, __thiscall ret 8).
-
-// CInGameText::InitActReg @0x0993e0 - construct the class's activation-coordinate
-// registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
 RVA(0x000993e0, 0x15)
 void CInGameText::InitActReg() {
     g_textDispatch.Construct(2000, 2010);
 }
 
-// ===========================================================================
-// CInGameText::Dispatch  (0x099460)
-// ===========================================================================
-// Index the global member-fn-ptr table by `idx`; if the resolved slot holds a
-// non-null member function, invoke it on `this`. The bounds-check + grow of the
-// table accessor is inlined (the _zvec::IndexToPtr body, no out-of-line call),
-// computed once for the null-test and once for the call.
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&g_textDispatch, idx)) != 0) {
@@ -1193,12 +1049,6 @@ void RegisterTextLogic() {
     *reinterpret_cast<void**>(dslot) = static_cast<void*>(&TextLogic_402013);
 }
 
-// ===========================================================================
-// CInGameText::Serialize  (0x099a30)
-// ===========================================================================
-// Guard on the archive, chain the shared CUserLogic::SerializeMove, then the
-// +0x34 sub-object's own serializer, then round-trip the two own dwords at
-// +0x54/+0x58: tag 4 stores (archive Write), tag 7 loads (archive Read).
 RVA(0x00099a30, 0xaa)
 i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
     if (ar == 0) {
@@ -1223,14 +1073,6 @@ i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
     return 1;
 }
 
-// ===========================================================================
-// CInGameIcon::SetField54  (0x099b10)
-// ===========================================================================
-// When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_soundRegistry, Lookup
-// at +0x10) into a local, then store the located value (or 0) into +0x54.
-// @interleaver CInGameIcon::SetField54 emitted-in <boundary: InGameTextUpdate.cpp
-// Update@CInGameText @0x997c0 (before) + AreaMgr.cpp TokenMgrReset99b80 @0x99b80
-// (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetField54(i32 v) {
     void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
@@ -1241,8 +1083,6 @@ void CInGameIcon::SetField54(i32 v) {
     m_cmapId = reinterpret_cast<i32>(found);
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CGameRegMapHolder);
 SIZE_UNKNOWN(CIconMapHolder);
 SIZE_UNKNOWN(CIconRecord);

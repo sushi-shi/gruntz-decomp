@@ -29,8 +29,6 @@
 
 #include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
 
-// 0x759e0: GetOriginXY - copy the cached origin pair (m_cellFlag[0x16],[0x17] ==
-// +0x174,+0x178) into the caller's out-slot and return it.
 RVA(0x000759e0, 0x18)
 CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
     out->m_x = m_cellFlag[0x16];
@@ -43,8 +41,6 @@ CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
 // are declared in <Gruntz/TriggerMgrViews.h> (included above) - their shapes belong in
 // the family scaffolding header; only the method bodies live here.
 
-// Coord::Set (0x75a10) - fill both coords and return this (the canonical pair's setter)
-// (called ONLY by this TU's megafn FUN_6f2f0).
 RVA(0x00075a10, 0x12)
 Coord* Coord::Set(i32 a, i32 b) {
     m_x = a;
@@ -52,10 +48,6 @@ Coord* Coord::Set(i32 a, i32 b) {
     return this;
 }
 
-// ---------------------------------------------------------------------------
-// 0x75a40: a 2D grid lookup - bounds-check (x, y) against the width/height, then
-// return the first dword of the (28-byte-stride) cell at rows[y][x]; out of bounds
-// returns 1.
 RVA(0x00075a40, 0x34)
 i32 CGridLookup::Lookup(i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(m_c) && static_cast<u32>(y) < static_cast<u32>(m_10)) {
@@ -70,9 +62,6 @@ i32 CGridLookup::Lookup(i32 x, i32 y) {
 // because respelling the [y][x] walk onto CTileGrid's i32* rows changes the
 // scaled-index instruction selection.)
 
-// 0x75a90: TmFlagsAllow(a, b, c) - a __cdecl trigger-flag compatibility test on the
-// shared bits m = a & b: bit 0x20000000 vetoes outright; with no shared bits, allow;
-// otherwise allow only when (a & c) is also set.
 RVA(0x00075a90, 0x27)
 i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
     i32 m = b & a;

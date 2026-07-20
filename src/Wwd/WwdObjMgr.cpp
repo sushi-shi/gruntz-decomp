@@ -34,106 +34,32 @@
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
 #include <Gruntz/UserLogic.h>          // CGameObject - the real class of the AABB pair
-                                       // BoxesOverlap_15a130 tests (was the CWwdBox view)
 #include <Wwd/WwdFile.h>               // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
 #include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CLevelPlane
 #include <Win32.h>                     // SetRect + RECT
 
-// Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
-
-// The WWD object-id counter (0x61ab14; retail .data init = 1). Owner-TU definition:
-// this manager stamps it into every created object's +0x188 and post-increments it
-// (WwdFactoryObject + DDrawSurfaceMgr's save/load header publish share the cell).
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
 
-// Placement new: construct a sub-object in place at a factory-computed offset.
 inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The +0x1a0 embedded sub-object the 0x1598d0 factory placement-constructs is a
-// CLoadable (base ctor 0x156cb0; via <Gruntz/ResolveNode.h> -> <Gruntz/Loadable.h>).
-// The former ctor-only `CDDrawSubMgr` view is DISSOLVED (2026-07-14): that name was
-// CLoadable's second identity (see Loadable.h).
-
-// ===========================================================================
-// The managed objects ARE the CWwdGameObject family (<Gruntz/WwdGameObject.h>
-// flat model + <Wwd/WwdGameObjectFamily.h> concrete kinds A/B/C/F at the exact
-// factory sizes 0x1dc/0x1fc/0x190/0x18c). The ex-`CWwdObject` element view is
-// DISSOLVED: its m_04/m_flags/m_5c/m_60/m_74(sort key)/m_78(POSITION cache)/
-// m_7c(worker)/m_188(map key) are the flat class's members at the same offsets,
-// its slot-8 probe is GetTypeId, and its +0x3c dispatch is Play (== Play).
-// ===========================================================================
-// (CDDrawGroupNode - the typed CObList node the walkers step - lives in
-// <DDrawMgr/DDrawChildGroup.h> next to the list it walks.)
-
-// The object reached via m_parent->+0x24->+0x5c is the plane/grid-owner
-// CDDrawWorkerHost (ex a CImageSet3 mis-attribution - the 0x1628d0 body reads
-// +0xb0 = m_spatialWorker, which the 0x18-byte record cannot hold); its
-// Prune_1628d0 (0x1628d0) forwards to the spatial grid's Prune. Canonical:
-// <DDrawMgr/DDrawWorkerHost.h> (included below).
 #include <DDrawMgr/DDrawWorkerHost.h>
 
-// (WwdObjDesc - the 0xa0-byte per-object level record LoadObjects reads - is
-// hoisted to <DDrawMgr/DDrawChildGroup.h> next to its reader.)
-
-// The +0x0c owner is the canonical CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>):
-// the former local `WwdFile` view's BuildChild @0x156a90 IS CDDrawSurfaceMgr::
-// InvokeCallback (100% EXACT), and its `m_14 + 0x10` map is m_workerCache->m_10.
-// SETTLED Ob-vs-Ptr (2026-07-16, mfc_class band authority): every retail Lookup
-// this TU makes on that map - CreateNamed_1593e0, Find_15a8c0, LoadObjects x3 -
-// calls 0x1b8008, which lies in the CMapStringToOb .obj band [0x1b7e17, 0x1b8247)
-// (the class whose head ctor stamps its own ??_7; FID rows in these bands are all
-// AMBIG noise). The member IS the declared CMapStringToOb, and the former
-// `(CMapStringToPtr*)&...` casts were wrong-band misbindings (they made the
-// recompile call 0x1b8438) - removed.
-
-// (The former .cpp-local `CWwdGameObject`/`WwdGameObjAux` pair was a DUP of the
-// canonical <Gruntz/WwdGameObject.h> class - same WriteSnapshot @0x151c00, same
-// +0x7c worker; the aux's +0x18 child slot is AnimWorkerObj::m_logic, the owned
-// polymorphic sub-record.)
-
-// The factories' Build dispatches are the family kinds' OWN vtable slots
-// (<Wwd/WwdGameObjectFamily.h>): 0x159600/0x1598d0 dispatch slot 10 (+0x28, the
-// 4-arg build - A::Setup / B::Slot10_1665e0), 0x159250 slot 16 (+0x40, the C
-// kind's 5-arg SetupFlagged16), 0x159440 slot 16 (+0x40, the F kind's 2-arg
-// SetupDeferredV). The ex-CWwdFactoryA/CWwdFactoryB dispatch views are gone.
-
-// (The three embedded sub-object record types - the +0x9c pair CWwdSlot9c /
-// CWwdSlot9cA and the +0xb8 shadow record CWwdShadowRec - are hoisted to
-// <Wwd/WwdGameObjectFamily.h>: they are member-range records of the family kinds
-// (the +0xb8 one IS the E-level shadow dirty-rect block whose m_c0/m_d8 sentinels
-// the family dtors clear). Their ctor bodies stay below at their retail RVAs.)
-
-// The shared kill-cue clock (advanced once per tick) + its per-frame delta, and
-// the cached timeGetTime import (bound in DirPal.cpp).
 extern "C" u32 g_killCueClock;     // 0x6bf3c0 kill-cue clock (prev now)
 extern "C" u32 g_engineFrameDelta; // 0x6bf3bc per-frame delta
 
-// The manager's map key is the object id (+0x188) used as the MFC void* key.
-// (Spelled through this inline - the direct `WwdKey(obj)` argument-cast
-// trips the documented MSVC5 parser-state bug in this TU's include context;
-// /O2 inlines it to the identical `mov reg,[obj+0x188]; push reg`.)
 inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);
 }
 
-// (The per-object expiry callback at worker+0x10 is now TYPED on the record -
-// AnimWorkerObj::m_notify - so the old KillCueFn cast-at-fire-site is gone.)
-
-// ---------------------------------------------------------------------------
-// CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Play.
 RVA(0x001591e0, 0x5)
 void CDDrawChildGroup::ForwardTo3C() {
     this->DestroyChildren();
 }
 
-// ---------------------------------------------------------------------------
-// 0x1591f0: ClearAll cleanup - run m_parent->+0x24->+0x5c->0x1628d0 (when present),
-// walk the +0x10 CObList destroying each node's child via its scalar-deleting
-// destructor, then RemoveAll the +0x10 list and the +0x2c / +0x48 collections.
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
     CGameLevel* p = m_parent->m_level;
@@ -356,21 +282,6 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     return static_cast<CWwdGameObject*>(static_cast<void*>(result));
 }
 
-// ---------------------------------------------------------------------------
-// The sprite object AttachSprite installs/initialises (arg0) is a wide object of
-// the CWwdGameObject family: its init virtual is the same slot-10 (+0x28) 4-arg
-// build the factories dispatch (the 4th arg carries the resolved CSprite template
-// on this path), its +0x08 is the shared flags word, and its +0x7c worker's +0x10
-// entry is the SAME callback slot TickKillCues fires (AnimWorkerObj::m_notify). The
-// ex-CSprite2/CSprite2SubTable views are gone.
-
-// ===========================================================================
-// CDDrawChildGroup::CreateSprite @0x1597b0 - the public sprite-creation entry the
-// HUD / level loaders call. Look the sprite TEMPLATE up by class-NAME (the `name`
-// arg) in the owner's worker-cache table (m_parent->m_workerCache->m_10); on a hit forward the
-// four leading build args + the resolved template + flags to CreateSpriteImpl
-// @0x159600 (== CreateObject_159600 above). __thiscall, ret 0x18.
-// ===========================================================================
 RVA(0x001597b0, 0x57)
 CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 kind,
@@ -572,13 +483,6 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawChildGroup walk dispatchers (0x159c90-0x159d90): walk the +0x14 list
-// dispatching one of the child's sibling virtuals per node.
-// RESIDUE (~89%, WalkDispatch34/38): loop-advance scheduling plateau - retail
-// keeps the live node in ESI across the virtual call and advances at the BOTTOM;
-// MSVC5 floats the next-pointer load ABOVE the call via a node copy. Every loop
-// form tried; the register set, offsets, arg order, and CFG are byte-exact.
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -627,8 +531,6 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     WalkDispatch30(a2, a3);
 }
 
-// ---------------------------------------------------------------------------
-// Walk the +0x14 list setting each child's field at +0xd8 to -1.
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::ResetChildD8() {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -641,10 +543,6 @@ void CDDrawChildGroup::ResetChildD8() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x159db0: retire `obj` - when it is transient (flag 0x800) just delete it;
-// otherwise unlink it from the list (its cached POSITION) and both maps, then
-// delete it. __thiscall, 1 arg (ret 4).
 RVA(0x00159db0, 0x5e)
 void CDDrawChildGroup::RemoveAndDelete_159db0(CWwdGameObject* obj) {
     if (obj->m_flags & 0x800) {
@@ -657,9 +555,6 @@ void CDDrawChildGroup::RemoveAndDelete_159db0(CWwdGameObject* obj) {
     delete obj;
 }
 
-// ---------------------------------------------------------------------------
-// 0x159e10: clear obj's re-sort flag (0x20000), unlink it from the list at its
-// cached POSITION, then re-insert it in sorted order. __thiscall, 1 arg (ret 4).
 RVA(0x00159e10, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged_159e10(CWwdGameObject* obj) {
     obj->m_flags &= 0xfffdffff;
@@ -700,11 +595,6 @@ void CDDrawChildGroup::InsertSorted_159e40(CGameObject* obj, i32 addToMaps) {
     obj->m_posCache = reinterpret_cast<i32>(m_list.AddTail(static_cast<CObject*>(obj)));
 }
 
-// CDDrawChildGroup::DestroyChildren_159ef0 (0x159ef0): non-virtual entry that
-// virtual-dispatches slot 15 - `mov eax,[ecx]; jmp [eax+0x3c]`. Receiver proven:
-// CDDrawSurfaceMgr::RestoreChildren calls it on [this+0x8] (the child group), and
-// +0x3c is only in-bounds on this 17-slot vtable (the old CDDrawSubMgrPages
-// attribution read past that class's 10-slot table into ??_7CFileMem).
 RVA(0x00159ef0, 0x5)
 void CDDrawChildGroup::DestroyChildren_159ef0() {
     DestroyChildren();
@@ -731,10 +621,6 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
 i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
 
-// NOTE: the inner-pair body is flattened with `continue` guards (identical CFG;
-// MSVC5's parser corrupts its state on the fully-nested spelling in THIS include
-// context - a compiler front-end bug, verified by bisection; the nested form
-// compiled fine in the smaller pre-split TU).
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1014,9 +900,6 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a7f0: scan the sorted list for the first object whose +0x04 key matches
-// `type`; return it, or 0 when none.
 RVA(0x0015a7f0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1031,9 +914,6 @@ CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a810: scan the sorted list for the first object whose status probe (slot
-// +0x20) is 5 AND whose +0x04 key matches `type`; return it, or 0 when none.
 RVA(0x0015a810, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1137,8 +1017,6 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a9a0: return the first list object whose map key (+0x188) equals `key`.
 RVA(0x0015a9a0, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1153,9 +1031,6 @@ CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15a9d0: return the first list object whose status probe (slot +0x20) is 5 and
-// whose map key (+0x188) equals `key`.
 RVA(0x0015a9d0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1170,9 +1045,6 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15aa20: uniqueness predicate - return 1 unless two or more list objects share
-// +0x04 == `kind`.
 RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
     CWwdGameObject* found = 0;
@@ -1191,8 +1063,6 @@ i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15aa60: count the list objects whose +0x04 == `kind`.
 RVA(0x0015aa60, 0x23)
 i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
     i32 count = 0;
@@ -1252,9 +1122,6 @@ i32 CDDrawChildGroup::SumWeighted_15aaf0() {
     return sum;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15ab30: drop a list slot + BOTH map entries (the +0x2c primary AND the
-// +0x48 active set).
 RVA(0x0015ab30, 0x38)
 void CDDrawChildGroup::RemoveAll_15ab30(i32 pos, CWwdGameObject* obj) {
     m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
@@ -1262,23 +1129,17 @@ void CDDrawChildGroup::RemoveAll_15ab30(i32 pos, CWwdGameObject* obj) {
     m_map48.RemoveKey(WwdKey(obj));
 }
 
-// ---------------------------------------------------------------------------
-// 0x15ab70: drop a list slot + its primary-map entry.
 RVA(0x0015ab70, 0x27)
 void CDDrawChildGroup::RemoveByPosition_15ab70(i32 pos, CWwdGameObject* obj) {
     m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
     m_map2c.RemoveKey(WwdKey(obj));
 }
 
-// ---------------------------------------------------------------------------
-// 0x15aba0: m_map48[obj->key] = obj.
 RVA(0x0015aba0, 0x1a)
 void CDDrawChildGroup::AddToMap48_15aba0(CWwdGameObject* obj) {
     m_map48[WwdKey(obj)] = obj;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15abc0: count m_map48 entries whose object lacks flag 0x4000000.
 RVA(0x0015abc0, 0x5e)
 i32 CDDrawChildGroup::CountActive_15abc0() {
     i32 n = 0;
@@ -1296,9 +1157,6 @@ i32 CDDrawChildGroup::CountActive_15abc0() {
     return n;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15ac20: for each active m_map48 object, dispatch its +0x3c virtual with the
-// three args + the object; always returns 1. Returns 0 immediately if a1==0.
 RVA(0x0015ac20, 0x81)
 i32 CDDrawChildGroup::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
@@ -1318,9 +1176,6 @@ i32 CDDrawChildGroup::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x15acb0: for each active m_map48 object, run its __thiscall probe at 0x151c00
-// with (a1, a2); always returns 1. Returns 0 immediately if a1==0.
 RVA(0x0015acb0, 0x76)
 i32 CDDrawChildGroup::ForEachProbe_15acb0(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -1563,28 +1418,18 @@ i32 CDDrawChildGroup::PruneOrphans_15b1d0() {
     return n;
 }
 
-// ===========================================================================
-// The three embedded sub-object ctors at the block tail (0x15b270-0x15b2b0):
-// placement-new'd by the factories above.
-// ===========================================================================
-// 0x15b270 - the +0xb8 sub-object ctor; seed +0x8 = INT_MIN and +0x20 = -1.
-// Stamps no vtable of its own -> the concrete member class has no recoverable
-// RTTI name (identity-TODO).
 RVA(0x0015b270, 0x11)
 CWwdShadowRec::CWwdShadowRec() {
     m_8 = static_cast<i32>(0x80000000);
     m_20 = -1;
 }
 
-// 0x15b2a0: zero +0x0c then +0x08; returns `this` (ctor).
 RVA(0x0015b2a0, 0xb)
 CWwdSlot9c::CWwdSlot9c() {
     m_0c = 0;
     m_08 = 0;
 }
 
-// 0x15b2b0 - a sibling embedded sub-object ctor (placement-new'd at obj+0x9c);
-// zero +0x0c, +0x08, +0x18. Stamps no vtable of its own (identity-TODO).
 RVA(0x0015b2b0, 0xe)
 CWwdSlot9cA::CWwdSlot9cA() {
     m_c = 0;

@@ -1,34 +1,9 @@
-// LatencyList.h - the multiplayer "connection latency preset" list (the network
-// start dialog, C:\Proj\NetMgr / Gruntz). ONE real class, formerly viewed under
-// four placeholder names across four TUs (all folded here, wave 3):
-//   * CMultiSlotList  (SlotComboFill.cpp)- FillCombo + SelectItem (the combo
-//                                          populate/select; both call g_pGetDlgItem)
-//   * CConnSlotList   (Net/ConnSlotList) - the AddItem populators (0x37c30/e10/f00)
-//   * CBzKindDispatch (BzKindDispatch)   - the mode dispatcher (0x37910)
-// PROOF of one class: the dispatcher 0x37910 (called on the dialog's m_slotList)
-// routes modes 1..5 to the five populators 0x37b40/c30/d20/e10/f00 (thunks 0x3760/
-// 3008/41ce/1eab/1cc1 -> those bodies), and FillCombo/SelectItem run on the SAME
-// container. The container's ctor 0x1b4867 (block size 0xa) is the plain MFC CPtrList
-// ctor - the object has NO own vtable (it uses CPtrList's 0x5eb054), so it is a
-// CPtrList subclass adding only the mode int at +0x1c.
-//
-// BuildSlotList (0x0c1e60) news a 0x20-byte object into CMultiStartDlg::m_slotList,
-// dispatches the connection-type mode via 0x37910, then fills/selects the 0x527
-// combo. Each populator appends eight rows via AddItem (0x37a70), which news a
-// 12-byte {CString text; int id; int param} node (CLatencyItem) and AddTail's it;
-// the populators differ only in the per-row `param` column. Field/method names are
-// placeholders (campaign doctrine); only the offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_NET_LATENCYLIST_H
 #define GRUNTZ_NET_LATENCYLIST_H
 
 #include <Net/KeyedList.h> // the REAL container: CKeyedList : CPtrList + AddNode/m_mode
 #include <rva.h>
 
-// The node payload hung off each CPtrList node's `data` pointer (heap, 0xc bytes). This
-// IS the CKeyedList payload node (CNode, <Net/KeyedList.h>) under a latency-specific
-// name; GetName (0x38120) returns m_text by value. Kept here (not folded onto CNode)
-// only because CLatencyItem::GetName lives in the not-owned slotcombofill TU - the
-// CLatencyItem<->CNode payload fold is a deferred cross-TU merge.
 struct CLatencyItem {
     CString m_text;    // +0x00  row label ("Very Low Latency [ping < 50]", ...)
     i32 m_id;          // +0x04  row id / ping column
@@ -37,10 +12,6 @@ struct CLatencyItem {
 };
 SIZE_UNKNOWN(CLatencyItem);
 
-// The connection-latency slot list IS a CKeyedList (the fake `CLatencyList : CPtrList`
-// view is folded onto the real container): it adds only the per-mode populators + the
-// combo fill/select. AddItem is the inherited CKeyedList::AddNode (0x37a70), so every
-// populator's append binds to the one real body.
 SIZE(CLatencyList, 0x20);
 class CLatencyList : public CKeyedList {
 public:
@@ -68,10 +39,5 @@ public:
     // (ignores `this` - a pure dialog-item scan). Returns 1 if found.
     i32 SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi);
 };
-
-// VTBL-coverage note (RESOLVED 2026-07-19): the stampless BuildSlotList ctor was the
-// proof that this family is NON-polymorphic - CKeyedList now HOLDS its CPtrList as the
-// m_list member (KeyedList.h), so no ??_7CKeyedList/??_7CLatencyList exists on either
-// side and the ctor/dtor stamp only CPtrList's own 0x5eb054.
 
 #endif // GRUNTZ_NET_LATENCYLIST_H

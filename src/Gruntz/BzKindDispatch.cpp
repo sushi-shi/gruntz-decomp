@@ -1,12 +1,3 @@
-// BzKindDispatch.cpp - CLatencyList::Dispatch (0x37910), the connection-latency
-// slot-list mode dispatcher (C:\Proj\Gruntz).
-//
-// Dispatch latches the incoming mode at +0x1c and routes modes 1..5 to the matching
-// per-mode populator (Populate1..5 @ 0x37b40/c30/d20/e10/f00, reached via ILT thunks
-// 0x3760/3008/41ce/1eab/1cc1 - verified), reporting whether the populator succeeded
-// (else 0 for an out-of-range mode). Folded from the former CBzKindDispatch view onto
-// the canonical CLatencyList (wave 3); same object CMultiStartDlg::BuildSlotList
-// dispatches on. The populators are reloc-masked cross-unit calls (bodies elsewhere).
 #include <Net/LatencyList.h>
 #include <rva.h>
 

@@ -1,20 +1,3 @@
-// Boomerang.cpp - the CBoomerang projectile ctor (its own TU; no other CBoomerang
-// method is reconstructed yet, so this is the class's first/real TU). Re-homed from
-// src/Stub/Boomerang.cpp.
-//
-// Object-ctor archetype (no EH): forward the single by-value ctor arg to the real
-// CProjectile base ctor (??0CProjectile@@QAE@PAUCGameObject@@@Z @0xdec60, engine fn,
-// not matched -> declared-only, reloc-masked rel32 call via thunk 0x37d8), the
-// compiler stamps the derived vftable into [this] (implicit, real polymorphic
-// class), then OR a flag bit into the inherited +0x154 render object's [+8] dword.
-//
-// CBoomerang : CProjectile (RTTI-proven, vftable 0x5e792c; vtable_hierarchy --tree).
-// The real base is the fully-modeled CProjectile (<Gruntz/Projectile.h>); cl emits
-// ??_7CBoomerang@@6B@ from CProjectile's 18-slot vtable with CBoomerang's five
-// overrides applied (slots 0/1/2/16/17 - all declared-only, reloc-masked), plus the
-// implicit post-base-ctor vptr stamp. The base ctor stays DECLARED only (out-of-line;
-// its `call` reloc-masks to 0xdec60 via thunk 0x37d8). Replaces the old fabricated
-// `CProjectileBase` stand-in.
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -24,9 +7,6 @@
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
 
-// pi - the boomerang's circular-flight phase constant. Owned here (Boomerang is its
-// sole referencer and 0x1eaae8 falls in this TU's data band); <Globals.h> keeps the
-// reference extern. Re-homed out of the generated src/Globals.cpp (2026-07-14).
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 
@@ -44,17 +24,8 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     m_38->m_flags |= 0x2000002;
 }
 
-// The game registry singleton (the m_world resource gate + m_cmdGrid launcher grid).
-
-// Shared free-list globals (recycle the launcher grunt's occupied-coord payloads);
-// DATA-pinned in Projectile.cpp, so extern-only here (no duplicate DATA binding).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
-// The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
-// only referencing TU) so the fmul/fdivr loads reloc-mask against the named symbols.
 DATA(0x001eaad8)
 const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
 DATA(0x001eaae0)
@@ -156,8 +127,3 @@ i32 CBoomerang::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     }
     return CProjectile::SerializeMove(ar, mode, a3, a4) ? 1 : 0;
 }
-
-// CBoomerang::MovingSlot16 (slot 16 @0xe08b0, the boomerang motion step) is defined
-// out-of-line in Projectile.cpp (interleaved in the CProjectile .text band, and it
-// shares g_frameDelta/g_projPhase* with CProjectile::MovingSlot16 there). SIZE + VTBL
-// live in <Gruntz/Boomerang.h>.

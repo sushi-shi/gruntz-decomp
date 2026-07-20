@@ -1,17 +1,3 @@
-// AniAdvanceCursor.h - CAniAdvanceCursor, THE 0x3c-byte CLoadable anim-advance /
-// blit-command cursor embedded at the wide game object's +0x1a0 (and owned by the
-// blit-worker path). ONE class: the 2026-07-14 fold dissolved the former
-// CDDrawBlitParam view (DDrawMgr/DDrawBlitParam.h - the dispatch/serialize API on
-// the SAME 0x3c object: field-for-field overlay proven at +0x14 srcRef==playlist,
-// +0x18 element==descriptor, +0x1c index, +0x30/+0x34 draw values, +0x38
-// scale==speed float) and the former CDDrawBlitParamSrc source view (== the real
-// CAniElement: its +0x0c "elements"/+0x10 "count" are CAniElement::m_records'
-// m_pData/m_nSize, +0x20 the same float scale). ~CWwdGameObjectA/B destroy the
-// +0x1a0 member by stamping ??_7CAniAdvanceCursor (0x5f0128) - the vtable proof.
-//
-// wave4-L: the satellite advance types (CAniRenderCtx/CAniDesc/CAniBlitTrigger)
-// live in <DDrawMgr/AniAdvance.h>; the Advance body is the I obj, TriggerBlit the
-// G obj (dossier #15). Field names are placeholders where the role is unproven.
 #ifndef GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H
 #define GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H
 
@@ -22,10 +8,6 @@
 class CAniRenderCtx; // the sprite-render context (satellite def in AniAdvance.h)
 class CAniDesc;      // the animation descriptor (playlist entry; == CAniRecord)
 class CAniElement;   // the descriptor playlist (<Gruntz/AniElement.h>; the ex
-                     // "CDDrawBlitParamSrc" resolved-source view)
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 

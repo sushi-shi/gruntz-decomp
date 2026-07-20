@@ -1,13 +1,3 @@
-// GruntSelectedSprite.cpp - the "grunt is selected" indicator sprite
-// (C:\Proj\Gruntz). A CUserLogic-derived game object; methods in ascending
-// retail-RVA order:
-//   ~CGruntSelectedSprite  @0x011e80 - the /GX leaf dtor (CUserLogic teardown).
-//   SetCell                @0x07e9c0 - stash the (x,y) grunt cell, return 1.
-//   Update                 @0x07e9f0 - track the selected grunt's screen pos.
-//
-// The 0x44 is a DESTRUCTOR (it stamps the CUserLogic 0x5e705c then CUserBase
-// 0x5e70b4 vptr and tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a
-// ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -19,8 +9,6 @@
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
-// DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
-// DATA() only in TU source, not headers).
 DATA(0x00244da8)
 extern CIndicatorActReg g_selectedActReg; // 0x644da8
 
@@ -35,9 +23,6 @@ extern CIndicatorActReg g_selectedActReg; // 0x644da8
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CGruntSelectedSprite@@UAE@XZ 0x00011e80 0x44
 
-// --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc --- the ctor anchors the
-// ??_7CGruntSelectedSprite vtable in this TU. Folds the inline CUserLogic(obj) base
-// + the sprite name/geometry tail.
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
@@ -51,19 +36,11 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     }
 }
 
-// CGruntSelectedSprite::InitActReg @0x07e5e0 - construct the class's activation-
-// coordinate registry singleton (g_selectedActReg @0x644da8) over [2000, 2010]
-// via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007e5e0, 0x15)
 void CGruntSelectedSprite::InitActReg() {
     g_selectedActReg.Construct(2000, 2010);
 }
 
-// CGruntSelectedSprite::RunAct @0x07e660 - resolve the coordinate-registry entry for
-// `id` (the inline CActReg::ResolveEntry fast [lo,hi] range + slow Find/Insert rebuild),
-// and if it holds a registered handler PMF, re-resolve the entry and dispatch the PMF on
-// `this`. ResolveEntry has side effects (m_scratch=0, may grow) so cl re-evaluates it for
-// the guarded call rather than CSE-ing - hence the two inline expansions.
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn != 0) {
@@ -102,7 +79,6 @@ void CGruntSelectedSprite::RegisterActs() {
     (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
-// SetCell @0x07e9c0 - stash the (x,y) grunt cell, return 1.
 RVA(0x0007e9c0, 0x16)
 i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
     m_cellX = x;
@@ -137,11 +113,6 @@ i32 CGruntSelectedSprite::Update() {
     return 0;
 }
 
-// SerializeMove @0x07ea70 (vtable slot 1) - round-trip the {m_cellX,m_cellY} 8-byte
-// grunt-cell pair through the archive stream (mode 4 = Write @+0x30, mode 7 = Read
-// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeMove, 0x16e7f0)
-// and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). The two-chain archetype
-// (CTimeBomb::SerializeMove / CGruntPuddle::Serialize).
 RVA(0x0007ea70, 0x6f)
 i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     CSerialArchive* sa = static_cast<CSerialArchive*>(arc);

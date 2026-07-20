@@ -1,29 +1,3 @@
-// TileTriggerContainer.cpp - Gruntz CTileTriggerContainer (C:\Proj\Gruntz).
-//
-// A 4-CPtrList container: a base sub-object at +0x00 (head +0x04) plus three more
-// CPtrList members at +0x1c / +0x38 / +0x54 (heads +0x20 / +0x3c / +0x58).  The
-// accessors find/move/remove heap command elements (CTileTriggerLogic) across the
-// lists; an element is destroyed inline (stamp vtable + RezFree) before its node
-// is unlinked.  The /GX ~dtor + RemoveAll empty all four lists; AddToList1/3
-// allocate+append elements; SetCell flags a keyed element; SerializeApplyA/B are
-// the tag-dispatched serialize helpers of the big serialize walk (0x117280).
-//
-// The dynamic this-tracer originally lumped these RVAs under
-// CTileTriggerSwitchLogic; they are a DIFFERENT shape (verified by the EH dtor
-// 0xc8640 destroying three CPtrList sub-objects at +0x1c/+0x38/+0x54 and the base
-// at +0x00 - not the +0x04 child-list switch-logic layout).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine).
-//
-// wave2-F: this file is the WOVEN original obj at retail .text
-// [0x115b60 .. 0x118001] (TU_MIGRATION interval 0x115b60, weave 0.43):
-// CTileTriggerContainer + the CTileTriggerSwitchLogic methods the devs defined
-// in this second file (their RVAs interleave with the container's throughout),
-// + the tiletriggerwiring / tiletriggerfactory singletons whose RVAs sit inside
-// the interval. Gate113860 (0x113860) moved OUT to TileTriggerSwitchLogic.cpp
-// (its RVA is inside the 0x110430 interval). Definitions in strict ascending
-// retail-RVA order (the ~dtor 0xc8640 is the lone COMDAT-at-usage outlier).
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -39,15 +13,6 @@
 #include <Gruntz/TileTriggerWiring.h>
 #include <Gruntz/GameLevel.h> // CGameLevel/CLevelPlane/CTileImageSet (the id-21 board latch)
 
-// The *0x24556c singleton. Declared here: <Gruntz/TileGridCommand.h>'s header-level decl was
-// removed so each TU picks the view/real class it needs (see the note in Play.h). Type unchanged.
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::Dtor
-// The /GX destructor: runs the most-derived teardown (DtorBase) then destroys the
-// four CPtrList sub-objects in reverse declaration order (m_list3, m_list2,
-// m_list1, m_base), each at its own EH trylevel.
-// ---------------------------------------------------------------------------
 RVA(0x000c8640, 0x70)
 CTileTriggerContainer::~CTileTriggerContainer() {
     DtorBase();
@@ -94,11 +59,6 @@ i32 Gap_115b60(void) {
     return 0;
 }
 
-// GetFlag74 (0x115f00): test-and-set the container's m_74 latch (1 on first call,
-// then 0). Out-of-line (retail emits it standalone; the inline member folded away).
-// CONTAINER method (was misfiled on CTileTriggerSwitchLogic, where +0x74 fell
-// inside m_block): ModeObjInit builds the receiver as this 4-CPtrList container
-// and zeroes exactly this +0x74 slot before the first call.
 RVA(0x00115f00, 0x13)
 i32 CTileTriggerContainer::GetFlag74() {
     if (m_74 != 0) {
@@ -108,11 +68,6 @@ i32 CTileTriggerContainer::GetFlag74() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::DtorBase
-// When +0x74 is set, runs RemoveAll (RVA 0x116fa0) and clears +0x74.
-// Reloc-masked rel32 callee invoked first by the EH dtor.
-// ---------------------------------------------------------------------------
 RVA(0x00115f30, 0x18)
 void CTileTriggerContainer::DtorBase() {
     if (m_74 != 0) {
@@ -120,8 +75,6 @@ void CTileTriggerContainer::DtorBase() {
         m_74 = 0;
     }
 }
-
-// Engine-label backlog stubs (moved from src/Stub/CTileTriggerSwitchLogic.cpp).
 
 // @confidence: high
 // @source: xref
@@ -151,18 +104,6 @@ i32 CTileTriggerContainer::AddSwitchLogic(
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::RemoveByKeys
-// Walks m_base (head @ +0x04; node next@0, prev@4, data@8); on the first 0x8c
-// switch-logic element whose m_04 == k2 and m_key1 == k1, deletes it (inlined
-// dtor vptr-restamp + RezFree), unlinks the node via m_base.RemoveAt, returns 1.
-// Returns 0 if no match. CONTAINER method: with the receiver settled as the
-// container, the old `(CPtrList*)this` reinterpret dissolves - m_base IS the
-// CPtrList at +0x00. The loop is the inlined CPtrList::GetNext idiom: a saved
-// position (cur, esi) + the GetNext local (pn, ecx) are two distinct node copies;
-// pn advances node then derefs data, so retail materializes the extra `mov ecx,eax`
-// copy and defers the data load past the advance.
-// ---------------------------------------------------------------------------
 RVA(0x00116320, 0x66)
 i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
     TtcNode* node = TtcHead(m_base);
@@ -181,9 +122,6 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
     }
     return 0;
 }
-
-// TileTriggerWiring.cpp - CTileTriggerWiring::AddLogicDefaults (0x1163b0): forward
-// to the full AddLogic factory, supplying six zeroed 16-byte parameter blocks.
 
 // ===========================================================================
 // CTileTriggerWiring::AddLogicDefaults  (0x1163b0)
@@ -222,13 +160,6 @@ void CTileTriggerContainer::
     );
 }
 
-// ===========================================================================
-// CTileTriggerWiring::AddLogicFromRecord  (0x1164a0)
-// ===========================================================================
-// Same forward as AddLogicDefaults, but the five ids (a3/a4/a5) and the six
-// CTrigParam blocks come from a source tile record instead of being zeroed:
-// a3/a4/a5 = rec->m_164/m_168/m_4; p1..p6 = rec->m_134/m_144/m_154/m_64 and the
-// +0x7c sub-object's m_f0/m_100. __thiscall, ret 0xc.
 RVA(0x001164a0, 0x116)
 void CTileTriggerContainer::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec) {
     AddLogic(
@@ -545,13 +476,6 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::FindChild
-// Walks m_base (head @ +0x04; node next@+0x00, data@+0x08); returns the first
-// switch-logic element whose m_key1 == k1 and (k2==0 || its type id m_04 == k2),
-// else NULL. CONTAINER method: VerifyBlockLinks reaches it as m_owner->FindChild
-// where m_owner is the container LoadElement stamps.
-// ---------------------------------------------------------------------------
 RVA(0x00116ee0, 0x2f)
 CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
     TtcNode* node = TtcHead(m_base);
@@ -568,11 +492,6 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::FindInLists12
-// Scans list1 (head @ +0x20) then list2 (head @ +0x3c) for the first element
-// whose +0x10 == a and (b == 0 || +0x04 == b); returns the element, else NULL.
-// ---------------------------------------------------------------------------
 RVA(0x00116f20, 0x51)
 CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     TtcNode* node = TtcHead(m_list1);
@@ -610,14 +529,6 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::RemoveAll
-// Empties all four lists, inline-destroying every element (stamp its vtable +
-// clear a field + RezFree) before RemoveAll'ing the list, then clears m_70.  The
-// element type/cleared-field differs per list: m_list1 / m_list2 hold grid
-// commands (vtable 0x5eaea4, clear +0x1c); m_base holds switch siblings (vtable
-// 0x5eae8c, clear +0x20); m_list3 holds plain records (clear +0x10, no stamp).
-// ---------------------------------------------------------------------------
 RVA(0x00116fa0, 0xc7)
 void CTileTriggerContainer::RemoveAll() {
     TtcNode* node = TtcHead(m_list1);
@@ -716,13 +627,6 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::FindByField0C
-// Walks m_list3 (head @ +0x58); returns the first CTileActionEvent whose cell
-// key m_c == key, else NULL. CONTAINER method (on the switch-logic view +0x58
-// fell inside m_block[11] - an overrun tell); this is SetCell's "FindByKey"
-// (ILT 0x2838 jmps here).
-// ---------------------------------------------------------------------------
 RVA(0x001171d0, 0x20)
 CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
     TtcNode* node = TtcHead(m_list3);
@@ -936,48 +840,6 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTr
     }
 }
 
-// TileTriggerFactory.cpp - the tile-trigger logic factory @0x117800 (proximity
-// CTileTriggerContainer / CTileTriggerSwitchLogic). A __thiscall(reader, 7, a2, a3)
-// ret 0x10 that reads a 4-byte type id off the serialized `reader` (vtable slot 11 =
-// +0x2c), then dispatches a dense `switch(id)` (ids 1..26, the MSVC compact byte-index
-// + jump-table idiom: index table @0x517cbc, jump table @0x517c80) to build the matching
-// trigger-logic object. Each case Rez-allocates the object (0x8c / 0x9c / 0xc8 bytes),
-// runs its 0-arg ctor thunk, then a 4-arg register thunk (0x277f for ids 1..8, 0x1abe
-// for ids 23..26 + 21, 0x1d39 for id 22), stamps the owner + id, and returns it. id 21
-// additionally resolves the board tile under the object and, on a 0x67/0x68 tile, latches
-// the object into this->m_70.
-//
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing. The ctor /
-// register thunks are reloc-masked externals (no body); the type id map (id-1):
-//   0..7 -> cases 0..7   8..19 -> default(0)   20..25 -> cases 8..13
-
-// The serialized type id is read off the shared CSerialArchive stream (Read @
-// vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
-
-// DE-VIEW (2026-07-13): the `CTileTriggerFactory` view was CTileTriggerContainer - this
-// very class. Proof, all already in the tree: (1) <Gruntz/TileTriggerContainer.h> ALREADY
-// declares `void* LoadElement(CSerialArchive*, i32, i32, i32); // 0x117800` - the exact RVA
-// the view's Build defined, so 0x117800 was double-claimed and the container's own decl was
-// a phantom; (2) the view's only field, +0x70, is the container's `CTileTriggerLogic* m_70`
-// (same offset, same id-21 latch role); (3) the object it builds back-stamps the factory
-// into its owner slot, and CTileTriggerLogic::m_20 is typed `CTileTriggerContainer*`.
-//
-// DE-VIEW (2026-07-13, Fable lane): CTrigLogic + its 11 ctor tags + the 3 size buckets
-// (CTrigLogic8c/9c/C8) are GONE. The bucket premise was refuted: every per-id leaf is a
-// real class at exactly the bucketed size (the 0x8c switch family in
-// TileTriggerSwitchLogic.h, the 0x9c logic family + the 0xc8 CGiantRockLogic in
-// TileTriggerLogic.h), so each case `new`s the real class. The three "register thunks"
-// resolve to three REAL methods (retail ILT jmps): 0x277f -> 0x113860
-// CTileTriggerSwitchLogic::ValidateByType, 0x1abe -> 0x113a90
-// CTileTriggerLogic::ValidateByType, 0x1d39 -> 0x113d40 CGiantRockLogic::ApplyByType -
-// all __thiscall on the built ELEMENT (retail `mov ecx,esi` before each), not the
-// receiver-dropping `__stdcall Gate113860` the old model called. The +0x24-vs-+0x20
-// owner-stamp split is the two FAMILIES' owner fields: CTileTriggerSwitchLogic::m_owner
-// @+0x24 vs CTileTriggerLogic::m_20 @+0x20 - and the +0x24 attribution conflict is
-// SETTLED: the owner is the CONTAINER (ModeObjInit constructs the receiver as this
-// 4-CPtrList container; VerifyBlockLinks' m_owner->+0x20 walk reads m_list1's head).
-
-// Build tail for the 0x8c switch-logic family (ids 1..8): register, stamp owner+id.
 static void* RegSwitchTail(
     CTileTriggerContainer* self,
     CTileTriggerSwitchLogic* obj,
@@ -994,7 +856,6 @@ static void* RegSwitchTail(
     return obj;
 }
 
-// Build tail for the 0x9c logic family (ids 23..26): register, stamp owner+id.
 static void* RegLogicTail(
     CTileTriggerContainer* self,
     CTileTriggerLogic* obj,
@@ -1125,13 +986,6 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
     }
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::TransferFlag74
-// If the stream is null returns 0; if the active game-manager (g_gameReg+0x30)
-// is null returns 0; otherwise writes the 4-byte m_74 latch through the
-// stream's write slot (+0x30) and returns 1. CONTAINER method (its own
-// Serialize op-4 close; +0x74 is the container's m_74, not m_block[18]).
-// ---------------------------------------------------------------------------
 RVA(0x00117e20, 0x36)
 i32 CTileTriggerContainer::TransferFlag74(CSerialArchive* s) {
     if (s == 0) {
@@ -1144,11 +998,6 @@ i32 CTileTriggerContainer::TransferFlag74(CSerialArchive* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::LoadFlag74
-// The read counterpart of TransferFlag74: same null/game-manager gates, but
-// reads m_74 through the stream's read slot (+0x2c). Returns 1 on success.
-// ---------------------------------------------------------------------------
 RVA(0x00117e70, 0x36)
 i32 CTileTriggerContainer::LoadFlag74(CSerialArchive* s) {
     if (s == 0) {

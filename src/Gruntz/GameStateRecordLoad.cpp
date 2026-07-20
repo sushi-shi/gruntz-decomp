@@ -1,24 +1,3 @@
-// GameStateRecordLoad.cpp - CGrunt::LoadStateRecord @0x555e0 (4856 B), the grunt's
-// game-state-record deserializer (mode-7 arm of CGrunt::SerializeMove @0x53b80,
-// its ONLY caller, dispatched on the grunt `this` - the ex-CGameStateRecord
-// on-disk record spec). Reads an entire saved record off the stream:
-//   - 7 serial-id object refs (read a 4-byte serial, look it up in the engine
-//     object directory's serial map, type-tag-check (==5), store the pointer;
-//     fail the load if a non-zero serial resolves to nothing),
-//   - 3 CString fields (read a 0x80 text buffer, CString::operator= it),
-//   - 18 name-ref object fields (read a 0x80 name, look it up by name in the
-//     directory's name map, store the pointer),
-//   - ~100 plain Read(&field, N) scalar/struct fields,
-//   - a 3x3 array of 0x68-byte sub-records (each Load'd via 0x3ee0),
-//   - two engine free-list-backed CRecPtrList rebuilds (count-prefixed),
-//   - a couple of event-buffer pushes + one bute GetIntDef.
-//
-// `this` is accessed by raw byte offset throughout (the offsets ARE the on-disk
-// record layout - the load-bearing spec); the archive Read / object type-tag are
-// modeled as typed vtable structs so the `mov edx,[esi]; call [edx+0x2c]` /
-// `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
-// no destructible locals (the CString targets are members, the text buffer is a
-// trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
@@ -34,63 +13,13 @@
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
-// Engine globals (reloc-masked; names match the delinked symbols).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-// g_buteMgr (0x6453d8, the global bute manager) comes from <Bute/ButeMgr.h>.
 
-// The two bute tag/key literals the tail GetIntDef reads.
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
-// The record reads from the shared WAP32 CSerialArchive stream (Read @ vtable +0x2c),
-// now the one modeled class in <Gruntz/SerialArchive.h> - the former local `CRecReader`
-// view is folded away. `ar->Read` lowers to `mov edx,[ar]; call [edx+0x2c]`.
-
-// The serial-ref type probe (virtual slot 8, +0x20) is the canonical
-// CGameObject::GetClassId (<Wwd/WwdGameObjectFamily.h>); only
-// CLASSID_SERIALREF (5) objects are accepted - the same probe idiom as
-// CPlay::SerializeMove / CSpotLight::SerializeMove. (Ex the CDirObj 9-slot
-// placeholder-padded view.)
-
-// The two engine lookup maps are the real MFC containers (reached below by casting
-// the map host + its embedded-map offset): the serial map @0x1b8760 =
-// CMapPtrToPtr::Lookup (int key); the name map @0x1b8438 = CMapStringToPtr::Lookup
-// (string key). Modeled directly as the MFC classes at the use sites (Mfc.h), so no
-// per-TU map view is needed.
-
-// The engine object directory IS the canonical CDDrawSurfaceMgr
-// (g_gameReg->m_world): the serial map is its m_8 factory's embedded key->object
-// CMapPtrToPtr (+0x48, GruntObjMap in <Gruntz/SpriteFactory.h>), the name map
-// its m_animRegistry's +0x10 CMapStringToPtr (canonical CDDrawSubMgrLeaf::m_10;
-// all 18 retail NAMEREF lookups call 0x1b8438, the Ptr band - the old
-// CMapStringToOb/m_10map reading bound the wrong-band 0x1b8008). (Ex the CObjDir
-// offset view.)
-
-// The game-manager singleton (the one true CGruntzMgr shape lives in
-// <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
-// here as the serial/name-map host), an engine helper at +0x74 the tail invokes
-// (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
-
-// The event/command buffer the tail writes is the grunt's own m_10 CGruntHud
-// (the m_4c/m_50/m_58 move-icon triple SelectMoveIcon also writes, + m_54).
-// (Ex the CCmdBuf offset view.)
-
-// CRecPtrList (engine; AddTail/RemoveHead/RemoveAll reloc-masked __thiscall).
-
-// A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
-
-// Global operator new / free (engine NAFXCW; reloc-masked).
 void* operator new(u32 n); // 0x1b9b46
 
-// The three repeating block shapes, expanded inline + unrolled (retail unrolls
-// each and shares one 0x80 text buffer + the id/obj scratch locals - a helper
-// function with a 0x80 local won't inline under MSVC5's budget, so the blocks
-// are open-coded as macros over the Load-local `p`/`ar`/`dir`/`buf`/`id`/`obj`).
-//   SERIALREF: read a 4-byte id, look it up, accept only a tag==5 object, store;
-//              fail the load if a non-zero id resolved to nothing.
 #define SERIALREF(off)                                                                             \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
@@ -107,14 +36,12 @@ void* operator new(u32 n); // 0x1b9b46
             return 0;                                                                              \
         }                                                                                          \
     } while (0)
-//   READCSTR: read a 0x80 text buffer, CString::operator= it.
 #define READCSTR(off)                                                                              \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
         *reinterpret_cast<CString*>(p + (off)) = buf;                                                              \
     } while (0)
-//   NAMEREF: read a 0x80 name, look it up by name (if non-empty), store.
 #define NAMEREF(off)                                                                               \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
@@ -391,5 +318,3 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     }
     return 1;
 }
-
-// --- vtable catalog ---

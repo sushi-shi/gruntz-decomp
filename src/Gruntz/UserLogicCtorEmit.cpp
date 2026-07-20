@@ -20,10 +20,6 @@
 // from ~90% to ~10-50%). Isolating the forcer + the inline body in this TU emits
 // the standalone COMDATs while UserLogic.cpp's leaves keep calling the helper.
 #include <Mfc.h> // operator new + the afx-first windows.h order UserLogic.h needs
-// The inline CUserLogic(obj) now inits only through m_2c (the true-0x30 base), so the
-// standalone COMDAT it forces already matches retail 0x58cd0 with no macro. The leaf-
-// only m_34/m_38/m_3c tail stores moved to CTileLogic(obj) (see <Gruntz/UserLogic.h>);
-// CProjectile/CDoNothingNormal/Grunt call this same base ctor out-of-line via 0x3828.
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
@@ -47,24 +43,11 @@
 //      (a scalar store vs call-arg ordering the scheduler owns).
 // @rva-symbol: ??0CUserLogic@@QAE@PAUCGameObject@@@Z 0x00058cd0 0x195
 
-// ---------------------------------------------------------------------------
-// Lookup-based inline body of CUserLogic::BuildLogicTypeTable (the 0x8a40 helper,
-// mirrored from src/Gruntz/LogicTypeTable.cpp): each of the three built-in types
-// re-reads obj->m_c->m_14 (the logic-type registry), Lookup()s the key (0x1b8008,
-// __thiscall ret 8, on registry+0x10), and RegisterType()s (vtable slot +0x24) it
-// when absent. Visible only in this TU, so it inlines into the standalone 1-arg
-// COMDAT but not into any leaf.
-// ---------------------------------------------------------------------------
 extern "C" {
     i32 LogicHitFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
     i32 LogicAttackFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant) // 0x56e4d0
     i32 LogicBumpFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
 }
-// REGISTRY = the canonical CDDrawWorkerCache (Fable A2, 2026-07-14; see
-// LogicTypeTable.cpp): the "+0x24 registrar" is its slot-9 CreateWorker and the
-// +0x10 lookup sub-object its real CMapStringToOb m_10 (Lookup @0x1b8008 - the
-// old CMapStringToPtr cast here bound the reloc to the WRONG library symbol,
-// 0x1b8438; the inverted-label pair struck again). The CLogicType* chain shells
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
@@ -91,14 +74,6 @@ inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// The forcers. The no-arg ctor is small (~75 B) - MSVC always inlines it, so
-// inline_depth(0) is used to force the standalone COMDAT (it has no inlinable
-// callees, so depth-0 is harmless). The 1-arg ctor is compiled at DEFAULT depth
-// so BuildLogicTypeTable folds into it as in retail 0x58cd0; the ~405 B body then
-// overflows the caller's inline budget across the repeated constructions and is
-// emitted standalone rather than folded into the forcer.
-// ---------------------------------------------------------------------------
 static CUserLogic* volatile g_forceEmitSink;
 #pragma inline_depth(0)
 void ForceEmitCUserLogicNoArg() {
@@ -111,5 +86,3 @@ void ForceEmitCUserLogic1Arg(CGameObject* o) {
     g_forceEmitSink = new CUserLogic(o);
     g_forceEmitSink = new CUserLogic(o);
 }
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

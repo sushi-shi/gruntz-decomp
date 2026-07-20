@@ -1,20 +1,3 @@
-// GruntzCommand.h - the command-pattern class family the Gruntz game-object
-// system uses to queue/dispatch per-grunt orders.
-//
-// THE HIERARCHY (recovered from RTTI + the three vtables, ImageBase 0x400000):
-//   CGruntzCommand        the abstract base command (vtable 0x5e9674).
-//   CGruntzSingleCommand  a single-target command   (vtable 0x5e9634).
-//   CGruntzMultiCommand   a multi-target command    (vtable 0x5e96b4).
-// Single/Multi each derive from CGruntzCommand: their vtables share slot 4
-// (+0x10 = 0x403373, the base default) and each carries its own slot-0
-// scalar-deleting dtor + its own override set. The base sub-object is vptr-only;
-// the leaves are 0x14 (20) bytes = vptr + four scalar members (the 0x14 the
-// per-leaf allocator passes to operator new).
-//
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS, the vtable
-// stores, and the code bytes are load-bearing (campaign doctrine). The base
-// layout is confirmed from the ctor/dtor; the leaf size (0x14) from the
-// operator new(0x14) in each leaf's allocator.
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
@@ -25,28 +8,10 @@
 typedef u32 gz_size_t;
 void* operator new(gz_size_t);
 
-// The recycle-list type each leaf allocator pulls from (a WAP32 CPtrList-family
-// list). Only RemoveTail() is reached (a __thiscall returning the recycled
-// node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
-// else operator new(0x14) the object + stamp its vftable.
-// CGruntzCmdList IS the MFC CPtrList too: its RemoveTail is ?RemoveTail@CPtrList@@QAEPAVCObject@@XZ
-// @0x1b4a27 (NAFXCW). Declaring it on our own name emitted ?RemoveTail@CGruntzCmdList@@QAEPAXXZ,
-// which nothing defines - 4 unresolved externals. Alias the real class (see GruntzCmdMgr.h).
 typedef CPtrList CGruntzCmdList;
 
-// (The CGruntzCmdTarget caller-side shim is GONE - DISSOLVED 2026-07-15. The
-//  "apply" target IS the CPlay play state and its executor's TRUE param types are
-//  the packed char/i16 (settled empirically: MSVC5 reads a narrow stack param as
-//  the full dword slot + AND mask, exactly the retail body's pattern, so ONE
-//  honest signature now serves both the unextended caller pushes and the body).
-//  ApplyOne/ApplyMask call ?ExecCommand@CPlay@@ (<Gruntz/Play.h>) directly.)
 class CPlay;
 
-// The network (de)serialization stream the base command Save/Load drive: the shared
-// WAP32 archive interface (Read @+0x2c / Write @+0x30), forward-declared here.
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
@@ -157,15 +122,8 @@ public:
     void CGruntzCommand_024430();
 };
 
-// The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.
 extern const u16 g_cmdBitTable[16]; // 0x1e9608
 
-// ---------------------------------------------------------------------------
-// CGruntzSingleCommand - single-target command (0x14 bytes; vtable 0x5e9634).
-// Allocate() is the new-or-recycle allocator: pull a recycled node from the
-// per-class free list if non-empty, else operator new(0x14) + inline ctor
-// (the ctor just stamps the leaf vftable - empty body, so it folds inline).
-// ---------------------------------------------------------------------------
 SIZE(CGruntzSingleCommand, 0x14);
 VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
 class CGruntzSingleCommand : public CGruntzCommand {
@@ -192,10 +150,6 @@ public:
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
 };
 
-// ---------------------------------------------------------------------------
-// CGruntzMultiCommand - multi-target command (0x14 bytes; vtable 0x5e96b4).
-// Same new-or-recycle allocator shape as the single-target command.
-// ---------------------------------------------------------------------------
 SIZE(CGruntzMultiCommand, 0x14);
 VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 class CGruntzMultiCommand : public CGruntzCommand {
@@ -221,8 +175,6 @@ public:
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
 };
 
-// The per-class recycle lists + their non-empty gates (file-scope globals the
-// allocators test/pull from). Reloc-masked; only the addresses are load-bearing.
 extern i32 g_singleCmdCount;           // 0x62b5dc - non-empty gate
 extern CGruntzCmdList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
 extern i32 g_multiCmdCount;            // 0x62b64c

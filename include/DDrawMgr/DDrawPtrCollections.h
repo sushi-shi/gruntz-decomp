@@ -1,18 +1,3 @@
-// DDrawPtrCollections.h - the DDraw surface/palette POOL host (tomalla
-// CDDrawPtrCollections): two CPtrList pools (+0x47c pool-A CDDSurface*, +0x498
-// pool-B CDDPalette*) + a CPtrArray (+0x4b4), two cached-surface slots at +0x00/
-// +0x04, and a last-error/state tail. 0x948 bytes. The item-factory + pool-drain
-// methods (0x142xxx / 0x143xxx) are the surface/palette acquire entries.
-//
-// Single owner of the class shape. The method bodies + the CPoolItem* / CCachedSurface
-// helper family live in src/DDrawMgr/DDrawPtrCollections.cpp (owner unit); the
-// item/surface pointer types are forward-declared here (the class uses them only as
-// pointers) so this header stays light. Consumers (ReconBatch2, GameAssetNamespaces)
-// that previously re-declared their own method-only views of this class now share
-// this def, so their MakeAndAddB/RemoveItemA calls pair with the owner's symbols.
-//
-// Field names are placeholders (m_<hexoffset>); only offsets + emitted code bytes
-// are load-bearing (campaign doctrine).
 #ifndef GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H
 #define GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H
 
@@ -22,32 +7,10 @@
 
 #include <DDrawMgr/DDSurface.h> // CDDSurface (the pool-A item base; CPoolItem* derive it)
 
-// The pool-B item (CDDPalette, DIRPAL.CPP - full def in <DDrawMgr/DirectDrawMgr.h>).
 struct CDDPalette;
-// The two cached device slots at +0x00/+0x04 are the REAL DirectDraw COM interfaces
-// (wave4-K: the former CCachedSurface view's slot set - "GetSurfaceDesc"@12 /
-// "Restore"@19 / "Configure"@21(5 args) - is exactly IDirectDraw2's GetDisplayMode /
-// RestoreDisplayMode / SetDisplayMode; the view is dissolved).
 struct IDirectDraw;  // <ddraw.h> in the dispatching TU
 struct IDirectDraw2; // <ddraw.h> in the dispatching TU
 
-// ---------------------------------------------------------------------------
-// The +0x47c-pool surface-item family. GENUINE C++ VTABLES (verified against the
-// retail .rdata): the 9-slot polymorphic base CDDSurface (vtable 0x5ef7f0) plus four
-// DERIVED subclasses (0x5efa58 / a88 / ab8 / ae8) that override {virtual dtor slot 0,
-// the slot-2 init, the slot-6 surface op} and add per-subclass init tail slots.
-// Shared here (wave4-K) because the factories live in the DDRAWMGR.CPP obj
-// (DirectDrawMgr.cpp) while the pocket slot bodies live in the 0x148840-pocket obj
-// (DDrawPtrCollections.cpp).
-//
-// vtable 0x5efa58: the "a58" subclass IS CFileImageSurface (<Image/Image.h>, the
-// canonical def: overrides the dtor ??_G 0x142340 / ~ 0x142360 + slot 6 0x143cc0,
-// adds the three init tail slots 9/10/11 = 0x148890/0x148940/0x148840). The former
-// local alias CPoolItemA (RELOC_VTBL) is dissolved; DirectDrawMgr.cpp's factories
-// `new CFileImageSurface` directly. See docs/patterns/surface-pool-comdat-dtors.md.
-
-// vtable 0x5efa88: overrides the dtor (??_G 0x142800 / ~ 0x142820) and slot 6 (0x143cb0);
-// adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).
 class CPoolItemA88 : public CDDSurface {
 public:
     virtual ~CPoolItemA88() OVERRIDE;                        // slot 0  ~ 0x142820
@@ -67,8 +30,6 @@ public:
 SIZE(CPoolItemA88, 0xc0);
 VTBL(CPoolItemA88, 0x001efa88);
 
-// vtable 0x5efab8: overrides the dtor (??_G 0x142a20 / ~ 0x142a40), slot 2 (0x148b50) and
-// slot 6 (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).
 class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;                        // slot 0  ~ 0x142a40
@@ -80,8 +41,6 @@ public:
 SIZE(CPoolItemAB8, 0xc0);
 VTBL(CPoolItemAB8, 0x001efab8);
 
-// vtable 0x5efae8: overrides the dtor (??_G 0x142d20 / ~ 0x142d40), slot 2 (0x148cc0)
-// and slot 6 (0x143ce0); adds one init tail slot (9 = 0x148c40, 6-arg).
 class CPoolItemAE8 : public CDDSurface {
 public:
     virtual ~CPoolItemAE8() OVERRIDE;                       // slot 0  ~ 0x142d40
@@ -156,7 +115,6 @@ public:
 
     // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
     i32 GetAvailableVidMem(u32 caps, u32* total, u32* free); // 0x143810
-
 
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();

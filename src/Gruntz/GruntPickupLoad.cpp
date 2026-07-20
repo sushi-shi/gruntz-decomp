@@ -1,10 +1,3 @@
-// GruntPickupLoad.cpp - CGrunt::LoadPickupSprites (@0x65e80), re-homed from
-// src/Stub/ApiCallers.cpp. The pickup/powerup entrance-sprite loader: gate on the
-// grunt-kind + entrance state, bump the per-owner pickup stat counters (when
-// counting is requested), re-latch the "J" anim-set node, then a ~90-way switch on
-// the pickup type resolves the matching GRUNTZ_PICKUPS_* sprite (the MEGAPHONE case
-// runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
-// into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -18,26 +11,10 @@
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
 #include <Globals.h>
-// The entrance player's name/geometry setters are folded onto CEntranceAnimPlayer /
-// CEntranceAnimSub (<Gruntz/Grunt.h>), reached as m_154->CacheFirstFrame /
-// m_154->m_1a0.SetGeometry; the former per-TU CDDrawBlitParam / CAniAdvanceCursor /
-// CGruntSprite facet views are gone.
 
-// The id->name-slot type registry @0x6bf650: Resolve(id) returns a slot whose +0 is
-// the interned anim-code name string (reloc-masked; Resolve is thunk 0x437c).
-// zDArray is the shared <Gruntz/TypeKeyColl.h> shape.
-
-// The single-char anim-code key strings (reloc-masked .rodata).
-
-// The per-owner pickup-stat block is the real CBattlezData (g_gameReg->m_scoreHud,
-// +0x7c): the stat bands are its m_*Pickupz arrays (the PickupType id base folds into
-// the retail displacement; see BattlezData.h). Re-read the member each use (matching
-// retail's reload of g_gameReg + [+0x7c]). The former GruntPickupStats view is GONE.
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntPickupStats.h> // MegaHolder / MegaCounter (the MEGAPHONE count path)
 
-// The looked-up sprite handle lands in the (otherwise dead) arg4 slot: taking its
-// address pins a4 to its incoming stack slot, exactly as retail reuses [esp+0x20].
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
@@ -45,12 +22,6 @@
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
-
-// The object-type id (LoadPickupSprites `type` / the megaphone-announce unit type)
-// that selects the GRUNTZ_PICKUPS_<NAME> entrance sprite is PickupType, the shared
-// object/pickup/grunt-kind id space in <Gruntz/PickupType.h>. Values are byte-verified
-// from the matched dispatch switch; each name is confirmed by its case's sprite
-// string. Same immediates as the bare labels -> naming is matching-neutral.
 
 // @early-stop
 // Lookup out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md),

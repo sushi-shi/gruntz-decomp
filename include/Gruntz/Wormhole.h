@@ -1,12 +1,3 @@
-// Wormhole.h - the world teleport-node game-object (C:\Proj\Gruntz), a CUserLogic
-// leaf. The class adds no data members the dtor sees, so its dtor folds the bare
-// CUserLogic teardown (the /GX leaf-dtor archetype). Split across two TUs:
-//   Wormhole.cpp      - the object logic (~CWormhole, SpawnPartners, LoadColors,
-//                       the config-rerun stubs).
-//   WormholeActs.cpp  - now the CEXITTRIGGER act cluster (re-attributed).
-// The vtable is stamped by ~CWormhole (its key function, in Wormhole.cpp); no other
-// TU instantiates the class, so none re-emits it. Field names/offsets + code bytes
-// are load-bearing.
 #ifndef GRUNTZ_CWORMHOLE_H
 #define GRUNTZ_CWORMHOLE_H
 
@@ -44,8 +35,5 @@ public:
     i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
 VTBL(CWormhole, 0x1e817c);
-
-// (CWormholeActEntry moved to <Gruntz/ExitTrigger.h> as CExitActEntry - the act
-// cluster is CExitTrigger's.)
 
 #endif // GRUNTZ_CWORMHOLE_H

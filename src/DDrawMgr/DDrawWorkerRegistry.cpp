@@ -16,13 +16,10 @@
 #include <Image/ImageSet.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-// <Mfc.h> brings real MFC afxcoll: CObject / CByteArray / CMapStringToOb / POSITION.
 #include <Mfc.h>
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in InstallTree / LoadNamespace)
 #include <Globals.h>
-// The canonical CDDrawWorkerRegistry (real polymorphic; the ex CWorkerVtableView /
-// CDDrawRegistryDtorHost / CWorkerValue views are folded onto it + CDDrawWorker).
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDrawWorker.h> // the ONE canonical keyed worker (vtable 0x1efbe8)
 #include <Gruntz/String.h>
@@ -33,16 +30,8 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The keyed worker is the ONE canonical CDDrawWorker (<DDrawMgr/DDrawWorker.h>,
-// CLoadable-derived, 17-slot vtable @0x1efbe8). This TU owns the registry-side
-// slot bodies (IsLoaded @0x155750, GetClassId @0x155770, SetKey @0x155810, the
-// dtor @0x1557a0); the frame-collection slots live in the S1 obj
-// (wwdgameobject). `new CDDrawWorker` makes cl auto-emit ??_7CDDrawWorker and
-// the two-phase vptr stamps. (Was a TU-local duplicate CDDrawWorker definition +
-// the RegWorkerValue reduced dispatch view - both dissolved onto the canonical.)
 SIZE(CDDrawWorker, 0x6c);
 
-// operator delete + the engine free.
 void operator delete(void*);
 
 // The linker-kept COMDAT pair of CLoadable's (A)-form inline dtor - ??_G
@@ -57,11 +46,6 @@ void operator delete(void*);
 // dissolved onto the real ??1CLoadable/??_GCLoadable identities.
 // @rva-symbol: ??1CLoadable@@UAE@XZ 0x000d5d70 0x16
 // @rva-symbol: ??_GCLoadable@@UAEPAXI@Z 0x00155720 0x1e
-
-// (The former RegDirEntry tree-cursor view is DISSOLVED 2026-07-14: the walkers'
-// FirstSub/NextSub children are Bute CSymTab scopes - m_name @+0x00, the same
-// FirstSub/NextSub cursor ScanTree_157ee0 already walks as CSymTab - the DirNode
-// precedent, <Bute/SymTab.h>.)
 
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
     return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
@@ -100,9 +84,6 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
     return static_cast<CDDrawWorker*>(found);
 }
 
-// ---------------------------------------------------------------------------
-// Slot 6 (the CLoadable-scheme IsReady override): clears the 25-dword blt-fx
-// scratch table, seeds the first entry to 100, reports ready.
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     for (i32 i = 0; i < 25; ++i) {
@@ -112,10 +93,6 @@ i32 CDDrawWorkerRegistry::IsReady() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Slot 7 (the CLoadable-scheme Unload override): self-dispatch the slot-22 map
-// teardown (+0x58, virtual on `this` - retail's `mov eax,[ecx]; call [eax+0x58]`),
-// then clear the two install counters; the `xor eax,eax` doubles as the return 0.
 RVA(0x00154ac0, 0x12)
 i32 CDDrawWorkerRegistry::Unload() {
     MapTeardown_1552b0();
@@ -124,8 +101,6 @@ i32 CDDrawWorkerRegistry::Unload() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// Finds or creates the keyed worker, then forwards to worker slot 14 (+0x38).
 RVA(0x00154ae0, 0xfc)
 i32 CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
@@ -135,8 +110,6 @@ i32 CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i3
     return reinterpret_cast<i32>(worker->InsertFrame(rec, a3, a4)); // slot 14 returns CImage*; forwarded as i32
 }
 
-// ---------------------------------------------------------------------------
-// Finds or creates the keyed worker, then forwards to worker slot 13 (+0x34).
 RVA(0x00154be0, 0xfc)
 i32 CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
@@ -146,8 +119,6 @@ i32 CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a
     return reinterpret_cast<i32>(worker->CreateFrame30(a1, a3, a4)); // slot returns CImage*; forwarded as i32
 }
 
-// ---------------------------------------------------------------------------
-// Finds or creates the keyed worker, then forwards to worker slot 12 (+0x30).
 RVA(0x00154ce0, 0x101)
 i32 CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
@@ -157,8 +128,6 @@ i32 CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a
     return reinterpret_cast<i32>(worker->CreateFrame28(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
 }
 
-// ---------------------------------------------------------------------------
-// Finds or creates the keyed worker, then forwards to worker slot 11 (+0x2c).
 RVA(0x00154df0, 0x101)
 i32 CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
@@ -168,8 +137,6 @@ i32 CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a
     return reinterpret_cast<i32>(worker->CreateFrame24(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
 }
 
-// ---------------------------------------------------------------------------
-// Thin forwarders to worker slots 13/14/12/11 (+0x34/+0x38/+0x30/+0x2c).
 RVA(0x00154f00, 0x1b)
 i32 CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return reinterpret_cast<i32>(worker->CreateFrame30(a1, a3, a4)); // slot returns CImage*; forwarded as i32
@@ -286,8 +253,6 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
     return count;
 }
 
-// ---------------------------------------------------------------------------
-// Removes a non-null worker from the map by its key at +0x24, then destroys it.
 RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != 0) {
@@ -296,9 +261,6 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Map teardown leaf (SEH): iterates m_10map via GetNextAssoc, destroys each
-// CObject* value via its scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0() {
     CObject* val = 0;
@@ -315,9 +277,6 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0() {
     m_10map.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// Map scan: remove every entry whose key strncmp-equals `str` (over its full
-// length), destroying each removed value via its scalar dtor; returns the count.
 RVA(0x00155360, 0xf8)
 i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
     CString match(base);
@@ -367,8 +326,6 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
     return total;
 }
 
-// ---------------------------------------------------------------------------
-// Map scan: return 1 if any key strncmp-equals `str` over strlen(str), else 0.
 RVA(0x00155550, 0xdc)
 i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
     i32 len = strlen(str);
@@ -384,13 +341,6 @@ i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// Reverse frame lookup: probe every non-null map value (a CImageSet) via its
-// FindFrame(frame, outName, outIndex); return 1 on the first hit, else 0.
-// Returns 0 immediately if `frame` is null. (The ~75.9% "regalloc wall" the old
-// i32,i32,i32 fake-typed signature carried DISSOLVED at 100.00 the moment the
-// params got their real CImage*/char*/i32* types - the lie scored worse than
-// the truth.)
 RVA(0x00155630, 0xc5)
 i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i32* outIndex) {
     if (frame == 0) {
@@ -411,9 +361,6 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i
 // (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, @rva-symbol-bound at the
 // file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
 
-// ---------------------------------------------------------------------------
-// 0x155750 - CDDrawWorker::IsLoaded (slot 5 override): loaded iff the owner
-// handle (m_0c) is set and the m_04 header word is not the -1 sentinel.
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {
     if (m_0c != 0 && m_04 != -1) {
@@ -422,8 +369,6 @@ i32 CDDrawWorker::IsLoaded() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x155770 - CDDrawWorker::GetClassId (slot 8 override): the worker class tag.
 RVA(0x00155770, 0x6)
 i32 CDDrawWorker::GetClassId() {
     return CLASSID_WORKER;
@@ -448,11 +393,6 @@ CDDrawWorker::~CDDrawWorker() {
     // grand-base vtable stamp) fold here.
 }
 
-// ---------------------------------------------------------------------------
-// 0x155810 - CDDrawWorker::SetKey (slot 9 override): copy at most 0x3F key bytes
-// into the m_key buffer (+0x24), NUL-terminate at +0x63, return 1. (Was the
-// misattributed CDDrawWorkerRegistry::StringCopy_155810 with raw this+0x24 casts;
-// the buffer is the WORKER's key field.)
 RVA(0x00155810, 0x23)
 i32 CDDrawWorker::SetKey_155810(const char* src) {
     strncpy(m_name, src, 0x3f);

@@ -1,13 +1,3 @@
-// DDrawPolyFill.cpp - the DDrawMgr module's polygon scanline-fill rasterizer
-// (C:\Proj\DDrawMgr\). FillPolygon (0x146fe0) is the lone __cdecl free function
-// here; unlike the rest of the DDrawMgr group it was compiled with the EBP frame
-// pointer RETAINED (/O2 /Oy-, the `framed` profile) - it indexes its locals and
-// edge state through `ebp`. Split into its own TU so the frame-pointer flag does
-// not perturb the FPO functions in CDirectDrawMgr.cpp.
-//
-// The active-edge tables, the scanline scratch globals and the fixed-point scales
-// are reloc-masked DATA externs; CDDSurface::Lock and the IDirectDrawSurface Unlock
-// vtable slot are reloc-masked calls (the DX6 vtable supplies the slot layout).
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + FillPolygon decl
 #include <Win32.h>           // windows.h base types (ddraw.h needs them first)
@@ -15,7 +5,6 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
 
-// The polygon vertex is the shared 28-byte ClipVtx (x@+0, y@+4; the rest unused here).
 DATA(0x002a2cf0)
 extern "C" FillEdgeRow g_rasterEdgeL[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
 DATA(0x002856f8)

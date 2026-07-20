@@ -1,19 +1,3 @@
-// GruntStateStep.cpp - CBattlezMapConfig::Step33520 (0x033520, __thiscall ret 4). A
-// grunt AI move-resolution step, sibling of CBattlezMapConfig::Step (0x031610,
-// BattlezMapConfig.cpp) and the region scan (GruntTileScan.cpp). `this` (ebp) is the
-// same CBattlezMapConfig object (board m_triggerMgr, grid m_board, thresholds
-// m_08c/m_090/m_0a0/m_0a4, random-goal CPtrArray m_0f0); the argument (esi) is the
-// CGrunt being moved. Dispatches on the
-// grunt arrival state (g->m_defenderState):
-//   state 3 -> return immediately;
-//   state 2 -> in-flight: fetch the path node, test arrival (Check3c4c). On arrival
-//              latch (-1,-1), and - gated on a set of flags + the grunt NOT being a
-//              type in {I,G,L,P,J,C,R} - run Finish3e4f; else clear. Not arrived ->
-//              reroute by Euclidean board distance (fild/fsqrt/__ftol);
-//   fresh   -> re-query the move grid, recycle the pending-coord list onto
-//              g_coordPool, recompute the grid dirty rect and re-target.
-// Big /base body (0xbc3, ~30 internal calls). Shares the CGrunt coord-pool / grid
-// family with GruntMoveStep.cpp + GruntTileScan.cpp.
 #include <rva.h>
 #include <new> // placement CRect ctor
 #include <Wap32/ZVec.h>
@@ -33,41 +17,9 @@
 #include <Gruntz/TypeColl.h>         // the shared type-name collection
 #include <Gruntz/TypeKeyColl.h>
 
-// --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// (CStepList was a third fake name for the REAL MFC CPtrList at g->m_31c - the same
-// fabrication Grunt.h records as GruntListSub.  Find1de8 @0x1de8 thunks to the free
-// __stdcall ListNodeAdvance @0x29a30; RemoveAll1b48a6 @0x1b48a6 IS CPtrList::RemoveAll.)
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-// (g->m_10 is the real CGruntHud (m_screenX/m_screenY); g->m_14 is the real
-// CAnimLookupNode (m_1c) - both are CGrunt's already-typed sub-objects.)
-// CTypeColl was a fake view of the REAL zDArray at 0x6bf650 - and it mangled to a
-// DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 
-// The single-char type keys pooled in .rdata (named in Globals.cpp).
-// k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-
-// (the ApiMisc::ClipHost_02b340 shell + the CStepGrid view are GONE - XREF-settled, both of
-// them, and they were the same object. The 0x43ea thunk lands on
-// ?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z (0x2b340, already reconstructed in
-// src/Gruntz/BrickzClip_02b340.cpp), so "SetStepFlag" was CMapMgr::Clip all along; and the
-// board this TU reaches through m_c has CMapMgr's layout field for field - +0x0c/+0x10 are
-// m_width/m_height, +0x60..+0x6c the bound RECT, +0x70/+0x74 the clipped extents. It IS the
-// CBrickzGrid/CMapMgr board. Typing the member with the real class made both the shell and
-// the cast at the call fall out.)
-// `this` (ebp) is the canonical CBattlezMapConfig: its board
-// is m_triggerMgr (CTriggerMgr, the 4x15 CGrunt* m_grid at +0x1c), the pathfinding grid
-// is m_board (CBrickzGrid/CMapMgr), the thresholds are m_08c/m_090/m_0a0/m_0a4, and the
-// random-goal "table" is the CPtrArray m_0f0 (data @ +0xf4 via GetData, count @ +0xf8
-// via GetSize). QueryTile4098/Finish3e4f/Method_034460 are its declared methods.
-
-// @0x29ac0 (thunk 0x34a4) IS the engine CRect(l,t,r,b) direct-store ctor (Ghidra/
-// FID: ??0CRect@@QAE@HHHH@Z), out-of-line so it is CALLed here. Modeled by the
-// canonical CRect (<Wap32/Rect.h>).
-
-// Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
-// empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
         GruntCoordNode* nd = (g)->CoordHead();                                                     \
@@ -82,8 +34,6 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
         (g)->m_31c.RemoveAll();                                                                    \
     }
 
-// Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a copy
-// of itself.
 #define STEP_BOUNDS(grid)                                                                          \
     {                                                                                              \
         RECT ra;                                                                                   \

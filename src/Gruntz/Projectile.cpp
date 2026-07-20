@@ -4,14 +4,6 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Grunt.h>
-// Projectile.cpp - the CProjectile game-object (C:\Proj\Gruntz). Continues the
-// CUserBase/CUserLogic/CMovingLogic hierarchy (see include/Gruntz/Projectile.h).
-//
-// CProjectile::CProjectile() (0x126e0) is the no-arg ctor: it folds the inline
-// CMovingLogic init (the +0x38..+0x10c motion ints + the twelve default-bound
-// doubles), constructs the +0x204 tracked-hit CPtrList, and stamps its vftable.
-// Like the rest of the family it constructs a throwing CUserBaseLink (in the
-// CUserLogic base) + a CPtrList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
 #include <Gruntz/LightFx.h>
@@ -23,14 +15,12 @@
 #include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
 #include <Gruntz/StringNode.h>        // the shared type-name teardown slot (CStringNode::Free)
 #include <Gruntz/ActReg.h>
-                            // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
 #include <Bute/ButeMgr.h>   // CButeTree (the type-registry funnel)
 #include <math.h>           // sin / cos (StepMotion's parabola)
 #include <string.h>         // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
 #include <Wap32/ZVec.h>
-// CTimeBomb's TU folds in below (ex TimeBomb.cpp).
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -44,67 +34,17 @@
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
-// render object IS the canonical CGameObject and the +0x1a0 sub-object its
-// embedded CAniAdvanceCursor - the sites call Setup_15c2d0/Advance/ApplyName/
-// ApplyLookupGeometry directly.)
-
-// StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
-// global it folds into the trajectory (loaded as a double via fild). DATA pins so
-// the fcomp/mov loads reloc-mask against the named symbols.
 extern "C" i32 g_frameDelta;
 
-// ---------------------------------------------------------------------------
-// Externs the reconstructed projectile methods reference (reloc-masked).
-// ---------------------------------------------------------------------------
-// The global node free-list the dtor / hit-scan recycle tracked-hit nodes onto.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
-// The draw-clock delta global fed to the render object's anim Tick on detach.
 extern "C" u32 g_engineFrameDelta;
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The DATA pin
-// reloc-masks the `mov ecx,ds:g_gameReg` load against the already-named symbol.
-// The projectile sound/hit-scan/effects paths reach the canonical sub-objects
-// through it: reg->m_world (CDDrawSurfaceMgr) -> m_8 the HUD sprite factory
-// (CDDrawChildGroup) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
-// reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
-// MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
-// the level-type descriptor (CState, +0x20 terrain-class id switch key).
-
-// A grunt in the hit-scan grid (g_gameReg->m_cmdGrid is a flat 15x15 cell table;
-// each cell holds a CGrunt ptr). ScanTargets reaches each grunt's bound object
-// (m_10, a CGameObject: screen pos +0x5c/+0x60), the spawn-cell key and the hit
-// handlers through the real CGrunt (<Gruntz/Grunt.h>) - no local view.
-//
-// The recycled {x,y} cell-key node is the canonical Coord payload of a
-// CoordPoolNode (<Gruntz/CoordNode.h> / FreeNodePool.h, pulled below): the raw pool
-// node's link is at +0x00 and the {x,y} payload it hands out at +0x04. The tracked-
-// hit CPtrList stores the Coord* payloads. Was the .cpp-local CGruntOwner (dead) +
-// CHitKey views.
-
-// The launch-sound lookup path is the canonical positional-cue subsystem
-// (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_soundRegistry is the
-// CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a LeafCue,
-// whose DSoundCloneInst (m_10) GetItem (0x135d70) clones the DirectSound buffer the
-// projectile owns as its m_sound sound sample.
-
-// The shared default-bound doubles the CMovingLogic ctor copies into the twelve
-// coordinate-bound members (retail .rdata 0x5f04b0 / 0x5f04b8). Defined here with
-// DATA() pins so the ctor's dword loads reloc-mask against them.
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 
-// ---------------------------------------------------------------------------
-// Out-of-line vtable anchors. Give CMovingLogic / CProjectile real vftables in
-// this TU so the inline ctors emit their vptr stores. Bodies are not matched.
-// (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.
-// CProjectile's slot-17 anchor is the real LoadProjectileSprites body below -
-// ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
 
 // @confidence: high
@@ -140,26 +80,8 @@ CProjectile::CProjectile() {}
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CTimeBomb@@UAE@XZ 0x00012a70 0x44
 
-// ---------------------------------------------------------------------------
-// CMovingLogic::FinalizeStep (0x13c70) - the slot-5 override (SETTLED: it sits in
-// ??_7CMovingLogic @0x1e87ac slot 5 via ILT 0x26e9, so its owner is CMovingLogic,
-// which CProjectile inherits; was bound `CProjectile::ReleaseDeferred`). Fire the
-// two queued one-shot callbacks (m_08 first, gated on the recorded hit-handle
-// still matching m_28; then m_04 unconditionally), reset the handle to its
-// default 0x3e9, then run the slot-16 virtual. The callbacks are raw __thiscall
-// code pointers cached in the inherited CUserLogic int slots m_04/m_08 (a
-// heterogeneous "user data" slot). MSVC5 has no __thiscall on free fn-ptrs, so
-// the code address is called through a single-inheritance pointer-to-member-
-// function (one word == the raw address), yielding `mov ecx,this; call ptr`.
-// Typing the base member as a PMF is not an option (MSVC5 fattens the PMF to the
-// general 16-byte form, shifting the shared CUserLogic layout and regressing
-// every leaf that folds the base ctor), so the int slot's bits are reinterpreted
-// at the call with reinterpret_cast (byte-identical to the store).
-// ---------------------------------------------------------------------------
 typedef void (CMovingLogic::*MovingCallback)();
 
-// @interleaver CMovingLogic - out-of-line COMDAT in the 0x13xxx leaf pool
-// (far from the projectile main block @0xdec60+); RVA-placement artifact, kept here.
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(i32) {
     if (m_04 != 0) {
@@ -174,8 +96,6 @@ void CMovingLogic::FinalizeStep(i32) {
     MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
 
-// The running game clock g_frameTime (0x245588) is DEFINED in RezMgr.cpp (RezMgr
-// is the sole writer + owner of the 0x245580-0x2455a0 frame-timer band); only read here.
 DATA(0x001eaa88)
 const double g_motionZScale = 0.0;
 DATA(0x001eab00)
@@ -183,7 +103,6 @@ const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g
 DATA(0x001f04e8)
 u32 g_defaultZ = 0;
 
-// A post-init hook the spawn ctor fires (0x16ea90, no args; ecx unused).
 extern void Fn16ea90();
 
 // @confidence: med
@@ -269,25 +188,6 @@ CProjectile::~CProjectile() {
     m_hitList.RemoveAll();
 }
 
-// ===========================================================================
-// CProjectile::LoadProjectileSprites (0xdf050, /GX) - resolve the projectile's
-// per-type sprite frames + launch trajectory at spawn. Snap the two grid
-// endpoints to tile centres (m_targetX/m_targetY), record the target/owner ids, then
-// switch on the projectile kind to pick the sprite-set base name + the
-// "<Kind>ProjectileTimePerTile" bute value (m_timePerTile) and the arc flag (m_isArcing; Wingz
-// also loops a launch sound + measures the tile distance). Look up the six frame
-// sprites ("<base>1".."<base>5", "<base>IMPACT") + "<base>FALL", install the
-// resolved frame-0 geometry, cache the object frame, compute the normalised
-// launch velocity, spawn the LightFx shadow companion, and latch the "A" act key.
-// (g_buteMgr is declared extern in <Gruntz/UserLogic.h>; BattlezMapConfig owns
-// its DATA label, so the GetDwordDef call here reloc-masks against it. The global
-// bute-tree g_buteTree @0x6bf620 is defined in the registration section below.)
-// ===========================================================================
-
-// The shooter-grunt projectile kind LoadProjectileSprites dispatches on (kind);
-// each name is confirmed by its case's GRUNTZ_<NAME>GRUNT_PROJECTILE sprite key +
-// its "<Name>ProjectileTimePerTile" bute key. Same immediates as the bare labels
-// -> naming is matching-neutral.
 enum ProjectileKind {
     PROJ_BOOMERANG = 2, // GRUNTZ_BOOMERANGGRUNT
     PROJ_GUNHAT = 9,    // GRUNTZ_GUNHATGRUNT
@@ -465,52 +365,17 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     return 1;
 }
 
-// ===========================================================================
-// CProjectile level-load registration (the same dual-registry archetype as
-// CKitchenSlime::RegisterType): a per-coordinate activation table (R2, the
-// projectile's own collection at @0x64c758) and the shared game-object type-name
-// table (R1, @0x6bf650) keyed by the per-type id the global bute-tree assigns to
-// the class name ("A"). All globals are BSS / DATA-pinned (reloc-masked); the
-// collection / CString helpers are external/no-body.
-// ===========================================================================
-
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
-
-// The activation-collection primitives are the shared CActColl/CVariantSlot
-// (<Gruntz/ActColl.h>): Find 0x16da80, RegisterRange 0x3742-thunk (-> 0x408710),
-// Insert 0x16d850, plus GetRetAddr 0x16d990 and the shared g_actCache (0x6bf464) /
-// g_retAddrBreadcrumb scratch. The per-registry field globals below form the CActReg
-// bodies (g_typeColl @0x6bf650, g_projActColl @0x64c758) around those coll objects.
-
-// R1 - the shared type-name table (@0x6bf650).
-// (was `extern CActColl g_typeColl;` - a SIXTH spelling of this one object, as the empty
-// CActColl view. The real class is zDArray; the g_projType* scalars around it were its
-// fields, not globals.)
 #include <Gruntz/TypeKeyColl.h>
-// g_projTypeCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
-// so nothing ever defined it. Unified onto the canonical.
 
-// R2 - the projectile's per-coordinate activation table (@0x64c758). CProjActEntry
-// (the per-class handler entry) is the canonical struct in <Gruntz/Projectile.h>.
 DATA(0x0024c758)
 extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 
-// The projectile activation-registry field globals (referenced only from this TU):
-// real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
-// The per-slot CString teardown node the type-name table walks is the shared
-// CStringNode (<Gruntz/StringNode.h>: m_0 slot + Free 0x1b9b93 __thiscall); name
-// assign into the resolved record is the real CString::operator= (0x1b9e74).
-
-// The projectile's activation handler (LAB_00403896, an ILT thunk).
 extern "C" void ProjActivationHandler(); // 0x403896
 
-// R2 lookup (projectile activation table): the registry-archetype ResolveEntry
-// over g_projActColl (per-field scalars reunified into the one object @0x64c758).
 static inline CProjActEntry* ProjActLookup(i32 coord) {
     return reinterpret_cast<CProjActEntry*>(g_projActColl.ResolveEntry(coord));
 }
 
-// R1 lookup (shared type-name table).
 static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
@@ -525,20 +390,11 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-// CProjectile::RegisterRange @0x0df920 - seed the projectile's activation table's
-// fast-range bounds (RegisterRange(0x7d0, 0x7da)). A static initializer.
 RVA(0x000df920, 0x15)
 void CProjectile::RegisterRange() {
     g_projActColl.Construct(0x7d0, 0x7da);
 }
 
-// (CProjActEntry - the __thiscall handler entry, a 4-byte single-inheritance PMF of
-// CProjectile - is the canonical struct in <Gruntz/Projectile.h>.)
-
-// CProjectile::RunAct @0x0df9a0 - the class's vtable slot-4 (UserLogicVfunc2) body:
-// resolve the activation entry for `coord` (R2 lookup, inlined twice); if a handler
-// is bound, re-resolve and invoke it __thiscall on this, else return the entry
-// pointer. Same archetype as CProjActDispatcher::Dispatch / CPathHazard::RunAct.
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     CProjActEntry* e = ProjActLookup(coord);
@@ -805,11 +661,6 @@ void CProjectile::MovingSlot16() {
     m_38->m_1a0.Setup_15c2d0(sprite);
 }
 
-// ---------------------------------------------------------------------------
-// CProjectile::DetachRenderObj (0xe05e0) - clear the render object's bit-0 flag,
-// re-target its animation to the current draw-delta, and (when the object is in
-// the "active but un-anchored" state) raise its hide bit. Returns 0.
-// ---------------------------------------------------------------------------
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_38->m_stateFlags &= ~1u;
@@ -981,76 +832,20 @@ void CProjectile::ScanTargets(i32 impact) {
     } while (rowBase < 0x10c);
 }
 
-// ===========================================================================
-// CTimeBomb (ex TimeBomb.cpp): the 0x0dec60-0x0e2213 interval is
-// ONE original TU - the text is a P-T-P sandwich (projectile x10 | timebomb x6 |
-// projectile @0xe2190 LaunchSound), and the private initialized-.data extents
-// are contiguous (projectile 0x213624..0x213838, timebomb 0x213860..0x2138b4).
-// NOTE the shared type-name registry cells (0x2bf650-0x2bf670 / 0x21aea8 /
-// 0x6bf464) keep BOTH view-name sets for now (g_projType* above, g_typeColl*/
-// g_typeCounter below) - unifying that family tree-wide is deferred work.
-// ===========================================================================
-
-// ---------------------------------------------------------------------------
-// The per-coordinate activation registry CTimeBomb::FireActivation (0x0e1830)
-// dispatches through - the SAME archetype as CKitchenSlime::FireActivation
-// (0x0b2940, src/Gruntz/KitchenSlime.cpp), but CTimeBomb's OWN registry instance
-// at 0x64c780. A coordinate maps to an Entry* either directly (when within the
-// fast [g_tbombLo, g_tbombHi] range) via g_tbombBase + (coord-lo)*stride, or by a
-// slow Find in the collection (0x16da80, __thiscall ret 8), which on miss rebuilds
-// (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and yields
-// g_tbombCur. The entry's first dword is a fn-ptr; a nonzero entry's handler is
-// called __thiscall on `this`. All globals are unnamed BSS (DATA-pinned so the
-// loads reloc-mask); the collection methods are external/no-body (the SAME shared
-// engine functions both registries call). The alloc-cache pair (g_actCache
-// 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME shared global both registries
-// write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
-// (CTBombEntry - the entry whose first dword is the registered handler - is the
-// canonical struct in <Gruntz/TimeBomb.h>.)
-
 DATA(0x0024c780)
 extern CCoordColl g_tbombColl;
 
-// The timebomb activation-registry field globals (referenced only from this TU):
-// real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
-
-// ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
-// [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
-// src/Stub/BoundaryLowerThunks.cpp.
 RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {
     g_tbombColl.Construct(0x7d0, 0x7da);
 }
-// g_projActCache (0x2bf464) + g_retAddrBreadcrumb come from <Gruntz/ActColl.h>.
 
-// (CTBombEntry / TBombHandler - the CTimeBomb PMF entry - are the canonical decls in
-// <Gruntz/TimeBomb.h>: FireActivation invokes the entry on `this`, emitting
-// `mov ecx,this; call [entry]`; CTimeBomb is complete there so the PMF stays 4 bytes.)
-
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
 static inline CTBombEntry* TBombLookup(i32 coord) {
     return reinterpret_cast<CTBombEntry*>(g_tbombColl.ResolveEntry(coord));
 }
 
-// ---------------------------------------------------------------------------
-// The shared activation-NAME registry CTimeBomb::RegisterActs (0x0e1990) interns
-// the key "A" into g_buteTree (Find returns the id, 0 == absent); on a fresh id it
-// records the key in the shared scratch name registry (@0x6bf650, the SAME range/
-// cache shape as g_tbombColl) and bumps g_typeCounter. Then it resolves id->Entry in
-// CTimeBomb's OWN registry (g_tbombColl via TBombLookup, the SAME instance
-// FireActivation uses) and stores the logic handler (the ILT to LoadAttributes
-// @0x0e1e60). g_buteTree (0x6bf620, named by mangled symbol) doubles as the
-// name->id map; g_typeCounter (0x61aea8) is the running id counter; s_codeA
-// (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
-// Find/GetRetAddr/Insert + g_actCache/g_retAddrBreadcrumb collection methods.
-// ---------------------------------------------------------------------------
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
-// The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
-// @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
-// reloc-mask).
-
-// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
@@ -1065,35 +860,10 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// The logic handler bound into the registry slot (the ILT to CTimeBomb's
-// attribute-loader @0x0e1e60); referenced by address so the DIR32 operand
-// reloc-masks.
 extern i32 TBombLogic_e1e60();
 
-// g_buteMgr comes from <Bute/ButeMgr.h>.
-
-// The running game clock g_frameTime is DEFINED in RezMgr.cpp (referenced above).
-
-// The bound game object is the inherited CUserLogic m_10/m_38 (both point at the
-// same CGameObject); the ctor reads/writes it directly (+0x08 flag word, +0x5c/
-// +0x60 screen pos, +0x74 z gate, +0x120 per-tile-time gate, +0x124, +0x1b4
-// active-anim descriptor, and ApplyName/ApplyLookupGeometry) - all modeled on
-// CGameObject (<Gruntz/UserLogic.h>). Re-reads m_10/m_38 per access, matching retail.
-
-// The collision grid the ctor marks / the per-frame step reads is
-// g_gameReg->m_tileGrid, already typed CTileGrid* on the canonical CGameRegistry:
-// an 0x1c-byte cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by
-// m_c x m_10 - no local grid view.
-// The registry's tile-manager (g_gameReg->m_68, a reused void* slot): the per-frame
-// detonate path posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 ->
-// 0x7b330, 4 args). Modeled NO-body so the call reloc-masks.
 SIZE_UNKNOWN(TBombTileMgr);
-// (g_gameReg is declared/DATA-pinned in the projectile preamble above.)
 
-// CTimeBomb::FireActivation @0x0e1830 - look the activation coordinate up in the
-// timebomb's per-coordinate registry; if the entry has a registered handler, look
-// it up again and dispatch it __thiscall on this. Same archetype as
-// CKitchenSlime::FireActivation (0x0b2940).
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     CTBombEntry* e = TBombLookup(coord);
@@ -1185,15 +955,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_124 = -1;
 }
 
-// The +0x1a0 animation sub-mgr the per-frame step advances each draw-delta
-// (Advance 0x15c360, __thiscall ret 4) - the SAME engine sink CTeleporter::Begin
-// drives. The draw-delta mirror (g_engineFrameDelta) is consumed by the advance.
 SIZE_UNKNOWN(TBombAnimSink);
-// (g_engineFrameDelta is declared/DATA-pinned in the projectile preamble above.)
 
-// The collision-grid cell lookup the per-frame step folds in three times: the
-// initial state read (out-of-bounds reads as 1) and the two detonate-path
-// clears. Same grid shape the ctor marks; the bounds compares are UNSIGNED.
 static inline i32 TBombGridCell(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
@@ -1341,7 +1104,3 @@ i32 CProjectile::LaunchSound(const char* key) {
     m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     return 1;
 }
-
-// (CProjActDispatcher::Dispatch @0x0ade60 carved out to src/Gruntz/LogicActReg646010.cpp
-// in REHOME D9: it dispatches over g_logicActReg_646010 @0x246010 and its .text sits in
-// that dispatch-table's 0xadde0-0xadfc0 COMDAT band, not the projectile bodies.)

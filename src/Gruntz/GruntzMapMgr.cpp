@@ -1,35 +1,8 @@
-// GruntzMapMgr.cpp - the grunt-map manager (C:\Proj\Gruntz): its two vtable
-// overrides + the container teardown, in ascending retail-RVA order.
-//
-// The two overrides arrived here from the ex-"CMapLogic" view, which CONFLATED two
-// unrelated classes (a 0x54-byte CBrickz tile leaf and this 0x94-byte manager). The
-// split is binary-proven, three ways:
-//   * ??_7CGruntzMapMgr @0x1e9bb4 slot[0] -> thunk 0x4430 -> 0x85480  (Reset)
-//     ??_7CGruntzMapMgr @0x1e9bb4 slot[1] -> thunk 0x16a9 -> 0x82430  (Visit)
-//     and slots 2..5 are BIT-IDENTICAL to ??_7CMapMgr @0x1ea3b4 - so this class
-//     overrides exactly slots 0 and 1, which is exactly these two bodies.
-//   * ??_7CMapMgr @0x1ea3b4 slot[0] -> thunk 0x1a91 -> 0x9ec30 (CMapMgr::Reset) and
-//     slot[1] -> thunk 0x26b2 -> 0x9f7f0 (CMapMgr::Visit) - the two bases each of
-//     these bodies tail-calls. Both are overrides that chain their own base.
-//   * neither body has a rel32 caller: they are reached ONLY through those slots.
-// The dtor half of the old view (0x113c0) is CBrickz's and is pinned as
-// ??1CBrickz@@UAE@XZ in TileLogicPump.cpp; nothing of the view survives.
-//
-// The node-pool teardown idiom (push every non-null CPtrArray element's node back
-// onto g_coordPool.m_freeHead, SetSize(0,-1), then the base grid Reset @0x9ec30) is
-// shared by Reset (0x85480) and ~CGruntzMapMgr (0x85d10) - the SAME loop, which is
-// why the ex-view's two halves looked alike and got conflated in the first place.
 #include <Gruntz/GruntzMapMgr.h>
 
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
-// The intrusive free-list node allocator (head @0x645544, raw subtrahend @0x64554c);
-// the node body pointer is recovered as (element - g_coordPool.m_linkOffset). Shared with
-// MapLogic.cpp / Projectile.cpp (DATA-bound there; extern here).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
-// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
-// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
 // ===========================================================================
 // CGruntzMapMgr::Visit  (0x082430) - vtable slot 1, __thiscall
@@ -148,13 +121,6 @@ void CGruntzMapMgr::Reset() {
     CMapMgr::Reset(); // @0x9ec30 (base slot-0 grid cleanup, direct call)
 }
 
-// ===========================================================================
-// ~CGruntzMapMgr  (0x085d10)
-// ===========================================================================
-// A /GX dtor: cl re-stamps the derived vtable (the implicit stamp-first), then the
-// body runs the same node-pool teardown as Reset above, and the implicit member dtor
-// (~CPtrArray on m_arr) plus the out-of-line base dtor (~CMapMgr @0x9e9e0, reached
-// through thunk 0x135c) close the frame.
 RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {

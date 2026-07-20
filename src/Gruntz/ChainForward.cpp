@@ -1,20 +1,3 @@
-// ChainForward.cpp - 0x114fa0 / 0x114f50: the two null-guarded pre-forwarders in
-// front of SaveScreenshot (0x114ff0). Each resolves the active capture surface off
-// the game registry - g_gameReg->m_world->m_drawTarget->{overlay,back}Pair->m_surface -
-// and, if it (and every link) is intact, forwards it + all six pass-through args to
-// SaveScreenshot.
-//
-// XREF IDENTITY (2026-07-14): the arg2 root was a fake `ChainRoot`/`Chain4`/`Chain18`/
-// `Chain2c` view chain; it is the real DDraw resource spine:
-//   * arg2 is forwarded unchanged to SaveScreenshot's 3rd param - the manager
-//     singleton (now typed at its real class, CGruntzMgr).
-//   * +0x30  = CGameRegistry::m_world      (CDDrawSurfaceMgr*)
-//   * +0x04  = CDDrawSurfaceMgr::m_drawTarget(CDDrawSubMgrPages*)
-//   * +0x18/+0x14 = CDDrawSubMgrPages::m_overlayPair / m_backPair (CDDrawSurfacePair*)
-//   * +0x2c  = CDDrawSurfacePair::m_surface (CDDSurface* = SaveScreenshot's 1st param).
-// The six forwarded params map 1:1 onto SaveScreenshot's (bute, owner, arg4, arg5,
-// name, arg7); retyping them is byte-neutral (all 4-byte pushes) and drops the arg
-// casts at the call.
 #include <Ints.h>
 #include <rva.h>
 

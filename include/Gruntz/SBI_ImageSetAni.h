@@ -1,13 +1,3 @@
-// SBI_ImageSetAni.h - CSBI_ImageSetAni (frameless method view), the "Resource
-// SHREDDER conveyor" SBI leaf. RTTI .?AVCSBI_ImageSetAni@@; chain
-//   CSBI_ImageSetAni : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// Vtable @0x5eae3c; slot 1 Serialize (0xe7cd0, thunk 0x2829, inherited by
-// CSBI_StatzTabArrow) saves/loads six persistent ints (m_3c..m_50) then chains the
-// CSBI_ImageSet base serialize (0xe74f0).
-//
-// This is the FRAMELESS method view (parallel to <Gruntz/SBI_WarlordHead.h>); the
-// builder-facet view (CSbConfigItem base) lives in <Gruntz/StatusBarMgrBuilders.h> -
-// the SBI two-view split (deliberately-incompatible, never co-included).
 #ifndef GRUNTZ_SBI_IMAGESETANI_H
 #define GRUNTZ_SBI_IMAGESETANI_H
 
@@ -81,23 +71,12 @@ public:
 SIZE_UNKNOWN(CSBI_ImageSetAni);
 VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)
 
-// CHAIN-DTOR device: the inline ~CSBI_ImageSetAni body a merged /GX leaf TU folds when
-// CSBI_ImageSetAni is an INLINE base (a deeper leaf, e.g. CSBI_StatzTabArrow). The one TU
-// that owns the out-of-line ??1 (SBI_ImageSetAni.cpp, the 0x1047f0 leaf) #defines
-// SBI_OWN_IMAGESETANI_DTOR to suppress this inline. Mirrors the SBI_Image.h/SBI_ImageSet.h
-// device (was <Gruntz/SbiDtorChain.h>, now retired). See StatusBarItem.h.
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     ResetCounters();
 }
 #endif
 
-// CSBI_StatzTabArrow - the deepest SBI leaf (RTTI .?AVCSBI_StatzTabArrow@@): the ANI-conveyor
-// arrow tab. Full chain CSBI_StatzTabArrow : CSBI_ImageSetAni : CSBI_ImageSet : CSBI_Image :
-// CSBI_RectOnly : CStatusBarItem. Its out-of-line /GX ~ (0x1048f0, folds all five base levels)
-// lives in SBI_StatzTabArrowEh.cpp via the CHAIN-DTOR device. This is the FRAMELESS/chain view;
-// the builder-facet view (CSbConfigItem base) is in <Gruntz/StatusBarMgrBuilders.h> (the SBI
-// two-view split, never co-included).
 class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
 public:
     // tag 5 (the Statz per-grunt arrow); same ani window seed as the base.

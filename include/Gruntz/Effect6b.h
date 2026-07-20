@@ -1,13 +1,3 @@
-// Effect6b.h - CEffect6b, the grunt exit-animation holder facet at CGrunt+0x150
-// (Apply @0x6b2e0 advances the entrance player's anim cursor). `this` is
-// &CGrunt::m_150, so the members ARE the CGrunt +0x150..+0x15c band: m_player ==
-// CGrunt::m_154 (the created entrance-anim CGameObject) and m_prevDesc == CGrunt::
-// m_prevEntranceDesc (+0x15c, the m_154->m_1a0.m_14 cache - which is exactly what
-// Apply stores). The +0x08 hole is CGrunt::m_158 (AnimWorkerObj*).
-//
-// IDENTITY (2026-07-16, RESOLVED): the pointee of m_player is the plain
-// CGameObject - the ex CEntranceAnimPlayer / CDecayMgr / CAnimOwner6b views are
-// CAniAdvanceCursor, whose +0x14 is the active descriptor Apply caches).
 #ifndef GRUNTZ_EFFECT6B_H
 #define GRUNTZ_EFFECT6B_H
 

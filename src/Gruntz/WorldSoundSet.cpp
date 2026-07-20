@@ -1,26 +1,3 @@
-// WorldSoundSet.cpp - the world-sound TU (C:\Proj\Gruntz), interval
-// 0x00b5e0-0x00cc98 (+ four out-of-band strays homed here). ONE original TU per
-// docs/exe-map/interval-dossiers.md #10d: our worldsoundset + randomambientsound
-// + ambientsound units were slices of this single file - CWorldSoundSet's
-// CreateAmbient*/CreatePos*/CreateRandom* factories manufacture exactly the
-// channel classes (CAmbientSound / CAmbientPosSound / CRandomAmbientSound)
-// defined around them; the head is woven, the tail class-grouped.
-//
-// CWorldSoundSet manages the list of live sound channels: Init seeds the
-// world/level back-pointers and activates the object; Restart/Stop/Resume/Retune
-// drive the channels (each walks the embedded CPtrList raw - node->next at +0x00,
-// the channel payload at node+0x08) and poke the world's DirectSound sub-object;
-// Teardown / the destructor scalar-delete every channel and RemoveAll the list.
-//
-// ALL-VTABLES mandate: the three channel classes are REAL polymorphic classes
-// (canonical headers <Gruntz/AmbientSound.h> / <Gruntz/RandomAmbientSound.h>).
-// RTTI derivation CAmbientPosSound / CRandomAmbientSound : CAmbientSound
-// (: CUserBase) is modeled by C++ inheritance; each is built via placement
-// `new (raw) CXxx`, so cl auto-emits ??_7CAmbientSound / ??_7CAmbientPosSound /
-// ??_7CRandomAmbientSound (0x1e710c / 0x1e7124 / 0x1e713c) and inlines the vptr
-// stamp at each Create* site.
-//
-// Field names are placeholders; the OFFSETS + emitted code bytes are load-bearing.
 #include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <Gruntz/WorldSoundSet.h>
@@ -35,7 +12,6 @@
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
-// The positional-sound request flag (owner-TU def; .bss, VA 0x62990c). Set to 2.
 DATA(0x0022990c)
 i32 g_posSoundReq; // 0x62990c
 
@@ -43,24 +19,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// ---------------------------------------------------------------------------
-// The free `Spawn`/`Stop` ambient-sound pair (0x00c9d0 / 0x00ca00, __cdecl). They
-// drive the ambient voice that hangs off a CGameObject's +0x7c aux: aux->m_requestState is
-// the request state (0 = "spawn", 0x1e = "stop"), aux->m_voice the live voice.
-// ---------------------------------------------------------------------------
-// The PosSoundObj / PosSoundAux spawn-path types now live in <Gruntz/PosSound.h>
-// (included above), not as .cpp-local views. The former PosSoundVoice view IS the
-// canonical CAmbientPosSound (<Gruntz/AmbientSound.h>): the spawn factory 0xb960 =
-// CWorldSoundSet::CreatePos5_b960 returns a 0x48-byte CAmbientPosSound, and the view's
-// m_mgr@+0x04 / m_isPlaying@+0x14 / m_spatialNode@+0x3c ARE CAmbientSound::m_voice /
-// m_isPlaying / m_listNode - so aux->m_voice is typed CAmbientPosSound* and the three
-// placeholder vtable-slot fillers (VtSlotFill0/1/2) fold onto the real channel vtable.
-// The spatial-sound voice CPtrList lives at g_gameReg->m_inputState + 0x08 (the same
-// embedded CPtrList the manager ctors/tears down); RemoveAt unlinks the voice's node.
-// g_gameReg->m_inputState is the CWorldSoundSet modeled in this TU's header.
-
-// The factory the spawn path calls (Stub_00b960 via the 0x20e5 thunk). It news a
-// 0x48-byte voice; modeled __stdcall (callee-cleaned, no `add esp`).
 extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a4, i32 a5);
 
 void SpawnPosSound(PosSoundObj* obj);
@@ -84,10 +42,6 @@ void SpawnPosSound(PosSoundObj* obj);
 // conversion (leaf ctor/dtor funclets now odr-use the out-of-line COMDAT); the body is
 // pinned by @rva-symbol in src/Gruntz/ActionArea.cpp beside ??1CUserBase.)
 
-// ---------------------------------------------------------------------------
-// Init: refuse a null world, otherwise stash both back-pointers, mark active and
-// clear the pending pan/volume. Returns 1 on success, 0 on the null guard.
-// ---------------------------------------------------------------------------
 RVA(0x0000b5e0, 0x29)
 i32 CWorldSoundSet::Init(void* world, i32 a2) {
     if (world == 0) {
@@ -101,11 +55,6 @@ i32 CWorldSoundSet::Init(void* world, i32 a2) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// Deactivate (0x0000b620): stop the world's sound device (FreeSamples, if live),
-// tear down every channel (Teardown), then clear the world back-pointer. 0xb620 is
-// CODE; Ghidra mis-typed it as g_typeDesc3 data (that bogus Globals DATA removed).
-// ---------------------------------------------------------------------------
 RVA(0x0000b620, 0x26)
 void CWorldSoundSet::Deactivate() {
     if (m_world != 0 && m_world->m_soundDev != 0) {
@@ -115,10 +64,6 @@ void CWorldSoundSet::Deactivate() {
     m_world = 0;
 }
 
-// ---------------------------------------------------------------------------
-// Teardown: scalar-delete every channel in the list (vtbl slot 0, flag 1), then
-// RemoveAll the now-dangling list.
-// ---------------------------------------------------------------------------
 RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
     CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
@@ -133,16 +78,6 @@ void CWorldSoundSet::Teardown() {
     m_list.RemoveAll();
 }
 
-// ===========================================================================
-// Create* factories (rtti-vptr mislabeled them onto the channel classes whose
-// vtable they stamp; the `this` is this owner). Each allocates a fresh channel,
-// seeds its level fields (m_level = 100 default), lets the inlined placement-new
-// ctor stamp the class's own vtable, runs the one-time Init; on failure
-// scalar-deletes it and returns 0, on success appends it to m_list (storing the
-// list node in m_listNode) and returns it.
-// ===========================================================================
-
-// CAmbientSound (0x40), 6-arg Init (m_world + the owner's m_volume threaded in).
 RVA(0x0000b6a0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     void* raw = RezAlloc(0x40);
@@ -167,20 +102,12 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
     return obj;
 }
 
-// ===========================================================================
-// CAmbientSound::~CAmbientSound  (0x00b790)
-// ===========================================================================
-// Clear the voice handle (+0x04) and the list node (+0x3c); cl auto-emits the
-// CUserBase base vptr restamp (0x5e70b4) as the sub-object unwinds. Real-
-// polymorphic, so no manual vtable store; the derived-vptr store at entry stays
-// DCE'd (no virtual dispatch in the body), matching retail's 15-byte shape.
 RVA(0x0000b790, 0xf)
 CAmbientSound::~CAmbientSound() {
     m_voice = 0;
     m_listNode = 0;
 }
 
-// CAmbientSound (0x40), 5-arg Init (no m_world).
 RVA(0x0000b7b0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     void* raw = RezAlloc(0x40);
@@ -205,7 +132,6 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
     return obj;
 }
 
-// CAmbientPosSound (0x48), 6-arg Init (vtable stamped last).
 RVA(0x0000b850, 0x83)
 CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     void* raw = RezAlloc(0x48);
@@ -230,18 +156,9 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
     return obj;
 }
 
-// 0xb940 - CAmbientPosSound::~CAmbientPosSound. IDENTITY PROVEN from the binary (was the
-// fake placeholder class CUserBaseSubB940, RELOC_VTBL'd onto CUserBase's vtable): the
-// class vtable ??_7CAmbientPosSound @0x1e7124 (bound in <Gruntz/AmbientSound.h>) holds at
-// slot 0 an ILT thunk to the scalar-deleting dtor 0xb910, whose body calls THIS dtor. Its
-// slots 1/2 are the SHARED CUserBase defaults (0x87d0 SerializeMove / 0x87f0 GetTypeTag
-// `xor eax,eax`) - which is why the placeholder looked like a bare "CUserBase" subobject.
-// The body zeroes the INHERITED CAmbientSound fields (m_voice @+0x04, m_listNode @+0x3c):
-// the empty leaf dtor folds ~CAmbientSound (0xb790) inline, exactly as retail.
 RVA(0x0000b940, 0xf)
 CAmbientPosSound::~CAmbientPosSound() {}
 
-// CAmbientPosSound (0x48), 5-arg Init.
 RVA(0x0000b960, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     void* raw = RezAlloc(0x48);
@@ -307,17 +224,12 @@ CRandomAmbientSound* CWorldSoundSet::
     return obj;
 }
 
-// ---------------------------------------------------------------------------
-// CRandomAmbientSound base ctor (0x00bb40): cl auto-stamps the vptr, then clear
-// the voice handle (+0x04) and the list node (+0x3c). The rest is set up by Setup.
-// ---------------------------------------------------------------------------
 RVA(0x0000bb40, 0xf)
 CRandomAmbientSound::CRandomAmbientSound() {
     m_voice = 0;
     m_listNode = 0;
 }
 
-// CRandomAmbientSound (0x58): 5-arg Init then an ungated 4-arg Init2.
 RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::
     CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
@@ -344,10 +256,6 @@ CRandomAmbientSound* CWorldSoundSet::
     return obj;
 }
 
-// ---------------------------------------------------------------------------
-// Restart: re-seed the secondary back-pointer, poke the world handle, then ask
-// every live channel to recompute against the new frame.
-// ---------------------------------------------------------------------------
 RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::Restart(i32 a1) {
     m_volume = a1;
@@ -365,10 +273,6 @@ void CWorldSoundSet::Restart(i32 a1) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Stop: poke the world handle, then stop+rewind each channel's DirectSound handle
-// and clear its +0x14 field.
-// ---------------------------------------------------------------------------
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
     if (m_world != 0 && m_world->m_soundDev != 0) {
@@ -442,12 +346,6 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
     }
 }
 
-// 0xbdd0: CRandomAmbientSound::Dispatch - look `key` up in arg1's embedded
-// CMapStringToOb (at +0x10) into a zero-initialised out slot; on miss return the
-// (null) slot, on hit tail-call this->Setup with the found entry's m_10 (the mgr
-// handle) plus the four trailing args. __thiscall, 6 stack args (ret 0x18). The old
-// CObj_bdd0 placeholder is dissolved: the tail call binds to Setup @0xbe50, which
-// PROVES `this` is a CRandomAmbientSound. 100% EXACT.
 RVA(0x0000bdd0, 0x53)
 void* CRandomAmbientSound::Dispatch(
     AmbSoundMapHolder* a1,
@@ -466,12 +364,6 @@ void* CRandomAmbientSound::Dispatch(
     return reinterpret_cast<void*>(Setup(out->m_mgr, a3, a4, box, a6));
 }
 
-// ---------------------------------------------------------------------------
-// CRandomAmbientSound::Setup (0x00be50, __thiscall, 5 args): refuse a null mgr;
-// otherwise stash the mgr + the three play params, copy the primary box (or stamp
-// the no-box sentinel), and reset the secondary box to the sentinel. Returns 1,
-// or 0 on the null guard.
-// ---------------------------------------------------------------------------
 RVA(0x0000be50, 0x8f)
 i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5) {
     if (mgr == 0) {
@@ -533,14 +425,6 @@ void CAmbientSound::Recompute(i32 master) {
     m_voice->SetVolumeByIndex(v);
 }
 
-// ===========================================================================
-// CAmbientSound::Restart  (0x00bfb0)
-// ===========================================================================
-// Re-arm the voice at its current level. Gated on the voice handle, the not-yet-
-// playing flag (m_isPlaying==0) and the active level/world (g_gameReg->m_soundEnabled and
-// ->m_54->m_objectCount). Reseed the channel, then inline SetLevel(m_level, 0, 0)'s scale+
-// clamp through SetVolumeByIndex; the level read (m_level) is re-stored unchanged on
-// both sides of the voice call (the reseeded channel may have touched it).
 RVA(0x0000bfb0, 0xa9)
 void CAmbientSound::Restart() {
     DirectSoundMgr* voice = m_voice;
@@ -664,12 +548,6 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 }
 
-// ===========================================================================
-// CAmbientSound::SetLevel  (0x00c200)
-// ===========================================================================
-// Scale `value` through the level scale-A (m_scaleA) and the secondary multiplier
-// (m_scaleB), clamp to 0..100, then drive the voice: mode 0 -> SetVolumeByIndex, else
-// CloneAndPlay carrying the `extra` arg.
 RVA(0x0000c200, 0x7e)
 i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
     m_level = value;
@@ -810,12 +688,6 @@ void CRandomAmbientSound::SetupFromMap(
     }
 }
 
-// ---------------------------------------------------------------------------
-// SetupPos (0x00c530, __thiscall, 5 args): the positional Setup. Refuse a null
-// mgr or null position; otherwise stash the mgr + the two play params + a5,
-// clear the playing flag (+0x14) and m_panIndex, and copy the (x,y) anchor into
-// m_40/m_44. Returns 1, or 0 on either null guard.
-// ---------------------------------------------------------------------------
 RVA(0x0000c530, 0x51)
 i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5) {
     if (mgr == 0) {
@@ -953,9 +825,6 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
 // its +0x28 record IS CAmbientSound::m_box2) now lives in <Gruntz/PosSound.h>.
 SIZE_UNKNOWN(PosSoundPlaced);
 extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
-// The world sound-set factory create calls (CWorldSoundSet::CreateRandom @0xbb60 via
-// thunk 0x3c97 / CreateAmbient5 @0xb7b0 via thunk 0x2ad6); modeled __stdcall exactly
-// like the sibling PosSoundSpawn - the factory ptr (layer +0x10) leads the arg list.
 PosSoundPlaced* __stdcall WorldSoundCreateFull(
     void* factory,
     i32 z,
@@ -1021,10 +890,6 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StopPosSound (0x00c9d0): mark the request "stop" (state 2 in the global queue
-// at 0x62990c) and run the spawn/stop driver.
-// ---------------------------------------------------------------------------
 RVA(0x0000c9d0, 0x18)
 void StopPosSound(PosSoundObj* obj) {
     g_posSoundReq = 2;
@@ -1172,21 +1037,11 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// ~CWorldSoundSet (0x085ed0, out-of-band stray - RVA-last in this file):
-// deactivate (sibling 0x00b620), then the embedded list's destructor fires from
-// the epilogue. The destructible list member forces the /GX EH frame (state 0
-// across Deactivate, -1 across ~list).
-// ---------------------------------------------------------------------------
 RVA(0x00085ed0, 0x4a)
 CWorldSoundSet::~CWorldSoundSet() {
     Deactivate();
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-// (CAmbientSound/CAmbientPosSound/CRandomAmbientSound carry SIZE/VTBL in their
-// canonical headers.)
 SIZE_UNKNOWN(AmbSoundMapHolder);
 SIZE_UNKNOWN(AmbSoundRecord);
 SIZE_UNKNOWN(AmbientPoint);

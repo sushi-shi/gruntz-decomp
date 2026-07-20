@@ -1,25 +1,7 @@
 #include <rva.h>
 #include <DinMgr2/DirectInputMgr2.h>
-// StateMgrBZ.cpp - the engine input/control state singleton (*g_spawnConfig). Built
-// from the DirectInputMgr2 (*g_inputMgr) with control mode 6 by the game's Init
-// (0x83450); driven each frame by CGruntzMgr::TickStateMgrs (0x920b0 -> Flush).
-//
-// The five methods:
-//   Init(src,mode)  0x382c0 - clear the latch, Build the source wiring, Setup the
-//                             key tables, Reset, Flush. Returns success.
-//   Build(src,mode) 0x383b0 - dense 9-way switch on the mode: wire 0..3 device
-//                             sources from the manager's controller list.
-//   Setup()         0x38340 - seed the keyboard device's +0x2b4.. scan-code table.
-//   Flush()         0x385e0 - OR-fold the source devices' packed key flags.
-//   Reset()         0x386b0 - per-device Reset dispatch, then clear the latch.
-//
-// Field names recovered from usage; offsets + code bytes are load-bearing.
 #include <Gruntz/StateMgrBZ.h>
 
-// ---------------------------------------------------------------------------
-// StateMgrBZ::Init (0x382c0; __thiscall, ret 8). Clear the latched state, then
-// run Build/Setup/Reset/Flush in order; bail out if the source is null or Build
-// fails.
 RVA(0x000382c0, 0x52)
 i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
@@ -38,10 +20,6 @@ i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StateMgrBZ::Setup (0x38340; __thiscall, ret 0). Seed the keyboard device's
-// scan-code table with the five mode-6 control slots (VK_ virtual-key codes).
-// Re-reads m_keyboard per store.
 RVA(0x00038340, 0x46)
 void StateMgrBZ::Setup() {
     if (m_keyboard) {
@@ -179,9 +157,6 @@ i32 StateMgrBZ::Flush() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// StateMgrBZ::Reset (0x386b0; __thiscall, ret 0). Dispatch the per-device Reset
-// (slot 5) over m_0 or, when none, the m_10 array, then clear the latched flags.
 RVA(0x000386b0, 0x5d)
 i32 StateMgrBZ::Reset() {
     CInputDevice* d = m_device;
@@ -205,8 +180,6 @@ i32 StateMgrBZ::Reset() {
     return 1;
 }
 
-// StateMgrBZ::GetDirBits (0x38730; __thiscall, ret 0). Pack the four top-nibble
-// direction bits of m_edgeKeys (0x10000000..0x80000000) into a 4-bit code.
 RVA(0x00038730, 0x2e)
 u8 StateMgrBZ::GetDirBits() {
     u32 k = m_edgeKeys;
@@ -226,8 +199,6 @@ u8 StateMgrBZ::GetDirBits() {
     return r;
 }
 
-// StateMgrBZ::SetDirBits (0x38770; __thiscall, ret 4). Unpack a 4-bit direction
-// code into the top nibble of m_edgeKeys; clear m_currentKeys. Returns 1.
 RVA(0x00038770, 0x40)
 i32 StateMgrBZ::SetDirBits(i32 flags) {
     m_edgeKeys = 0;

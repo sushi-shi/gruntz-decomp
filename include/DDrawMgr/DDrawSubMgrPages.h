@@ -1,60 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
 #define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
 
-// DDrawSubMgrPages.h - THE single-source shape of CDDrawSubMgrPages, the DDraw
-// surface-manager child held at CDDrawSurfaceMgr+0x04 (m_drawTarget). It owns the three
-// front/back/overlay surface elements at +0x10/+0x14/+0x18 and back-points at the
-// root manager at +0x0c. Retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08 (23 slots).
-//
-// This class is what USED TO BE modeled as TWO separate views:
-//   - CDDrawSubMgrPages (DDrawSubMgrPages.cpp): the page/child factory + teardown
-//     (IsLoaded 0x157480, DestroyChildren 0x158ac0, CreateChildren 0x1588f0, the
-//     virtual dtor 0x1574d0).
-//   - CDDrawWorkerMgr (was include/DDrawMgr/DDrawWorkerMgr.h): the 0x158b40..0x159ef0
-//     surface-op method cluster reached by the game as PreviewMgr+0x04 /
-//     status-bar +0x04 / FxResource+0x04 / CLevelData+0x04.
-// PROVEN the same class: the WorkerMgr `this` uses the SAME +0x10/+0x14/+0x18
-// front/back/overlay layout and +0x0c parent back-pointer, and the game holds it at
-// CDDrawSurfaceMgr+0x04 (== m_drawTarget). The old WorkerMgr view under-declared a 10-slot
-// vtable; the real ??_7 @0x5efe08 carries 23 slots (dump below), so the missing
-// 13 slots are declared here.
-//
-// The +0x0c back-pointer (former WorkerMgr m_worker) is the ROOT CDDrawSurfaceMgr
-// (its m_lastError @+0x38, m_drawTarget @+0x04 == this, m_childGroup @+0x08, m_flags
-// @+0x34); the "m_worker: CDDrawWorkerNode" naming was a mis-derived view (the
-// pointed-to object is the parent, not a standalone worker node) - not migrated.
-//
-// Polymorphic CWapObj (CObject grand-base): the ctor stamps ??_7CDDrawSubMgrPages
-// vptr-first and ~CDDrawSubMgrPages folds the grand-base re-stamp (0x5e8cb4) last, cl-
-// emitted - no manual `*(void**)this = &g_*Vtbl` store. The 23-slot own vtable
-// @0x5efe08 (slots 0..4 the CObject thunks + the auto-generated scalar-deleting
-// dtor ??_G @0x1574b0, slots 5/6 from CWapObj):
-//   slot 1  (@0x04)  ??_GCDDrawSubMgrPages  0x1574b0  (cl auto-gen; ~dtor is 0x1574d0)
-//   slot 5  (@0x14)  IsLoaded         0x157480  (CWapObj slot-5 override)
-//   slot 6  (@0x18)  IsReady          0x001c08  (CWapObj default, inherited)
-//   slot 7  (@0x1c)  DestroyChildren  0x158ac0
-//   slot 8  (@0x20)  GetStateId       0x1574a0
-//   slot 9  (@0x24)  CreateChildren   0x1588f0
-//   slot 10 (@0x28)  0x157a20  (a 30-B deleting dtor (??_G) variant)
-//   slot 11 (@0x2c)  0x165e30  (COMDAT-folded with CFileMemBase::SetName, filemem)
-//   slot 12 (@0x30)  0x157a70
-//   slot 13 (@0x34)  0x157a50  (COMDAT-folded with CFileMem::Reset, filemem)
-//   slot 14 (@0x38)  0x157920
-//   slot 15 (@0x3c)  0x157a00  (Method_159ef0 tail-forwards here - the old Vfunc3c)
-//   slot 16 (@0x40)  0x157a10
-//   slot 17 (@0x44)  0x157940
-//   slot 18 (@0x48)  0x157950
-//   slot 19 (@0x4c)  0x165e60  (COMDAT-folded with CFileMem::Open, filemem)
-//   slot 20 (@0x50)  0x165ef0  (COMDAT-folded with CFileMem::Ready, filemem)
-//   slot 21 (@0x54)  0x165f00  (COMDAT-folded with CFileMem::Read, filemem)
-//   slot 22 (@0x58)  0x165f50  (COMDAT-folded with CFileMem::Write, filemem)
-// Slots 10..22 are declared-only vNN (bodies live in unmatched/filemem TUs, so no
-// RVA() here - they only shape the emitted (reloc-masked) vtable). cl emits
-// ??_7CDDrawSubMgrPages only in the owner TU (DDrawSubMgrPages.cpp, where the
-// slot-1/5/7/8/9 bodies live); the emitted datum is reloc-masked -> matching-neutral.
-//
-// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
-
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StateId.h>  // StateId (GetStateId return type)
@@ -65,20 +11,6 @@ class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
-// ---------------------------------------------------------------------------
-// CDDrawSubMgrPages (retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08): a 10-slot
-// vtable (0x28 B) - byte-proven 2026-07-14: the adjacent 0x1efe30 is the REAL
-// ??_7CFileMem (15 separate ctor-stamp code refs), NOT a Pages continuation, so
-// the former "slots 10..22" decls here were FABRICATED overhang transcriptions
-// of the filemem tables (e.g. the old Slot0F_157a00 "+0x3c slot" is really
-// ??_7CFileMem+0x14; 0x159ef0 belongs to CDDrawChildGroup, whose 17-slot table
-// makes its `jmp [eax+0x3c]` in-bounds). Slot 5 IsLoaded is an own body
-// (0x157480); slot 6 IsReady holds the shared family default 0x1c08 - the
-// CWapObj-scheme slot (WapObj.h). Modeled `: CObject` with slots 5/6 declared,
-// the family flat-model convention (the vtable_hierarchy audit diffs this
-// family against CObject because the abstract CWapObj emits no vtable to diff
-// against; the family-wide `: CLoadable` rebase is the flagged intermediate pass).
-// ---------------------------------------------------------------------------
 SIZE(CDDrawSubMgrPages, 0x1c);
 class CDDrawSubMgrPages : public CObject {
 public:
@@ -165,9 +97,6 @@ public:
 SIZE(CDrawSubWorker, 0x30);
 VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
-// The "A" child built by CreateChildren (0x30 bytes, vtable 0x5eff70): the
-// mode-surface leaf. : CDrawSubWorker (base proven above); overrides slots
-// 5/7/8/9/10, adds no fields. (The ex WapObjBase view of its dtor is dissolved.)
 class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
     // Inline ctor - retail CreateChildren shows exactly this expansion:

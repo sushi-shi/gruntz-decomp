@@ -1,15 +1,3 @@
-// ImagePaletteNode.h - the shared, single declaration of the palette-list node
-// ApiCallerStubs::CImagePaletteNode (the CImagePool palette node; RTTI-less scaffold
-// namespace). Its RVA-keyed bodies live across two TUs: the pool-owned builders /
-// front-ends (Build/ProcessPal*/Parse*/Load*) in ImagePool.cpp, and the BMP/PALETTE
-// loaders LoadBmpFile (0x177480) + Apply (0x1775f0) in PaletteBmp.cpp. Extracted to a
-// header so PaletteBmp models the REAL class (its former CPalLoader view is deleted)
-// and its Apply->ProcessPal (0x176e70) / LoadBmpFile->Build (0x176df0) calls bind to
-// the pool bodies instead of reloc-masking through a fake per-TU view.
-//
-// NOTE: ImagePool.cpp still carries an identical LOCAL definition of this class
-// (forward-declared via ImagePool.h). Folding that TU onto this header is a deferred
-// cross-lane dedup; the layout below is copied faithfully so the two agree.
 #ifndef SRC_IMAGE_IMAGEPALETTENODE_H
 #define SRC_IMAGE_IMAGEPALETTENODE_H
 

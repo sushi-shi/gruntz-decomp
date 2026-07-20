@@ -1,31 +1,3 @@
-// DroppedObject.cpp - the dropped-object tile-logic TU (C:\Proj\Gruntz):
-// CObjectDropper + CDroppedObject + CDroppedObjectShadow, their logic-worker
-// pumps, activation registries and serialize round-trips - the ONE original obj
-// at retail .text [0xc5360 .. 0xc7e90] (9 leading $E static-init frags + code +
-// the trailing 9-frag run), plus the three low-band /GX leaf dtors.
-//
-// wave2-H merge, PROVEN one TU against the roster hypothesis by the
-// private-globals oracle: the .data band 0x64be10..0x64c268 is one interleaved
-// contribution - the 9 leading frag statics (0x64be20..88 + 0x64bec8..d0) WEAVE
-// with this TU's registry singletons (g_dropperActReg 0x64be90, g_dropColl
-// 0x64bed8, g_shadowActReg 0x64bf00), while MultiStartDlgRoster's private
-// extent ends cleanly at 0x64bdcc. g_dropperActReg (ex "g_netBe90") is
-// referenced ONLY by InitActReg (0xc5f00, ex roster's "NetConfigureBe90") +
-// FireAct/RegisterActs here - zero roster references. Each class carries the
-// identical {E-frag, Construct(0x15), atexit-thunk(0xe)} static-registry triple
-// (0xc5ee0/0xc5f00/0xc5f30 dropper; 0xc6b30/0xc6b50/0xc6b80 dropped;
-// 0xc76b0/0xc76d0/0xc7700 shadow). Merges the former droppedobject +
-// objectdropper + droppedobjectshadow + droppedobjectserialize +
-// objectlogicpump + actregsiblings(in-band fns) units + WapMisc's 0xc76d0 +
-// the roster's 0xc5f00.
-//
-// IDENTITY RECOVERED: ActRegSiblings' "CSiblingActorA" facet IS CObjectDropper
-// (its registry entry fires &CObjectDropper::Update) and "CSiblingActorB" IS
-// CDroppedObjectShadow (its registry construct 0xc76d0 abuts the shadow ctor;
-// its per-frame Advance spawns the "DroppedObject" sprite on the drop frame).
-//
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -53,73 +25,27 @@
 
 #include <string.h> // inline strcmp for the direction-name match
 
-// ---------------------------------------------------------------------------
-// Shared engine singletons/externs (reloc-masked).
-// ---------------------------------------------------------------------------
-// The global bute store (?g_buteTree@@3VCButeTree@@A @0x6bf620; Find 0x16d190 /
-// Insert 0x16db90) + the bute manager (g_buteMgr); named symbols so the calls
-// reloc-mask.
-// g_buteMgr comes from <Bute/ButeMgr.h>.
-
-// The game-registry singleton (0x64556c; the SAME instance every gamemode unit
-// binds as g_gameReg / g_gameReg). The dropper family reaches its facets
-// through the reused per-mode slots (authentic downcasts, see CGameRegistry.h).
-
-// The per-frame game clock (g_frameTime) + frame delta (g_frameDelta) + draw-clock
-// delta (g_engineFrameDelta). C linkage so the symbols pair with the targets' _g_* names
-// (the convention across the gamemode units).
 extern "C" {
     extern u32 g_frameDelta;       // 0x645584
     extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
-// g_actCache spelling was an unbound VA-typo alias of this global
-
-// The drop-motion .rdata FP constants (owner-TU defs; VA 0x5ea9f0/0x5eaa00).
 DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
 DATA(0x001eaa00)
 double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
 
-// ---------------------------------------------------------------------------
-// The three per-class activation-coordinate registries (one per leaf class; all
-// the shared <Gruntz/ActReg.h> CActReg archetype, each built over the fixed
-// [2000, 2010] act-id range by its class's InitActReg static-init triple):
-//   g_dropperActReg @0x64be90 (ex "g_netBe90" - a net-parking misnomer)
-//   g_dropColl      @0x64bed8 (CDroppedObject's, reached via the DropLookup inline)
-//   g_shadowActReg  @0x64bf00 (ex "g_64bf00")
-// ---------------------------------------------------------------------------
 DATA(0x0024be90)
 extern CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
-                                // fields 0x24be94..0x24beb0 are this object's members)
 DATA(0x0024bed8)
 extern CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fields
-                           // 0x24bedc..0x24bef8 are this object's members - it used to
-                           // be shredded into seven separate scalar globals, unlike its
-                           // two siblings above/below. Zero-init .bss, no ctor: the CRT
-                           // dynamic-init table (30 entries @0x2096e4) has no initializer
-                           // for it and the address is past .data's raw extent; Construct
-                           // (0x408710) ctors it in place at runtime.)
 DATA(0x0024bf00)
 extern CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
-                               // fields 0x24bf04..0x24bf20 are this object's members)
 
-// The registered-handler entries (first dword = the handler PMF, single inheritance
-// -> 4-byte code pointers) are the canonical per-class structs in their headers:
-// CDropperActEntry (<Gruntz/ObjectDropper.h>) + CShadowActEntry
-// (<Gruntz/DroppedObjectShadow.h>).
-
-// ---------------------------------------------------------------------------
-// The shared activation-NAME registry (@0x6bf650, the SAME shared instance
-// CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
-// ---------------------------------------------------------------------------
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
-// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
@@ -134,75 +60,15 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// The two per-frame handlers bound into CDroppedObject's registry slots
-// (referenced by address so the DIR32 store operands reloc-mask). 0xc7090 binds
-// to "A" (== CDroppedObject::ActA below), 0xc7be0 to "B" (unreconstructed).
 extern i32 DropActA_c7090();
 extern i32 DropActB_c7be0();
 
-// CDroppedObject's entry type CDropEntry (+ the DropHandler PMF) is the canonical
-// struct in <Gruntz/DroppedObject.h>.
-// The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
-// inline (the seven g_drop* scalars it used to run over ARE g_dropColl's fields).
 static inline CDropEntry* DropLookup(i32 coord) {
     return reinterpret_cast<CDropEntry*>(g_dropColl.ResolveEntry(coord));
 }
 
-// The default case's shared type-keyed record serializer (0x16e4f0, owned +
-// matched in TypeKeyColl.cpp = ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z); the active
-// logic leaf is the record arg, reinterpreted as the archive record it drives.
 #include <Gruntz/XferArchive.h>
 
-// ---------------------------------------------------------------------------
-// ObjectDropper.cpp's local views of the bound object + registry facets (only
-// the touched offsets are modeled; see each note).
-// ---------------------------------------------------------------------------
-
-// The bound-object / registry facet views are GONE. Every one of them was a per-TU
-// re-model of a class this TU ALREADY holds by its real type, and the file disproved
-// them itself - `m_38`/`m_object` are declared `CGameObject*`, and the SAME three-field
-// write appears twice, once through the canonical names and once through the view:
-//     canonical (0xc7a10): o->m_drawActive = 1; o->m_drawFillArg = fill;
-//                          o->m_drawFillCmd = 7;
-//     view      (0xc59f0): o->m_active     = 1; o->m_spriteRef   = sel;
-//                          o->m_state      = 7;
-// and likewise `m_object->m_sortKey != 0xcf851 -> m_flags |= 0x20000` vs the
-// view's `o->m_layerKey != 0xcf851 -> ...`. Same offsets, same logic, two names.
-//
-//   CObjDropObj -> CGameObject       (<Gruntz/UserLogic.h>; m_38/m_object are already
-//                  typed as it. The old note claimed the base "treats +0x194 as padding"
-//                  so the fold was impossible - that is FALSE: UserLogic.h carries
-//                  `char* m_194 // object source-def record (class-name string at +0x24)`,
-//                  exactly the field the view called m_nameRec. It also already has
-//                  m_layer @+0x198 and m_value @+0x1b4.)
-//   DropperLayer -> CGameObjLayer    (m_halfWidth/m_halfHeight @+0x18/+0x1c)
-//                  m_layer @+0x198 and m_geoId @+0x1b4.)
-//   DropperLayer -> CImage           (m_anchorX/m_anchorY half-extents @+0x18/+0x1c)
-//   DropperFound -> CTmCell (= CGrunt)  the REAL return type of CTriggerMgr::FindGruntAt
-//                  (<Gruntz/TriggerMgr.h>); its +0x10 is CUserLogic::m_object, the bound
-//                  CGameObject - so `found->m_obj` is just `found->m_object`.
-//   DropperBox   -> RECT             FindGruntAt already takes `RECT* span, RECT* src`.
-//   DropperMgr   -> CDDrawSurfaceMgr  g_gameReg->m_world is ALREADY declared as it
-//                  (GameRegistry.h); its m_8 is the canonical CDDrawChildGroup. The Update
-//                  path called CreateSprite through the view while the ActA path (0xc7090)
-//                  already called it cast-free off the real type.
-//   DropperLevel -> CGameLevel       (holder->m_24; CGameViewport was the same class)
-//   DropperWorld -> CGameLevel::m_mainPlane (CLevelPlane; the m_5c object) - its +0x30/
-//                  +0x30/+0x34 world bounds are named there now)
-//   DropperTile  -> BrickzCell       (the canonical 0x1c-byte grid cell, <Gruntz/Brickz.h>;
-//                  its m_0 is the packed terrain-flags dword MapMgr.h points at)
-//   DropperAnim  -> dead (an empty comment-holder; the +0x1a0 embedded per-leaf anim
-//                  sub-object is reached by address, which UserLogic.h documents as the
-//                  authentic idiom for that slot)
-//   DropReg2c    -> CState           g_gameReg->m_curState is ALREADY declared CState*;
-//                  its +0x20 is m_levelType (the level terrain-class id CProjectile
-//                  switches on with the same 4/5/8 arms).
-
-// The dropper's travel direction, stashed in the bound object's +0x12c. All four arms
-// are PROVEN: each is written under an exact strcmp against its own name literal in
-// CObjectDropper::LoadAttributes, and the matching (dx,dy) unit vector is assigned
-// beside it. The base field itself stays i32 - it is a per-leaf reused CGameObject slot
-// (CSpotLight puts an unrelated scale gate there), so only the VALUES are typed here.
 typedef enum DropperDir {
     DROPDIR_NORTH = 1, // "LEVEL_OBJECTDROPPER_NORTH", (dx,dy) = ( 0,-1)
     DROPDIR_EAST = 2,  // "LEVEL_OBJECTDROPPER_EAST",  (dx,dy) = ( 1, 0)
@@ -236,22 +102,6 @@ typedef enum DropperDir {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CDroppedObjectShadow@@UAE@XZ 0x00012670 0x44
 
-// ===========================================================================
-// The three logic-worker pumps (0xc5630/0xc5770/0xc58b0, ex ObjectLogicPump.cpp)
-// - the per-frame state/message pumps for the three leaves. Each is the SAME
-// archetype as StateDispatch.cpp's CLevelTime pump (0x9b770): a
-// __cdecl(CGameObject*) that reads the object's +0x7c aux state id (+0x1c) and,
-// on id 0, operator-new's + constructs its leaf (id then latched to 0x3e8),
-// Activates it (vtable slot 6) and installs it into aux->m_logic (+0x18); routes
-// ids 0x1d/0x1e/0x50..0x53 to the active handler's matching CUserLogic virtual
-// slot; and (default) hands the handler to the shared type-keyed serializer.
-// Always returns 1.
-// ===========================================================================
-
-// EXACT since the merge: the old "throwing-operator-new /GX frame wall" (~32%
-// /GX profile raises the operator-delete-on-ctor-throw frame retail has - and
-// the UNSIGNED switch key emits the retail ja/jbe range checks
-// (docs/patterns/switch-key-unsigned-ja-vs-jg.md).
 RVA(0x000c5630, 0xf4)
 i32 ObjectDropperPump(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
@@ -447,20 +297,11 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_area.bottom = 1;
 }
 
-// CObjectDropper::InitActReg @0xc5f00 (ex the roster-parked "NetConfigureBe90") -
-// construct the class's activation-coordinate registry singleton over [2000,
-// 2010]; the Construct body of the class's static-registry triple (its $E frag
-// @0xc5ee0 calls this, its atexit dtor thunk is 0xc5f30/0xc5f50). Free init
-// thunk; reloc-masked.
 RVA(0x000c5f00, 0x15)
 void CObjectDropper::InitActReg() {
     g_dropperActReg.Construct(0x7d0, 0x7da);
 }
 
-// CObjectDropper::FireAct (0xc5f80): the runtime side of the registry - resolve the
-// handler for act `actId` and, if bound, fire it on `this`. ResolveEntry has side
-// effects (m_scratch reset + GrowTo-on-miss), so it is re-run for the actual call
-// rather than cached; the null-slot path just returns (eax = the entry ptr).
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
     if ((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn != 0) {
@@ -501,15 +342,6 @@ void CObjectDropper::RegisterActs() {
     (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
-// CObjectDropper::Update @0xc62e0 - the per-frame tick (re-homed from the
-// CDroppedObjectShadow::LoadAttributes trace mis-attribution). When the 64-bit
-// re-arm timer expires (and the game isn't paused in edit mode), probe a random
-// reachable destination tile inside the wander box, and if it lands on a new,
-// unblocked tile spawn a "DroppedObjectShadow" there and re-arm the timer from
-// the "Hazardz/ObjectDropperDelay" bute. Every frame: advance the bound sprite's
-// animator, x87-drift the double position by g_frameDelta * m_speed along the travel
-// vector (wrapping at the world tile bounds), and write the rounded coords back
-// to the bound object's screen position.
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
@@ -599,9 +431,6 @@ i32 CObjectDropper::Update() {
     return 0;
 }
 
-// CObjectDropper::Serialize (0xc6680): the base/chain gate, then the +0x88/+0x90 drop-
-// timing i64 pair, then the +0x58..+0x80 move/state fields; mode 8 instead seeds a
-// draw-fill command on the bound object from the light-FX table set.
 RVA(0x000c6680, 0x1b4)
 i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -703,20 +532,11 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         );
 }
 
-// CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
-// table's fast-range bounds via the shared _zdvec registry ctor
-// (RegisterRange(0x7d0, 0x7da), 0x408710 through the 0x3742 ILT thunk). The
-// Construct body of this class's static-registry triple ($E frag @0xc6b30,
-// atexit thunk 0xc6b80); same archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000c6b50, 0x15)
 void CDroppedObject::RegisterRange() {
     g_dropColl.Construct(0x7d0, 0x7da);
 }
 
-// CDroppedObject::FireActivation @0x0c6bd0 - look the activation coordinate up
-// in the registry; if the entry has a registered handler, look it up again and
-// dispatch it __thiscall on this. Same archetype as CTimeBomb::FireActivation
-// (0x0e1830).
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
     CDropEntry* e = DropLookup(coord);
@@ -873,10 +693,6 @@ i32 CDroppedObject::ActA() {
     return 0;
 }
 
-// CDroppedObject::UserLogicVfunc5 (0xc7350), vtable slot 7 - the per-frame draw-
-// cursor step: advance the bound object's +0x1a0 anim cursor by the frame draw-
-// delta, then latch the object's dirty bit (0x10000) when its anim sub-mgr is
-// active (m_1c8) but idle (m_1c0 == 0).
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::UserLogicVfunc5() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -886,8 +702,6 @@ i32 CDroppedObject::UserLogicVfunc5() {
     return 0;
 }
 
-// CDroppedObject::Serialize (0xc73a0): base/chain gate, then the +0x58/+0x60 doubles
-// and the +0x68 landing row.
 RVA(0x000c73a0, 0xb5)
 i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -944,18 +758,11 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     }
 }
 
-// CDroppedObjectShadow::InitActReg @0xc76d0 (ex WapMisc's "Unmatched_c76d0") -
-// construct the class's activation-coordinate registry singleton over [2000,
-// 2010]; the Construct body of the class's static-registry triple ($E frag
-// @0xc76b0, atexit thunk 0xc7700). Free init thunk; reloc-masked.
 RVA(0x000c76d0, 0x15)
 void CDroppedObjectShadow::InitActReg() {
     g_shadowActReg.Construct(0x7d0, 0x7da);
 }
 
-// CDroppedObjectShadow::FireActivation (0xc7750): runtime dispatch for the
-// class registry @0x64bf00 - same double-ResolveEntry + PMF-fire archetype as
-// CObjectDropper::FireAct.
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
     if ((reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(coord)))->m_fn != 0) {
@@ -1018,11 +825,6 @@ i32 CDroppedObjectShadow::Advance() {
     return 0;
 }
 
-// CDroppedObjectShadow::SerializeMove (0xc7b40), vtable slot 1 - chain the shared
-// serialize helper + the +0x34 CSerialObjRef gate (both early-return 0 on failure);
-// adds no streamed leaf fields. Mode 8 instead re-seeds the bound object's draw-fill
-// render state (same shade-table source as the ctor). The CObjectDropper::Serialize
-// mode-8 archetype.
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, c, d)) {

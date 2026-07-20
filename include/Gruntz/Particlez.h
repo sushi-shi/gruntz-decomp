@@ -1,18 +1,3 @@
-// Particlez.h - the particlez effect game-object (C:\Proj\Gruntz).
-//
-// CParticlez : CUserLogic - a tile-logic leaf in the same game-object hierarchy
-// as CTimeBomb (proven by its dtor @0x012d90 stamping the CUserLogic vftable
-// 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down the +0x18 link via
-// the embedded ~EngStr at 0x16d2a0 - byte-identical in shape to ~CTimeBomb
-// @0x012a70). The leaf adds no destructible members beyond CUserLogic, so its
-// dtor folds the bare CUserLogic teardown (the /GX leaf-dtor archetype).
-//
-// FireActivation (0x046d30) is the SAME per-coordinate activation-registry
-// dispatcher archetype as CTimeBomb::FireActivation (0x0e1830), but a DIFFERENT
-// registry instance (CParticlez's, at 0x644870).
-//
-// Field names are placeholders; only OFFSETS + the inheritance chain are
-// load-bearing.
 #ifndef GRUNTZ_CPARTICLEZ_H
 #define GRUNTZ_CPARTICLEZ_H
 
@@ -45,11 +30,6 @@ public:
 };
 VTBL(CParticlez, 0x001e7614);
 
-// The activation-registry entry record: its first dword is a PMF of CParticlez
-// (single inheritance -> a 4-byte code pointer). FireActivation reads it as a void
-// PMF (CPartEntry); RegisterActs stamps Update through the i32-returning
-// CPartEntryI32 view of the same slot. Declared AFTER the complete class so the
-// PMF stays 4 bytes.
 typedef void (CUserLogic::*PartHandler)();
 struct CPartEntry {
     PartHandler m_fn; // [entry]

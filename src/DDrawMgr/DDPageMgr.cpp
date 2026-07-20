@@ -1,43 +1,11 @@
-// DDPageMgr.cpp - the primary-surface / display-mode bring-up + Smacker playback obj.
-//
-// waveM-mech merged the 0x17c040-0x17d720 .text (ONE original TU: text A-B-A weave -
-// CDDPageMgr's Init@0x17c040 + CheckMode16/RemoveAt/FreeAll@0x17d2b0-0x17d6b0 bracket
-// the CMoviePlayer(smackervideowindow) + CDDScreen(ddscreen) methods; DDPageMgr's Init
-// calls CMoviePlayer::HandleError@0x17cc80 - same obj). Absorbed the ex ddpagemgr +
-// smackervideowindow + ddscreen units.
-//
-// FOLD DONE (2026-07-17). CDDPageMgr and CDDScreen were "two cross-header views of the
-// SAME tiled-DirectDraw display object", and the note here said unifying them was
-// deferred work whose cross-calls "stay reloc-masked (distinct mangled names)". That
-// note had already been overtaken: both names are now TYPEDEF ALIASES of CMoviePlayer
-// (<DDrawMgr/DirectDrawMgr.h>:291, <DDrawMgr/DDScreen.h>:44), which is the class every
-// method in this TU is already defined on. So the 13 `((CDDScreen*)this)->X()` /
-// `((CDDPageMgr*)this)->X()` "same-object bridges" were casting CMoviePlayer* to
-// CMoviePlayer* - self-casts, one mangled name, not a bridge between anything. They are
-// removed: `this->X()` is the identical call (CheckMode16() was already spelled that way
-// beside them). Byte-neutral, and the fold this banner deferred is simply finished.
-//
-// BOUNDARY (left separate, frag-woven strays out of scope): CMoviePlayer::Open@0x17c6f0
-// (movieplayer), CMoviePlayer::UploadPalette@0x17ca10 (palettecopy), CMoviePlayer::ResetPalette
-// @0x17ca60 (palettereset), CImageProbe::Init@0x17cbe0 (imageprobe), PalCache::Snapshot
-// @0x17cd90 (resourceloaders) - each is a method of this obj's classes wearing a stray
-// unit; SHOULD fold here in a follow-up.
-//
-// Include env mirrors the SmackerVideoWindow environment (Mfc.h/afxwin.h -> CWnd,
-// smack.h -> the RAD Smacker SDK, ddraw.h) plus the DDrawMgr display headers. Only
-// offsets + code bytes are load-bearing; field names are placeholders.
 #include <Mfc.h> // CString + windows.h (afx-first)
 #ifdef __clang__
-// The label-step clang can't parse MFC's afxwin1.inl (implicit-int CMenu::operator==);
-// skip the *.inl for clang only - docs/patterns/afxwin-clang-label-step-skip-inl.md.
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h> // the REAL MFC CWnd (m_videoWnd) + AfxRegisterWndClass
 #include <Ints.h>
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
-// smack.h pulls rad.h, whose u8/u16/u32/... object-like macros shadow <Ints.h>; undo
-// them (matching-neutral: rad's u32==unsigned long is the same 4 bytes).
 #undef u8
 #undef u16
 #undef u32
@@ -56,13 +24,6 @@
 #include <string.h> // memset / inlined memcpy (rep movsd)
 #include <Globals.h>
 
-// The engine heap allocator (0x1b9b46) - Configure's explicit-blit RECT nodes.
-
-// The dxguid GUID constants Init passes to QueryInterface by REFIID. DEFINED here
-// (the retail link pulled the dxguid.lib entries into .rdata for this referencing
-// obj); the byte values are the SDK's own {DA044E00-69B2-11D0-A1D5-00AA00B8DFBB} /
-// {B3A6F3E0-2B43-11CF-A2DE-00AA00B93356}, TRANSCRIBED and verified against the
-// retail bytes at 0x5ef848/0x5ef888.
 DATA(0x001ef848)
 extern "C" const GUID IID_IDirectDraw2 = {
     0xB3A6F3E0,
@@ -78,24 +39,6 @@ extern "C" const GUID IID_IDirectDrawSurface3 = {
     {0xA1, 0xD5, 0x00, 0xAA, 0x00, 0xB8, 0xDF, 0xBB},
 }; // 0x5ef888
 
-// The game's cached ShowCursor fn-ptr global (?::ShowCursor@@3P6GHH@ZA, def in
-// stateimages) the 0x17c3f0 command handler hides the cursor through.
-
-// [The former Handler_17c3f0 command-block view (with its ObjA2/ObjA3 placeholder-slot
-// interfaces) is dissolved onto the canonical CDDScreen (<DDrawMgr/DDScreen.h>): the
-// dispatches are genuine COM - IDirectDraw2::CreatePalette (slot 5, +0x14) and
-// IDirectDrawSurface::SetPalette (slot 31, +0x7c) - and every touched field sits at a
-// CDDScreen offset (m_dd2/m_primary/m_palette/m_palEntries/m_screenWidth/m_screenHeight/
-// m_bpp). The remaining (CDDPageMgr*) casts are the documented CDDScreen==CDDPageMgr
-// cross-header conflation (deferred fold).]
-
-// ===========================================================================
-// Functions in retail-RVA order.
-// ===========================================================================
-
-// CMoviePlayer::Init (0x17c040, __thiscall) - create DirectDraw, QI IDirectDraw2, set
-// the cooperative level + display mode, create the primary surface (QI'd to
-// IDirectDrawSurface3) and, for 8bpp, a palette; cache geometry + show the cursor.
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
@@ -226,14 +169,6 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     return Init(h, reinterpret_cast<DDModeInfo*>(a0), static_cast<u32>(a1));
 }
 
-// CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
-// CDDScreen display object (a stack-local 0x520+-byte block in the caller;
-// CGruntzMgr::ChangeState_8fab0 builds + InitMode()s it).
-// Size was 0x14e - OVER-DECLARED by 0x2e, overlapping ?Teardown@CMoviePlayer@@ @0x17c510.
-// The bytes end this function at 0x17c50f: `... pop edi; pop esi; pop ebp; xor eax,eax;
-// pop ebx; ret 0x7c` closes at 0x17c50e, then a single `90` nop aligns to 0x17c510 where
-// Teardown's `push esi; mov esi,ecx; ...` begins. Real size 0x120. Found by the new
-// overlapping-range census in verify_unique_names.
 RVA(0x0017c3f0, 0x120)
 i32 CMoviePlayer::InitMode(
     HWND wnd,
@@ -307,7 +242,6 @@ i32 CMoviePlayer::InitMode(
     return 1;
 }
 
-// CMoviePlayer::Teardown (0x17c510) - tear the playback object down + restore the cursor.
 RVA(0x0017c510, 0x5e)
 void CMoviePlayer::Teardown() {
     if (!m_initialized) {
@@ -326,8 +260,6 @@ void CMoviePlayer::Teardown() {
     ShowCursor(1);
 }
 
-// CMoviePlayer::OpenLo (0x17c570) - open a Smacker stream (0xfe000 flags, +0x100000 for
-// DirectSound), begin playback, roll back on failure.
 RVA(0x0017c570, 0xc0)
 i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (!m_initialized) {
@@ -365,7 +297,6 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     return r;
 }
 
-// CMoviePlayer::OpenHi (0x17c630) - same as OpenLo but with the 0xff000 flag set.
 RVA(0x0017c630, 0xc0)
 i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (!m_initialized) {
@@ -403,18 +334,6 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     return r;
 }
 
-// --------------------------------------------------------------------------
-// CMoviePlayer::Open (0x17c6f0) - homed from the former MoviePlayer.cpp slice.
-// 0x17c6f0 lies inside THIS obj's contiguous CMoviePlayer run, between 0x17c630
-// and Pump (0x17c790) below; the split TU kept only the pooled dtors at 0x38fc0.
-// --------------------------------------------------------------------------
-// ===========================================================================
-// 0x17c6f0 - Open: bail if the worker is inactive (m_active == 0). Prepare the +0x540
-// decode store (Begin); open the low-res source (OpenA(a1)); open the high-res
-// source (OpenB(a2)); finalize through OpenHi with the OpenB handle + the four
-// trailing args. Any failing step aborts the store and returns 0; full success
-// returns 1.
-// ===========================================================================
 RVA(0x0017c6f0, 0x9c)
 i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (m_initialized == 0) {
@@ -439,8 +358,6 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     return 1;
 }
 
-// CMoviePlayer::Pump (0x17c790) - pump the Win32 queue while a movie plays; abort on the
-// selected key/mouse events, else render the next frame until `count` plays elapse.
 RVA(0x0017c790, 0x14a)
 i32 CMoviePlayer::Pump(i32 flags, i32 count) {
     if (!m_initialized || count < -1 || count == 0) {
@@ -488,8 +405,6 @@ i32 CMoviePlayer::Pump(i32 flags, i32 count) {
     }
 }
 
-// CMoviePlayer::Advance (0x17c8e0) - wait for the stream, render a frame, loop on EOF
-// until `loops` is exhausted.
 RVA(0x0017c8e0, 0xca)
 i32 CMoviePlayer::Advance(IDirectDrawSurface* target, i32 loops) {
     if (!target || !m_initialized || loops < -1 || loops == 0) {
@@ -519,7 +434,6 @@ i32 CMoviePlayer::Advance(IDirectDrawSurface* target, i32 loops) {
     return result;
 }
 
-// CMoviePlayer::CloseSmacker (0x17c9b0) - shut the sub-player, close the stream, free buffers.
 RVA(0x0017c9b0, 0x5b)
 i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
@@ -539,9 +453,6 @@ i32 CMoviePlayer::CloseSmacker() {
     return 1;
 }
 
-// CMoviePlayer::Frame (0x17caa0) - the per-frame renderer Pump drives: lock the DDraw
-// surface (retrying on DDERR_SURFACELOST), decode the current Smacker frame, blit the
-// changed region(s), advance to the next frame.
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_bpp == 8) {
@@ -581,8 +492,6 @@ afterLock:
     return 1;
 }
 
-// CMoviePlayer::HandleError (0x17cc80) - release owned interfaces; if still mid-bringup
-// black the primary surface, then release the remaining objects.
 RVA(0x0017cc80, 0x109)
 void CMoviePlayer::HandleError() {
     if (m_srcSurf) {
@@ -634,8 +543,6 @@ void CMoviePlayer::HandleError() {
     }
 }
 
-// CMoviePlayer::BlitRegion (0x17cdf0) - blit the (col,row,nCols,nRows) tile region from the
-// source surface onto the primary; handle DDERR_SURFACELOST by restoring + retrying.
 RVA(0x0017cdf0, 0x1c6)
 i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     RECT dst, src;
@@ -918,7 +825,6 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     return 1;
 }
 
-// CMoviePlayer::FreeAll (0x17d6b0) - RemoveAt(1) every record, then free the array buffer.
 RVA(0x0017d6b0, 0x70)
 i32 CMoviePlayer::FreeAll() {
     if (!m_initialized) {
@@ -937,7 +843,6 @@ i32 CMoviePlayer::FreeAll() {
     return 1;
 }
 
-// CMoviePlayer::PlayList (0x17d720) - play the whole m_868c clip playlist `loops` times.
 RVA(0x0017d720, 0x188)
 i32 CMoviePlayer::PlayList(i32 loops) {
     if (!m_initialized || loops < -1 || loops == 0) {

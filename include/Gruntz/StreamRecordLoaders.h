@@ -1,16 +1,10 @@
-// StreamRecordLoaders.h - the HandleEvent-path serialized record (owner:
-// StreamRecordLoaders.cpp; the CTriggerLoadRec sibling with its own field layout).
 #ifndef GRUNTZ_GRUNTZ_STREAMRECORDLOADERS_H
 #define GRUNTZ_GRUNTZ_STREAMRECORDLOADERS_H
 
 #include <Ints.h>
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (a typedef - a bare fwd decl
-                                  // would re-declare a DISTINCT class)
 
-// The serialized event record: two raw dwords, one plain name ref (m_8), one raw
-// dword, five bounds-checked type-table index refs (m_10..m_20), two trailing raw
-// dwords (m_48/m_4c). Load @0x09c650 (__thiscall, ret 4).
 struct CEventLoadRec {
     i32 Load(CSerialArchive* s);
 

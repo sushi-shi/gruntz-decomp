@@ -1,32 +1,9 @@
-// CheatMgr.cpp - the cheat-code dictionary (C:\Proj\Gruntz\, the 0x22bxx region).
-//
-// Four __thiscall methods of CCheatMgr, reconstructed in ascending-RVA order. The
-// class embeds a CMapStringToPtr (at +0x04) keyed by each cheat's obfuscated code
-// string; map values are heap CheatEntry {commandId, flag} pairs. Empty() and the
-// destructor each build a destructible CString local, forcing the /GX EH frame, so
-// this unit uses the "eh" flag profile. The destructor (0x85e60, 0x4a B) calls
-// Empty() then the compiler emits the embedded m_map's ~CMapStringToPtr from the
-// epilogue - the same wrapper shape as CGruntSpawnConfig's 0x85df0 dtor.
-//
-// LoadCheatConfig (0x22e60) is this class's bute/registry config loader; it lives
-// in another TU (the engine_label_stubs backlog) so the RegisterCheats tail call
-// reloc-masks. The MFC map helpers (Lookup/operator[]/GetNextAssoc/RemoveAll/the
-// ~CMapStringToPtr base) and the CRT operator new/delete come from <Mfc.h> and are
-// reloc-masked (NAFXCW / CRT, no body here).
-//
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing. See include/Gruntz/CheatMgr.h for the recovered layout.
 #include <Gruntz/CheatMgr.h>
 #include <EmptyString.h> // g_emptyString
 
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-
-// The global empty C string the default CString temp copies from (0x6293f4).
-
-// The global CButeMgr instance (the config tree LoadCheatConfig reads cheats from),
-// g_buteMgr from <Bute/ButeMgr.h>.
 
 // The 19 built-in cheat-code string buffers - obfuscated .data byte arrays passed
 // to AddCheat by address as the map key. Each holds a cheat code obfuscated as
@@ -80,19 +57,7 @@ char s_cheat_20c900[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c";                   
 char s_cheat_20c90c[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90";                     // "MPOBJECTS"
 char s_cheat_20c918[8] = "\x8a\x8d\x8d\x8c\x90";                                      // "MPPOS"
 char s_cheat_20c920[8] = "\x8a\x8d\x83\x8d\x90";                                      // "MPFPS"
-// clang-format on
 
-// The cheat-config tag/key string literals (objdiff matches these .data relocs by
-// value). The obfuscated code stored under each "Cheat%i" group's "Text" key is
-// recovered by CheckCode by uppercasing then adding 0x3d to every byte.
-
-// ===========================================================================
-// CCheatMgr::Init  (0x22ad0)
-// ===========================================================================
-// Seed the +0 owner/count field from the arg and clear the scalar state
-// (m_flag / m_120 / m_124); returns TRUE. The non-iterating counterpart to
-// Empty() - same scalar clear, but it stores the arg into +0 instead of zeroing
-// it and never walks the map (so no CString temp / no /GX frame).
 RVA(0x00022ad0, 0x1f)
 BOOL CCheatMgr::Init(i32 owner) {
     m_count = owner;
@@ -102,12 +67,6 @@ BOOL CCheatMgr::Init(i32 owner) {
     return TRUE;
 }
 
-// ===========================================================================
-// CCheatMgr::Empty  (0x22b00)
-// ===========================================================================
-// Iterate the map freeing every CheatEntry payload (operator delete), RemoveAll()
-// the map, then clear the scalar state (m_count / m_flag / m_120 / m_124). The
-// per-iteration CString key + the throwing map calls force the /GX EH frame.
 RVA(0x00022b00, 0xaf)
 void CCheatMgr::Empty() {
     POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
@@ -164,11 +123,6 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     return TRUE;
 }
 
-// ===========================================================================
-// CCheatMgr::RegisterCheats  (0x22c80)
-// ===========================================================================
-// Seed the 19 built-in cheat codes (each -> a WM_COMMAND id) then load the
-// per-config cheats from the bute/registry via LoadCheatConfig.
 RVA(0x00022c80, 0x173)
 void CCheatMgr::RegisterCheats() {
     AddCheat(s_cheat_20c920, 0x804b, 1);
@@ -270,12 +224,6 @@ BOOL CCheatMgr::CheckCode(CString code) {
     return TRUE;
 }
 
-// ===========================================================================
-// CCheatMgr::~CCheatMgr  (0x85e60)
-// ===========================================================================
-// Empty() the dictionary, then the embedded m_map's ~CMapStringToPtr fires from
-// the destructor epilogue (a reloc-masked NAFXCW base call). The destructible
-// member forces the /GX EH frame.
 RVA(0x00085e60, 0x4a)
 CCheatMgr::~CCheatMgr() {
     Empty();

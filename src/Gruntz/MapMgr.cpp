@@ -1,40 +1,3 @@
-// MapMgr.cpp - the map/pathfinding TU (C:\Proj\Gruntz), interval
-// 0x09e700-0x09fe39. ONE original TU per docs/exe-map/interval-dossiers.md #10a:
-// our mapmgr + brickz(-interval) units were slices of this single file - the
-// weave is A-B-A-B-A (CMapMgr::Reset @0x9ec30 sits BETWEEN the two CBrickzGrid
-// blocks; Save/Load @0x9f840 after them), and the 16 init frags (brickz 6@0x9de10
-// + mapmgr 10@0x9fb20) are one obj's run bracketing the interval.
-//
-// Contents: CMapMgr (the level/map manager) ctor/dtor/Reset/Save/Load + the two
-// embedded growable-array sub-objects (CMapArrayA @+0x30 / CMapArrayB @+0x3c),
-// the CBrickzGrid out-of-line pathfinding core (AllocGrid/Search/Expand/Insert/
-// PopFront/CellPush/Find/FindCellNode/Drain/Reset/Unlink/CellPop - Tier A of the
-// Brickz.cpp assessment; the scattered Tier-B singletons stay in Brickz.cpp),
-// the CMapVisitTarget::Visit probe (dossier seam 0x9f7f0), and SetVersionRect.
-//
-// @owner-TODO: CBrickzGrid's layout (cell pool +0x4 / row table +0x8 / dims
-// +0xc,+0x10 / the +0x30/+0x3c node pools it inits VIA CMapArrayA/B::Allocate /
-// the IsCellClear vtable slot in ??_7CMapMgr@@6B@) tracks CMapMgr field-for-field
-// - the two classes are one identity to reconcile (Brickz.h vs MapMgr.h); kept
-// as-is this package (no class renames per the wave1-D brief).
-//
-// CMapMgr carries a C++ EH frame (the member sub-objects with destructors) -> /GX
-// (the former brickz-unit fns have no destructible locals - /GX-neutral).
-// Names are placeholders; only offsets + code bytes are load-bearing.
-//
-// Allocate{A,B} PLATEAU (~70%/64%): both build a doubly-linked free list over
-// `count` fixed-stride (0x24 / 0x0c) elements with prev/next links (A: next@+0x14
-// prev@+0x18; B: data@+0x00 prev@+0x04 next@+0x08), first-element prev=0 and
-// last-element next=0 - all offsets/strides/values/control-flow correct. The
-// residue is a pervasive MSVC5 register-allocation + strength-reduction divergence:
-// the target strength-reduces the loop induction onto eax = &elem.prev (indexing
-// elem base as eax-0x18) and avoids a held-zero register (using `test`/immediate
-// zero stores), whereas our codegen keeps the element pointer in ecx and caches 0
-// in ebx. Four source forms (raw-offset cursor on the prev field, element-struct
-// pointer walk, cached m_block local, ptr-cast index) all normalized to the same
-// (valid) ecx-relative codegen - no source lever flips the induction register.
-// Entropy-class; left per the campaign doctrine (the strides + link layout, the
-// deliverable here, are fully recovered).
 #include <Mfc.h>          // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -47,22 +10,8 @@
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 #include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
 
-// The pool allocator the grid new's its cell pool + column table off
-// (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
-
-// The intrusive free-list the search nodes recycle into when a goal node is reached.
-// 0x645544 is NOT a global of its own: it is m_freeHead (+0x04) of the coord-node pool
-// g_coordPool @0x645540 (DEFINED in src/Gruntz/GameText.cpp). This TU used to redeclare
-// that one slot under a third name/type (g_brickzFreeList, BrickzFreeRec*) - a divergent
-// symbol for a field. The head is genuinely void* (the pool recycles several node types),
-// so BrickzFreeRec is a cast at the use sites.
 #include <Gruntz/FreeNodePool.h>
 
-// ===========================================================================
-// CMapArrayA (embedded at CMapMgr+0x30; element stride 0x24).
-// ===========================================================================
-
-// CMapArrayA::CMapArrayA(): zero m_0(+4), m_block(+0), m_count(+8).
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_0 = 0;
@@ -108,7 +57,6 @@ i32 CMapArrayA::Allocate(u32 count) {
     return 1;
 }
 
-// CMapArrayA::~CMapArrayA(): free m_0(+4) if set, then zero all.
 RVA(0x0009e7e0, 0x29)
 CMapArrayA::~CMapArrayA() {
     if (m_0) {
@@ -119,11 +67,6 @@ CMapArrayA::~CMapArrayA() {
     m_count = 0;
 }
 
-// ===========================================================================
-// CMapArrayB (embedded at CMapMgr+0x3c; element stride 0x0c).
-// ===========================================================================
-
-// CMapArrayB::CMapArrayB(): zero m_0(+0), m_block(+4), m_count(+8).
 RVA(0x0009e820, 0xd)
 CMapArrayB::CMapArrayB() {
     m_0 = 0;
@@ -170,7 +113,6 @@ i32 CMapArrayB::Allocate(u32 count) {
     return 1;
 }
 
-// CMapArrayB::~CMapArrayB(): free m_0(+0) if set, then zero all.
 RVA(0x0009e900, 0x28)
 CMapArrayB::~CMapArrayB() {
     if (m_0) {
@@ -181,13 +123,6 @@ CMapArrayB::~CMapArrayB() {
     m_count = 0;
 }
 
-// ===========================================================================
-// CMapMgr.
-// ===========================================================================
-
-// CMapMgr::CMapMgr(). The two array members are constructed
-// first (out-of-line ctors), then the body zeroes the scalar members, stores the
-// vftable and seeds m_maskA=-1 / m_dirty=1.
 RVA(0x0009e940, 0x73)
 CMapMgr::CMapMgr() {
     m_4 = 0;
@@ -202,8 +137,6 @@ CMapMgr::CMapMgr() {
     m_dirty = 1;
 }
 
-// CMapMgr::~CMapMgr(). Calls the slot-0 Reset (frees m_4/m_8,
-// resets the two arrays), then the two member-array destructors run automatically.
 RVA(0x0009e9e0, 0x5d)
 CMapMgr::~CMapMgr() {
     Reset();
@@ -271,9 +204,6 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, void (*callback)()) {
     return 1;
 }
 
-// CMapMgr::Reset() (slot 0). Frees m_4 and m_8 if set, resets
-// the two embedded arrays (calls their destructors in place), then zeroes the
-// scalar bookkeeping members.
 RVA(0x0009ec30, 0x4b)
 void CMapMgr::Reset() {
     if (m_4) {
@@ -566,9 +496,6 @@ relax:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Insert - insert node into the m_openList-headed list, kept ascending by
-// m_10. Links: m_cellCount = forward (next), m_openList = backward (prev). Always returns 1.
 RVA(0x0009f370, 0x8a)
 i32 CBrickzGrid::Insert(BrickzNode* node) {
     BrickzNode* cur = m_openList;
@@ -661,9 +588,6 @@ void CBrickzGrid::CellPush(BrickzNode* node) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Find - walk the m_openList lookup list (linked via m_cellCount), return the node
-// whose (m_0,m_4) pair equals (key1,key2); 0 if absent.
 RVA(0x0009f500, 0x24)
 BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
     BrickzNode* p = m_openList;
@@ -679,10 +603,6 @@ BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::FindCellNode - look up the (col,row) search-record threaded through
-// grid cell m_rows[row][col]'s bucket list (each bucket node's m_0 is the child
-// record; walk the bucket via m_8). Return the matching child record, else 0.
 RVA(0x0009f540, 0x40)
 BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
     BrickzNode* n = m_rows[row][col].m_head;
@@ -828,15 +748,6 @@ void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
     }
 }
 
-// ===========================================================================
-// CMapMgr::Visit (0x09f7f0) - slot 1 of ??_7CMapMgr (0x1ea3b4). OWNER RECOVERED: the
-// "CMapVisitTarget" class (MapLogic.h) that used to own this was a fabrication, and so
-// were the Slot00/Slot04/Slot08/Slot0C virtuals it dispatched through - those ARE THIS
-// CLASS'S OWN SLOTS. The dispatch is `mov eax,[this]; call [eax+8]` / `call [eax+0xc]`,
-// and CMapMgr's vtable holds Save @+0x08 (slot 2, 0x9f840) and Load @+0x0c (slot 3,
-// 0x9f9a0) - both taking a CSerialArchive*. So this is the archive dispatcher on the map
-// manager itself: mode 4 = Save, mode 7 = Load, `this` is the map, and the "buffer" is
-// the archive. A null archive returns 0; any other mode returns 1.
 RVA(0x0009f7f0, 0x3b)
 i32 CMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
@@ -927,26 +838,10 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     return 1;
 }
 
-// (The three "vftable-anchor" stubs Vfunc1/Vfunc4/Vfunc5 are GONE: they were fabricated
-//  empty bodies for slots that hold REAL functions - 0x9f7f0 / 0x9eca0 / 0x853f0 - two of
-//  which are defined right here in this TU. See the slot table in <Gruntz/MapMgr.h>.)
-
 SIZE_UNKNOWN(MapElemA);
 SIZE_UNKNOWN(MapElemB);
 SIZE_UNKNOWN(BrickzFreeRec);
 
-// ===========================================================================
-// SetVersionRect (0x0009fe10) - a free __cdecl that seeds the map/menu-screen
-// version-string RECT {5, 0x1c5, 0x27b, 0x1de} (a bottom strip on the 640x480
-// select screen). @orphan: its only inbound edge is an unrecovered fn at ~0x9face
-// (the gap between MapMgr's last method @0x9f9a0 and MenuStateAssets @0x9fe50);
-// homed here as the offset-0-safe adjacent unit (extends MapMgr's top). The four
-// consecutive DWORDs @0x245cc8..d4 ARE the single CGMVerRect that MenuState reads by
-// value (canonical `g_versionRect` in <Gruntz/GameMode.h>); write its fields so all four
-// stores bind through the one `_g_versionRect` symbol + addend (0/4/8/c). This ends the
-// per-rva conflation (the ex-four `g_versionRect{L,T,R,B}` i32 externs collided with
-// _g_versionRect at 0x245cc8 and lost the keep-last dedup -> UNBOUND). The DIR32 stores are
-// reloc-masked so single-sourcing onto the RECT is byte-neutral.
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
     g_versionRect.a = 5;

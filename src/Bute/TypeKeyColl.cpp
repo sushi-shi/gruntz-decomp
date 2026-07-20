@@ -1,30 +1,3 @@
-// TypeKeyColl.cpp - the shared container/type-registry engine TU at retail
-// .text [0x16d000 .. 0x16e7e8] (C++ Tools container library + the type-key
-// registries; C:\Proj\incs).
-//
-// ONE original TU (wave2-H merge): the former typekeycoll + butetree(interval
-// fns) + userbaselink(interval fns) units were a WOVEN single interval
-// (TU_MIGRATION 0x16d000, weave 0.31; typekeycoll's own 7-frag init run
-// @0x16d6f0 sits MID-interval between userbaselink's 0x16d3a0 and 0x16d710 -
-// one obj), plus the seven in-interval strays proven by first-link contiguity:
-// zBitVec(i32,i32) (ex ProjActCache.cpp), _zvec::GrowTo + ~_zdvec (ex
-// ZVec.cpp), CButeNodeEntry/zPTree ctors (ex ButeNode.cpp),
-// CButeStore::ClearRecursive (ex ButeStoreClear.cpp), zBitVec::SetSize +
-// ~zErrHandling (ex EngStr.cpp), and Reg23::Add (ex Registry23.cpp - Reg23 IS
-// CKeyFinder: its Find was the same 0x16e1d0, its m_4 the same +0x04 index;
-// folded onto the one class here).
-//
-// STILL ELSEWHERE (documented walls): the zErrHandling/zErrHandling ctor
-// (0x16d9c0) stays in GameText.cpp - it needs the deliberately NON-virtual
-// (the old "GameText.h and zBitVec.h never coexist" wall is DEAD - GameText.h had one
-//  includer; its duplicate zErrHandling view is folded onto zBitVec.h's)
-// in one TU). The CZArrayRoot/zErrHandling/zErrHandling and CZArray2D/_zdvec
-// dual models are a known pending dedup (one real class each).
-//
-// All callees into the deeper engine (the base ctor, the error/insert helper,
-// the CRT alloc/free) are external no-body so their call rel32 / the vtable +
-// global DIR32 stores reloc-mask in objdiff. Field names are placeholders; only
-// OFFSETS + code bytes are load-bearing (campaign doctrine).
 #include <Gruntz/UserLogic.h> // complete CUserLogic (ProjTypeXfer drives its [3]/[4]/[5] virtually)
 #include <Mfc.h>
 #include <iostream.h>       // the REAL istream the config reader is (operator>> @0x191fe0/0x191f30)
@@ -38,8 +11,6 @@
 #include <stdlib.h> // malloc (0x120b60) / realloc (0x125180) / free (0x120c30)
 #include <string.h> // memset (rep stos) / inline strcpy / strchr / memmove / memcpy
 
-// The zBitVec parser calls the isspace/isdigit LIBRARY functions (retail does, not
-// the table macro), and operator=/GrowTo call memcpy out-of-line; force all three.
 #undef isspace
 #undef isdigit
 #pragma function(memcpy)
@@ -52,29 +23,8 @@
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 
-// ===========================================================================
-// Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
-//
-// The CZArrayRoot/CZArray2D/zDArray vtables (0x5f04cc/0x5f04d4/0x5f04d0) are
-// NO LONGER externs: that 1-slot-each construction hierarchy is now modeled as
-// REAL polymorphic C++ (virtual dtor per level), so cl emits the implicit ??_7
-// vptr stamp in each ctor (reloc-masked) instead of a manual stamp. Likewise
-// ~_zdvec below auto-emits ??_7zDArray (bound at the retail dtor-vtable RVA).
-// ===========================================================================
-// g_keyFinderVtbl is NOT a vtable: 0x16e220 is a FUNCTION in .text (the default
-// callback the CKeyFinder/CVariantSlot +0x00 slot is seeded with) - stored as a
-// plain fn-ptr field init, not a polymorphic vptr, so it stays a manual store.
-
-// The live zDArray<...> vtable Destroy() re-stamps lives with Destroy in
-// ZVec.cpp; ~_zdvec's emitted ??_7zDArray is bound at the retail dtor-entry
-// vtable RVA here (the annotation moved with the dtor).
 VTBL(_zdvec, 0x001f04d4); // ~_zdvec-entry vtable (0x5f04d4)
 
-// ===========================================================================
-// The registry globals (BSS / .data; DATA-pinned so the loads reloc-mask).
-// (g_retAddrBreadcrumb / g_projActCache / g_projActName / g_containerName /
-// g_defaultProjActSize + GetCallerRetAddr come from <Wap32/zBitVec.h>.)
-// ===========================================================================
 DATA(0x002bf468)
 u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
@@ -92,8 +42,6 @@ u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zAr
 // registries in GruntVoice.cpp), but they are referenced by ~20 TUs, so that is its own pass -
 // not a drive-by. Left undefined and honest until then.
 
-// The bad-argument / bad-character diagnostic name cell the zBitVec parser reports
-// through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
 DATA(0x002bf45c)
 void* g_projActName2; // 0x6bf45c
 
@@ -105,69 +53,21 @@ void* g_projActName2; // 0x6bf45c
 // @data-symbol: ?g_containerName@@3PADA 0x002bf408
 // @data-symbol: ?g_defaultProjActSize@@3HA 0x0021ad28
 
-// The container OOM message the _zvec grow path reports (0x61adf4). Owner-TU
-// definition: this TU is its only referencing unit, and the length is
-// NULL-TERMINATOR-PROVEN from the retail bytes ("out of memory\0" = 14 B; the
-// next literal follows separately) - not a gap guess. extern "C" so the array
-// binding avoids the const-array (?x@@3QBDB) mangling that drops DATA().
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
-// The deeper-base ctor argument (a data tag global at 0x6bf468).
-
-// The "Inconsistent bounds" / "out of memory" message strings are emitted as
-// literals (their DIR32 references reloc-mask against the retail $SG symbols).
-
-// ===========================================================================
-// External engine leaves (no body - call rel32 reloc-masks).
-// ===========================================================================
-// CZErrSink (the fatal-alloc/bounds error sink stored at +0x04) is the shared
-// <Gruntz/TypeKeyColl.h> shape.
-// The CKSlimeColl2 dispatcher the type-name lookup grows the collection through.
-
-// The _zdvec construction hierarchy CZArrayRoot <- CZArray2D <- zDArray and
-// the leaf ??_7CTypeKeyColl @0x5f04d0 are the shared <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern zDArray g_typeColl; // 0x6bf650
 
-// The engine heap alloc/free ARE the global operator new (0x1b9b46 = ??2) / operator
-// delete (0x1b9b82 = ??3); called as ::operator new/delete (no decl needed).
-
-// The first-differing-bit (crit-bit index) of two keys (__cdecl). The name
-// matches the delinker's symbol for 0x16e480 so the `call` reloc pairs; defined
-// below at its retail RVA.
 i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
-// ===========================================================================
-// CKeyFinder (the binary-search cursor over the sorted global key table @0x6bf498)
-// and its 12-byte TypeKeyRec record are the shared <Bute/ButeTree.h> shapes (same
-// CVariantSlot family - Set drives the cursor over its own +0x04 index slot). Their
-// ctor (0x16e1a0) / Find (0x16e1d0) / Add (0x16e360) bodies live here.
-// ===========================================================================
-// Owner-TU definition (.bss). Capacity CODE-PROVEN, not gap-guessed: CKeyFinder::Add
-// refuses inserts at `count >= 0x20`, so the table is exactly 32 records (12 B x 32
-// = 0x180 = the 0x6bf498..0x6bf618 span up to the count cell - corroborating).
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
-// The live record count @0x6bf618. It had THREE names for the one datum (g_keyCount,
-// g_recCount23, g_varProbeEnabled) - and the DATA() sat on an `extern`, i.e. a
-// declaration, so none of them was actually a defined global. Defined once, here, in the
-// TU that owns the table; every reader uses this name. (CVariantSlot::Set's "probe
-// enabled" gate is just `count != 0`.)
 extern "C" {
     DATA(0x002bf618)
     i32 g_recCount23;
 }
-// (The `g_keyArray` / `g_keyCount` aliases are GONE. They were a second, flat i32-view of
-//  these very globals - declared, never defined, so ?g_keyArray@@3PAHA / ?g_keyCount@@3HA
-//  were two guaranteed unresolved externals. CKeyFinder::Find walks the real records: its
-//  stride-3 i32 scan IS g_recs23[mid].m_key, the array's 12-byte stride.)
 
-// (The `CVarTableEntry g_varTable[]` view @0x6bf49c is GONE: it was an INTERIOR
-//  alias of this very table - &g_recs23[0].m_4, the +4 fn/word column read at a
-//  12-byte stride. Set now dispatches through the real record members.)
-
-// The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
 // ===========================================================================
@@ -280,10 +180,6 @@ void* CButeTree::Find(const char* key) {
     return 0;
 }
 
-// ===========================================================================
-// zBitVec::~zBitVec() (0x16d2a0) - free the heap band when out of SBO range,
-// then chain ~zErrHandling (implicit).
-// ===========================================================================
 RVA(0x0016d2a0, 0x26)
 zBitVec::~zBitVec() {
     if (static_cast<u32>(m_capacity) > 0x20) {
@@ -467,11 +363,6 @@ badchar: {
 }
 }
 
-// ===========================================================================
-// zBitVec() default ctor - build the base, size to g_defaultProjActSize, no bit
-// set. INLINE so it folds into CUserBaseLink::CUserBaseLink() (0x16d710), the
-// only site that default-constructs the link's zBitVec name.
-// ===========================================================================
 inline zBitVec::zBitVec() : zErrHandling(g_containerName) {
     if (!SetSize(g_defaultProjActSize)) {
         void* cache = g_projActCache;
@@ -480,8 +371,6 @@ inline zBitVec::zBitVec() : zErrHandling(g_containerName) {
     }
 }
 
-// The +0x18 link: a zBitVec name field, default-constructed (0x16d710; can throw ->
-// the /GX EH frame every leaf ctor inherits).
 RVA(0x0016d710, 0x76)
 CUserBaseLink::CUserBaseLink() {}
 
@@ -572,14 +461,6 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
     }
 }
 
-// ===========================================================================
-// zErrHandling::~zErrHandling() (0x16da60, ex EngStr.cpp) - the compiler
-// auto-stamps ??_7CContainerErr at dtor entry (matching retail's stamp-first
-// order), then unregisters the error handler. Real-polymorphic (manual
-// vptr-field stamp drained): cl's implicit dtor-entry store lands stamp-first,
-// exactly as retail does here, so this is byte-exact. (The CTOR at 0x16d9c0
-// stays in GameText.cpp - it needs the vptr-LAST non-virtual dual-view.)
-// ===========================================================================
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
     // 0x16e360 is CKeyFinder::Add (the cursor's insert/update/remove facet), reached on
@@ -755,13 +636,6 @@ void* CButeTree::Insert(const char* key, void* value) {
     return 0;
 }
 
-// ===========================================================================
-// zDArray::zDArray (0x16dda0) - the derived ctor. Forwards the four
-// arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
-// the primary buffer) and the element count (hi - lo + 1). cl emits the implicit
-// ??_7CTypeKeyColl vptr stamp (was `*(void**)this = &g_typeKeyCollVtbl`). No EH
-// frame of its own (the base ctor owns the unwind state).
-// ===========================================================================
 RVA(0x0016dda0, 0x3c)
 zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     : _zdvec(stride, lo, hi, scratch) {
@@ -819,12 +693,6 @@ _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
     m_errSink->Set(static_cast<void*>(this), reinterpret_cast<i32>("out of memory"), 0xc);
 }
 
-// ===========================================================================
-// _zdvec::~_zdvec() (0x16df40, ex ZVec.cpp) - cl auto-stamps the derived dtor
-// vtable (??_7zDArray) at entry, then frees the band and chains to the base
-// dtor. Real-polymorphic: the manual dtor-vtable stamp is drained (cl's
-// implicit dtor-entry stamp replaces it, reloc-masked); byte-exact.
-// ===========================================================================
 RVA(0x0016df40, 0x22)
 _zdvec::~_zdvec() {
     char* p = m_base;
@@ -849,19 +717,6 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
     m_nodeCount = 0;
 }
 
-// ===========================================================================
-// CButeNodeEntry::~CButeNodeEntry (0x16dfc0) - the +0x08 second base's virtual
-// destructor: an EMPTY body, so all cl emits is the implicit re-stamp of the class's
-// own vptr and a return (`mov [ecx],offset ??_7CButeNodeEntry@@6B@ (0x5f04d8); ret` -
-// exactly the 7 retail bytes). Its scalar-deleting ??_G sits at 0x16dfa0.
-//
-// This is the REAL identity of the `CButeNodeSecondBase` phantom: the store/config-node
-// destructors (0x174d70 butenode, 0x21310 / 0x21570 butemgr) all fold their +0x08 base
-// through THIS dtor with the MI `this ? this+8 : 0` adjust. It had no definition
-// anywhere in the tree, so every one of those calls dangled; defining it here - in the
-// TU that owns the class's ctor and whose RVA band contains 0x16dfc0 (between
-// ~_zdvec @0x16df40 and the zPTree ctor @0x16dff0) - binds them all.
-// ===========================================================================
 RVA(0x0016dfc0, 7)
 CButeNodeEntry::~CButeNodeEntry() {}
 
@@ -881,17 +736,6 @@ zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
     m_lookupPending = 0;
 }
 
-// ===========================================================================
-// CButeStore::ClearRecursive (0x16e070, ex ButeStoreClear.cpp) - the derived
-// keyed-store's recursive node-free (C:\Proj\Bute). The store holds a binary
-// tree at +0x18 keyed by each node's +0x08. The walk post-order frees: it
-// recurses into a child only when that child's key is GREATER than the current
-// node's (the heap-ordered owned-subtree invariant), frees the node's name
-// string (+0x0c), then - when the store's +0x10 flag has bit 2 - runs the
-// store's per-value callback (+0x0c fn-ptr) on the node's value (+0x10) and
-// frees it, and finally frees the node itself. No destructible local, so no /GX
-// frame even under this TU's eh flags.
-// ===========================================================================
 RVA(0x0016e070, 0x7b)
 void CButeStore::ClearRecursive(CButeTreeNode* node) {
     CButeTreeNode* n = node;
@@ -915,10 +759,6 @@ void CButeStore::ClearRecursive(CButeTreeNode* node) {
     ::operator delete(n);
 }
 
-// GetCallerRetAddr (0x16e0f0): return the caller's return address, read from the
-// caller's frame at [ebp+4]. Naked leaf - a 4-byte `mov eax,[ebp+4]; ret` (an
-// intrinsic emits a different encoding, so inline asm is the only faithful form, like
-// GetRetAddr @0x16d990). In this TU's own .text band; was a GAME-ASM carve-out.
 RVA(0x0016e0f0, 4)
 __declspec(naked) void* GetCallerRetAddr() {
     __asm {
@@ -1120,12 +960,6 @@ void* CKeyFinder::Add(void* key, void* val) {
     return 0;
 }
 
-// ===========================================================================
-// FirstDiffBit (0x16e480) - the crit-bit index (bit-level common-prefix length)
-// of two byte keys: 8 per matching leading byte, plus the trailing-zero-bit count
-// of the first differing pair's xor. __cdecl free helper; Insert (above) and
-// CProjActMap::Insert (projactcache) both call it. Folded from Stub/DiscoveredSmall.
-// ===========================================================================
 RVA(0x0016e480, 0x3e)
 i32 FirstDiffBit(const char* a, const char* b) {
     i32 n = 0;
@@ -1144,18 +978,6 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
-// ===========================================================================
-// ProjTypeXfer (0x16e4f0) - serialize the type-name table entry resolved from an
-// archive record through the archive's slot dispatches. Resolves the entry id
-// (ar->m_14->m_1c) to its zDArray entry (the inlined fast-range / Find /
-// grow lookup), frees the stale node array, then xfers the entry name (slot
-// +0x0c) and id (slot +0x10); a second identical resolve xfers the name through
-// slot +0x14. Returns 1.
-// ===========================================================================
-// The archive record (`ar`) the serializer drives is the canonical CXferArchive
-// (<Gruntz/XferArchive.h>, included above).
-
-// The inlined type-id -> entry resolution (== KitchenSlime/Projectile TypeLookup).
 static inline char* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
@@ -1170,7 +992,6 @@ static inline char* TypeResolve(i32 key) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-// Free the stale node array (g_typeColl.m_grown slots, walking g_typeColl.m_alloc).
 static inline void FreeNodes() {
     CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
     i32 cnt = g_typeColl.m_grown;
@@ -1224,8 +1045,6 @@ i32 ProjTypeXfer(CUserLogic* ar) {
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The no-op per-value free-callback the ctor receives (0x16ea10; DEFINED below in
-// RVA order - it used to be the `void* g_buteTreeArg` DATA phantom).
 void ButeTreeNopFree(void*);
 
 RVA(0x0016e6a0, 0x26)
@@ -1246,18 +1065,9 @@ i32 Gap_16e6e0(void) {
     return 0;
 }
 
-// Placement new (construct g_typeColl in place; no allocation, so it just runs the
-// zDArray ctor on the existing global, exactly as the retail in-place build).
 inline void* operator new(u32, void* p) {
     return p;
 }
-
-// g_typeColl's RUNTIME-PHASE type is the canonical CTypeCollRuntime (a zDArray<CString>
-// collection; <Gruntz/TypeCollRuntime.h>) whose ??_7 @0x5f04e4 + ScalarDelete (0x16ea20)
-// are owned by src/Bute/TypeCollRuntime.cpp. After DynInitTypeColl builds g_typeColl
-// through the zDArray ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
-// re-stamps that live 1-slot runtime vtable @0x5f04e4 over it. The former .cpp-local
-// `struct CTypeCollRuntime` view (a duplicate binding of 0x1f04e4 that clashed with
 
 // ===========================================================================
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
@@ -1342,9 +1152,5 @@ i32 Gap_16e7a0(void) {
 // zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
 // @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45
 
-// The zPTree per-value free-callback g_buteTree's ctor receives (retail 0x16ea10:
-// a bare `ret`, laid right after ??_GCButeTree - this TU's code). The bute tree's
-// values need no per-value teardown, so the callback is a no-op. It used to be
-// mis-modeled as a DATA global (`void* g_buteTreeArg`): a FUNCTION, not a datum.
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}

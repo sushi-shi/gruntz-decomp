@@ -1,27 +1,9 @@
-// CursorSnapSprite.cpp - the cursor-snap sprite game object (C:\Proj\Gruntz).
-//
-// Two trace-discovered CCursorSnapSprite methods, defined in ascending retail-RVA
-// order:
-//   Serialize         @0x011880 - the two-chain Serialize override.
-//   ~CCursorSnapSprite @0x011920 - the /GX leaf dtor (folds the CUserLogic teardown).
-//
-// CCursorSnapSprite : CUserLogic (RTTI .?AVCCursorSnapSprite@@). Only offsets /
-// code bytes are load-bearing; names are placeholders for the recovered engine
-// identities.
 #include <Gruntz/CursorSnapSprite.h>
 #include <Bute/ButeTree.h>          // g_buteTree
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)
 #include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
-// pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-
-// CCursorSnapSprite::Serialize @0x011880 - chain the shared CUserLogic serialize
-// helper on `this`, and (only on success) the +0x34 sub-object's chain; both run
-// the same (ar, tag, c, d) tuple. Returns the second chain's success normalized
-// to a bool (the retail neg/sbb/neg idiom). The SAME archetype as
-// CFortressFlag::Serialize (0x46410), minus the tag-8 sprite fixup.
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -42,10 +24,6 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 // @rva-symbol: ??1CCursorSnapSprite@@UAE@XZ 0x00011920 0x44
 
-// Handler03a200 @0x3a200 - this class's state-0 anim-worker dispatch handler (the
-// same pump archetype as Demo.cpp's Handler03d2b0 family; the class file carries
-// its own handler here, text-adjacent to the ctor below - dossier #16). __cdecl
-// FREE function; reads owner->m_7c (the worker) and pumps on the state tag.
 RVA(0x0003a200, 0xf1)
 i32 Handler03a200(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
@@ -102,13 +80,6 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
     m_38->m_stateFlags |= 1;
 }
 
-// The class dispatch table filled by RegisterXLogic_62bfa0 (LogicActReg.cpp);
-// referenced here for the slot-4 lookup.
-
-// CCursorSnapSprite::FireActivation @0x03a5b0 - slot-4 (UserLogicVfunc2) override:
-// resolve `id` in the class dispatch table; if the entry carries a handler,
-// re-resolve and dispatch it __thiscall on `this`. Same archetype as
-// CTeleporter::FireActivation (the ResolveEntry inline expands twice).
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
     CSnapActEntry* e = reinterpret_cast<CSnapActEntry*>(g_logicActReg_62bfa0.ResolveEntry(id));

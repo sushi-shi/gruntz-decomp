@@ -1,22 +1,3 @@
-// Projectile.h - the CMovingLogic / CProjectile game-object subtree
-// (C:\Proj\Gruntz), continuing the CUserBase/CUserLogic hierarchy in
-// <Gruntz/UserLogic.h>.
-//
-// Hierarchy (RTTI in GRUNTZ.EXE):
-//     CUserBase                         vftable 0x5e70b4
-//       +-- CUserLogic : CUserBase      vftable 0x5e705c
-//             +-- CMovingLogic          vftable 0x5e87ac  (17 virtuals)
-//                   +-- CProjectile     vftable 0x5e798c  (18 virtuals)
-//
-// CMovingLogic adds the projectile/moving-object motion state: a band of
-// per-axis bookkeeping ints (+0x38..+0x10c) plus twelve `double` coordinate
-// bounds (+0xa8..+0x13f) seeded to a default [-INF,+INF]-style box. Its ctor
-// (out-of-line 0x13940) is also INLINED into the leaf ctors; modeled inline here
-// so MSVC folds it into CProjectile::CProjectile.
-//
-// CProjectile adds the CPtrList at +0x204 (the projectile's tracked-hit list, MFC
-// block size 10) and its own most-derived vftable. The no-arg ctor (0x126e0)
-// folds the whole CMovingLogic init, constructs the list, and stamps its vptr.
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
@@ -26,44 +7,8 @@ class CLightFx; // folded CProjShadowActivate
 #include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
-// The animation sub-object embedded in a render object at +0x1a0. It bridges the two
-// (The former CProjAnim / CProjSpriteMgr / CProjResMgr / CProjRenderObj views are
-// ARE canonical CGameObjects (<Gruntz/UserLogic.h>) - m_08==m_flags, m_c==m_0c
-// (the CDDrawSurfaceMgr; the frame map is m_0c->m_animRegistry->m_10, the mfc_class-proven
-// CMapStringToPtr band 0x1b8438), m_40==m_stateFlags, m_5c/m_60==m_screenX/Y,
-// +0x1a0 the embedded CAniAdvanceCursor (SetGeometry==Setup_15c2d0, Advance
-// @0x15c360), m_1b4==m_1a0.m_14 and the +0x1c0/+0x1c8 gates its m_20/m_28.)
-
-// (The former CProjShadowSub/CProjShadowActivate views of the shadow's +0x7c
-// is m_notify and the "+0x18 activation host" the bound CLightFx leaf at
-// m_logic - its real Activate is CLightFx::Activate @0x9d520.)
-
-// The sound sample object the projectile launches (+0x200) IS a DirectSoundMgr: the
-// cue-mgr's GetItem hands back the pooled DirectSound buffer, and StopAndRewind
-// (0x135380) / ApplyAndPlay are DirectSoundMgr methods.
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buffer
 
-// ---------------------------------------------------------------------------
-// CProjectile : CMovingLogic - 18 virtuals (vftable 0x5e798c). Adds the
-// tracked-hit CPtrList at +0x204 plus the projectile's render/motion state
-// (+0x140..+0x224); sizeof == 0x228. Field names are placeholders; the OFFSETS +
-// code bytes are the load-bearing facts.
-// ---------------------------------------------------------------------------
-// CWapX is a DIRECT second base at +0x150 (MI1, 2026-07-17), RTTI-proven from
-// CProjectile's own CHD @VA 0x5f3438: attributes=1 (MI), and decoding the
-// numContainedBases nesting gives DIRECT bases = CMovingLogic@0x0 + CWapX@0x150
-// (CMovingLogic's own CHD @0x5f3cf0 is attributes=0 and carries NO CWapX, so it does
-// not arrive through it). mdisp +0x150 also states sizeof(CMovingLogic)==0x150 - the
-// fat canonical spine this class already rides, so the base lands with NO layout
-// change and this class's real own members still start at +0x170 = 0x150 + 0x20.
-// The five fields that used to be spelled here (m_150/m_sprite/m_158/m_savedFrameGeo/
-// m_pad160) were that base as flat padding - the same error the +0x34 tile-logic
-// leaves carried. Their own comments gave it away ("= owner", "= owner->m_7c",
-// "role unproven", "write-only here"): the ctor seeds them and CWapX::Chain consumes
-// them in ANOTHER TU, so their role was invisible from inside this one.
-// NB the ctor assigns them in its BODY (not via an init-list `CWapX(owner)`) - retail
-// orders those stores after m_148/m_14c/m_moveMode/Fn16ea90, which a base ctor cannot
-// do. See the ctor + the ordering note in UserLogic.h.
 SIZE(CProjectile, 0x228);
 class CProjectile : public CMovingLogic, public CWapX {
 public:
@@ -136,11 +81,6 @@ public:
 };
 VTBL(CProjectile, 0x1e798c);
 
-// The projectile activation entry: its first dword is the registered class handler,
-// stored by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a
-// 4-byte single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
-// (Was the .cpp-local CProjActEntry view; CProjectile is complete above so the PMF
-// stays 4 bytes - pmf-complete-class-4byte.)
 typedef i32 (CUserLogic::*ProjActHandler)();
 struct CProjActEntry {
     ProjActHandler m_fn;

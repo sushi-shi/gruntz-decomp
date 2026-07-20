@@ -1,23 +1,3 @@
-// GooWellMgr.cpp - the multiplayer (Battlez) goo-well / resource respawn +
-// win-condition step of CTriggerMgr (the g_gameReg->m_68 / m_cmdGrid object).
-// THE `CGooWellMgr` VIEW IS DISSOLVED (2026-07-14): it was another fake name for
-// CTriggerMgr - every field overlaid the canonical exactly (m_playerFlag[4]@+0x10c
-// == m_rowCount, m_overlay@+0x25c, m_phase@+0x288, the +0x290..+0x2c8 i64 timer
-// pairs, m_2a0==m_pendingFx, m_2a4==m_countdownActive, the +0x3f0..+0x3fc loop
-// channels), its `Notify` @0x7c3d0 is CTriggerMgr::LoadFinishLevelSprite and its
-// ClearRowAndRefresh/ClearRow @0x7a510/0x7d140 the already-reconstructed
-// CTriggerMgr methods. The per-frame Update (0x6eb80) does four things over the
-// 4 player slots (g_gameReg + 0x150, stride 0x238):
-//   1. start/stop the LEVEL_ROLLINGBALL and GAME_TELEPORTLOOP looping sounds
-//      (handles cached in m_rollingballLoop/m_teleportLoop, gated by the
-//      m_rollingballWanted/m_teleportWanted flags);
-//   2. drive the 64-bit "match over" countdown (m_timerBase/m_timerWindow) once
-//      one player is left, dispatched on the game-mode (g_gameReg->m_134) value;
-//   3. on a resolved winner (g_gameReg->m_curState->ClearPlacedObjects() != -1), walk
-//      the player rows clearing/refreshing the HUD and resolving death anims;
-//   4. run the goo (m_gooTimerBase/m_gooInterval, "TimePerGoo") and resource
-//      (m_resourceTimerBase/m_resourceInterval, "TimePerResource") respawn timers,
-//      reading the intervals from g_buteMgr.
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -37,62 +17,6 @@
 #include <Gruntz/Play.h>     // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
 #include <Gruntz/SoundCue.h> // CSndHost - the world holder's +0x28 named-cue registry
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + GruntObjEntry - the +0x08 id->object map
-
-// The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
-// zero-extended into the 64-bit countdown subtracts.
-
-// The local player index (DAT_00644c54): selects this client's row.
-
-// The bute attribute store (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>): the respawn intervals.
-
-// ---------------------------------------------------------------------------
-// THE VIEWS ARE DISSOLVED (2026-07-13). Every hop this TU used to re-model as a
-// private struct already had a canonical class, and three sibling TUs write the
-// IDENTICAL chains through them:
-//
-//   CMgrHolderX  -> CDDrawSurfaceMgr  (<Gruntz/GameRegistry.h>). Its "m_idMap"
-//        (+0x08) is the typed CDDrawChildGroup* m_8 and its "m_nameMap" (+0x28) is the
-//        typed CSndHost* m_28. g_gameReg->m_world was ALREADY declared as this class -
-//        the lateral view was re-deriving two members the canonical holder had.
-//   CResHolder   -> CSndHost              (<Gruntz/SoundCue.h>): its +0x10 IS the map.
-//   CResHolder2  -> CDDrawChildGroup        (<Gruntz/SpriteFactory.h>): m_map48 @+0x48.
-//   CResMapInt   -> GruntObjMap           (same header; the MFC CMapPtrToPtr @+0x48).
-//   CLookObj     -> was a CONFLATION of the two maps' value types, which are different
-//        classes: the NAME map yields a LeafCue (+0x10 DSoundCloneInst, <Gruntz/LeafCue.h>),
-//        the ID map yields a GruntObjEntry (+0x7c inner, <Gruntz/SpriteFactory.h>).
-//   CObj7c       -> AnimWorkerObj (canonical): its m_logic is the bound
-//        CUserLogic leaf, downcast to CGrunt for the animation resolve.
-//   CGaugeObj    -> CStatusBarMgr         (<Gruntz/StatusBarMgr.h>): +0x550 m_toggleActive,
-//        +0x554 m_toggleHandle. The file already CAST this member to CStatusBarMgr to call
-//        AdvanceGauge/UpdateRezMachineWakeStatusBar - it disproved its own view.
-//   CGameObj2c   -> CPlay                 (<Gruntz/Play.h>): +0x2dc m_guts, +0x4f4
-//        m_winLoseBanner. The "Play.h is too heavy here" note was false - it includes fine.
-//        Its +0x594 is NOT a CPlay member: it is CMulti::m_594 (<Gruntz/Multi.h>,
-//        CMulti : CPlay), and the store is guarded by the m_134 == 2 mode test.
-//   CPlay / CActionOptionsMenuBar (TU-local decl-only shadows) -> the real headers.
-//
-// The id->object lookup below is verbatim the chain GruntzMgrCmd.cpp's 0x8106 cheat
-// already writes cast-free through the canonicals (m_world->m_childGroup->m_map48 ->
-// GruntObjEntry::m_7c->m_18 -> CGrunt::ResolveDeathAnimation).
-//
-// THE MAP CLASS WAS INVERTED: the +0x10 registry's Lookup @0x1b8438 is
-// ?Lookup@CMapStringToPtr@@ (python -m gruntz.analysis.mfc_class 0x1b8438; CMapStringToOb's
-// is the DIFFERENT body at 0x1b8008). The old `CMapStringToOb m_map10` bound every call
-// here to the wrong library routine. CMapStringToPtr is a void* container, so the
-// (LeafCue*) at the use site is the devs' own cast.
-// ---------------------------------------------------------------------------
-
-// One player slot is CFocusSlot, the g_gameReg->m_options[] element
-// (<Gruntz/GameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
-// this round" mark, m_0c the row's sound id.
-
-// The game-registry singleton, canonical CGameRegistry view. The slots this TU
-// walks are typed there; the casts that remain are AUTHENTIC view/downcasts:
-//   +0x2c  m_2c is CState*; CPlay/CMulti are the concrete play-mode DOWNCASTs.
-//   +0x68  m_68 is a genuinely REUSED slot (placement/cue grid in single-player,
-//          the CTriggerMgr goo-well step in battlez) - a real per-mode object.
-// The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
-// (stride 0x238) is reached via raw offset.
 
 // ---------------------------------------------------------------------------
 // 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.

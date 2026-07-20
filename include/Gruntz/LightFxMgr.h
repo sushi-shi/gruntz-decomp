@@ -1,17 +1,3 @@
-// LightFxMgr.h - the light-FX / translucency shade-table manager (tracer
-// placeholder tomalla-3). A heap object hung off the game registry at
-// g_gameReg->m_78 (created in the registry Init at 0x83450, torn down in the
-// registry close at 0x855e0). It owns the engine's pre-built RGB565 color /
-// translucency lookup tables: an identity "grey" remap (CShadeTableCache::GreyTable),
-// one additive glow table (AddTable), and eight subtractive color tables
-// (SubTable, one per fixed effect color). Each Push() applies a chosen table to
-// an image-set's frames (CImageSet::SetAllTypes / SetAllFormats).
-//
-// sizeof 0x3c (operator new(0x3c)). Field names are placeholders (m_<hexoffset>);
-// only the OFFSETS + code bytes are load-bearing. The 10 shade-table slots live
-// at +0x14..+0x3b as a CShadeTable*[10] array (Push indexes it by the clamped
-// anchor key; Reset zeroes it). The CShadeTableCache builders + the global table
-// registrar (0x14dcf0) + CImageSet accessors are external/reloc-masked.
 #ifndef GRUNTZ_GRUNTZ_LIGHTFXMGR_H
 #define GRUNTZ_GRUNTZ_LIGHTFXMGR_H
 
@@ -25,7 +11,6 @@ struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keywor
 class CDDrawSurfaceMgr; // reg->m_world (+0x30) - the loaded world/resource holder
 class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
-                                // keeps this header pointer-only/include-light.
 
 class CLightFxMgr {
 public:

@@ -1,7 +1,3 @@
-// WorldState.h - the world/level-select state CWorldState and its LevelMgr member.
-// Both were viewed per-TU in WorldLevelPath.cpp (BuildWorldLevelPath, the full field
-// set) and WorldLevelKey.cpp (BuildWorldLevelKey, a subset); folded here (wave 3) to
-// the union. Field names are placeholders; only offsets + code bytes are load-bearing.
 #ifndef SRC_GRUNTZ_WORLDSTATE_H
 #define SRC_GRUNTZ_WORLDSTATE_H
 
@@ -12,7 +8,6 @@ class CGruntzMgr; // Gruntz/GruntzMgr.h (CWorldState::m_4 IS the game mgr)
 class CSymTab;    // <Bute/SymTab.h>
 class CGameLevel; // <Gruntz/GameLevel.h>
 
-// The world level-set manager (CWorldState::m_0c); its +0x24 is the CGameLevel.
 SIZE_UNKNOWN(LevelMgr);
 struct LevelMgr {
     char m_pad00[0x24];
