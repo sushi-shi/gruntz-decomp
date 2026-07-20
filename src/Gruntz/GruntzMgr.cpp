@@ -59,7 +59,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // m_world->m_drawTarget (ex CWorldSub4; Method_158c70 pause)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_world->m_drawTarget (ex CWorldSub4; BlitPage pause)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CSndHost == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
@@ -1173,7 +1173,7 @@ RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         CDDrawSubMgrPages* pages = m_world->m_drawTarget;
-        pages->Method_158c70(pages->m_backPair);         // pause the back pair
+        pages->BlitPage(pages->m_backPair);         // pause the back pair
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);

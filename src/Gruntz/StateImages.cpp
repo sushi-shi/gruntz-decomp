@@ -95,7 +95,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->TransExit();
     RetireScene(
         0x50,
         0x3e8,

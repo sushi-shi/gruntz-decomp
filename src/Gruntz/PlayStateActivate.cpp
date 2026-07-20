@@ -30,7 +30,7 @@
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DinMgr2/InputMgrPtr.h>       // g_inputMgr (DirectInputMgr2* view; the one decl)
-#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90)
+#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (TransTitle)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface Fill target)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B (PruneWorkers - the "present")
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Fill (0x13e760)
@@ -106,7 +106,7 @@ i32 CPlay::InputVirtual() {
     m_guts->Deactivate();
     m_guts->LoadMainStatusBarSprite();
     m_stepCountdown = 2;
-    m_c->m_drawTarget->Method_158e90();
+    m_c->m_drawTarget->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)
     return 1;
 }

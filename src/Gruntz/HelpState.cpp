@@ -17,7 +17,9 @@
 #include <Mfc.h> // ShowCursor (afx-first)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
+#include <DDrawMgr/DDrawSubMgrPages.h>  // CDDrawSubMgrPages::PagesReady (the page gate)
+#include <DDrawMgr/DDrawSurfacePair.h> // the front pair's held surface (Render's busy probe)
+#include <DDrawMgr/DDSurface.h>
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
@@ -118,7 +120,7 @@ i32 CHelpState::Vslot09(i32 arg) {
 // CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
-    IDirectDrawSurface* busy = (reinterpret_cast<CMenuRoot*>(m_c))->m_04->m_10->m_2c->m_8;
+    IDirectDrawSurface* busy = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_4->ReportError(0x8006, 0x445);
@@ -126,9 +128,9 @@ i32 CHelpState::Render() {
         }
     }
 
-    CAttractPooledRes* res = (reinterpret_cast<CMenuRoot*>(m_c))->m_28->m_2c;
+    SoundStream* res = m_c->m_soundRegistry->m_2c;
     if (res) {
-        (reinterpret_cast<SoundDevice*>(res))->PurgeVoiceList(-1);
+        res->PurgeVoiceList(-1);
     }
 
     AttractActorList* list = g_actorList;
@@ -153,7 +155,7 @@ i32 CHelpState::Render() {
 // again, return the sequence result.
 RVA(0x00095320, 0x56)
 i32 CHelpState::InputVirtual() {
-    if (m_c->m_drawTarget->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

@@ -5030,7 +5030,7 @@ i32 CPlay::ResumeGame() {
 // ---------------------------------------------------------------------------
 // 0x0cef50. Teardown:
 // empty the +0x04 owner's +0xc8 CString; when +0x1c0 is live, run the +0x0c
-// worker-mgr close (Method_158d20 -> Method_158e40) and dispatch the manager's
+// worker-mgr close (Method_158d20 -> TransEnter) and dispatch the manager's
 // ChangeState(3). Returns 1. Uses this TU's real CDDrawSubMgrPages/CGruntzMgr.
 // (The Ccef50/CMid_cef50 orphan views are GONE - the receiver IS CPlay:
 // +0x04 is the CState owner back-ptr (CGruntzMgr), +0x0c the CState holder
@@ -5045,7 +5045,7 @@ i32 CPlay::QuitToMenu() {
     m_4->m_strWorldFile.Empty();
     if (m_1c0 != 0) {
         if (m_c->m_drawTarget->Method_158d20() != 0) {
-            m_c->m_drawTarget->Method_158e40();
+            m_c->m_drawTarget->TransEnter();
         }
         m_4->ChangeState_8fab0(3);
     }
@@ -6763,7 +6763,7 @@ i32 CPlay::EnterMode(i32 mode) {
     }
 
 finish:
-    m_c->m_drawTarget->Method_158e90();
+    m_c->m_drawTarget->TransTitle();
     RetireScene(
         0x50,
         0x3e8,

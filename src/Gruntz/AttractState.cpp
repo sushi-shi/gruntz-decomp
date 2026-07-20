@@ -34,7 +34,7 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry / g_gameReg (+ SoundCue chain: DirectSoundMgr/SoundDevice/SoundStream)
 #include <Gruntz/AttractActor.h>       // the shared per-frame g_actorList view
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Vslot09 Method_158c70)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Vslot09 BlitPage)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
 #include <DDrawMgr/DDSurface.h>        // CDDSurface (Vslot07 Flip; m_10->m_2c)
 #include <ddraw.h>                     // IDirectDrawSurface (Render busy IsLost)
@@ -114,7 +114,7 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    (reinterpret_cast<CDDrawSubMgrLeafScan*>(menuRoot()->m_28))->ScanTree_157ee0(static_cast<CSymTab*>(sound), "ATTRACT", "_");
+    menuRoot()->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -137,11 +137,11 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
 // Release access (retail does not cache it).
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    CAttractRegistrar* reg = menuRoot()->m_28;
+    CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
     if (reg->m_2c) {
-        (reinterpret_cast<SoundStream*>(reg->m_2c))->Stop();
+        reg->m_2c->Stop();
     }
-    (reinterpret_cast<CDDrawSubMgrLeafScan*>(menuRoot()->m_28))->RemoveKeysEqual_157c70("ATTRACT", "_");
+    menuRoot()->m_soundRegistry->RemoveKeysEqual_157c70("ATTRACT", "_");
     // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
     // CState vtable slot 2 default body; qualified -> direct call).
     CState::ReleaseResources();
@@ -149,7 +149,7 @@ void CAttract::ReleaseResources() {
 
 // CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen
 // entry (/GX EH frame from the CString format local). Hide the cursor, roll a random
-// TITLE%d and run it (as the siblings do), advance the active menu page (Method_158c70),
+// TITLE%d and run it (as the siblings do), advance the active menu page (BlitPage),
 // then - via the inline MS-CRT LCG (== Rng::Next, seeded through the cached timeGetTime
 // fn-ptr) - build a random "ATTRACT_TITLE%s" key, look it up in the registrar's
 // CMapStringToOb (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
@@ -176,8 +176,8 @@ i32 CAttract::Vslot09(i32 arg) {
     CString s;
     s.Format("TITLE%d", idx);
     RunTitleSeq(s, 0, 0, 1, 0);
-    CDDrawSubMgrPages* page = reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04);
-    page->Method_158c70(page->m_backPair);
+    CDDrawSubMgrPages* page = menuRoot()->m_drawTarget;
+    page->BlitPage(page->m_backPair);
 
     i32 seed;
     if (!(g_randSeeded & 1)) {
@@ -193,7 +193,7 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>((reinterpret_cast<char*>(menuRoot()->m_28) + 0x10));
+    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>(&menuRoot()->m_soundRegistry->m_10); // the Ob-band read of the Ptr map (documented dual-band keep)
     CObject* found = 0;
     map->Lookup(buf, found);
     m_host = reinterpret_cast<CAttractHost*>(found);
@@ -235,9 +235,9 @@ i32 CAttract::FrameSlot28(i32 arg) {
         return 1;
     }
     do {
-        CAttractPooledRes* r = menuRoot()->m_28->m_2c;
+        SoundStream* r = menuRoot()->m_soundRegistry->m_2c;
         if (r) {
-            (reinterpret_cast<SoundDevice*>(r))->PurgeVoiceList(-1);
+            r->PurgeVoiceList(-1);
         }
     } while (m_host->m_10->IsPlaying());
     return 1;
@@ -258,7 +258,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    IDirectDrawSurface* busy = menuRoot()->m_04->m_10->m_2c->m_8;
+    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_8;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(0x8006, 0x3e8);
@@ -266,9 +266,9 @@ i32 CAttract::Render() {
         }
     }
 
-    CAttractPooledRes* res = menuRoot()->m_28->m_2c;
+    SoundStream* res = menuRoot()->m_soundRegistry->m_2c;
     if (res) {
-        (reinterpret_cast<SoundDevice*>(res))->PurgeVoiceList(-1);
+        res->PurgeVoiceList(-1);
     }
 
     if (g_frameDelta < m_idleTimer) {
@@ -299,9 +299,9 @@ i32 CAttract::Render() {
 // local forces the /GX EH frame. (Render polls this slot each frame.)
 RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
-    // The page "loaded?" gate is CDDrawSubMgrPages::Method_158bc0 (0x158bc0), reached
+    // The page "loaded?" gate is CDDrawSubMgrPages::PagesReady (0x158bc0), reached
     // through the page's real class (the CMenuPage view's IsLoaded @0x158bc0 == this).
-    if ((reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04))->Method_158bc0() == 0) {
+    if (menuRoot()->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
@@ -375,8 +375,8 @@ i32 CAttract::Vslot07() {
         do {
         } while (ShowCursor(0) >= 0);
     }
-    menuRoot()->m_04->m_10->m_2c->Flip(0);
-    menuRoot()->m_04->BlitFrom(menuRoot()->m_04->m_14);
+    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);
     return 1;
 }
 
@@ -401,8 +401,5 @@ CAttract::~CAttract() {
 
 SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE_UNKNOWN(CAttractHost);
-SIZE_UNKNOWN(CAttractPooledRes);
-SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractVideo);
-SIZE_UNKNOWN(CMenuRoot);
 SIZE_UNKNOWN(CDDrawSurfacePair);

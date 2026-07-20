@@ -36,7 +36,7 @@ class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (D
 class CSymTab;
 typedef CSymTab CResSource; // +0x28/+0x30/+0x34 resolved asset banks (== the ButeMgr symbol table)
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CMenuRoot;         // m_c's title/menu-root facet (the title-roll cluster's view)
+// (CMenuRoot is GONE - the 'menu root' facet WAS m_c, the CDDrawSurfaceMgr itself.)
 class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
                          // Forward-declared (MFC-free) so this widely-included header stays
@@ -208,8 +208,8 @@ public:
     // The title cluster's typed views of the shared CState slots (m_c is the menu
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
-    CMenuRoot* menuRoot() {
-        return reinterpret_cast<CMenuRoot*>(m_c);
+    CDDrawSurfaceMgr* menuRoot() {
+        return m_c;
     }
     CAttractScreenObj* screenObj() {
         return reinterpret_cast<CAttractScreenObj*>(m_2c);

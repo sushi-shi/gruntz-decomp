@@ -24,7 +24,7 @@
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/SoundStream.h>       // SoundStream::Stop (ReleaseResources' owned stream)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (m_c->m_04 page gate)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
@@ -174,7 +174,7 @@ post:
 // current asset-root name, return its result.
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::InputVirtual() {
-    if (m_c->m_drawTarget->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

@@ -357,9 +357,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            m_c->m_drawTarget->Method_158ee0();
+            m_c->m_drawTarget->TransExit();
             m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
-            m_c->m_drawTarget->Method_158e90();
+            m_c->m_drawTarget->TransTitle();
             RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -372,7 +372,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_c->m_drawTarget->Method_158ee0();
+            m_c->m_drawTarget->TransExit();
             RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             m_activation = 0xfffffffe;
             return 1;
@@ -386,7 +386,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        m_c->m_drawTarget->Method_158ee0();
+        m_c->m_drawTarget->TransExit();
         RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
         return 1;
     }

@@ -401,7 +401,7 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->TransExit();
     m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();

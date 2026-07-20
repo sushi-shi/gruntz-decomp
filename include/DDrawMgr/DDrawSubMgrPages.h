@@ -100,16 +100,16 @@ public:
     i32 Method_158b10(struct CParseSource* src, i32 arg2); // 0x158b10 (ResolveImage the page from the parse record)
     i32 Method_158b40(struct CParseSource* src, i32 arg2); // 0x158b40 (LoadImage the page from the parse record)
     void Method_158b90();                      // 0x158b90
-    i32 Method_158bc0();                       // 0x158bc0
+    i32 PagesReady();                       // 0x158bc0
     i32 Method_158bf0(i32 a1, i32 a2, i32 a3); // 0x158bf0
     i32 Method_158cb0(i32 a1, i32 a2);         // 0x158cb0
     void Method_158d50(i32 a1);                // 0x158d50
-    i32 Method_158c70(CDDrawSurfacePair* dst); // 0x158c70
+    i32 BlitPage(CDDrawSurfacePair* dst); // 0x158c70
     i32 Method_158d20();                       // 0x158d20
     i32 Method_158dc0();                       // 0x158dc0
-    i32 Method_158e40();                       // 0x158e40
-    i32 Method_158e90();                       // 0x158e90
-    i32 Method_158ee0();                       // 0x158ee0
+    i32 TransEnter();                       // 0x158e40
+    i32 TransTitle();                       // 0x158e90
+    i32 TransExit();                       // 0x158ee0
 
     // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
     i32 m_04;                         // +0x04  (reset to -1 on teardown)

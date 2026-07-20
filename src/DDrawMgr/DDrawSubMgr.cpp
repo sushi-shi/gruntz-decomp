@@ -1619,7 +1619,7 @@ void CDDrawSubMgrPages::Method_158b90() {
 // 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair
 // (RestoreIfLost).
 RVA(0x00158bc0, 0x2e)
-i32 CDDrawSubMgrPages::Method_158bc0() {
+i32 CDDrawSubMgrPages::PagesReady() {
     if (m_frontPair && !m_frontPair->Probe_164660()) {
         return 0;
     }
@@ -1652,7 +1652,7 @@ i32 CDDrawSubMgrPages::Method_158bf0(i32 a1, i32 a2, i32 a3) {
 
 // 0x158c70: blt dst's surface <- m_frontPair's surface; return (hr == 0).
 RVA(0x00158c70, 0x36)
-i32 CDDrawSubMgrPages::Method_158c70(CDDrawSurfacePair* dst) {
+i32 CDDrawSubMgrPages::BlitPage(CDDrawSurfacePair* dst) {
     if (!m_frontPair) {
         return 0;
     }
@@ -1761,7 +1761,7 @@ i32 CDDrawSubMgrPages::Method_158dc0() {
 // scheduling (retail interleaves it before the test/sete; our cl emits it in
 // the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x00158e40, 0x4c)
-i32 CDDrawSubMgrPages::Method_158e40() {
+i32 CDDrawSubMgrPages::TransEnter() {
     if (m_overlayPair && m_overlayPair->IsLoaded()) {
         CDDrawSurfacePair* a = m_overlayPair;
         CDDrawSurfacePair* b = m_frontPair;
@@ -1785,7 +1785,7 @@ i32 CDDrawSubMgrPages::Method_158e40() {
 // 0x158e90: if m_backPair and m_overlayPair->IsLoaded(): BltFast(0,0,m_backPair
 // surf, &m_backPair[+0x1c], 0x10).
 RVA(0x00158e90, 0x47)
-i32 CDDrawSubMgrPages::Method_158e90() {
+i32 CDDrawSubMgrPages::TransTitle() {
     if (!m_backPair) {
         return 0;
     }
@@ -1804,7 +1804,7 @@ i32 CDDrawSubMgrPages::Method_158e90() {
 // 0x158ee0: if m_backPair, m_overlayPair and m_overlayPair->IsLoaded():
 // BltFast(0,0,m_overlayPair surf,&m_overlayPair[+0x1c],0x10).
 RVA(0x00158ee0, 0x47)
-i32 CDDrawSubMgrPages::Method_158ee0() {
+i32 CDDrawSubMgrPages::TransExit() {
     if (!m_backPair) {
         return 0;
     }

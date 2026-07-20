@@ -164,12 +164,12 @@ i32 CPreviewState::Tick() {
 }
 
 // CPreviewState::Refade (0x0de2c0) - gated re-fade: only when the preview page
-// manager (m_c->m_04) reports ready (Method_158bc0), hide the cursor and re-run the
+// manager (m_c->m_04) reports ready (PagesReady), hide the cursor and re-run the
 // title fade-in of the current screen name, then retire the scene. Returns the fade
 // result (0 when the page gate fails).
 RVA(0x000de2c0, 0x5c)
 i32 CPreviewState::Refade_0de2c0() {
-    if (m_c->m_drawTarget->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

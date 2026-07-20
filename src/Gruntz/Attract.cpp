@@ -158,16 +158,16 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
             return 0;
         }
 
-        CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (reinterpret_cast<CDDSurface*>(tgt))
             ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-        menuRoot()->m_04->TransTitle();
+        menuRoot()->m_drawTarget->TransTitle();
     } else {
-        menuRoot()->m_04->TransEnter();
-        CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
+        menuRoot()->m_drawTarget->TransEnter();
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
         (reinterpret_cast<CDDSurface*>(tgt))
             ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-        menuRoot()->m_04->TransExit();
+        menuRoot()->m_drawTarget->TransExit();
     }
 
     RetireScene(0x50, 0x3e8, 0,
@@ -202,7 +202,7 @@ i32 CAttract::Activate() {
         return gate;
     }
 
-    (reinterpret_cast<CMenuBrightnessReset*>(menuRoot()->m_04->m_14->m_2c))->Reset(0);
+    menuRoot()->m_drawTarget->m_backPair->m_surface->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -221,10 +221,9 @@ i32 CAttract::Activate() {
         return 0;
     }
 
-    CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
-    (reinterpret_cast<CDDSurface*>(tgt))
-        ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-    menuRoot()->m_04->TransTitle();
+    CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
+    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
+    menuRoot()->m_drawTarget->TransTitle();
 
     RetireScene(0x50, 0x3e8, 0,
                 1); // 0xfa8f0 CState::RetireScene
@@ -271,7 +270,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (page == 0) {
         return 0;
     }
-    CDDrawSubMgrPages* w = reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04);
+    CDDrawSubMgrPages* w = menuRoot()->m_drawTarget;
     if (w->Method_158b40(static_cast<CParseSource*>(page), e != 0 ? 2 : 1) != 0) {
         return 1;
     }
@@ -304,7 +303,7 @@ i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_2c) {
         return 0;
     }
-    menuRoot()->m_04->m_10->m_2c->Flip(0);
+    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
     return 1;
 }
 
@@ -666,7 +665,7 @@ i32 CMgrPersistObj::Init() {
     // slot in a reg.
     while (ShowCursor(0) >= 0)
         ;
-    if (m_levelData->m_drawTarget->Method_158bc0() == 0) {
+    if (m_levelData->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     if (g_playActive == 0) {
@@ -727,10 +726,10 @@ void CState::Present(i32 arg0) {
         g_suppress_64e360 = 0;
         return;
     }
-    fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
+    fxRes()->m_worker->BlitPage(fxRes()->m_worker->m_backPair);
     fxRes()->m_worker->m_backPair->m_surface->ShadeRect(arg0, static_cast<RECT*>(0));
     fxRes()->m_worker->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
-    fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
+    fxRes()->m_worker->BlitPage(fxRes()->m_worker->m_backPair);
 }
 
 // CState::ShadeScreen (0x0faf50): consume the g_suppress latch (return its old value)
@@ -855,8 +854,6 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
 
 SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE_UNKNOWN(CAttractHost);
-SIZE_UNKNOWN(CAttractPooledRes);
-SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractSceneSlot);
 SIZE_UNKNOWN(CAttractScreenObj);
 SIZE_UNKNOWN(CAttractVideo);
@@ -864,7 +861,6 @@ SIZE_UNKNOWN(CMenuBrightnessHolder);
 SIZE_UNKNOWN(CMenuBrightnessReset);
 SIZE_UNKNOWN(CMenuBrightnessTarget);
 SIZE_UNKNOWN(CMenuRenderM10);
-SIZE_UNKNOWN(CMenuRoot);
 SIZE_UNKNOWN(CSoundFxEmitter);
 SIZE_UNKNOWN(CDDrawSurfacePair);
 SIZE_UNKNOWN(FxResource);

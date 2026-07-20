@@ -53,73 +53,13 @@ class CSymParser; // <Bute/SymParser.h> (ResolvePath 0x13c030); m_8 re-typed
 // The menu/brightness sink chain rooted at CAttract+0xc (== CState::m_c). The
 // page's +0x14/+0x18 holders carry the brightness targets (their m_2c) that take
 // the CButeMgr value; m_04 drives the page enter/exit transitions.
-// ---------------------------------------------------------------------------
-class CMenuBrightnessTarget {
-public:
-    // SetBrightness @0x13f460 IS CDDSurface::ShadeRect; cast at each call.
-};
-
-struct CMenuBrightnessHolder {
-    char m_pad00[0x2c];
-    CMenuBrightnessTarget* m_2c; // +0x2c  brightness target
-};
-
-// The flip/render target is the canonical CDDSurface (m_04->m_10->m_2c->Flip(0);
-// ?Flip@CDDSurface@@QAEHPAV1@@Z, FUN_0013e850, __thiscall ret 4).
-struct CMenuRenderM10 {
-    char m_pad00[0x2c];
-    CDDSurface* m_2c; // +0x2c
-};
-
-class CMenuPage {
-public:
-    i32 IsLoaded();    // FUN_00558bc0  (ready-3 predicate; gate for the title roll)
-    void TransEnter(); // FUN_00558e40  (mode == 2: enter, runs first)
-    void TransTitle(); // FUN_00558e90  (mode != 2: after brightness)
-    void TransExit();  // FUN_00558ee0  (mode == 2: after brightness)
-    // The host poll tail's blit (engine FUN_00558c70, __thiscall ret 4): pushes
-    // m_14, blits onto m_18.
-    void BlitFrom(CMenuBrightnessHolder* src); // FUN_00558c70
-
-    char m_pad00[0x10];
-    CMenuRenderM10* m_10;        // +0x10  render/flip view (host poll)
-    CMenuBrightnessHolder* m_14; // +0x14  title brightness holder / blit src
-    CMenuBrightnessHolder* m_18; // +0x18  menu  brightness holder / blit dst
-};
-
-// The attract registrar at CMenuRoot+0x28: the slot-1 loader hands it the loaded
-// sound handle plus the "ATTRACT"/"_" tags (engine FUN_00557ee0, __thiscall
-// ret 0xc) so the attract page is wired into the active menu. The slot-2 release
-// (FUN_00557c70, __thiscall ret 8) tears it back down; +0x2c holds a pooled
-// resource freed first (FUN_00537a80, __thiscall no-arg).
-class CAttractPooledRes {
-public:
-    // Free @? IS SoundStream::Stop; cast at the call.
-    // Stop @? IS SoundDevice::PurgeVoiceList; cast at the call.
-};
-
-class CAttractRegistrar {
-public:
-    // Register @0x157ee0 = CDDrawSubMgrLeafScan::ScanTree_157ee0, Release @0x157c70 =
-    // CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70; cast at each call.
-
-    char m_pad00[0x2c];
-    CAttractPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
-};
-
-struct CMenuRoot {
-    char m_pad00[0x4];
-    CMenuPage* m_04; // +0x4  active menu page
-    char m_pad08[0x28 - 0x8];
-    CAttractRegistrar* m_28; // +0x28  attract page registrar
-};
-
-// The title-brightness target's preset/reset method (engine FUN_0053e760,
-// __thiscall ret 4) called once before the fade with arg 0.
-class CMenuBrightnessReset {
-public:
-    void Reset(i32 value);
-};
+// (The title-roll view cluster is GONE - every class was canon:
+//   CMenuBrightnessTarget == CDDSurface       (SetBrightness was ShadeRect; Reset was Fill @0x13e760)
+//   CMenuBrightnessHolder == CDDrawSurfacePair (+0x2c m_surface)
+//   CMenuRenderM10        == CDDrawSurfacePair (the front pair; +0x2c ->Flip)
+//   the local "CMenuPage"  == CDDrawSubMgrPages (IsLoaded/TransEnter/TransTitle/
+//                             TransExit/BlitPage @0x158bc0..0x158ee0 - its own methods)
+//   CMenuBrightnessReset  == CDDSurface        (Fill(0) - the blackout preset).)
 
 // The m_1b8 sound/host sub-object the per-frame poll drives: its +0x10 voice is
 // queried (IsPlaying), (re)started, and the registrar's pooled resource is

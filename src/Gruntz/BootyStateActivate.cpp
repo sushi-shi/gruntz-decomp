@@ -172,7 +172,7 @@ i32 CBootyState::Vslot09(i32) {
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
         return 0;
     }
-    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CGruntzMgr* reg = g_gameReg;
@@ -660,7 +660,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
@@ -1051,7 +1051,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
-    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     return 1;
 }

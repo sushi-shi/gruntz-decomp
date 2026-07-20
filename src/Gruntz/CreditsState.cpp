@@ -278,9 +278,9 @@ i32 CCreditsState::Render() {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
     // the page pump at m_c->m_drawTarget is CDDrawSubMgrPages; the ready gate is
-    // Method_158bc0 (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same page gate
+    // PagesReady (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same page gate
     // the sibling states (CHelpState/CSplashState) poll.
-    if (m_c->m_drawTarget->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {
@@ -370,7 +370,7 @@ i32 CCreditsState::InitAttractTitle() {
     CDDrawSurfaceMgr* root = m_c;
     if (m_videoPlaying != 0) {
         (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158dc0();
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158e90();
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
         (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158d50(0);
         root->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         return 1;
@@ -393,7 +393,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
-    (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158e90();
+    (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; ex "BuildMenuPage")
     return 1;
 }
