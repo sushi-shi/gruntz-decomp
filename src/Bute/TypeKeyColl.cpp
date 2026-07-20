@@ -25,6 +25,7 @@
 // the CRT alloc/free) are external no-body so their call rel32 / the vtable +
 // global DIR32 stores reloc-mask in objdiff. Field names are placeholders; only
 // OFFSETS + code bytes are load-bearing (campaign doctrine).
+#include <Gruntz/UserLogic.h> // complete CUserLogic (ProjTypeXfer drives its [3]/[4]/[5] virtually)
 #include <Mfc.h>
 #include <iostream.h>       // the REAL istream the config reader is (operator>> @0x191fe0/0x191f30)
 #include <Bute/ButeTree.h>  // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
@@ -1189,15 +1190,16 @@ static inline void FreeNodes() {
 // a spill order MSVC reproduces only for one allocation; logic + offsets + the
 // inlined lookup + the slot conventions are byte-faithful. Deferred to the final sweep.
 RVA(0x0016e4f0, 0x19b)
-i32 ProjTypeXfer(CXferArchive* ar) {
-    CTypeNameEntry* entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(ar->m_14->m_1c));
+i32 ProjTypeXfer(CUserLogic* ar) {
+    CTypeNameEntry* entry =
+        reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
     FreeNodes();
-    ar->Xfer0c(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
-    ar->Xfer10(ar->m_14->m_1c);
+    ar->XferName(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
+    ar->FireActivation(reinterpret_cast<i32>(ar->m_objAux->m_1c));
 
-    entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(ar->m_14->m_1c));
+    entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
     FreeNodes();
-    ar->Xfer14(entry->m_name.GetBuffer(0));
+    ar->FinalizeStep(reinterpret_cast<i32>(entry->m_name.GetBuffer(0)));
     return 1;
 }
 

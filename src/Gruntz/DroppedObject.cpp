@@ -284,7 +284,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;
@@ -322,7 +322,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;
@@ -360,7 +360,7 @@ i32 DroppedObjectShadowPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;

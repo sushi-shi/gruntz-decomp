@@ -14,27 +14,13 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The field descriptor `ar->m_14` points at: its first word (as sliced by the
-// archive) is the type id. (Kept exactly as the TypeKeyColl.cpp view - m_1c lives
-// at offset 0 of the sliced record; the name is a placeholder, offset is load-bearing.)
-SIZE_UNKNOWN(CXferField);
-struct CXferField {
-    i32 m_1c; // type id (offset 0 of the record slice)
-};
+// CXferArchive + CXferField are GONE (retail-arbitrated, llvm-objdump @0x16e4f0):
+// the "archive" IS the CUserLogic object (the dispatchers pass ctl->m_logic in),
+// the id is [logic+0x14]->m_1c (the aux union's REAL +0x1c - the slice@0 model was
+// wrong), and the hooks are VIRTUAL dispatches through the logic's real slots:
+// [3] XferName(name), [4] FireActivation(id), [5] FinalizeStep((i32)name).
 
-// The archive record ProjTypeXfer drives.
-SIZE_UNKNOWN(CXferArchive);
-struct CXferArchive {
-    void Xfer0c(void* name); // vtbl +0x0c  per-field name transfer hook
-    void Xfer10(i32 id);     // vtbl +0x10  per-field id transfer hook
-    void Xfer14(void* name); // vtbl +0x14  per-field name transfer hook
-    char _vft0[4];           // +0x00  engine vptr (reduced view; not dispatched)
-    char pad_04[0x14 - 0x04];
-    CXferField* m_14; // +0x14  field descriptor (its +0x1c is the type id)
-};
-
-// 0x16e4f0 - serialize the type-name table entry resolved from `ar`. Body lives in
-// TypeKeyColl.cpp; reloc-masked from the dispatchers' default case.
-i32 ProjTypeXfer(CXferArchive* ar);
+// 0x16e4f0 - resolve the logic's type name + activate it. Body in TypeKeyColl.cpp.
+i32 ProjTypeXfer(class CUserLogic* logic);
 
 #endif // SRC_GRUNTZ_XFERARCHIVE_H

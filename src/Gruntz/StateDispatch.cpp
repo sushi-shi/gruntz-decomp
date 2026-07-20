@@ -25,8 +25,8 @@
 // entry and xfers it through the handler's own vtable slots. Its REAL arg is the
 // CXferArchive record (<Gruntz/XferArchive.h>, ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z);
 // the active handler (the logic leaf) aliases that record at this call site.
-struct CXferArchive;
-i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
+class CUserLogic;
+i32 ProjTypeXfer(CUserLogic* logic); // 0x16e4f0 (the "archive" IS the logic)
 
 // The old "throwing-operator-new /GX frame wall" was a FLAGS MIS-PROFILE, not a
 // codegen wall: this unit was compiled flags="base" (no /GX at all), so nothing
@@ -72,7 +72,7 @@ i32 StateDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;

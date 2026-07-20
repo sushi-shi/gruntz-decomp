@@ -15,6 +15,7 @@
 #include <Mfc.h>                     // CString / RECT / PostMessageA
 #include <Bute/SymTab.h>             // CSymTab::ResolveQualified (winapi_064540 level lookup)
 #include <Gruntz/LogicTypeId.h>      // LogicTypeId (CUserBase/CUserLogic GetTypeTag)
+#include <Gruntz/Grunt.h> // complete CGrunt (its slot-3 XferName stub is homed here)
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 #include <Globals.h>
@@ -42,8 +43,9 @@ LogicTypeId CUserBase::GetTypeTag() {
     return static_cast<LogicTypeId>(0);
 }
 
-i32 CUserLogic::UserLogicVfunc1() {
-    return 0;
+void CUserLogic::XferName(char* name) {
+    // ret-4 one-arg no-op (the base 0x00106e shape); leaves override to receive
+    // their serialized type name.
 }
 // The real base body (0x8b70, reached via the slot's ILT thunk 0x246e) is a bare
 // `ret 4` - an empty do-nothing hook taking the activation id. Anchor only.
@@ -95,7 +97,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // See docs/patterns/ilt-thunk-indirection.md.
 // @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000087d0
 // @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x000087f0
-// @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00008b50
+// @rva-symbol: ?XferName@CUserLogic@@UAEXPAD@Z 0x00008b50
 // @rva-symbol: ?FireActivation@CUserLogic@@UAEXH@Z 0x00008b70
 // @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000088d0
 // @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x000088f0
@@ -153,4 +155,4 @@ i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) {
 // @source: string-xref;vtable-slot
 // @stub
 RVA(0x0005d210, 0x1443)
-void CUserLogic::LoadGruntTuningConstants(i32) {}
+void CGrunt::XferName(char* name) {}

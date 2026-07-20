@@ -63,7 +63,7 @@ enum LogicRecordState {
 // 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl). Thin forwarder so the
 // callers emit the bound rel32 (was the fake, UNBOUND _LogicSubDefault_16e4f0).
 inline void LogicSubDefault_16e4f0(CUserLogic* sub) {
-    ProjTypeXfer(reinterpret_cast<CXferArchive*>(sub));
+    ProjTypeXfer(sub);
 }
 
 // LogicDispatchE @0x0de8a0 - state-0 builds a CProjectile (0x228, ctor 0xdec60). The

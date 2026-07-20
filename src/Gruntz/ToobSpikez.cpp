@@ -83,7 +83,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(rec->m_logic));
+            ProjTypeXfer(rec->m_logic);
             break;
     }
     return 1;

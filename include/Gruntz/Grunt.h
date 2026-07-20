@@ -870,7 +870,9 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNT;
     } // slot 2  (0xf2a0)
-    virtual i32 UserLogicVfunc1() OVERRIDE; // slot 3  (0x5d210)
+    // slot 3 (0x5d210, 5187 B @stub): receives the serialized type NAME (the base
+    // XferName hook) and loads the grunt's per-type tuning constants from it.
+    virtual void XferName(char* name) OVERRIDE;
     // RunAct (0x5bcd0): the class's vtable slot-4 (UserLogicVfunc2) activation
     // dispatcher body - a plain method (the no-arg UserLogicVfunc2() base placeholder
     // blocks the int-arg OVERRIDE spelling). Resolves `id`'s handler in the per-class

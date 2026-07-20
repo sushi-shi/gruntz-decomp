@@ -33,7 +33,7 @@
 // coordinate/type-registry resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z,
 // __cdecl). Thin forwarder so callers emit the bound rel32 (was fake _Worker_DefaultPump).
 inline void Worker_DefaultPump(CUserLogic* sub) {
-    ProjTypeXfer(reinterpret_cast<CXferArchive*>(sub));
+    ProjTypeXfer(sub);
 }
 
 // The shared logic-worker message pump. Each per-type handler is `{ LOGIC_WORKER_PUMP(LEAF); }`

@@ -401,7 +401,10 @@ public:
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc1();
+    // slot 3 (+0x0c): the serialize name-in hook - ProjTypeXfer (0x16e4f0) resolves
+    // the type name and dispatches it here virtually (`push name; call [vptr+0xc]`,
+    // llvm-objdump-proven). Default 0x00106e: a ret-4 one-arg no-op.
+    virtual void XferName(char* name);
     // slot 4 (+0x10): the activation dispatcher - SIGNATURE SETTLED (2026-07-15) from
     // retail: the base body (thunk 0x246e -> 0x8b70) is a bare `ret 4`, i.e. an empty
     // __thiscall taking ONE stack arg, and every leaf override reads that arg at

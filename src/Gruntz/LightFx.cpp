@@ -307,7 +307,7 @@ i32 LightFxLogicDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(aux->m_logic));
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;

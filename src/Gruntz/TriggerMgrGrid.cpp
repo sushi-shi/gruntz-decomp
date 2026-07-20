@@ -538,14 +538,16 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     }
     i32 cx = x;
     i32 cy = y;
-    CUserLogic* obj = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(plane + 0x2e4) + 0)));
+    CTileTriggerSwitchLogic* obj =
+        static_cast<CTileTriggerSwitchLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(plane + 0x2e4) + 0)));
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
         g_gameReg->ReportError(0x80dd, 0x3f7);
         return 0;
     }
-    obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
+    obj->SwitchUp(); // vtbl slot 3 (+0xc) - retail calls it NO-ARG here (the SwitchLogic
+                     // hierarchy's own slot 3; the old CUserLogic spelling conflated the two trees)
     return 1;
 }
 

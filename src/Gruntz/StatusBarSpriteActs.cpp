@@ -70,7 +70,7 @@ i32 StatusBarSpriteStep(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));
+            ProjTypeXfer(ctl->m_logic);
             break;
     }
     return 1;
