@@ -57,12 +57,10 @@ struct CSbiHlRow {
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
 SIZE_UNKNOWN(CSbiRect);
 
-struct CSbiStatObj {
-    // Notify2 @0x27f7 IS CSBI_RectOnly::ResetGroupA (args reloc-masked); cast at the call.
-    // The (stateId, on) toggle notifier (thunk FUN_004ea170; ex CStatzTabSub::Toggle).
-    void Toggle(i32 stateId, i32 on);
-};
-SIZE_UNKNOWN(CSbiStatObj);
+// (CSbiStatObj DISSOLVED 2026-07-20: m_statObj holds CStatusBarMgr sub-managers - the
+// SetState clear path already casts m_statObj[idx] to CStatusBarMgr for ResetGroupA, and
+// its Toggle notifier (FUN_004ea170, unreconstructed) is that same class's method. Both
+// call sites now agree on CStatusBarMgr; Toggle is declared on it below.)
 
 class CSbiNotifyTarget {
 public:
@@ -231,6 +229,9 @@ public:
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
     void ResetGroupA();
+    // 0xea170 (FUN_004ea170, unreconstructed): the per-stat (stateId, on) toggle notifier
+    // fired on the m_statObj sub-managers (ex the CSbiStatObj view). Reloc-masked.
+    void Toggle(i32 stateId, i32 on);
     // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -
     // m_extraNotifyArg0 / m_ptrPool active cell).
     i32 GetActiveValue();
@@ -352,7 +353,7 @@ public:
     i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSBI_SideTab* m_hitRects[15]; // +0x150  the statz side-tab widgets (hit-test targets)
-    CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
+    CStatusBarMgr* m_statObj[15]; // +0x18c  per-stat sub-manager array (notified on clear; ex CSbiStatObj view)
     CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
     CSBI_MenuItem* m_tabSprite1;  // +0x1cc  ClearTabSprites in declaration order)
     CSBI_MenuItem* m_tabSprite2;  // +0x1d0

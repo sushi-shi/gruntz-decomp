@@ -2194,7 +2194,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_44 = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            (reinterpret_cast<CStatusBarMgr*>(m_statObj[idx]))->ResetGroupA();
+            m_statObj[idx]->ResetGroupA();
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
             if (host->m_30 == 0) {
                 void* found = 0;
