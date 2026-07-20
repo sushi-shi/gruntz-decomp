@@ -186,20 +186,9 @@ public:
 SIZE(FontRenderer, 0x10); // stateful render shim; the ctor inits exactly the four
                           // fields m_font/m_color/m_surface/m_clip (through +0x0c)
 
-// ---------------------------------------------------------------------------
-// TextRange - a {begin..end} view over a measured run of text, built on the
-// FontRenderer word-wrap stack (three adjacent CString locals: the line text and
-// its head/tail markers). Span() returns the byte distance end - begin (a signed
-// length fed to the per-line divide in the wrap loop). Only the two char* fields
-// it reads (+0x00 begin, +0x08 end) are load-bearing.
-// ---------------------------------------------------------------------------
-struct TextRange {
-    char* m_begin; // +0x00
-    char* m_pad04; // +0x04
-    char* m_end;   // +0x08
-    i32 Span();    // 0x17b500
-};
-SIZE_UNKNOWN(TextRange); // {begin..end} view built on three adjacent stack CStrings
+// (TextRange is GONE - a fabricated {begin..end} view with ZERO real callers: every
+// caller of the 0x17b500 helper passes a CRect, so it is CRect::Width()
+// (<Wap32/Rect.h>), out-of-line in this TU per the retail contribution range.)
 
 // ---------------------------------------------------------------------------
 // CharCursor - the per-character accessor at 0x17b4f0. It reads byte `i` of the

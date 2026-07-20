@@ -442,8 +442,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 // Word-wrap layout + draw: measures the block (MeasureWrapped) for vertical
 // centering when `hcenter` is set, then greedily breaks the run into lines (the
 // same skeleton as MeasureWrapped) and draws each line via DrawLine - centered
-// horizontally within [x0, right] using TextRange::Span (the {x0, top, right}
-// arg triple reinterpreted as a TextRange) when `hcenter` is set.
+// horizontally within [x0, right] using CRect::Width when `hcenter` is set.
 // @early-stop
 // ~73% (from 0.5%): logic + control flow + the full call set (6 DrawLine, 8
 // MeasureText, 5 Span, 2 Left, 17 CString ctors, 8 operator=, ...) byte-match.
@@ -490,7 +489,7 @@ void FontRenderer::DrawWrapped(
             text = "";
             if (y + lineAdvance <= rc.bottom) {
                 if (hcenter) {
-                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -523,7 +522,7 @@ void FontRenderer::DrawWrapped(
                 x = headW + x;
             } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
-                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -542,7 +541,7 @@ void FontRenderer::DrawWrapped(
                             MeasureText(CString(static_cast<char>((reinterpret_cast<CharCursor*>(&head))->GetChar(0)), 1)).width;
                         if (chW + x > rc.right) {
                             if (hcenter) {
-                                i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2
+                                i32 cx = rc.left + rc.Width() / 2
                                          - MeasureText(line).width / 2;
                                 DrawLine(line, surf, cx, y, z);
                             } else {
@@ -565,7 +564,7 @@ void FontRenderer::DrawWrapped(
             }
             if (breakNL) {
                 if (hcenter) {
-                    i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
                     DrawLine(line, surf, rc.left, y, z);
@@ -578,7 +577,7 @@ void FontRenderer::DrawWrapped(
     }
     if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
-            i32 cx = rc.left + (reinterpret_cast<TextRange*>(&rc))->Span() / 2 - MeasureText(line).width / 2;
+            i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
             DrawLine(line, surf, cx, y, z);
         } else {
             DrawLine(line, surf, rc.left, y, z);
@@ -846,8 +845,9 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
     return ext;
 }
 
-// TextRange::Span (0x17b500) - byte distance end - begin.
+// CRect::Width (0x17b500) - right - left. The engine rect's own accessor, placed in
+// this TU by retail (the DrawWrapped/DrawTextBox centering callers all live here).
 RVA(0x0017b500, 0x8)
-i32 TextRange::Span() {
-    return m_end - m_begin;
+i32 CRect::Width() {
+    return right - left;
 }
