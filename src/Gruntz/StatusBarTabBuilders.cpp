@@ -34,7 +34,7 @@
 
 // The name maps are the real MFC CMapStringToOb (Lookup x1b8008 - mfc_class names that
 // band CMapStringToOb; the ex-note here had the Ob/Ptr pairing inverted). No local view.
-#include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
+#include <Gruntz/StatusBarTabBuildersViews.h> // (tombstone - the views are dissolved)
 #include <Image/ImageSet.h> // canonical CImageSet (SetAllTypes/SetAllFormats; the config record)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialCounter.h> // g_serialCounter (bumped once per string field)
@@ -143,9 +143,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 sel =
         g_gameReg->m_spriteFactory
             ->GetSel(
-                (reinterpret_cast<StatusBarTabBuilders::CSbWorldSlot*>((reinterpret_cast<char*>(g_gameReg)
-                                                       + 0x138)))[StatusBarTabBuilders::g_curPlayer]
-                    .m_toolId,
+                g_gameReg->m_options[StatusBarTabBuilders::g_curPlayer].m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
                 0
             );
     if (sel == 0) {

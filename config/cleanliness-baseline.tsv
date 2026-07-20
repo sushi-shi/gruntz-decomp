@@ -1,4 +1,4 @@
-m_<hex> fields	9697
+m_<hex> fields	9663
 Unknown ids	0
 g_<hex> globals	0
 Method/Stub/FUN/Gap	245
@@ -19,5 +19,5 @@ C-style numeric casts	0
 void* m_ members	22
 offset-cast macros	0
 cpp extern decls	490
-view classes (*Views.h)	32
+view classes (*Views.h)	24
 caller-callee FAKE-VIEW	0
