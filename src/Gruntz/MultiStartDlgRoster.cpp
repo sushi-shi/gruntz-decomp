@@ -777,7 +777,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = reinterpret_cast<i32>((reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(netMgr->m_hostIndex));
+        i32 transformedPlayerId = reinterpret_cast<i32>(m_host->FindOptionsSlot(netMgr->m_hostIndex));
         g_multiState->BroadcastOneChannel(transformedPlayerId);
     }
 }
@@ -1051,7 +1051,7 @@ void CMultiStartDlg::Watchdog() {
 // OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    i32* slot = reinterpret_cast<i32*>((reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(g_multiState->m_hostIndex));
+    i32* slot = reinterpret_cast<i32*>(m_host->FindOptionsSlot(g_multiState->m_hostIndex));
     if (slot == 0) {
         return -1;
     }
@@ -1076,10 +1076,10 @@ void CMultiStartDlg::VerifyCustomLevel() {
     i32 token;
     if (g_multiState->m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
+        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
+        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
     }
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {

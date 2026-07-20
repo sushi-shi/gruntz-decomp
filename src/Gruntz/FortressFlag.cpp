@@ -377,7 +377,7 @@ char* CActReg::Resolve(i32 id) {
     if (id >= m_lo && id <= m_hi) {
         return m_base + (id - m_lo) * m_stride;
     }
-    if (reinterpret_cast<i32>((reinterpret_cast<_zvec*>(this))->GrowTo(id, 0))) { // 0x16da80 = _zvec::GrowTo
+    if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
         return m_base + (id - m_lo) * m_stride;
     }
     void* item = g_projActCache;

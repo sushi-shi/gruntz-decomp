@@ -501,7 +501,7 @@ void CGrunt::LoadEntranceConfig() {
         i32 newTileY = newPxY >> 5;
 
         if (oldX != -1 && m_lastTilePxY != -1) {
-            CTileGrid* og = reinterpret_cast<CTileGrid*>(g_gameReg->m_tileGrid);
+            CTileGrid* og = g_gameReg->m_tileGrid; // implicit upcast (the one board class)
             (reinterpret_cast<char*>(&og->m_8[oldTileY][oldTileX * 7]))[3] &= ~0x20;
             og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
         }

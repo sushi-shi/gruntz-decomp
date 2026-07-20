@@ -337,7 +337,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), C
             // Dual-view bridge: the singleton IS the RTTI-true CGruntzMgr, whose
             // ReportError @0x8dc60 (WPARAM,LPARAM) is the real symbol the rel32 binds
             // (the CGameRegistry facet's (i32,i32) name resolved to nothing).
-            (reinterpret_cast<CGruntzMgr*>(g_gameReg))->ReportError(0x8009, 0x3e9);
+            (g_gameReg)->ReportError(0x8009, 0x3e9);
             return;
     }
 
