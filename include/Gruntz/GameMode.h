@@ -134,7 +134,7 @@ struct CGMVerRect {
     i32 a, b, c, d;
 };
 extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
-extern "C" u32 g_frameDelta;         // (last-frame delta, fed to Step)
+extern "C" i32 g_frameDelta;         // (last-frame delta, fed to Step)
 
 // A {y,x} onscreen-coordinate pair (the booty idle-sprite geometry table @0x5e8fe4;
 // DATA home BootyMessages.cpp). Homed here from that TU (per-TU view -> owner header).

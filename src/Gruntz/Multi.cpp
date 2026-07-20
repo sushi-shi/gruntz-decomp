@@ -994,7 +994,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             return 0;
         }
         e->m_038.FreeArrays();
-        if (e->m_038.LoadConfig(reinterpret_cast<CLevelInfo*>(Mgr()), i, e->m_configId) == 0) {
+        if (e->m_038.LoadConfig(Mgr(), i, e->m_configId) == 0) {
             return 0;
         }
         if (e->m_014 && e->m_liveGate) {

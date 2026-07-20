@@ -735,7 +735,7 @@ struct StateMgrBZ {
 
 extern "C" {
     extern i32 g_lastNow;    // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
-    extern u32 g_frameDelta; // 0x245584 (frame delta cap)
+    extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
     extern u32 g_frameTime;  // 0x245588 (the running game clock)
     extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;       // a default cue/message wParam

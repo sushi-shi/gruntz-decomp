@@ -119,7 +119,10 @@ public:
     // draw target (the ex CDDrawSubMgrPages/StateMgrBZ views; every CState::m_c consumer
     // reaches the flip pump + the three CDDrawSurfacePair pages through it).
     CDDrawSubMgrPages* m_drawTarget;
-    CDDrawChildGroup* m_childGroup; // +0x08  broadcast child-group
+    union { // +0x08 one object, two facet types (the sprite factory IS the walked list host)
+        CDDrawChildGroup* m_childGroup;
+        class CQueueDrainHost* m_walkHost; // ListGetFirst/Next facet (ex the m_objList->m_coll view)
+    }; // +0x08  broadcast child-group
     CDDrawWorkerList* m_workerList; // +0x0c  the per-frame worker pump (real type; ex "renderer B")
     CDDrawWorkerRegistry* m_imageRegistry; // +0x10  name->sprite/image registry (m_10map; vtbl
                                            //        0x5efd28; ex "m_imageRegistry" - it is a

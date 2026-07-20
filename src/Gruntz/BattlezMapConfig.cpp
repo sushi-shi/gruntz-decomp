@@ -41,6 +41,7 @@
 //   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
+#include <Gruntz/Play.h> // complete CPlay (the m_10 spawn-info holder is the play state)
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -276,7 +277,7 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
 // ---------------------------------------------------------------------------
 // The three marker loops walk the level's game-object collection
-// (lvl->m_objList->m_coll, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
+// (mgr->m_world->m_childGroup, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
 // {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
 // +0x5c/+0x60, m_7c the AnimWorkerObj whose +0x10 holds the object's FACTORY fn-ptr -
 // the type key the filters compare - and m_124 the per-map id). CBrickzGrid's +0xc is m_width.
@@ -398,7 +399,7 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 // CBattlezMapConfig::LoadConfig
 // ===========================================================================
 RVA(0x00025020, 0x984)
-i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
+i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     // --- prologue: zero the scratch fields, copy the level-info handles. ---
     m_gruntCreationTime = 0;
     m_4c = 0;
@@ -406,12 +407,12 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_resourceCreationTime = 0;
     m_58 = 0;
     m_5c = 0;
-    m_levelInfo = lvl;
+    m_levelInfo = mgr;
     m_ownerId = id;
-    m_8 = lvl->m_triggerMgr;
-    m_dims = lvl->m_dims;
-    m_10 = lvl->m_spawnInfo;
-    m_14 = m_10->m_2e4;
+    m_8 = mgr->m_cmdGrid;
+    m_dims = mgr->m_tileGrid;
+    m_10 = static_cast<CPlay*>(mgr->m_curState);
+    m_14 = m_10->m_beginMarker; // the play state's begin-marker sink (CTileTriggerContainer)
     m_0 = 1;
 
     // --- the [Battlez] creation-rate / chance block. ---
@@ -427,10 +428,10 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 1: append EVERY type-1 start marker to the +0xdc array. The marker
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
-    //     The list is re-derived (lvl->m_objList->m_coll) and advanced via the GetNext
+    //     The list is re-derived (mgr->m_world->m_childGroup) and advanced via the GetNext
     //     cursor idiom on every step. ---
-    for (CGameObject* cur = ListGetFirst(lvl->m_objList->m_coll); cur != 0;
-         cur = ListGetNext(lvl->m_objList->m_coll)) {
+    for (CGameObject* cur = ListGetFirst(mgr->m_world->m_walkHost); cur != 0;
+         cur = ListGetNext(mgr->m_world->m_walkHost)) {
         if (cur->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateGruntCreationPoint) && cur->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -446,8 +447,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 2: find the FIRST type-2 marker, stamp m_markerX/m_markerY with its /32 coords,
     //     and stop (fall straight into loop 3). ---
-    for (CGameObject* cur2 = ListGetFirst(lvl->m_objList->m_coll); cur2 != 0;
-         cur2 = ListGetNext(lvl->m_objList->m_coll)) {
+    for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_walkHost); cur2 != 0;
+         cur2 = ListGetNext(mgr->m_world->m_walkHost)) {
         if (cur2->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateExitTrigger) && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
@@ -457,8 +458,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 3: append EVERY type-3 marker to the +0xf0 array, scaled by >>5
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
-    for (CGameObject* cur3 = ListGetFirst(lvl->m_objList->m_coll); cur3 != 0;
-         cur3 = ListGetNext(lvl->m_objList->m_coll)) {
+    for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_walkHost); cur3 != 0;
+         cur3 = ListGetNext(mgr->m_world->m_walkHost)) {
         if (cur3->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateWayPoint) && cur3->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -639,7 +640,7 @@ i32 CBattlezMapConfig::Method_025d90() {
     if (m_active == 0) {
         return 1;
     }
-    if (m_ctx->m_triggerMgr == 0) {
+    if (m_ctx->m_cmdGrid == 0) {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_spawnInterval) {
@@ -802,7 +803,7 @@ i32 CBattlezMapConfig::Method_025d90() {
 // byte-exact in shape. Residual is pure register allocation: retail pins the row
 // count in edx and the candidate index in ebp where MSVC5 here picks esi/eax, and
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
-// level chains (m_ctx->m_objList->m_24->m_5c) are modeled by raw offset. Final sweep.
+// level chains (m_ctx->m_world->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::Method_026470(i32) {
     CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
@@ -853,10 +854,10 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
     }
     Coord screen;
-    m_ctx->m_objList->m_view->m_5c->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
+    m_ctx->m_world->m_level->m_mainPlane->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
-        cell = m_ctx->m_triggerMgr->ProbeCell(
+        cell = m_ctx->m_cmdGrid->ProbeCell(
             m_curCell,
             screen.m_x,
             reinterpret_cast<void*>(0x186a0),
@@ -868,7 +869,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
             0
         );
     } else {
-        cell = m_ctx->m_triggerMgr->ProbeCell(
+        cell = m_ctx->m_cmdGrid->ProbeCell(
             m_curCell,
             screen.m_x,
             reinterpret_cast<void*>(0x186a0),
@@ -883,7 +884,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = (reinterpret_cast<CGrunt**>((m_ctx->m_triggerMgr)))[cell * 3 + m_curCell * 3];
+    CGrunt* unit = (reinterpret_cast<CGrunt**>((m_ctx->m_cmdGrid)))[cell * 3 + m_curCell * 3];
     if (unit == 0) {
         return 0;
     }
@@ -2127,7 +2128,7 @@ extern "C" void Handler_0040288d(void);
 // CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect  @0x02c140
 // For an idle unit (m_gruntKind==0, prim anim clear) clamp the board dirty-rect to an 8x8
 // box centered on the unit (four GetCoord corner reads + the IntersectRect copy-back
-// idiom), then iterate the scene collection (m_ctx->m_objList->m_coll) for a kind-matching
+// idiom), then iterate the scene collection (m_ctx->m_world->m_childGroup) for a kind-matching
 // (m_7c handler == 0x40288d), non-flagged (m_40&1), in-box unit; on the first such
 // unit re-path this unit toward it (Method_0300c0, flags 0x2000098b), re-clamp the
 // dirty-rect, and return 1. Exhausting the collection tails into board Clip + return 0.
@@ -2182,7 +2183,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // Iterate the scene collection for kind-matching units inside the box.
-    CQueueDrainHost* coll = m_ctx->m_objList->m_coll;
+    CQueueDrainHost* coll = m_ctx->m_world->m_walkHost;
     coll->m_scan = coll->m_head;
     CGameObject* g = static_cast<CGameObject*>(coll->Drain_031250());
     while (g != 0) {
@@ -2263,7 +2264,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             }
         }
         // Back-edge: the inlined first GetNext pop, tail-continuing via the helper.
-        CQueueDrainHost* c = m_ctx->m_objList->m_coll;
+        CQueueDrainHost* c = m_ctx->m_world->m_walkHost;
         g = 0;
         if (c->m_scan != 0) {
             CQueueProbeNode* nd = c->m_scan;
@@ -4263,7 +4264,7 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_triggerMgr->m_grid[cell + m_curCell * 15];
+    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_curCell * 15];
     if (unit == 0) {
         return 0;
     }
@@ -4314,7 +4315,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
     char* cell;
     if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tile) + 0x10)) == 0x67) {
-        cell = reinterpret_cast<char*>(m_ctx->m_dims); // ctx+0x70 IS the board (== this->m_board)
+        cell = reinterpret_cast<char*>(m_ctx->m_tileGrid); // ctx+0x70 IS the board (== this->m_board)
     } else {
         cell = reinterpret_cast<char*>((reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0));
     }
@@ -5468,12 +5469,12 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
 // ===========================================================================
 // CBattlezMapConfig::Method_035210  @0x035210
 // Is there an unoccupied candidate cell at grid (x,y)? Walk the trigger-mgr's
-// candidate list (reached via m_ctx->m_triggerMgr->m_objListHead) and return 1 the
+// candidate list (reached via m_ctx->m_cmdGrid->m_objListHead) and return 1 the
 // moment a candidate matches (x,y) and is not flagged occupied; else 0.
 // ===========================================================================
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
-    CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
+    CPtrList& lst = m_ctx->m_cmdGrid->m_baseList;
     POSITION pos = lst.GetHeadPosition();
     while (pos != 0) {
         CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));

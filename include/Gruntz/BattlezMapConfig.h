@@ -54,13 +54,17 @@ class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
 class CTileTriggerContainer;  // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
 class CGrunt;                 // <Gruntz/Grunt.h> - the grid units the spawn machine drives
-#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (the LoadConfig arg AND m_ctx)
+// (the LoadConfig arg AND m_ctx are the CGruntzMgr - proven by every caller passing
+// the mgr + the offset-identical field quartet; the ex-CLevelInfo view is dead here)
+class CGruntzMgr;
+class CLevelInfo;      // real level record (m_levelInfo member)
+class CLevelSpawnInfo; // spawn-info handle
 
 SIZE(CBattlezMapConfig, 0x1e8);
 class CBattlezMapConfig {
 public:
     // ---- load phase (BattlezMapConfig.cpp) --------------------------------
-    i32 LoadConfig(CLevelInfo* lvl, i32 id, i32 diff); // 0x025020
+    i32 LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff); // 0x025020
 
     // ---- run phase (the BattlezMapConfig RUN-phase unit) -------------------------------
     CBattlezMapConfig();
@@ -133,7 +137,7 @@ public:
         // Run-phase (spawn state-machine) view.
         struct {
             i32 m_active;                       // +0x000  active gate (methods bail when 0)
-            CLevelInfo* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
+            CGruntzMgr* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
             CTriggerMgr* m_triggerMgr;          // +0x008  the level's CTriggerMgr (4x15 grid)
             CBrickzGrid* m_board;               // +0x00c  the CBrickz pathfinding-grid / tile-map
             i32 m_010;                          // +0x010  (untouched by run ctor)
@@ -194,10 +198,12 @@ public:
         // Load-phase (LoadConfig) view.
         struct {
             i32 m_0;                     // +0x00  = 1
-            CLevelInfo* m_levelInfo;     // +0x04  = lvl  (the SAME slot + object as m_ctx)
+            CGruntzMgr* m_levelInfo;     // +0x04  = mgr (the SAME slot + object as m_ctx;
+                                         //         the ex-"level" IS the manager)
             CTriggerMgr* m_8;            // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
             CMapMgr* m_dims;             // +0x0c  = lvl->m_dims        (== m_board)
-            CLevelSpawnInfo* m_10;       // +0x10  = lvl->m_spawnInfo
+            class CPlay* m_10;           // +0x10  = mgr->m_curState (the play state;
+                                         //         its +0x2e4 spawn table feeds m_14)
             CTileTriggerContainer* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
             i32 m_ownerId;               // +0x18  = id (owner/team id)
             char m_pad1c[0x30 - 0x1c];
