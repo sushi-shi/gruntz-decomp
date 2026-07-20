@@ -59,16 +59,8 @@ struct AniImageHost {
     AniSurfDesc* m_10; // +0x10  surface descriptor
 };
 
-// The by-value CString-array element accessor at 0x168e70 (ResolveIndices calls it,
-// xref-proven). This IS CStringArray::GetAt (vptr@0 / m_pData@0x04 layout, body =
-// `return m_pData[i]`), but MFC models CStringArray::GetAt _AFXCOLL_INLINE in
-// afxcoll.inl, so the retail's OUT-OF-LINE COMDAT of it cannot be re-emitted as the
-// real MFC method (redefinition) - hence this minimal shim of the same shape. Method
-// impl (RVA 0x168e70) lives in AniRecord.cpp.
-struct CAniStrArray {
-    char m_00[4];             // +0x00  CObject vptr slot (unread)
-    CString* m_data;          // +0x04  CString array base (== CStringArray::m_pData)
-    CString GetAt(int index); // 0x168e70
-};
+// (CAniStrArray is GONE - 0x168e70 IS the real ?GetAt@CStringArray COMDAT; MSVC5
+// emits it out-of-line naturally (by-value CString return), so the "cannot re-emit
+// the real MFC method" wall was false. Direct tokens.GetAt(i) + @rva-symbol pin.)
 
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDVIEWS_H

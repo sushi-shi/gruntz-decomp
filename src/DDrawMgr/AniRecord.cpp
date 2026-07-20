@@ -207,10 +207,11 @@ void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
     if (m_count > 0) {
         m_indices = static_cast<i32*>(operator new(static_cast<u32>((m_count * 4))));
         for (i32 i = 0; i < m_count; i++) {
-            // GetAt reaches the OUT-OF-LINE CStringArray::GetAt COMDAT (0x168e70), which
-            // MFC models _AFXCOLL_INLINE - so it is bound as the layout-identical
-            // CAniStrArray shim (vptr@0 / m_data@0x04 == m_pData). See AniRecordViews.h.
-            CString t = (reinterpret_cast<CAniStrArray*>(&tokens))->GetAt(i);
+            // The direct MFC call: MSVC5's budget does NOT inline the by-value-CString
+            // accessor - it emits its own out-of-line ?GetAt@CStringArray COMDAT and
+            // calls it, exactly retail's 0x168e70 shape. (The ex-CAniStrArray shim's
+            // "cannot re-emit the real method" wall was WRONG.)
+            CString t = tokens.GetAt(i);
             void* v = 0;
             owner->m_map.Lookup(t, v);
             m_indices[i] = reinterpret_cast<i32>(v);
@@ -232,16 +233,10 @@ i32 CAniRecordView::GetSize() {
 }
 
 // ---------------------------------------------------------------------------
-// CAniStrArray::GetAt (0x168e70) - the out-of-line CStringArray::GetAt COMDAT
-// (a by-value CString-array element accessor; ResolveIndices @0x168d00 calls it,
-// xref-proven). Decl in <DDrawMgr/AniRecordViews.h> (MFC models GetAt inline, so
-// this out-of-line copy cannot be re-emitted as the real CStringArray method).
-// Returns (via the RVO return slot) a copy of the CString at m_data[index].
-SIZE_UNKNOWN(CAniStrArray);
-RVA(0x00168e70, 0x27)
-CString CAniStrArray::GetAt(int index) {
-    return m_data[index];
-}
+// 0x168e70 IS the real ?GetAt@CStringArray COMDAT, emitted by THIS TU's direct
+// tokens.GetAt(i) call (MSVC5 declines to inline the by-value-CString accessor).
+// The ex-CAniStrArray shim + its hand copy are GONE; the COMDAT is name-pinned.
+// @rva-symbol: ?GetAt@CStringArray@@QBE?AVCString@@H@Z 0x00168e70 0x27
 
 // ---------------------------------------------------------------------------
 // 0x168ea0: (re)allocate the +0x10 work buffer from the owner's pool with size
