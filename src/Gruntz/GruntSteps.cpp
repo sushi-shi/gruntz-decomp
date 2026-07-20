@@ -1187,7 +1187,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             break;
     }
     (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClockLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClock));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchorLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimerLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_entranceClockLo));

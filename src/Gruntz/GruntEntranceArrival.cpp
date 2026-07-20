@@ -884,10 +884,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             return 0;
         } else {
             DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
-            m_toyDurationLo = static_cast<i32>(tt);
-            m_toyDurationHi = 0;
-            m_toyClockLo = static_cast<i32>(g_frameTime);
-            m_toyClockHi = 0;
+            m_toyDuration = static_cast<u32>(tt);
+            m_toyClock = static_cast<u32>(g_frameTime);
             m_toyTime = 0x64;
             CreateToyTimeSprite();
         }
@@ -936,7 +934,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
     i32 t0 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy1) + 0x24));
     i32 t1 = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_poseToy2) + 0x24));
-    i64 elapsed = *reinterpret_cast<i64*>(&m_toyClockLo) - static_cast<i64>(static_cast<u32>(g_frameTime));
+    i64 elapsed = m_toyClock - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
         cap = 0;
@@ -1040,8 +1038,8 @@ i32 CGrunt::StepEntranceRelatchA() {
         return 0;
     }
     // sub-player armed-but-still-running: the toy-break timer path.
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_toyClockLo);
-    if (diff >= *reinterpret_cast<i64*>(&m_toyDurationLo) && m_entranceStamped == 0 && ready == 1) {
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_toyClock;
+    if (diff >= m_toyDuration && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != 0) {
             m_toyTimeSprite->m_flags |= 0x10000;
             m_toyTimeSprite = 0;
@@ -1660,8 +1658,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - *reinterpret_cast<i64*>(&m_toyClockLo);
-    if (elapsed >= *reinterpret_cast<i64*>(&m_toyDurationLo)) {
+    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_toyClock;
+    if (elapsed >= m_toyDuration) {
         if (m_entranceStamped == 0 && m_10->m_screenX == m_lastTilePxX
             && m_10->m_screenY == m_lastTilePxY) {
             if (m_toyTimeSprite) {

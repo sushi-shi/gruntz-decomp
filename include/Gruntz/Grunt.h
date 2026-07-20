@@ -1381,10 +1381,8 @@ public:
     // +0x468 owned-cell array (9 x 0x68, +0x468..+0x810; entrance-cell record table,
     // 0x68-byte stride). Value array so ~CGrunt auto-emits the __ehvec_dtor teardown.
     CGruntCellRec m_cells[9]; // +0x468..+0x810  (per-direction anim-name cell records)
-    i32 m_toyClockLo;         // +0x810 (toy timer: anchor clock lo; i64 w/ m_toyClockHi)
-    i32 m_toyClockHi;         // +0x814 (toy timer: anchor clock hi)
-    i32 m_toyDurationLo;      // +0x818 (toy timer: duration lo)
-    i32 m_toyDurationHi;      // +0x81c (toy timer: duration hi)
+    i64 m_toyClock;           // +0x810 (toy timer: anchor clock; ex the Lo/Hi dword pair)
+    i64 m_toyDuration;        // +0x818 (toy timer: duration; ex the Lo/Hi dword pair)
     i32 m_idleAnchorLo;       // +0x820 (idle-timer: low)
     i32 m_idleAnchorHi;       // +0x824 (idle-timer: high)
     i32 m_idleDelayLo;        // +0x828 (idle-timer: delay low)
