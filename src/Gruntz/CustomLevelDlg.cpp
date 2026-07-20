@@ -1,6 +1,7 @@
 #include <Gruntz/Dialogs.h>       // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (IsBattlezMapFile)
+#include <Gruntz/WaitCursorApp.h> // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h> // g_battlezCustomMsgMap (this dialog's MFC message map @0x5e8e98)
@@ -22,7 +23,7 @@ RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));
     if (pDX->m_bSaveAndValidate == 0) {
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->BeginWaitCursor();
         {
             char buf[0x400];
             _getcwd(buf, 0x400);
@@ -45,7 +46,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
             }
             ::SendMessageA(item->m_hWnd, 0x186, 0, 0);
         }
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        (reinterpret_cast<CWaitCursorApp*>(AfxGetModuleState()->m_pCurrentWinApp))->EndWaitCursor();
         return;
     }
     i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, 0x188, 0, 0));

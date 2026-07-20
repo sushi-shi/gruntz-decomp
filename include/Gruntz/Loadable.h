@@ -32,11 +32,9 @@ public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's
     // 0xd5dc0). Declared-only (reloc-masked). Every concrete leaf overrides it.
     virtual i32 IsLoaded() OVERRIDE; // [5] @+0x14  0x155700
-    // slot 6 IsReady carries the CWapObj default body (@0x001c08 `return 1`);
-    // redeclared per the family convention (the audit diffs src-only tables vs
-    // CObject - the abstract CWapObj emits no vtable to diff against).
-    virtual i32 IsReady() OVERRIDE; // [6] @+0x18  0x001c08
-    virtual i32 Unload();           // [7] @+0x1c  0x155740 (reset/unload hook)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, now a
+    // real body); not redeclared here (the redeclaration was a declared-only phantom).
+    virtual i32 Unload(); // [7] @+0x1c  0x155740 (reset/unload hook; bare-ret i32 no-op)
     virtual i32 GetClassId();       // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
     i32 m_04; // +0x04  (reset to -1 on teardown)

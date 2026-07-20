@@ -71,6 +71,14 @@ i32 Gap_0d5c10(void) {
 // obj emits both halves of the pair). Was the fabricated `CDDrawSubMgrFar :
 // CObject` view with four body-less placeholder virtuals - dissolved.
 
+// CWapObj::IsReady (0x000d5da0): the slot-6 base default - `return 1`. Reached by
+// the whole family through the 0x001c08 ILT thunk; every kind inherits it unless it
+// overrides. Un-phantoms the shared slot-6 declaration.
+RVA(0x000d5da0, 0x6)
+i32 CWapObj::IsReady() {
+    return 1;
+}
+
 RVA(0x000d5dc0, 0xb)
 i32 CWapObj::IsLoaded() {
     return *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x10)) > 0;

@@ -770,7 +770,6 @@ rva,name,lib,confidence,source
 0x0c7e20,__inc,LIBCMT,LOW,anchored
 0x0c7e70,__inc,LIBCMT,LOW,anchored
 0x0cee30,_DllMain@12,LIBCMT,LOW,anchored
-0x0d5da0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x0d5e50,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0da4c0,__inc,LIBCMT,LOW,anchored
 0x0da510,__inc,LIBCMT,LOW,anchored
@@ -1837,7 +1836,6 @@ rva,name,lib,confidence,source
 0x143cd0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x150020,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x151d80,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x154a00,___init_collate,LIBCMT,LOW,anchored
 0x154a30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x155740,__fpclear,LIBCMT,LOW,anchored
 0x155890,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
