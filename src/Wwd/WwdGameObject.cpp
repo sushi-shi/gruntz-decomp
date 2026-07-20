@@ -178,7 +178,9 @@ void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefau
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
+    CObject* sprOb = 0;
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
+    spr = static_cast<CSprite*>(sprOb);
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
@@ -199,7 +201,9 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
 RVA(0x00150540, 0x65)
 void CWwdGameObjectA::ApplyName(const char* name) {
     CSprite* spr = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
+    CObject* sprOb = 0;
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
+    spr = static_cast<CSprite*>(sprOb);
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_minIndex;
@@ -504,8 +508,10 @@ i32 CWwdGameObjectA::Sub150c30(i32 src) {
         // number against the sprite's valid range, then index its frame array. The former
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
+        CObject* foundOb = 0;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        mgr->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(found));
+        mgr->m_imageRegistry->m_10map.Lookup(name, foundOb);
+        found = static_cast<CSprite*>(foundOb);
         m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -649,7 +655,9 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
 RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    CObject* handlerOb = 0;
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    handler = static_cast<CGameObject*>(handlerOb);
     EnsureWorker80(handler);
 }
 
@@ -700,7 +708,9 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
 RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    CObject* handlerOb = 0;
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    handler = static_cast<CGameObject*>(handlerOb);
     EnsureWorker88(handler);
 }
 
@@ -745,7 +755,9 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
 RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
-    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    CObject* handlerOb = 0;
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
+    handler = static_cast<CGameObject*>(handlerOb);
     EnsureWorker90(handler);
 }
 

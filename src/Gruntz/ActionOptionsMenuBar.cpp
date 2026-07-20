@@ -109,31 +109,34 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr = 0;
+    spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_NORMCHIPZ",
-        reinterpret_cast<CObject*&>(spr)
+        spr_ob
     );
+    spr = static_cast<CSprite*>(spr_ob);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = 0;
+    spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_HIGHCHIPZ",
-        reinterpret_cast<CObject*&>(spr)
+        spr_ob
     );
+    spr = static_cast<CSprite*>(spr_ob);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = 0;
+    spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
         "GAME_INGAMEICONZ_GREYCHIPZ",
-        reinterpret_cast<CObject*&>(spr)
+        spr_ob
     );
+    spr = static_cast<CSprite*>(spr_ob);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;

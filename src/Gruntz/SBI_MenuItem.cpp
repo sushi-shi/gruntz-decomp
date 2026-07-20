@@ -17,6 +17,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CImageRegistry + CSprite)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_soundRegistry's real class (the cue host: m_10 cue map + m_30 gate)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (one shape)
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
@@ -42,7 +43,8 @@
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
-// CMiCue/DSoundCloneInst/CMapStringToOb/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
+// CMiCue/DSoundCloneInst live in <Gruntz/SBI_MenuItem.h>. The cue host is the REAL
+// m_soundRegistry (CDDrawSubMgrLeafScan) - the ex CMiMusicHost view is DISSOLVED.
 
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
@@ -217,10 +219,16 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     } else if (state == 2 && a) {
         // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
         // cue facet's map @+0x10 differs from CDDrawSubMgrLeafScan's install map).
-        CMiMusicHost* mh = reinterpret_cast<CMiMusicHost*>(g_gameReg->m_world->m_soundRegistry);
+        // The sound registry IS the cue host - no view: m_10 is its keyed cue map
+        // (CMapStringToPtr, Ptr band), m_30 its busy/gate guard.
+        CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_30 == 0) {
             CMiCue* found = 0;
-            (reinterpret_cast<CMapStringToOb*>((reinterpret_cast<char*>(mh) + 0x10)))->Lookup("GAME_TABHIGHLIGHT2", reinterpret_cast<CObject*&>(found));
+            void* foundP = 0;
+            // the cue map is the Ptr band (void* values), so the element read is a
+            // plain from-void cast, not a class-to-class cross-cast.
+            mh->m_10.Lookup("GAME_TABHIGHLIGHT2", foundP);
+            found = reinterpret_cast<CMiCue*>(foundP);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;

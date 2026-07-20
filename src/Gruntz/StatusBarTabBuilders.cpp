@@ -107,11 +107,13 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
     CImageSet* rec = 0;
+    CObject* recOb = 0;
     m_cmd = p3;
     h->m_imageRegistry->m_10map.Lookup(
         "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-        reinterpret_cast<CObject*&>(rec)
+        recOb
     );
+    rec = static_cast<CImageSet*>(recOb);
     CImage* spr;
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = 0;
@@ -123,7 +125,9 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CImageSet* cfg = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(cfg));
+    CObject* cfgOb = 0;
+    m_24->m_imageRegistry->m_10map.Lookup(key, cfgOb);
+    cfg = static_cast<CImageSet*>(cfgOb);
     m_30 = cfg;
     if (cfg == 0) {
         return 0;
@@ -457,10 +461,12 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_54 = onLeft;
     if (onLeft == 0) {
         CImageSet* n = 0;
+        CObject* nOb = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            reinterpret_cast<CObject*&>(n)
+            nOb
         );
+        n = static_cast<CImageSet*>(nOb);
         CImage* v;
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
@@ -472,10 +478,12 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_48 = (p7 - p5) / 2 + parent->m_rect14.m_4;
     } else {
         CImageSet* n = 0;
+        CObject* nOb = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
-            reinterpret_cast<CObject*&>(n)
+            nOb
         );
+        n = static_cast<CImageSet*>(nOb);
         CImage* v;
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
@@ -809,8 +817,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
     CSprite* head = 0;
+    CObject* headOb = 0;
     m_cmd = p3;
-    h->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(head));
+    h->m_imageRegistry->m_10map.Lookup(key, headOb);
+    head = static_cast<CSprite*>(headOb);
     m_glyphMap = head;
     if (head == 0) {
         return 0;
@@ -838,9 +848,11 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CImage* val;
     if (selMode == 0) {
         CSprite* sel = 0;
+        CObject* selOb = 0;
         m_24
             ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
+            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", selOb);
+        sel = static_cast<CSprite*>(selOb);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;
@@ -852,9 +864,11 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
     } else {
         CSprite* sel = 0;
+        CObject* selOb = 0;
         m_24
             ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
+            .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", selOb);
+        sel = static_cast<CSprite*>(selOb);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;

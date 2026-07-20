@@ -42,23 +42,12 @@ struct CMiCue {
 };
 SIZE_UNKNOWN(CMiCue);
 
-// The cue lookup map embedded at the music host's +0x10 (CMapStringToOb::Lookup,
-// 0x1b8438, ret 8) - the cue-facet map, distinct from the image registry's m_10map.
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-
-// The music host reached as g_gameReg->m_world->m_soundRegistry viewed as its cue facet: a
-// non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at
-// host+0x10 (documented sub-object offset). This is the SAME +0x28 sound object as
-// CDDrawSurfaceMgr::m_28 (CDDrawSubMgrLeafScan, the install facet); its cue map's Lookup (0x1b8438)
-// differs from the install facet's (0x1b8008), so the cue view is reached by a
-// documented multi-view cast on m_28 - the cross-TU merge with SBI_RectOnly's
-// identical CSbiMusicHost is deferred (see report).
-struct CMiMusicHost {
-    char m_pad0[0x30];
-    i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip)
-};
-SIZE_UNKNOWN(CMiMusicHost);
+// (CMiMusicHost DISSOLVED 2026-07-20: it was a duplicate view of
+// g_gameReg->m_world->m_soundRegistry, whose real class CDDrawSubMgrLeafScan already
+// carries the cue map (m_10, CMapStringToPtr @+0x10, Lookup 0x1b8438) and the busy/gate
+// guard (m_30). The old "cue map @0x1b8438 differs from the install map @0x1b8008" note
+// was a mis-read - it is the ONE +0x10 Ptr-band map. The cue play reads m_soundRegistry
+// directly; SBI_MenuItem.cpp includes <DDrawMgr/DDrawSubMgrLeafScan.h>.)
 
 // The owning rect-only host at m_2c: SetState drives its tab state through three
 // sibling thunks (all ILT-reloc-masked). m_10c is the active-tab latch.

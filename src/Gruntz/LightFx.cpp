@@ -141,9 +141,11 @@ void CLightFx::RegisterActs() {
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
+    CObject* nodeOb = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), reinterpret_cast<CObject*&>(node));
+    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), nodeOb);
+    node = reinterpret_cast<i32>(nodeOb);
     i32 found = node;
     g_gameReg->m_logicPump->Push(reinterpret_cast<CImageSet*>(found), anchorA, 7);
     if (found != 0) {

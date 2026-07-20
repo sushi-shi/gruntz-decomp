@@ -4096,8 +4096,10 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         return 1;
     }
     CImageSet* grid = 0;
+    CObject* gridOb = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
-    m_c->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(grid));
+    m_c->m_imageRegistry->m_10map.Lookup(key, gridOb);
+    grid = static_cast<CImageSet*>(gridOb);
     m_grid = grid;
     if (grid == 0) {
         return 1;

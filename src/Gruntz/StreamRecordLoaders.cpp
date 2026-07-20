@@ -192,6 +192,8 @@ SIZE_UNKNOWN(CEventLoadRec);
 RVA(0x0009cab0, 0x23)
 i32 CDDrawWorkerCache::Find(const char* key) {
     i32 local = 0;
-    m_10.Lookup(key, reinterpret_cast<CObject*&>(local));
+    CObject* localOb = 0;
+    m_10.Lookup(key, localOb);
+    local = reinterpret_cast<i32>(localOb);
     return local;
 }

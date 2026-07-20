@@ -252,7 +252,9 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     CSprite* spr = 0;
-    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", reinterpret_cast<CObject*&>(spr));
+    CObject* sprOb = 0;
+    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", sprOb);
+    spr = static_cast<CSprite*>(sprOb);
     if (!spr) {
         return 0;
     }

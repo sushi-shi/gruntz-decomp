@@ -169,7 +169,9 @@ i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) 
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CImageSet* out;
-                reg->m_imageRegistry->m_10map.Lookup(buf, reinterpret_cast<CObject*&>(out));
+                CObject* outOb;
+                reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
+                out = static_cast<CImageSet*>(outOb);
                 m_34 = out;
             } else {
                 m_34 = 0;
