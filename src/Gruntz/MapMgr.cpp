@@ -84,29 +84,27 @@ CMapArrayA::CMapArrayA() {
 // not source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
-    MapElemA* block = static_cast<MapElemA*>(::operator new(count * sizeof(MapElemA)));
+    BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
     m_0 = block;
     if (!block) {
         return reinterpret_cast<i32>(block);
     }
 
-    // @fold-TODO: MapElemA IS BrickzNode (0x24 B, links @+0x14/+0x18) - the pool's block
-    // pointer is typed BrickzNode* on the shared class, so the element view casts once.
-    m_block = reinterpret_cast<BrickzNode*>(block);
+    m_block = block;
     m_count = count;
-    block->m_prev = 0;
+    block->m_18 = 0;
 
-    MapElemA* e = block;
+    BrickzNode* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == reinterpret_cast<MapElemA*>(m_block)) {
-            e->m_prev = 0;
+        if (e == m_block) {
+            e->m_18 = 0;
         } else {
-            e->m_prev = e - 1;
+            e->m_18 = e - 1;
         }
-        e->m_next = e + 1;
+        e->m_14 = e + 1;
         ++e;
     }
-    (reinterpret_cast<MapElemA*>(m_block))[m_count - 1].m_next = 0;
+    m_block[m_count - 1].m_14 = 0;
     return 1;
 }
 

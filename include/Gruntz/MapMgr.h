@@ -67,7 +67,7 @@ public:
     i32 Allocate(u32 count);
 
     BrickzNode* m_block; // +0x00  the 0x24-byte search-record pool (was void*)
-    struct MapElemA* m_0; // +0x04  the owned element block (the dtor frees it)
+    BrickzNode* m_0;     // +0x04  the owned element block (the dtor frees it; == m_block)
     u32 m_count;         // +0x08
 };
 
@@ -257,13 +257,8 @@ public:
 typedef CMapMgr CBrickzGrid;
 
 // --- the embedded-array element records (ex MapMgr.cpp-local) -------------------
-// A 0x24-byte element of CMapArrayA's block: next link @+0x14, prev link @+0x18.
-struct MapElemA {
-    char m_pad0[0x14];
-    MapElemA* m_next; // +0x14
-    MapElemA* m_prev; // +0x18
-    char m_pad1c[0x24 - 0x1c];
-};
+// (MapElemA is GONE - the 0x24-byte A-pool element IS BrickzNode: m_next/m_prev
+// were its m_14/m_18 list links, same size, same alloc arithmetic.)
 
 // A 0x0c-byte element of CMapArrayB's block: data @+0x00, prev @+0x04, next @+0x08.
 struct MapElemB {
