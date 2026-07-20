@@ -17,7 +17,6 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-struct CWorldView;
 class CDDrawSubMgrLeafScan;
 typedef CDDrawSubMgrLeafScan CSndHost;
 class CDDrawWorkerRegistry;
