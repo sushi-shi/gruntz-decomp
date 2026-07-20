@@ -897,7 +897,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         r2++;
     }
-    i32 budget = static_cast<i32>((static_cast<double>(*reinterpret_cast<i32*>((reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238 + 0x378)))
+    i32 budget = static_cast<i32>((static_cast<double>(m_ctx->m_options[m_curCell].m_comboSel)
                        * static_cast<double>(m_budgetMul) * g_diffScale));
     if (slot38 >= m_spawnPct || freeCount >= budget) {
         unit->m_2d8 = 4;
@@ -4895,8 +4895,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         unit->m_defenderX = -1;
         unit->m_defenderY = -1;
     } else {
-        char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
-        if (*reinterpret_cast<i32*>((rec + 0x174)) != 0 || *reinterpret_cast<i32*>((rec + 0x170)) == 0) {
+        if (m_ctx->m_options[band].m_clearedRound != 0 || m_ctx->m_options[band].m_liveGate == 0) {
             // Invalid record: recycle the unit's coords onto g_coordPool, reset state.
             if (unit->CoordCount() != 0) {
                 void* pos = unit->CoordHead();
@@ -4922,10 +4921,10 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         }
     }
     band = unit->m_2e8;
-    char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
-    i32 rx = *reinterpret_cast<i32*>((rec + 0x258));
-    i32 ry = *reinterpret_cast<i32*>((rec + 0x25c));
-    char* edge = rec + 0x188;
+    CBattlezMapConfig* bundle = &m_ctx->m_options[band].m_038;
+    i32 rx = bundle->m_markerX;
+    i32 ry = bundle->m_markerY;
+    char* edge = reinterpret_cast<char*>(bundle); // bundle-relative cursor (offset reads below)
     if (unit->CoordCount() != 0) {
         if (unit->m_defenderState != 6) {
             return 1;
@@ -5535,9 +5534,8 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     char* recB0 = 0;
     i32 cell = unit->m_arrivalCol;
     if (cell >= 0 && cell < 4) {
-        char* rec = reinterpret_cast<char*>(m_ctx) + cell * 0x238;
-        recA = rec + 0x150;
-        recB0 = rec + 0x188;
+        recA = reinterpret_cast<char*>(&m_ctx->m_options[cell]);
+        recB0 = reinterpret_cast<char*>(&m_ctx->m_options[cell].m_038);
     }
     if (unit->CoordCount() == 0) {
         if (cell == -1) {
@@ -5549,12 +5547,12 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
                 r++;
             }
             i32 band = r % 4;
-            char* recB = reinterpret_cast<char*>(m_ctx) + band * 0x238 + 0x188;
-            i32 cnt = *reinterpret_cast<i32*>((recB + 0xf8));
-            i32 x = *reinterpret_cast<i32*>((recB + 0xd0));
-            i32 y = *reinterpret_cast<i32*>((recB + 0xd4));
+            CBattlezMapConfig* b = &m_ctx->m_options[band].m_038;
+            i32 cnt = b->m_0f0.GetSize();
+            i32 x = b->m_markerX;
+            i32 y = b->m_markerY;
             if (cnt != 0) {
-                Coord** arr = *reinterpret_cast<Coord***>((recB + 0xf4));
+                Coord** arr = reinterpret_cast<Coord**>(b->m_0f0.GetData()); // the CPtrArray band
                 Coord* pair = arr[rand() % cnt];
                 x = pair->m_x;
                 y = pair->m_y;
@@ -5567,7 +5565,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             unit->m_dwell = 0;
             return 1;
         }
-        char* recB = reinterpret_cast<char*>(m_ctx) + cell * 0x238 + 0x188;
+        CBattlezMapConfig* recB = &m_ctx->m_options[cell].m_038;
         if (recB == 0) {
             return 1;
         }
