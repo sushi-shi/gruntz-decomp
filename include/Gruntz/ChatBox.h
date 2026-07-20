@@ -49,7 +49,7 @@ public:
     // 0x182ab0 (__thiscall, defined in MenuStateAssets.cpp): seed the box from the
     // resource holder + the game window's HWND, copy/derive the region rect. The ex
     // MenuRegion view of this same `this` is dissolved onto CChatBox.
-    i32 InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
+    i32 InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
     void Reset();                             // 0x182b30 - free the node list, re-zero the rows
     void Clear();                             // 0x182b60 - free node payloads, empty the list
     i32 Find(const char* s);                  // 0x182be0 - find a node by string key
@@ -88,7 +88,7 @@ public:
                               //       resource holder (MenuRegion::Init @0x182ab0 stores
                               //       a CDDrawSurfaceMgr*): the box drives its +0x04
                               //       render set, +0x10 image registry, +0x28 cue host.
-    i32 m_4;                  // +0x04  (Init seeds it with the HWND; otherwise only zeroed)
+    HWND m_wnd;               // +0x04  the command-target window (InitRegion arg; ex the CMenuItemHost view's m_wnd)
     // +0x08..+0x1f: the region rect + 2 scalars (retail Init @0x182ab0 CopyRects the
     // rect arg into +0x08 and stores the two i32 args at +0x18/+0x1c).
     RECT m_rect8; // +0x08  region rect (left/top/right/bottom)

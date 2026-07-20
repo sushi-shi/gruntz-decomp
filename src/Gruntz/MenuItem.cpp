@@ -241,7 +241,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(void* notify) {
     if (notify) {
-        (reinterpret_cast<CChatBox*>(m_host))->ScrollRow0();
+        m_host->ScrollRow0();
     }
     Disable(2);
     return 1;
@@ -249,9 +249,9 @@ i32 CMenuItem::Configure(void* notify) {
 // trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
-    (reinterpret_cast<CChatBox*>(m_host))->ScrollRow1();
+    m_host->ScrollRow1();
     NotifyCmd();
-    (reinterpret_cast<CChatBox*>(m_host))->ReplaceNode(*reinterpret_cast<void**>(&m_key));
+    m_host->ReplaceNode(*reinterpret_cast<void**>(&m_key));
     return 1;
 }
 // hit-test: is (x,y) inside the cached placed rect?

@@ -93,12 +93,12 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 // the three ex-blockers (m_page CChatPage->CDDrawSurfaceMgr, m_pad8->RECT, m_wrapFlag
 // char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
 RVA(0x00182ab0, 0x7b)
-i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
+i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f) {
     if (!src) {
         return 0;
     }
     m_page = src;
-    m_4 = a;
+    m_wnd = wnd;
     m_wrapFlag = f;
     m_headGap = d;
     m_rowSpacing = e;
@@ -122,7 +122,7 @@ RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
     m_page = 0;
-    m_4 = 0;
+    m_wnd = 0;
     m_activeNode = 0;
     m_row0Anim = 0;
     m_row1Anim = 0;

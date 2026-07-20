@@ -47,12 +47,8 @@ class CMenuItem;
 struct CMenuItemPlacer {};
 SIZE_UNKNOWN(CMenuItemPlacer);
 
-// The chatbox host (m_8) Trigger drives; its +0x04 is the command-target window.
-struct CMenuItemHost {
-    char pad0[0x4];
-    HWND m_wnd; // +0x04 command-target window (NotifyCmd)
-};
-SIZE_UNKNOWN(CMenuItemHost);
+// (CMenuItemHost is GONE - the "+0x08 chatbox host" IS the CChatBox itself: same
+// +0x04 command-target HWND, and the Scroll/ReplaceNode calls were already cast to it.)
 
 // The string->item catalog reached through m_4->m_10->m_10 (CMapStringToOb::Lookup,
 // 0x1b8008) - the same two-hop the page uses (m_0 -> +0x10 ptr -> +0x10 map base).
@@ -73,7 +69,7 @@ SIZE_UNKNOWN(CMenuItemHostOwner);
 // The template Init reads (its [0] is the catalog host, [4] the chatbox host).
 struct CMenuItemTemplate {
     CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
-    CMenuItemHost* m_4;      // +0x04 -> chatbox host
+    class CChatBox* m_4;     // +0x04 -> the chatbox
 };
 SIZE_UNKNOWN(CMenuItemTemplate);
 
@@ -129,7 +125,7 @@ public:
 
     // implicit vptr                  // +0x00
     CMenuItemHostOwner* m_owner;   // +0x04  owner / catalog host (template->[0])
-    CMenuItemHost* m_host;         // +0x08  chatbox host (command window + Scroll/ReplaceNode)
+    class CChatBox* m_host;        // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
     CMenuItemTemplate* m_template; // +0x0c  the source template (Init arg a0)
     CString m_name;                // +0x10  item name (GetName)
     CString m_key;                 // +0x14  key string (Trigger ReplaceNode payload)
