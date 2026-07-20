@@ -628,8 +628,8 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     i32 zk = m_object->m_layer->m_anchorY + m_object->m_screenY + 0x186a0;
-    if (m_object->m_latchedAnimId != zk) {
-        m_object->m_latchedAnimId = zk;
+    if (m_object->m_sortKey != zk) {
+        m_object->m_sortKey = zk;
         m_object->m_flags |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
@@ -791,8 +791,8 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x1000000;
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
+    if (m_object->m_sortKey != 0) {
+        m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
 }

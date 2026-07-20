@@ -61,7 +61,7 @@ struct LeafCue : public CLoadable {
 // zeroed tail with +0x18 before +0x14. The vptr is cl-auto-stamped (ctor prologue).
 inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_04 = count;
-    m_08 = 0;
+    m_flags = 0;
     m_0c = handle;
     m_10 = 0;
     m_18 = 0;

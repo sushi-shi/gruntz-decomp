@@ -35,9 +35,9 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId != 0xdbba0) {
-        o->m_latchedAnimId = 0xdbba0;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xdbba0) {
+        o->m_sortKey = 0xdbba0;
         o->m_flags |= 0x20000;
     }
     m_health = 0; // +0x5c  wingz-time icon screen-offset X (reuses the base slot)

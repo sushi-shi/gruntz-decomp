@@ -38,7 +38,7 @@ extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance 
 RVA(0x000476b0, 0x69)
 i32 RbEffect::Update() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 1) {
-        CGameObject* t = m_10;
+        CWwdGameObjectA* t = m_10;
         if (t->m_114 == 1) {
             g_gameReg->m_cmdGrid->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
         }

@@ -147,7 +147,7 @@ i32 CTriggerMgr::PlaceObject(
         return -1;
     }
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CGameObject* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
+    CWwdGameObjectA* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;
     }
@@ -303,7 +303,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         for (i32 col = 0; col < 15; col++) {
             CTmCell* g = cell[col];
             if (g != 0 && g->m_entranceCommitted != 0) {
-                CGameObject* o = g->m_10;
+                CWwdGameObjectA* o = g->m_10;
                 if (o->m_layer != 0) {
                     i32 x0 = o->m_screenX - 15;
                     i32 y0 = o->m_screenY - 15;

@@ -15,7 +15,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <string.h>                  // strcpy/strlen (blit-param label buffer)
-#include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
+#include <Wwd/WwdGameObjectFamily.h> // the CGameObject/A/F/B/C dtor-family hierarchy
 #include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
 #include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
@@ -71,14 +71,14 @@ extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
-    m_08 = field08;
+    m_flags = field08;
     m_0c = owner;
     m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
     m_screenX = static_cast<i32>(0x80000000);
-    m_64 = static_cast<i32>(0x80000000);
+    m_clip.left = static_cast<i32>(0x80000000);
     m_3c = 0;
-    m_40 = 0;
+    m_stateFlags = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ CResolveNode::~CResolveNode() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b4f0 - ~CWwdGameObjectE (vtable 0x5f0020): { Unload(); } - the inline E
+// 0x15b4f0 - ~CGameObject (vtable 0x5f0020): { Unload(); } - the inline E
 // release pass folds, then the CString member dtor, then the inline
 // ~CResolveNode + ~CLoadable + CObject-grand-base restamp fold in (retail tail).
 // @early-stop
@@ -175,7 +175,7 @@ CResolveNode::~CResolveNode() {
 // logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
 // zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
 RVA(0x0015b4f0, 0xde)
-CWwdGameObjectE::~CWwdGameObjectE() {
+CGameObject::~CGameObject() {
     Unload(); // devirtualized in the dtor -> the inline E pass
 }
 
@@ -190,7 +190,7 @@ CWwdGameObjectE::~CWwdGameObjectE() {
 // vs retail `testb mem`) and the budget subtract (mem-operand vs reg-load first).
 // Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
-void CWwdGameObjectE::Notify_15b650(void* p) {
+void CGameObject::Notify_15b650(void* p) {
     char* o = reinterpret_cast<char*>(this);
     if (*reinterpret_cast<unsigned char*>((o + 0x8)) & 0x8) {
         i32 d = *reinterpret_cast<i32*>(o + 0x128) - *reinterpret_cast<i32*>((reinterpret_cast<char*>(p) + 0x120));
@@ -217,7 +217,7 @@ RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
     Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
     m_04 = -1;
-    m_08 = 0;
+    m_flags = 0;
     m_0c = 0;
 }
 
@@ -236,7 +236,7 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
-    m_08 = field08;
+    m_flags = field08;
     m_0c = owner;
     m_10 = 0;
     m_14 = 0;
@@ -261,10 +261,10 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 // Init (0x15b940): zero +0x19c, construct the +0x1a0 command map, then Setup.
 // ---------------------------------------------------------------------------
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
     m_1a0.Construct(this);
-    return CWwdGameObject::Setup(a1, a2, a3, a4);
+    return CGameObject::Setup(a1, a2, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
@@ -280,14 +280,14 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 
 // CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line.
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
-    return CWwdGameObject::Setup(0, 0, a3, a4);
+i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
+    return CGameObject::Setup(0, 0, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
 // 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init
 // call 0x166810, trailing base CResolveNode dtor 0x429b): the 4-level polymorphic
-// chain CWwdGameObjectB : WwdBLevel2 : WwdBMid : WwdBResolve (family header).
+// chain CWwdGameObject : WwdBLevel2 : WwdBMid : WwdBResolve (family header).
 // @early-stop
 // eh-dtor multi-level trylevel wall: the real 4-level polymorphic chain reproduces
 // the four cl-emitted vptr restamps + the per-phase field re-clears + the CString/
@@ -295,7 +295,7 @@ i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
 // destruct phases (the same zero-register-pinning const coloring as the A/C/F
 // variants) - not source-steerable.
 RVA(0x0015bd10, 0x1ef)
-CWwdGameObjectB::~CWwdGameObjectB() {
+CWwdGameObject::~CWwdGameObject() {
     Unload(); // devirtualized -> the inline B pass (Clear_166810 + geometry + E release)
     // m_1dc (CObList) member-destroys, then ~A folds (retail: the A-phase spills
     // to `call 0x15b5d0` and the bottom keeps the 0x5efbc0 stamp + `call 0x429b`).
@@ -331,9 +331,9 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 
 // CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *reinterpret_cast<char*>(&m_18c) = static_cast<char>(flag);
-    return CWwdGameObject::Setup(a1, a2, a3, a4);
+i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
+    m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
+    return CGameObject::Setup(a1, a2, a3, a4);
 }
 
 // 0x15c290: blit-param init.

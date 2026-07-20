@@ -250,7 +250,7 @@ typedef enum WarlordBattleTag {
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                   \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                   \
         dst = reinterpret_cast<CAniElement*>(h);                                                                     \
     }
 
@@ -294,8 +294,8 @@ CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), C
     // anim id and mark the geometry z-key dirty.
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    if (m_object->m_latchedAnimId != 0xc3500) {
-        m_object->m_latchedAnimId = 0xc3500;
+    if (m_object->m_sortKey != 0xc3500) {
+        m_object->m_sortKey = 0xc3500;
         m_object->m_flags |= 0x20000;
     }
     m_38->m_flags |= 0x2000002;
@@ -500,7 +500,7 @@ i32 CWarlord::LoadAttributes() {
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         i32 dist =
             (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -544,7 +544,7 @@ i32 CWarlord::LoadAttributes2() {
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         i32 dist =
             (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -631,7 +631,7 @@ i32 CWarlord::RearmMoving2() {
 // DECODED (for the final sweep):
 //   ((CAniAdvanceCursor*)sub)->Advance(g_engineFrameDelta);                      // m_38+0x1a0, 0x15c360
 //   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
-//   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
+//   CWwdGameObjectA* o = m_10; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {
 //     spr = reg->m_30->m_08->CreateSprite(0, x-30, y+10, 0xcf84f, "..."@0x60a96c, 0x40003);
 //     if (spr) { spr->ApplyName("..."@0x60d30c);    // 0x150540
@@ -733,7 +733,7 @@ i32 CGrunt::ResolveDeathAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -766,7 +766,7 @@ i32 CGrunt::ResolveAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -803,7 +803,7 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -843,7 +843,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB

@@ -46,8 +46,8 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_object->m_latchedAnimId != 0x15) {
-        m_object->m_latchedAnimId = 0x15;
+    if (m_object->m_sortKey != 0x15) {
+        m_object->m_sortKey = 0x15;
         m_object->m_flags |= 0x20000;
     }
     m_38->m_stateFlags |= 1;
@@ -114,7 +114,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellY = y;
     m_powerupId = powerup;
     i32 rec = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[powerup]);
-    CGameObject* r = m_object;
+    CWwdGameObjectA* r = m_object;
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
     r->m_drawFillArg = rec;
@@ -166,7 +166,7 @@ i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 
             ar->Read(&m_cellX, 8);
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
-            CGameObject* r = m_object;
+            CWwdGameObjectA* r = m_object;
             i32 v = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[id]);
             r->m_drawActive = 1;
             r->m_drawFillArg = v;

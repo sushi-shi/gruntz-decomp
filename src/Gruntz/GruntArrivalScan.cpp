@@ -190,7 +190,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                     == -1) {
                     m_dwell = 0;
                     if (m_390 != 0) {
-                        CGameObject* h = m_10;
+                        CWwdGameObjectA* h = m_10;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
                         char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -216,7 +216,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                 >= *reinterpret_cast<i64*>(&m_arrivalRerollWindowLo)) {
                 goto L8b5;
             }
-            CGameObject* h = m_10;
+            CWwdGameObjectA* h = m_10;
             i32 baseX = h->m_extent.left;
             i32 spanX = abs(h->m_extent.right - baseX);
             i32 baseY = h->m_extent.top;
@@ -721,7 +721,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 return 1;
             }
-            CGameObject* base = m_10;
+            CWwdGameObjectA* base = m_10;
             i32 clip = 1;
             i32 py = GameRand() % 4 + (base->m_screenY >> 5) - 2;
             i32 px = GameRand() % 4 + (base->m_screenX >> 5) - 2;
@@ -777,7 +777,7 @@ timeout:
             m_arrivalRerollLo = static_cast<i32>(g_frameTime);
             m_arrivalRerollHi = 0;
         } else {
-            CGameObject* base = m_10;
+            CWwdGameObjectA* base = m_10;
             u32 lx = static_cast<u32>(base->m_extent.left);
             i32 dxr = base->m_extent.right - static_cast<i32>(lx);
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
@@ -1601,7 +1601,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             m_arrivalRow = o->m_tileOwnerLo;
             m_defenderState = 1;
             {
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
                 i32* rect =
@@ -1772,7 +1772,7 @@ i32 CGrunt::StepArrivalDefense() {
         c2_miss:
             m_defenderState = 1;
             {
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -1890,7 +1890,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalCol = occ->m_tileOwnerHi;
                 m_arrivalRow = occ->m_tileOwnerLo;
                 m_defenderState = 1;
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
                 i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
                 if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
@@ -1926,7 +1926,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             {
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 i32 baseX = h->m_extent.left;
                 i32 spanX = abs(h->m_extent.right - baseX);
                 i32 baseY = h->m_extent.top;
@@ -2724,7 +2724,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             );
             return 1;
         c2_miss: {
-            CGameObject* h = m_10;
+            CWwdGameObjectA* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -2744,7 +2744,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             m_defenderState = 1;
             m_dwell = 0x1f4;
             {
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -2833,7 +2833,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             {
-                CGameObject* h = m_10;
+                CWwdGameObjectA* h = m_10;
                 i32 baseX = h->m_extent.left;
                 i32 spanX = abs(h->m_extent.right - baseX);
                 i32 baseY = h->m_extent.top;

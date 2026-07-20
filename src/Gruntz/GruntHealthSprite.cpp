@@ -51,8 +51,8 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_health = 0x64;
-    if (m_object->m_latchedAnimId != 0xdbba0) {
-        m_object->m_latchedAnimId = 0xdbba0;
+    if (m_object->m_sortKey != 0xdbba0) {
+        m_object->m_sortKey = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
     m_60 = -0x19;
@@ -131,7 +131,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellX = x;
     m_cellY = y;
     i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     CSprite* map = obj->m_sprite;
     if (map) {
         CImage* glyph;
@@ -176,7 +176,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     i32 result = Vslot16(e);
     if (m_health != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
-        CGameObject* obj = m_object;
+        CWwdGameObjectA* obj = m_object;
         CSprite* holder = obj->m_sprite;
         if (holder != 0) {
             CImage* glyph;

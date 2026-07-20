@@ -230,7 +230,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         if (!LoadCursorSprites(0, 0)) {
             return 0;
         }
-        CGameObject* peer = m_scrollSink;
+        CWwdGameObjectA* peer = m_scrollSink;
         if (peer) {
             peer->m_stateFlags |= 1;
         }

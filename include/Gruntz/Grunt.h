@@ -1051,7 +1051,7 @@ public:
     // own field. The local re-declaration was dropped 2026-07-17 (SM1); the name,
     // type (void*) and offset are unchanged, so every use site is untouched.
     char m_pad34[0x38 - 0x34];
-    CGameObject* m_animPlayer; // +0x38  the bound game object, driven as the animation
+    CWwdGameObjectA* m_animPlayer; // +0x38  the bound A-kind sprite, driven as the animation
                        //        player (tile-leaf convention m_38 == obj; the ex
                        //        CGruntAnimState view)
     char m_pad3c[0x40 - 0x3c];
@@ -1146,7 +1146,7 @@ public:
     // not hit this because its handler table's return types are uniform.
     // ---------------------------------------------------------------------
     CGameObject* m_34; // +0x150  (CWapX::m_34; == the bound object, m_38's twin slot)
-    CGameObject* m_38; // +0x154  the created entrance-anim sprite object (the ex
+    CWwdGameObjectA* m_38; // +0x154  the created entrance-anim sprite object (the ex
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
@@ -1182,14 +1182,14 @@ public:
     i32 m_1ac;                      // +0x1ac (serialized)
     i32 m_1b0;                      // +0x1b0 (serialized)
     i32 m_1b4;                      // +0x1b4 (serialized)
-    CGameObject* m_selectedSprite;  // +0x1b8
-    CGameObject* m_toySprite;       // +0x1bc
+    CWwdGameObjectA* m_selectedSprite;  // +0x1b8
+    CWwdGameObjectA* m_toySprite;       // +0x1bc
     CString m_animSetName;          // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
-    CGameObject* m_healthSprite;    // +0x1c4
-    CGameObject* m_staminaSprite;   // +0x1c8
-    CGameObject* m_toyTimeSprite;   // +0x1cc
-    CGameObject* m_wingzTimeSprite; // +0x1d0
-    CGameObject* m_powerupSprite;   // +0x1d4
+    CWwdGameObjectA* m_healthSprite;    // +0x1c4
+    CWwdGameObjectA* m_staminaSprite;   // +0x1c8
+    CWwdGameObjectA* m_toyTimeSprite;   // +0x1cc
+    CWwdGameObjectA* m_wingzTimeSprite; // +0x1d0
+    CWwdGameObjectA* m_powerupSprite;   // +0x1d4
     i32 m_arrived;                  // +0x1d8 (entrance-arrival gate)
     i32 m_1dc;                      // +0x1dc
     i32 m_1e0;                      // +0x1e0

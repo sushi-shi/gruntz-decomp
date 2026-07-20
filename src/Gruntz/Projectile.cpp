@@ -220,12 +220,12 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     // ctor assigns the inherited fields itself - see the ordering note in UserLogic.h.
     // Typing them on the base also retires three `(i32)`/`(CGameObject*)` casts.
     m_34 = owner;
-    m_38 = owner;
+    m_38 = static_cast<CWwdGameObjectA*>(owner); // the bound owner IS the A-kind sprite
     m_3c = owner->m_7c;
     m_38->m_flags |= 0x2000002;
     m_38->m_stateFlags |= 1;
-    if (m_object->m_latchedAnimId != 0xcf850) {
-        m_object->m_latchedAnimId = 0xcf850;
+    if (m_object->m_sortKey != 0xcf850) {
+        m_object->m_sortKey = 0xcf850;
         m_object->m_flags |= 0x20000;
     }
     memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
@@ -323,7 +323,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_targetId = t0;
     m_ownerId = t1;
 
-    CGameObject* owner = m_object;
+    CWwdGameObjectA* owner = m_object;
     double dx = static_cast<double>((m_targetX - owner->m_screenX));
     double dy = static_cast<double>((m_targetY - owner->m_screenY));
     i32 count = 1;
@@ -384,7 +384,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
     // Resolve the six numbered frame sprites; frame "1" is required.
     CMapStringToPtr& map =
-        m_38->m_0c->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
+        m_38->OwnerMgr()->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
@@ -451,7 +451,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     // Spawn the LightFx shadow companion + activate its two frames.
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow =
-        static_cast<CGameObject*>(factory
+        (factory
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003));
     if (m_shadow != 0) {
         m_shadow->m_7c->m_notify(m_shadow);
@@ -611,7 +611,7 @@ void CProjectile::MovingSlot16() {
     }
 
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
-        CGameObject* owner = m_object;
+        CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (owner->m_screenX < reg->m_viewOriginR && owner->m_screenX >= reg->m_viewOriginL
             && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
@@ -750,7 +750,7 @@ void CProjectile::MovingSlot16() {
             // water tile: spill a splash then hide the projectile
             if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                 && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                CGameObject* fx =
+                CWwdGameObjectA* fx =
                     reg->m_world->m_childGroup
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
@@ -777,7 +777,7 @@ void CProjectile::MovingSlot16() {
                         // level death tile: spill the death-splash then hide
                         if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                             && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                            CGameObject* fx = reg->m_world->m_childGroup->CreateSprite(
+                            CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,
                                 m_targetY,
@@ -817,7 +817,7 @@ i32 CProjectile::DetachRenderObj() {
     // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* r = m_38;
+    CWwdGameObjectA* r = m_38;
     if (r->m_1a0.m_28 != 0 && r->m_1a0.m_20 == 0) {
         r->m_flags |= 0x10000;
     }
@@ -1156,8 +1156,8 @@ void CTimeBomb::RegisterActs() {
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
-    if (m_object->m_latchedAnimId != 0xf) {
-        m_object->m_latchedAnimId = 0xf;
+    if (m_object->m_sortKey != 0xf) {
+        m_object->m_sortKey = 0xf;
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GAME_TIMEBOMB");

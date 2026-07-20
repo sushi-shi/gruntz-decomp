@@ -199,7 +199,7 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(&g_logicTypesRegistered, 4);
         arc->Read(&m_prevAnimSetNode, 4);
         m_0c = reinterpret_cast<CGameObject*>(a4);
-        m_object = reinterpret_cast<CGameObject*>(a4);
+        m_object = reinterpret_cast<CWwdGameObjectA*>(a4);
         m_objAux = (reinterpret_cast<CGameObject*>(a4))->m_7c;
         m_04 = 0;
         m_08 = 0;
@@ -265,12 +265,12 @@ void CMovingLogic::MovingSlot16() {
 
     // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
-        m_148 = m_object->m_0c->m_level
+        m_148 = m_object->OwnerMgr()->m_level
                     ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), m_object->m_screenY, m_14c);
         Motion()->m_30 = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
-        m_148 = m_object->m_0c->m_level
+        m_148 = m_object->OwnerMgr()->m_level
                     ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), static_cast<i32>(Motion()->m_48), m_14c);
     }
 

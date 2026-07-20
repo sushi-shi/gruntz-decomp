@@ -38,7 +38,7 @@ public:
     CGameObject* Level() {
         return m_object;
     }
-    CGameObject* Anim() {
+    CWwdGameObjectA* Anim() {
         return m_38;
     }
     char m_pad54[0x58 - 0x54];

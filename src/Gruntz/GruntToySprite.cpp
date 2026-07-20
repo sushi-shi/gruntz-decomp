@@ -38,8 +38,8 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_stateFlags |= 1;
-    if (m_object->m_latchedAnimId != 0xdbba0) {
-        m_object->m_latchedAnimId = 0xdbba0;
+    if (m_object->m_sortKey != 0xdbba0) {
+        m_object->m_sortKey = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
     m_lastLayer = 0;
@@ -116,7 +116,7 @@ i32 CGruntToySprite::Update() {
     }
     i32 layer = e->m_198;
     if (m_lastLayer != layer) {
-        CGameObject* r = m_object;
+        CWwdGameObjectA* r = m_object;
         m_lastLayer = layer;
         CSprite* h = r->m_sprite;
         if (h != 0) {

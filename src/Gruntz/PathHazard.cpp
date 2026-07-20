@@ -116,7 +116,7 @@ CPathHazard::CPathHazard() {
 // TU that constructs it - so its @rva-symbol pin lives in RainCloud.cpp, not here.)
 
 // the bound object is the canonical CGameObject (screen pos m_screenX/Y, z-key
-// m_latchedAnimId, flags m_flags; the WWD record stores the raw waypoint tile
+// m_sortKey, flags m_flags; the WWD record stores the raw waypoint tile
 // coords in the extent/area/m_154.. slots - a per-kind ROLE of the same fields)
 // and its +0x7c the canonical AnimWorkerObj (per-tile time m_bc, the two +0xf0/
 // +0x100 coord quads).)
@@ -147,15 +147,15 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_38->m_flags |= 0x2000002;
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_latchedAnimId != 0xcf850) {
-        o->m_latchedAnimId = 0xcf850;
+    if (o->m_sortKey != 0xcf850) {
+        o->m_sortKey = 0xcf850;
         o->m_flags |= 0x20000;
     }
 
@@ -254,7 +254,7 @@ RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     // The probe rect (a 4-int local) the on-screen query tests, computed
     // unconditionally: {left, top, right, bottom} around the bound object's
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
@@ -285,7 +285,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CGameObject* m10 = m_object;
+    CWwdGameObjectA* m10 = m_object;
     i32 wx = m_wpX;
     if (m10->m_screenX == wx) {
         i32 wy = m_wpY;
@@ -385,7 +385,7 @@ i32 CRainCloud::Tick() {
             m_strikeArmed = 0;
         }
         i32 frame = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[idx]);
-        CGameObject* spr = m_object;
+        CWwdGameObjectA* spr = m_object;
         spr->m_drawActive = 1;
         spr->m_drawFillArg = frame;
         spr->m_drawFillCmd = 7;
@@ -420,7 +420,7 @@ i32 CPathHazard::SiblingTick() {
         } else if (g_timer200 < 0x64) {
             sel = 0;
         }
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[sel]); // [m_78 + sel*4 + 0x14]
@@ -428,7 +428,7 @@ i32 CPathHazard::SiblingTick() {
 
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     i32 rect[4];
     rect[0] = obj->m_screenX - obj->m_layer->m_anchorX + 7;
     rect[2] = obj->m_layer->m_anchorX + obj->m_screenX - 7;
@@ -459,7 +459,7 @@ i32 CPathHazard::SiblingTick() {
 
     i64 legElapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_legDeadline;
     if (legElapsed >= m_legWindow) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]); // [m_78 + 0x28]
@@ -492,7 +492,7 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     m_strikeDeadline = static_cast<i64>(static_cast<u32>(g_frameTime));
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     i32 y = obj->m_screenY;
     i32 x = obj->m_screenX;
@@ -543,7 +543,7 @@ i32 CPathHazard::Arrive() {
 // every offset / immediate / branch matches retail. Logic byte-for-byte correct.
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     i32 idx = m_wpIndex;
     i32 wx = m_wp[idx].x;
     m_wpX = wx;

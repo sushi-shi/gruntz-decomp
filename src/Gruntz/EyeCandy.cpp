@@ -44,11 +44,11 @@ i32 CEyeCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ctor lives here). Folds the inline CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey == 0 && o->m_layer != 0) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-        if (o->m_latchedAnimId != v) {
-            o->m_latchedAnimId = v;
+        if (o->m_sortKey != v) {
+            o->m_sortKey = v;
             o->m_flags |= 0x20000;
         }
     }

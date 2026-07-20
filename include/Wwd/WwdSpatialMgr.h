@@ -84,10 +84,10 @@ struct CWwdSpatialMgr {
     void RemoveObject(CWwdGameObject* obj); // 0x1688f0
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);
-    i32 ForEach(void(__cdecl* cb)(CWwdGameObject*));
-    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*));
-    CWwdGameObject* GetFirstObject();
-    CWwdGameObject* GetNextObject();
+    i32 ForEach(void(__cdecl* cb)(CGameObject*));
+    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*));
+    CGameObject* GetFirstObject();
+    CGameObject* GetNextObject();
 };
 
 typedef CWwdSpatialMgr CPlaneScroll; // the ex-WwdFile.h spelling

@@ -90,8 +90,8 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_object->m_latchedAnimId != 0xf4240) {
-        m_object->m_latchedAnimId = 0xf4240;
+    if (m_object->m_sortKey != 0xf4240) {
+        m_object->m_sortKey = 0xf4240;
         m_object->m_flags |= 0x20000;
     }
 }

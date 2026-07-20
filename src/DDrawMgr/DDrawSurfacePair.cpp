@@ -787,13 +787,13 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
     m_10 = 0;
     m_14 = 0;
-    m_40 = 0;
+    m_stateFlags = 0;
     m_44 = 0;
-    m_4c = 0;
-    m_58 = 0;
+    m_drawFillArg = 0;
+    m_drawActive = 0;
     m_screenY = y;
     m_48 = 0x32;
-    m_50 = 1;
+    m_drawFillCmd = 1;
     m_3c = reinterpret_cast<i32>(OwnerMgr()->m_level); // the mgr's +0x24 CGameLevel, held as the int handle
     return 1;
 }
@@ -814,12 +814,12 @@ i32 CResolveNode::Init(
 ) {
     m_0c = owner;
     m_04 = field04;
-    m_08 = field08;
-    m_4c = 0;
-    m_58 = 0;
-    m_50 = 1;
+    m_flags = field08;
+    m_drawFillArg = 0;
+    m_drawActive = 0;
+    m_drawFillCmd = 1;
     SetPosition(resolveX, resolveY); // virtual slot 9 (0x164790)
-    m_40 = field40;
+    m_stateFlags = field40;
     return 1;
 }
 

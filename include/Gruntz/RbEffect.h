@@ -16,9 +16,9 @@ struct CGameObject; // (struct tag matches <Gruntz/UserLogic.h>)
 
 struct RbEffect {
     char p0[0x10];
-    CGameObject* m_10; // +0x10  target object
+    CWwdGameObjectA* m_10; // +0x10  target object
     char p14[0x38 - 0x14];
-    CGameObject* m_38; // +0x38  effect sprite
+    CWwdGameObjectA* m_38; // +0x38  effect sprite (a CreateSprite product - the A kind)
     i32 Update();      // 0x476b0
 };
 SIZE_UNKNOWN(RbEffect);

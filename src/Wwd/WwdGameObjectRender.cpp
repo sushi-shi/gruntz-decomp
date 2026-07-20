@@ -1,7 +1,7 @@
 // WwdGameObjectRender.cpp - the 0x1660f0-0x166984 wwd render/broadcast block:
 // CWwdGameObject::RenderDot + the CWwdGameObjectC render slots + ResetAndSetup +
-// the CWwdGameObjectB child-object factory pair (ex-CWwdObjMgrL, dissolved onto the
-// family class) + the CWwdGameObjectB broadcast walkers.
+// the CWwdGameObject child-object factory pair (ex-CWwdObjMgrL, dissolved onto the
+// family class) + the CWwdGameObject broadcast walkers.
 //
 // original TU: filename unknown (@identity-TODO - wave4-L dossier #15 block R: the
 // 0x1660f0-0x1670d0+ zone (these wwd render fns + the imageset1/2/3 Parse/Query
@@ -17,11 +17,11 @@
 #include <stdlib.h> // abs() (the Slot34/38 dirty-rect deltas)
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <Wwd/WwdGameObjectFamily.h>   // the CWwdGameObjectE/A/F/B/C hierarchy
+#include <Wwd/WwdGameObjectFamily.h>   // the CGameObject/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
 #include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObjectB owner (m_0c) real class
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObject owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Wwd/WwdGameObjCtor.h>        // CWwdGameObjBaseCtor - the shared 0x15b390 base-object ctor
 
@@ -36,10 +36,10 @@ inline void* operator new(u32, void* p) {
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 
-// The factory pair CreateObject_166640/CreateNamed_166780 are CWwdGameObjectB methods
+// The factory pair CreateObject_166640/CreateNamed_166780 are CWwdGameObject methods
 // (the former CWwdObjMgrL view is DISSOLVED onto the family class). PROVEN: `this`
 // reads only +0x0c (the CLoadable owner int handle = the CDDrawSurfaceMgr) and the
-// +0x1dc child CObList (CWwdGameObjectB::m_1dc) - the exact two members CWwdGameObjectB
+// +0x1dc child CObList (CWwdGameObject::m_1dc) - the exact two members CWwdGameObject
 // already owns for AddChild_1667e0 / Clear_166810 / WalkChildWorkers_166880; CreateObject
 // builds a child CWwdGameObjectA (the 0x1dc size table's new-site) via the family Build
 // dispatch (slot 10 Setup) + the virtual slot-1 dtor, and publishes it into that same
@@ -63,7 +63,7 @@ inline void* operator new(u32, void* p) {
 // "x in ebx + color spilled" layout. See const-materialize-into-reg-vs-immediate.
 // ---------------------------------------------------------------------------
 RVA(0x001660f0, 0xd1)
-void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
+void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     i32 x = m_screenX;
     i32 m64 = m_clip.left;
     i32 y;
@@ -103,14 +103,14 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_b0 * x;
-            *reinterpret_cast<char*>((base + row + col)) = *reinterpret_cast<char*>(&m_18c);
+            *reinterpret_cast<char*>((base + row + col)) = m_dotColor;
             surf->m_8->Unlock(0);
         }
     }
     m_lastX = m_screenX;
     m_lastY = m_screenY;
-    m_30 = 1;
-    m_34 = 1;
+    m_dirtyW = 1;
+    m_dirtyH = 1;
     m_38 = 0;
     return;
 reject:
@@ -263,16 +263,16 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 // retail's register schedule.
 // ---------------------------------------------------------------------------
 RVA(0x001665e0, 0x55)
-i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    POSITION pos = m_subList.GetHeadPosition();
+i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
+    POSITION pos = m_1dc.GetHeadPosition();
     while (pos != 0) {
-        CObject* p = static_cast<CObject*>(static_cast<void*>(m_subList.GetNext(pos)));
+        CObject* p = static_cast<CObject*>(static_cast<void*>(m_1dc.GetNext(pos)));
         if (p != 0) {
             delete p;
         }
     }
-    m_subList.RemoveAll();
-    return CWwdGameObject::Setup(a1, a2, a3, a4) != 0;
+    m_1dc.RemoveAll();
+    return CGameObject::Setup(a1, a2, a3, a4) != 0;
 }
 
 // ===========================================================================
@@ -288,7 +288,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // ===========================================================================
 RVA(0x00166640, 0x13b)
 CWwdGameObject*
-CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
@@ -299,7 +299,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
         // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128
         // vptr stamp is compiler-emitted-vtable-dropped (% ok per drive-to-0).
         result->m_1a0.m_04 = a1;
-        result->m_1a0.m_08 = a6;
+        result->m_1a0.m_flags = a6;
         result->m_1a0.m_0c = root;
         result->m_1a0.m_10 = 0;
         result->m_1a0.m_14 = 0;
@@ -307,7 +307,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
         // the CWwdGameObjectA vptr (0x5f00a8) stamp is compiler-emitted-vtable-dropped.
         result->m_18c = -1;
         result->m_190 = -1;
-        result->m_198 = 0;
+        result->m_layer = 0;
         result->m_194 = 0;
         result->m_19c = 0;
     } else {
@@ -326,7 +326,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
         return 0;
     }
     result->m_posCache = reinterpret_cast<i32>(node);
-    if (result->m_08 & 0x200000) {
+    if (result->m_flags & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
     }
@@ -341,7 +341,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
 // 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
-CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
+CWwdGameObject::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
     CObject* val = 0;
     // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
     // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
@@ -358,7 +358,7 @@ CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* 
 // its returned POSITION in child->m_78. Rejects a null child or a failed insert.
 // __thiscall, 1 arg (ret 4).
 RVA(0x001667e0, 0x2f)
-i32 CWwdGameObjectB::AddChild_1667e0(CWwdGameObjectE* child) {
+i32 CWwdGameObject::AddChild_1667e0(CGameObject* child) {
     if (child == 0) {
         return 0;
     }
@@ -371,12 +371,12 @@ i32 CWwdGameObjectB::AddChild_1667e0(CWwdGameObjectE* child) {
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObjectB::Clear_166810 (0x166810): walk the +0x1dc CObList's raw nodes
+// CWwdGameObject::Clear_166810 (0x166810): walk the +0x1dc CObList's raw nodes
 // (m_listHead = its m_pNodeHead), scalar-delete each node's owned CDDrawGroupChild,
-// then RemoveAll the list. Called by ~CWwdGameObjectB + CWwdFactoryObject::Reset.
+// then RemoveAll the list. Called by ~CWwdGameObject + CWwdFactoryObject::Reset.
 // ---------------------------------------------------------------------------
 RVA(0x00166810, 0x32)
-void CWwdGameObjectB::Clear_166810() {
+void CWwdGameObject::Clear_166810() {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     while (n) {
         CDDrawGroupNode* cur = n;
@@ -393,7 +393,7 @@ void CWwdGameObjectB::Clear_166810() {
 // (CObList::RemoveAt). Rejects a null child or an unlinked one (m_78 == 0).
 // __thiscall, 1 arg (ret 4).
 RVA(0x00166850, 0x29)
-i32 CWwdGameObjectB::RemoveChild_166850(CWwdGameObjectE* child) {
+i32 CWwdGameObject::RemoveChild_166850(CGameObject* child) {
     if (child == 0) {
         return 0;
     }
@@ -411,12 +411,12 @@ i32 CWwdGameObjectB::RemoveChild_166850(CWwdGameObjectE* child) {
 // return the number of children visited. Advances to the next node BEFORE the
 // callback (so a callback that unlinks the child is safe).
 RVA(0x00166880, 0x29)
-i32 CWwdGameObjectB::WalkChildWorkers_166880() {
+i32 CWwdGameObject::WalkChildWorkers_166880() {
     i32 count = 0;
     for (CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition()); n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
-        CWwdGameObjectE* o = cur->m_obj;
+        CGameObject* o = cur->m_obj;
         o->m_7c->m_notify(reinterpret_cast<CGameObject*>(o));
         count++;
     }
@@ -424,11 +424,11 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObjectB broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
+// CWwdGameObject broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
 // the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
 // forwarded args. No post-loop dispatch. __thiscall.
 RVA(0x001668b0, 0x26)
-void CWwdGameObjectB::Render(CDDrawSurfacePair* ctx) {
+void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {
@@ -439,7 +439,7 @@ void CWwdGameObjectB::Render(CDDrawSurfacePair* ctx) {
     }
 }
 RVA(0x001668e0, 0x2d)
-void CWwdGameObjectB::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {
@@ -450,7 +450,7 @@ void CWwdGameObjectB::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
 }
 RVA(0x00166910, 0x34)
-void CWwdGameObjectB::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {
@@ -461,7 +461,7 @@ void CWwdGameObjectB::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
     }
 }
 RVA(0x00166950, 0x34)
-void CWwdGameObjectB::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObject::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {

@@ -245,7 +245,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
 RVA(0x00156cb0, 0x20)
 CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
-    m_08 = field08;
+    m_flags = field08;
     m_0c = owner;
 }
 
@@ -441,7 +441,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
-    m_08 = 0;
+    m_flags = 0;
     m_0c = 0; // the owner-ctx handle
 }
 
@@ -503,7 +503,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
-    m_08 = 0;
+    m_flags = 0;
     m_0c = 0; // the owner-ctx handle
 }
 
@@ -1834,7 +1834,7 @@ i32 CDDrawSubMgrPages::TransExit() {
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
-    m_08 = a3;
+    m_flags = a3;
     m_0c = a1;
     m_width = 0;
 }

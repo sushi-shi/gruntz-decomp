@@ -8,7 +8,7 @@
 // (<Gruntz/ResolveNode.h>). The proof that unlocked it:
 //   - 0x164790 IS CResolveNode::SetPosition (slot 9 of ??_7CResolveNode @0x1efbc0 -
 //     the vtable datum holds 0x164790 at +0x24), and it is `call`ed BOTH from the
-//     wide-object family Setup @0x150d60 (on a CWwdGameObjectE, a CResolveNode) AND
+//     wide-object family Setup @0x150d60 (on a CGameObject, a CResolveNode) AND
 //     from every worker Vfunc* - so a worker holds a CResolveNode base subobject.
 //   - the base field block +0x04..+0x64 maps field-for-field onto CResolveNode
 //     (the owner ctx handle @+0x0c == CLoadable::m_0c; m_20/m_38/m_5c/m_64 are its
@@ -62,7 +62,7 @@ public:
     // element. Declared here so the list dispatches through the base.
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
 
-    char _pad68[0x74 - 0x68]; // +0x68..+0x73
+    // (+0x68..+0x73 is the base node's m_clip tail - no pad needed: the node ends at +0x74)
     i32 m_refCount;           // +0x74  frames-remaining count (Vfunc* re-arm to 2)
     // +0x78 the frame slot - a BASE field (the shared slot bodies read/clear it as a
     // dword: IsLoaded @0x157200 `[ecx+0x78]!=0`, Unload @0x157310 `[ecx+0x78]=0`),
@@ -76,20 +76,20 @@ public:
     CDDrawWorkerBase() {}
     // The worker-seed ctor: CDDrawWorkerList's CreateWorkerA/B* factories all build a
     // worker with this SAME 9-field base seed (m_0c = the ctx handle, the rest
-    // constants - the CResolveNode-default seed set with m_04/m_08 zeroed). The
+    // constants - the CResolveNode-default seed set with m_04/m_flags zeroed). The
     // derived CDDrawWorkerA/B ctors delegate here and add m_78. cl emits the base
     // seed, then the DERIVED vptr, then m_78 - matching retail's store order + single
     // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
     CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_04 = 0;
         m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
-        m_08 = 0;
+        m_flags = 0;
         m_20 = static_cast<i32>(0x80000000);
         m_38 = -1;
         m_screenX = static_cast<i32>(0x80000000);
-        m_64 = static_cast<i32>(0x80000000);
+        m_clip.left = static_cast<i32>(0x80000000);
         m_3c = 0;
-        m_40 = 0;
+        m_stateFlags = 0;
     }
 };
 SIZE(CDDrawWorkerBase, 0x7c);

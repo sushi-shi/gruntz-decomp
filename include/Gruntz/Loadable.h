@@ -69,7 +69,7 @@ enum LoadableClassId {
     // `mov eax,<id>; ret` at the cited RVAs).
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
-    CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObjectB::GetClassId @0x15bce0
+    CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObject::GetClassId @0x15bce0
     CLASSID_WWDOBJ_A = 0x1c, // CWwdGameObjectA::GetClassId @0x15b760 (the CreateSprite kind)
 };
 
@@ -95,7 +95,7 @@ public:
     virtual i32 GetClassId();       // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
     i32 m_04; // +0x04  (reset to -1 on teardown)
-    i32 m_08; // +0x08  (reset to 0)
+    i32 m_flags; // +0x08  (reset to 0; the wide-object collision/state flag word)
     i32 m_0c; // +0x0c  (reset to 0)
 
     CLoadable() {}
@@ -119,7 +119,7 @@ public:
     // (no manual `*(void**)this = &g_*Vtbl`).
     virtual ~CLoadable() OVERRIDE {
         m_04 = -1;
-        m_08 = 0;
+        m_flags = 0;
         m_0c = 0;
     }
 };

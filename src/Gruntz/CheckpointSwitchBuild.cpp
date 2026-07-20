@@ -80,7 +80,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (a9 == 0) {
         return 1;
     }
-    CGameObject* spr =
+    CWwdGameObjectA* spr =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
     if (!spr) {
         return 0;

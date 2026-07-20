@@ -126,7 +126,7 @@ public:
     CAniElement *m_frame4, *m_frame5; // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
     CAniElement* m_impactSprite;      // +0x1f4  "<base>IMPACT" sprite
     CAniElement* m_fallSprite;        // +0x1f8  "<base>FALL" sprite
-    CGameObject* m_shadow;            // +0x1fc  LightFx shadow render companion
+    CWwdGameObjectA* m_shadow;            // +0x1fc  LightFx shadow render companion (A-kind)
     DirectSoundMgr* m_sound;          // +0x200  launch sound sample (pooled DirectSound buffer)
     CPtrList m_hitList;               // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;        // +0x220/+0x224  target/owner ids passed to DeliverHit

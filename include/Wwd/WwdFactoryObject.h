@@ -16,7 +16,7 @@
 // onto the real family (<Wwd/WwdGameObjectFamily.h>): its Vs20 was slot-8
 // GetClassId, its Build slot-10 Setup, and its Reset_/ReleaseSubs_ method set
 // the per-kind Unload overrides (0x15b5d0/0x15b980/0x15bf00/0x15bc50/0x15c200);
-// Notify_15b650 is CWwdGameObjectE::Notify_15b650.)
+// Notify_15b650 is CGameObject::Notify_15b650.)
 
 // (The former CWwdNotifier view of the +0x80/+0x88 notifier is DISSOLVED onto
 // the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): its "+0x10 cdecl

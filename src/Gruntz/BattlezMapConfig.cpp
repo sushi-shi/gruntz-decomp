@@ -997,7 +997,7 @@ void* __stdcall ListNodeAdvance(void** it) {
 // (declared in <Gruntz/UserLogic.h>); physically compiled in this TU.
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(ScreenPoint* out) {
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 y = o->m_screenY;
     i32 x = o->m_screenX;
     out->m_x = x;
@@ -1006,7 +1006,7 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
 
 RVA(0x00029a80, 0x29)
 i32 CUserLogic::IsAtSavedScreenPos() {
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 sx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x17c));
     if (o->m_screenX == sx && o->m_screenY == *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x180))) {
         return 1;
@@ -2269,7 +2269,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             CQueueProbeNode* nd = c->m_scan;
             c->m_scan = nd->m_next;
             CGameObject* pp = nd->m_data;
-            if (pp->GetTypeId() == 5) {
+            if (pp->GetClassId() == 5) {
                 g = pp;
             } else {
                 g = static_cast<CGameObject*>(c->Drain_031250());
@@ -4718,7 +4718,7 @@ L_clear:
 // pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
 RVA(0x00031c70, 0x1d)
 GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 x = h->m_screenX >> 5;
     i32 y = h->m_screenY >> 5;
     out->m_x = x;

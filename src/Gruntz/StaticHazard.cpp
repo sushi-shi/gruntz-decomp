@@ -171,8 +171,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // snap the bound object's screen position to tile center.
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
+    if (m_object->m_sortKey != 0) {
+        m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
     m_tileCol = m_object->m_screenX >> 5;
@@ -351,8 +351,8 @@ i32 CStaticHazard::LoadAttributes() {
                     d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
-            if (m_object->m_latchedAnimId != 0) {
-                m_object->m_latchedAnimId = 0;
+            if (m_object->m_sortKey != 0) {
+                m_object->m_sortKey = 0;
                 m_object->m_flags |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
@@ -371,8 +371,8 @@ i32 CStaticHazard::LoadAttributes() {
                 d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
+        if (m_object->m_sortKey != 0) {
+            m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
         m_fired = 0;
@@ -394,8 +394,8 @@ i32 CStaticHazard::LoadAttributes() {
                 d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
+        if (m_object->m_sortKey != 0) {
+            m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
         m_fired = 1;
@@ -409,8 +409,8 @@ dispatch:
             != 0) {
             g_gameReg->m_cmdGrid->CellDispatch(a, b, m_object->m_124, -1);
         }
-        if (m_object->m_latchedAnimId != m_object->m_placeMode) {
-            m_object->m_latchedAnimId = m_object->m_placeMode;
+        if (m_object->m_sortKey != m_object->m_placeMode) {
+            m_object->m_sortKey = m_object->m_placeMode;
             m_object->m_flags |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
@@ -422,8 +422,8 @@ dispatch:
         if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
             grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
+        if (m_object->m_sortKey != 0) {
+            m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
     }

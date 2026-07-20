@@ -85,7 +85,7 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     if (CProjectile::LoadProjectileSprites(kind, a, b, sx, sy, t0, t1) == 0) {
         return 0;
     }
-    CGameObject* owner = m_object;
+    CWwdGameObjectA* owner = m_object;
     m_launchX = owner->m_screenX;
     m_launchY = owner->m_screenY;
     double d = g_projPhase0 / (static_cast<double>(static_cast<u32>(m_timePerTile)) * g_boomTimeScale * m_flightDist);

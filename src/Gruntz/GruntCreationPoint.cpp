@@ -79,8 +79,8 @@ extern "C" u32 g_engineFrameDelta;
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
-    if (m_object->m_latchedAnimId != 5) {
-        m_object->m_latchedAnimId = 5;
+    if (m_object->m_sortKey != 5) {
+        m_object->m_sortKey = 5;
         m_object->m_flags |= 0x20000;
     }
     m_value = m_38->m_1a0.m_14;

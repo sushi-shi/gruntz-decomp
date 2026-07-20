@@ -38,27 +38,28 @@ struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.
 
 // (The former CDDrawGroupChild dispatch view of the wide game object is
 // DISSOLVED onto the real family (<Wwd/WwdGameObjectFamily.h>, base
-// CWwdGameObjectE): its ReleaseSubs was slot-7 Unload, its GetTypeId slot-8
+// CGameObject): its ReleaseSubs was slot-7 Unload, its GetTypeId slot-8
 // GetClassId, its m_78/m_7c/m_d8 the family m_posCache/m_7c/m_d8.)
-class CWwdGameObjectE;
+struct CGameObject;
 
 // One node of the intrusive list at +0x14 (the +0x10 CObList's CNode: pNext @0,
 // pPrev @4, data @8). The object is read three ways pending the FLAT-view merge
 // (@identity-TODO: CGameObject (UserLogic.h flat view) == CWwdGameObject ==
 // CWwdGameObjectA - one class): the DDraw walkers dispatch it as the real family
-// (CWwdGameObjectE), the WWD collection walkers as CWwdGameObject, the game-side
+// (CGameObject), the WWD collection walkers as CWwdGameObject, the game-side
 // warlord/grunt loaders (Play.cpp) read it as CGameObject - same pointer, union'd
 // (the CDDrawSurfaceMgr pattern). The former View.h CWarlordListHead/
 // CWarlordListNode duplicate is dissolved here (2026-07-14); the former
 // SpriteFactory.h "CSpriteListNode" (next/m_sprite) and WwdObjMgr.h "CWwdNode"
 // (m_next/m_prev/m_obj) duplicates are dissolved here (2026-07-16).
 struct CGameObject;   // <Gruntz/UserLogic.h> (game-side reading of the same object)
+class CWwdGameObjectA; // the created-sprite kind (CreateSprite's product type)
 class CWwdGameObject; // <Gruntz/WwdGameObject.h> (WWD collection reading)
 struct CDDrawGroupNode {
     CDDrawGroupNode* m_next; // +0x00
     CDDrawGroupNode* m_prev; // +0x04  (pPrev; rarely walked)
     union {
-        CWwdGameObjectE* m_obj; // +0x08  the wide game object (any kind; real family)
+        CGameObject* m_obj; // +0x08  the wide game object (any kind; real family)
         CWwdGameObject* m_wwd;  // +0x08  WWD collection reading (list/map ops)
         CGameObject* m_gameObj; // +0x08  game-side reading (UserLogic.h flat view)
     };
@@ -97,7 +98,7 @@ public:
     // Per-kind object factories.
     CWwdGameObject* CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
     CWwdGameObject* CreateObject_159440(int a1, int a2, int a3, int a4);
-    CWwdGameObject* CreateObject_159600(int a1, int a2, int a3, int a4, int a5, int flags);
+    CWwdGameObjectA* CreateObject_159600(int a1, int a2, int a3, int a4, int a5, int flags);
     CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
     // Name-resolving factory front-ends: resolve `name` through the owner's
     // worker-cache name map (m_parent->m_workerCache->m_10, the Ob-band Lookup
@@ -113,7 +114,8 @@ public:
     // worker-cache table and forwards the build args + the resolved template to
     // CreateObject_159600, which `new`s the 0x1dc game-sprite instance
     // (CGameObject, <Gruntz/UserLogic.h>). __thiscall, ret 0x18.
-    CGameObject* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+    CWwdGameObjectA*
+    CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
     // Initialise an already-allocated sprite against a named template (@0x159830).
     i32 AttachSprite(CWwdGameObject* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
 
@@ -133,7 +135,7 @@ public:
     i32 PruneOrphans_15b1d0();
     void RemoveAndDelete_159db0(CWwdGameObject* obj);   // 0x159db0
     void ReinsertUnflagged_159e10(CWwdGameObject* obj); // 0x159e10
-    void InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps);
+    void InsertSorted_159e40(CGameObject* obj, i32 addToMaps);
     i32 CheckSortOrder_15a780();
     CWwdGameObject* FindByType04_15a7f0(i32 type);
     CWwdGameObject* FindByTypeProbe_15a810(i32 type);

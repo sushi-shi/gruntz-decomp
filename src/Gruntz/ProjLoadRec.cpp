@@ -45,7 +45,7 @@
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
 // embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
-// through a3->m_7c->m_0c->m_animRegistry). Names are placeholders; offsets + bytes load-bearing.
+// through a3->m_7c->OwnerMgr()->m_animRegistry). Names are placeholders; offsets + bytes load-bearing.
 // ===========================================================================
 
 // g_gameReg->m_world IS the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>):
@@ -63,7 +63,7 @@
 
 // The +0x204 list the read path appends payloads to (CPtrList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.
-// a3->m_7c->m_0c->m_animRegistry is the registry leaf; the canonical types give m_7c
+// a3->m_7c->OwnerMgr()->m_animRegistry is the registry leaf; the canonical types give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
 // +0x0c. Reuse CGameObject for a3; view its name-holder's +0x0c through AnimWorkerObj.
 // @identity-recovered: CProjLoadRec IS CProjectile, and Load @0x0e0d40 IS
@@ -141,7 +141,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (found->GetTypeId() == 5) ? reinterpret_cast<i32>(found) : 0;
+                r = (found->GetClassId() == 5) ? reinterpret_cast<i32>(found) : 0;
             }
             m_1fc = reinterpret_cast<CGameObject*>(r);
             if (m_1fc == 0 && key != 0) {

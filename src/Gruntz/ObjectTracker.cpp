@@ -77,7 +77,7 @@ i32 CGrunt::StepPeerTracking() {
         if (m_390 == 0) {
             return 1;
         }
-        CGameObject* c = m_10;
+        CWwdGameObjectA* c = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;

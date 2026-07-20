@@ -69,8 +69,8 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
+    if (m_object->m_sortKey != 0) {
+        m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
     if (m_object->m_layer != 0) {

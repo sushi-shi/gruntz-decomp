@@ -34,8 +34,8 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClockHi = 0;
     m_countdownHi = 0;
     m_object->m_screenY -= 0x18;
-    if (m_object->m_latchedAnimId != 0xdbba0) {
-        m_object->m_latchedAnimId = 0xdbba0;
+    if (m_object->m_sortKey != 0xdbba0) {
+        m_object->m_sortKey = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);

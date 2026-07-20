@@ -91,8 +91,8 @@ i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (m_object->m_latchedAnimId != 0xf4240) {
-        m_object->m_latchedAnimId = 0xf4240;
+    if (m_object->m_sortKey != 0xf4240) {
+        m_object->m_sortKey = 0xf4240;
         m_object->m_flags |= 0x20000;
     }
     CImage* aux = m_object->m_layer;
@@ -141,11 +141,11 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey == 0 && o->m_layer != 0) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-        if (o->m_latchedAnimId != v) {
-            o->m_latchedAnimId = v;
+        if (o->m_sortKey != v) {
+            o->m_sortKey = v;
             o->m_flags |= 0x20000;
         }
     }
@@ -227,8 +227,8 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_object->m_latchedAnimId != 0xf4240) {
-        m_object->m_latchedAnimId = 0xf4240;
+    if (m_object->m_sortKey != 0xf4240) {
+        m_object->m_sortKey = 0xf4240;
         m_object->m_flags |= 0x20000;
     }
 }

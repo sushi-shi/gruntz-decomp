@@ -89,8 +89,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = cx;
     m_60 = static_cast<double>(nx);
     m_68 = m_78;
-    if (m_object->m_latchedAnimId != 0xcf850) {
-        m_object->m_latchedAnimId = 0xcf850;
+    if (m_object->m_sortKey != 0xcf850) {
+        m_object->m_sortKey = 0xcf850;
         m_object->m_flags |= 0x20000;
     }
     m_80 = m_70 - m_60;
@@ -221,10 +221,10 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                     if (out == 0) {
                         resolved = 0;
                     } else {
-                        resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
+                        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
                     }
                 }
-                m_focus = reinterpret_cast<CGameObject*>(resolved);
+                m_focus = reinterpret_cast<CWwdGameObjectA*>(resolved);
                 if (m_focus == 0 && id != 0) {
                     return 0;
                 }
@@ -234,7 +234,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             s->Read(&m_a4, 4);
             break;
         case 8: { // re-apply the level draw-fill color
-            CGameObject* o = m_object;
+            CWwdGameObjectA* o = m_object;
             i32 fill = reinterpret_cast<i32>(reg->m_logicPump->m_tables[o->m_11c]);
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
@@ -337,7 +337,7 @@ i32 CSpotLight::Tick_0b1af0() {
     double s = sin(m_90);
     double c = cos(m_90);
     double dt = static_cast<double>(static_cast<i32>(g_frameDelta));
-    CGameObject* mv = m_focus; // the focus object (real CGameObject; ex CSpotLaser view)
+    CWwdGameObjectA* mv = m_focus; // the focus object (real CGameObject; ex CSpotLaser view)
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;
     if (mv != 0) {

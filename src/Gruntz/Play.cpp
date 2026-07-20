@@ -108,7 +108,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h>   // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <Gruntz/GruntzPlayer.h>     // the per-player slot record
-#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
+#include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
 #include <Gruntz/Grunt.h>            // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
 #include <Gruntz/SerialArchive.h>    // the shared archive stream (GruntzPlayer::Serialize)
 #include <rva.h>
@@ -1356,7 +1356,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
     set = self->m_c->m_childGroup->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-    self->m_scrollSink = static_cast<CGameObject*>(set);
+    self->m_scrollSink = static_cast<CWwdGameObjectA*>(set);
     if (set != 0) {
         self->m_c->m_childGroup->TickKillCues_159a70(0); // vtable +0x24, the real slot 9
         if (savedThis == 0) {
@@ -2096,12 +2096,12 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     // grid-resolve slot; data flow preserved from the byte-validated shape).
     CGameObject* oe = 0;
     res->m_childGroup->m_map48.Lookup(gridObj, reinterpret_cast<void*&>(oe));
-    CGameObject* sink;
+    CWwdGameObjectA* sink;
     if (oe == 0) {
         sink = 0;
     } else {
         // GetClassId (slot 8) == CLASSID_SERIALREF (5): the serialize-map referent kind
-        sink = (reinterpret_cast<CWwdGameObjectE*>(oe))->GetClassId() == CLASSID_SERIALREF ? oe : 0;
+        sink = (reinterpret_cast<CGameObject*>(oe))->GetClassId() == CLASSID_SERIALREF ? reinterpret_cast<CWwdGameObjectA*>(oe) : 0;
     }
     m_scrollSink = sink;
     if (sink == 0 && gridObj != 0) {
@@ -4213,7 +4213,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         if (m_hitTest->HitTest(x, y) != 0 || m_4->m_frameGate != 0 || m_inGame != 0
             || m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
             // (a second, distinct re-arm landing pad in retail.)
-            CGameObject* s2 = m_scrollSink;
+            CWwdGameObjectA* s2 = m_scrollSink;
             if (s2 == 0) {
                 return 1;
             }
@@ -4271,7 +4271,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     return 1;
 
 rearm:
-    CGameObject* s = m_scrollSink;
+    CWwdGameObjectA* s = m_scrollSink;
     if (s == 0) {
         return 1;
     }

@@ -46,13 +46,13 @@ i32 CUFO::Tick() {
 // Deferred to the final sweep.
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 sx = o->m_screenX;
     i32 sy = o->m_screenY;
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CGameObject* sl =
+        CWwdGameObjectA* sl =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
@@ -91,7 +91,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
         return 0;
     }
     if (mode == 8) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = mode;
         o->m_fillFraction = 0x80;
@@ -115,7 +115,7 @@ i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
     }
     if (tag == 8) {
         CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = reinterpret_cast<i32>(x);

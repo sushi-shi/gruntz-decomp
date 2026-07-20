@@ -18,7 +18,7 @@
 // here so the base `call` reloc-masks). cl stamps the leaf vftable then the body
 // caches the bound object's frame sprite (m_38->ApplyLookupSprite), swaps in the "A"
 // bute animset node (m_prevAnimSetNode/m_objAux->m_1c), forces the object's pose id
-// (m_latchedAnimId = 0xdbba0 + m_flags |= 0x20000) and seeds the icon anchor - the
+// (m_sortKey = 0xdbba0 + m_flags |= 0x20000) and seeds the icon anchor - the
 // +0x5c/+0x60 slots the CGruntHealthSprite base names m_health/m_60, reused as the
 // stamina icon's screen offset.
 //
@@ -36,9 +36,9 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId != 0xdbba0) {
-        o->m_latchedAnimId = 0xdbba0;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xdbba0) {
+        o->m_sortKey = 0xdbba0;
         o->m_flags |= 0x20000;
     }
     m_health = 0x64; // +0x5c  stamina icon screen-offset X (reuses the base slot)

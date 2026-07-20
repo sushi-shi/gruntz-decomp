@@ -338,7 +338,7 @@ i32 CGrunt::ScanNearestTarget() {
                     m_arrivalRerollHi = 0;
                 } else {
                     // not elapsed: jitter to a random nearby board cell.
-                    CGameObject* hud = m_10;
+                    CWwdGameObjectA* hud = m_10;
                     i32 baseCol = hud->m_extent.left;
                     i32 spanX = hud->m_extent.right - baseCol;
                     i32 baseRow = hud->m_extent.top;

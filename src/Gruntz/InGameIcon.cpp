@@ -233,8 +233,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
     obj->m_screenY = (obj->m_screenY & ~0x1f) + 0x10;
 
-    if (obj->m_latchedAnimId != 0x17318) {
-        obj->m_latchedAnimId = 0x17318;
+    if (obj->m_sortKey != 0x17318) {
+        obj->m_sortKey = 0x17318;
         obj->m_flags |= 0x20000;
     }
 
@@ -256,7 +256,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_74 = 0;
 
     i32 glitter = 0;
-    char* rec = obj->m_194;
+    char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194; // the handed obj IS the A-kind sprite
     if (rec != 0) {
         CString name;
         name = rec + 0x24;
@@ -492,7 +492,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
-        CGameObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,
@@ -556,7 +556,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // jump-table reloc-typing fix.
 RVA(0x00097680, 0xf5)
 i32 CInGameIcon::HandleInput() {
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_124;
     i32 rec;
     if (cmd == 0x55) {
@@ -605,7 +605,7 @@ i32 CInGameIcon::HandleInput() {
     } else {
         return 1;
     }
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0xa;
     o->m_drawFillArg = rec;
@@ -738,7 +738,7 @@ void RegisterIconState() {
 // flag the +0x38 render object dirty (|= 0x10000). Returns 0.
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
     i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
@@ -756,7 +756,7 @@ i32 CInGameIcon::RefreshCell() {
             return 0;
         }
     }
-    CGameObject* r = m_38;
+    CWwdGameObjectA* r = m_38;
     r->m_flags |= 0x10000;
     return 0;
 }
@@ -781,7 +781,7 @@ i32 CInGameIcon::RefreshCell() {
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
         CGruntzMgr* reg = g_gameReg;
@@ -824,7 +824,7 @@ i32 CInGameIcon::PeekCycle() {
             ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
             0
         );
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 0xa;
         o->m_drawFillArg = rec;
@@ -878,7 +878,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     if (reg->m_134 == 1 && arg0 != g_curPlayer && m_object->m_124 != 0x55) {
         return 0;
     }
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     if (obj->m_124 == 0x55) {
         // ---- selection/preview path ----
         i32 param = obj->m_118;
@@ -904,7 +904,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             return 0;
         }
         if (m_cmapId != 0) {
-            CGameObject* o = m_object;
+            CWwdGameObjectA* o = m_object;
             if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
                 && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
                 Eng_PostCmd(g_sndCueTag, 0, 0, 0);
@@ -912,7 +912,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             }
         }
         ClearTileBit(reg, m_object);
-        CGameObject* r = m_38;
+        CWwdGameObjectA* r = m_38;
         r->m_flags |= 0x10000;
         return 1;
     }
@@ -940,7 +940,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
     }
     if (m_cmapId != 0) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
             && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
             Eng_PostCmd(g_sndCueTag, 0, 0, 0);
@@ -948,7 +948,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
     }
     ClearTileBit(reg, m_object);
-    CGameObject* owner = m_38;
+    CWwdGameObjectA* owner = m_38;
     if (owner->m_120 > 0) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
@@ -961,12 +961,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         m_driftThreshHi = 0;
         return 1;
     }
-    CGameObject* rend = m_glitterSprite;
+    CWwdGameObjectA* rend = m_glitterSprite;
     if (rend != 0) {
         rend->m_flags |= 0x10000;
         m_glitterSprite = 0;
     }
-    CGameObject* r = m_38;
+    CWwdGameObjectA* r = m_38;
     r->m_flags |= 0x10000;
     return 1;
 }
@@ -995,13 +995,13 @@ i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
     if (delta >= *reinterpret_cast<i64*>(&m_driftThresh)) {
-        CGameObject* r = m_38;
+        CWwdGameObjectA* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
 
         CGruntzMgr* reg = g_gameReg;
-        CGameObject* obj = m_object;
+        CWwdGameObjectA* obj = m_object;
         i32 tileX = obj->m_screenX >> 5;
         i32 tileY = obj->m_screenY >> 5;
         CTileGrid* grid = reg->m_tileGrid;
@@ -1130,8 +1130,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    if (m_object->m_latchedAnimId != 0x17318) {
-        m_object->m_latchedAnimId = 0x17318;
+    if (m_object->m_sortKey != 0x17318) {
+        m_object->m_sortKey = 0x17318;
         m_object->m_flags |= 0x20000;
     }
     m_cachedAreaId = -1;

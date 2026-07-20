@@ -834,7 +834,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     i32 z = src[7];
     i32 gridIndex = src[8];
 
-    CGameObject* obj = static_cast<CGameObject*>(operator new(0x1dc));
+    CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(operator new(0x1dc));
     if (obj == 0) {
         return 0;
     }
@@ -899,7 +899,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
-        obj->Delete(1);
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
@@ -913,13 +913,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     if (!loaded) {
-        obj->Delete(1);
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
     if (obj->Setup(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
-        obj->Delete(1);
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return 0;
     }
 
@@ -927,7 +927,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     AnimWorkerObj* anim = obj->m_7c;
     if (anim == 0) {
-        obj->Delete(1);
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return 0;
     }
 

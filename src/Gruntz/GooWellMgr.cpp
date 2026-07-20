@@ -23,7 +23,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
-#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
+#include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -210,7 +210,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         GruntzPlayer* slot = &g_gameReg->m_options[i];
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                             slot->m_clearedRound = 1;
-                            CWwdGameObjectE* out = 0;
+                            CGameObject* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
                                     .Lookup(reinterpret_cast<void*>(slot->m_00c), reinterpret_cast<void*&>(out))
                                 && out) {
@@ -225,7 +225,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             g_gameReg->m_cmdGrid->LoadFinishLevelSprite(2);
                         }
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag && !lastSlot->m_clearedRound) {
-                            CWwdGameObjectE* out = 0;
+                            CGameObject* out = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48
                                     .Lookup(reinterpret_cast<void*>(lastSlot->m_00c), reinterpret_cast<void*&>(out))
                                 && out) {

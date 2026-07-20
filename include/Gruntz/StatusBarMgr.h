@@ -494,7 +494,7 @@ public:
     // +0x08: the status-bar render sprite - the "StatusBarSprite" CreateSprite result.
     // The ex CSbiRenderObj/CSbiSeqHolder views of this slot were CGameObject facets:
     // +0x5c/+0x60 m_screenX/Y, +0x188 the archive-cue id, +0x198 m_layer (the CImage).
-    struct CGameObject* m_barSprite; // (struct key - the PAU/PAV mangling trap)
+    class CWwdGameObjectA* m_barSprite; // the bound A-kind bar sprite
     // +0x0c: the config host every widget-setup call takes as arg2. Typed from the retail
     // callee: CSBI_Image::SetupImage (0xe6c80) DEREFERENCES this arg at +0x10
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a

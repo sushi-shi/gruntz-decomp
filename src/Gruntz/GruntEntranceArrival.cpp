@@ -285,10 +285,10 @@ void CGrunt::FinalizeStep(i32 arg) {
         }
         m_10->m_screenX = nx;
         m_10->m_screenY = ny;
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != v) {
-            h->m_latchedAnimId = v;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
             h->m_flags |= 0x20000;
         }
         return;
@@ -317,10 +317,10 @@ void CGrunt::FinalizeStep(i32 arg) {
         }
         m_10->m_screenX = nx;
         m_10->m_screenY = ny;
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != v) {
-            h->m_latchedAnimId = v;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
             h->m_flags |= 0x20000;
         }
     }
@@ -480,7 +480,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_combatClockHi = 0;
 
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
@@ -491,15 +491,15 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     }
 
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 z = h->m_screenY + 0x186c1;
-        if (h->m_latchedAnimId != z) {
-            h->m_latchedAnimId = z;
+        if (h->m_sortKey != z) {
+            h->m_sortKey = z;
             h->m_flags |= 0x20000;
         }
     }
 
-    CGameObject* p = m_38;
+    CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
     p->m_1a0.Setup_15c2d0((&m_poseAttack1)[idx]);
 
@@ -534,7 +534,7 @@ i32 CGrunt::RearmAttackAnim2() {
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeF));
 
-    CGameObject* p = m_38;
+    CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
     p->m_1a0.Setup_15c2d0(m_poseAttack2);
 
@@ -602,7 +602,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_GUNHAT:
             case GRUNT_NERFGUN:
             case GRUNT_ROCK: {
-                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -627,7 +627,7 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -663,7 +663,7 @@ i32 CGrunt::StepAttackFire() {
             }
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -735,17 +735,17 @@ i32 CGrunt::StepAttackFire() {
     }
 
     // finish tail (0x61f74): bail while the cursor is still un-armed or running.
-    CGameObject* r = m_38;
+    CWwdGameObjectA* r = m_38;
     if ((r->m_1a0.m_28 == 0 || r->m_1a0.m_20 != 0) && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
         SetMoveStateA(0, 1, 0, 0);
     }
-    CGameObject* h = m_object;
+    CWwdGameObjectA* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
-    if (h->m_latchedAnimId != zkey) {
-        h->m_latchedAnimId = zkey;
+    if (h->m_sortKey != zkey) {
+        h->m_sortKey = zkey;
         h->m_flags |= 0x20000;
     }
     i32 v220 = m_poweredUp;
@@ -921,10 +921,10 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = static_cast<void*>(g_buteTree.Find("G"));
 
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 z = h->m_screenY + 0xc3500;
-    if (h->m_latchedAnimId != z) {
-        h->m_latchedAnimId = z;
+    if (h->m_sortKey != z) {
+        h->m_sortKey = z;
         h->m_flags |= 0x20000;
     }
 
@@ -963,7 +963,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
     // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
     // fire CueSpawn(this, 0xa|0xb, -1,-1,-1) when inside.
-    CGameObject* hud = m_10;
+    CWwdGameObjectA* hud = m_10;
     CGruntzMgr* g = g_gameReg;
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
@@ -1027,10 +1027,10 @@ i32 CGrunt::StepEntranceRelatchA() {
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             return 0;
         }
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != v) {
-            h->m_latchedAnimId = v;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
             h->m_flags |= 0x20000;
         }
         return 0;
@@ -1050,7 +1050,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         char* nm = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(nm, frame);
         m_entranceStamped = 1;
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -1546,7 +1546,7 @@ i32 CGrunt::StepArrivalReroll() {
     }
     g_randSeed = x2 * 214013 + 2531011;
     i32 pick = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x65;
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     CGruntzMgr* g = g_gameReg;
@@ -1668,7 +1668,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, elem[0x14 / 4]);
 
-            CGameObject* h = m_10;
+            CWwdGameObjectA* h = m_10;
             CGruntzMgr* g = g_gameReg;
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
@@ -1685,7 +1685,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_idleAnchor;
     if (elapsed2 >= m_idleDelay) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -1695,7 +1695,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         }
     }
 
-    CGameObject* h2 = m_10;
+    CWwdGameObjectA* h2 = m_10;
     CGruntzMgr* g2 = g_gameReg;
     i32 hx = h2->m_screenX;
     i32 hy = h2->m_screenY;
@@ -1784,7 +1784,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE));
+        found = static_cast<CSprite*>(m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE));
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1794,7 +1794,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO));
+        found = static_cast<CSprite*>(m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO));
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1804,7 +1804,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE));
+        found = static_cast<CSprite*>(m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE));
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1877,10 +1877,10 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         return 0;
     }
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != v) {
-            h->m_latchedAnimId = v;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
             h->m_flags |= 0x20000;
         }
     }
@@ -1963,7 +1963,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0) {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 hx = (h->m_screenX & ~0x1f) + 0x10;
         i32 hy = (h->m_screenY & ~0x1f) + 0x10;
         i32 flag = 1;
@@ -1988,10 +1988,10 @@ reject:
     }
     SetMoveStateA(m_19c, 1, 0, 1);
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != v) {
-            h->m_latchedAnimId = v;
+        if (h->m_sortKey != v) {
+            h->m_sortKey = v;
             h->m_flags |= 0x20000;
         }
     }
@@ -2069,7 +2069,7 @@ tail:
         m_38->ApplyLookupSprite(cn, frame);
     }
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -2210,7 +2210,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             -1
         );
     } else {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32* rect = reinterpret_cast<i32*>((reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX)));
         if (GruntPointVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY)) {
@@ -2260,7 +2260,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         }
 
         i32 cueId = base + m_moveVariant - 1;
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;

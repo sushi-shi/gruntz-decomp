@@ -447,7 +447,7 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // dt is the per-tile time step; m_41c is the configured TimePerTile.
 RVA(0x00057060, 0x6f)
 void CGrunt::ComputeFacing(double dt) {
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
     m_400 = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
@@ -596,7 +596,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CGameObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdGameObjectA* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
@@ -611,7 +611,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_124 = 0;
             n->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
-            CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdGameObjectA* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
@@ -626,7 +626,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_124 = 0;
             e->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
-            CGameObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
@@ -641,7 +641,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_124 = 0;
             s->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
-            CGameObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdGameObjectA* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,
@@ -700,7 +700,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
         m_1f4_moveIcon = 0;
     }
     i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     h->m_drawActive = 1;
     h->m_drawFillCmd = 0xa;
     h->m_drawFillArg = sel;
@@ -726,7 +726,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY,
@@ -767,7 +767,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if (reason <= 0 || reason >= 0x17) {
         return 0;
     }
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
@@ -2247,7 +2247,7 @@ i32 CGrunt::Activate() {
     }
 
     // --- spawn-state reset tail (integer field stores) ---
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 px = h->m_screenX;
     m_commitPxX = px;
     m_lastTilePxX = px;

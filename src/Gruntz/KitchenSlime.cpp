@@ -136,7 +136,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
 
 // The bound object the ctor reads IS the canonical CGameObject (m_object == m_38):
 // the screen position m_screenX/m_screenY (+0x5c/+0x60), the layer key
-// m_latchedAnimId (+0x74), the flags m_flags (+0x08), the on-screen travel window
+// m_sortKey (+0x74), the flags m_flags (+0x08), the on-screen travel window
 // m_extent.left..m_extent.bottom (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
 // the direction name at m_194+0x24, and the re-seeded rect m_area.left..m_area.bottom
 
@@ -159,15 +159,15 @@ RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_latchedAnimId != 0x13) {
-        o->m_latchedAnimId = 0x13;
+    if (o->m_sortKey != 0x13) {
+        o->m_sortKey = 0x13;
         o->m_flags |= 0x20000;
     }
     m_tileY = snapY;
@@ -184,7 +184,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_extent.top = (o->m_screenY >= o->m_168) ? o->m_168 : o->m_screenY;
     o->m_extent.bottom = (o->m_screenY <= o->m_168) ? o->m_168 : o->m_screenY;
 
-    CGameObject* obj38 = Anim();
+    CWwdGameObjectA* obj38 = Anim();
     if (obj38->m_194 != 0) {
         CString name;
         name = obj38->m_194 + 0x24;
@@ -590,7 +590,7 @@ i32 CKitchenSlime::LoadSprites() {
     // role-union: +0x194 (m_sprite) is the cached CSprite*, +0x198 (m_layer) doubles
     // as the first-frame pointer - the same union access CGameObject's own ApplyName
     // does.
-    CGameObject* player = Anim();
+    CWwdGameObjectA* player = Anim();
     CSprite* spr = player->m_sprite;
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {

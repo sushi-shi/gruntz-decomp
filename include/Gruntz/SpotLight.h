@@ -40,7 +40,7 @@ public:
     double m_80;          // +0x80  rotation offset X (m_70 - snapped origin)
     double m_88;          // +0x88  rotation offset Y (m_78 - snapped origin)
     double m_90;          // +0x90  running rotation angle (seeded pi or 0)
-    CGameObject* m_focus; // +0x98  the serialized focus object (GetTypeId()==5 gate; a
+    CWwdGameObjectA* m_focus; // +0x98  the serialized focus object (GetTypeId()==5 gate; a
                           //         real CGameObject - id at +0x188, coords at +0x5c/+0x60)
     i32 m_9c;             // +0x9c
     i32 m_a0;             // +0xa0

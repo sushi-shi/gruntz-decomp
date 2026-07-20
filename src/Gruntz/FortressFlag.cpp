@@ -230,10 +230,10 @@ i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // re-stamp position + EH-state ids.
 RVA(0x00045d30, 0x203)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-    if (o->m_latchedAnimId != v) {
-        o->m_latchedAnimId = v;
+    if (o->m_sortKey != v) {
+        o->m_sortKey = v;
         o->m_flags |= 0x20000;
     }
     const char* name;
@@ -262,7 +262,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 3;
     i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[m_object->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
-    CGameObject* spr = m_object;
+    CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
     spr->m_drawFillCmd = 0xa;
     spr->m_drawFillArg = sel;
@@ -346,7 +346,7 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
         return 0;
     }
     if (tag == 8) {
-        CGameObject* spr = m_object;
+        CWwdGameObjectA* spr = m_object;
         i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
@@ -476,8 +476,8 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
-    if (m_object->m_latchedAnimId != 0xcf84f) {
-        m_object->m_latchedAnimId = 0xcf84f;
+    if (m_object->m_sortKey != 0xcf84f) {
+        m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
     }
     m_object->m_38 = 0;
@@ -544,7 +544,7 @@ void CParticlez::RegisterActs() {
 RVA(0x00047090, 0x4c)
 i32 CParticlez::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* o = m_38;
+    CWwdGameObjectA* o = m_38;
     if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
         o->m_flags |= 0x10000;
     }
@@ -566,9 +566,9 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId != 0xf4240) {
-        o->m_latchedAnimId = 0xf4240;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xf4240) {
+        o->m_sortKey = 0xf4240;
         o->m_flags |= 0x20000;
     }
     m_object->m_38 = 0;

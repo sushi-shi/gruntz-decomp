@@ -44,8 +44,8 @@ i32 CBehindCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // the shared z-clamp tail.
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
+    if (m_object->m_sortKey != 0) {
+        m_object->m_sortKey = 0;
         m_object->m_flags |= 0x20000;
     }
     if (m_object->m_layer != 0) {

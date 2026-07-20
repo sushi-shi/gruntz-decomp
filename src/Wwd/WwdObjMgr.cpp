@@ -64,7 +64,7 @@ inline void* operator new(u32, void* p) {
 // factory sizes 0x1dc/0x1fc/0x190/0x18c). The ex-`CWwdObject` element view is
 // DISSOLVED: its m_04/m_flags/m_5c/m_60/m_74(sort key)/m_78(POSITION cache)/
 // m_7c(worker)/m_188(map key) are the flat class's members at the same offsets,
-// its slot-8 probe is GetTypeId, and its +0x3c dispatch is Slot3C (== Play).
+// its slot-8 probe is GetTypeId, and its +0x3c dispatch is Play (== Play).
 // ===========================================================================
 // (CDDrawGroupNode - the typed CObList node the walkers step - lives in
 // <DDrawMgr/DDrawChildGroup.h> next to the list it walks.)
@@ -116,7 +116,7 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc per-frame delta
 // (Spelled through this inline - the direct `WwdKey(obj)` argument-cast
 // trips the documented MSVC5 parser-state bug in this TU's include context;
 // /O2 inlines it to the identical `mov reg,[obj+0x188]; push reg`.)
-inline void* WwdKey(CWwdGameObject* o) {
+inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);
 }
 
@@ -124,7 +124,7 @@ inline void* WwdKey(CWwdGameObject* o) {
 // AnimWorkerObj::m_notify - so the old KillCueFn cast-at-fire-site is gone.)
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Slot3C.
+// CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Play.
 RVA(0x001591e0, 0x5)
 void CDDrawChildGroup::ForwardTo3C() {
     this->DestroyChildren();
@@ -149,7 +149,7 @@ void CDDrawChildGroup::DestroyChildren() {
     while (n != 0) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
-        CWwdGameObjectE* obj = cur->m_obj;
+        CGameObject* obj = cur->m_obj;
         if (obj != 0) {
             delete obj;
         }
@@ -197,13 +197,13 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
     } else {
         result = 0;
     }
-    if (result->SetupFlagged16(a2, a3, a4, a5, a6) == 0) {
+    if (result->SetupFlagged(a2, a3, a4, a5, a6) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted_159e40(static_cast<CWwdGameObject*>(static_cast<void*>(result)), 1);
+    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
     if (a7 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
@@ -268,13 +268,13 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
     } else {
         result = 0;
     }
-    if (result->SetupDeferredV(a2, a3) == 0) {
+    if (result->SetupDeferred(a2, a3) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted_159e40(static_cast<CWwdGameObject*>(static_cast<void*>(result)), 1);
+    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
     if (a4 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
@@ -308,7 +308,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 // retail frame. Logic/fields/offsets complete.
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
-CWwdGameObject*
+CWwdGameObjectA*
 CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
@@ -348,7 +348,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         }
         return 0;
     }
-    InsertSorted_159e40(static_cast<CWwdGameObject*>(static_cast<void*>(result)), 1);
+    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
     if (flags & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
@@ -372,7 +372,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
 // @0x159600 (== CreateObject_159600 above). __thiscall, ret 0x18.
 // ===========================================================================
 RVA(0x001597b0, 0x57)
-CGameObject* CDDrawChildGroup::CreateSprite(
+CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 kind,
     i32 geoB,
     i32 geoA,
@@ -388,7 +388,7 @@ CGameObject* CDDrawChildGroup::CreateSprite(
     }
     // 0x159600 is CDDrawChildGroup::CreateObject_159600 (the factory IS the manager); the
     // old ?CreateSpriteImpl@CDDrawChildGroup@ decl was a PHANTOM second name for it.
-    return static_cast<CGameObject*>(static_cast<void*>(CreateObject_159600(kind, geoB, geoA, hint, reinterpret_cast<i32>(tmpl), flags)));
+    return CreateObject_159600(kind, geoB, geoA, hint, reinterpret_cast<i32>(tmpl), flags); // the launder dies - one type now
 }
 
 // ===========================================================================
@@ -439,7 +439,7 @@ RVA(0x001598d0, 0x13d)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1fc));
-    CWwdGameObjectB* result; // the 0x1fc kind (vtable 0x5f00e8)
+    CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = reinterpret_cast<int>(m_parent);
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
@@ -457,7 +457,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
         new (obj + 0x1dc) CObList(0xa);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *reinterpret_cast<int*>((obj + 0x1f8)) = 0;
-        result = reinterpret_cast<CWwdGameObjectB*>(obj);
+        result = reinterpret_cast<CWwdGameObject*>(obj);
     } else {
         result = 0;
     }
@@ -467,7 +467,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
         }
         return 0;
     }
-    InsertSorted_159e40(static_cast<CWwdGameObject*>(static_cast<void*>(result)), 1);
+    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
     if (a6 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
@@ -677,7 +677,7 @@ void CDDrawChildGroup::ReinsertUnflagged_159e10(CWwdGameObject* obj) {
 // artifact on the two CMapPtrToPtr::operator[] calls (REL32 vs cl's DIR32 vs a
 // differently-named symbol). docs/patterns + objdiff-reloc-scoring.
 RVA(0x00159e40, 0xaa)
-void CDDrawChildGroup::InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps) {
+void CDDrawChildGroup::InsertSorted_159e40(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
         obj->m_posCache = 0;
         return;
@@ -687,12 +687,12 @@ void CDDrawChildGroup::InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps) {
         m_map48[WwdKey(obj)] = obj;
     }
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    i32 key = obj->m_latchedAnimId;
+    i32 key = obj->m_sortKey;
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         CWwdGameObject* data = cur->m_wwd;
         node = node->m_next;
-        if (data->m_latchedAnimId > key && !(data->m_flags & 0x20000)) {
+        if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
             obj->m_posCache = reinterpret_cast<i32>(m_list.InsertBefore(reinterpret_cast<POSITION>(cur), reinterpret_cast<CObject*>(obj)));
             return;
         }
@@ -729,7 +729,7 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // Forward decl for the Slot40 body (definition follows at 0x15a130 in RVA order):
 // the box-overlap predicate over two CGameObjects (<Gruntz/UserLogic.h>; the old
 // CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
-i32 __stdcall BoxesOverlap_15a130(CWwdGameObjectE* a1, CWwdGameObjectE* a2);
+i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
 
 // NOTE: the inner-pair body is flattened with `continue` guards (identical CFG;
 // MSVC5's parser corrupts its state on the fully-nested spelling in THIS include
@@ -739,17 +739,17 @@ RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (outer != 0) {
-        CWwdGameObjectE* oi = outer->m_obj;
+        CGameObject* oi = outer->m_obj;
         CDDrawGroupNode* nextOuter = outer->m_next;
-        if (!(oi->m_08 & 1)) {
+        if (!(oi->m_flags & 1)) {
             CDDrawGroupNode* inner = nextOuter;
             for (; inner != 0; inner = inner->m_next) {
-                CWwdGameObjectE* oj = inner->m_obj;
-                i32 fj = oj->m_08;
+                CGameObject* oj = inner->m_obj;
+                i32 fj = oj->m_flags;
                 if (fj & 1) {
                     continue;
                 }
-                i32 fi = oi->m_08;
+                i32 fi = oi->m_flags;
                 if ((fi ^ fj) & 0x40000) {
                     continue;
                 }
@@ -789,7 +789,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                 }
                             }
                             if (mask1) {
-                                if (oi->m_08 & 8) {
+                                if (oi->m_flags & 8) {
                                     i32 v = oi->m_placeMode - oj->m_120;
                                     oi->m_placeMode = v;
                                     if (v <= 0) {
@@ -809,10 +809,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                     }
                 }
                 // --- BOX PHASE (skipped when j&4 or i&0x80) ---
-                if (oj->m_08 & 4) {
+                if (oj->m_flags & 4) {
                     continue;
                 }
-                if (oi->m_08 & 0x80) {
+                if (oi->m_flags & 0x80) {
                     continue;
                 }
                 i32 mask1b = oj->m_ec & static_cast<i32>(oi->m_collCategory);
@@ -845,13 +845,13 @@ void CDDrawChildGroup::CollideBroadcast() {
 // 3 spilled box edges, our cl reuses the incoming arg stack slots - shifting every
 // spill offset + rotating esi/edi. A non-steerable codegen heuristic
 // (zero-register-pinning family).
-// The two boxes are wide game objects (CWwdGameObjectE family) - the `CWwdBox` view is
+// The two boxes are wide game objects (CGameObject family) - the `CWwdBox` view is
 // gone. Every field is a canonical member at the same offset: the screen position
 // (m_screenX @+0x5c / m_screenY @+0x60, CResolveNode) and the two 4-dword boxes
 // m_area (+0x144) / m_switchRect (+0x154) on E. The 0x80000000 "invalid" sentinel is
 // the family's documented unset marker.
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap_15a130(CWwdGameObjectE* a1, CWwdGameObjectE* a2) {
+i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
     if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
@@ -992,7 +992,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
     if (anchor == 0) {
         return 1;
     }
-    i32 key = anchor->m_latchedAnimId;
+    i32 key = anchor->m_sortKey;
     if (node == 0) {
         return 1;
     }
@@ -1001,10 +1001,10 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
         if ((obj->m_flags & 0x20000) == 0) {
-            i32 curKey = obj->m_latchedAnimId;
+            i32 curKey = obj->m_sortKey;
             if (key > curKey) {
-                anchor->GetTypeId();
-                obj->GetTypeId();
+                anchor->GetClassId();
+                obj->GetClassId();
             } else {
                 key = curKey;
                 anchor = obj;
@@ -1041,7 +1041,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && obj->m_04 == type) {
+        if (obj->GetClassId() == 5 && obj->m_04 == type) {
             return obj;
         }
     }
@@ -1066,7 +1066,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
+        if (obj->GetClassId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
             void* worker = *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0x7c));
             if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(worker) + 0x10)) == *reinterpret_cast<i32*>((reinterpret_cast<char*>(key) + 0x10))) {
                 return obj;
@@ -1106,7 +1106,7 @@ void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
     do {
         char* obj = *reinterpret_cast<char**>((node + 8));
         node = *reinterpret_cast<char**>(node);
-        i32 tag = (reinterpret_cast<CWwdGameObjectE*>(obj))->GetClassId(); // vtable slot 8 (the type tag)
+        i32 tag = (reinterpret_cast<CGameObject*>(obj))->GetClassId(); // vtable slot 8 (the type tag)
         if (tag == 5 && *reinterpret_cast<i32*>((obj + 4)) == id
             && *reinterpret_cast<i32*>((*reinterpret_cast<char**>(obj + 0x7c) + 0x10)) == *reinterpret_cast<i32*>((fp + 0x10))) {
             return obj;
@@ -1129,7 +1129,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
+        if (obj->GetClassId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
             && *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0xe8)) == key) {
             return obj;
         }
@@ -1163,7 +1163,7 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetTypeId() == 5 && WwdKey(obj) == key) {
+        if (obj->GetClassId() == 5 && WwdKey(obj) == key) {
             return obj;
         }
     }
@@ -1246,7 +1246,7 @@ i32 CDDrawChildGroup::SumWeighted_15aaf0() {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        sum += i * (obj->m_screenX + obj->m_latchedAnimId + obj->m_screenY + obj->m_04);
+        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_04);
         ++i;
     }
     return sum;
@@ -1311,7 +1311,7 @@ i32 CDDrawChildGroup::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
             CWwdGameObject* val = 0;
             m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
             if (val != 0 && !(val->m_flags & 0x4000000)) {
-                val->Slot3C(a1, a2, a3, val);
+                val->Play(a1, a2, a3, val);
             }
         } while (pos != 0);
     }
@@ -1372,7 +1372,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
         savedCounter = g_wwdObjIdCounter;
         g_wwdObjIdCounter = desc.m_04;
 
-        CWwdGameObject* createdObj = 0;
+        CWwdGameObjectA* createdObj = 0;
         switch (desc.m_08) {
             case 5: {
                 CObject* val;
@@ -1482,7 +1482,7 @@ i32 CDDrawChildGroup::ForEachSerialize_15b020(CSerialArchive* ar, i32 a2) {
             if (val != 0 && !(val->m_flags & 0x4000000)) {
                 void* k = WwdKey(val);
                 ar->Write(&k, 4);
-                if (val->Slot3C(reinterpret_cast<i32>(ar), 4, a2, val) == 0) {
+                if (val->Play(reinterpret_cast<i32>(ar), 4, a2, val) == 0) {
                     return 0;
                 }
             }
@@ -1522,7 +1522,7 @@ i32 CDDrawChildGroup::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag
         if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x7c)) == 0) {
             return 0;
         }
-        if (obj->Slot3C(reinterpret_cast<i32>(ar), 7, flag, obj) == 0) {
+        if (obj->Play(reinterpret_cast<i32>(ar), 7, flag, obj) == 0) {
             return 0;
         }
     }

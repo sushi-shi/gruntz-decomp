@@ -24,7 +24,7 @@
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
 #include <Gruntz/Grunt.h>             // canonical CGrunt (this) + CGruntHud + CDDrawChildGroup
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (the name map host, holder +0x2c)
-#include <Wwd/WwdGameObjectFamily.h>  // CWwdGameObjectE::GetClassId (the ==5 probe)
+#include <Wwd/WwdGameObjectFamily.h>  // CGameObject::GetClassId (the ==5 probe)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
@@ -50,7 +50,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // view is folded away. `ar->Read` lowers to `mov edx,[ar]; call [edx+0x2c]`.
 
 // The serial-ref type probe (virtual slot 8, +0x20) is the canonical
-// CWwdGameObjectE::GetClassId (<Wwd/WwdGameObjectFamily.h>); only
+// CGameObject::GetClassId (<Wwd/WwdGameObjectFamily.h>); only
 // CLASSID_SERIALREF (5) objects are accepted - the same probe idiom as
 // CPlay::SerializeMove / CSpotLight::SerializeMove. (Ex the CDirObj 9-slot
 // placeholder-padded view.)
@@ -98,7 +98,7 @@ void* operator new(u32 n); // 0x1b9b46
         obj = 0;                                                                                   \
         void* r;                                                                                   \
         if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0 && obj != 0) {                  \
-            r = ((reinterpret_cast<CWwdGameObjectE*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
+            r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -377,13 +377,13 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     // m_4c/m_50/m_58 move-icon triple, the SelectMoveIcon idiom).
     i32 flag = (m_entranceReason >= 0x17);
     i32 r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
-    CGameObject* cb = m_10;
+    CWwdGameObjectA* cb = m_10;
     cb->m_drawActive = 1;
     cb->m_drawFillCmd = 0xa;
     cb->m_drawFillArg = r;
 
     if (m_gruntKind == 0x36) {
-        CGameObject* cb2 = m_10;
+        CWwdGameObjectA* cb2 = m_10;
         i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_drawActive = 1;
         cb2->m_drawFillCmd = 0xb;

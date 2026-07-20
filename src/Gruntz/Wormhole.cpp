@@ -273,8 +273,8 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_WORMHOLE");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
-    if (m_object->m_latchedAnimId != 0x1869f) {
-        m_object->m_latchedAnimId = 0x1869f;
+    if (m_object->m_sortKey != 0x1869f) {
+        m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -288,7 +288,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
         color = colorTable[kind + 0x14 / 4];
     }
-    CGameObject* s = m_object;
+    CWwdGameObjectA* s = m_object;
     s->m_drawActive = 1;
     s->m_drawFillCmd = 7;
     s->m_drawFillArg = color;
@@ -324,7 +324,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
             color = colorTable[kind + 0x14 / 4];
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
-        CGameObject* s = m_object;
+        CWwdGameObjectA* s = m_object;
         s->m_drawActive = 1;
         s->m_drawFillCmd = 7;
         s->m_drawFillArg = color;
@@ -408,7 +408,7 @@ void CWormhole::SpawnPartners() {
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
-    CGameObject* g = m_38;
+    CWwdGameObjectA* g = m_38;
     if (g->m_1a0.m_28 == 0 || g->m_1a0.m_20 != 0) {
         return;
     }
@@ -454,8 +454,8 @@ void CWormhole::SpawnPartners() {
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
-    if (m_object->m_latchedAnimId != 0xa) {
-        m_object->m_latchedAnimId = 0xa;
+    if (m_object->m_sortKey != 0xa) {
+        m_object->m_sortKey = 0xa;
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
@@ -550,14 +550,14 @@ void RegisterLogic_6445e8() {
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     m_tileX = o->m_screenX >> 5;
     m_tileY = o->m_screenY >> 5;
     m_placeArg3 = a3;
     m_gruntType = a0;
     m_placeIndex = a1;
     i32 rec = g_gameReg->m_spriteFactory->GetSel(a1, 0);
-    CGameObject* obj = m_object;
+    CWwdGameObjectA* obj = m_object;
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = 0xa;
     obj->m_drawFillArg = rec;
@@ -622,7 +622,7 @@ i32 CGruntPuddle::Remove() {
         }
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* o = m_38;
+    CWwdGameObjectA* o = m_38;
     if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
@@ -699,8 +699,8 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_armClockHi = 0;
     m_intervalHi = 0;
     m_38->m_flags |= 0x2000002;
-    if (m_object->m_latchedAnimId != 0x1869f) {
-        m_object->m_latchedAnimId = 0x1869f;
+    if (m_object->m_sortKey != 0x1869f) {
+        m_object->m_sortKey = 0x1869f;
         m_object->m_flags |= 0x20000;
     }
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -743,7 +743,7 @@ void CWormhole::LoadColors() {
     // The TAIL caches m_10 once (eax) and reuses it for the id read + all three
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
-    CGameObject* s = m_object;
+    CWwdGameObjectA* s = m_object;
     i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
     i32 colorEntry = colorTable[s->m_placeMode + 0x14 / 4];
     s->m_drawActive = 1;
@@ -926,7 +926,7 @@ i32 CTeleporter::Begin() {
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* a = m_38;
+    CWwdGameObjectA* a = m_38;
     if (a->m_1a0.m_28 != 0 && a->m_1a0.m_20 == 0) {
         if (m_object->m_124 == 1) {
             a->m_flags |= 0x10000;
@@ -938,7 +938,7 @@ i32 CTeleporter::Update() {
 
     CGruntzMgr* mgr;
     if (m_tickHandled == 0) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
@@ -953,7 +953,7 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     if (o->m_7c->m_bc != 0) {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_armClockLo);
         if (delta >= *reinterpret_cast<i64*>(&m_intervalLo)) {
@@ -978,8 +978,8 @@ i32 CTeleporter::Update() {
         g_gameReg->m_scoreHud->m_28++; // wormhole/teleporter use counter (FormatHudText case 7)
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
-        CGameObject* s = m_object;
-        CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdGameObjectA* s = m_object;
+        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_11c * 32 + 16,
             s->m_120 * 32 + 16,
@@ -995,8 +995,8 @@ i32 CTeleporter::Update() {
             spawned->m_7c->m_bc = 0;
         }
     } else {
-        CGameObject* s = m_object;
-        CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdGameObjectA* s = m_object;
+        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_164 * 32 + 16,
             s->m_168 * 32 + 16,

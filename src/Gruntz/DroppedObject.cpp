@@ -166,7 +166,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                          o->m_drawFillCmd = 7;
 //     view      (0xc59f0): o->m_active     = 1; o->m_spriteRef   = sel;
 //                          o->m_state      = 7;
-// and likewise `m_object->m_latchedAnimId != 0xcf851 -> m_flags |= 0x20000` vs the
+// and likewise `m_object->m_sortKey != 0xcf851 -> m_flags |= 0x20000` vs the
 // view's `o->m_layerKey != 0xcf851 -> ...`. Same offsets, same logic, two names.
 //
 //   CObjDropObj -> CGameObject       (<Gruntz/UserLogic.h>; m_38/m_object are already
@@ -391,19 +391,19 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_latchedAnimId != 0xcf851) {
-        o->m_latchedAnimId = 0xcf851;
+    if (o->m_sortKey != 0xcf851) {
+        o->m_sortKey = 0xcf851;
         o->m_flags |= 0x20000;
     }
 
-    CGameObject* obj38 = m_38;
+    CWwdGameObjectA* obj38 = m_38;
     if (obj38->m_194 != 0) {
         CString name;
         name = obj38->m_194 + 0x24;
@@ -514,7 +514,7 @@ RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
-            CGameObject* o = m_object;
+            CWwdGameObjectA* o = m_object;
             RECT box;
             box.left = o->m_screenX - o->m_layer->m_anchorX + 7;
             box.right = o->m_screenX + o->m_layer->m_anchorX - 7;
@@ -651,7 +651,7 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
             break;
         case 8: {
             i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
-            CGameObject* o = m_object;
+            CWwdGameObjectA* o = m_object;
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = 7;
@@ -692,8 +692,8 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
     m_fallY = static_cast<double>(m_object->m_screenY);
-    if (m_object->m_latchedAnimId != 0xcf851) {
-        m_object->m_latchedAnimId = 0xcf851;
+    if (m_object->m_sortKey != 0xcf851) {
+        m_object->m_sortKey = 0xcf851;
         m_object->m_flags |= 0x20000;
     }
     m_timePerTile =
@@ -832,7 +832,7 @@ i32 CDroppedObject::ActA() {
                             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                                 && m_landY < g_gameReg->m_viewOriginB
                                 && m_landY >= g_gameReg->m_viewOriginT) {
-                                CGameObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
+                                CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                                     0,
                                     x,
                                     m_landY,
@@ -854,7 +854,7 @@ i32 CDroppedObject::ActA() {
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                 && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
-                CGameObject* s = g_gameReg->m_world->m_childGroup
+                CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup
                                      ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
@@ -938,8 +938,8 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_object->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
-    if (m_object->m_latchedAnimId != 0xcf84f) {
-        m_object->m_latchedAnimId = 0xcf84f;
+    if (m_object->m_sortKey != 0xcf84f) {
+        m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
     }
 }
@@ -1008,7 +1008,7 @@ void CDroppedObjectShadow::RegisterActs() {
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
@@ -1033,7 +1033,7 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
     }
     if (mode == 8) {
         i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
-        CGameObject* o = m_object;
+        CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = fill;

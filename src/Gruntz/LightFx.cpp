@@ -169,10 +169,10 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
+    m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
     if (node != 0) {
         node = 0;
-        m_38->m_0c->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(node));
         RebindNode();

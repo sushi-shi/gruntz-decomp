@@ -134,7 +134,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = px;
                 pt.y = py;
                 if (PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
-                    CGameObject* set =
+                    CWwdGameObjectA* set =
                         level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
                     if (set != 0) {
                         set->ApplyName("LEVEL_DIRT");

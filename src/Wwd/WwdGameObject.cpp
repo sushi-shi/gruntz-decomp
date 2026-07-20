@@ -18,7 +18,7 @@
 // precede DDrawSubMgrLeafScan.h (its `class CParseSource` fwd flips MSVC5's default
 // access for the later struct definition)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
-#include <Wwd/WwdGameObjectFamily.h>      // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
+#include <Wwd/WwdGameObjectFamily.h>      // the CGameObject/A/F/B/C dtor-family hierarchy
 #include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
@@ -28,13 +28,13 @@
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_0c->m_drawTarget->m_frontPair (Test cull extent)
-#include <DDrawMgr/DDrawWorkerCache.h>    // m_0c->m_workerCache (FindKeyOfValue_165360 / m_10)
+#include <DDrawMgr/DDrawWorkerCache.h>    // OwnerMgr()->m_workerCache (FindKeyOfValue_165360 / m_10)
 #include <Gruntz/GameLevel.h>             // m_0c->m_level->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the +0x2c geometry-source catalog)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // OwnerMgr()->m_animRegistry (the +0x2c geometry-source catalog)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -155,7 +155,7 @@ static inline void StampWorkerVtbl(AnimWorkerObj* w) {
 // directly (no name lookup). __thiscall, ret 8.
 // ===========================================================================
 RVA(0x00058b60, 0x2d)
-void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
+void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
     m_1a0.Setup_15c2d0(srcSprite);
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
@@ -176,9 +176,9 @@ void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) 
 // sprite/frame eax<->ecx allocation; identical instruction multiset, ~84%. Same
 // wall as the sibling ApplyName (89%). Logic complete.
 RVA(0x001504d0, 0x6c)
-void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
+void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    m_0c->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
@@ -197,9 +197,9 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
 // guard is m_64 vs m_64 (always equal); written verbatim so MSVC emits both reads.
 // ===========================================================================
 RVA(0x00150540, 0x65)
-void CGameObject::ApplyName(const char* name) {
+void CWwdGameObjectA::ApplyName(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(spr));
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_minIndex;
@@ -219,9 +219,9 @@ void CGameObject::ApplyName(const char* name) {
 // geometry source g_engineFrameDelta via Advance. __thiscall, ret 8.
 // ===========================================================================
 RVA(0x001505b0, 0x5c)
-i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
+i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    m_0c->m_animRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
+    OwnerMgr()->m_animRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (!spr) {
         return 0;
     }
@@ -242,9 +242,9 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // identical instruction multiset to the sibling Apply* lookups; the `mov [&spr],0`
 // sinks past the arg pushes. ~73%; logic complete, deferred to the final sweep.
 RVA(0x00150610, 0x41)
-i32 CGameObject::LookupAnimSprite(const char* name) {
+i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_soundRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
+    OwnerMgr()->m_soundRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (spr != 0) {
         m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
@@ -361,16 +361,16 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 
 // ---------------------------------------------------------------------------
 // CWwdGameObject::Test (0x1509c0): on-screen visibility cull. Derive the object's
-// four edges from its centre (m_screenX/m_screenY) and the sprite half-extents (m_198),
+// four edges from its centre (m_screenX/m_screenY) and the sprite half-extents (m_layer),
 // then bounds-check against either the camera rect (when the 0x40000 flag is set)
 // or the plane grid limits. __thiscall, 0 args.
 // @early-stop
-// regalloc wall (~73%): the four derived edges + m_198/m_0c/m_flags want 4 callee-saved
-// regs where retail packs them into 3 (ebx/esi/edi, m_198 kept in edi, m_flags tested from
+// regalloc wall (~73%): the four derived edges + m_layer/m_0c/m_flags want 4 callee-saved
+// regs where retail packs them into 3 (ebx/esi/edi, m_layer kept in edi, m_flags tested from
 // memory). No source spelling reproduces retail's exact edge-register assignment; both the
 // camera-rect and grid-extent bounds checks are byte-faithful.
 RVA(0x001509c0, 0xab)
-i32 CWwdGameObject::Test() {
+i32 CWwdGameObjectA::Test() {
     CImage* e = m_layer;
     if (!e) {
         return 0;
@@ -382,7 +382,7 @@ i32 CWwdGameObject::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
-        RECT* r = reinterpret_cast<RECT*>((reinterpret_cast<char*>(m_0c->m_level->m_mainPlane) + 0x40));
+        RECT* r = reinterpret_cast<RECT*>((reinterpret_cast<char*>(OwnerMgr()->m_level->m_mainPlane) + 0x40));
         if (right < r->left) {
             return 0;
         }
@@ -396,7 +396,7 @@ i32 CWwdGameObject::Test() {
     } else {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
-        CDDrawSurfacePair* g = m_0c->m_drawTarget->m_frontPair;
+        CDDrawSurfacePair* g = OwnerMgr()->m_drawTarget->m_frontPair;
         if (right < 0) {
             return 0;
         }
@@ -415,11 +415,11 @@ i32 CWwdGameObject::Test() {
 // route by `type`: 4 -> ReadState, 7 -> Sub150c30 (abort on failure), then play.
 // ---------------------------------------------------------------------------
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
+i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find(reinterpret_cast<CSerialArchive*>(a1), type, a3, a4) == 0) {
+    if (m_1a0.Find(reinterpret_cast<CSerialArchive*>(a1), type, a3, reinterpret_cast<i32>(self)) == 0) {
         return 0;
     }
     switch (type) {
@@ -434,7 +434,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
             }
             break;
     }
-    return Play(a1, type, a3, a4) != 0;
+    return CGameObject::Play(a1, type, a3, self) != 0; // the base body (retail rel32 -> 0x151150)
 }
 
 // ---------------------------------------------------------------------------
@@ -448,7 +448,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
 // (base str@[esp+0x10]/flag@[esp+0x14]; retail flag@0x10/str@0x14) - one `lea ecx`
 // operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
 RVA(0x00150b00, 0x12b)
-i32 CWwdGameObject::ReadState(i32 src) {
+i32 CWwdGameObjectA::ReadState(i32 src) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
     if (ar == 0) {
         return 0;
@@ -470,7 +470,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = m_0c->m_soundRegistry->FindKeyOfValue_158570(m_19c);
+        CString str = OwnerMgr()->m_soundRegistry->FindKeyOfValue_158570(m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -481,12 +481,12 @@ i32 CWwdGameObject::ReadState(i32 src) {
 // Sub150c30 (0x150c30): the read/load counterpart of ReadState - pull two ints
 // (+0x18c/+0x190), a flag, and a name back through the archive's +0x2c slot,
 // look the name up in the mgr's first map to resolve m_194; when the flag is 1
-// and the lookup hit, read m_198 from the resolved object's bounded +0x14 table
+// and the lookup hit, read m_layer from the resolved object's bounded +0x14 table
 // indexed by m_190. Then read a second name, look it up in the mgr's second map
 // to resolve m_19c. (Dispatch case 7.)
 // ---------------------------------------------------------------------------
 RVA(0x00150c30, 0x130)
-i32 CWwdGameObject::Sub150c30(i32 src) {
+i32 CWwdGameObjectA::Sub150c30(i32 src) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
     if (ar == 0) {
         return 0;
@@ -504,7 +504,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // number against the sprite's valid range, then index its frame array. The former
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
-        CDDrawSurfaceMgr* mgr = m_0c;
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_imageRegistry->m_10map.Lookup(name, reinterpret_cast<CObject*&>(found));
         m_sprite = found;
         if (found != 0 && flag == 1) {
@@ -525,7 +525,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // m_28's map is a CMapStringToPtr - a genuinely void*-valued container, so the
         // element cast is authentic (it is the map's own interface, not a missing type).
         void* found = 0;
-        CDDrawSurfaceMgr* mgr = m_0c;
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_soundRegistry->m_10.Lookup(name, found);
         m_19c = static_cast<LeafCue*>(found);
     }
@@ -542,11 +542,11 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
 // 0x80000000 stores into the zero-fill run; retail loads them just-in-time.
 // Logic complete; the unrolled init-block store order is not steerable.
 RVA(0x00150d60, 0x14d)
-i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    Helper164790(a1, a2);
+i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
+    CResolveNode::SetPosition(a1, a2); // qualified = retail direct rel32 -> 0x164790
     m_screenX = a1;
     m_screenY = a2;
-    m_latchedAnimId = a3;
+    m_sortKey = a3;
     m_104 = a1;
     AnimWorkerObj* w = m_7c;
     m_108 = a2;
@@ -618,7 +618,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -649,7 +649,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
 RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker80(handler);
 }
 
@@ -675,7 +675,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -700,7 +700,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
 RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker88(handler);
 }
 
@@ -720,7 +720,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -745,7 +745,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
 RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
-    m_0c->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, reinterpret_cast<CObject*&>(handler));
     EnsureWorker90(handler);
 }
 
@@ -761,7 +761,7 @@ void CGameObject::AddLogicBump(char* key) {
 // tail. Logic complete; the per-case regalloc/tail-merge layout is a
 // compiler-internal choice not steerable from C.
 RVA(0x00151150, 0x175)
-i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
+i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
@@ -825,7 +825,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (m_0c->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found) == 0) {
+                if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found) == 0) {
                     m_carrier = 0;
                 } else {
                     m_carrier =
@@ -848,24 +848,24 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             break;
         }
     }
-    return m_7c->Dispatch(a1, type, reinterpret_cast<void*>(a3), reinterpret_cast<void*>(a4)) != 0;
+    return m_7c->Dispatch(a1, type, reinterpret_cast<void*>(a3), self) != 0;
 }
 
 // ---------------------------------------------------------------------------
 // Serialize (0x151320): read a 0x24 block + a name string, then ~13 dwords.
 // ---------------------------------------------------------------------------
 RVA(0x00151320, 0x454)
-i32 CWwdGameObject::Serialize(i32 arParam) {
+i32 CGameObject::Serialize(i32 arParam) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
     if (ar == 0) {
         return 0;
     }
 
-    ar->Write(m_b8, 0x24);
+    ar->Write(&m_b8, 0x24); // the +0xb8..+0xdb shadow block, first field's address
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
-    strcpy(tmp, m_name);
+    strcpy(tmp, m_dc); // CString -> LPCTSTR
     ar->Write(tmp, 0x80);
 
     ar->Write(&m_moveMode, 4);
@@ -915,21 +915,21 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collideWorker != 0) {
-        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_collideWorker));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_collideWorker));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -944,17 +944,17 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 // (Dispatch/Play case 7.) Same offset/size sweep as Serialize, reversed.
 // ---------------------------------------------------------------------------
 RVA(0x00151780, 0x40d)
-i32 CWwdGameObject::Sub151780(i32 arParam) {
+i32 CGameObject::Sub151780(i32 arParam) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
     if (ar == 0) {
         return 0;
     }
 
-    ar->Read(m_b8, 0x24);
+    ar->Read(&m_b8, 0x24);
 
     char name[0x80];
     ar->Read(name, 0x80);
-    *reinterpret_cast<CString*>(&m_name) = name;
+    m_dc = name; // the real CString member - the reinterpret dies
 
     ar->Read(&m_moveMode, 4);
     ar->Read(&m_collCategory, 4);
@@ -1004,7 +1004,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_0c->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
         if (this->EnsureWorker80(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
@@ -1013,7 +1013,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_0c->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
         if (this->EnsureWorker88(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
@@ -1022,7 +1022,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_0c->m_workerCache->m_10.Lookup(name, found);
+        OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
         if (this->EnsureWorker90(reinterpret_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
@@ -1033,7 +1033,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // ---------------------------------------------------------------------------
 // Sub151b90 (0x151b90): cache the linked object (m_98) resolved from the
 // serialized key handle (m_184) through the manager's kill-cue map
-// (m_0c->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
+// (OwnerMgr()->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
 // caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
 // @early-stop
 // Logic complete + verified (74.6%). Residual is a pure MSVC5 block-layout tiebreak:
@@ -1045,13 +1045,13 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // change). Not source-steerable.
 // ---------------------------------------------------------------------------
 RVA(0x00151b90, 0x70)
-i32 CWwdGameObject::Sub151b90(i32 gate) {
+i32 CGameObject::Sub151b90(i32 gate) {
     if (gate == 0) {
         return 0;
     }
     if (m_184 != 0) {
         void* found = 0;
-        if (m_0c->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
+        if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
             m_carrier = 0;
             return 1;
         }
@@ -1073,7 +1073,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
 // Two __thiscall params (ret 8): dst = the archive (used), the 2nd is unused (retail
 // never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
 RVA(0x00151c00, 0x118)
-i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
+i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(dst);
     if (ar == 0) {
         return 0;
@@ -1087,8 +1087,9 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     }
 
     i32 ebx = 0;
-    if (this->GetTypeId() == 0x1c) {
-        ebx = this->GetSnapshotSubId();
+    if (this->GetClassId() == 0x1c) {
+        // the OOB slot-16 quirk - retail's shipped bug (see WwdGameObject.h)
+        ebx = reinterpret_cast<WwdRetailSlot16Facet*>(this)->GetSnapshotSubId();
     }
 
     w = m_7c;
@@ -1099,16 +1100,16 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
 
     WwdSnapshot rec;
     rec.m_00 = m_04;
-    rec.m_08 = this->GetTypeId();
+    rec.m_08 = this->GetClassId();
     rec.m_04 = m_188;
     rec.m_94 = m_screenX;
     rec.m_98 = m_screenY;
-    rec.m_9c = m_latchedAnimId;
+    rec.m_9c = m_sortKey;
     rec.m_0c = ebx;
     rec.m_10 = edi;
 
     {
-        CString str = m_0c->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_7c));
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_7c));
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);

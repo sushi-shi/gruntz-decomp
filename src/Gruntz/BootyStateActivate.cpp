@@ -235,14 +235,14 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGruntzMgr* reg = g_gameReg;
     // The +0x1ec array is CBootyState::m_trailSprites - a real, typed member now, so the
     // `(CGameObject**)((char*)this + 0x1ec)` offset-reach is gone.
-    CGameObject** slot = m_trailSprites;
+    CWwdGameObjectA** slot = m_trailSprites;
     m_radius = 0xc8;
     m_letterIdx = (reg->m_scoreHud->m_count - 1) % 4; // +0x7c->+0x04: the active letter count
     m_angleStep = 0;
     m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGameObject* a = g_gameReg->m_world->m_childGroup
+        CWwdGameObjectA* a = g_gameReg->m_world->m_childGroup
                              ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
@@ -254,7 +254,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     for (i32 k = 0; k <= m_letterIdx; k++) {
         slot[k]->m_stateFlags &= ~1;
     }
-    CGameObject* g =
+    CWwdGameObjectA* g =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
     m_cursorLetter = g;
     if (g == 0) {
@@ -279,15 +279,15 @@ void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
             i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CGameObject** ap = m_trailSprites; // walks the array by 1
+            CWwdGameObjectA** ap = m_trailSprites; // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
-                CGameObject* e = *ap;
+                CWwdGameObjectA* e = *ap;
                 e->m_screenX = tbl[-1];
                 e = *ap;
                 e->m_screenY = tbl[0];
                 e = *ap;
-                if (e->m_latchedAnimId != 1) {
-                    e->m_latchedAnimId = 1;
+                if (e->m_sortKey != 1) {
+                    e->m_sortKey = 1;
                     e->m_flags |= 0x20000;
                 }
                 ap++;
@@ -311,12 +311,12 @@ void CMultiBootyState::StepGlitterAnim() {
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
-    CGameObject** arr1ec = m_trailSprites;
+    CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
         i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        CGameObject** ap = arr1ec;          // eax
+        CWwdGameObjectA** ap = arr1ec;          // eax
         do {
-            CGameObject* e = *ap;
+            CWwdGameObjectA* e = *ap;
             i++;
             ap++;
             e->m_screenX = tbl[-1];
@@ -334,9 +334,9 @@ void CMultiBootyState::StepGlitterAnim() {
     MoveLettersByDir();
 
     if (m_radius == 0) {
-        CGameObject* e = arr1ec[i];
-        if (e->m_latchedAnimId != 1) {
-            e->m_latchedAnimId = 1;
+        CWwdGameObjectA* e = arr1ec[i];
+        if (e->m_sortKey != 1) {
+            e->m_sortKey = 1;
             e->m_flags |= 0x20000;
         }
     }
@@ -353,7 +353,7 @@ void CMultiBootyState::StepGlitterAnim() {
 RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
-        CGameObject** p = m_sprintSprites;
+        CWwdGameObjectA** p = m_sprintSprites;
         i32 n = 8;
         do {
             CGameObject* e = *p;
@@ -362,7 +362,7 @@ void CMultiBootyState::MoveLettersByDir() {
         } while (--n);
         return;
     }
-    CGameObject** p = m_sprintSprites;
+    CWwdGameObjectA** p = m_sprintSprites;
     for (i32 i = 0; i < 8; i++, p++) {
         CGameObject* e = *p;
         i32 x = e->m_screenX;
@@ -542,7 +542,7 @@ i32 CBootyState::CheckPerfectBonus() {
     if (!g_gameReg->m_scoreHud->InBounds(-1)) { // FrameReady @0xfcd70 == CBattlezData::InBounds
         return 1;
     }
-    CGameObject* st = m_bootyPerfectSprite;
+    CWwdGameObjectA* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;

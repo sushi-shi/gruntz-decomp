@@ -146,8 +146,8 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_object->m_164 = m_object->m_screenX >> 5;
     m_object->m_168 = m_object->m_screenY >> 5;
-    if (m_object->m_latchedAnimId != 0xc) {
-        m_object->m_latchedAnimId = 0xc;
+    if (m_object->m_sortKey != 0xc) {
+        m_object->m_sortKey = 0xc;
         m_object->m_flags |= 0x20000;
     }
 }

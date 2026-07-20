@@ -16,9 +16,9 @@ CResolveNode::CResolveNode() {
     m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
     m_screenX = static_cast<i32>(0x80000000);
-    m_64 = static_cast<i32>(0x80000000);
+    m_clip.left = static_cast<i32>(0x80000000);
     m_3c = 0;
-    m_40 = 0;
+    m_stateFlags = 0;
 }
 
 // (~CResolveNode is defined out-of-line in WwdFactoryObject.cpp @0x154a50 - the

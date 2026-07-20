@@ -257,7 +257,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     }
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
-                    CGameObject* g = m_animSprites[m_stepIndex];
+                    CWwdGameObjectA* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = 1;
                     g->m_drawFillCmd = 0xa;
                     g->m_drawFillArg = sel;
@@ -283,7 +283,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
-                    CGameObject* g = m_animSprites[m_stepIndex];
+                    CWwdGameObjectA* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = 1;
                     g->m_drawFillCmd = 0xa;
                     g->m_drawFillArg = sel;
@@ -307,7 +307,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         }
     } else if (m_walkStarted != 0) {
         // the +0x1a0 anim-sink pair: m_1c8 = active/armed, m_1c0 = idle/done
-        CGameObject* spr = m_animSprites[m_stepIndex];
+        CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
         if (spr->m_1a0.m_28 != 0 && spr->m_1a0.m_20 == 0) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {

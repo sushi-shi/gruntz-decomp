@@ -47,7 +47,7 @@
 #include <Gruntz/GameMode.h>         // CMenuState (StopMusicChain/StartMusic; state 5)
 #include <Gruntz/Multi.h>            // CMulti (Connect; state 0x11)
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr (m_cmdGrid)
-#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
+#include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
 #include <Gruntz/Grunt.h>            // CGrunt (grid cells) + GruntObjEntry (death chain)
 #include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
@@ -450,7 +450,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         m_cmdGrid->ClearRowAndRefresh(5);
                         void* _key = reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c); // death/monologo sprite key
                         if (_key) {
-                            CWwdGameObjectE* _dr = 0;
+                            CGameObject* _dr = 0;
                             if (g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
                                 && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk

@@ -4,7 +4,7 @@
 // ResolveNode.h - CResolveNode, the 0x68-byte CLoadable node (own primary
 // vftable @0x1efbc0 = ??_7CResolveNode) that is BOTH the DDraw surface/page-
 // manager leaf AND the direct base of the wide game-object family
-// (CWwdGameObjectE : CResolveNode - proven by the family ctor 0x15b390 stamping
+// (CGameObject : CResolveNode - proven by the family ctor 0x15b390 stamping
 // 0x5efbc0 for its base subobject and every family dtor folding this class's
 // teardown; the former WwdBResolve duplicate of this class is DISSOLVED).
 // Hoisted from ResolveNode.cpp (wave4-L) so the split method set can live in its
@@ -74,17 +74,23 @@ public:
     i32 m_dirtyH;             // +0x34
     i32 m_38;                 // +0x38  live dirty-rect armed flag (-1 == disarmed)
     i32 m_3c;                 // +0x3c  = 0
-    i32 m_40;                 // +0x40  (SetPosition zeroes)
+    i32 m_stateFlags;                 // +0x40  (SetPosition zeroes)
     i32 m_44;                 // +0x44  (SetPosition zeroes)
     i32 m_48;                 // +0x48  (SetPosition reseeds 0x32)
-    i32 m_4c;                 // +0x4c  (SetPosition zeroes)
-    i32 m_50;                 // +0x50  (SetPosition reseeds 1)
-    char _pad54[0x58 - 0x54]; // +0x54..+0x57
-    i32 m_58;                 // +0x58  (SetPosition zeroes)
+    i32 m_drawFillArg;        // +0x4c  (SetPosition zeroes; flat name carried)
+    i32 m_drawFillCmd;        // +0x50  (SetPosition reseeds 1; 0xb = decay fill-bar)
+    i32 m_fillFraction;       // +0x54  fill fraction (0..256)
+    i32 m_drawActive;         // +0x58  dirty/active flag (SetPosition zeroes)
     i32 m_screenX;            // +0x5c  screen/position X (INT_MIN = unset; the flat
                               //        CGameObject model's m_screenX - name converged)
     i32 m_screenY;            // +0x60  screen/position Y
-    i32 m_64;                 // +0x64  = INT_MIN (clip-rect left sentinel)
+    // +0x64..+0x73  the record clip rect - ONE member, wholly the node's: LevelTile-
+    // Validation passes it BY VALUE (a RECT straddling a base boundary cannot exist),
+    // the D-ctor seeds only .left (the INT_MIN sentinel), and the worker leaves'
+    // +0x68..+0x73 is an untouched pad with their own m_refCount at +0x74 - so the
+    // node ends at +0x74, not +0x68. (.left/.top/.right are also the checkpoint
+    // config triple, slots 12..14.)
+    RECT m_clip; // +0x64
 };
 SIZE_UNKNOWN(CResolveNode);
 VTBL(CResolveNode, 0x001efbc0); // ??_7CResolveNode@@6B@ (10 slots; ex WwdBResolve dup)

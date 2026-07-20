@@ -177,7 +177,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 
     CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
 
-    CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CWwdGameObjectA* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[0] = sw;
     if (sw == 0) {
         return 0;
@@ -186,7 +186,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_icons[0]->m_stateFlags |= 1;
 
-    CGameObject* wh =
+    CWwdGameObjectA* wh =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[7] = wh;
     if (wh == 0) {
@@ -196,12 +196,12 @@ i32 CBootyState::LoadGruntEffectSprites() {
         g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]);
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
-    CGameObject* p318 = m_icons[7];
+    CWwdGameObjectA* p318 = m_icons[7];
     p318->m_drawActive = 1;
     p318->m_drawFillCmd = 7;
     p318->m_drawFillArg = tint;
 
-    CGameObject* ex =
+    CWwdGameObjectA* ex =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[1] = ex;
     if (ex == 0) {
@@ -209,13 +209,13 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     ex->ApplyName("GRUNTZ_EXITZ");
     m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
-    CGameObject* p300 = m_icons[1];
+    CWwdGameObjectA* p300 = m_icons[1];
     p300->m_drawActive = 1;
     p300->m_drawFillCmd = 0xa;
     p300->m_drawFillArg = handleA;
     m_icons[1]->m_stateFlags |= 1;
 
-    CGameObject* dt =
+    CWwdGameObjectA* dt =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[2] = dt;
     if (dt == 0) {
@@ -223,13 +223,13 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
     m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
-    CGameObject* p304 = m_icons[2];
+    CWwdGameObjectA* p304 = m_icons[2];
     p304->m_drawActive = 1;
     p304->m_drawFillCmd = 0xa;
     p304->m_drawFillArg = handleA;
     m_icons[2]->m_stateFlags |= 1;
 
-    CGameObject* gl =
+    CWwdGameObjectA* gl =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[3] = gl;
     if (gl == 0) {
@@ -237,13 +237,13 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
     m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p308 = m_icons[3];
+    CWwdGameObjectA* p308 = m_icons[3];
     p308->m_drawActive = 1;
     p308->m_drawFillCmd = 0xa;
     p308->m_drawFillArg = handleA;
     m_icons[3]->m_stateFlags |= 1;
 
-    CGameObject* bb =
+    CWwdGameObjectA* bb =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[4] = bb;
     if (bb == 0) {
@@ -251,13 +251,13 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p30c = m_icons[4];
+    CWwdGameObjectA* p30c = m_icons[4];
     p30c->m_drawActive = 1;
     p30c->m_drawFillCmd = 0xa;
     p30c->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= 1;
 
-    CGameObject* rz =
+    CWwdGameObjectA* rz =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[5] = rz;
     if (rz == 0) {
@@ -265,13 +265,13 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
     m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p310 = m_icons[5];
+    CWwdGameObjectA* p310 = m_icons[5];
     p310->m_drawActive = 1;
     p310->m_drawFillCmd = 0xa;
     p310->m_drawFillArg = handleA;
     m_icons[5]->m_stateFlags |= 1;
 
-    CGameObject* cn =
+    CWwdGameObjectA* cn =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[6] = cn;
     if (cn == 0) {
@@ -279,7 +279,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
     m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p314 = m_icons[6];
+    CWwdGameObjectA* p314 = m_icons[6];
     p314->m_drawActive = 1;
     p314->m_drawFillCmd = 0xa;
     p314->m_drawFillArg = handleA;
@@ -289,7 +289,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGameObject* b =
+        CWwdGameObjectA* b =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_bomb[i] = b;
         if (b == 0) {
@@ -297,7 +297,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         }
         b->ApplyName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
         m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
-        CGameObject* bp = m_bomb[i];
+        CWwdGameObjectA* bp = m_bomb[i];
         bp->m_drawActive = 1;
         bp->m_drawFillCmd = 0xa;
         bp->m_drawFillArg = handleA;
@@ -305,7 +305,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
         m_bomb[i]->m_stateFlags |= 1;
 
-        CGameObject* e =
+        CWwdGameObjectA* e =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_expl[i] = e;
         if (e == 0) {
@@ -314,7 +314,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         e->ApplyName("GAME_EXPLOSION");
         m_expl[i]->m_stateFlags |= 1;
 
-        CGameObject* g =
+        CWwdGameObjectA* g =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_gokart[i] = g;
         if (g == 0) {
@@ -322,7 +322,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         }
         g->ApplyName("GRUNTZ_GOKARTGRUNT_EAST");
         m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-        CGameObject* gp = m_gokart[i];
+        CWwdGameObjectA* gp = m_gokart[i];
         gp->m_drawActive = 1;
         gp->m_drawFillCmd = 0xa;
         gp->m_drawFillArg = handleB;
@@ -406,7 +406,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             // every slot landed: latch the explosion sprites visible once their anim
             // sub-mgr reports active-but-not-idle, then done.
             for (i32 i = 0; i < 8; i++) {
-                CGameObject* e = m_expl[i];
+                CWwdGameObjectA* e = m_expl[i];
                 if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
                     e->m_stateFlags |= 1;
                 }
@@ -432,7 +432,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_1a0.m_14 == 0)) {
-                CGameObject* e = m_expl[i];
+                CWwdGameObjectA* e = m_expl[i];
                 e->m_stateFlags &= ~1;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
@@ -486,7 +486,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     }
     // latch the already-landed explosion sprites active.
     for (i32 j = 0; j < m_slot; j++) {
-        CGameObject* e = m_expl[j];
+        CWwdGameObjectA* e = m_expl[j];
         if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
             e->m_stateFlags |= 1;
         }
@@ -500,7 +500,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            CGameObject* e = m_expl[i];
+            CWwdGameObjectA* e = m_expl[i];
             e->m_stateFlags &= ~1;
             e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
             e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;

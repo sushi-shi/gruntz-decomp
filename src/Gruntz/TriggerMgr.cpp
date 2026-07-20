@@ -506,10 +506,10 @@ i32 CTriggerMgr::LoadCameraSprite() {
     }
 
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
+    CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = reinterpret_cast<CTmGoal*>(spr);
     spr->m_7c->m_notify(spr);
-    (reinterpret_cast<CGameObject*>(m_goal))->ApplyName("GAME_CAMERASPRITE");
+    (reinterpret_cast<CWwdGameObjectA*>(m_goal))->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -997,7 +997,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
 RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CGameObject* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    CWwdGameObjectA* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
         // The *0x24556c singleton IS a CGruntzMgr; ReportError @0x08dc60 is ITS method.
         // Calling it through the CGameRegistry view emitted ?ReportError@CGameRegistry@@QAEXHH@Z,
@@ -1106,7 +1106,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
         }
     }
 
-    CGameObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         g_gameReg->ReportError(0x8009, 0x402);
         return 0;
@@ -1479,7 +1479,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
-            void* obj = (looked != 0 && (static_cast<CGameObject*>(looked))->GetTypeId() == 5) ? looked : 0;
+            void* obj = (looked != 0 && (static_cast<CGameObject*>(looked))->GetClassId() == 5) ? looked : 0;
             m_goal = static_cast<CTmGoal*>(obj); // Eh's serialize-view reinterpret of the goal slot
             if (obj == 0) {
                 return 0;
@@ -1621,7 +1621,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
 RVA(0x0007b330, 0xc6)
 i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CGameObject* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
+    CWwdGameObjectA* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
         if (v == 0) {
@@ -1785,7 +1785,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (!PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
                 continue;
             }
-            CGameObject* spr =
+            CWwdGameObjectA* spr =
                 m_world->m_childGroup->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
@@ -1946,7 +1946,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->FreezeApply();
                         CGameObject* h = g->m_10;
-                        CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,
                             h->m_screenX,
                             h->m_screenY,
@@ -2109,7 +2109,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CGameObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
     }
@@ -2469,7 +2469,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             return 0;
     }
 
-    CGameObject* spr = g_gameReg->m_world->m_childGroup
+    CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
                            ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;

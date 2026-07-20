@@ -42,7 +42,7 @@ i32 CNetSession::Checksum() {
             if (obj != 0) {
                 CGameObject* sub = obj->m_10;
                 sum += obj->m_entranceCell.reason + obj->m_stamina + obj->m_toyTime + obj->m_health
-                       + sub->m_screenY + sub->m_latchedAnimId + sub->m_screenX + obj->m_lastTilePxX
+                       + sub->m_screenY + sub->m_sortKey + sub->m_screenX + obj->m_lastTilePxX
                        + obj->m_lastTilePxY;
                 i32 n = obj->m_entranceReason;
                 i32 d = n;

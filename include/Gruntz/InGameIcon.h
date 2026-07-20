@@ -134,7 +134,7 @@ public:
     i32 m_6c;                  // +0x6c  icon idle-timer HI
     i32 m_70;                  // +0x70  icon idle-window LO (i64 pair w/ m_74)
     i32 m_74;                  // +0x74  icon idle-window HI
-    CGameObject* m_glitterSprite; // +0x78  glitter overlay FX sprite (powerup/curse)
+    CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
 };
 VTBL(CInGameIcon, 0x1e7d04);
 

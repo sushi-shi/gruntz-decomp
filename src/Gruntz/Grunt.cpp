@@ -237,7 +237,7 @@ static void GruntScratchTeardown();
 // CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60
 // Fills the per-pose animation-name index table (m_poseWalk..m_poseItem2) by looking up
 // "GRUNTZ_" + this->m_animSetName + "_<POSE>" in the entrance player's
-// name->animset hash (m_154->m_0c->m_animRegistry->m_10map). __thiscall, ret 8 (/GX - the
+// name->animset hash (m_154->OwnerMgr()->m_animRegistry->m_10map). __thiscall, ret 8 (/GX - the
 // two operator+ CString temporaries per block carry a C++ EH frame).
 //
 //   * kind==0  : load the full grunt pose set (WALK/ATTACK*/STRUCK*/IDLE1..5/
@@ -273,7 +273,7 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), reinterpret_cast<void*&>(_out)); \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), reinterpret_cast<void*&>(_out)); \
         (dst) = _out;                                                                              \
     } while (0)
 
@@ -436,7 +436,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase(static_cast<CGameObject*>(owner))
     (reinterpret_cast<CMovingLogic*>(this))->MovingSlot16();
     CGameObject* obj = static_cast<CGameObject*>(owner); // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_34 = obj;
-    m_38 = obj; // the owner object doubles as the entrance player
+    m_38 = static_cast<CWwdGameObjectA*>(obj); // the owner object doubles as the entrance player (A-kind)
     m_3c =
         obj->m_7c; // the bound object's AnimWorkerObj (typed)
     m_struckClockLo = 0;
@@ -542,10 +542,10 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase(static_cast<CGameObject*>(owner))
     m_defenderState = 0;
     m_2d8 = 0;
     {
-        CGameObject* h = m_10;
+        CWwdGameObjectA* h = m_10;
         i32 lim = h->m_screenY + 0x186a0;
-        if (h->m_latchedAnimId != lim) {
-            h->m_latchedAnimId = lim;
+        if (h->m_sortKey != lim) {
+            h->m_sortKey = lim;
             h->m_flags |= 0x20000;
         }
     }
@@ -767,7 +767,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_448 = s_GRUNTZ_ + m_animSetName;
     }
     i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 keep50 = h->m_drawFillCmd;
     h->m_drawActive = 1;
     h->m_drawFillCmd = keep50;

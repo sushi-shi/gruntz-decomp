@@ -48,7 +48,7 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
         arc->Read(name, 0x80);
         arc->Read(m_blob, 0x10);
         m_34 = obj;
-        m_38 = obj;
+        m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the A-kind sprite
         m_3c = obj->m_7c;
         if (strlen(name) == 0) {
             m_value = 0;

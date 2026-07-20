@@ -36,7 +36,7 @@ SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
 public:
     CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL; own fields here - NO CWapX base:
-    CGameObject* m_38;   // +0x38   this class's RTTI/identity places CWapX elsewhere or
+    CWwdGameObjectA* m_38;   // +0x38   this class's RTTI/identity places CWapX elsewhere or
     AnimWorkerObj* m_3c; // +0x3c   not at all - see the class comment)
 public:
     i32 LoadGruntDecayConfig();    // 0x612a0
@@ -49,7 +49,7 @@ public:
 
     // Members beyond CUserLogic's 0x40 base.
     char m_pad40[0x154 - 0x40];
-    CGameObject* m_drawState; // +0x154 bound draw-state / entrance-anim object
+    CWwdGameObjectA* m_drawState; // +0x154 bound draw-state / entrance-anim object
                               //        (== CGrunt::m_154; ex the CDecayMgr view)
     char m_pad158[0x170 - 0x158];
     i32 m_gruntSubState; // +0x170 grunt sub-state

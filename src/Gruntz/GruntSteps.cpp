@@ -376,7 +376,7 @@ CGruntVoiceRec g_voiceSW;
 // 3-DWORD voice record through PlaySound(1000, rec). __thiscall, ret 8, frameless.
 RVA(0x000511b0, 0x246)
 void CGrunt::PlayMoveSound(i32 x, i32 y) {
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 dy = y - h->m_screenY;
     i32 dx = x - h->m_screenX;
     i32 cx = h->m_screenX;
@@ -456,9 +456,9 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 a) {
     m_10->m_screenX = m_lastTilePxX;
     m_10->m_screenY = m_lastTilePxY;
-    CGameObject* h = m_10;
-    if (h->m_latchedAnimId != h->m_screenY + 0x186a0) {
-        h->m_latchedAnimId = h->m_screenY + 0x186a0;
+    CWwdGameObjectA* h = m_10;
+    if (h->m_sortKey != h->m_screenY + 0x186a0) {
+        h->m_sortKey = h->m_screenY + 0x186a0;
         h->m_flags |= 0x20000;
     }
     SetEntrancePos(a, 1);
@@ -984,7 +984,7 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
 // reverses the eax/ecx axis assignment. Source-invariant on a 75-byte leaf. ~84%.
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
-    CGameObject* h = m_10;
+    CWwdGameObjectA* h = m_10;
     i32 px = (h->m_screenX & ~0x1f) + 0x10;
     i32 py = (h->m_screenY & ~0x1f) + 0x10;
     if (px != m_lastTilePxX || py != m_lastTilePxY) {
@@ -1105,8 +1105,8 @@ idleReseed:
     SetMoveStateA(m_19c, 1, 0, 1);
     {
         i32 px = m_10->m_screenY + 0x186a0;
-        if (m_10->m_latchedAnimId != px) {
-            m_10->m_latchedAnimId = px;
+        if (m_10->m_sortKey != px) {
+            m_10->m_sortKey = px;
             m_10->m_flags |= 0x20000;
         }
     }
@@ -1235,7 +1235,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_selectedSprite;
+        CWwdGameObjectA* sp = m_selectedSprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1244,7 +1244,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_toySprite;
+        CWwdGameObjectA* sp = m_toySprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1253,7 +1253,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_healthSprite;
+        CWwdGameObjectA* sp = m_healthSprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1262,7 +1262,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_staminaSprite;
+        CWwdGameObjectA* sp = m_staminaSprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1271,7 +1271,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_toyTimeSprite;
+        CWwdGameObjectA* sp = m_toyTimeSprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1280,7 +1280,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_wingzTimeSprite;
+        CWwdGameObjectA* sp = m_wingzTimeSprite;
         if (sp) {
             tmp = sp->m_188;
         }
@@ -1289,7 +1289,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CGameObject* sp = m_powerupSprite;
+        CWwdGameObjectA* sp = m_powerupSprite;
         if (sp) {
             tmp = sp->m_188;
         }

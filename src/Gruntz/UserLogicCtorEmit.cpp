@@ -70,23 +70,23 @@ extern "C" {
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
-        obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
+        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
-        obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
+        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
-        obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
+        obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
         }
     }
 }

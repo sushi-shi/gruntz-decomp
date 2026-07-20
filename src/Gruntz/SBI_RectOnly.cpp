@@ -864,10 +864,10 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
 
     void* obj = 0;
     CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(gm) + 8) + 0x48));
-    CGameObject* m8 = 0;
+    CWwdGameObjectA* m8 = 0;
     if (map->Lookup(reinterpret_cast<void*>(seq), obj)) {
         if (obj != 0) {
-            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5) ? reinterpret_cast<CGameObject*>(obj) : 0;
+            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5) ? reinterpret_cast<CWwdGameObjectA*>(obj) : 0;
         }
     }
     m_barSprite = m8;
@@ -2645,7 +2645,7 @@ i32 CStatusBarMgr::RefreshState() {
 // while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    CGameObject* r = m_barSprite;
+    CWwdGameObjectA* r = m_barSprite;
     if (r == 0) {
         return 0;
     }
@@ -2657,11 +2657,11 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 }
 
 // 0xfe8a0 - HitTestLayer(x, y): test the point against the render object's layer
-// rect - origin (m_198->m_10/m_14) plus the position-relative inset
-// (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
+// rect - origin (m_layer->m_10/m_14) plus the position-relative inset
+// (m_layer->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CGameObject* r = m_barSprite;
+    CWwdGameObjectA* r = m_barSprite;
     CImage* L = r->m_layer;
     i32 xlo = r->m_screenX - L->m_anchorX;
     i32 ylo = r->m_screenY - L->m_anchorY;

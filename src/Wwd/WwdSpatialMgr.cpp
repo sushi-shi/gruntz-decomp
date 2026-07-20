@@ -165,7 +165,7 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
-        CWwdGameObject* w = obj->m_object;
+        CGameObject* w = obj->m_object;
         if ((w->m_flags & 0x2) || (w->m_7c->m_08 & 0x4)) {
             m_mgr->InsertSorted_159e40(w, 1);
             grid->Remove(obj);
@@ -266,7 +266,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
-        CWwdGameObject* w = obj->m_object;
+        CGameObject* w = obj->m_object;
         m_mgr->InsertSorted_159e40(w, 1);
         grid->Remove(obj);
         ++count;
@@ -279,7 +279,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
 // three plane grids (via ForEachGrid), summing the counts. Null cb -> 0.
 // ===========================================================================
 RVA(0x00168a20, 0x46)
-i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdGameObject*)) {
+i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
     if (cb == 0) {
         return 0;
     }
@@ -299,7 +299,7 @@ i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdGameObject*)) {
 // byte-identical, the iterator local's frame numbers off by 4. See
 // docs/patterns/gx-scoped-local-eh-frame-size.md.
 RVA(0x00168a70, 0x73)
-i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*)) {
+i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
@@ -315,7 +315,7 @@ i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject
 // return its first object, or 0 when all three are empty.
 // ===========================================================================
 RVA(0x00168af0, 0x6d)
-CWwdGameObject* CWwdSpatialMgr::GetFirstObject() {
+CGameObject* CWwdSpatialMgr::GetFirstObject() {
     m_curGrid = m_grid0;
     WwdRegion* n = m_iter.Start(m_grid0, 0);
     if (n) {
@@ -341,7 +341,7 @@ CWwdGameObject* CWwdSpatialMgr::GetFirstObject() {
 // re-seed. Returns the next object, or 0 when all grids are done.
 // ===========================================================================
 RVA(0x00168b60, 0x85)
-CWwdGameObject* CWwdSpatialMgr::GetNextObject() {
+CGameObject* CWwdSpatialMgr::GetNextObject() {
     if (m_curGrid == 0) {
         return 0;
     }

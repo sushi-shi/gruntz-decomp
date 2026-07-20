@@ -176,6 +176,7 @@ class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
 // (CBootyBonusState is GONE - there was never a "bonus state object": +0x2f8 holds the
 // BOOTY_PERFECT CGameObject sprite, and its "phase" is that sprite's own m_screenX.)
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
+class CWwdGameObjectA; // the created-sprite kind (sprite fields below hold it)
                     // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
                     //  draw walks the same objects as position/flag records)
 
@@ -540,26 +541,26 @@ public:
     i32 m_angleStep;                // +0x1e0  spiral angle/step counter (advances by 5)
     i32 m_scratchX;                 // +0x1e4  computed scratch X
     i32 m_1e8;                      // +0x1e8  computed scratch Y
-    CGameObject* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle sprites
+    CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle sprites
                                     //         (the `(char*)this + 0x1ec` array of 0x19540)
-    CGameObject* m_cursorLetter;    // +0x1fc  the trailing/cursor letter sprite
+    CWwdGameObjectA* m_cursorLetter;    // +0x1fc  the trailing/cursor letter sprite
     i32 m_levelCompleteGate;        // +0x200  level-complete gate
     // +0x204..+0x224: the 8 directional sprint sprites BuildGruntSprintAnimation builds -
     // exactly filling what was padding (8 pointers = 0x20 bytes).
-    CGameObject* m_sprintSprites[8]; // +0x204
+    CWwdGameObjectA* m_sprintSprites[8]; // +0x204
     // The level-message HUD sprite banks (each lands in what was pure padding here, so
     // no declared field moved).
-    CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites (slide left)
-    CGameObject* m_gokart[8]; // +0x244  go-kart sprites (slide right)
-    CGameObject* m_expl[8];   // +0x264  explosion sprites (latched active once landed)
+    CWwdGameObjectA* m_bomb[8];   // +0x224  bomb-grunt sprites (slide left)
+    CWwdGameObjectA* m_gokart[8]; // +0x244  go-kart sprites (slide right)
+    CWwdGameObjectA* m_expl[8];   // +0x264  explosion sprites (latched active once landed)
     // +0x284 / +0x2a4: the view called these m_shownA / m_shownB - the SAME two latches,
     // at the same offsets, that this class already named. Canonical names kept; the roles
     // LevelMsgHudDriver proves are recorded here.
     i32 m_readyFlags[8];           // +0x284  per-slot "stat line (rectsB) shown" latch
     i32 m_templateFlags[8];        // +0x2a4  per-slot "level message (rectsA) shown" latch
     i32 m_slot;                    // +0x2c4  active reveal slot / phase counter (0..8)
-    CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
-    CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
+    CWwdGameObjectA* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
+    CWwdGameObjectA* m_animSprites[4]; // +0x2d8  per-player idle sprites (A-kind)
     i32 m_stepIndex;               // +0x2e8  active-player step index
     i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;            // +0x2f0  sound-started gate
@@ -571,13 +572,13 @@ public:
     // object (m_5c phase / m_8 flags)" IS this sprite: CGameObject's m_flags (+0x08) and
     // m_screenX (+0x5c) - the scroll "phase" is literally the sprite's screen x, wrapping
     // off-screen left at -0x82. Same object, two names.
-    CGameObject* m_bootyPerfectSprite;
+    CWwdGameObjectA* m_bootyPerfectSprite;
     // +0x2fc  the eight in-game effect icons LoadGruntEffectSprites populates
     // ([0]=stopwatch [1]=exit [2]=deathtwitch [3]=gauntletz [4]=beachballz [5]=roidz
     //  [6]=coin [7]=wormhole/teleporter); LevelMsgHudDriver indexes them by m_slot.
     // Ends at 0x31c - inside the allocation-proven 0x320, which is what pins these
     // methods to THIS class rather than any smaller state.
-    CGameObject* m_icons[8]; // +0x2fc
+    CWwdGameObjectA* m_icons[8]; // +0x2fc
     // Tail padding to the TRUE retail size: TransitionState `push 0x320; call ??2` @0x8bebc,
     // then the inline `mov [esi],??_7CBootyState@@6B@` (0x5e9cec) stamp.
     char m_pad31c[0x320 - 0x31c];
@@ -678,9 +679,9 @@ public:
     i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
     i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
     i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
-    CGameObject* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
+    CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
                                     //         sprites (walked 0..m_letterIdx, %4-bounded)
-    CGameObject* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite
+    CWwdGameObjectA* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite
     // ENDS AT 0x244 - the allocation-proven size (TransitionState @0x8c056:
     // `push 0x244; call ??2@YAPAXI@Z`, then the ??_7CMultiBootyState (0x5e9bdc) stamp).
     // The out-of-bounds `m_bonusState` @+0x2f8 that used to sit here is GONE, and so is its
@@ -689,7 +690,7 @@ public:
     // is CBootyState::Render. This class is whole again - the fourth and last of the
     // out-of-bounds @identity-TODOs to close by the allocation-site bound.
     i32 m_levelCompleteGate;         // +0x200  level-complete gate (mirrors CBootyState)
-    CGameObject* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
+    CWwdGameObjectA* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
     char m_pad224[0x244 - 0x224];
 };
 VTBL(CMultiBootyState, 0x001e9bdc);

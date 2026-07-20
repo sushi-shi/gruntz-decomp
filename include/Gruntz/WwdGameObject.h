@@ -77,65 +77,44 @@ struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex Le
 // the former WwdRenderCtx view described offset-for-offset).
 
 // ---------------------------------------------------------------------------
-// CWwdGameObject - the canonical runtime plane object (raw-offset access; only
-// offsets are load-bearing). It DERIVES from the real MFC CObject (the WAP engine
-// statically links MFC and uses CObject as its game-object grand-base): PROVEN by
-// ??_7CObject@0x1e8cb4 whose slots 0/2/3/4 (0x1bef01 GetRuntimeClass / 0x0028ec
-// Serialize / 0x00106e AssertValid / 0x00404034 Dump) are EXACTLY this object's
-// manual-table slots 0/2/3/4, with slot 1 the dtor override (0x15b4c0). So slots
-// 0-4 are inherited from CObject and only slots 5-16 are the derived's own (below).
-// The table (?g_wwdGameObjectVtbl@@3PAXA, VA 0x5f0020, read from .rdata) holds
-// NON-virtual method addresses the engine hand-placed (retail calls Play/Setup/
-// Helper164790 DIRECTLY via rel32), so those stay plain methods; the 12 declared-only
-// virtuals model only the table SHAPE so WriteSnapshot dispatches slot 8/16 through
-// the real vptr with no cast. Slot RVAs are the binary's ground truth (never
-// fabricated); unrecovered slots carry @rva. (Slot 1, the scalar-deleting dtor
-// override @0x15b4c0, is realized by the /GX CWwdGameObjectE sibling in this TU.)
+// CWwdGameObject IS the family B kind (<Wwd/WwdGameObjectFamily.h>, 0x1fc,
+// vtable 0x5f00e8, the +0x1dc child CObList): the flat "dispatch model" class
+// that lived here is DISSOLVED - its method set is homed on the real family
+// levels (E: Setup/Play/Serialize/WriteSnapshot/Sub*/EnsureWorker*/AddLogic*;
+// A: Apply*/Test/ReadState + the slot-10/15 overrides; B: Setup @0x1665e0 +
+// the child-list ops; C: Render/SetupFlagged; F: SetupDeferred).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CWwdGameObject); // the DISPATCH model; the concrete kinds carry the sizes
-// The data (+0x04..+0x1db) and the 17-slot vtable live in the BASE CGameObject
-// (<Gruntz/UserLogic.h>) - ONE wide object, formerly modeled twice (this class and
-// the CGameObject "view" were the same 0x5f0020-vtable object). Slot semantics:
-// 0-4 CObject's five, 5/6 the CWapObj IsLoaded (@0x15b370 worker-gate: `return
-// m_7c && m_0c && m_04 != -1`) / IsReady (0x001c08 default) pair, 7 ReleaseSubs
-// @0x15b5d0, 8 GetTypeId @0x154a00 (per-kind tag: E=0, C=6, F=0x16, B=0x1b),
-// 9 SetPosition @0x164790 (body = Helper164790 below, the direct-call spelling),
-// 10 Setup, 11 Render, 12-14 BltDirty*, 15 Slot3C == Play, 16 GetSnapshotSubId.
-class CWwdGameObject : public CGameObject {
-public:
-    // slot 10 - the factories' 4-arg Build dispatch; the body definition
-    // (0x150d60) is below. Direct callers (Init/SetupDeferred/SetupFlagged/
-    // ResetAndSetup) spell it CWwdGameObject::Setup (qualified = devirtualized)
-    // so they keep retail's direct rel32.
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x150d60
 
-    // On-screen visibility cull (0x1509c0): bounds-check the object's sprite extent
-    // (m_198) against the camera rect or the plane grid limits (via m_mgr).
-    i32 Test();
-    // Dispatch entry (0x150a70) and the methods it routes to.
-    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
-    i32 ReadState(i32 src);                                     // 0x150b00
-    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);                 // 0x151150 (vtbl +0x3c)
-    i32 Serialize(i32 ar);                                      // 0x151320
-    i32 WriteSnapshot(i32 dst, i32 unused);                     // 0x151c00 (ret 8; 2nd arg unused)
-    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);                   // 0x15b940
-    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x1665e0
-    i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0 (out-of-line)
-    i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30 (out-of-line)
-    void RenderDot(CDDrawSurfacePair* a);                       // 0x1660f0
-
-    // Sibling helpers (modeled as same-class methods so ecx=this matches).
-    i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
-    i32 Sub150c30(i32 a1);            // 0x150c30
-    i32 Sub151780(i32 a1);            // 0x151780
-    i32 Sub151b90(i32 a1);            // 0x151b90  cache linked object (m_98) from key m_184
-
-    // The three "resolve object reference" setters Sub151780 dispatches the
-    // deserialized name lookups into are the base CGameObject::EnsureWorker80/88/90
-    // (0x150eb0/0x150f90/0x151070) - inherited, called directly.
-
-    CObList m_subList; // +0x1dc  MFC CObList of owned sub-objects
+// The retail out-of-bounds slot-16 dispatch (a shipped bug, kept for the bytes):
+// WriteSnapshot fires `call [vptr+0x40]` when GetClassId()==0x1c (an A-kind
+// object) - but A's table has 16 slots (0x00..0x3c), so the read lands on the
+// ADJACENT ??_7CWwdGameObjectB[0] (tables pack 0x1f00a8..0x1f00e8..) =
+// CObject::GetRuntimeClass @0x1bef01, whose return rides into the snapshot as
+// the "sub id". No type in the real hierarchy can spell an out-of-table
+// dispatch; this declared-only 17-slot facet (never constructed, no vtable
+// emitted, ONE use site) reproduces the call shape. docs: the flat-merge fold.
+struct WwdRetailSlot16Facet {
+    virtual void S00();
+    virtual void* Delete(i32 flag); // [1] the scalar-deleting dtor slot - ReadPlaneObjects
+                                    //     calls it BARE (push 1; call [edx+4], no null guard;
+                                    //     plain `delete` under MSVC5 emits the guard)
+    virtual void S02();
+    virtual void S03();
+    virtual void S04();
+    virtual void S05();
+    virtual void S06();
+    virtual void S07();
+    virtual void S08();
+    virtual void S09();
+    virtual void S10();
+    virtual void S11();
+    virtual void S12();
+    virtual void S13();
+    virtual void S14();
+    virtual void S15();
+    virtual i32 GetSnapshotSubId(); // [16] +0x40 - lands on B[0] at runtime
 };
+SIZE_UNKNOWN(WwdRetailSlot16Facet); // dispatch facet (never constructed)
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

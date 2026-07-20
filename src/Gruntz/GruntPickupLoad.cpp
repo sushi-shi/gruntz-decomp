@@ -41,7 +41,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_38->m_0c->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));                               \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));                               \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
@@ -247,7 +247,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             MegaHolder* mh = reinterpret_cast<MegaHolder*>(g_gameReg->m_curState);
             a4 = 0;
-            m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", reinterpret_cast<void*&>(a4));
+            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", reinterpret_cast<void*&>(a4));
             m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {
@@ -450,7 +450,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         return 0;
     }
     if (id != 0) {
-        CGameObject* hud = m_10;
+        CWwdGameObjectA* hud = m_10;
         CGruntzMgr* g = g_gameReg;
         if ((hud->m_screenX < g->m_viewOriginR && hud->m_screenX >= g->m_viewOriginL
              && hud->m_screenY < g->m_viewOriginB && hud->m_screenY >= g->m_viewOriginT)

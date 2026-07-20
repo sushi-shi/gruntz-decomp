@@ -45,7 +45,7 @@ class CTriggerMgr;           // CWorld::m_68  (== g_gameReg->m_cmdGrid; TriggerM
 class CStatusBarMgr;         // CPlay::m_guts (+0x2dc; the 0x630-byte alloc in CPlay::LoadGameAssetNamespaces)
 class CLightFxRender;        // CPlay::m_lightFx (+0x320; the 0x43c alloc in LoadByMode)
 class CTileTriggerContainer; // CPlay::m_beginMarker (+0x2e4; Serialize @0x117280)
-struct CGameObject;          // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
+struct CGameObject; class CWwdGameObjectA; // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
 
 // The per-namespace load-notify sink passed to the GRUNTZ_* installers; its
 // OnLoaded() (0x4bc420 thiscall) posts a load-progress tick. Full def in CPlay.cpp.
@@ -679,7 +679,7 @@ public:
     // CGameObject (<Gruntz/UserLogic.h>): its m_stateFlags (+0x40) bit0 is the
     // drag/select active bit and its m_screenX/m_screenY (+0x5c/+0x60) receive
     // StepScroll's snapped scroll offsets. Was the `ScrollSink` view.
-    CGameObject* m_scrollSink; // +0x4e4
+    CWwdGameObjectA* m_scrollSink; // +0x4e4
     i32 m_gridWalkActive;      // +0x4e8  grid-walk active flag
     i32 m_renderDisabled;      // +0x4ec  Render hard early-out gate
     i32 m_4f0;             // +0x4f0  highlight-busy gate (SBI_RectOnly reads it non-zero => bail)

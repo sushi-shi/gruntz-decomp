@@ -290,8 +290,8 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_durationMs = 0;
     m_64 = 0;
     m_38->ApplyName("GAME_EXCLAMATION");
-    if (m_object->m_latchedAnimId != 0xdbba1) {
-        m_object->m_latchedAnimId = 0xdbba1;
+    if (m_object->m_sortKey != 0xdbba1) {
+        m_object->m_sortKey = 0xdbba1;
         m_object->m_flags |= 0x20000;
     }
     m_sample = 0;
@@ -557,7 +557,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetTypeId() == 5) ? reinterpret_cast<i32>(out) : 0;
+                resolved = (out->GetClassId() == 5) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {
@@ -581,7 +581,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetTypeId() == 5) ? reinterpret_cast<i32>(out) : 0;
+                resolved = (out->GetClassId() == 5) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {
@@ -590,7 +590,7 @@ i32 CGruntVoice::Update() {
         }
         m_object->m_stateFlags &= ~1;
         i32 dx = 0, dy = 0;
-        CImage* layer = (reinterpret_cast<CGameObject*>(resolved))->m_layer;
+        CImage* layer = (reinterpret_cast<CWwdGameObjectA*>(resolved))->m_layer;
         if (layer != 0) {
             dx = layer->m_originX;
             dy = layer->m_originY;

@@ -1045,7 +1045,7 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
 // (The world object chain is the canonical CDDrawChildGroup/CDDrawGroupNode
 // (<DDrawMgr/DDrawChildGroup.h>); the chain payloads are CGameObjects. The objects'
 // +0x74 z-key is read here for the draw ordering - the canonical field is named
-// m_latchedAnimId (historical); CheckpointTrigger derives it as
+// m_sortKey (historical); CheckpointTrigger derives it as
 // layer-base + screenY + bias, i.e. a cached z-order key. Rename deferred until
 // the UserLogic TU is free.)
 
@@ -1084,7 +1084,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                     CDDrawGroupNode* cur = node;
                     node = node->m_next;
                     CGameObject* pl = cur->m_gameObj;
-                    if (pl->m_latchedAnimId < zBound) { // z-key vs the plane's z bound
+                    if (pl->m_sortKey < zBound) { // z-key vs the plane's z bound
                         pl->Render(static_cast<CDDrawSurfacePair*>(visitor));
                     } else {
                         node = cur;

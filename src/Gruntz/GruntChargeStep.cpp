@@ -158,7 +158,7 @@ i32 CGrunt::ChargeStep() {
                         m_arrivalCol = g->m_tileOwnerHi;
                         m_arrivalRow = g->m_tileOwnerLo;
                         m_defenderState = 1;
-                        CGameObject* mp = m_10;
+                        CWwdGameObjectA* mp = m_10;
                         CGruntzMgr* mgr = g_gameReg;
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
@@ -177,7 +177,7 @@ i32 CGrunt::ChargeStep() {
                 }
             }
             if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
-                CGameObject* mp = m_10;
+                CWwdGameObjectA* mp = m_10;
                 i32 baseX = mp->m_extent.left;
                 i32 spanX = mp->m_extent.right - baseX;
                 spanX = spanX < 0 ? -spanX : spanX;

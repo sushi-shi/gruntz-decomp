@@ -36,7 +36,7 @@ struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
     BucketHead* m_bucket; // +0x0c  cached owning bucket
     i32 m_x;              // +0x10
     i32 m_y;              // +0x14
-    class CWwdGameObject* m_object; // +0x18  owning wide-object back-pointer
+    struct CGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
 
 // Position-iterator over a CWwdGrid: a rect-restricted cursor. REAL POLYMORPHIC:

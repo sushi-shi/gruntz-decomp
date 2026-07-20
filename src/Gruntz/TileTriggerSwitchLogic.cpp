@@ -630,7 +630,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
-                CGameObject* spr = gameMgr->m_childGroup->CreateSprite(
+                CWwdGameObjectA* spr = gameMgr->m_childGroup->CreateSprite(
                     0,
                     ((i + m_08) << 5) - 0x10,
                     ((j + m_0c) << 5) - 0x10,
@@ -1261,7 +1261,7 @@ i32 CTileActionEvent::Process(i32 arg) {
     i32 py = (m_tileY << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CGameObject* spr = g_gameReg->m_world->m_childGroup
+        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
                                ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);

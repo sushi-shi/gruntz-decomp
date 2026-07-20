@@ -96,7 +96,7 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 x = o->m_screenX;
     i32 y = o->m_screenY;
     if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL

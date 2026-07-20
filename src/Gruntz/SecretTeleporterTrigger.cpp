@@ -147,8 +147,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
+        if (m_object->m_sortKey != 0) {
+            m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
         m_38->m_flags |= 2;
@@ -220,8 +220,8 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
     if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
+        if (m_object->m_sortKey != 0) {
+            m_object->m_sortKey = 0;
             m_object->m_flags |= 0x20000;
         }
         m_38->m_flags |= 2;
@@ -293,7 +293,7 @@ void CSecretLevelTrigger::RegisterActs() {
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
-    CGameObject* spr = m_object;
+    CWwdGameObjectA* spr = m_object;
     CTrigger* hit =
         reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1));
     if (hit) {
@@ -326,13 +326,13 @@ i32 CSecretLevelTrigger::Tick() {
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     CTrigger* hit =
         reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1));
     if (hit) {
         o = m_object;
         CDDrawChildGroup* fac = g_gameReg->m_world->m_childGroup;
-        CGameObject* spr = fac->CreateSprite(
+        CWwdGameObjectA* spr = fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,

@@ -75,7 +75,7 @@ static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
         i32 field1c = ReadRegistryField1c(parent);
         i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
-        w->m_08 = 0;
+        w->m_flags = 0;
         w->m_0c = surfaceMgr;
         w->m_minIndex = 99999;
         w->m_maxIndex = 0;

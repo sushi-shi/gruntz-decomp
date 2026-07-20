@@ -45,8 +45,8 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_object->m_latchedAnimId != 0x14) {
-        m_object->m_latchedAnimId = 0x14;
+    if (m_object->m_sortKey != 0x14) {
+        m_object->m_sortKey = 0x14;
         m_object->m_flags |= 0x20000;
     }
 }

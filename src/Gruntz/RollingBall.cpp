@@ -130,7 +130,7 @@ static i32 VtblResolve(void* ent) {
 
 // The ctor's bound object (m_object == m_38) IS the canonical CGameObject and the
 // game registry IS the canonical CGameRegistry (g_gameReg, typed above): the ex
-// (+0x5c/+0x60), m_latchedAnimId (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
+// (+0x5c/+0x60), m_sortKey (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
 // m_118/m_124/m_12c, m_area.left..m_area.bottom (+0x144..+0x150), m_194, and the registry's
 // m_isEasyMode/m_134 all read cast-free through the canonical members.
 
@@ -167,19 +167,19 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
 
-    CGameObject* o = m_object;
+    CWwdGameObjectA* o = m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = 0x10 + (o->m_screenY & ~0x1f);
     o->m_screenX = snapX;
     m_subX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_subY = static_cast<double>(snapY);
-    if (o->m_latchedAnimId != 0x186a0 + snapY) {
-        o->m_latchedAnimId = snapY + 0x186a0;
+    if (o->m_sortKey != 0x186a0 + snapY) {
+        o->m_sortKey = snapY + 0x186a0;
         o->m_flags |= 0x20000;
     }
 
-    CGameObject* obj38 = m_38;
+    CWwdGameObjectA* obj38 = m_38;
     if (obj38->m_194 != 0) {
         CString name;
         name = obj38->m_194 + 0x24;
@@ -295,7 +295,7 @@ RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
-    CGameObject* anim = m_38;
+    CWwdGameObjectA* anim = m_38;
     if (anim->m_1a0.m_28 != 0 && anim->m_1a0.m_20 == 0) {
         anim->m_flags |= 0x10000;
         return 0;
@@ -303,7 +303,7 @@ i32 CRollingBall::Update() {
 
     // The explosion latch (+0x80): the explosion sound + cell-clear fire once.
     if (m_explodeLatch == 0) {
-        CGameObject* logic = m_object;
+        CWwdGameObjectA* logic = m_object;
         i32 lo = g_frameTime - m_explodeStartLo;
         i32 hi = 0 - m_explodeStartHi;
         i32 lim = m_explodeWindowHi;
@@ -325,14 +325,14 @@ i32 CRollingBall::Update() {
 
     // The fall latch (+0x84): grid-side death flag + rect re-mark.
     if (m_fallLatch == 0) {
-        CGameObject* logic = m_object;
+        CWwdGameObjectA* logic = m_object;
         i32 cx = logic->m_screenX;
         i32 cy = logic->m_screenY;
         if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
             && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
             *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x3f8)) = 1;
         }
-        CGameObject* logic2 = m_object;
+        CWwdGameObjectA* logic2 = m_object;
         i32 outA, outB;
         if (RbProbeRect(
                 g_gameReg->m_cmdGrid,
@@ -348,7 +348,7 @@ i32 CRollingBall::Update() {
     }
 
     // ----- the sub-tile-snapped move + action switch -----
-    CGameObject* logic = m_object;
+    CWwdGameObjectA* logic = m_object;
     if (logic->m_screenX == m_targetX && m_targetY == logic->m_screenY) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
@@ -438,7 +438,7 @@ i32 CRollingBall::Update() {
     (reinterpret_cast<i32*>(&m_subY))[0] = 0;
     (reinterpret_cast<i32*>(&m_subX))[1] = 0;
     (reinterpret_cast<i32*>(&m_subY))[1] = 0;
-    CGameObject* lg = m_object;
+    CWwdGameObjectA* lg = m_object;
     switch (lg->m_12c) {
         case 1:
             m_subY = -*reinterpret_cast<double*>(&m_moveDeltaLo);
@@ -469,7 +469,7 @@ i32 CRollingBall::Update() {
     }
 
     // ----- the x87 sub-tile interpolation tail -----
-    CGameObject* lg2 = m_object;
+    CWwdGameObjectA* lg2 = m_object;
     m_subX = static_cast<double>(lg2->m_screenX) + m_subX;
     m_subY = static_cast<double>(lg2->m_screenY) + m_subY;
     m_moveDeltaLo = 0;
@@ -514,13 +514,13 @@ i32 CRollingBall::Update() {
         ny = __ftol(RbFloor(m_subY));
     }
 
-    CGameObject* out = m_object;
+    CWwdGameObjectA* out = m_object;
     out->m_screenX = nx;
     out->m_screenY = ny;
-    CGameObject* out2 = m_object;
+    CWwdGameObjectA* out2 = m_object;
     i32 next = out2->m_screenY + 0x186a0;
-    if (out2->m_latchedAnimId != next) {
-        out2->m_latchedAnimId = next;
+    if (out2->m_sortKey != next) {
+        out2->m_sortKey = next;
         out2->m_flags |= 0x20000;
     }
     return 0;
