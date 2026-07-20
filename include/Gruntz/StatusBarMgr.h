@@ -655,39 +655,11 @@ SIZE_UNKNOWN(CSbiCueRecord);
 
 // The cue player (ConfigureItem == FUN_005360d0, __thiscall, ret 0x10).
 
-// CONSOLIDATION NOTE (g_gameReg->m_world world/resource-mgr views): CSbiGameMgr is the
-// canonical CDDrawSurfaceMgr (<Gruntz/ResMgr.h>) - g_gameReg->m_world, whose m_8 (CDDrawChildGroup, the
-// Deserialize seq map @+0x48) and m_28 (the sound object) were verified as the same
-// slots CDDrawSurfaceMgr models. CSbiMusicHost is the +0x28 sound object viewed as its CUE
-// facet (the same shape as SBI_MenuItem's CMiMusicHost: +0x30 gate, cue map @+0x10),
-// a SIBLING of CDDrawSurfaceMgr::m_28 (CDDrawSubMgrLeafScan, the install facet). The fold to CDDrawSurfaceMgr
-// is DEFERRED here (documented, not fabricated): this 4469-line, mostly-@early-stop TU
-// reaches m_30 through its own CGameReg singleton, so pulling in <Gruntz/ResMgr.h>
-// risks broad codegen shifts across its ~70 functions, and the m_28 cue access needs a
-// multi-view cast at ~7 sites (the CDDrawSubMgrLeafScan-vs-cue-host facet split is not
-// settled by the delinked bytes). Kept as the per-TU view for the final sweep.
-
-// The music host chain: g_gameReg->m_world->m_soundRegistry->{m_30 gate, Lookup map @+0x10}
-// (== CDDrawSurfaceMgr::m_28 viewed as its cue facet; see the consolidation note above).
-struct CSbiMusicHost {
-    char m_pad0[0x10];         // +0x00..0x0f
-    CMapStringToOb m_map10;    // +0x10  cue lookup map (CMapStringToOb view)
-    char m_pad11[0x30 - 0x11]; // +0x11..0x2f
-    i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip the cue play)
-};
-SIZE_UNKNOWN(CSbiMusicHost);
-
-// The active game manager (g_gameReg->m_world == CDDrawSurfaceMgr): carries the main
-// status-bar draw chain at +0x04 and the sound object / music host at +0x28. See
-// the consolidation note above (fold to CDDrawSurfaceMgr deferred).
-struct CSbiMainL1; // +0x04 draw chain (defined below); the main-bar sprite path
-struct CSbiGameMgr {
-    char m_pad0[0x4];
-    CSbiMainL1* m_4; // +0x04  main-status-bar draw chain (m_4->m_14->m_2c setup)
-    char m_pad8[0x28 - 0x8];
-    CSbiMusicHost* m_musicHost; // +0x28  music host (CDDrawSurfaceMgr::m_28 cue facet)
-};
-SIZE_UNKNOWN(CSbiGameMgr);
+// (CSbiGameMgr / CSbiMusicHost DISSOLVED 2026-07-20: the world/resource-mgr views are
+// GONE - SBI_RectOnly.cpp already reaches g_gameReg->m_world as the real CDDrawSurfaceMgr
+// and g_gameReg->m_world->m_soundRegistry as the real CDDrawSubMgrLeafScan (m_10 cue map
+// @+0x10 Ptr band, m_30 gate) at every site, cast-free. The structs were dead phantom
+// duplicates.)
 
 // The current play-state at g_gameReg->m_curState
 // (+0x2c) is the real CPlay (Play.h). Its highlight methods are CPlay methods, reached
@@ -716,14 +688,8 @@ SIZE_UNKNOWN(CSbiGameMgr);
 // QueryPos->GetValueDword (0x1395d0). (m_settings stays void* in the canonical header -
 // its MFC-side dual-view types it CSettingsWriter*, owned by a parallel worker.)
 
-// The window host at g_gameReg->m_gameWnd (+0x4): carries the game HWND at +0x4 (the
-// PostMessage target). Reached as ((CSbiWndHost*)g_gameReg->m_gameWnd) - the +0x4
-// sub-object of the canonical CGameRegistry, not a facet of the singleton itself.
-struct CSbiWndHost {
-    char m_pad0[0x4];
-    HWND m_4;  // +0x4  game window handle
-};
-SIZE_UNKNOWN(CSbiWndHost);
+// (CSbiWndHost DISSOLVED 2026-07-20: dead phantom - the game HWND at
+// g_gameReg->m_gameWnd+0x4 is reached through the real CGameRegistry, cast-free.)
 
 // The *0x24556c singleton is the canonical CGameRegistry (<Gruntz/GameRegistry.h>).
 // The scalar slots are canonical members reached cast-free (m_c -> m_frameGate +0xc,
@@ -814,8 +780,8 @@ SIZE_UNKNOWN(CTabList);
 // against the real DDraw chain: L1 == CDDrawSubMgrPages (+0x14 = m_backPair),
 // L2 == CDDrawSurfacePair (+0x2c = m_surface), and the "setup" IS the CDDSurface
 // (the old (CDDSurface*)tgt Restore cast was the confession). The main-bar chain
-// in real terms: world->m_drawTarget->m_backPair->m_surface.)
-SIZE_UNKNOWN(CSbiMainL1);
+// in real terms: world->m_drawTarget->m_backPair->m_surface. The leftover
+// SIZE_UNKNOWN(CSbiMainL1) stub is removed 2026-07-20.)
 // The resolved GAME_STATUSBAR_MAINBAR cfg record: a frame-entry table at +0x14 indexed
 // by +0x64; each entry carries an origin pair at +0x18/+0x1c.
 struct CSbiFrameEntry {
