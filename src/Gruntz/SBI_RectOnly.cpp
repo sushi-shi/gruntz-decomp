@@ -1592,8 +1592,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_fallLast);
-        if (d >= *reinterpret_cast<i64*>(&m_fallDelay)) {
+        i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_fallLast;
+        if (d >= m_fallDelay) {
             i32 newLo = m_fallRectT + speed;
             m_fallRectT = newLo;
             i32 newHi = m_fallRectB + speed;
@@ -1608,10 +1608,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 p[2] = m_fallRectR + sx;
                 p[3] = sy + newHi;
             }
-            m_fallDelay = static_cast<i32>(delay);
-            m_fallDelayHi = 0;
-            m_fallLast = static_cast<i32>(g_frameTime);
-            m_fallLastHi = 0;
+            m_fallDelay = static_cast<u32>(static_cast<i32>(delay));
+            m_fallLast = static_cast<u32>(static_cast<i32>(g_frameTime));
             stepped = 1;
         }
     }
@@ -1744,17 +1742,14 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
     // CDestructBlock view onto the canonical class.)
     switch (m_destructWarnActive) {
         case 1: {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_destructWarnLast);
-            if (d >= *reinterpret_cast<i64*>(&m_destructWarnDelay)) {
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_destructWarnLast;
+            if (d >= m_destructWarnDelay) {
                 if (++m_modeState >= 6) {
                     m_modeState = 6;
                     m_destructWarnActive = 2;
                 }
-                m_destructWarnDelay =
-                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                m_destructWarnDelayHi = 0;
-                m_destructWarnLast = g_frameTime;
-                m_destructWarnLastHi = 0;
+                m_destructWarnDelay = static_cast<u32>(g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32));
+                m_destructWarnLast = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(m_modeState);
@@ -1763,17 +1758,14 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
             break;
         }
         case 2: {
-            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_destructWarnLast);
-            if (d >= *reinterpret_cast<i64*>(&m_destructWarnDelay)) {
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_destructWarnLast;
+            if (d >= m_destructWarnDelay) {
                 if (--m_modeState <= 2) {
                     m_modeState = 2;
                     m_destructWarnActive = 1;
                 }
-                m_destructWarnDelay =
-                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                m_destructWarnDelayHi = 0;
-                m_destructWarnLast = g_frameTime;
-                m_destructWarnLastHi = 0;
+                m_destructWarnDelay = static_cast<u32>(g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32));
+                m_destructWarnLast = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(m_modeState);
@@ -3555,14 +3547,8 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         if (m_destructWarnActive == 0) {
                             m_destructWarnActive = 1;
                             m_modeState = 2;
-                            m_destructWarnDelay = g_buteMgr.GetIntDef(
-                                "StatusBar",
-                                "DestructButtonWarningDelay",
-                                0x32
-                            );
-                            m_destructWarnDelayHi = 0;
-                            m_destructWarnLast = g_frameTime;
-                            m_destructWarnLastHi = 0;
+                            m_destructWarnDelay = static_cast<u32>(g_buteMgr.GetIntDef( "StatusBar", "DestructButtonWarningDelay", 0x32 ));
+                            m_destructWarnLast = static_cast<u32>(g_frameTime);
                             sm->ArmSnapshot(1, 0xbb7);
                         } else {
                             CSBI_ImageSet* n = m_modeNotify;
@@ -4311,10 +4297,8 @@ RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
     m_fallActive = 1;
-    m_fallDelay = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-    m_fallDelayHi = 0;
-    m_fallLast = g_frameTime;
-    m_fallLastHi = 0;
+    m_fallDelay = static_cast<u32>(g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32));
+    m_fallLast = static_cast<u32>(g_frameTime);
     CSBI_ImageSet* n = m_extraNotify1;
     i32 l = a2 - 0xc;
     i32 t = a3 - 0xc;

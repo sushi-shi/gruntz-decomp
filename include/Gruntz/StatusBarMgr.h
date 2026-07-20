@@ -622,10 +622,8 @@ public:
     char m_pad4e4[0x4e8 - 0x4e4];
     i32 m_fallActive;            // +0x4e8  falling-item active flag
     i32 m_extraNotifyArg1;       // +0x4ec  arg for (*m_extraNotify1)->Notify
-    i32 m_fallLast;              // +0x4f0  falling-item timer last draw-clock = g_dat645588
-    i32 m_fallLastHi;            // +0x4f4
-    i32 m_fallDelay;             // +0x4f8  falling-item config delay
-    i32 m_fallDelayHi;           // +0x4fc
+    i64 m_fallLast;              // +0x4f0  falling-item timer last draw-clock = g_dat645588
+    i64 m_fallDelay;             // +0x4f8  falling-item config delay
     CSBI_ImageSet* m_extraNotify1; // +0x500
     i32 m_fallRectL;             // +0x504  falling-item rect A (relative)
     i32 m_fallRectT;             // +0x508
@@ -649,10 +647,8 @@ public:
     i32 m_toggleHandle;           // +0x554  toggle-mode tab handle
     i32 m_destructWarnActive;     // +0x558
     i32 m_modeState;              // +0x55c
-    i32 m_destructWarnLast;       // +0x560  destruct-warning last draw-clock
-    i32 m_destructWarnLastHi;     // +0x564
-    i32 m_destructWarnDelay;      // +0x568  destruct-warning delay (config)
-    i32 m_destructWarnDelayHi;    // +0x56c
+    i64 m_destructWarnLast;       // +0x560  destruct-warning last draw-clock
+    i64 m_destructWarnDelay;      // +0x568  destruct-warning delay (config)
     CSBI_ImageSet* m_modeNotify;    // +0x570  notify target
     i32 m_modeArmed;              // +0x574
     i32 m_578;                    // +0x578  (cleared on multiplayer/battlez reset)
@@ -942,13 +938,9 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_beltLast = 0;     // +0x4d0  (64-bit)
     m_beltInterval = 0; // +0x4d8  (64-bit)
     m_fallLast = 0;     // +0x4f0
-    m_fallLastHi = 0;
     m_fallDelay = 0;
-    m_fallDelayHi = 0;
     m_destructWarnLast = 0; // +0x560
-    m_destructWarnLastHi = 0;
     m_destructWarnDelay = 0;
-    m_destructWarnDelayHi = 0;
     // +0x1c8..+0x200: the fifteen per-tab sprite widgets, as FIFTEEN INDIVIDUAL stores
     // (retail schedules the m_destructButton store between m_tabSprite10/m_tabSprite11).
     m_tabSprite0 = 0;

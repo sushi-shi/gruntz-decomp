@@ -31,10 +31,8 @@ void CStatusBarMgr::UpdateDestructButton(i32 arg) {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
     m_destructWarnActive = 1;
     m_modeState = 2;
-    m_destructWarnDelay = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-    m_destructWarnDelayHi = 0;
-    m_destructWarnLast = g_frameTime;
-    m_destructWarnLastHi = 0;
+    m_destructWarnDelay = static_cast<u32>(g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32));
+    m_destructWarnLast = static_cast<u32>(g_frameTime);
     play->ArmSnapshot(1, arg);
     SetMode(0);
 }
