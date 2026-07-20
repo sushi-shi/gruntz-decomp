@@ -41,10 +41,8 @@ public:
     i32 m_2a0;    // +0x2a0  cue-active flag
 };
 
-class CRegBattleEvent {
-public:
-    void PostBattleEvent(i32 id, i32 event, i32 a, i32 b, i32 c);
-};
+// (CRegBattleEvent DISSOLVED 2026-07-20: PostBattleEvent IS CGruntSpawnConfig::Cue on the
+// +0x60 m_cueSink - the warlord fort-alert path now calls reg->m_cueSink->Cue directly.)
 
 struct CWarlordObjective {
     char m_pad00[0x4c];

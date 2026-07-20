@@ -431,7 +431,7 @@ i32 CWarlord::LoadAttributes2() {
         }
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_cooldownStampLo)
             >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
-            (reinterpret_cast<CRegBattleEvent*>(reg->m_cueSink))->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
+            reg->m_cueSink->Cue(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;
             m_cooldownStampLo = g_frameTime;
@@ -663,7 +663,6 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     return 1;
 }
 
-SIZE_UNKNOWN(CRegBattleEvent);
 SIZE_UNKNOWN(CRegThreatHelper);
 SIZE_UNKNOWN(CWarlordAnimSub);
 SIZE_UNKNOWN(CWarlordMission);
