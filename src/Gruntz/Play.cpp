@@ -1358,8 +1358,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     set = self->m_c->m_childGroup->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
     self->m_scrollSink = static_cast<CGameObject*>(set);
     if (set != 0) {
-        void* host8 = self->m_c->m_childGroup;
-        (*reinterpret_cast<void (**)(void*, i32)>((reinterpret_cast<char*>(*static_cast<void**>(host8)) + 0x24)))(host8, 0); // host8 vtable +0x24
+        self->m_c->m_childGroup->TickKillCues_159a70(0); // vtable +0x24, the real slot 9
         if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
             CStatusBarMgr* tiles = self->m_guts;
@@ -1377,8 +1376,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), reinterpret_cast<i32*>((reinterpret_cast<char*>(nameBuf) + 0x20))) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
-                void* host8b = self->m_c->m_childGroup;
-                (*reinterpret_cast<void (**)(void*, i32)>((reinterpret_cast<char*>(*static_cast<void**>(host8b)) + 0x24)))(host8b, 0);
+                self->m_c->m_childGroup->TickKillCues_159a70(0);
                 self->m_guts->winapi_107d00_SetRect();
                 (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                 while (ShowCursor(0) >= 0)

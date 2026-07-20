@@ -12,6 +12,8 @@
 // index ((V & mask) | U) >> 14, in one of three inner loops: copy-all, skip-zero,
 // or skip-colorkey. Field names are placeholders; offsets + code bytes are the
 // load-bearing fact.
+#include <Mfc.h>   // afx-first (this TU pulls MFC downstream; Mfc.h supersets Win32.h)
+#include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual +0x80 dispatch)
 #include <Ints.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + WarpTextureBlit decl
@@ -291,7 +293,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    (*reinterpret_cast<void (**)(void*, i32)>((*reinterpret_cast<void***>(src->m_8) + 0x80 / 4)))(src->m_8, 0);
-    (*reinterpret_cast<void (**)(void*, i32)>((*reinterpret_cast<void***>(dst->m_8) + 0x80 / 4)))(dst->m_8, 0);
+    src->m_8->Unlock(0);
+    dst->m_8->Unlock(0);
     return 1;
 }
