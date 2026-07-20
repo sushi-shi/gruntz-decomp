@@ -360,7 +360,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     // the visible view rect, or when it is the registry's focused grunt and its
     // m_tileOwnerHi matches the focus sentinel.
     i32 onScreen = 0;
-    CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+    CGruntzMgr* g = g_gameReg;
     {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
@@ -462,7 +462,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
     if (m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         CGameObject* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = h->m_screenX >> 5;
@@ -768,7 +768,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseIdle4 = 0;
         m_poseIdle5 = 0;
 
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         i32 y = m_10->m_screenY;
         i32 x = m_10->m_screenX;
         CCueRect* r = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);

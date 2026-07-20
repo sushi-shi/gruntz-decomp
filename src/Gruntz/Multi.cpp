@@ -3750,7 +3750,7 @@ i32 CMulti::WaitForOtherPlayers() {
 
     SendStatFlag(0x3ed, 1);
     CString waitStr("Waiting for other playerz...");
-    CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg); // registry view (facet fields; convert with its fields)
+    CGruntzMgr* g = g_gameReg;
     RECT rc;
     rc.left = 0;
     rc.top = 0;
@@ -3806,7 +3806,7 @@ i32 CMulti::WaitForOtherPlayers() {
     }
 
     g_scoreTimeBase = timeGetTime();
-    if (g->m_14 != 0) {
+    if (g->m_musicEnabled != 0) { // the CGameMgr base's music-on flag gates the ambient cue
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
         NetGameMgr()->m_sound->PlayByName(buf, 1);

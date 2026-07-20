@@ -737,7 +737,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
-    CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+    CGruntzMgr* g = g_gameReg;
     i32 x = m_10->m_screenX;
     i32 y = m_10->m_screenY;
     CCueRect* rc = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
@@ -1163,14 +1163,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
         if (c < 5) {
-            CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+            CGruntzMgr* g = g_gameReg;
             i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
                 g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
@@ -1183,7 +1183,7 @@ void CGrunt::OnStruck(i32 wasHit) {
     if (c < 5) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
@@ -1193,7 +1193,7 @@ void CGrunt::OnStruck(i32 wasHit) {
     if (c < 0xa) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
@@ -1204,7 +1204,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
         m_struckCount = 0;
-        CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg);
+        CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);

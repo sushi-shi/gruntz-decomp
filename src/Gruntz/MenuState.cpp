@@ -351,7 +351,7 @@ void CMenuState::StartMusic() {
     if (m_1bc == 0) {
         return;
     }
-    if ((reinterpret_cast<WwdGameReg*>(g_gameReg))->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     i32 saved = g_sndEnabled;
@@ -360,7 +360,7 @@ void CMenuState::StartMusic() {
         flag = 1;
         g_sndEnabled = 1;
     }
-    i32 item = (reinterpret_cast<WwdGameReg*>(g_gameReg))->m_11c;
+    i32 item = g_gameReg->m_soundVolume;
     LeafCue* mus = m_1bc;
     if (flag) {
         u32 clk = g_killCueClock;
