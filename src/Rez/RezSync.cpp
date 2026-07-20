@@ -643,12 +643,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_spriteFactory = static_cast<CSpriteRefTable*>(RezAlloc(0x94));
     if (m_spriteFactory) {
-        i32* z = reinterpret_cast<i32*>(m_spriteFactory);
-        z[0] = z[1] = 0;
-        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 0x90)) = 0;
+        m_spriteFactory->m_factory = 0;
+        m_spriteFactory->m_spriteMgrHolder = 0;
+        m_spriteFactory->m_built = 0;
         for (i32 k = 0; k < 0x11; ++k) {
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 8 + k * 4)) = 0;
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_spriteFactory) + 0x4c + k * 4)) = 0;
+            m_spriteFactory->m_refA[k] = 0;
+            m_spriteFactory->m_refB[k] = 0;
         }
     }
     if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
