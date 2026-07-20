@@ -347,7 +347,7 @@ CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* 
     // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
     // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
     // the ex-view guessed) resolves `name` -> the child's arg5.
-    (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }

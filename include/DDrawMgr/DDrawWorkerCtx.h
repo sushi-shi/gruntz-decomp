@@ -10,22 +10,11 @@
 #include <Mfc.h> // real MFC CMapStringToOb (Lookup 0x1b8008, reloc-masked)
 #include <rva.h> // SIZE_UNKNOWN
 
-// The sub-manager ctx->m_10 points to: its +0x10 is the named-object map.
-struct CDDrawWorkerCtxMap {
-    char pad_00[0x10];
-    CMapStringToOb m_10; // +0x10  named-object map
-};
-
-// The worker/host owner context: a sub-manager ptr at +0x10 (whose +0x10 is the
-// string->object map) and an int at +0x24 (primes SetPosition's m_3c).
-struct CDDrawWorkerCtx {
-    char pad_00[0x10];
-    CDDrawWorkerCtxMap* m_10; // +0x10
-    char pad_14[0x24 - 0x14];
-    i32 m_24; // +0x24
-};
-
-SIZE_UNKNOWN(CDDrawWorkerCtxMap);
-SIZE_UNKNOWN(CDDrawWorkerCtx);
+// (CDDrawWorkerCtx/CDDrawWorkerCtxMap are GONE - the "+0x0c owner context" IS the
+// CDDrawSurfaceMgr (its +0x10 m_imageRegistry is the ctx "sub-manager", whose +0x10
+// CMapStringToOb is the named-object map; its +0x24 m_level primes SetPosition's
+// m_3c). Reach it via CLoadable::OwnerMgr().)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERCTX_H

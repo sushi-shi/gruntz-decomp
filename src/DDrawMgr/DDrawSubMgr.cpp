@@ -1166,7 +1166,7 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
 // A dead function still belongs to a class; here its own neighbours name it.
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
-    char* p24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_0c) + 0x24));
+    char* p24 = reinterpret_cast<char*>(OwnerMgr()->m_level);
     if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_30 == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
@@ -1356,7 +1356,7 @@ LeafCue::~LeafCue() {
 // obj's RVA span.)
 RVA(0x001586e0, 0x34)
 i32 LeafCue::LoadSoundA(void* riff) {
-    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
     }
@@ -1369,7 +1369,7 @@ i32 LeafCue::LoadSoundA(void* riff) {
 // fopen + slurp + Acquire. (Ex "Configure2_158720"; CreateEntry2's loader.)
 RVA(0x00158720, 0x34)
 i32 LeafCue::LoadSoundB(void* src) {
-    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
     }
@@ -1395,7 +1395,7 @@ i32 LeafCue::Configure_158760(CParseSource* src) {
     if (blob == 0) {
         return 0;
     }
-    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (dev == 0) {
         src->EndParse();
         return 0;
@@ -1424,7 +1424,7 @@ RVA(0x001587c0, 0x23)
 i32 LeafCue::Unload() {
     i32 r = reinterpret_cast<i32>(m_10);
     if (r != 0) {
-        SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
+        SoundDevice* dev = OwnerMgr()->m_soundStream;
         if (dev != 0) {
             dev->RemoveBuffer(m_10);
             m_10 = 0;

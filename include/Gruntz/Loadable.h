@@ -109,6 +109,11 @@ public:
     // stores in their own ctor body (over the default base ctor), reproducing the
     // fused shape without a second definition.
     CLoadable(i32 owner, i32 field04, i32 field08);
+    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family
+    // (surface pairs/children, workers, resolve nodes, cue leaves - every read site
+    // agrees); plane/leaf embedders park OTHER context words in the same slot and
+    // never call this. One value-read of the generic i32 handle, typed once.
+    class CDDrawSurfaceMgr* OwnerMgr() { return reinterpret_cast<class CDDrawSurfaceMgr*>(m_0c); }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject
     // (no manual `*(void**)this = &g_*Vtbl`).

@@ -34,7 +34,7 @@
 
 // +0x0c owner sub-manager (a CLoadable-family node); its +0x24 int primes m_3c
 // and its +0x10 named-object map backs Helper_166040. Completed in HelperHost.cpp.
-struct CDDrawWorkerCtx;
+class CDDrawSurfaceMgr; // the +0x0c owner (the ex-CDDrawWorkerCtx view)
 
 // PlaceFrame's frame-source arg IS the canonical CDDrawWorker (m_items CObArray
 // m_pData@+0x14, windowed by m_64/m_68) - the ex CDDrawFrameSource view.
@@ -80,7 +80,7 @@ public:
     // derived CDDrawWorkerA/B ctors delegate here and add m_78. cl emits the base
     // seed, then the DERIVED vptr, then m_78 - matching retail's store order + single
     // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
-    CDDrawWorkerBase(CDDrawWorkerCtx* ctx) : CResolveNode(NO_SEED) {
+    CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_04 = 0;
         m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
         m_08 = 0;
@@ -101,7 +101,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     // [10] 0x165fa0: plot the marker pixel (m_78) at (m_5c,m_60) onto both pairs.
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerA() {}
-    CDDrawWorkerA(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) {
+    CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78b = 0; // the BYTE frame seed (retail `mov byte [eax+0x78],bl`)
     }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x157110
@@ -118,7 +118,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     // targets (unconditional first, gated second on m_2c live + not flagged 0x20000).
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerB() {}
-    CDDrawWorkerB(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) {
+    CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                    // [11] 0x1572f0

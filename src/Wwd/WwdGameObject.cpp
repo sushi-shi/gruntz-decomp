@@ -1410,12 +1410,12 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
                 count++;
             }
             val = tab->NextSym3(val);
-            if (((reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_flags & 0x100) && count > 0) {
+            if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
                 val = 0;
             }
         }
         sym = tab->NextSym(sym);
-        if (((reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_flags & 0x100) && count > 0) {
+        if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
             sym = 0;
         }
     }

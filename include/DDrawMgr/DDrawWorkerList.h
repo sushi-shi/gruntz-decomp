@@ -60,7 +60,7 @@ public:
     virtual ~WorkerListSibBase() OVERRIDE; // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 m_status;                          // +0x04  initialized to -1 when inactive
     i32 m_08;                              // +0x08
-    CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  the owning surface mgr (copied into worker m_ctx)
+    class CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c  the owning surface mgr (copied into worker m_ctx)
     WorkerListSibBase() {}
 };
 inline WorkerListSibBase::~WorkerListSibBase() {

@@ -165,9 +165,11 @@ public:
     u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride); ctor default 1
     char _2a[0x2c - 0x2a];
     i32 m_blendVariant; // +0x2c pixel-format blend variant flag (RGB555/565 shift check)
-    u8* m_lutBank0;     // +0x30 blend LUT bank 0 (g_clut interior plane R, +0x20002)
-    u8* m_lutBank1;     // +0x34 blend LUT bank 1 (g_clut interior plane G, +0x2)
-    u8* m_lutBank2;     // +0x38 blend LUT bank 2 (g_clut interior plane B, +0x10002)
+    // The three blend LUT banks are word tables (every read site indexes them as
+    // u16); the seeds keep byte-granular g_clut arithmetic (odd interior offsets).
+    u16* m_lutBank0; // +0x30 blend LUT bank 0 (g_clut interior plane R, +0x20002)
+    u16* m_lutBank1; // +0x34 blend LUT bank 1 (g_clut interior plane G, +0x2)
+    u16* m_lutBank2; // +0x38 blend LUT bank 2 (g_clut interior plane B, +0x10002)
 };
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

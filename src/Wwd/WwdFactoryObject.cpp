@@ -872,7 +872,7 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
         // KeyOfValue_152d30 returns the label for the map VALUE m_14 (CAniElement : CObject).
-        CString label = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_animRegistry->KeyOfValue_152d30(m_14);
+        CString label = OwnerMgr()->m_animRegistry->KeyOfValue_152d30(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -910,7 +910,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     } else {
         // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
         void* out = 0;
-        (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_animRegistry->m_10.Lookup(buf, out);
+        OwnerMgr()->m_animRegistry->m_10.Lookup(buf, out);
         m_14 = static_cast<CAniElement*>(out);
     }
     CAniElement* w = m_14;

@@ -604,7 +604,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // source lever (the two paths are genuinely identical code). Logic byte-faithful.
 RVA(0x001644a0, 0x19b)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
-    CDDrawSurfaceMgr* mgr = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+    CDDrawSurfaceMgr* mgr = OwnerMgr();
     m_width = w;
     m_height = h;
     m_bpp = bpp;
@@ -624,54 +624,54 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
         if (err != 0) {
             switch (err) {
                 case 0x3e9: {
-                    CDDrawSurfaceMgr* m = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+                    CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80e9;
                     }
                     return 0;
                 }
                 case 0x3ea: {
-                    CDDrawSurfaceMgr* m = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+                    CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ea;
                     }
                     return 0;
                 }
                 case 0x3eb: {
-                    CDDrawSurfaceMgr* m = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+                    CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80eb;
                     }
                     return 0;
                 }
                 case 0x3ec: {
-                    CDDrawSurfaceMgr* m = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+                    CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ec;
                     }
                     return 0;
                 }
                 case 0x3ed: {
-                    CDDrawSurfaceMgr* m = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+                    CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ed;
                     }
                     return 0;
                 }
             }
-            CDDrawSurfaceMgr* md = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+            CDDrawSurfaceMgr* md = OwnerMgr();
             if (md->m_lastError == 0) {
                 md->m_lastError = 0xbb9;
             }
             return 0;
         }
-        CDDrawSurfaceMgr* m4 = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+        CDDrawSurfaceMgr* m4 = OwnerMgr();
         if (m4->m_lastError == 0) {
             m4->m_lastError = 0xbb9;
         }
         return 0;
     }
-    CDDrawSurfaceMgr* m2 = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+    CDDrawSurfaceMgr* m2 = OwnerMgr();
     i32 amode = 1;
     if (m2->m_flags & 2) {
         amode = 2;
@@ -681,7 +681,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (surf != 0 && surf->IsValid()) {
         return 1;
     }
-    CDDrawSurfaceMgr* m3 = reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
+    CDDrawSurfaceMgr* m3 = OwnerMgr();
     if (m3->m_lastError == 0) {
         m3->m_lastError = 0xbba;
     }
@@ -733,7 +733,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawPtrCollections* pool = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_ptrColl;
+    CDDrawPtrCollections* pool = OwnerMgr()->m_ptrColl;
     if (pool == 0) {
         return 0;
     }
@@ -743,7 +743,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
         return 0;
     }
     i32 amode = 1;
-    if ((reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_flags & 2) {
+    if (OwnerMgr()->m_flags & 2) {
         amode = 2;
     }
     m_surface = pool->Createab8_24_3(amode);
@@ -794,7 +794,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_60 = y;
     m_48 = 0x32;
     m_50 = 1;
-    m_3c = (reinterpret_cast<CDDrawWorkerCtx*>(m_0c))->m_24; // the CLoadable-family int owner handle
+    m_3c = reinterpret_cast<i32>(OwnerMgr()->m_level); // the mgr's +0x24 CGameLevel, held as the int handle
     return 1;
 }
 
@@ -1389,7 +1389,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     CObject* obj = 0;
-    (reinterpret_cast<CDDrawWorkerCtx*>(m_0c))->m_10->m_10.Lookup(reinterpret_cast<const char*>(key), obj);
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), obj);
     CDDrawWorkerObj* p = reinterpret_cast<CDDrawWorkerObj*>(obj);
     i32 v;
     if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {

@@ -52,6 +52,9 @@ public:
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                  // +0x0c  parent/root handle
+    // Same +0x0c owner-context truth as CLoadable::OwnerMgr(): the handle IS the
+    // CDDrawSurfaceMgr for this family; typed once here.
+    class CDDrawSurfaceMgr* OwnerMgr() { return reinterpret_cast<class CDDrawSurfaceMgr*>(m_0c); }
     LeafScanBase() {}
 };
 
