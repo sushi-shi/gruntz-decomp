@@ -9,9 +9,11 @@
 #ifndef GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 #define GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 
-#include <Gruntz/TypeKeyColl.h> // zDArray (owns the shared Construct @0x8710)
+#include <Gruntz/ActReg.h> // CLogicActTable (the SAME per-logic-class dispatch-table shell)
 
-struct LogicFnTable : public zDArray {};
+// LogicFnTable IS CLogicActTable - two names had grown for the one dispatch-table
+// shell (zDArray + the CActReg resolve surface). One class, both spellings.
+typedef CLogicActTable LogicFnTable;
 
 // The eye-candy per-coordinate dispatch table (0x646060; DATA home + construction in
 // src/Gruntz/LogicDispatchInit.cpp). Declared here so FrontCandyAni references it from

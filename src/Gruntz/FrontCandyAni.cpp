@@ -169,9 +169,9 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CEyeCandyActEntry* e = reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id));
+    CEyeCandyActEntry* e = reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id)))->m_fn)();
+        (this->*(reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))->m_fn)();
     }
 }
 
@@ -204,7 +204,7 @@ void CEyeCandyAni::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CEyeCandyActEntry*>((reinterpret_cast<CActReg*>(&g_eyeCandyDispatch))->ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
