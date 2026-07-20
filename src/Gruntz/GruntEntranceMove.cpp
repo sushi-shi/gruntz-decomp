@@ -506,7 +506,7 @@ void CGrunt::LoadEntranceConfig() {
             og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
-            CTileGrid* ng = reinterpret_cast<CTileGrid*>(g_gameReg->m_tileGrid);
+            CTileGrid* ng = static_cast<CTileGrid*>(g_gameReg->m_tileGrid);
             (reinterpret_cast<char*>(&ng->m_8[newTileY][newTileX * 7]))[3] |= 0x20;
             ng->m_8[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }

@@ -159,13 +159,13 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         }
 
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
-        (reinterpret_cast<CDDSurface*>(tgt))
+        (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
         menuRoot()->m_drawTarget->TransTitle();
     } else {
         menuRoot()->m_drawTarget->TransEnter();
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
-        (reinterpret_cast<CDDSurface*>(tgt))
+        (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
         menuRoot()->m_drawTarget->TransExit();
     }

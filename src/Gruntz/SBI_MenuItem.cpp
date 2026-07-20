@@ -133,7 +133,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* rec_v = 0;
-    CDDrawSurfaceMgr* host = reinterpret_cast<CDDrawSurfaceMgr*>(m_24);
+    CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
     CImageSet* rec = static_cast<CImageSet*>(rec_v);
     m_38 = rec;
