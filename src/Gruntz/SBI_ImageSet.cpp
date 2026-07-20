@@ -64,10 +64,10 @@ i32 CSBI_ImageSet::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = reinterpret_cast<i32>(owner);
+    m_2c = owner;
     m_10 = obj;
     i32* rc = reinterpret_cast<i32*>(&m_rect14);
-    m_24 = reinterpret_cast<i32>(host);
+    m_24 = host;
     m_28 = 0;
     m_4 = 1;
     rc[0] = rect.left;

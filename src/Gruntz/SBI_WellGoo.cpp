@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_24 config host (real type)
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -44,7 +45,7 @@ extern "C" CGooGameReg* g_gameReg;
 // frame + drops ebp - a uniform frame shift that mismatches every [esp+X]
 // operand. Frame/regalloc wall; full reconstruction deferred to the final sweep.
 RVA(0x000e6020, 0x288)
-i32 CSBI_WellGoo::Setup(i32, i32, i32, i32, SbiRect, i32, i32) {
+i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbiRect, i32, i32) {
     return 0;
 }
 
@@ -252,7 +253,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {
-        (reinterpret_cast<CGooGameMgr*>(m_24))->m_surfacePool->RemoveItemA(m_gooSrc);
+        m_24->m_ptrColl->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }
@@ -267,7 +268,7 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Free() {
     if (m_gooSrc != 0) {
-        (reinterpret_cast<CGooGameMgr*>(m_24))->m_surfacePool->RemoveItemA(m_gooSrc);
+        m_24->m_ptrColl->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }

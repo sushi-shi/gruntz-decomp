@@ -97,9 +97,9 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = reinterpret_cast<i32>(owner);
+    m_2c = owner;
     m_10 = p4;
-    m_24 = reinterpret_cast<i32>(h);
+    m_24 = h;
     m_28 = 0;
     m_4 = 1;
     m_rect14.m_0 = g.left;
@@ -123,7 +123,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CImageSet* cfg = 0;
-    (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(cfg));
+    m_24->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(cfg));
     m_30 = cfg;
     if (cfg == 0) {
         return 0;
@@ -440,9 +440,9 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (host == 0 || parent == 0) {
         return 0;
     }
-    m_24 = reinterpret_cast<i32>(host);
+    m_24 = host;
     m_10 = p4;
-    m_2c = reinterpret_cast<i32>(parent);
+    m_2c = reinterpret_cast<CStatusBarMgr*>(parent); // the builder IS the mgr-family (CTabzBuilder==CStatusBarMgr precedent; fold TODO)
     m_rect14.m_0 = p5;
     m_28 = 0;
     m_rect14.m_4 = p6;
@@ -536,7 +536,7 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     CTmCell* unit = g_gameReg->m_cmdGrid->m_grid[m_40 + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
     if (unit == 0) {
-        (reinterpret_cast<CStatusBarMgr*>(m_2c))->ClearStat(m_40);
+        m_2c->ClearStat(m_40);
         return 0;
     }
     i32 val;
@@ -801,9 +801,9 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
-    m_2c = reinterpret_cast<i32>(owner);
+    m_2c = owner;
     m_10 = p4;
-    m_24 = reinterpret_cast<i32>(h);
+    m_24 = h;
     m_28 = 0;
     m_4 = 1;
     m_rect14.m_0 = g.left;
@@ -840,7 +840,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CImage* val;
     if (selMode == 0) {
         CSprite* sel = 0;
-        (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))
+        m_24
             ->m_imageRegistry->m_10map
             .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
         m_timerGlyphMap = sel;
@@ -854,7 +854,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
     } else {
         CSprite* sel = 0;
-        (reinterpret_cast<CDDrawSurfaceMgr*>(m_24))
+        m_24
             ->m_imageRegistry->m_10map
             .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", reinterpret_cast<CObject*&>(sel));
         m_timerGlyphMap = sel;

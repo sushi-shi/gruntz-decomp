@@ -39,6 +39,9 @@
 // workaround, not a second class the developers wrote.
 // ---------------------------------------------------------------------------
 // The +0x14 sub-block CSBI_RectOnly::Setup fills (a RECT-like 4-int record).
+class CStatusBarMgr;      // the owning status-bar manager (Setup arg1 / m_2c)
+class CDDrawSurfaceMgr;   // the config host (Setup arg2 / m_24)
+
 struct SbiRect {
     i32 m_0; // +0x00 (rel +0x14)
     i32 m_4; // +0x04 (rel +0x18)
@@ -98,7 +101,7 @@ public:
     // sites pass an INLINE TEMPORARY, `SbRect(cx - 0x5e, cy - 0x3c, ...)`. That temporary
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
+    virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
     virtual void SbiSlot3();                                                        // slot 3
     virtual void SbiSlot4();                                                        // slot 4
     virtual void SbiSlot5();                                                        // slot 5
@@ -118,9 +121,9 @@ public:
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
     SbiRect m_rect14; // +0x14  Setup args 5..8
-    i32 m_24;         // +0x24  Setup arg2
+    class CDDrawSurfaceMgr* m_24; // +0x24  Setup arg2: the config host (surface mgr)
     i32 m_28;         // +0x28
-    i32 m_2c;         // +0x2c  Setup arg1 (owner/id target)
+    class CStatusBarMgr* m_2c;    // +0x2c  Setup arg1: the owning status-bar mgr
 
     // Member teardown run by the inline destructor of the CHAIN-DTOR device below
     // (reloc-masked extern; the retail standalone body is 0x10bfa0).

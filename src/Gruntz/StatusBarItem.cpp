@@ -81,12 +81,12 @@ VTBL(CStatusBarItem, 0x001eabcc);
 // finds no operand fix - same non-steerable coin-flip as its 0xe86e0 sibling. Final sweep.
 // ---------------------------------------------------------------------------
 RVA(0x00100660, 0x50)
-i32 CStatusBarItem::Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) {
-    if (a2 == 0 || a1 == 0) {
+i32 CStatusBarItem::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) {
+    if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = a1;
-    m_24 = a2;
+    m_2c = owner;
+    m_24 = host;
     m_10 = a4;
     m_rect14.m_0 = rc.m_0;
     m_rect14.m_4 = rc.m_4;

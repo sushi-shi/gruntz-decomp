@@ -2787,8 +2787,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            reinterpret_cast<i32>(this),
-            reinterpret_cast<i32>(code),
+            this,
+            code,
             0x259,
             0,
             SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
@@ -2805,8 +2805,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            reinterpret_cast<i32>(this),
-            reinterpret_cast<i32>(code),
+            this,
+            code,
             0x25a,
             0,
             SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7),
@@ -2823,8 +2823,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
     if (!it->Setup(
-            reinterpret_cast<i32>(this),
-            reinterpret_cast<i32>(code),
+            this,
+            code,
             0x25b,
             0,
             SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),

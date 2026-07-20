@@ -94,8 +94,8 @@ i32 CSBI_MenuItem::SetupImage(
     if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = reinterpret_cast<i32>(owner); // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = reinterpret_cast<i32>(host);  // config host (CDDrawSurfaceMgr, cast at the deref sites)
+    m_2c = owner; // owning tab host (CMiTabHost view at the deref sites)
+    m_24 = host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
     m_10 = a4;
     m_8 = 2;
     m_30 = 0;
@@ -208,7 +208,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_34 == 3) {
         return 1;
     }
-    CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c);
+    CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c); // the mgr through its tab-host view (fold TODO)
     if (state == 3) {
         (reinterpret_cast<CStatusBarMgr*>(host))->ClearTabGroup();
         host->m_10c = m_c;

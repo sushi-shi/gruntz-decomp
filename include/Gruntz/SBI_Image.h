@@ -45,7 +45,7 @@ public:
     // (CStatusBarItem::SerializeFields, thunk 0x1848). The `SbiVfunc0` the old merged TU
     // defined under this class name belonged to the host's fabricated vtable, not here.)
     // slot 2 (0xe86e0). Args 5..8 are ONE by-value SbRect - see StatusBarItem.h.
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) OVERRIDE;
+    virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) OVERRIDE;
     virtual void SbiSlot3() OVERRIDE; // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
     // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).

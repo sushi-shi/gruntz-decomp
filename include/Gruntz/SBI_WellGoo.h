@@ -121,7 +121,7 @@ public:
     // fill/rect fields + two frame handles by name+index, (mode 8) re-resolves the goo
     // surface + rebinds the frames' shade nodes, then chains CSBI_Image::SerializeFields.
     virtual i32 SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
+    virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value SbRect - see StatusBarItem.h)
     virtual void SbiSlot3() OVERRIDE; // slot 3 (the Free below)
     virtual void SbiSlot4() OVERRIDE; // slot 4
