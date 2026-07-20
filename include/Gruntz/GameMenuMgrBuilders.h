@@ -53,13 +53,9 @@
 //      +0x55c / +0x570 all already existed on CStatusBarMgr (two independent
 //      reconstructions of one object).
 
-// The game registry singleton (?g_gameReg, DATA 0x64556c). Only the fields the
-// builder touches are modeled.
-struct CGmFactory {
-    char m_pad[0x288];
-    i32 m_variant; // +0x288  MISSIONSTATUS variant selector
-};
-SIZE_UNKNOWN(CGmFactory);
+// (CGmFactory is GONE - the "+0x288 MISSIONSTATUS variant selector" IS
+// CTriggerMgr::m_phase on the m_cmdGrid object: the briefing variant is picked by
+// the round phase.)
 
 // CGameMenuMgr's fields are the canonical CStatusBarMgr's, offset for offset (see the
 // identity proof at the top of this file). The view's SEMANTIC names, preserved here

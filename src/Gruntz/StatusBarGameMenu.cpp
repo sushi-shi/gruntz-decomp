@@ -43,6 +43,7 @@
 // Both are documented codegen walls (docs/patterns/gx-frame-outofline-ctor.md);
 // re-attack in the final sweep.
 #include <rva.h>
+#include <Gruntz/TriggerMgr.h> // m_cmdGrid's real class (m_phase/m_3ec)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 
@@ -251,7 +252,7 @@ void CStatusBarMgr::BuildGameMenu() {
 
     // ---- briefing variant: a single MISSIONSTATUS widget ----
     it = new CSBI_ImageSet;
-    i32 variant = ((reinterpret_cast<CGmFactory*>(g_gameReg->m_cmdGrid))->m_variant == 1) ? 1 : 2;
+    i32 variant = (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2; // MISSIONSTATUS variant = the round phase
     r.left = bx;
     r.top = by + 0xd7;
     r.right = bx + 0x9f;

@@ -38,6 +38,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/TriggerMgr.h> // m_cmdGrid's real class (m_phase/m_3ec)
 #include <Gruntz/GruntzMgr.h>          // the *0x24556c singleton (CGruntzMgr)
 #include <Gruntz/SbiTabzDialogViews.h> // the CSBI_Image / CSBI_MenuItem / CSBI_ImageSet leaves
 #include <Gruntz/StatusBarMgr.h>       // the REAL host: this fn is a CStatusBarMgr method
@@ -139,9 +140,9 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(dialog);
 
-    i32 reason = (reinterpret_cast<TabzGmFactory*>(g_gameReg->m_cmdGrid))->m_3ec;
+    i32 reason = g_gameReg->m_cmdGrid->m_3ec;
 
-    if ((reinterpret_cast<TabzGmFactory*>(g_gameReg->m_cmdGrid))->m_288 == 1) {
+    if (g_gameReg->m_cmdGrid->m_phase == 1) {
         // mission accomplished
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
