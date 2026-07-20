@@ -49,6 +49,12 @@ class
                        // (slot 11's ctx WAS the WwdRenderCtx view - offset-exact m_width/
                        //  m_height/m_surface, now the real class)
 class CWwdGameObject;  // the flat dispatch model (CWwdGameObjectB factory pair return type)
+// A-tail cached-resource types (pointer members only -> fwd/typedef suffice).
+class CDDrawWorker;             // CSprite/CImageSet ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
+typedef CDDrawWorker CSprite;   // (repeats Sprite.h's identical typedef - legal)
+typedef CDDrawWorker CImageSet; // (repeats ImageSet.h's - the +0x194 union's other role)
+class CImage;    // the cached frame element (<Image/CImage.h>)
+struct LeafCue;  // the leaf-scan cache value (<Gruntz/LeafCue.h>)
 
 // Manual scalar-delete of an owned worker pointer (the retail idiom).
 #define WORKER_FREE(p)                                                                             \
@@ -93,7 +99,7 @@ public:
     // slots 8 (GetClassId @0x154a00) and 9 (SetPosition @0x164790) INHERITED.
     // slot 10 - the factories' 4-arg build dispatch (the flat model's Setup
     // @0x150d60 is the body; renamed onto the family in the flat-merge stage).
-    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
     // slots 11-14 - per-object render + dirty-rect blit hooks: PURE in this base
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
     virtual void Render(CDDrawSurfacePair* ctx) = 0;                                     // slot 11
@@ -102,7 +108,7 @@ public:
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 14
     // slot 15 - the 4-arg play/serialize dispatch (the flat model's Play
     // @0x151150 is the body).
-    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
+    virtual i32 Play(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
 
     // 0x15b650: per-tick notify - under flag bit 0x8 decrement the +0x128 budget
     // (latch the worker's error state on underflow); else fire the +0x80
@@ -112,7 +118,7 @@ public:
     i32 m_clipTop;       // +0x68  clip rect tail (m_64 = clipLeft on CResolveNode)
     i32 m_clipRight;     // +0x6c
     i32 m_clipBottom;    // +0x70
-    i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup28 stores a3;
+    i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup stores a3;
                          //         CDDrawChildGroup::InsertSorted orders the list by it)
     i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
                          //         TickKillCues/RemoveAndDelete unlink through it)
@@ -227,21 +233,34 @@ public:
         return CWwdGameObjectE::Unload();
     }
     virtual i32 GetClassId() OVERRIDE;                            // slot 8  @0x15b760 (0x1c)
-    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 @0x1506b0
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 14 @0x1508a0
-    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self)
+    virtual i32 Play(i32 ar, i32 mode, i32 a3, void* self)
         OVERRIDE; // slot 15 @0x150a70 (Dispatch)
 
     i32 m_18c; // +0x18c  (WwdFile stamp -1; the C kind reads its low byte as dot color)
-    i32 m_190; // +0x190  cached frame number
-    i32 m_194; // +0x194  cached sprite (typed CSprite* on the flat model)
-    i32 m_198; // +0x198  cached frame/layer (typed CGameObjLayer* on the flat model)
-    i32 m_19c; // +0x19c  resolved anim/cue slot (CreateObject_166640 zero-inits it)
+    i32 m_190; // +0x190  cached frame NUMBER (WwdFile stamp -1)
+    union {          // +0x194  role-union (the flat model's proof): a WwdFile-loaded
+                     //         object keeps its source-def record (class-name string
+                     //         at +0x24); a CreateSprite'd object caches the looked-up
+                     //         sprite (ApplyName/ApplyLookupSprite) / its CImageSet
+                     //         (ActionArea's pulse ramp SetAllTypes/SetAllField18)
+        char* m_194; // source-def record
+        CSprite* m_sprite;     // cached sprite (frame-cache role)
+        CImageSet* m_imageSet; // cached image set (color/brightness role)
+    };
+    CImage* m_198; // +0x198  cached frame POINTER (the flat model's m_layer)
+    union {          // +0x19c  role-union (mirrors +0x194): resolved sound-cue value
+                     //         (ReadState -> FindKeyOfValue_158570) vs the cached anim
+                     //         sprite (LookupAnimSprite); WwdFile stamps 0
+        LeafCue* m_19c;
+        CSprite* m_19cSprite;
+    };
     CAniAdvanceCursor m_1a0; // +0x1a0..+0x1db  the anim/command cursor (its
                              //  ~CAniAdvanceCursor folds inline in ~A/~B - the
                              //  retail 0x5f0128 member restamp)
@@ -249,7 +268,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CWwdGameObjectB - the 0x1fc broadcast-group kind (vtable 0x5f00e8) ON TOP OF A
-// (retail slot 15 = 0x150a70 = A's Play3C, inherited). Adds the child CObList.
+// (retail slot 15 = 0x150a70 = A's Play, inherited). Adds the child CObList.
 // ---------------------------------------------------------------------------
 class CWwdGameObjectB : public CWwdGameObjectA {
 public:
@@ -270,7 +289,7 @@ public:
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
-    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)

@@ -42,7 +42,7 @@ inline void* operator new(u32, void* p) {
 // +0x1dc child CObList (CWwdGameObjectB::m_1dc) - the exact two members CWwdGameObjectB
 // already owns for AddChild_1667e0 / Clear_166810 / WalkChildWorkers_166880; CreateObject
 // builds a child CWwdGameObjectA (the 0x1dc size table's new-site) via the family Build
-// dispatch (slot 10 Setup28) + the virtual slot-1 dtor, and publishes it into that same
+// dispatch (slot 10 Setup) + the virtual slot-1 dtor, and publishes it into that same
 // list. m_0c is cast to the CDDrawSurfaceMgr the render TU already includes (its
 // m_workerCache->m_10 name map = the `[this+0xc]->[+0x14]->+0x10->call 0x1b8438` lookup).
 
@@ -316,7 +316,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
     if (result == 0) {
         return 0;
     }
-    if (result->Setup28(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, a5) == 0) {
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }

@@ -97,7 +97,7 @@ inline void* operator new(u32, void* p) {
 
 // The factories' Build dispatches are the family kinds' OWN vtable slots
 // (<Wwd/WwdGameObjectFamily.h>): 0x159600/0x1598d0 dispatch slot 10 (+0x28, the
-// 4-arg build - A::Setup28 / B::Slot10_1665e0), 0x159250 slot 16 (+0x40, the C
+// 4-arg build - A::Setup / B::Slot10_1665e0), 0x159250 slot 16 (+0x40, the C
 // kind's 5-arg SetupFlagged16), 0x159440 slot 16 (+0x40, the F kind's 2-arg
 // SetupDeferredV). The ex-CWwdFactoryA/CWwdFactoryB dispatch views are gone.
 
@@ -342,7 +342,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     } else {
         result = 0;
     }
-    if (result->Setup28(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, a5) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -461,7 +461,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
     } else {
         result = 0;
     }
-    if (result->Setup28(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, a5) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
