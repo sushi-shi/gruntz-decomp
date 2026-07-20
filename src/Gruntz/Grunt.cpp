@@ -73,7 +73,8 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h> // CGameLevel + CLevelPlane (m_world->m_level->m_mainPlane rect)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -649,7 +650,7 @@ void CGrunt::ReadConfigFromButeMgr() {
 // loads the full pose set + the grunt-level _DEATH name (m_44c); kind!=0 loads
 // only the direction-only WALK-cell names + _BREAK (m_448) when dirOnly!=0, else
 // just "GRUNTZ_"+m_animSetName into m_448. Tail: latch the move-cursor sprite
-// (g_gameReg->m_74->GetSel(m_1f4, kind)) into the HUD (m_10->m_4c) + mark m_58.
+// (g_gameReg->m_spriteFactory->GetSel(m_1f4, kind)) into the HUD (m_10->m_4c) + mark m_58.
 // Each concat -> a pair of stack CString temps (/GX EH frame); reloc-masked.
 static const char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
 static const char s_d48_NORTH_WALK[] = "_NORTH_WALK";
@@ -765,7 +766,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     } else {
         m_448 = s_GRUNTZ_ + m_animSetName;
     }
-    i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, kind);
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
     CGameObject* h = m_10;
     i32 keep50 = h->m_drawFillCmd;
     h->m_drawActive = 1;
@@ -1161,7 +1162,7 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
     if (m_arrivalState == 0x11) {
-        char* slot = reinterpret_cast<char*>(g_gameReg) + m_tileOwnerHi * 0x238 + 0x188;
+        CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_038;
         if (slot != 0 && GruntDropReady029b40(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
