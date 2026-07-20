@@ -119,11 +119,11 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    i32 node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+    CParseSource* node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
     if (node == 0) {
         return 0;
     }
-    if (m_0c->m_24->LoadFromSource(reinterpret_cast<CParseSource*>(node)) == 0) {
+    if (m_0c->m_24->LoadFromSource(node) == 0) {
         return 0;
     }
     m_0c->m_24->NotifyAllPlanes();

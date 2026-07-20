@@ -469,12 +469,12 @@ CSymTab::~CSymTab() {
 // sub-table (record+0x24) for `key`, forwarding m_owner->m_68 == 0 as the flag.
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
 RVA(0x0013a000, 0x37)
-i32 CSymTab::Insert(const char* key, void* arg) {
+CParseSource* CSymTab::Insert(const char* key, void* arg) {
     CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(reinterpret_cast<u32>(arg)));
     if (!rec) {
-        return reinterpret_cast<i32>(rec);
+        return 0;
     }
-    return reinterpret_cast<i32>(rec->m_valTable.Walk(key, m_owner->m_68 == 0));
+    return static_cast<CParseSource*>(rec->m_valTable.Walk(key, m_owner->m_68 == 0));
 }
 
 // Find (0x13a040): split `path` into its components, derive the leaf record's value
@@ -496,7 +496,7 @@ void* CSymTab::Find(const char* path) {
     } else {
         arg = 0;
     }
-    return reinterpret_cast<void*>(Insert(fname, arg));
+    return Insert(fname, arg);
 }
 
 // ---------------------------------------------------------------------------
@@ -1690,7 +1690,7 @@ void* CSymTab::FindQualified(const char* name) {
 // (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
 // induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
 RVA(0x0013be40, 0x1ac)
-i32 CSymTab::ResolveQualified(const char* name, void* arg) {
+CParseSource* CSymTab::ResolveQualified(const char* name, void* arg) {
     char qual[0x100];
     char key[0x24];
     const char* p = name;
@@ -1733,7 +1733,7 @@ CSymTab* CSymParser::GetRoot() {
 
 // ResolveQualified (0x13bff0): forward (name, arg) into GetRoot()'s CSymTab.
 RVA(0x0013bff0, 0x19)
-i32 CSymParser::ResolveQualified(const char* name, void* arg) {
+CParseSource* CSymParser::ResolveQualified(const char* name, void* arg) {
     return GetRoot()->ResolveQualified(name, arg);
 }
 

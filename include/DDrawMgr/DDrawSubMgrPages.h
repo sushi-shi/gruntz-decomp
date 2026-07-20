@@ -97,8 +97,8 @@ public:
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
-    i32 Method_158b10(i32 arg1, i32 arg2);     // 0x158b10
-    i32 Method_158b40(i32 arg1, i32 arg2);     // 0x158b40
+    i32 Method_158b10(struct CParseSource* src, i32 arg2); // 0x158b10 (ResolveImage the page from the parse record)
+    i32 Method_158b40(struct CParseSource* src, i32 arg2); // 0x158b40 (LoadImage the page from the parse record)
     void Method_158b90();                      // 0x158b90
     i32 Method_158bc0();                       // 0x158bc0
     i32 Method_158bf0(i32 a1, i32 a2, i32 a3); // 0x158bf0

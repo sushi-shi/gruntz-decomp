@@ -216,7 +216,7 @@ public:
     void SetDelims(char* s); // 0x13ba80
 
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
-    i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
+    struct CParseSource* ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 

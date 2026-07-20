@@ -20,16 +20,9 @@
 // CDDrawMapWorker (RELOC_VTBL alias) + CDDrawMapWorkerObj is dissolved onto it.
 #include <DDrawMgr/AniRecordBase2.h>
 
-// The surface/resource arg passed to the two elaborate factories (0x1658c0/0x165a90):
-// a __thiscall Lock/Unlock, a format-id probe, a +0x0c key handle, and a name at
-// +0x00 (dispatched through the canonical CParseSource casts).
-class CDDrawSurfaceSource {
-public:
-    const char* m_name; // +0x00
-    char m_pad04[0x0c - 0x04];
-    const char* m_0c; // +0x0c  key handle
-};
-SIZE_UNKNOWN(CDDrawSurfaceSource);
+// (CParseSource is GONE - the factories' source arg IS the CParseSource
+// leaf record ResolveQualified returns; the bodies already cast every use.)
+#include <Gruntz/ParseSource.h> // the real parse-source record
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent
@@ -48,10 +41,10 @@ public:
     // recovery gap, declared-only). The old "GetStateId 0x157600" plain-method
     // claim was a misbinding: 0x157600 is CDDrawChildGroup's slot 8 (id 0x10).
     virtual StateId GetStateId(); // [8]  0x156cf0 (STATE_WORKERMAPSMALL = 0x14)
-    virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
+    virtual void* Factory_1658c0(CParseSource* a1, const char* key, i32 a3); // [9] 0x1658c0
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
-    virtual void* Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
+    virtual void* Factory_165a90(CParseSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]; 0x156d20 (G obj)
 
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)

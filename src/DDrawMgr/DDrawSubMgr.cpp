@@ -1571,7 +1571,7 @@ void CDDrawSubMgrPages::DestroyChildren() {
 // 0x158b10: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x38
 // (ResolveImage) with arg1. Twin of Method_158b40 (which dispatches slot 0x34).
 RVA(0x00158b10, 0x2c)
-i32 CDDrawSubMgrPages::Method_158b10(i32 arg1, i32 arg2) {
+i32 CDDrawSubMgrPages::Method_158b10(CParseSource* src, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_overlayPair;
@@ -1584,12 +1584,12 @@ i32 CDDrawSubMgrPages::Method_158b10(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->ResolveImage_163ee0(reinterpret_cast<CParseSource*>(arg1));
+    return p->ResolveImage_163ee0(src);
 }
 
 // 0x158b40: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x34.
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
+i32 CDDrawSubMgrPages::Method_158b40(CParseSource* src, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_overlayPair;
@@ -1602,7 +1602,7 @@ i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->LoadImage_163e50(reinterpret_cast<CParseSource*>(arg1));
+    return p->LoadImage_163e50(src);
 }
 
 // 0x158b90: flip m_frontPair's surface, then broadcast (back-pair, overlay-pair)

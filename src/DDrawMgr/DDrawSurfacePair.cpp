@@ -1121,20 +1121,20 @@ void CDDrawWorkerMapSmall::DestroyAll() {
 // regalloc; the residual is the vptr store position (cl 1st vs retail 4th) + the /GX
 // EH-state schedule around the destructible worker/CString locals.
 RVA(0x001658c0, 0xcc)
-void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3) {
-    i32 data = (reinterpret_cast<CParseSource*>(a1))->BeginParse();
+void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i32 a3) {
+    i32 data = a1->BeginParse();
     if (data == 0) {
         return 0;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->AllocBufMakeB(data, a3) == 0) {
-        (reinterpret_cast<CParseSource*>(a1))->EndParse();
+        a1->EndParse();
         if (w != 0) {
             delete w;
         }
         return 0;
     }
-    (reinterpret_cast<CParseSource*>(a1))->EndParse();
+    a1->EndParse();
     const char* k = key != 0 ? key : a1->m_name;
     char buf[0x40];
     strcpy(buf, k);
@@ -1183,15 +1183,15 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
 // vptr-scheduler wall (~93%, twin of Factory_1658c0): real ctor fixed the regalloc;
 // residual is the vptr store position (cl 1st vs retail 4th) + the /GX EH-state schedule.
 RVA(0x00165a90, 0xf4)
-void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3) {
-    if ((reinterpret_cast<CParseSource*>(a1))->GetEntryTag() != 0x504358) {
+void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
+    if (a1->GetEntryTag() != 0x504358) {
         return 0;
     }
-    i32 data = (reinterpret_cast<CParseSource*>(a1))->BeginParse();
+    i32 data = a1->BeginParse();
     if (data == 0) {
         return 0;
     }
-    const char* keyHandle = a1->m_0c;
+    const char* keyHandle = reinterpret_cast<const char*>(a1->m_length); // +0x0c doubles as the key handle for this entry kind
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
         if (w != 0) {

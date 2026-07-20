@@ -191,11 +191,11 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", reinterpret_cast<char*>(name));
-    void* pal = reinterpret_cast<void*>((reinterpret_cast<CSymParser*>(src))->ResolveQualified(buf, reinterpret_cast<void*>(0x50414c)));
+    CParseSource* pal = (reinterpret_cast<CSymParser*>(src))->ResolveQualified(buf, reinterpret_cast<void*>(0x50414c));
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->Factory_1658c0(static_cast<CDDrawSurfaceSource*>(pal), 0, 0) != 0;
+    return m_spriteMgrHolder->m_workerMap->Factory_1658c0(pal, 0, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------

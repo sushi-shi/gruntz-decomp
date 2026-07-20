@@ -89,9 +89,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         } else {
             sprintf(scratch, "LEVEL%i", a4);
         }
-        CParseSource* sub = reinterpret_cast<CParseSource*>(
-            node->Insert(scratch, reinterpret_cast<void*>(0x575744))
-        );
+        CParseSource* sub = node->Insert(scratch, reinterpret_cast<void*>(0x575744));
         if (sub == 0) {
             return 0;
         }
@@ -109,7 +107,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
             return 0;
         }
         CParseSource* sub =
-            reinterpret_cast<CParseSource*>(node->Insert(name, reinterpret_cast<void*>(0x575744)));
+            node->Insert(name, reinterpret_cast<void*>(0x575744));
         if (sub == 0) {
             return 0;
         }
@@ -126,7 +124,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         return 0;
     }
     CParseSource* sub =
-        reinterpret_cast<CParseSource*>(node->Insert(name, reinterpret_cast<void*>(0x575744)));
+        node->Insert(name, reinterpret_cast<void*>(0x575744));
     if (sub == 0) {
         return 0;
     }

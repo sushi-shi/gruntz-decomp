@@ -39,20 +39,20 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     if (m_4->m_strWorldFile.GetLength() != 0) {
         if (m_4->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_4->GetWorldFileName();
-            i32 node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+            CParseSource* node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadFromSource(reinterpret_cast<CParseSource*>(node)) == 0) {
+            if (m_0c->m_24->LoadFromSource(node) == 0) {
                 return 0;
             }
         } else if (m_4->m_12c != 0) {
             CString key = "MULTI\\" + m_4->GetWorldFileName();
-            i32 node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+            CParseSource* node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadFromSource(reinterpret_cast<CParseSource*>(node)) == 0) {
+            if (m_0c->m_24->LoadFromSource(node) == 0) {
                 return 0;
             }
         } else {
@@ -71,11 +71,11 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        i32 node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+        CParseSource* node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
         if (node == 0) {
             return 0;
         }
-        if (m_0c->m_24->LoadFromSource(reinterpret_cast<CParseSource*>(node)) == 0) {
+        if (m_0c->m_24->LoadFromSource(node) == 0) {
             return 0;
         }
     }

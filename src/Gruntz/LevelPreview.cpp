@@ -272,7 +272,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    i32 sym = SymTab2c()->ResolveQualified(buf, &g_screenTag);
+    CParseSource* sym = SymTab2c()->ResolveQualified(buf, &g_screenTag);
     if (sym == 0) {
         return 0;
     }

@@ -272,13 +272,13 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
         return 0;
     }
     CDDrawSubMgrPages* w = reinterpret_cast<CDDrawSubMgrPages*>(menuRoot()->m_04);
-    if (w->Method_158b40(reinterpret_cast<i32>(page), e != 0 ? 2 : 1) != 0) {
+    if (w->Method_158b40(static_cast<CParseSource*>(page), e != 0 ? 2 : 1) != 0) {
         return 1;
     }
     if (e == 0) {
         return 1;
     }
-    if (w->Method_158b40(reinterpret_cast<i32>(page), 1) != 0) {
+    if (w->Method_158b40(static_cast<CParseSource*>(page), 1) != 0) {
         return 1;
     }
     return 0;

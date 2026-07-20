@@ -984,7 +984,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins =
+            CParseSource* ins =
                 (static_cast<CSymTab*>(set))->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
@@ -1012,7 +1012,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins =
+            CParseSource* ins =
                 (static_cast<CSymTab*>(set))->Insert(static_cast<const char*>(self->m_4->GetWorldFileName()), g_emptyString);
             if (ins == 0) {
                 return 0;
@@ -5857,28 +5857,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* levelSet = static_cast<CSymTab*>(m_levelBank->ResolvePath("MIDIZ"));
     if (levelSet) {
-        CParseSource* e = reinterpret_cast<CParseSource*>(levelSet->Insert("AMBIENT0", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        CParseSource* e = levelSet->Insert("AMBIENT0", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
-        e = reinterpret_cast<CParseSource*>(levelSet->Insert("AMBIENT1", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        e = levelSet->Insert("AMBIENT1", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
-        e = reinterpret_cast<CParseSource*>(levelSet->Insert("INTRO0", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        e = levelSet->Insert("INTRO0", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "INTRO0");
             }
         }
-        e = reinterpret_cast<CParseSource*>(levelSet->Insert("INTRO1", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        e = levelSet->Insert("INTRO1", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
@@ -5889,21 +5889,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* gameSet = static_cast<CSymTab*>(m_gameBank->ResolvePath("MIDIZ"));
     if (gameSet) {
-        CParseSource* e = reinterpret_cast<CParseSource*>(gameSet->Insert("POWERUP", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        CParseSource* e = gameSet->Insert("POWERUP", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "POWERUP");
             }
         }
-        e = reinterpret_cast<CParseSource*>(gameSet->Insert("CURSE", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        e = gameSet->Insert("CURSE", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
                 m_4->m_sound->CreateBank(res, e->m_length, "CURSE");
             }
         }
-        e = reinterpret_cast<CParseSource*>(gameSet->Insert("MONOLITH", reinterpret_cast<void*>(MUSIC_TAG_XMI)));
+        e = gameSet->Insert("MONOLITH", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
             void* res = reinterpret_cast<void*>(e->BeginParse());
             if (res) {
