@@ -96,12 +96,10 @@ extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
 //  binding a header cannot: a DATA() in a header is ignored by the label pass, so
 //  declaring it here bound it to NO retail address at all.)
 
-// The DAT_006bf650 config-name registry (its method maps a sprite-type id to a config-name
-// string; @0x6bf66c/@0x6bf670 are its node array + count). Reloc-masked.
-struct CTmNameReg {
-    char** Lookup(i32 id); // 0x46e0c0
-};
-extern CTmNameReg g_nameReg; // 0x6bf650
+// (CTmNameReg + its g_nameReg alias-extern are GONE - "the DAT_006bf650 registry"
+// IS g_typeColl, the shared CActReg (TypeKeyColl.cpp: "0x6bf650 is a CActReg like
+// every other one"); Lookup@0x46e0c0 is a standalone slot-returning ResolveEntry
+// copy, now declared on CActReg.)
 void Str_Free(void* node);   // CString teardown, 0x1b9b93
 
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,

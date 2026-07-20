@@ -26,6 +26,9 @@ struct CActReg : public zDArray {
     // (cl's caller-size inline budget declines the expansion there) where the
     // small dispatchers inline ResolveEntry.
     char* Resolve(i32 id);
+    // Standalone SLOT-returning ResolveEntry copy in the TriggerMgr band (0x46e0c0):
+    // returns &entry-slot; callers deref for the config-name string. Reloc-masked.
+    char** ResolveSlot_46e0c0(i32 id);
 
     char* ResolveEntry(i32 id) {
         m_grown = 0;

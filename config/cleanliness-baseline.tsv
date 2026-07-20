@@ -19,5 +19,5 @@ C-style numeric casts	0
 void* m_ members	19
 offset-cast macros	0
 cpp extern decls	490
-view classes (*Views.h)	6
+view classes (*Views.h)	5
 caller-callee FAKE-VIEW	0
