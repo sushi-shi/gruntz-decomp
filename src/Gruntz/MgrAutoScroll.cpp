@@ -17,6 +17,7 @@
 #include <Wwd/WwdFile.h>      // canonical CLevelPlane (== CDDrawWorkerHost) - the scroll plane
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/StatusBarMgr.h> // the status-bar mgr (bar->m_position gates the h-center)
 #include <Globals.h>
 
 // The active scroll "view" (pm->m_world->m_level->m_mainPlane, and the back-plane g_64c27c)
@@ -90,7 +91,7 @@ static i32 RandRange(i32 lo, i32 hi) {
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
 // __cdecl 3-arg (retail callers push 3; the former 4th `unused` param was spurious).
-void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
+void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     CLevelPlane* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_snappedX;
     i32 scrollY = v->m_snappedY;
@@ -110,7 +111,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
 
     i32 cx = g_gameReg->m_modeW / 2;
     i32 cy = g_gameReg->m_modeH / 2;
-    if (*pMode != 2) {
+    if (bar->m_position != 2) {
         cx -= 0xa0;
     }
     if (snapFlag) {

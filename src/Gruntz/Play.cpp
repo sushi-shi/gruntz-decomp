@@ -186,7 +186,7 @@ extern "C" {
 class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
 // The manager auto-scroll step (0xebd70, MgrAutoScroll.cpp).
-void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // 0x0ebd70
+void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag); // 0x0ebd70
 
 // OnRegion3's scroll-region re-arm cue (CmdScrollApply.cpp @0x0ec1c0, cdecl 5-arg).
 void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
@@ -461,7 +461,7 @@ i32 CPlay::Render() {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));             // 0x3710  CTimer::Tick
         m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta));          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_c->m_drawTarget->m_backPair));           // 0x1519
         return 1;                                                             // -> draw tail
     }
@@ -1824,10 +1824,10 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         s->Write(markerData()[i0], 8);
     }
 
-    char* p = reinterpret_cast<char*>(m_anchors); // the four 8-byte fx-anchor pairs at +0x384 (raw block)
+    Anchor* p = m_anchors; // the four 8-byte fx-anchor pairs at +0x384
     for (i32 k0 = 4; k0 != 0; k0--) {
         s->Write(p, 8);
-        p += 8;
+        p++;
     }
 
     for (i32 k1 = 0; k1 < 4; k1++) {
@@ -2007,10 +2007,10 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
 
     {
         // the four 8-byte fx-anchor pairs at +0x384 (raw block, as the Write twin).
-        char* q = reinterpret_cast<char*>(m_anchors);
+        Anchor* q = m_anchors;
         for (i32 k = 4; k != 0; k--) {
             ar->Read(q, 8);
-            q += 8;
+            q++;
         }
     }
 
@@ -2940,7 +2940,7 @@ i32 CPlay::ProfileInputFrame() {
         m_c->m_level->m_mainPlane->CenterScrollB();
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
-    UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
+    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate); // 0xebd70
     return 1;
 }
 
@@ -4593,13 +4593,13 @@ drag_path: {
             // the guts +0x08 slot holds the dragged widget's display object
             // (screen pos at +0x5c/+0x60 - the CGameObject shape); snap origin =
             // widget pos - click pos.
-            CGameObject* g8 = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(m_guts) + 8));
+            CGameObject* g8 = m_guts->m_barSprite;
             i32 dx = 0;
             if (g8 != 0) {
                 dx = g8->m_screenX - xr;
             }
             m_snapOriginX = dx;
-            CGameObject* g8b = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(m_guts) + 8));
+            CGameObject* g8b = m_guts->m_barSprite;
             if (g8b == 0) {
                 m_snapOriginY = 0;
                 return 1;
@@ -6726,7 +6726,7 @@ i32 CPlay::EnterMode(i32 mode) {
     if (m_1c4 != 0) {
         m_1c4 = 0;
         m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-        UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
+        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate); // 0x2356
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {

@@ -51,7 +51,7 @@
 // The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
 // called with (g_gameReg, this->m_guts, this->m_region0Gate).
 class CGruntzMgr;
-void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // reloc-masked
+void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag); // reloc-masked
 
 RVA(0x000cb800, 0x191)
 i32 CPlay::InputVirtual() {
@@ -91,7 +91,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-    UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
