@@ -814,8 +814,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         row++;
     }
-    char* rec = reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238;
-    if (occupied >= *reinterpret_cast<i32*>((rec + 0x378))) {
+    if (occupied >= m_ctx->m_options[m_curCell].m_comboSel) {
         return 1;
     }
     i32 n = m_candArray.GetSize();
@@ -4192,9 +4191,9 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         i32 lx = lvl->m_screenX >> 5;
         i32 ly = lvl->m_screenY >> 5;
         if (u->m_2d8 == 4 && u->m_2e8 != -1) {
-            char* rec = reinterpret_cast<char*>(m_ctx) + u->m_2e8 * 0x238;
-            i32 dx = *reinterpret_cast<i32*>(rec + 0x258) - lx;
-            i32 dy = *reinterpret_cast<i32*>(rec + 0x25c) - ly;
+            CBattlezMapConfig* bundle = &m_ctx->m_options[u->m_2e8].m_038;
+            i32 dx = bundle->m_markerX - lx;
+            i32 dy = bundle->m_markerY - ly;
             dx = abs(dx);
             dy = abs(dy);
             if (dx * dx + dy * dy > 0x19) {
@@ -4242,8 +4241,7 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
         }
         row++;
     }
-    char* rec = reinterpret_cast<char*>(m_ctx) + m_curCell * 0x238;
-    if (occupied >= *reinterpret_cast<i32*>((rec + 0x378))) {
+    if (occupied >= m_ctx->m_options[m_curCell].m_comboSel) {
         return 0;
     }
     i32 cell = m_triggerMgr->Probe(
@@ -4252,7 +4250,7 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
         (ax << 5) + 0x10,
         0x186a0,
         3,
-        *reinterpret_cast<i32*>((rec + 0x158)),
+        m_ctx->m_options[m_curCell].m_008,
         0,
         0,
         0x11,
@@ -4468,16 +4466,16 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
         o->m_y = lvl->m_screenY >> 5;
         return o;
     }
-    char* rec = reinterpret_cast<char*>(m_ctx) + kind * 0x238 + 0x278;
+    CPtrArray* coords = &m_ctx->m_options[kind].m_038.m_0f0; // the loop-3 start-coord array
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> 5;
     i32 ry = lvl->m_screenY >> 5;
-    i32 count = *reinterpret_cast<i32*>((rec + 0x8));
+    i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;
         i32 k = 0;
         if (count > 0) {
-            Coord** arr = *reinterpret_cast<Coord***>((rec + 0x4));
+            Coord** arr = reinterpret_cast<Coord**>(coords->GetData());
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_curCell;
             for (;;) {
@@ -4509,7 +4507,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
             }
         }
         r = rand() % count;
-        Coord* cand = (*reinterpret_cast<Coord***>((rec + 0x4)))[r];
+        Coord* cand = reinterpret_cast<Coord**>(coords->GetData())[r];
         rx = cand->m_x;
         ry = cand->m_y;
     }
@@ -4887,11 +4885,10 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             band++;
         }
         band = band % 4;
-        char* rec = reinterpret_cast<char*>(m_ctx) + band * 0x238;
-        if (*reinterpret_cast<i32*>((rec + 0x174)) != 0) {
+        if (m_ctx->m_options[band].m_clearedRound != 0) {
             return 1;
         }
-        if (*reinterpret_cast<i32*>((rec + 0x170)) == 0) {
+        if (m_ctx->m_options[band].m_liveGate == 0) {
             return 1;
         }
         unit->m_2e8 = band;
