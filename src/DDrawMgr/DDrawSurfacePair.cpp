@@ -196,7 +196,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     if (m_status == 1) {
         CDDrawSurfaceMgr* mgr = m_mgr;
         m_surface =
-            static_cast<CDDSurface*>((reinterpret_cast<CDirectDrawMgr*>(mgr->m_ptrColl))
+            static_cast<CDDSurface*>(mgr->m_ptrColl
                 ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
         if (m_surface == 0) {
             if (m_mgr->m_lastError == 0) {
@@ -507,7 +507,7 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
         if (m_status == 1) {
             CDDrawSurfaceMgr* mgr = m_mgr;
             m_surface =
-                static_cast<CDDSurface*>((reinterpret_cast<CDirectDrawMgr*>(mgr->m_ptrColl))
+                static_cast<CDDSurface*>(mgr->m_ptrColl
                     ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
             if (m_surface == 0) {
                 return 0;
@@ -615,12 +615,12 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     }
     i32 hr;
     if (mgr->m_flags & 0x10) {
-        hr = (reinterpret_cast<CDirectDrawMgr*>(pool))->CreateDevice(static_cast<void*>(mgr->m_hWnd), reinterpret_cast<void*>(2), w, h, bpp, mode);
+        hr = pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), reinterpret_cast<void*>(2), w, h, bpp, mode);
     } else {
-        hr = (reinterpret_cast<CDirectDrawMgr*>(pool))->CreateDevice(static_cast<void*>(mgr->m_hWnd), static_cast<void*>(0), w, h, bpp, mode);
+        hr = pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), static_cast<void*>(0), w, h, bpp, mode);
     }
     if (hr == 0) {
-        i32 err = pool->m_944;
+        i32 err = pool->m_lastError;
         if (err != 0) {
             switch (err) {
                 case 0x3e9: {
@@ -908,7 +908,7 @@ CString CDDrawWorkerCache::FindKeyOfValue_165360(CImageSet* target) {
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
         // Reads the raw +0x10 dword of both, exactly as retail does (this is the ex
-        // `m_array` view of that offset). NOTE, flagged not fixed: +0x10 is the embedded
+        // `m_poolItems` view of that offset). NOTE, flagged not fixed: +0x10 is the embedded
         // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
         // constant-vs-itself and the scan returns the first key. That is pre-existing
         // and out of this fold's scope - the fold only preserves the same memory read.

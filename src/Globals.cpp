@@ -12,7 +12,8 @@
 struct AttractActorList;
 struct CVariantSlot;
 struct CActEntry;
-class CDirectDrawMgr;
+class CDDrawPtrCollections;
+typedef CDDrawPtrCollections CDirectDrawMgr; // one class, both spellings
 class CGameWnd; // g_activeGameWnd's pointee (?g_activeGameWnd@@3PAVCGameWnd@@A)
 struct CVariantSlot;
 struct CDropEntry;

@@ -105,7 +105,7 @@ typedef CDDrawWorkerRegistry CImageRegistry;
 // settled-identity note there). The facets: m_4 == m_drawTarget (CWorldSub4 was
 // CDDrawSubMgrPages;
 // "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
-// m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_surf0 IDirectDraw2::
+// m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_device IDirectDraw2::
 // FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.
 class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
 typedef CDDrawWorker CImageSet; // (identical repeat of ImageSet.h's typedef)

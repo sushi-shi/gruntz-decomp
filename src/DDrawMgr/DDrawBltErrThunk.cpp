@@ -17,7 +17,7 @@
 #include <Ints.h>
 
 // [SETTLED (Fable lane, 2026-07-13): the "DDrawBltHost/DDrawBltSurface" views WERE
-// CDDrawPtrCollections + its held IDirectDraw2 (+0x00 m_surf0): the "2-RECT Blt at
+// CDDrawPtrCollections + its held IDirectDraw2 (+0x00 m_device): the "2-RECT Blt at
 // slot 11" is IDirectDraw2::GetCaps (slot 11, +0x2c, __stdcall, TWO LPDDCAPS args)
 // and the "+0x08 dest RECT" is the 0x17c-byte driver DDCAPS block (+0x184 = HEL).
 // The 12-slot placeholder interface is dissolved onto the real COM vtable.]
@@ -26,7 +26,7 @@
 // through the DDraw error reporter CDirectDrawMgr::GetErrorString (0x141400).
 RVA(0x0008dd80, 0x31)
 i32 CDDrawPtrCollections::GetCapsChecked() {
-    i32 hr = m_surf0->GetCaps(reinterpret_cast<LPDDCAPS>(m_driverCaps), reinterpret_cast<LPDDCAPS>(m_helCaps));
+    i32 hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_driverCaps), reinterpret_cast<LPDDCAPS>(m_helCaps));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"), 0x135, hr);
     }

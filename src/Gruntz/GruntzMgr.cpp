@@ -107,7 +107,7 @@
 // `virtual void __stdcall`, so `d->Slot0a()` lowers to `mov eax,[d]; call [eax+0x28]`.
 // (CDDrawPtrCollections); its "Prepare" @0x08dd80 IS GetCapsChecked (the
 // IDirectDraw2::GetCaps probe), and the "*m_1c slot-10 Slot0a" dispatch is
-// m_surf0->FlipToGDISurface() (IDirectDraw2 slot 10, +0x28) before each modal UI.]
+// m_device->FlipToGDISurface() (IDirectDraw2 slot 10, +0x28) before each modal UI.]
 
 // CGruntzMgr::m_lobby is the REAL DirectPlay lobby COM interface (IDirectPlayLobby,
 // from the vendored <dplobby.h>); only Release (slot 2) + GetConnectionSettings
@@ -1174,7 +1174,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         CDDrawSubMgrPages* pages = m_world->m_drawTarget;
         pages->BlitPage(pages->m_backPair);         // pause the back pair
-        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);
     while (ShowCursor(1) < 0) {
@@ -3423,7 +3423,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
     if (m_world) {
         RedrawMapIndex(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair));
-        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -3466,7 +3466,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         } else {
             notify = 0;
         }
-        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -4077,7 +4077,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         } else {
             flag = 0;
         }
-        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -4263,7 +4263,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CDdModePair pt;
-    (reinterpret_cast<CDirectDrawMgr*>(m_world->m_ptrColl))->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
+    m_world->m_ptrColl->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -4289,7 +4289,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CDdModePair pt;
-    (reinterpret_cast<CDirectDrawMgr*>(m_world->m_ptrColl))->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
+    m_world->m_ptrColl->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

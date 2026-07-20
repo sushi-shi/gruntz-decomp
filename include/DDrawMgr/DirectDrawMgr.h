@@ -21,6 +21,7 @@
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
 #include <rva.h>
+#include <DDrawMgr/DDrawPtrCollections.h> // the ONE device/pool class
 
 #include <Mfc.h> // POSITION (CDDPalette::m_pos, the pool-B cached CPtrList handle) from the
                  // real MFC header, not a hand-rolled forward-decl/typedef
@@ -86,82 +87,12 @@ SIZE_UNKNOWN(CDdModePair);
 // `this` offset 0 holds the IDirectDraw2 device interface.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CDirectDrawMgr);
-class CDirectDrawMgr {
-public:
-    // Device bring-up (__thiscall, 6 args; arg1 unused). If the global DirectDraw
-    // object already exists it reuses it, else DirectDrawCreate + QueryInterface
-    // for IID_IDirectDraw2; then SetCooperativeLevel, GetCaps, an internal setup
-    // pass, optional SetDisplayMode and GetDisplayMode; caches the singleton.
-    i32 CreateDevice(
-        void* a1,
-        void* hwnd,
-        i32 width,
-        i32 height,
-        i32 bpp,
-        u32 coopFlags
-    ); // 0x141dc0
-
-    // Queries the current display mode via IDirectDraw2::GetDisplayMode into a
-    // scratch DDSURFACEDESC and returns width / height / bpp through the three
-    // out-pointers; on a failed COM call it zeroes them, reports the HRESULT and
-    // returns 0. (__thiscall, ret 0xc => 3 args.)
-    i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp); // 0x143740
-
-    // Fetch the shared GDI (primary) surface from the device. On a failed COM call
-    // it TRACEs "CDirectDrawMgr::GetGDISurface()" and returns 0. (__thiscall.)
-    IDirectDrawSurface* GetGDISurface(); // 0x1438c0
-
-    // Query the device's free video memory (DDSCAPS_TEXTURE); returns the free-byte
-    // count on success, 0 on a failed COM call. (__thiscall.)
-    i32 GetFreeVidMem(); // 0x143840
-
-    // Diagnostic error reporter. Given a calling site's __FILE__/__LINE__ and a
-    // DirectDraw HRESULT, builds a "<DDERR_NAME> (<code>) - <description>" string
-    // and (per three reporting-mode globals) beeps, logs and/or message-boxes it.
-    // STATIC: ignores `this`, __cdecl/caller-cleaned.
-    static void GetErrorString(char* file, i32 line, i32 hr); // 0x141400
-
-    // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
-    // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
-    void SetupCaps();                                                 // 0x143240
-    void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
-    i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
-    // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
-    static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
-    void AddPoolItem(void* item);                   // 0x142100  pool publisher (reloc-masked)
-
-    // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
-    // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
-    // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
-    i32 FindIndex(i32 k0, i32 k1, i32 k2);                   // 0x1434c0
-    i32 FindLast(u32 k0, u32 k1, i32 k2);                    // 0x143470
-    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);  // 0x143510
-    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2); // 0x143590
-    // FindMatch = the last >= match's {m_c,m_8} dims (or {-1,-1}); via FindLast.
-    void FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2); // 0x143420
-
-    // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
-    // caches g_ddCreateCtx), then bring up the device via CreateDevice.
-    i32 Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
-
-    // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
-    i32 GetAvailableVidMem(u32 caps, u32* total, u32* free); // 0x143810
-
-    // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device
-    IDirectDraw* m_dd1;     // +0x04  the raw IDirectDraw DirectDrawCreate returns
-    i32 m_caps[0x5f];       // +0x08  driver DDCAPS_DX6 storage (0x17c B); .cpp uses (DDCAPS*)
-    i32 m_helCaps[0x5f];    // +0x184 HEL DDCAPS_DX6 storage (0x17c B)
-    char m_pad300[0x4b4 - 0x300];
-    CPtrArray m_poolItems; // +0x4b4 pool-item array (m_pData@+0x4b8 / m_nSize@+0x4bc)
-    char m_pad4c8[0x534 - 0x4c8];
-    i32 m_bltCaps; // +0x534 caps flag (& 0x8000000)
-    i32 m_bpp;     // +0x538 cached bpp
-    char m_pad53c[0x93c - 0x53c];
-    i32 m_93c;       // +0x93c
-    i32 m_940;       // +0x940
-    i32 m_lastError; // +0x944 last-error stash
-};
+// CDirectDrawMgr IS CDDrawPtrCollections - one retail object (this+0 == the held
+// IDirectDraw2 device; +0x08/+0x184 caps blocks; +0x4b4 pool array; +0x944 last
+// error), its methods split across DDRAWMGR.CPP and the collections TU exactly as
+// retail's project did. ONE class, both spellings (the CImageSet==CDDrawWorker
+// typedef pattern); the merged def lives in <DDrawMgr/DDrawPtrCollections.h>.
+typedef CDDrawPtrCollections CDirectDrawMgr;
 
 // ---------------------------------------------------------------------------
 // CDDPalette (DIRPAL.CPP) - a palette wrapper. Held IDirectDrawPalette @0x4,

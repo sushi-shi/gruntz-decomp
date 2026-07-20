@@ -93,8 +93,71 @@ SIZE(CPoolItemAE8, 0xc0);
 VTBL(CPoolItemAE8, 0x001efae8);
 
 SIZE_UNKNOWN(CDDrawPtrCollections);
+struct CDdModePair; // <DDrawMgr/DirectDrawMgr.h> (the mode-pair the finders fill)
+
 class CDDrawPtrCollections {
 public:
+    // --- the DDRAWMGR.CPP method set (ex 'CDirectDrawMgr' - same object) ---
+    // Device bring-up (__thiscall, 6 args; arg1 unused). If the global DirectDraw
+    // object already exists it reuses it, else DirectDrawCreate + QueryInterface
+    // for IID_IDirectDraw2; then SetCooperativeLevel, GetCaps, an internal setup
+    // pass, optional SetDisplayMode and GetDisplayMode; caches the singleton.
+    i32 CreateDevice(
+        void* a1,
+        void* hwnd,
+        i32 width,
+        i32 height,
+        i32 bpp,
+        u32 coopFlags
+    ); // 0x141dc0
+
+    // Queries the current display mode via IDirectDraw2::GetDisplayMode into a
+    // scratch DDSURFACEDESC and returns width / height / bpp through the three
+    // out-pointers; on a failed COM call it zeroes them, reports the HRESULT and
+    // returns 0. (__thiscall, ret 0xc => 3 args.)
+    i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp); // 0x143740
+
+    // Fetch the shared GDI (primary) surface from the device. On a failed COM call
+    // it TRACEs "CDirectDrawMgr::GetGDISurface()" and returns 0. (__thiscall.)
+    IDirectDrawSurface* GetGDISurface(); // 0x1438c0
+
+    // Query the device's free video memory (DDSCAPS_TEXTURE); returns the free-byte
+    // count on success, 0 on a failed COM call. (__thiscall.)
+    i32 GetFreeVidMem(); // 0x143840
+
+    // Diagnostic error reporter. Given a calling site's __FILE__/__LINE__ and a
+    // DirectDraw HRESULT, builds a "<DDERR_NAME> (<code>) - <description>" string
+    // and (per three reporting-mode globals) beeps, logs and/or message-boxes it.
+    // STATIC: ignores `this`, __cdecl/caller-cleaned.
+    static void GetErrorString(char* file, i32 line, i32 hr); // 0x141400
+
+    // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
+    // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
+    void SetupCaps();                                                 // 0x143240
+    void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
+    i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
+    // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
+    static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
+    void AddPoolItem(void* item);                   // 0x142100  pool publisher (reloc-masked)
+
+    // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
+    // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
+    // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
+    i32 FindIndex(i32 k0, i32 k1, i32 k2);                   // 0x1434c0
+    i32 FindLast(u32 k0, u32 k1, i32 k2);                    // 0x143470
+    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);  // 0x143510
+    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2); // 0x143590
+    // FindMatch = the last >= match's {m_c,m_8} dims (or {-1,-1}); via FindLast.
+    void FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2); // 0x143420
+
+    // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
+    // caches g_ddCreateCtx), then bring up the device via CreateDevice.
+    i32 Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
+
+    // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
+    i32 GetAvailableVidMem(u32 caps, u32* total, u32* free); // 0x143810
+
+
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();
 
@@ -163,17 +226,17 @@ public:
     // masks; report + latch the failure code on either error. 0x143c20.
     i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20
     // 0x08dd80 (body in DDrawBltErrThunk.cpp; ex "DDrawBltHost::BltChecked" - the
-    // held object IS this class): m_surf0->GetCaps(driver, hel) with the DDraw
+    // held object IS this class): m_device->GetCaps(driver, hel) with the DDraw
     // error log on failure. CGruntzMgr::RegisterLevelAssetKeys calls it twice.
     i32 GetCapsChecked(); // 0x08dd80
 
-    IDirectDraw2* m_surf0; // +0x00 - the held DirectDraw device (Release on Clear).
+    IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device (Release on Clear)
                            //         NOTE (wave4-K): +0x00/+0x04 mirror CDirectDrawMgr's
                            //         m_device/m_dd1 - CDDrawPtrCollections and
                            //         CDirectDrawMgr are two views of ONE DDRAWMGR.CPP
                            //         manager class (shared +0x4b4 array, +0x93c..+0x944
                            //         tail); flagged for a canonical-class unification.
-    IDirectDraw* m_surf4;  // +0x04 - the raw pre-QI DirectDraw device (Release on Clear)
+    IDirectDraw* m_dd1;     // +0x04  the raw pre-QI IDirectDraw (Release on Clear)
     // +0x008/+0x184: the driver + HEL DDCAPS blocks (0x17c B each; the SDK DDCAPS'
     // sizeof differs across DX versions, so raw dword storage + LPDDCAPS casts at
     // the GetCaps call - the CDDPageMgr view models its copy the same way).
@@ -182,9 +245,9 @@ public:
     char _pad300[0x47c - 0x300];
     CPtrList m_poolA;  // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*
-    CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
+    CPtrArray m_poolItems; // +0x4b4  the display-mode/pool-item array (m_pData@+0x4b8 / m_nSize@+0x4bc)
     char _pad4C8[0x534 - 0x4c8];
-    i32 m_534; // +0x534  - zeroed in ctor / Clear
+    i32 m_bltCaps; // +0x534  caps flag (& 0x8000000); zeroed in ctor / Clear
     // Display palette context (+0x538..+0x944). This IS the "palette source" the
     // Image-module BMP/PCX/PID decoders read through as an argument: m_palBpp is the
     // display bit depth (latched from a pool item's m_a8 by the Create* factories),
@@ -196,7 +259,7 @@ public:
     i32 m_palette[0x100]; // +0x53c  256-entry display palette (RGBQ)
     i32 m_hasPalette;     // +0x93c  have-palette flag
     i32 m_940;            // +0x940  - zeroed in ctor (palette tag)
-    i32 m_944;            // +0x944  - zeroed in ctor
+    i32 m_lastError;      // +0x944  last-error stash; zeroed in ctor
 }; // 0x948
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H

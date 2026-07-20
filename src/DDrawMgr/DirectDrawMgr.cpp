@@ -395,14 +395,14 @@ void __cdecl DDrawLogLine(char*, ...) {}
 // Constructor (0x141cc0).  /GX EH frame to unwind the three containers.
 // ---------------------------------------------------------------------------
 RVA(0x00141cc0, 0x84)
-CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_array() {
-    m_surf0 = 0;
-    m_surf4 = 0;
-    m_534 = 0;
+CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poolItems() {
+    m_device = 0;
+    m_dd1 = 0;
+    m_bltCaps = 0;
     m_palBpp = 0;
     m_hasPalette = 0;
     m_940 = 0;
-    m_944 = 0;
+    m_lastError = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -425,7 +425,7 @@ i32 CDirectDrawMgr::CreateDevice(
     i32 bpp,
     u32 coopFlags
 ) {
-    m_93c = 0;
+    m_hasPalette = 0;
     m_940 = 0;
     IDirectDraw2* dd = g_DirectDraw;
     if (dd != 0) {
@@ -461,7 +461,7 @@ i32 CDirectDrawMgr::CreateDevice(
     }
 
     i32 i;
-    i32* p = m_caps;
+    i32* p = m_driverCaps;
     for (i = 0x5f; i != 0; i--) {
         *p++ = 0;
     }
@@ -469,16 +469,16 @@ i32 CDirectDrawMgr::CreateDevice(
     for (i = 0x5f; i != 0; i--) {
         *q++ = 0;
     }
-    // m_caps/m_helCaps are the driver + HEL DDCAPS_DX6 blocks (raw i32[0x5f] in the
+    // m_driverCaps/m_helCaps are the driver + HEL DDCAPS_DX6 blocks (raw i32[0x5f] in the
     // lean header; sizeof(DDCAPS)==0x17c is exactly 0x5f*4). Access them through the
     // real SDK type so the dwSize/dwCaps fields are named, not magic indices.
-    (reinterpret_cast<LPDDCAPS>(m_caps))->dwSize = sizeof(DDCAPS);
+    (reinterpret_cast<LPDDCAPS>(m_driverCaps))->dwSize = sizeof(DDCAPS);
     (reinterpret_cast<LPDDCAPS>(m_helCaps))->dwSize = sizeof(DDCAPS);
-    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_caps), reinterpret_cast<LPDDCAPS>(m_helCaps));
+    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_driverCaps), reinterpret_cast<LPDDCAPS>(m_helCaps));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
-    m_bltCaps = (reinterpret_cast<LPDDCAPS>(m_caps))->dwCaps & 0x8000000;
+    m_bltCaps = (reinterpret_cast<LPDDCAPS>(m_driverCaps))->dwCaps & 0x8000000;
     SetupCaps();
 
     if (width > 0 && height > 0) {
@@ -490,7 +490,7 @@ i32 CDirectDrawMgr::CreateDevice(
             }
             return 0;
         }
-        m_bpp = bpp;
+        m_palBpp = bpp;
     }
 
     if (bpp == 0) {
@@ -503,7 +503,7 @@ i32 CDirectDrawMgr::CreateDevice(
         desc.dwSize = 0x6c;
         hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
-            m_bpp = desc.ddpfPixelFormat.dwRGBBitCount;
+            m_palBpp = desc.ddpfPixelFormat.dwRGBBitCount;
         }
     }
 
@@ -541,25 +541,25 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
 // ---------------------------------------------------------------------------
 RVA(0x00142060, 0x9d)
 void CDDrawPtrCollections::Clear(i32 mode) {
-    if (mode && m_surf0) {
-        m_surf0->RestoreDisplayMode();
+    if (mode && m_device) {
+        m_device->RestoreDisplayMode();
     }
-    for (i32 i = 0; i < m_array.GetSize(); i++) {
-        ::operator delete(m_array.GetData()[i]);
+    for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
+        ::operator delete(m_poolItems.GetData()[i]);
     }
-    m_array.SetSize(0, -1);
+    m_poolItems.SetSize(0, -1);
     EmptyPoolA();
     EmptyPoolB();
     g_DirectDrawMgr = 0;
-    if (m_surf0) {
-        m_surf0->Release();
-        m_surf0 = 0;
+    if (m_device) {
+        m_device->Release();
+        m_device = 0;
     }
-    if (m_surf4) {
-        m_surf4->Release();
-        m_surf4 = 0;
+    if (m_dd1) {
+        m_dd1->Release();
+        m_dd1 = 0;
     }
-    m_534 = 0;
+    m_bltCaps = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -971,14 +971,14 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
 
 // ---------------------------------------------------------------------------
 // MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CDDPalette, zero its
-// fields, init it via the alternate Init2 (0x147410) with (m_surf0, a, b); on success
+// fields, init it via the alternate Init2 (0x147410) with (m_device, a, b); on success
 // add to pool B and return it, else tear down + RezFree and return 0.  NO EH frame
 // (no destructible local), so this matches cleanly.
 // ---------------------------------------------------------------------------
 RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    if (!item->LoadFromFile(m_surf0, reinterpret_cast<char*>(a), b)) {
+    if (!item->LoadFromFile(m_device, reinterpret_cast<char*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -997,7 +997,7 @@ CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
 RVA(0x00142fc0, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
     CDDPalette* item = new CDDPalette;
-    if (!item->CreateRGB(m_surf0, rgb, flags)) {
+    if (!item->CreateRGB(m_device, rgb, flags)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1010,13 +1010,13 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 
 // ---------------------------------------------------------------------------
 // Create (0x143040).  Sibling of MakeB2: RezAlloc a 0x38-byte CDDPalette, init it
-// via CDDPalette::Create (0x147390) with (m_surf0, a, b); on success add to pool B
+// via CDDPalette::Create (0x147390) with (m_device, a, b); on success add to pool B
 // and return it, else tear down + RezFree and return 0.
 // ---------------------------------------------------------------------------
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    if (!item->Create(m_surf0, reinterpret_cast<void*>(a), b)) {
+    if (!item->Create(m_device, reinterpret_cast<void*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1029,14 +1029,14 @@ CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
 
 // ---------------------------------------------------------------------------
 // MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CDDPalette,
-// zero its fields, init it via the 3-param Init3 (0x147840) with (m_surf0, a, b,
+// zero its fields, init it via the 3-param Init3 (0x147840) with (m_device, a, b,
 // c); on success add to pool B and return it, else tear down + RezFree and return
 // 0.  No EH frame (no destructible local) -> matches cleanly.
 // ---------------------------------------------------------------------------
 RVA(0x001430c0, 0x81)
 CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
     CDDPalette* item = new CDDPalette;
-    if (!item->CreateFromTrailing(m_surf0, reinterpret_cast<void*>(a), b, c)) {
+    if (!item->CreateFromTrailing(m_device, reinterpret_cast<void*>(a), b, c)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1562,7 +1562,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
     DDSURFACEDESC desc;
     memset(&desc, 0, 0x6c);
     desc.dwSize = 0x6c;
-    i32 hr = m_surf0->GetDisplayMode(&desc);
+    i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
         return 0;
@@ -1620,24 +1620,24 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 // ---------------------------------------------------------------------------
 // ConfigureSurface (0x143c20).  Reconfigure the display mode through the device
 // (IDirectDraw2::SetDisplayMode - five args forwarded verbatim).  On a non-zero HRESULT, report through
-// GetErrorString, latch m_944 = 0x3ec if unset, and return the HRESULT.
-// Otherwise recompute the color masks; if that fails, latch m_944 = 0x3ed if
+// GetErrorString, latch m_lastError = 0x3ec if unset, and return the HRESULT.
+// Otherwise recompute the color masks; if that fails, latch m_lastError = 0x3ed if
 // unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
 // ---------------------------------------------------------------------------
 RVA(0x00143c20, 0x84)
 i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    i32 hr = m_surf0->SetDisplayMode(a0, a1, a2, a3, a4);
+    i32 hr = m_device->SetDisplayMode(a0, a1, a2, a3, a4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
-        if (m_944 == 0) {
-            m_944 = 0x3ec;
+        if (m_lastError == 0) {
+            m_lastError = 0x3ec;
         }
         return hr;
     }
     if (ComputeColorMasks() == 0) {
         hr = static_cast<i32>(0x80004005);
-        if (m_944 == 0) {
-            m_944 = 0x3ed;
+        if (m_lastError == 0) {
+            m_lastError = 0x3ed;
         }
     }
     return hr;

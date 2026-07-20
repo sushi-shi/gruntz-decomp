@@ -23,7 +23,8 @@
 struct AttractActorList;
 struct CVariantSlot;
 struct CActEntry;
-class CDirectDrawMgr;
+class CDDrawPtrCollections;
+typedef CDDrawPtrCollections CDirectDrawMgr; // one class, both spellings
 struct CVariantSlot;
 struct CDropEntry;
 struct CVariantSlot;
