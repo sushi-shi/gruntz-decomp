@@ -23,7 +23,8 @@
 #include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString letter temp (/GX) + operator+
 
-#include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)
+#include <Gruntz/GameMode.h>  // canonical CBootyState : CState (the folded booty state)
+#include <Gruntz/GruntzMgr.h> // the real g_gameReg class (the Booty view is dissolved)
 #include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views
 
 #include <rva.h>
@@ -61,19 +62,18 @@ char g_secretChars[] = "WARP"; // "WARP"
 // identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
-    if (g_gameReg->m_levelRecord->m_suppressGate != 0) {
+    if (g_gameReg->m_scoreHud->m_08 != 0) {
         return 1;
     }
-    if (g_gameReg->m_levelRecord->m_levelIndex > 0x24) {
+    if (g_gameReg->m_scoreHud->m_count > 0x24) {
         return 1;
     }
-    i32 sel = g_gameReg->m_selSource->GetSel(0, 0);
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (sel == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        m_animSprites[i] = g_gameReg->m_soundHolder->m_spriteFactory
-                               ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        m_animSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_animSprites[i] == 0) {
             return 0;
         }
@@ -83,13 +83,12 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->m_drawActive = 1;
         m_animSprites[i]->m_drawFillCmd = 0xa;
         m_animSprites[i]->m_drawFillArg = sel;
-        m_visSprites[i] = g_gameReg->m_soundHolder->m_spriteFactory
-                              ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        m_visSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_visSprites[i] == 0) {
             return 0;
         }
         static CString buf;
-        const char* prefix = (i < (g_gameReg->m_levelRecord->m_levelIndex - 1) % 4 + 1)
+        const char* prefix = (i < (g_gameReg->m_scoreHud->m_count - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
         buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
@@ -129,11 +128,11 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 //      `??_C@` string-constant labels (docs/patterns/jumptable-data-overlap.md).
 RVA(0x0001b690, 0x7bf)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
-    BzLevelRecord* rec = g_gameReg->m_levelRecord;
-    if (rec->m_suppressGate != 0) {
+    CBattlezData* rec = g_gameReg->m_scoreHud;
+    if (rec->m_08 != 0) {
         return 1;
     }
-    i32 n = rec->m_levelIndex;
+    i32 n = rec->m_count;
     if (n > 0x24) {
         return 1;
     }
@@ -145,12 +144,12 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         // ---- init path ----
         if (n < 0x24) {
             for (i32 i = 0; i < 4; i++) {
-                if (i <= (g_gameReg->m_levelRecord->m_levelIndex - 1) % 4) {
+                if (i <= (g_gameReg->m_scoreHud->m_count - 1) % 4) {
                     m_visSprites[i]->m_stateFlags |= 1;
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~1;
-                    if ((reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->GetRecordValue(i) == 0) {
+                    if ((g_gameReg->m_scoreHud)->GetRecordValue(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
@@ -197,27 +196,27 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if ((reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->GetRecordValue(m_stepIndex) == 0) {
+        if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) == 0) {
             m_soundStarted = 1;
-            BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
-            if (ss->m_playing == 0) {
-                BzSoundEntry* res = 0;
-                ss->m_findTable.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+            CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+            if (ss->m_30 == 0) {
+                LeafCue* res = 0;
+                ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
                 if (res != 0) {
-                    (reinterpret_cast<LeafCue*>(res))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
         }
     }
 
     if (m_soundStarted != 0) {
-        BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
-        BzSoundEntry* res = 0;
-        ss->m_findTable.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+        CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+        LeafCue* res = 0;
+        ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
         if (res == 0) {
             return 1;
         }
-        if ((reinterpret_cast<DirectSoundMgr*>(res->m_player))->IsPlaying() != 0) {
+        if (res->m_10->IsPlaying() != 0) {
             m_visSprites[m_stepIndex]->m_stateFlags ^= 1;
         } else {
             m_visSprites[m_stepIndex]->m_stateFlags |= 1;
@@ -241,19 +240,18 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            i32 sel = g_gameReg->m_selSource->GetSel(0, 0);
+            i32 sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != 0) {
-                if ((reinterpret_cast<CBattlezData*>(g_gameReg->m_levelRecord))->GetRecordValue(m_stepIndex) != 0) {
-                    BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
-                    if (ss->m_playing == 0) {
-                        BzSoundEntry* res = 0;
-                        ss->m_findTable.Lookup("GAME_FLAGRISE", reinterpret_cast<void*&>(res));
+                if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) != 0) {
+                    CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+                    if (ss->m_30 == 0) {
+                        LeafCue* res = 0;
+                        ss->m_10.Lookup("GAME_FLAGRISE", reinterpret_cast<void*&>(res));
                         if (res != 0 && g_sndEnabled != 0) {
                             u32 clock = g_killCueClock;
-                            if (clock - res->m_lastPlayed >= res->m_interval) {
-                                res->m_lastPlayed = clock;
-                                (reinterpret_cast<DSoundCloneInst*>(res->m_player))
-                                    ->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                            if (clock - res->m_14 >= res->m_18) {
+                                res->m_14 = clock;
+                                res->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }
@@ -272,7 +270,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         x = g_randSeed;
                     }
                     g_randSeed = x * 214013 + 2531011;
-                    g_gameReg->m_cuePlayer
+                    g_gameReg->m_cueSink
                         ->SpawnVoiceDriver(
                             0,
                             0x3bf,
@@ -291,9 +289,9 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
-                    g_gameReg->m_cuePlayer
+                    g_gameReg->m_cueSink
                         ->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
-                    if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
+                    if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                         m_stepIndex = 4;
                         return 1;
                     }
@@ -312,7 +310,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         CGameObject* spr = m_animSprites[m_stepIndex];
         if (spr->m_1a0.m_28 != 0 && spr->m_1a0.m_20 == 0) {
             m_stepIndex++;
-            if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
+            if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                 m_stepIndex = 4;
                 return 1;
             }

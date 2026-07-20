@@ -21,24 +21,10 @@
 
 class CString; // <Mfc.h>; used by reference in BzState::FormatHudText's declaration
 
-// The per-level record (g_gameReg->m_levelRecord). m_recordBase points at the
-// group-records table GetRecordValue indexes (0x40-byte stride, +0x28 payload).
-struct BzLevelRecord {
-    u8* m_recordBase;   // +0x00  group-records table base (raw record band)
-    i32 m_levelIndex;   // +0x04  area/level index
-    i32 m_suppressGate; // +0x08  suppress gate
-    i32 m_worldFlag;    // +0x0c  world/training flag
-    char m_pad10[0x44 - 0x10];
-    i32 m_progressFlag; // +0x44  progress flag
-};
-SIZE_UNKNOWN(BzLevelRecord);
-
-// The top-level window holder reached via g_gameReg->m_wnd; m_hwnd is its HWND.
-struct BzWndHolder {
-    char m_pad00[0x4];
-    i32 m_hwnd; // +0x04  HWND
-};
-SIZE_UNKNOWN(BzWndHolder);
+// (BzLevelRecord is GONE - it was CBattlezData: +0x00 records base / +0x04 count
+// (the (count-1)/4 group-of-4 math), +0x44 lands on m_scoreValue exactly.
+// BzWndHolder is GONE - it was CGameWnd (m_hwnd @+0x04, <Wap32/Wap32.h>).)
+#include <Gruntz/BattlezData.h> // CBattlezData (g_gameReg->m_scoreHud)
 
 // The idle/walking grunt sprite (m_trailSprites[]/m_visSprites[]/m_animSprites[]
 // elements) is the shared CGameObject (<Gruntz/UserLogic.h>): ApplyName (0x150540)
@@ -48,69 +34,19 @@ SIZE_UNKNOWN(BzWndHolder);
 // as "sprite id"/"timer" - the stored values are onscreen coordinates; its +0x1a0
 // completion sub is the canonical m_1c0/m_1c8 anim-sink pair).
 
-// The playback sub-object of a sound entry (BzSoundEntry::m_player).
-struct BzSoundPlayer {};
-SIZE_UNKNOWN(BzSoundPlayer);
+// (BzSoundPlayer/BzSoundEntry/BzSoundSet are GONE - the "sound set" at
+// g_gameReg->m_world->+0x28 IS CDDrawSubMgrLeafScan (same CMapStringToPtr @+0x10 -
+// the mfc_class-audited Lookup 0x1b8438 band - busy gate m_30, stream m_2c), and its
+// cached entries ARE LeafCue (m_10 player / m_14 stamp / m_18 interval, PlayIfElapsed).)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the real keyed sound-cue cache
+#include <Gruntz/LeafCue.h>               // the real cue element
 
-// A named ambient sound entry. m_player is the playback sub-object; m_lastPlayed /
-// m_interval rate-limit the cue.
-struct BzSoundEntry {
-    char m_pad00[0x10];
-    BzSoundPlayer* m_player; // +0x10  player sub-object
-    u32 m_lastPlayed;        // +0x14  last-played stamp
-    u32 m_interval;          // +0x18  interval
-};
-SIZE_UNKNOWN(BzSoundEntry);
-
-struct BzSoundSet {
-    char m_pad00[0x10];
-    CMapStringToPtr m_findTable;  // +0x10  the name->cue find table (real MFC, 0x1c B)
-    char m_pad2c[0x30 - 0x2c];
-    i32 m_playing; // +0x30  is-playing gate
-};
-SIZE_UNKNOWN(BzSoundSet);
-
-// g_gameReg->m_soundHolder->m_spriteFactory - the canonical CDDrawChildGroup
-// (<Gruntz/SpriteFactory.h>) the booty setup builds its per-player idle grunts
-// through (CreateSprite @0x1597b0).
-struct BzSoundHolder {
-    char m_pad00[0x8];
-    CDDrawChildGroup* m_spriteFactory; // +0x08  sprite/animation factory
-    char m_pad0c[0x28 - 0xc];
-    BzSoundSet* m_soundSet; // +0x28
-};
-SIZE_UNKNOWN(BzSoundHolder);
-
-// g_gameReg->m_cuePlayer IS the CGruntSpawnConfig positional sound-cue player;
-// g_gameReg->m_selSource IS the CSpriteRefTable selection resolver (GetSel). (The
-// former empty BzCuePlayer/BzSelSource placeholder views are dissolved.)
-class CGruntSpawnConfig; // <Gruntz/GruntSpawnConfig.h>
-class CSpriteRefTable;   // <Gruntz/SpriteRefTable.h>
-
-// The game registry singleton (*0x64556c). m_levelRecord is the per-level record;
-// m_soundHolder the ambient sound holder; m_cuePlayer the sound-cue player;
-// m_selSource the selection source; m_wnd the top-level window holder.
-struct BzGameReg {
-    char m_pad00[0x4];
-    BzWndHolder* m_wnd; // +0x04
-    char m_pad08[0x30 - 0x8];
-    BzSoundHolder* m_soundHolder; // +0x30
-    char m_pad34[0x60 - 0x34];
-    CGruntSpawnConfig* m_cuePlayer; // +0x60  positional sound-cue player
-    char m_pad64[0x74 - 0x64];
-    CSpriteRefTable* m_selSource; // +0x74  selection resolver (GetSel)
-    char m_pad78[0x7c - 0x78];
-    BzLevelRecord* m_levelRecord; // +0x7c
-    // *g_gameReg's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
-    // so g_gameReg->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
-    // (The booty idle tick's per-area click relay reaches the singleton's real
-    // CGruntzMgr::PassClickToPlayState @0x8d780 via the g_gameReg -> CGruntzMgr cast -
-    // DISASM-PROVEN receiver: ecx = *0x24556c, not `this`.)
-    i32 ChangeState_8fab0(i32 arg); // 0x08fab0
-};
-
-extern "C" BzGameReg* g_gameReg; // *0x24556c (Booty view of the singleton)
-SIZE_UNKNOWN(BzGameReg);
+// (BzGameReg is GONE - the eighth and last registry view of the *0x64556c
+// CGruntzMgr singleton: m_wnd==the CGameMgr base's m_gameWnd, m_soundHolder==m_world,
+// m_cuePlayer==m_cueSink, m_selSource==m_spriteFactory, m_levelRecord==m_scoreHud -
+// all same offsets, several same TYPES; the empty BzCuePlayer/BzSelSource placeholder
+// views dissolved with it. ChangeState_8fab0 was already on CGruntzMgr.)
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 // DISSOLVED (Fable A2, 2026-07-14): the "BzSink" HUD message-sink view WAS the
 // canonical CDDrawSurfaceMgr (CState::m_c == g_gameReg->m_30) - proven by the

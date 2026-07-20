@@ -9,11 +9,9 @@
 #ifndef GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 #define GRUNTZ_GRUNTZ_LOGICFNTABLE_H
 
-#include <Wap32/ZVec.h> // the zDArray<member-fn-ptr> base
+#include <Gruntz/TypeKeyColl.h> // zDArray (owns the shared Construct @0x8710)
 
-struct LogicFnTable : public _zdvec {
-    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
-};
+struct LogicFnTable : public zDArray {};
 
 // The eye-candy per-coordinate dispatch table (0x646060; DATA home + construction in
 // src/Gruntz/LogicDispatchInit.cpp). Declared here so FrontCandyAni references it from

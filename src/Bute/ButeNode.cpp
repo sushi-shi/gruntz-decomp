@@ -124,7 +124,7 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 // zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
 // destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
 // the ultimate polymorphic base.
-// @data-symbol: ??_7zPTree@@6BCContainerErr@@@ 0x001e94ac
+// @data-symbol: ??_7zPTree@@6BzErrHandling@@@ 0x001e94ac 0x4
 // @data-symbol: ??_7zPTree@@6BCButeNodeEntry@@@ 0x001e949c 0x4
 RVA(0x00174d70, 0x70)
 CButeNode::~CButeNode() {}
