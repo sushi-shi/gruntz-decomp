@@ -390,6 +390,11 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                     slot = 0;
                 }
             } else {
+                // m_488 is the documented MFC DUAL-BAND object: retail calls BOTH the
+                // CPtrArray band (GetAt/SetSize, typed below/in Play.cpp) and the
+                // CDWordArray band (RemoveAt/InsertAt/SetAtGrow, the casts here) on this
+                // ONE array - byte-identical classes, both COMDAT bands linked. The casts
+                // are band selectors, retail-faithful (same verdict as the m_10map pair).
                 slot = static_cast<i32*>(self->m_488.GetAt(0));
                 (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(0, 1);
                 i32 c = self->m_49c - 1;
