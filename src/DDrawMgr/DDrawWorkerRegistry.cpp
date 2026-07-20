@@ -358,8 +358,22 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i
     return 0;
 }
 
+// CLoadable::IsLoaded (0x155700): the slot-5 base default - loaded iff the owner
+// context (m_0c) is set and m_04 != -1. Identical body to CDDrawWorker's override
+// below (MSVC5 has no /OPT:ICF, so both are emitted). Un-phantoms the slot.
+RVA(0x00155700, 0x16)
+i32 CLoadable::IsLoaded() {
+    if (m_0c != 0 && m_04 != -1) {
+        return 1;
+    }
+    return 0;
+}
+
 // (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, @rva-symbol-bound at the
 // file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
+// (CLoadable::Unload @0x155740 is a bare `ret` = i32-slot no-op; MSVC5 rejects an
+//  empty-body non-void fn (C2561) and the slot can't be void (derived overrides
+//  return their eax residue), so this base default stays declared-only.)
 
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {
