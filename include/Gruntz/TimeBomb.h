@@ -37,10 +37,8 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     i32 m_fastPhase; // +0x54  0 = slow phase (re-arms to fast on expiry), 1 = fast phase (detonates)
-    i32 m_startTimeLo; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
-    i32 m_startTimeHi; // +0x5c  (hi dword)
-    i32 m_durationLo;  // +0x60  phase duration (lo dword of the i64)
-    i32 m_durationHi;  // +0x64  (hi dword)
+    i64 m_startTime; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
+    i64 m_duration;  // +0x60  phase duration (lo dword of the i64)
 };
 VTBL(CTimeBomb, 0x1e771c);
 SIZE(CTimeBomb, 0x68);

@@ -1166,18 +1166,13 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo = m_object->m_120;
-        m_durationHi = 0;
-        m_startTimeLo = g_frameTime;
-        m_startTimeHi = 0;
+        m_duration = static_cast<u32>(m_object->m_120);
+        m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 1;
     } else {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
-        m_durationLo =
-            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0));
-        m_durationHi = 0;
-        m_startTimeLo = g_frameTime;
-        m_startTimeHi = 0;
+        m_duration = static_cast<u32>(static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0)));
+        m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 0;
     }
     i32 cx = m_object->m_screenX >> 5;
@@ -1248,17 +1243,14 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_startTimeLo) < *reinterpret_cast<i64*>(&m_durationLo)) {
+    if (static_cast<i64>(g_frameTime) - m_startTime < m_duration) {
         return 0;
     }
     if (m_fastPhase == 0) {
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo =
-            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8));
-        m_durationHi = 0;
-        m_startTimeLo = static_cast<i32>(g_frameTime);
-        m_startTimeHi = 0;
+        m_duration = static_cast<u32>(static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8)));
+        m_startTime = static_cast<u32>(static_cast<i32>(g_frameTime));
         m_fastPhase = 1;
         return 0;
     }
@@ -1290,11 +1282,11 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
     if (mode == 4) {
-        sa->Write(&m_startTimeLo, 8);
-        sa->Write(&m_durationLo, 8);
+        sa->Write(&m_startTime, 8);
+        sa->Write(&m_duration, 8);
     } else if (mode == 7) {
-        sa->Read(&m_startTimeLo, 8);
-        sa->Read(&m_durationLo, 8);
+        sa->Read(&m_startTime, 8);
+        sa->Read(&m_duration, 8);
     }
     if (mode == 4) {
         sa->Write(&m_fastPhase, 4);
