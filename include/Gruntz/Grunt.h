@@ -1818,6 +1818,6 @@ extern char s_codeQ[]; // "Q" (0x0060dc08)
 // just naming a dead datum - dissolving it needs a funclet-level byte comparison
 // against retail's unwind path (what table retail's funclet stamps, and whether
 // retail's linker kept a discarded-??_7 twin). Deferred to that focused audit.
-RELOC_VTBL(CGruntMovingBase, 0x001e8754);
+// (RELOC_VTBL removed - TESTING whether the annotation is gate-load-bearing)
 
 #endif // SRC_GRUNTZ_GRUNT_H

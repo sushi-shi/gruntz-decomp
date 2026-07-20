@@ -7,6 +7,7 @@
 // SBI_RectOnly.h); THIS TU models the thin chain class of <Gruntz/SBI_Image.h>.
 #include <Mfc.h>
 
+#define SBI_RECTONLY_OWN_CTOR // this TU emits the out-of-line ??0CSBI_RectOnly COMDAT (0x101fa0)
 #include <Gruntz/SBI_Image.h> // the frameless chain (CSBI_RectOnly : CStatusBarItem)
 #include <Ints.h>
 #include <rva.h>

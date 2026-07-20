@@ -39,7 +39,16 @@ class CImage; // the latched/resolved m_30 frame (<Image/CImage.h>)
 // deriving CStatusBarItem directly (matching-neutral) while recovering the real level.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-    CSBI_RectOnly();                   // 0x00101fa0 (SBI_RectOnlyBase.cpp) - m_8 = 1
+    // INLINE in the header (like CStatusBarItem's ctor): MSVC5's per-site inline
+    // BUDGET reproduces retail's split for free - it INLINES this tiny body at the
+    // simple leaf `new` sites (BuildStatusBarTabs) and CALLS the out-of-line COMDAT
+    // where the enclosing ctor's budget is exhausted (the CSBI_MenuItem base chain).
+    // SBI_RectOnlyBase.cpp #defines SBI_RECTONLY_OWN_CTOR to emit the 0x101fa0 COMDAT.
+#ifdef SBI_RECTONLY_OWN_CTOR
+    CSBI_RectOnly(); // 0x00101fa0 (out-of-line COMDAT, SBI_RectOnlyBase.cpp)
+#else
+    CSBI_RectOnly() { m_kind = 1; }
+#endif
     virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
     // (NO slot-1 override: sema class says vtbl 0x1eab8c slot [1] is INHERITED
     // (CStatusBarItem::SerializeFields, thunk 0x1848). The `SbiVfunc0` the old merged TU

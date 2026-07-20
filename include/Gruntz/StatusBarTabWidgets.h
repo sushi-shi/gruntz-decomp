@@ -62,20 +62,12 @@
 // consistent: an incomplete ctor does NOT bound an object.
 // SIZE IS 0x30, NOT 0x3c - and the ALLOCATION SITE IN THIS TU says so. The three rect
 // sub-widgets BuildStatusBarTabs creates are allocated `push 0x30; call ??2@YAPAXI@Z`
-// (@0xffe46 / 0xffed5 / 0xfff4b), while the five menu items in the SAME function are
-// `push 0x3c` (@0xfffd9 / 0x100071 / 0x100105 / 0x100199 / 0x100275). So the +0x30/+0x34/
-// +0x38 trio belongs to the MENU ITEM ONLY - exactly as the old base's own comment said
-// ("fields end at +0x30 (the rect-widget size); the menu-item's m_30/m_34/m_38 live in
-// CSBI_MenuItem") before it handed them to the rect widget anyway, on the strength of a
-// DIFFERENT allocation site (0x10237d, in CStatusBarMgr::LoadTabSprites - which allocates
-// a different, larger object). We were over-allocating these by 12 bytes.
-class CSbiRectSub : public CStatusBarItem { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
-public:
-    CSbiRectSub() {
-        m_kind = 1;
-    }
-};
-SIZE(CSbiRectSub, 0x30);
+// (CSbiRectSub is GONE - it was CSBI_RectOnly (the real 0x30 game class, vtable
+// 0x5eab8c): the two-class split existed only to reproduce retail's INLINED leaf-
+// widget ctor at BuildStatusBarTabs vs the OUT-OF-LINE base-subobject ctor 0x101fa0
+// in the CSBI_MenuItem chain. One retail class -> one C++ class; the leaf sites now
+// call the real ctor (a compiler-inlining artifact we cannot steer, not a 2nd class).
+#include <Gruntz/SBI_Image.h> // the canonical CSBI_RectOnly the tab builders `new`
 
 // The tag-2 menu item is the CANONICAL CSBI_MenuItem (<Gruntz/SBI_MenuItem.h>,
 // included above): : CSBI_Image : CSBI_RectOnly : CStatusBarItem, vtable 0x5eab4c,

@@ -75,6 +75,6 @@ struct DnnOwner {
 
 // HandlerA9E00's record ctor stamps 0x1e859c == CDoNothingNormal's bound table
 // (DnnRec IS the DoNothingNormal record); its ??_7 reloc-masks it.
-RELOC_VTBL(DnnRec, 0x001e859c);
+// (RELOC_VTBL removed - TESTING whether the annotation is gate-load-bearing)
 
 #endif // GRUNTZ_LOGICWORKERHANDLERSAVIEWS_H

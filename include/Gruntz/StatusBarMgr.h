@@ -973,6 +973,6 @@ inline CStatusBarMgr::CStatusBarMgr() {
 // cannot come from one plain inline definition under our cl; until that mechanism
 // is found, the CSbiRectSub view IS the inline flavor and this alias is the
 // measured-necessary record of its vtable identity.
-RELOC_VTBL(CSbiRectSub, 0x001eab8c);
+
 
 #endif // GRUNTZ_SBI_RECTONLY_H

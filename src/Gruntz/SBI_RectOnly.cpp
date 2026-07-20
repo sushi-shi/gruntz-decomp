@@ -2782,7 +2782,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     CStatusBarItem* it;
 
     // ---- rect-only sub-widget A (id 0x259) ----
-    it = new CSbiRectSub;
+    it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
             code,
@@ -2800,7 +2800,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
 
     // ---- rect-only sub-widget B (id 0x25a) ----
-    it = new CSbiRectSub;
+    it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
             code,
@@ -2818,7 +2818,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
 
     // ---- rect-only sub-widget C (id 0x25b) ----
-    it = new CSbiRectSub;
+    it = new CSBI_RectOnly;
     if (!it->Setup(
             this,
             code,
