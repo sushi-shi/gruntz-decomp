@@ -1207,14 +1207,12 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         }
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
-        m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
-        m_idleDelayHi = 0;
-        m_idleAnchorLo = static_cast<i32>(g_frameTime);
-        m_idleAnchorHi = 0;
+        m_idleDelay = static_cast<u32>(g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710));
+        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         m_freezeDelayDone = 0;
     }
     if (m_freezeDelayDone == 0) {
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleAnchorLo) >= *reinterpret_cast<i64*>(&m_idleDelayLo)) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGameObject* h = m_10;

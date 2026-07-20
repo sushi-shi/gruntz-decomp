@@ -912,10 +912,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_38->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
-        m_idleDelayLo = static_cast<i32>((tt >> 1));
-        m_idleDelayHi = 0;
-        m_idleAnchorLo = static_cast<i32>(g_frameTime);
-        m_idleAnchorHi = 0;
+        m_idleDelay = static_cast<u32>(static_cast<i32>((tt >> 1)));
+        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         return 0;
     }
 
@@ -1174,15 +1172,11 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         // Re-anchor the idle timer to a randomized IdleDelay window.
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
-        m_idleWindowLo = 0x3a98;
-        m_idleWindowHi = 0;
-        m_idleTimerLo = static_cast<i32>(g_frameTime);
-        m_idleTimerHi = 0;
+        m_idleWindow = static_cast<u32>(0x3a98);
+        m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
-        m_idleDelayLo = GruntRand() % n + 0x7530;
-        m_idleDelayHi = 0;
-        m_idleAnchorLo = static_cast<i32>(g_frameTime);
-        m_idleAnchorHi = 0;
+        m_idleDelay = static_cast<u32>(GruntRand() % n + 0x7530);
+        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
         // Single geometry source: re-arm it (no flag set).
@@ -1198,10 +1192,8 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
-            m_idleDelayLo = GruntRand() % (d - 0x4e1f) + 0x4e20;
-            m_idleDelayHi = 0;
-            m_idleAnchorLo = static_cast<i32>(g_frameTime);
-            m_idleAnchorHi = 0;
+            m_idleDelay = static_cast<u32>(GruntRand() % (d - 0x4e1f) + 0x4e20);
+            m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         }
     } else {
         // Cycle among the available sources, with the focused-grunt cue.
@@ -1331,7 +1323,7 @@ void CGrunt::ResolveEntranceArrival() {
 
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleTimerLo) >= *reinterpret_cast<i64*>(&m_idleWindowLo)) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
         CGruntzMgr* g = g_gameReg;
         i32 mode = g->m_134;
         if (mode != 1) {
@@ -1385,7 +1377,7 @@ tail:
         }
         return;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleAnchorLo) >= *reinterpret_cast<i64*>(&m_idleDelayLo) && ready == 1) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
 }
@@ -1691,8 +1683,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleAnchorLo);
-    if (elapsed2 >= *reinterpret_cast<i64*>(&m_idleDelayLo)) {
+    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_idleAnchor;
+    if (elapsed2 >= m_idleDelay) {
         CGameObject* h = m_10;
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
