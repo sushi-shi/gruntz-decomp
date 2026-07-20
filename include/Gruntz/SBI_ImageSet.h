@@ -55,7 +55,9 @@ public:
         OVERRIDE; // slot 11
     // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
     // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.
-    virtual void SbiSlot12(i32 a);
+    // slot 12 (+0x30; shared default body 0xe74c0 - the level that grows the vtable
+    // to 13): the (on) notify hook the status-bar walkers drive on the notify fields.
+    virtual void Notify(i32 on);
     // (0xe74f0 was declared here as a non-virtual `Serialize` - it IS the slot-1
     //  SerializeFields override above. The 0xe6e40 base leg is CSBI_Image's - SBI_Image.h.)
     // slot-3 body (vtbl 0x1eac4c slot [3], thunk 0x2a09): reset the resolved record +

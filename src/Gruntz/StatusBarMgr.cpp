@@ -307,7 +307,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_notify0 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_notify0 = it;
             it = new CSBI_Image;
             r.left = bx;
             r.top = by + 0xfb;
@@ -329,7 +329,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_notify2 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_notify2 = it;
             it = new CSBI_Image;
             r.left = bx + 0x48;
             r.top = by + 0xd3;
@@ -351,7 +351,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_notify3 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_notify3 = it;
             // BELT: 3 unrolled CSBI_ImageSet belt segments (config-d from m_groupSlots[0].m_value/m_groupSlots[1].m_value/m_groupSlots[2].m_value,
             // cached to m_308/m_30c/m_310).
             it = new CSBI_ImageSet;
@@ -375,7 +375,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[0] = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
             it = new CSBI_ImageSet;
             r.left = bx + 0x40;
             r.top = by + 0x11c;
@@ -397,7 +397,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[1] = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
             it = new CSBI_ImageSet;
             r.left = bx + 0x68;
             r.top = by + 0x11c;
@@ -419,7 +419,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[2] = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
             // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
             // rect members m_itemRectL..m_520 + bx/by; config source m_extraNotifyArg0, id 0xdf.
             it = new CSBI_ImageSet;
@@ -443,7 +443,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify0 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
             it->m_4 = 0;
             // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
             // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
@@ -576,7 +576,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_notify1 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_notify1 = it;
             // Conveyor top (CSBI_ImageSetAni via its slot-13 Init).
             ani = new CSBI_ImageSetAni;
             r.left = bx;
@@ -624,7 +624,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify1 = reinterpret_cast<CSbiSlotPtr*>(it);
+            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
             it->m_4 = 0;
             // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
             ani = new CSBI_ImageSetAni;

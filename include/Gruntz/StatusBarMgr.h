@@ -53,6 +53,7 @@
 #ifndef GRUNTZ_CSTATUSBARMGR_H
 #define GRUNTZ_CSTATUSBARMGR_H
 
+class CSBI_ImageSet; // notify-field element (slot-12 Notify receiver)
 class CWarpStoneFly;
 // The per-tab menu-item widget. Only pointers are needed here, so it is forward-
 // declared: the real chain class lives in <Gruntz/SBI_MenuItem.h>, and the host TU's
@@ -573,7 +574,7 @@ public:
     CSBI_MenuItem* m_tabSprite13; // +0x1fc
     CSBI_MenuItem* m_tabSprite14; // +0x200
     // +0x204: the five slot notifiers (ArmSlot indexes `[ecx+eax*4+0x204]`, idx 0..4).
-    CSbiSlotPtr* m_slotNotify[5];   // +0x204 .. +0x218
+    CSBI_ImageSet* m_slotNotify[5];   // +0x204 .. +0x218
     CSbiGaugeNotify* m_gaugeNotify; // +0x218  gauge notifier (vfunc 0x28)
     CSbiGaugeNotify* m_gaugeSink;   // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
     // +0x220: the five 0x18-byte slot records. ArmSlot: `lea edx,[eax+eax*2];
@@ -603,7 +604,7 @@ public:
     // out-of-line element ctor 0xc86d0 with m_hlGrid (the vector-ctor iterator takes
     // that one function pointer for BOTH arrays). Layout is unchanged.
     CSbiHlRow m_groupSlots[3];     // +0x2c0
-    CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
+    CSBI_ImageSet* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
     i32 m_hudRectB_x;                    // +0x318  HUD-rect group B (x0)
     i32 m_hudRectB_y;                    // +0x31c  (y0)
@@ -624,18 +625,18 @@ public:
     i32 m_tabsBuilt;                     // +0x358  tab-widgets-built flag
     i32 m_activeSlot;                    // +0x35c  active-slot index (-1 = none)
     i32 m_pendingHlRow;                  // +0x360  pending highlight row index (-1 none)
-    CSbiSlotPtr* m_notify0;              // +0x364  notify targets (slot 0x28)
-    CSbiSlotPtr* m_notify1;              // +0x368
-    CSbiSlotPtr* m_notify2;              // +0x36c
-    CSbiSlotPtr* m_notify3;              // +0x370
+    CStatusBarItem* m_notify0;              // +0x364  notify targets (slot 0x28)
+    CStatusBarItem* m_notify1;              // +0x368
+    CStatusBarItem* m_notify2;              // +0x36c
+    CStatusBarItem* m_notify3;              // +0x370
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
-    CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
+    CSBI_ImageSet* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
     i32 m_machinePhase;          // +0x4c8  (set to 1 by InitTabRects)
     i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
     i64 m_beltLast;              // +0x4d0  belt-drop timer last draw-clock (64-bit)
     i64 m_beltInterval;          // +0x4d8  belt-drop timer interval (64-bit)
-    CSbiSlotPtr* m_extraNotify0; // +0x4e0
+    CSBI_ImageSet* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4e8 - 0x4e4];
     i32 m_fallActive;            // +0x4e8  falling-item active flag
     i32 m_extraNotifyArg1;       // +0x4ec  arg for (*m_extraNotify1)->Notify
@@ -643,7 +644,7 @@ public:
     i32 m_fallLastHi;            // +0x4f4
     i32 m_fallDelay;             // +0x4f8  falling-item config delay
     i32 m_fallDelayHi;           // +0x4fc
-    CSbiSlotPtr* m_extraNotify1; // +0x500
+    CSBI_ImageSet* m_extraNotify1; // +0x500
     i32 m_fallRectL;             // +0x504  falling-item rect A (relative)
     i32 m_fallRectT;             // +0x508
     i32 m_fallRectR;             // +0x50c
@@ -670,7 +671,7 @@ public:
     i32 m_destructWarnLastHi;     // +0x564
     i32 m_destructWarnDelay;      // +0x568  destruct-warning delay (config)
     i32 m_destructWarnDelayHi;    // +0x56c
-    CSbiSlotPtr* m_modeNotify;    // +0x570  notify target
+    CSBI_ImageSet* m_modeNotify;    // +0x570  notify target
     i32 m_modeArmed;              // +0x574
     i32 m_578;                    // +0x578  (cleared on multiplayer/battlez reset)
     i32 m_battlezPct[38];         // +0x57c  running-sum item-percent table (battlez cfg)

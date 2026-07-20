@@ -3,6 +3,7 @@
 // the declared-only empty form that diverged across objs. Must precede any SBI include.
 #define SBI_DTOR_CHAIN
 #include <Mfc.h>                 // afx-first umbrella (CByteArray/CPtrList consumers below)
+#include <Gruntz/SBI_ImageSet.h> // complete CSBI_ImageSet (slot-12 Notify receivers)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
@@ -418,19 +419,19 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 RVA(0x00106a00, 0xbf)
 void CStatusBarMgr::NotifyAllSlots() {
     if (m_notify0) {
-        m_notify0->Refresh();
+        m_notify0->SetSubtype();
     }
     if (m_notify2) {
-        m_notify2->Refresh();
+        m_notify2->SetSubtype();
     }
     if (m_notify3) {
-        m_notify3->Refresh();
+        m_notify3->SetSubtype();
     }
     if (m_extraNotify0 && m_extraNotifyArg0) {
         m_extraNotify0->Notify(m_extraNotifyArg0);
     }
 
-    CSbiSlotPtr** p = &m_hlNotify[4]; // group B base; ±4 elements reach groups A / C
+    CSBI_ImageSet** p = &m_hlNotify[4]; // group B base; ±4 elements reach groups A / C
     i32* h = &m_hlGrid[4].m_handle;   // anchor on the handle field (+0x3dc)
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
@@ -447,7 +448,7 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 
     if (m_notify1) {
-        m_notify1->Refresh();
+        m_notify1->SetSubtype();
     }
     if (m_extraNotify1) {
         m_extraNotify1->Notify(m_extraNotifyArg1);
@@ -1270,18 +1271,18 @@ i32 CStatusBarMgr::Deactivate() {
 
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiSlotPtr* cur = static_cast<CSbiSlotPtr*>(m_tabLists[0].GetNext(n));
+        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(m_tabLists[0].GetNext(n));
         if (cur) {
-            cur->Refresh();
+            cur->SetSubtype();
         }
     }
 
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiSlotPtr* cur = static_cast<CSbiSlotPtr*>(tab.GetNext(m));
+        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(tab.GetNext(m));
         if (cur) {
-            cur->Refresh();
+            cur->SetSubtype();
         }
     }
 
@@ -1494,7 +1495,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     // slot's m_value (+4) is the animation frame, m_8/m_c (+8/+c) the 64-bit
     // start clock, and the notifier's slot-12 Notify(frame) is the set-frame hook.
     // (Folded off the fake EngineLabelBacklog view onto the canonical class.)
-    CSbiSlotPtr** slot = m_slotNotify;
+    CSBI_ImageSet** slot = m_slotNotify;
     CSbiSlot* tab = m_slots;
     i32 n = 5;
     do {
@@ -1521,7 +1522,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             }
             if (frame != tab->m_value) {
                 tab->m_value = frame;
-                CSbiSlotPtr* w = *slot;
+                CSBI_ImageSet* w = *slot;
                 if (w) {
                     w->Notify(frame);
                 }
@@ -1555,7 +1556,7 @@ RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     // Every offset is the canonical member - the grinder conveyor
     // is the m_fall* band and the rect-target widget is m_extraNotify1's own
-    // +0x14 screen rect (CSbiSlotPtr::m_rect14 - the same slot-map rect band
+    // +0x14 screen rect (CSBI_ImageSet::m_rect14 - the same slot-map rect band
     // CSbiRect carries as m_xLo..m_yHi).
     if (m_fallActive == 0) {
         return;
@@ -1597,11 +1598,11 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallRectT = newLo;
             i32 newHi = m_fallRectB + speed;
             m_fallRectB = newHi;
-            CSbiSlotPtr* w = m_extraNotify1;
+            CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
                 i32 sx = m_10;
                 i32 sy = m_rect14.m_0;
-                i32* p = w->m_rect14;
+                i32* p = &w->m_rect14.m_0; // the 4-int SbiRect block, walked flat
                 p[0] = m_fallRectL + sx;
                 p[1] = sy + newLo;
                 p[2] = m_fallRectR + sx;
@@ -1754,7 +1755,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
                 m_destructWarnDelayHi = 0;
                 m_destructWarnLast = g_frameTime;
                 m_destructWarnLastHi = 0;
-                CSbiSlotPtr* w = m_modeNotify;
+                CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(m_modeState);
                 }
@@ -1773,7 +1774,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
                 m_destructWarnDelayHi = 0;
                 m_destructWarnLast = g_frameTime;
                 m_destructWarnLastHi = 0;
-                CSbiSlotPtr* w = m_modeNotify;
+                CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(m_modeState);
                 }
@@ -3126,10 +3127,10 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
     if (m_extraNotify0) {
         i32 x = m_10;
         i32 y = m_rect14.m_0;
-        m_extraNotify0->m_rect14[0] = m_itemRectL + x;
-        m_extraNotify0->m_rect14[1] = m_itemRectT + y;
-        m_extraNotify0->m_rect14[2] = m_itemRectR + x;
-        m_extraNotify0->m_rect14[3] = m_itemRectB + y;
+        m_extraNotify0->m_rect14.m_0 = m_itemRectL + x;
+        m_extraNotify0->m_rect14.m_4 = m_itemRectT + y;
+        m_extraNotify0->m_rect14.m_8 = m_itemRectR + x;
+        m_extraNotify0->m_rect14.m_c = m_itemRectB + y;
     }
     RefreshFallRect();
     i32 c = m_rezTick;
@@ -3564,7 +3565,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                             m_destructWarnLastHi = 0;
                             sm->ArmSnapshot(1, 0xbb7);
                         } else {
-                            CSbiSlotPtr* n = m_modeNotify;
+                            CSBI_ImageSet* n = m_modeNotify;
                             m_destructWarnActive = 0;
                             m_modeState = 1;
                             if (n) {
@@ -3799,7 +3800,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
 RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
-    CSbiSlotPtr** notify = m_groupNotify;
+    CSBI_ImageSet** notify = m_groupNotify;
     SbiPhaseSlot* ph = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
     do {
         switch (ph->m_state) {
@@ -4283,10 +4284,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 
     if (m_extraNotify0) {
         if (rectFlag) {
-            m_extraNotify0->m_rect14[0] = m_itemRectL + m_10;
-            m_extraNotify0->m_rect14[1] = m_itemRectT + m_rect14.m_0;
-            m_extraNotify0->m_rect14[2] = m_itemRectR + m_10;
-            m_extraNotify0->m_rect14[3] = m_itemRectB + m_rect14.m_0;
+            m_extraNotify0->m_rect14.m_0 = m_itemRectL + m_10;
+            m_extraNotify0->m_rect14.m_4 = m_itemRectT + m_rect14.m_0;
+            m_extraNotify0->m_rect14.m_8 = m_itemRectR + m_10;
+            m_extraNotify0->m_rect14.m_c = m_itemRectB + m_rect14.m_0;
         }
         if (refreshFlag) {
             RefreshFallRect();
@@ -4314,7 +4315,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallDelayHi = 0;
     m_fallLast = g_frameTime;
     m_fallLastHi = 0;
-    CSbiSlotPtr* n = m_extraNotify1;
+    CSBI_ImageSet* n = m_extraNotify1;
     i32 l = a2 - 0xc;
     i32 t = a3 - 0xc;
     i32 rr = a2 + 0xc;
@@ -4325,11 +4326,11 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallRectB = b;
     if (n) {
         i32 x = m_10;
-        n->m_rect14[0] = l + x;
-        n->m_rect14[2] = x + rr;
+        n->m_rect14.m_0 = l + x;
+        n->m_rect14.m_8 = x + rr;
         i32 y = m_rect14.m_0;
-        n->m_rect14[1] = t + y;
-        n->m_rect14[3] = y + b;
+        n->m_rect14.m_4 = t + y;
+        n->m_rect14.m_c = y + b;
     }
     RefreshFallRect();
     return 1;

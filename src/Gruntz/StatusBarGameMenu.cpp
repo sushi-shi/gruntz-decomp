@@ -239,12 +239,12 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_modeNotify = reinterpret_cast<CSbiSlotPtr*>(it);
+        m_modeNotify = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
         if (g_gameReg->m_134 != 1) {
             it->m_4 = 0;
             m_modeState = 7;
             m_destructWarnActive = 0;
-            (reinterpret_cast<CSBI_ImageSet*>(m_modeNotify))->SbiSlot12(7);
+            m_modeNotify->Notify(7);
         }
         return;
     }

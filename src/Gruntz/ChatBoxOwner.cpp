@@ -169,7 +169,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 //   // teardown: destruct ~8 CString temps in reverse EH-state order, free the
 //   // two RezAlloc'd scratch buffers (0x1b9b82), reset the bute reader (0x170330).
 //   reset:  m_14->ClearInput();                          // 0x167c -> 0x442b
-//   done:   m_14->Refresh(); this->m_10 = 0;             // 0x25c2
+//   done:   m_14->SetSubtype(); this->m_10 = 0;             // 0x25c2
 //
 // @early-stop
 // DEFERRED to the final sweep (ALL-OR-NOTHING /GX FRAME wall). This is a 1857-byte
