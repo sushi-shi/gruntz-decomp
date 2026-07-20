@@ -125,13 +125,10 @@ public:
 };
 SIZE_UNKNOWN(CMultiPlayer);
 
-// The report gate's player-info sub-object (gate->m_70): per-slot occupancy probes
-// the multiplayer-start dialog reads to derive the player count. Reloc-masked
-// __thiscall leaves in the DirectPlay session cluster (0x1794xx).
-class CMultiPlayerInfo {
-public:
-};
-SIZE_UNKNOWN(CMultiPlayerInfo);
+// (CMultiPlayerInfo is GONE - the "player-info sub-object"'s reloc-masked 0x1794xx
+// probes ARE InterfaceObject's IsInterface1-5 (0x1794b0..): the gate's m_70 holds
+// the DirectPlay service-provider node, not a new class.)
+class InterfaceObject; // <Net/InterfaceObject.h>
 
 // The join/report gate at CMulti+0x524 - IDENTITY RESOLVED (netmgr-vs-cmulti):
 // this IS the real CNetMgr (RTTI CNetMgr : CObject, ??_7 @0x1ea42c, virtual dtor
@@ -162,7 +159,7 @@ public:
     // returns the player record pointer (0 = fail). Reloc-masked.
     i32 CreatePlayer(void* name, i32 b, i32 c); // 0x178cb0
     char m_pad04[0x70 - 0x4];
-    CMultiPlayerInfo* m_playerInfo; // +0x70  per-slot player-info sub-object (start-dialog probes)
+    InterfaceObject* m_playerInfo; // +0x70  the DirectPlay service-provider node (IsInterface1-5 probes)
     CMultiPlayer* m_player;         // +0x74  the player StartTitle opened (OpenPlayer result)
     i32 m_78; // +0x78  reset to 0 by CMultiStartDlg::DoDataExchange (load pass)
 };

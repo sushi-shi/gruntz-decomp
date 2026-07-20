@@ -696,8 +696,12 @@ public:
 
     char m_pad4[0x20 - 0x4]; // +0x04
     __POSITION* m_20;        // +0x20  cached list position
+    char m_pad24[0x34 - 0x24];
+    char* m_profile; // +0x34  keyed player-name/profile text (LB_ADDSTRING source;
+                     //        NetFormatKeyed reads the NAME key out of it - the ex
+                     //        CNetPlayerDesc facet, merged)
 };
-SIZE_UNKNOWN(CNetPlayerObj); // polymorphic-dispatch view (only +0x20 pinned); size TBD
+SIZE_UNKNOWN(CNetPlayerObj); // the payload node (+0x20 position + +0x34 profile pinned)
 // No VTBL: this is a slot-dispatch modeling view (virtuals undefined -> cl emits no
 // vtable here); its concrete retail vtable is not confidently pinned in this TU.
 
@@ -962,16 +966,9 @@ struct CNetGameMgr {
 SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); retail size TBD
 
 // The DirectPlay player-descriptor node the +0x38 player CObList holds (the
-// payload PopulatePlayerList lists into the Win32 list box). Only its +0x34
-// name-string pointer is touched (LB_ADDSTRING). This is a DISTINCT object from
-// the GruntzPlayer slot CNetGameMgr::FindPlayer returns (whose name is the +0x4
-// CString / GetName @0x1f450) - the chat broadcaster uses GruntzPlayer directly.
-struct CNetPlayerDesc {
-    char m_pad0[0x34];
-    char* m_profile; // +0x34  keyed player-name/profile text (LB_ADDSTRING source;
-                     //         NetFormatKeyed reads the NAME key out of it)
-};
-SIZE_UNKNOWN(CNetPlayerDesc); // descriptor-node view (only +0x34 name pinned); size TBD
+// (CNetPlayerDesc is GONE - the "+0x34 descriptor" was the OTHER facet of the SAME
+// CNetPlayerObj payload node the list's m_data already points at. Still a DISTINCT
+// object from the GruntzPlayer slot - that verdict stands.)
 
 // FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
 // 0x64c3f0). External, no body -> the call reloc-masks.

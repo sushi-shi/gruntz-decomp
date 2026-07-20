@@ -254,20 +254,20 @@ i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_multiState;
     i32 count = 5;
-    CMultiPlayerInfo* pi = reg->m_netGate->m_playerInfo;
+    InterfaceObject* pi = reg->m_netGate->m_playerInfo;
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
-        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface1()) {
+        if (pi->IsInterface1()) {
             count = 1;
         }
-        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface2()) {
+        if (pi->IsInterface2()) {
             count = 2;
         }
-        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface3()) {
+        if (pi->IsInterface3()) {
             count = 3;
         }
-        if ((reinterpret_cast<InterfaceObject*>(pi))->IsInterface4()) {
+        if (pi->IsInterface4()) {
             count = 4;
         }
     }

@@ -489,10 +489,10 @@ void CNetMgr::PopulatePlayerList(void* hList) {
 
     CNetListNode* node = reinterpret_cast<CNetListNode*>(m_players.GetHeadPosition());
     m_playerSelId = node;
-    CNetPlayerDesc* payload;
+    CNetPlayerObj* payload;
     if (node != 0) {
         m_playerSelId = node->m_next;
-        payload = reinterpret_cast<CNetPlayerDesc*>(node->m_data);
+        payload = node->m_data;
     } else {
         payload = 0;
     }
@@ -504,7 +504,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
         }
         CNetListNode* cur = m_playerSelId;
         if (cur != 0) {
-            payload = reinterpret_cast<CNetPlayerDesc*>(cur->m_data);
+            payload = cur->m_data;
             m_playerSelId = cur->m_next;
         } else {
             payload = 0;

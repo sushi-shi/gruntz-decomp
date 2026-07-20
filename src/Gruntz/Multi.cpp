@@ -2089,10 +2089,10 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     CNetListNode* node = reinterpret_cast<CNetListNode*>(sess->m_players.GetHeadPosition());
     sess->m_playerSelId = node;
-    CNetPlayerDesc* player;
+    CNetPlayerObj* player;
     if (node) {
         sess->m_playerSelId = node->m_next;
-        player = reinterpret_cast<CNetPlayerDesc*>(node->m_data);
+        player = node->m_data;
     } else {
         player = 0;
     }
@@ -2109,7 +2109,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         }
         CNetListNode* pos = sess->m_playerSelId;
         if (pos) {
-            player = reinterpret_cast<CNetPlayerDesc*>(pos->m_data);
+            player = pos->m_data;
             sess->m_playerSelId = pos->m_next;
         } else {
             player = 0;
