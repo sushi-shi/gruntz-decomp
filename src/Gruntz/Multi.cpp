@@ -22,6 +22,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
+#include <Net/NetMgr.h> // CNetPlayerListNode - the real OpenPlayer result (ex CMultiPlayer view)
 #include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
 #include <Gruntz/GruntzMgr.h>        // CGruntzMgr - the REAL CState::m_4 game mgr
@@ -1072,7 +1073,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     m_netGate->Activate();
-    CMultiPlayer* player = m_netGate->OpenPlayer(desc->m_8);
+    CNetPlayerListNode* player = m_netGate->OpenPlayer(desc->m_8);
     if (player == 0) {
         return 0;
     }
@@ -1086,6 +1087,13 @@ i32 CMulti::StartTitle() {
     // real bodies below (ex the "RebindHostAlt"/"RebindHost" alias decls).
     i32 r = m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer();
     return r ? 1 : 0;
+}
+
+// CNetPlayerListNode::GroupName (0xb76a0): return the session/group name copied into
+// the descriptor at m_desc.m_lpszName (+0x34). Out-of-lined into this TU (lone caller).
+RVA(0x000b76a0, 0x4)
+char* CNetPlayerListNode::GroupName() {
+    return m_desc.m_lpszName;
 }
 
 // ===========================================================================

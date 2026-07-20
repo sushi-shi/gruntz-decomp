@@ -32,11 +32,10 @@ public:
 
 void SetActiveAndFocus(void* hwnd); // 0x00518930
 
-class CMultiPlayer {
-public:
-    char* GroupName(); // 0x004b76a0
-};
-SIZE_UNKNOWN(CMultiPlayer);
+// CMultiPlayer DISSOLVED: it was a fake view of CNetPlayerListNode (<Net/NetMgr.h>) -
+// OpenPlayer @0x5786d0 RezAlloc's a 0x58-byte node with vptr 0x5f0760 (the real
+// CNetPlayerListNode), and GroupName @0xb76a0 just reads m_desc.m_lpszName @+0x34.
+class CNetPlayerListNode; // <Net/NetMgr.h>  OpenPlayer result
 
 class InterfaceObject; // <Net/InterfaceObject.h>
 
@@ -48,14 +47,14 @@ public:
     virtual ~CMultiReportGate();          // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
     void Activate();                      // 0x578750
-    CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
+    CNetPlayerListNode* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
     void M178a80(void* h, i32 a);         // 0x578a80  watchdog re-probe (EnumGroupsRange)
     // Create a session player from `name` (the CNetMgr wrapper method, RVA 0x178cb0);
     // returns the player record pointer (0 = fail). Reloc-masked.
     i32 CreatePlayer(void* name, i32 b, i32 c); // 0x178cb0
     char m_pad04[0x70 - 0x4];
     InterfaceObject* m_playerInfo; // +0x70  the DirectPlay service-provider node (IsInterface1-5 probes)
-    CMultiPlayer* m_player;         // +0x74  the player StartTitle opened (OpenPlayer result)
+    CNetPlayerListNode* m_player;   // +0x74  the player StartTitle opened (OpenPlayer result)
     i32 m_78; // +0x78  reset to 0 by CMultiStartDlg::DoDataExchange (load pass)
 };
 

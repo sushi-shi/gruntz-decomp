@@ -483,6 +483,9 @@ public:
     // was a duplicate view of THIS class (its m_type/m_buf34/m_buf38 were
     // m_desc.m_dwSize/m_lpszName/m_lpszPassword), not a base - DISSOLVED.
     void FreeStrings(); // 0x179680
+    // Return the deep-copied session/group name (m_desc.m_lpszName @+0x34). Body is
+    // out-of-lined into the Multi TU (its lone caller, CMulti::StartTitle @0xb72c0).
+    char* GroupName(); // 0xb76a0
 };
 SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
