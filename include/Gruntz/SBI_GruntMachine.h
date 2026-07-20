@@ -55,7 +55,7 @@ class CSBI_GruntMachine : public CStatusBarItem {
 public:
     // tag 9 (the Resource-tab MACHINE widget). Built through BuildResourceTabStatusBar.
     CSBI_GruntMachine() {
-        m_8 = 9;
+        m_kind = 9;
         m_34 = 0;
         m_3c = 0;
         m_44 = 0;

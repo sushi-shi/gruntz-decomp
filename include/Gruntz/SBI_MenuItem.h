@@ -112,7 +112,7 @@ public:
     // SbiTabzDialogViews.h) carried it, so every canonical `new CSBI_MenuItem` site
     // under-emitted the four stores. Recovered here as part of dissolving that view.
     CSBI_MenuItem() {
-        m_8 = 2;
+        m_kind = 2;
         m_34 = 0;
         m_30 = 0;
         m_38 = 0;

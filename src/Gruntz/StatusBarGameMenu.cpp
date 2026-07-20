@@ -139,7 +139,7 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
-            it->m_4 = 0;
+            it->m_enabled = 0;
         }
 
         // ---- SAVE ----
@@ -157,7 +157,7 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
-            it->m_4 = 0;
+            it->m_enabled = 0;
         }
 
         // ---- SETTINGS ----
@@ -199,7 +199,7 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
         if (g_gameReg->m_134 == 2) {
-            it->m_4 = 0;
+            it->m_enabled = 0;
         }
 
         // ---- QUIT (inlined ctor in retail) ----
@@ -241,7 +241,7 @@ void CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_modeNotify = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
         if (g_gameReg->m_134 != 1) {
-            it->m_4 = 0;
+            it->m_enabled = 0;
             m_modeState = 7;
             m_destructWarnActive = 0;
             m_modeNotify->Notify(7);

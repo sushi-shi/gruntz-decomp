@@ -104,7 +104,7 @@ public:
         m_timerWindowLo = 0;
         m_timerAnchorHi = 0;
         m_timerWindowHi = 0;
-        m_8 = 6;
+        m_kind = 6;
         m_statusGlyphLatched = 0;
         m_abilityGlyphLatched = 0;
         m_overrideGlyphLatched = 0;

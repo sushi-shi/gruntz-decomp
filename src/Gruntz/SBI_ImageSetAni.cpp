@@ -52,15 +52,15 @@ i32 CSBI_ImageSetAni::Init(
 ) {
     if (host != 0 && owner != 0) {
         m_2c = owner;
-        m_10 = a3;
+        m_tab = a3;
         m_24 = host;
         m_28 = 0;
-        m_4 = 1;
+        m_enabled = 1;
         m_rect14.m_0 = rc.left;
         m_rect14.m_4 = rc.top;
         m_rect14.m_8 = rc.right;
         m_rect14.m_c = rc.bottom;
-        m_c = a2;
+        m_cmd = a2;
         if (key != 0) {
             CImageSet* tbl = 0;
             (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(tbl));

@@ -63,8 +63,8 @@ public:
     CStatusBarItem();
 #else
     CStatusBarItem() {
-        m_4 = 0;
-        m_8 = 0;
+        m_enabled = 0;
+        m_kind = 0;
         m_24 = 0;
         m_28 = 0;
     }
@@ -109,15 +109,17 @@ public:
     // `xor eax,eax; ret 0xc` => i32-return, 3 stack args, `return 0`. No SBI leaf
     // overrides them. Out-of-line default bodies in SBI_RectOnly.cpp.
     virtual i32 SbiSlot6(i32, i32, i32); // slot 6  0x100530
-    virtual i32 SbiSlot7(i32, i32, i32); // slot 7  0x100550
+    virtual i32 Click1c(i32 a, i32 b, i32 c); // slot 7 (+0x1c)  0x100550  click handler A
     virtual i32 SbiSlot8(i32, i32, i32); // slot 8  0x100570
-    virtual i32 SbiSlot9(i32, i32, i32); // slot 9  0x100590
+    virtual i32 Click24(i32 a, i32 b, i32 c); // slot 9 (+0x24)  0x100590  click handler B
     virtual void SetSubtype();           // slot 10
 
-    i32 m_4;  // +0x04
-    i32 m_8;  // +0x08
-    i32 m_c;  // +0x0c  Setup arg3
-    i32 m_10; // +0x10  Setup arg4
+    // Semantic names recovered from the ex-CSbiRect reader view (the hit-test code
+    // reads these same slots as enabled/kind/cmd/tab + the x/y span rect).
+    i32 m_enabled; // +0x04  enabled gate (Setup seeds 0/1)
+    i32 m_kind;    // +0x08  widget kind tag
+    i32 m_cmd;     // +0x0c  Setup arg3: command id
+    i32 m_tab;     // +0x10  Setup arg4: owning tab index
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
     SbiRect m_rect14; // +0x14  Setup args 5..8

@@ -21,7 +21,7 @@ public:
     // ctor leg the Resource-tab conveyor builders fold at each new-site.
     CSBI_ImageSetAni() {
         m_30 = 0;
-        m_8 = 8;
+        m_kind = 8;
         m_34 = 0;
         m_44 = 0;
         m_3c = 0x64;
@@ -102,7 +102,7 @@ class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
 public:
     // tag 5 (the Statz per-grunt arrow); same ani window seed as the base.
     CSBI_StatzTabArrow() {
-        m_8 = 5;
+        m_kind = 5;
     }
     // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::ResetCounters
     // (0xe7400), called three times: own level + the folded ImageSetAni + ImageSet

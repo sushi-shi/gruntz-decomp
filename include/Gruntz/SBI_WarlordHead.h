@@ -72,7 +72,7 @@ public:
     // tag 0xb (the multiplayer WARLORDHEAD slot).
     CSBI_WarlordHead() {
         m_30 = 0;
-        m_8 = 0xb;
+        m_kind = 0xb;
         m_34 = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1ead24, 13 slots; overrides 0/1/5/11).

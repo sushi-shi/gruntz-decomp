@@ -148,33 +148,11 @@ SIZE_UNKNOWN(CSbiSeqHolder);
 // (reloc-masked
 // call rel32 to the real rvas bound in SBI_MenuItem.cpp).
 
-// A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
-// object (vptr at +0) with the m_enabled gate at +4, m_xLo/m_xHi the x span, and
-// m_yLo/m_yHi the y span. Two click handlers dispatch through vtable slots 7/9.
-class CSbiRect {
-public:
-    virtual void Destroy();                    // slot 0  scalar-deleting dtor
-    virtual void Serialize();                  // slot 1
-    virtual void Setup();                      // slot 2
-    virtual void ClearFrame();                 // slot 3
-    virtual void Poll();                       // slot 4
-    virtual void Tick();                       // slot 5
-    virtual void HitHandlerA();                // slot 6
-    virtual void Click1c(i32 a, i32 b, i32 c); // +0x1c (slot 7)
-    virtual void HitHandlerC();                // slot 8
-    virtual void Click24(i32 a, i32 b, i32 c); // +0x24 (slot 9)
-    i32 m_enabled;                             // +0x04 enabled (== the toggle "active" flag)
-    i32 m_kind;                                // +0x08 widget kind tag
-    i32 m_cmd;                                 // +0x0c command id
-    i32 m_tab;                                 // +0x10 owning tab index
-    i32 m_xLo;                                 // +0x14 x lo
-    i32 m_yLo;                                 // +0x18 y lo
-    i32 m_xHi;                                 // +0x1c x hi
-    i32 m_yHi;                                 // +0x20 y hi
-    char m_pad24[0x44 - 0x24];                 // +0x24
-    i32 m_toggleValue; // +0x44  latched statz-toggle value (LoadStatzTabToggleSprite;
-                       //        ex the CStatzTabItem view of this same +0x150 element)
-};
+// (CSbiRect is GONE - it was the CStatusBarItem widget scheme under semantic names,
+// and those names are the CANONICAL ones now: m_enabled/m_kind/m_cmd/m_tab live on
+// CStatusBarItem, the x/y span is m_rect14, and the +0x44 "toggle value" is
+// CSBI_SideTab::m_44 (the sample mode the statz toggle latches).)
+class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
 SIZE_UNKNOWN(CSbiRect);
 
 // The ConfigureRect host (its arg2), its lookup map + record come from the shared
@@ -470,7 +448,7 @@ public:
     // 0x2559). Reloc-masked until reconstructed.
     i32 ClickAt_ff9d0(i32 a, i32 x, i32 y);
     i32 ClickToggle(i32 x, i32 y, i32 z);
-    CSbiRect* HitTestRects(i32 x, i32 y);
+    CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);
     void ClearTabGroup();
     i32 ClearStat(i32 idx);
@@ -539,7 +517,7 @@ public:
     i32 m_activeTab;              // +0x10c  active tab index (1..5)
     i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
-    CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
+    CSBI_SideTab* m_hitRects[15]; // +0x150  the statz side-tab widgets (hit-test targets)
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
     CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
     CSBI_MenuItem* m_tabSprite1;  // +0x1cc  ClearTabSprites in declaration order)

@@ -41,8 +41,8 @@ void CStatusBarItem::SetSubtype() {
 // is installed. Byte-identical to the COMDAT copy of the header's inline ctor.
 RVA(0x001005d0, 0x17)
 CStatusBarItem::CStatusBarItem() {
-    m_4 = 0;
-    m_8 = 0;
+    m_enabled = 0;
+    m_kind = 0;
     m_24 = 0;
     m_28 = 0;
 }
@@ -87,11 +87,11 @@ i32 CStatusBarItem::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, 
     }
     m_2c = owner;
     m_24 = host;
-    m_10 = a4;
+    m_tab = a4;
     m_rect14.m_0 = rc.m_0;
     m_rect14.m_4 = rc.m_4;
     m_rect14.m_8 = rc.m_8;
     m_rect14.m_c = rc.m_c;
-    m_c = a3;
+    m_cmd = a3;
     return 1;
 }

@@ -72,7 +72,7 @@
 class CSbiRectSub : public CStatusBarItem { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
 public:
     CSbiRectSub() {
-        m_8 = 1;
+        m_kind = 1;
     }
 };
 SIZE(CSbiRectSub, 0x30);

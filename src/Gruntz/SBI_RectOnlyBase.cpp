@@ -22,7 +22,7 @@
 // vtable. See the banner of <Gruntz/StatusBarMgr.h>.
 RVA(0x00101fa0, 0x1b)
 CSBI_RectOnly::CSBI_RectOnly() {
-    m_8 = 1;
+    m_kind = 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -44,13 +44,13 @@ i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i
     }
     m_2c = owner;
     m_24 = host;
-    m_10 = a4;
+    m_tab = a4;
     m_rect14.m_0 = rc.m_0;
     m_rect14.m_4 = rc.m_4;
     m_rect14.m_8 = rc.m_8;
     m_rect14.m_c = rc.m_c;
-    m_c = a3;
-    m_4 = 1;
+    m_cmd = a3;
+    m_enabled = 1;
     return 1;
 }
 

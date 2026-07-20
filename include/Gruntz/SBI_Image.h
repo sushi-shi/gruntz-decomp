@@ -77,7 +77,7 @@ public:
     // tag 3 with m_30 cleared, on top of the out-of-line CSBI_RectOnly base ctor (0x101fa0)
     // retail calls first. Inline, so the builders fold it at the new-site like retail.
     CSBI_Image() {
-        m_8 = 3;
+        m_kind = 3;
         m_30 = 0;
     }
     virtual ~CSBI_Image() OVERRIDE; // slot 0

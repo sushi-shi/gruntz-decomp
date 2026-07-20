@@ -60,7 +60,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             return 0;
         }
         m_tabLists[0].AddTail(newobj);
-        m_hitRects[i] = reinterpret_cast<CSbiRect*>(newobj); // CSbiRect models the SAME 10-slot widget scheme CSBI_SideTab derives (CStatusBarItem); unify next
+        m_hitRects[i] = newobj;
         i++;
     }
     return 1;

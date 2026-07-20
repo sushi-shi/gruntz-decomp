@@ -96,17 +96,17 @@ i32 CSBI_MenuItem::SetupImage(
     }
     m_2c = owner; // owning tab host (CMiTabHost view at the deref sites)
     m_24 = host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
-    m_10 = a4;
-    m_8 = 2;
+    m_tab = a4;
+    m_kind = 2;
     m_30 = 0;
     m_rect14.m_0 = rc.left;
     m_28 = 0;
     m_rect14.m_4 = rc.top;
     m_rect14.m_8 = rc.right;
     m_rect14.m_c = rc.bottom;
-    m_c = cmd;
+    m_cmd = cmd;
     m_34 = 1;
-    m_4 = 1;
+    m_enabled = 1;
     return ResolveFrame(reinterpret_cast<i32>(key), frame) != 0;
 }
 
@@ -211,7 +211,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c); // the mgr through its tab-host view (fold TODO)
     if (state == 3) {
         (reinterpret_cast<CStatusBarMgr*>(host))->ClearTabGroup();
-        host->m_10c = m_c;
+        host->m_10c = m_cmd;
         (reinterpret_cast<CStatusBarMgr*>(host))->LoadTabSprites();
         (reinterpret_cast<CStatusBarMgr*>(host))->Deactivate();
     } else if (state == 2 && a) {
@@ -364,18 +364,18 @@ i32 CStatusBarItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) 
     }
     switch (kind) {
         case 7:
-            ar->Read(&m_4, 4);
-            ar->Read(&m_8, 4);
-            ar->Read(&m_c, 4);
-            ar->Read(&m_10, 4);
+            ar->Read(&m_enabled, 4);
+            ar->Read(&m_kind, 4);
+            ar->Read(&m_cmd, 4);
+            ar->Read(&m_tab, 4);
             ar->Read(&m_rect14, 0x10);
             ar->Read(&m_28, 4);
             break;
         case 4:
-            ar->Write(&m_4, 4);
-            ar->Write(&m_8, 4);
-            ar->Write(&m_c, 4);
-            ar->Write(&m_10, 4);
+            ar->Write(&m_enabled, 4);
+            ar->Write(&m_kind, 4);
+            ar->Write(&m_cmd, 4);
+            ar->Write(&m_tab, 4);
             ar->Write(&m_rect14, 0x10);
             ar->Write(&m_28, 4);
             break;

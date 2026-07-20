@@ -65,16 +65,16 @@ i32 CSBI_ImageSet::SetupImage(
         return 0;
     }
     m_2c = owner;
-    m_10 = obj;
+    m_tab = obj;
     i32* rc = reinterpret_cast<i32*>(&m_rect14);
     m_24 = host;
     m_28 = 0;
-    m_4 = 1;
+    m_enabled = 1;
     rc[0] = rect.left;
     rc[1] = rect.top;
     rc[2] = rect.right;
     rc[3] = rect.bottom;
-    m_c = cmd;
+    m_cmd = cmd;
     if (key == 0) {
         return 0;
     }

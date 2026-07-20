@@ -98,16 +98,16 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     CDDrawSurfaceMgr* h = host;
     m_2c = owner;
-    m_10 = p4;
+    m_tab = p4;
     m_24 = h;
     m_28 = 0;
-    m_4 = 1;
+    m_enabled = 1;
     m_rect14.m_0 = g.left;
     m_rect14.m_4 = g.top;
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
     CImageSet* rec = 0;
-    m_c = p3;
+    m_cmd = p3;
     h->m_imageRegistry->m_10map.Lookup(
         "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
         reinterpret_cast<CObject*&>(rec)
@@ -441,18 +441,18 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         return 0;
     }
     m_24 = host;
-    m_10 = p4;
+    m_tab = p4;
     m_2c = parent;
     m_rect14.m_0 = p5;
     m_28 = 0;
     m_rect14.m_4 = p6;
     m_rect14.m_8 = p7;
     m_rect14.m_c = p8;
-    m_c = p3;
+    m_cmd = p3;
     if (p12 == 0) {
-        m_4 = 0;
+        m_enabled = 0;
     } else {
-        m_4 = 1;
+        m_enabled = 1;
     }
     m_rowIndex = p10;
     m_40 = p11;
@@ -802,16 +802,16 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     }
     CDDrawSurfaceMgr* h = host;
     m_2c = owner;
-    m_10 = p4;
+    m_tab = p4;
     m_24 = h;
     m_28 = 0;
-    m_4 = 1;
+    m_enabled = 1;
     m_rect14.m_0 = g.left;
     m_rect14.m_4 = g.top;
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
     CSprite* head = 0;
-    m_c = p3;
+    m_cmd = p3;
     h->m_imageRegistry->m_10map.Lookup(key, reinterpret_cast<CObject*&>(head));
     m_glyphMap = head;
     if (head == 0) {

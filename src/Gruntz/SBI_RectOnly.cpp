@@ -163,7 +163,7 @@ i32 CStatusBarItem::SbiSlot6(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100550, 0x5)
-i32 CStatusBarItem::SbiSlot7(i32, i32, i32) {
+i32 CStatusBarItem::Click1c(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100570, 0x5)
@@ -171,7 +171,7 @@ i32 CStatusBarItem::SbiSlot8(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100590, 0x5)
-i32 CStatusBarItem::SbiSlot9(i32, i32, i32) {
+i32 CStatusBarItem::Click24(i32, i32, i32) {
     return 0;
 }
 
@@ -310,10 +310,10 @@ RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
         for (i32 i = 0; i < 15; i++) {
-            CSbiRect* p = m_hitRects[i];
+            CSBI_SideTab* p = m_hitRects[i];
             if (p && p->m_enabled) {
                 i32 hit =
-                    p->m_enabled && x < p->m_xHi && x >= p->m_xLo && y < p->m_yHi && y >= p->m_yLo;
+                    p->m_enabled && x < p->m_rect14.m_8 && x >= p->m_rect14.m_0 && y < p->m_rect14.m_c && y >= p->m_rect14.m_4;
                 if (hit) {
                     return i;
                 }
@@ -1434,7 +1434,7 @@ i32 CStatusBarMgr::Activate() {
 // 0x104e60 is a real CStatusBarMgr method (ToggleStat calls it unqualified on `this`),
 // typed against the canonical layout (m_statFlags @+0x114, m_hitRects @+0x150,
 // m_statObj @+0x18c, m_activeTab, m_position). The +0x150 element's toggle facet is the
-// same CSbiRect (m_enabled/+0x44 m_toggleValue). The +0x68 "unit-record table"
+// same CSbiRect (m_enabled/+0x44 m_44). The +0x68 "unit-record table"
 // IS CTriggerMgr - its +0x1c slot array is m_grid.
 RVA(0x00104e60, 0xed)
 i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
@@ -1447,10 +1447,10 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         return 0;
     }
 
-    CSbiRect* item = m_hitRects[idx];
+    CSBI_SideTab* item = m_hitRects[idx];
     i32 one = 1;
     if (item) {
-        item->m_toggleValue = value;
+        item->m_44 = value;
         item->m_enabled = one;
         if (m_activeTab == one) {
             m_statObj[idx]->Toggle(m_position, one);
@@ -1557,7 +1557,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     // Every offset is the canonical member - the grinder conveyor
     // is the m_fall* band and the rect-target widget is m_extraNotify1's own
     // +0x14 screen rect (CSBI_ImageSet::m_rect14 - the same slot-map rect band
-    // CSbiRect carries as m_xLo..m_yHi).
+    // CSbiRect carries as m_rect14.m_0..m_rect14.m_c).
     if (m_fallActive == 0) {
         return;
     }
@@ -1824,12 +1824,12 @@ i32 CStatusBarMgr::GetActiveValue() {
 // same regalloc coin-flip as ResetWidgets/ClearTabGroup, not source-steerable. Logic
 // byte-correct; deferred to the final sweep.
 RVA(0x000ffcb0, 0xe2)
-CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
+CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiRect* r = static_cast<CSbiRect*>(m_tabLists[0].GetNext(n));
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            i32 hit = x < r->m_rect14.m_8 && x >= r->m_rect14.m_0 && y < r->m_rect14.m_c && y >= r->m_rect14.m_4;
             if (hit) {
                 return r;
             }
@@ -1838,9 +1838,9 @@ CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     CPtrList& tab = m_tabLists[m_activeTab];
     n = tab.GetHeadPosition();
     while (n) {
-        CSbiRect* r = static_cast<CSbiRect*>(tab.GetNext(n));
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            i32 hit = x < r->m_rect14.m_8 && x >= r->m_rect14.m_0 && y < r->m_rect14.m_c && y >= r->m_rect14.m_4;
             if (hit) {
                 return r;
             }
@@ -1848,9 +1848,9 @@ CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     }
     n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiRect* r = static_cast<CSbiRect*>(m_tabLists[6].GetNext(n));
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            i32 hit = x < r->m_rect14.m_8 && x >= r->m_rect14.m_0 && y < r->m_rect14.m_c && y >= r->m_rect14.m_4;
             if (hit) {
                 return r;
             }
@@ -1885,7 +1885,7 @@ void CStatusBarMgr::InitTabRects() {
 // window, then forward the offset command id.
 RVA(0x000ff9f0, 0xe4)
 i32 CStatusBarMgr::ClickToggle(i32 x, i32 y, i32 z) {
-    CSbiRect* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestRects(x, y);
     if (r == 0) {
         ClearTabSprites(-1);
         return 1;
@@ -2340,7 +2340,7 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
 // deferred to the final sweep.
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
-    CSbiRect* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestRects(x, y);
     if (r == 0) {
         return 1;
     }
@@ -2377,9 +2377,9 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
 // the draw-clock window; then clear the stat flag. Returns 1.
 RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearStat(i32 idx) {
-    CSbiRect* r = m_hitRects[idx];
+    CSBI_SideTab* r = m_hitRects[idx];
     if (r != 0) {
-        r->m_toggleValue = 0;
+        r->m_44 = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             (reinterpret_cast<CStatusBarMgr*>(m_statObj[idx]))->ResetGroupA();
@@ -2422,14 +2422,14 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (m_pendingHlRow == -1) {
         return 0;
     }
-    CSbiRect* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestRects(x, y);
     if (r == 0) {
         return 0;
     }
     if (r->m_cmd != 0xce && r->m_cmd != 0xd0) {
         return 0;
     }
-    i32* rc = &r->m_xLo; // rect cursor {xLo,yLo,xHi,yHi}
+    i32* rc = &r->m_rect14.m_0; // rect cursor {xLo,yLo,xHi,yHi}
     i32 cx = x;
     i32 lo = rc[0] + 0x1b;
     i32 xHi = rc[2];
@@ -2932,7 +2932,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             v = 0;
         }
         mp->m_30 = v;
-        mp->m_4 = 0;
+        mp->m_enabled = 0;
         mp->SetSubtype(); // slot 10 (the view called it "Refresh")
     }
 

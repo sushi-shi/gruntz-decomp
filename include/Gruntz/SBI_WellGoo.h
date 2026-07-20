@@ -64,7 +64,7 @@ class CSBI_WellGoo : public CSBI_Image {
 public:
     // tag 7 (the Gruntz-tab WELLGOO widget).
     CSBI_WellGoo() {
-        m_8 = 7;
+        m_kind = 7;
         m_30 = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eadfc, 12 slots; overrides 0/1/2/3/4/5).

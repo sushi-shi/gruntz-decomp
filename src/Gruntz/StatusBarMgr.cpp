@@ -444,7 +444,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[3].AddTail(it);
             m_extraNotify0 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
-            it->m_4 = 0;
+            it->m_enabled = 0;
             // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
             // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
             // The config sources are read off a column-1 pointer (&m_3dc[row]) at
@@ -625,7 +625,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[3].AddTail(it);
             m_extraNotify1 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
-            it->m_4 = 0;
+            it->m_enabled = 0;
             // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
             ani = new CSBI_ImageSetAni;
             r.left = bx;
