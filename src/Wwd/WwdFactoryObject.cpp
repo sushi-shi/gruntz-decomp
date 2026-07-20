@@ -202,7 +202,7 @@ void CGameObject::Notify_15b650(void* p) {
         AnimWorkerObj* h = *reinterpret_cast<AnimWorkerObj**>((o + 0x80));
         if (h != 0) {
             *reinterpret_cast<void**>((o + 0x84)) = p;
-            h->m_notify(reinterpret_cast<CGameObject*>(this));
+            h->m_notify(this);
         }
     }
 }

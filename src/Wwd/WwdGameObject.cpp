@@ -1005,7 +1005,7 @@ i32 CGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker80(reinterpret_cast<CGameObject*>(found)) == 0) {
+        if (this->EnsureWorker80(static_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }
@@ -1014,7 +1014,7 @@ i32 CGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker88(reinterpret_cast<CGameObject*>(found)) == 0) {
+        if (this->EnsureWorker88(static_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }
@@ -1023,7 +1023,7 @@ i32 CGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         CObject* found = 0;
         OwnerMgr()->m_workerCache->m_10.Lookup(name, found);
-        if (this->EnsureWorker90(reinterpret_cast<CGameObject*>(found)) == 0) {
+        if (this->EnsureWorker90(static_cast<CGameObject*>(found)) == 0) {
             return 0;
         }
     }

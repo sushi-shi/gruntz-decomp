@@ -328,7 +328,7 @@ CWwdGameObject::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int 
     result->m_posCache = reinterpret_cast<i32>(node);
     if (result->m_flags & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
-        result->m_7c->m_notify(reinterpret_cast<CGameObject*>(result));
+        result->m_7c->m_notify(result);
     }
     // the flat CWwdGameObject dispatch model and the CWwdGameObjectA family model are two
     // reconstructions of the ONE retail object (offset-0 identity); the return reinterprets.
@@ -417,7 +417,7 @@ i32 CWwdGameObject::WalkChildWorkers_166880() {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CGameObject* o = cur->m_obj;
-        o->m_7c->m_notify(reinterpret_cast<CGameObject*>(o));
+        o->m_7c->m_notify(o);
         count++;
     }
     return count;
