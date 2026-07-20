@@ -104,10 +104,11 @@ public:
 
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
     i32 m_sample;     // +0x54  the play request's sample object (Setup stores, Reset clears)
-    i32 m_icon;       // +0x58  in-game icon handle (seeded to g_frameTime)
-    i32 m_5c;         // +0x5c  icon-companion slot (zeroed with m_icon; role unproven)
-    i32 m_durationMs; // +0x60  cached sample play duration (sample->ComputeDuration)
-    i32 m_64;         // +0x64  running/elapsed slot (zeroed on setup; role unproven)
+    i32 m_icon;       // +0x58  play-start stamp LO (an i64 pair w/ m_5c; the elapsed
+                      //         check reads *(i64*)&m_icon - INTERLEAVED-zero keep, see task 23)
+    i32 m_5c;         // +0x5c  play-start stamp HI
+    i32 m_durationMs; // +0x60  sample play duration LO (i64 pair w/ m_64)
+    i32 m_64;         // +0x64  sample play duration HI
     i32 m_source;     // +0x68  the play request's source (Setup arg0, cleared by Reset)
     i32 m_playFlags;  // +0x6c  the play request's flag word (Setup arg2, cleared by Reset)
     i32 m_owner;      // +0x70  the play request's owner (Setup arg3)

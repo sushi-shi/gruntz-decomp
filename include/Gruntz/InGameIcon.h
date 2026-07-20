@@ -130,10 +130,10 @@ public:
     i32 m_driftPosHi;          // +0x5c  drift-tracked position hi
     i32 m_driftThresh;         // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
     i32 m_driftThreshHi;       // +0x64  drift threshold hi
-    i32 m_68;                  // +0x68  (serialized state; role unproven)
-    i32 m_6c;                  // +0x6c  (role unproven)
-    i32 m_70;                  // +0x70  (role unproven)
-    i32 m_74;                  // +0x74  (role unproven)
+    i32 m_68;                  // +0x68  icon idle-timer LO (i64 pair w/ m_6c; interleaved keep)
+    i32 m_6c;                  // +0x6c  icon idle-timer HI
+    i32 m_70;                  // +0x70  icon idle-window LO (i64 pair w/ m_74)
+    i32 m_74;                  // +0x74  icon idle-window HI
     CGameObject* m_glitterSprite; // +0x78  glitter overlay FX sprite (powerup/curse)
 };
 VTBL(CInGameIcon, 0x1e7d04);
