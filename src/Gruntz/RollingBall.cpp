@@ -46,6 +46,7 @@
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (g_gameReg typed)
 
 #include <rva.h>
+#include <Gruntz/GameLevel.h> // CTileImageSet (the tile-descriptor the resolver dispatches on)
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Globals.h>
 #include <Wap32/ZVec.h>
@@ -102,10 +103,11 @@ i32 RbProbeRect(void* obj, i32 cx, i32 cy, RECT* rect, i32* outA, i32* outB, i32
 void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
 void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
 
-// Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[ent]; call [edx+0x20].
+// The cell -> collision-kind resolver: the table entry IS a CTileImageSet (the same
+// m_imageSets[raw & 0xffff] lookup GameLevel's own collision macro does typed), and
+// slot +0x20 is its GetCollisionAt - queried at the tile origin.
 static i32 VtblResolve(void* ent) {
-    void* vtbl = *static_cast<void**>(ent);
-    return (*reinterpret_cast<i32(**)(void*, i32, i32)>((reinterpret_cast<char*>(vtbl) + 0x20)))(ent, 0, 0);
+    return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
 }
 
 // ===========================================================================
