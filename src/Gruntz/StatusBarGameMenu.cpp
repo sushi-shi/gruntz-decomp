@@ -239,7 +239,7 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_modeNotify = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+        m_modeNotify = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
         if (g_gameReg->m_134 != 1) {
             it->m_4 = 0;
             m_modeState = 7;

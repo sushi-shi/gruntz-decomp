@@ -375,7 +375,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it = new CSBI_ImageSet;
             r.left = bx + 0x40;
             r.top = by + 0x11c;
@@ -397,7 +397,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it = new CSBI_ImageSet;
             r.left = bx + 0x68;
             r.top = by + 0x11c;
@@ -419,7 +419,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
             // rect members m_itemRectL..m_520 + bx/by; config source m_extraNotifyArg0, id 0xdf.
             it = new CSBI_ImageSet;
@@ -443,7 +443,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it->m_4 = 0;
             // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
             // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
@@ -624,7 +624,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it); // @identity-TODO: the new-site spells CSBI_Image but the field is slot-12 (Notify) dispatched - arbitrate the ctor class
+            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it->m_4 = 0;
             // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
             ani = new CSBI_ImageSetAni;
