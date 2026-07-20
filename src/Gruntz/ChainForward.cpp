@@ -6,8 +6,8 @@
 //
 // XREF IDENTITY (2026-07-14): the arg2 root was a fake `ChainRoot`/`Chain4`/`Chain18`/
 // `Chain2c` view chain; it is the real DDraw resource spine:
-//   * arg2 is forwarded unchanged to SaveScreenshot's 3rd param, whose retail mangling
-//     is PAUCGameRegistry -> arg2 IS CGameRegistry* (owner).
+//   * arg2 is forwarded unchanged to SaveScreenshot's 3rd param - the manager
+//     singleton (now typed at its real class, CGruntzMgr).
 //   * +0x30  = CGameRegistry::m_world      (CDDrawSurfaceMgr*)
 //   * +0x04  = CDDrawSurfaceMgr::m_drawTarget(CDDrawSubMgrPages*)
 //   * +0x18/+0x14 = CDDrawSubMgrPages::m_overlayPair / m_backPair (CDDrawSurfacePair*)
@@ -20,7 +20,7 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (m_backPair/m_overlayPair)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair::m_surface (CDDSurface*)
-#include <Gruntz/GameRegistry.h>       // CGameRegistry::m_world -> CDDrawSurfaceMgr::m_drawTarget
+#include <Gruntz/GruntzMgr.h>          // CGruntzMgr::m_world -> CDDrawSurfaceMgr::m_drawTarget
 #include <Gruntz/SaveScreenshot.h>     // SaveScreenshot (0x114ff0) owner decl
 #include <Utils/RegistryHelper.h>      // Utils::RegistryHelper (forwarded bute param)
 
@@ -32,7 +32,7 @@
 RVA(0x00114f50, 0x3e)
 void ChainForward14(
     Utils::RegistryHelper* p1,
-    CGameRegistry* p2,
+    CGruntzMgr* p2,
     i32 p3,
     i32 p4,
     char* p5,
@@ -57,7 +57,7 @@ void ChainForward14(
 RVA(0x00114fa0, 0x3e)
 void ChainForward(
     Utils::RegistryHelper* p1,
-    CGameRegistry* p2,
+    CGruntzMgr* p2,
     i32 p3,
     i32 p4,
     char* p5,

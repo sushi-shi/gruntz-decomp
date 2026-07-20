@@ -7,6 +7,7 @@
 // Two functions, ascending retail-RVA:
 //   ParseSerial          @0x0d210 - the serial/key validator (the parse-callback front)
 //   SerialObjectFactory  @0x0d2a0 - the mode-dispatch + typeId->class object factory
+#include <Gruntz/GruntzMgr.h> // the mgr's real type
 #include <Ints.h>
 #include <string.h>
 
@@ -27,7 +28,7 @@ int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
 // ecx (both are 0/free after the rep-stosd). Logic + the inline strlen/memset + the
 // parse-callback dispatch are byte-exact; the single reg pick is not source-steerable.
 RVA(0x0000d210, 0x65)
-i32 ParseSerial(CGameRegistry* mgr, char* s) {
+i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     if (mgr == 0) {
         return 0;
     }

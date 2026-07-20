@@ -93,7 +93,7 @@ extern CString g_brickText2;
 // src/Gruntz/SerialObjectFactory.cpp in REHOME D9 (their contiguous 0xd210-0xec24
 // .text block is a separate obj). HandleCommand's WM_COMMAND 0x807e path calls
 // ParseSerial cross-TU (declared here, defined there).
-i32 ParseSerial(CGameRegistry* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
+i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
 // The screenshot dispatch chain (thunk 0x277a -> the 6-arg __cdecl forwarder
 // Fwd114ec0 @0x114ec0 -> the guarded Fwd114f00 @0x114f00 -> SaveScreenshot
@@ -726,7 +726,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
                 ReportError(0x8005, 0x421);
             }
-            if (!ParseSerial(reinterpret_cast<CGameRegistry*>(this), si->m_serial)) {
+            if (!ParseSerial(this, si->m_serial)) {
                 ReportError(0x8005, 0x465);
             }
             CheckSavedMode();

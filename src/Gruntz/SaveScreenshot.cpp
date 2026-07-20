@@ -40,7 +40,7 @@ RVA(0x00114ff0, 0x1b3)
 i32 SaveScreenshot(
     CDDSurface* src,
     Utils::RegistryHelper* bute,
-    CGameRegistry* owner,
+    CGruntzMgr* owner,
     i32 arg4,
     i32 arg5,
     char* name,

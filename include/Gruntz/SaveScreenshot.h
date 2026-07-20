@@ -13,12 +13,12 @@ class CDDSurface;
 namespace Utils {
     class RegistryHelper;
 }
-struct CGameRegistry;
+class CGruntzMgr;
 
 i32 SaveScreenshot(
     CDDSurface* src,
     Utils::RegistryHelper* bute,
-    CGameRegistry* owner,
+    CGruntzMgr* owner,
     i32 arg4,
     i32 arg5,
     char* name,
