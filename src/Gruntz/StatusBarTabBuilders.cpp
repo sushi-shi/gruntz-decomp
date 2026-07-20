@@ -27,7 +27,7 @@
 #include <Image/CImage.h>            // the frame handles ARE CImage (RenderFrame @0x153790)
 #include <Gruntz/SBI_GruntMachine.h> // canonical CSBI_GruntMachine (vtable @0x5eadbc)
 #include <Gruntz/SBI_SideTab.h>      // canonical CSBI_SideTab (vtable @0x5eae3c) + referent views
-#include <Gruntz/SbiSideTabBuildViews.h> // CStatzTabBuilder (the side tab's `parent`)
+#include <Gruntz/SbiSideTabBuildViews.h> // (the builder IS CStatusBarMgr now)
 #include <Gruntz/SbiConfig.h>       // canonical CDDrawSurfaceMgr (the builders' arg2 config host)
 #include <Gruntz/SBI_ImageSetAni.h> // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
@@ -412,7 +412,7 @@ namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 // the freshly-`new`ed child by CStatzTabBuilder::Build. Re-homed off `CSbTab` (the same
 // conflation view that held the other two Build*). `this` is proven by the call site
 // (`newobj->BuildStatzTabStatusBar` straight after `new CSBI_SideTab`); `parent` is the
-// BUILDER, not another side tab - the body reads parent->m_10 / parent->m_18, which are
+// BUILDER, not another side tab - the body reads parent->m_10 / parent->m_rect14.m_4, which are
 // CStatzTabBuilder's geometry anchors. The caller-side view typed that param CSBI_SideTab*
 // purely to compile, forcing a cross-cast of a CStatzTabBuilder. The view's CSbImageSet is
 // the canonical CSbiConfigRecord.
@@ -422,7 +422,7 @@ namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 // block can't use the struct-copy idiom). Body logic byte-faithful; ~65%. Deferred.
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
-    CStatzTabBuilder* parent,
+    CStatusBarMgr* parent,
     CDDrawSurfaceMgr* host,
     i32 p3,
     i32 p4,
@@ -442,7 +442,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     }
     m_24 = host;
     m_10 = p4;
-    m_2c = reinterpret_cast<CStatusBarMgr*>(parent); // the builder IS the mgr-family (CTabzBuilder==CStatusBarMgr precedent; fold TODO)
+    m_2c = parent;
     m_rect14.m_0 = p5;
     m_28 = 0;
     m_rect14.m_4 = p6;
@@ -471,7 +471,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_50 = -1;
-        m_48 = (p7 - p5) / 2 + parent->m_18;
+        m_48 = (p7 - p5) / 2 + parent->m_rect14.m_4;
     } else {
         CImageSet* n = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(

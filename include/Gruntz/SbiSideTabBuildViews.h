@@ -20,26 +20,9 @@
 // The settings/registry singleton (0x64556c); its +0x30 is the level's status-bar
 // owner passed as the StatzTab arg2.
 
-// CStatzTabBuilder - the STATZTAB CONTAINER Build runs on (0x105070 was MISLABELED
-// ~CSBI_SideTab by the rtti-vptr heuristic; the CSBI_SideTab is the CHILD it builds,
-// not this container - see the file header). A gate at +0x00, two geometry-base
-// pointers at +0x10/+0x18, the +0x2c child CPtrList, and the parallel +0x114 key /
-// +0x150 child-slot arrays (15 entries, 0x3c apart).
-class CStatzTabBuilder {
-public:
-    i32 Build(); // 0x105070
-
-    i32 m_0; // +0x00  gate (0 => geometry from m_10, else from m_18)
-    char m_pad04[0x10 - 0x04];
-    i32 m_10; // +0x10
-    char m_pad14[0x18 - 0x14];
-    i32 m_18; // +0x18
-    char m_pad1c[0x2c - 0x1c];
-    CPtrList m_2c; // +0x2c  child list (sizeof CPtrList == 0x1c -> ends +0x48)
-    char m_pad48[0x114 - 0x48];
-    i32 m_114[15];           // +0x114  per-slot key inputs
-    CSBI_SideTab* m_150[15]; // +0x150  built child slots
-};
-SIZE_UNKNOWN(CStatzTabBuilder);
+// (CStatzTabBuilder is GONE - the "container" was CStatusBarMgr itself: the +0x00
+// gate is m_position (the status-bar SIDE selector - it picks the geometry base!),
+// +0x10/+0x18 are m_10/m_rect14.m_4, +0x2c is m_tabLists[0], +0x114 m_statFlags,
+// +0x150 m_hitRects. Build @0x105070 is CStatusBarMgr::BuildSideTabs.)
 
 #endif // GRUNTZ_SBI_SIDETAB_BUILD_VIEWS_H

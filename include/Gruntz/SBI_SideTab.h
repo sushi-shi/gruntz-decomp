@@ -31,11 +31,11 @@
 // CStatusBarItem. Fields are placeholders; the offsets + code bytes are the
 // load-bearing fact, the mangled (?<method>@CSBI_SideTab@@...) name is
 // layout-independent.
-class CStatzTabBuilder; // the STATZTAB container that `new`s + configures these children
+class CStatusBarMgr; // the mgr that `new`s + configures these children (ex 'CStatzTabBuilder')
 
 class CSBI_SideTab : public CStatusBarItem {
 public:
-    // The field init retail's inline ctor did at the CStatzTabBuilder::Build new-site (the
+    // The field init retail's inline ctor did at the BuildSideTabs new-site (the
     // base CStatusBarItem ctor already zeroes m_4/m_8/m_24/m_28).
     CSBI_SideTab() {
         m_topFrame = 0;
@@ -53,13 +53,13 @@ public:
     virtual void SbiSlot5() OVERRIDE; // slot 5
 
     // 0xe9600: the side tab's own configure, run on the freshly-`new`ed child by
-    // CStatzTabBuilder::Build. `parent` is the BUILDER - the body reads parent->m_10 /
-    // parent->m_18, which are CStatzTabBuilder's geometry anchors - and `host` the config
+    // CStatusBarMgr::BuildSideTabs. `parent` is the mgr - the body reads parent->m_10 /
+    // parent->m_rect14.m_4, its geometry anchors - and `host` the config
     // host, the same arg2 every setup in this family takes. It was DEFINED as
     // `CSbTab::BuildStatzTabStatusBar` while the caller referenced it on a 1-slot
     // CSBI_SideTab view: two mangled names, so the call resolved to no definition at link.
     i32 BuildStatzTabStatusBar(
-        CStatzTabBuilder* parent,
+        CStatusBarMgr* parent,
         CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,

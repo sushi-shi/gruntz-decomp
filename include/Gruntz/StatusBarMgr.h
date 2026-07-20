@@ -343,6 +343,7 @@ public:
     // local `Worker630` view - the last view in ModeObjInit.cpp - and the two
     // out-of-band stamps Multi.cpp had to bolt on after `new` (m_barFrameGate/m_544).
     CStatusBarMgr();
+    i32 BuildSideTabs(); // 0x105070 (ex 'CStatzTabBuilder::Build' - the builder WAS this mgr)
 
     // The REAL inline destructor: Teardown() then the compiler-generated member
     // teardown, in reverse declaration order - ~CPtrArray on m_ptrPool, then the
