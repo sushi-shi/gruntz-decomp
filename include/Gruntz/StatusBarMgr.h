@@ -132,12 +132,7 @@ struct CSbiHlRow {
 // vtable +0x2c / Write @ +0x30 - the store/transfer slot), now the one modeled class in
 // <Gruntz/SerialArchive.h>.
 
-// The +0x8 object carries a sequence id at +0x188 (read during serialize).
-struct CSbiSeqHolder {
-    char m_pad0[0x188];
-    i32 m_188; // +0x188
-};
-SIZE_UNKNOWN(CSbiSeqHolder);
+// (CSbiSeqHolder is GONE - a CGameObject/CImage facet of the m_barSprite slot; see m_barSprite.)
 
 // The per-tab sprite/menu widgets (m_tabSprite0..14) are the real CSBI_MenuItem
 // (vtable 0x1eab4c; defined below): ClearTabSprites drives Blit() (0xe84f0),
@@ -496,7 +491,10 @@ public:
     // it to the registry under "StatusBar Position".
     i32 m_position; // +0x00  status-bar side/position selector (registry "StatusBar Position")
     i32 m_4;        // +0x04
-    i32 m_8;        // +0x08
+    // +0x08: the status-bar render sprite - the "StatusBarSprite" CreateSprite result.
+    // The ex CSbiRenderObj/CSbiSeqHolder views of this slot were CGameObject facets:
+    // +0x5c/+0x60 m_screenX/Y, +0x188 the archive-cue id, +0x198 m_layer (the CImage).
+    struct CGameObject* m_barSprite; // (struct key - the PAU/PAV mangling trap)
     // +0x0c: the config host every widget-setup call takes as arg2. Typed from the retail
     // callee: CSBI_Image::SetupImage (0xe6c80) DEREFERENCES this arg at +0x10
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
@@ -777,23 +775,7 @@ struct CSbiResetHost {
 };
 SIZE_UNKNOWN(CSbiResetHost);
 
-// The m_8 render object the item drives: a screen-position pair at +0x5c/+0x60
-// and a layer descriptor at +0x198 whose +0x10/+0x14 origin and +0x18/+0x1c
-// inset frame the hit-test rect. (m_8 is the base CStatusBarItem int overlaid as
-// a pointer, same authentic int-as-pointer overlay as Serialize uses.)
-struct CSbiLayer {
-    char m_pad0[0x10];
-    i32 m_10, m_14; // +0x10/+0x14  rect origin (lo X / lo Y)
-    i32 m_18, m_1c; // +0x18/+0x1c  inset (added to the shifted position)
-};
-SIZE_UNKNOWN(CSbiLayer);
-struct CSbiRenderObj {
-    char m_pad0[0x5c];
-    i32 m_5c, m_60; // +0x5c/+0x60  screen position
-    char m_pad64[0x198 - 0x64];
-    CSbiLayer* m_layer; // +0x198  layer descriptor
-};
-SIZE_UNKNOWN(CSbiRenderObj);
+// (CSbiRenderObj is GONE - a CGameObject/CImage facet of the m_barSprite slot; see m_barSprite.)
 
 // A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
 struct CSbiFreeNode {
@@ -938,7 +920,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite12 = 0;
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
-    m_8 = 0;                                     // +0x08
+    m_barSprite = 0;                                     // +0x08
     m_c = 0;                                     // +0x0c
     m_rect14.m_c = 0;                            // +0x20  (the rect block's 4th int; only this one)
     m_activeTab = 0;                             // +0x10c

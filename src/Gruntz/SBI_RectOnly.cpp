@@ -747,12 +747,9 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
 
     g_serialCounter++;
     i32 seq = 0;
-    // m_8 is the base CStatusBarItem `int` member, overlaid here as a pointer to
-    // the sequence holder (retail reads it as a pointer and fetches +0x188).
-    // Authentic int-as-pointer overlay; retyping it lives in the base class, not
-    // here, so the cast stays (flagged in the report).
-    if (m_8) {
-        seq = (reinterpret_cast<CSbiSeqHolder*>(m_8))->m_188;
+    // The +0x08 slot IS the render sprite (CGameObject); +0x188 is its archive-cue id.
+    if (m_barSprite) {
+        seq = m_barSprite->m_188;
     }
     s->Write(&seq, 4);
 
@@ -867,14 +864,14 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
 
     void* obj = 0;
     CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(gm) + 8) + 0x48));
-    i32 m8 = 0;
+    CGameObject* m8 = 0;
     if (map->Lookup(reinterpret_cast<void*>(seq), obj)) {
         if (obj != 0) {
-            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5) ? reinterpret_cast<i32>(obj) : 0;
+            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5) ? reinterpret_cast<CGameObject*>(obj) : 0;
         }
     }
-    m_8 = m8;
-    if (m_8 == 0 && seq != 0) {
+    m_barSprite = m8;
+    if (m_barSprite == 0 && seq != 0) {
         return 0;
     }
 
@@ -1388,7 +1385,7 @@ i32 CStatusBarMgr::TryActivate() {
 // late; cl uses sub + an earlier m_x load. Clamp logic, factory call and literal faithful.
 RVA(0x00104dd0, 0x6b)
 i32 CStatusBarMgr::Activate() {
-    if (m_8 != 0) {
+    if (m_barSprite != 0) {
         return 0;
     }
     i32 a = g_gameReg->m_modeW - 0x22;
@@ -1399,8 +1396,8 @@ i32 CStatusBarMgr::Activate() {
     if (m_28 > d - 9) {
         m_28 = d - 0x22;
     }
-    m_8 = reinterpret_cast<i32>((m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1));
-    return m_8 != 0;
+    m_barSprite = (m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
+    return m_barSprite != 0;
 }
 
 // ===========================================================================
@@ -1969,7 +1966,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_tabSprite12 = 0;
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
-    m_8 = 0;
+    m_barSprite = 0;
     i32 i;
     for (i = 0; i < 15; i++) {
         m_hitRects[i] = 0;
@@ -2648,12 +2645,12 @@ i32 CStatusBarMgr::RefreshState() {
 // while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    CSbiRenderObj* r = reinterpret_cast<CSbiRenderObj*>(m_8);
+    CGameObject* r = m_barSprite;
     if (r == 0) {
         return 0;
     }
-    r->m_5c = x;
-    (reinterpret_cast<CSbiRenderObj*>(m_8))->m_60 = y;
+    r->m_screenX = x;
+    m_barSprite->m_screenY = y;
     m_28 = y;
     m_24 = x;
     return 1;
@@ -2664,12 +2661,12 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 // (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CSbiRenderObj* r = reinterpret_cast<CSbiRenderObj*>(m_8);
-    CSbiLayer* L = r->m_layer;
-    i32 xlo = r->m_5c - L->m_18;
-    i32 ylo = r->m_60 - L->m_1c;
-    i32 xhi = L->m_10 + xlo;
-    i32 yhi = L->m_14 + ylo;
+    CGameObject* r = m_barSprite;
+    CImage* L = r->m_layer;
+    i32 xlo = r->m_screenX - L->m_anchorX;
+    i32 ylo = r->m_screenY - L->m_anchorY;
+    i32 xhi = L->m_width + xlo;
+    i32 yhi = L->m_height + ylo;
     if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
         return 0;
     }
