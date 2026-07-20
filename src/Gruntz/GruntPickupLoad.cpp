@@ -11,7 +11,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Wap32/ZVec.h>
-#include <Gruntz/TypeKeyColl.h>   // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h>   // the shared zDArray (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
@@ -24,7 +24,7 @@
 
 // The id->name-slot type registry @0x6bf650: Resolve(id) returns a slot whose +0 is
 // the interned anim-code name string (reloc-masked; Resolve is thunk 0x437c).
-// CTypeKeyColl is the shared <Gruntz/TypeKeyColl.h> shape.
+// zDArray is the shared <Gruntz/TypeKeyColl.h> shape.
 
 // The single-char anim-code key strings (reloc-masked .rodata).
 
@@ -69,11 +69,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (m_entranceActive != 0) {
             return 0;
         }
-        if (strcmp(*reinterpret_cast<const char**>((static_cast<zDArray*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), "A")
+        if (strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), "A")
                 != 0
-            && strcmp(*reinterpret_cast<const char**>((static_cast<zDArray*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), s_codeD)
+            && strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), s_codeD)
                    != 0
-            && strcmp(*reinterpret_cast<const char**>((static_cast<zDArray*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), "E")
+            && strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c))), "E")
                    != 0) {
             return 0;
         }
@@ -486,4 +486,4 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-SIZE_UNKNOWN(CTypeKeyColl);
+SIZE_UNKNOWN(zDArray);

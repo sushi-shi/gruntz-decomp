@@ -40,7 +40,7 @@
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // (g->m_10 is the real CGruntHud (m_screenX/m_screenY); g->m_14 is the real
 // CAnimLookupNode (m_1c) - both are CGrunt's already-typed sub-objects.)
-// CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
+// CTypeColl was a fake view of the REAL zDArray at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 
@@ -199,7 +199,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
-                    (reinterpret_cast<CTypeNode*>(g_typeColl.zDArray::IndexToPtr(reinterpret_cast<i32>(g->m_14->m_1c))))->m_0;
+                    (reinterpret_cast<CTypeNode*>(g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_14->m_1c))))->m_0;
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
                     && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0
                     && strcmp(nm, "C") != 0 && strcmp(nm, "R") != 0) {

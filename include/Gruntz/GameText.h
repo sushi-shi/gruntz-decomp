@@ -4,7 +4,7 @@
 //   GetWorldDisplayName    - seeds the 8 world display names.
 //   GetEndLevelStatLabels  - seeds the 8 end-of-level stat labels.
 //   GetWarlordName         - boss/warlord name by id (returns CString).
-//   CContainerErr::CContainerErr - the container-library exception
+//   zErrHandling::zErrHandling - the container-library exception
 //                                  ctor (lazy-inits its message table).
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing
@@ -21,7 +21,7 @@
 #include <rva.h>
 #include <Gruntz/String.h>
 
-// CContainerErr - the Monolith container-library exception base. THE DUPLICATE VIEW
+// zErrHandling - the Monolith container-library exception base. THE DUPLICATE VIEW
 // THAT LIVED HERE IS GONE: it was a second model of the class <Wap32/zBitVec.h> already
 // owns (same class, same one-slot vtable ??_7CContainerErr@@6B@ @0x1f04cc). It was kept
 // as a "byte-forced dual-view / required ODR split", but that wall does not exist - this

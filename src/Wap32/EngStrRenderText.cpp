@@ -2,7 +2,7 @@
 // the EngStr_DrawText forwarder (src/Wap32/EngStr.cpp) tail-calls. Its true home is
 // EngStr.cpp, but it is kept in its own unit so its size (+ its font-size jump table
 // and the Win32 rect imports) do not perturb the already-matched zBitVec::SetSize /
-// CContainerErr neighbours in EngStr.cpp (adding it there regressed SetSize ~13%).
+// zErrHandling neighbours in EngStr.cpp (adding it there regressed SetSize ~13%).
 //
 // The worker: bails unless object/string/rect/draw-method are all present; picks the
 // font by the size selector (100/110/120/130 -> tiny/small/medium/large); if the

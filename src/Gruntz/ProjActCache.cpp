@@ -1,4 +1,4 @@
-// ProjActCache.cpp - zBitVec::zBitVec (0x16d790): construct the CContainerErr
+// ProjActCache.cpp - zBitVec::zBitVec (0x16d790): construct the zErrHandling
 // error-tracking base (cl re-stamps the implicit most-derived ??_7zBitVec vptr after
 // it returns - real polymorphic shape, no manual stamp), size the bit-vector to cover
 // `idx`, then set bit `idx`; on a sizing failure record the caller return address

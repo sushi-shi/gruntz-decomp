@@ -39,7 +39,7 @@ static CString g_worldName[8] = {
 
 // ---------------------------------------------------------------------------
 // 0x082aa0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - register thunk: seed
-// the caption act-registry cell @0x6451a8 (the SAME zDArray-family archetype as
+// the caption act-registry cell @0x6451a8 (the SAME _zdvec-family archetype as
 // every other registry cell: a zero-init .bss CActReg constructed in place by
 // CZDArrayDerived::Construct - the cast is the documented storage/runtime-class
 // duality, see GruntStartingPoint.cpp). __cdecl; RVA-contiguous with the
@@ -235,7 +235,7 @@ CString __stdcall GetWarlordName(i32 id) {
 }
 
 // ---------------------------------------------------------------------------
-// CContainerErr::CContainerErr - the container-library exception ctor (__thiscall
+// zErrHandling::zErrHandling - the container-library exception ctor (__thiscall
 // (this, msg)). Stores the (custom or default)
 // message, installs the vtable, and on FIRST construction lazily seeds the
 // static 8-entry container-error message table. The error strings (by code):
@@ -258,16 +258,16 @@ static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
-// @interleaver CContainerErr::CContainerErr emitted-in typekeycoll. Retail emits this ctor
-// COMDAT just before typekeycoll's block, where its sibling ~CContainerErr @0x16da60 lives
+// @interleaver zErrHandling::zErrHandling emitted-in typekeycoll. Retail emits this ctor
+// COMDAT just before typekeycoll's block, where its sibling ~zErrHandling @0x16da60 lives
 // (getretaddr @0x16d990 is the lone fn before it). The old "dual-view wall" that blocked
-// homing it there is GONE - GameText.h's duplicate CContainerErr view is dissolved and this
+// homing it there is GONE - GameText.h's duplicate zErrHandling view is dissolved and this
 // TU now models the class through the canonical <Wap32/zBitVec.h>, so the two headers no
 // longer conflict. Re-homing the body to TypeKeyColl.cpp is now unblocked (follow-up).
 RVA(0x0016d9c0, 0x75)
-CContainerErr::CContainerErr(void* errSink) {
+zErrHandling::zErrHandling(void* errSink) {
     // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
-    // register with, not a string: ~CContainerErr loads +0x04 into ecx as a __thiscall
+    // register with, not a string: ~zErrHandling loads +0x04 into ecx as a __thiscall
     // `this` (see <Wap32/zBitVec.h>). The default-sink buffer is taken by address.
     m_errSink = static_cast<CVariantSlot*>((errSink ? errSink : g_defaultErrMsg));
 

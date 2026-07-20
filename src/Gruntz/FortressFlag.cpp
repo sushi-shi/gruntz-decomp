@@ -104,9 +104,9 @@ extern "C" u32 g_engineFrameDelta;
 // / 0x6bf650 (g_typeColl) / 0x6bf848; and (2) the address lies past .data's raw extent
 // (file-backed only through rva 0x229400), so the loader zero-fills it. The object is
 // ctor'd IN PLACE at runtime by InitActReg below (Construct 0x408710 -> the real
-// CTypeKeyColl ctor 0x16dda0, then the live-vtable stamp) - which is exactly why the
+// zDArray ctor 0x16dda0, then the live-vtable stamp) - which is exactly why the
 // engine call sites cast it to (_zvec*): the storage type and the runtime class differ
-// in retail itself. Declaring it `CTypeKeyColl` instead would be unbuildable (no default
+// in retail itself. Declaring it `zDArray` instead would be unbuildable (no default
 // ctor) and would fabricate a 31st CRT initializer the binary does not have.
 DATA(0x00244870)
 extern CActReg g_partColl;

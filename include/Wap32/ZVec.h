@@ -1,7 +1,7 @@
 // ZVec.h - the WAP32 engine's `_zvec`/`_zdvec` dynamic-vector base and the
 // `zDArray<T>` template that derives from it (C:\Proj\incs). RTTI in GRUNTZ.EXE
 // names the most-derived instance here as
-//   .?AV?$zDArray@P8CUserLogic@@AEHXZ@@   ==  zDArray<int (CUserLogic::*)(void)>
+//   .?AV?$_zdvec@P8CUserLogic@@AEHXZ@@   ==  zDArray<int (CUserLogic::*)(void)>
 // with the class hierarchy  zDArray<T> : _zdvec : _zvec : zErrHandling.
 //
 // The vector stores a contiguous element band addressed by an integer index that
@@ -21,7 +21,7 @@
 #define GRUNTZ_WAP32_ZVEC_H
 
 #include <Ints.h>
-#include <Wap32/zBitVec.h> // the canonical CContainerErr - _zvec's real {vptr, sink} head
+#include <Wap32/zBitVec.h> // the canonical zErrHandling - _zvec's real {vptr, sink} head
 #include <rva.h>
 
 // (The empty zErrHandling placeholder that lived here - the stand-in base
@@ -39,22 +39,22 @@ struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call
 //
 // Its head {vptr@0, err-sink@4} IS the container-error base - RTTI spells the chain
 // `zDArray<T> : _zdvec : _zvec : zErrHandling`, and zErrHandling is the class
-// <Wap32/zBitVec.h> models as CContainerErr. _zvec used to redeclare that head itself,
-// with its own `virtual ~_zvec()` "at 0x16da60" - but 0x16da60 is ~CContainerErr, and
-// ??1_zvec was defined nowhere, so ~zDArray's chained base-dtor call dangled. Derive the
+// <Wap32/zBitVec.h> models as zErrHandling. _zvec used to redeclare that head itself,
+// with its own `virtual ~_zvec()` "at 0x16da60" - but 0x16da60 is ~zErrHandling, and
+// ??1_zvec was defined nowhere, so ~_zdvec's chained base-dtor call dangled. Derive the
 // real base instead: _zvec adds no destructible state, so its implicit dtor folds away
-// and ~zDArray chains straight to ~CContainerErr - which is exactly what retail does.
-class _zvec : public CContainerErr {
+// and ~_zdvec chains straight to ~zErrHandling - which is exactly what retail does.
+class _zvec : public zErrHandling {
 public:
     // Pass-through to the error-sink base ctor (0x16d9c0): retail's allocating ctor
     // opens with exactly that one base call, so this stays inline (no _zvec body of
     // its own exists in the image).
-    _zvec(void* errSink) : CContainerErr(errSink) {}
+    _zvec(void* errSink) : zErrHandling(errSink) {}
 
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     char* IndexToPtr(i32 idx);     // 0x312a0  (the plain base accessor)
 
-    // vptr @+0x00 and the error sink @+0x04 come from CContainerErr (which names the
+    // vptr @+0x00 and the error sink @+0x04 come from zErrHandling (which names the
     // sink m_errSink; this class's code still reads it under that name).
     i32 m_lo;      // +0x08
     i32 m_hi;      // +0x0c
@@ -69,21 +69,21 @@ public:
 // member-function pointers; its accessor override fixes up freshly-grown slots.
 //
 // The former <Gruntz/TypeKeyColl.h> `CZArray2D` was a SECOND model of THIS class
-// (one class, two names - now folded): its vtable 0x1f04d4 is the datum VTBL(zDArray)
+// (one class, two names - now folded): its vtable 0x1f04d4 is the datum VTBL(_zdvec)
 // binds, its ctor 0x16de30 is the allocating ctor below, and its ??1 0x16df40 is
-// ~zDArray. Field mapping (offsets identical): m_buf==m_base, m_buf2==m_spare,
-// m_owner==CContainerErr::m_errSink. Likewise `CZArrayRoot` was a second model of
-// CContainerErr (ctor 0x16d9c0, vtable 0x1f04cc) - also folded.
-class zDArray : public _zvec {
+// ~_zdvec. Field mapping (offsets identical): m_buf==m_base, m_buf2==m_spare,
+// m_owner==zErrHandling::m_errSink. Likewise `CZArrayRoot` was a second model of
+// zErrHandling (ctor 0x16d9c0, vtable 0x1f04cc) - also folded.
+class _zdvec : public _zvec {
 public:
     // The allocating ctor (0x16de30, body in src/Bute/TypeKeyColl.cpp): records
     // [lo,hi] + the element stride, allocates the (hi-lo+1)*stride band (+ a scratch
     // element when none is supplied) and reports a fatal bounds/OOM through the
-    // inherited error sink. /GX (the half-built CContainerErr base unwinds).
-    zDArray(i32 stride, i32 lo, i32 hi, void* scratch);
-    i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~zDArray)
+    // inherited error sink. /GX (the half-built zErrHandling base unwinds).
+    _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
+    i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~_zdvec)
     char* IndexToPtr(i32 i);     // 0x310f0 (base accessor + per-slot member-ptr init)
-    virtual ~zDArray() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
+    virtual ~_zdvec() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
 
 // --- vtable catalog ---

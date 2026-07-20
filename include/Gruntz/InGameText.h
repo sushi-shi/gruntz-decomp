@@ -3,7 +3,7 @@
 // pair - the same shape every UserLogic leaf carries). Recovered from the three
 // trace-discovered methods:
 //   0x011dc0  ~CInGameText  (the bare CUserLogic teardown, /GX frame)
-//   0x099460  Dispatch      (member-fn-ptr dispatch through a global zDArray)
+//   0x099460  Dispatch      (member-fn-ptr dispatch through a global _zdvec)
 //   0x099a30  Serialize     (chain base + the +0x34 sub-object, then +0x54/+0x58)
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are

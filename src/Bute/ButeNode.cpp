@@ -116,7 +116,7 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 // stamp zPTree's vtable pair (0x1e94ac / 0x1e949c; the derived pair's own stamps are
 // /O2 dead stores and vanish), ClearRecursive(0) (?ClearRecursive@CButeStore@@
 // 0x16e070), then fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
-// (~CContainerErr 0x16da60). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
+// (~zErrHandling 0x16da60). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
 // CButeNode's own vtable 0x1f051c slot 0 is the sdd 0x174d50, whose ~ call targets
 // exactly 0x174d70 - the fabricated CButeStoreDtorCopyNode anchor said this body
 // stamped a vtable (0x1e94ac) that never dispatched it.

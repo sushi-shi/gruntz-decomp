@@ -1,28 +1,28 @@
-// zBitVec.h - CContainerErr (the WAP32 container-error base, vtable
+// zBitVec.h - zErrHandling (the WAP32 container-error base, vtable
 // ??_7CContainerErr@@6B@ @0x5f04cc) + zBitVec (its derived small-buffer bit-vector,
 // vtable ??_7zBitVec@@6B@ @0x5f04c8). These are the devs' REAL class names: zBitVec
 // (from the delinked ??0zBitVec@@QAE@HH@Z / ?SetSize@zBitVec / ?EnsureSize@zBitVec
-// symbols) derived from CContainerErr (its ??_7CContainerErr@@6B@ RTTI-less vtable).
+// symbols) derived from zErrHandling (its ??_7CContainerErr@@6B@ RTTI-less vtable).
 //
 // CANONICAL home for the container family that was modeled 3x: <Gruntz/UserBaseLink.h>
-// (as the Ghidra label "EngStr"), <Wap32/EngStr.h> (as unrelated CContainerErr +
-// zBitVec), and <Gruntz/ProjActCache.h> (as zBitVec : CContainerErr). The "EngStr"
+// (as the Ghidra label "EngStr"), <Wap32/EngStr.h> (as unrelated zErrHandling +
+// zBitVec), and <Gruntz/ProjActCache.h> (as zBitVec : zErrHandling). The "EngStr"
 // class IS zBitVec: its ~ (0x16d2a0), operator= (0x16d2f0) and the 836B ctor
-// (0x16d3a0) all stamp the ??_7zBitVec vptr @0x5f04c8 and derive from CContainerErr.
+// (0x16d3a0) all stamp the ??_7zBitVec vptr @0x5f04c8 and derive from zErrHandling.
 //
-// LAYOUT (proven): CButeStore (a CContainerErr, CObj50 multiple-inheritance dtor,
-// DiscoveredEh.cpp) places CObj50 at +0x08 -> CContainerErr is exactly 8 bytes
+// LAYOUT (proven): CButeStore (a zErrHandling, CObj50 multiple-inheritance dtor,
+// DiscoveredEh.cpp) places CObj50 at +0x08 -> zErrHandling is exactly 8 bytes
 // {vptr@0, m_errSink@4}. The base ctor (0x16d9c0) writes ONLY +0x04 and the vptr;
 // the +0x08 capacity and +0x0c word band are written only by zBitVec's own methods,
-// so they are zBitVec fields, not CContainerErr fields. GameText.h's non-virtual
-// 8-byte CContainerErr view corroborates the 8-byte base.
+// so they are zBitVec fields, not zErrHandling fields. GameText.h's non-virtual
+// 8-byte zErrHandling view corroborates the 8-byte base.
 //
-// NOTE - the CContainerErr CTOR (0x16d9c0) is DEFINED (byte-exact) in gametext.cpp
+// NOTE - the zErrHandling CTOR (0x16d9c0) is DEFINED (byte-exact) in gametext.cpp
 // under a deliberately NON-virtual dual-view (its ctor must store the vptr LAST, so a
 // real `virtual` would regress it - vtable-conversion-log.md). That is a required
 // (STALE-WALL NOTE, corrected: this used to say "GameText.h and this header never coexist
 // in one TU". That was false - GameText.h had exactly ONE includer, so the collision it
-// warned about could not happen. Its duplicate CContainerErr view is folded in and gone;
+// warned about could not happen. Its duplicate zErrHandling view is folded in and gone;
 // GameText.h now includes THIS header. Do not resurrect the split.)
 #ifndef WAP32_ZBITVEC_H
 #define WAP32_ZBITVEC_H
@@ -63,7 +63,7 @@ struct CVariantSlot;
 // is the ??_G at 0x16da40). The six "Slot04_16dde0 .. Slot18_16ea20" virtuals that used
 // to be declared here were FABRICATED: 0x1f04d0 / 0x1f04d4 / 0x1f04d8 / 0x1f04dc /
 // 0x1f04e0 / 0x1f04e4 are not this vtable's slots 1..6 - they are the NEIGHBOURING
-// classes' own one-slot vtables (CTypeKeyColl, zDArray, CButeNodeEntry, ...), read as if
+// classes' own one-slot vtables (zDArray, _zdvec, CButeNodeEntry, ...), read as if
 // they were a 7-slot table. Declaring them inflated every derived class's vtable.
 //
 // +0x04 IS AN OBJECT POINTER, not a message string: the destructor (0x16da60) does
@@ -72,18 +72,18 @@ struct CVariantSlot;
 // registering/unregistering this object). So the ctor argument is the SINK to report
 // through - the legacy `const char* msg` typing was the mis-model. Typed void* here: the
 // call sites pass a sink global by address and no longer need a cast.
-SIZE(CContainerErr, 0x8); // { vptr @0, m_errSink @4 }
-class CContainerErr {
+SIZE(zErrHandling, 0x8); // { vptr @0, m_errSink @4 }
+class zErrHandling {
 public:
-    CContainerErr(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
-    virtual ~CContainerErr();     // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
+    zErrHandling(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
+    virtual ~zErrHandling();     // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
 
     // 0x034960: the OUTLINED overflow/OOM report path (defined in BattlezMapConfig.cpp,
     // where it sits in retail RVA order). Body = `g_retAddrBreadcrumb = GetRetAddr();
     // m_errSink->Set(this, sentinel, code);` - the exact tail of the inlined grow-on-miss
     // fast path (CActReg::ResolveEntry spells the same two statements). It was modeled as a
     // .cpp-local `ZErrTarget` view {vptr@0, m_err@+0x04}: that IS this class's layout
-    // (vptr@0, m_errSink@+0x04), so the view is dissolved onto CContainerErr.
+    // (vptr@0, m_errSink@+0x04), so the view is dissolved onto zErrHandling.
     void Report(i32 sentinel, i32 code); // 0x034960
 
     CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
@@ -95,7 +95,7 @@ public:
 // ctor right after the base ctor returns; the virtual dtor override makes cl emit the
 // distinct most-derived vtable + the implicit re-stamp.
 SIZE(zBitVec, 0x10);
-class zBitVec : public CContainerErr {
+class zBitVec : public zErrHandling {
 public:
     zBitVec();                                // default (link-embedded; see CUserBaseLink)
     zBitVec(i32 idx, i32 sizehint);           // 0x16d790 (??0zBitVec@@QAE@HH@Z)
@@ -118,7 +118,7 @@ public:
 // 98.7% -> 85.3%). EngStr.cpp needs only the container classes above.
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CContainerErr, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
+VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 VTBL(zBitVec, 0x001f04c8);
 
 #endif // WAP32_ZBITVEC_H

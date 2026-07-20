@@ -89,8 +89,8 @@ extern LogicFnTable g_simpleAnimDispatch;
 extern i32 SimpleAnimLogic_4028b0();
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
-// the freshly-grown region (the zDArray::IndexToPtr body).
-static inline char* ResolveNameSlot(zDArray* v, i32 idx) {
+// the freshly-grown region (the _zdvec::IndexToPtr body).
+static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
@@ -189,7 +189,7 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 // the handler member-fn-ptr (0x4028b0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family - see
+// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family - see
 // ZVec.cpp's IndexToPtr/GrowTo @early-stops + RegisterTextLogic/RegisterIconState
 // ~96%): the two inlined accessors + the CString-ctor fixup loop are reconstructed
 // faithfully, but cl pins the index/this/base across the grow branches differently

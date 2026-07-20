@@ -41,7 +41,7 @@ _COLL = {"__POSITION"}
 # generic-collection keep the goal allows (like POSITION). zDArray<T> instances
 # exist in retail RTTI, but the multi-role singletons (g_typeColl/CActReg cells)
 # are used at several strides - by construction generic.
-_ZVEC_FAMILY = {"_zvec", "zDArray", "CTypeKeyColl", "CActReg", "CActColl"}
+_ZVEC_FAMILY = {"_zvec", "_zdvec", "zDArray", "CActReg"}
 _ZVEC_FIELDS = {"m_alloc", "m_base", "m_cur", "m_spare"}
 
 

@@ -18,14 +18,13 @@ struct CVariantSlot;  // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
 struct CButeTreeNode; // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
 
 // zErrHandling - the container-library exception base (vptr@0, err-sink@4). RTTI names
-// zPTree's primary base `zErrHandling`; that class IS <Wap32/zBitVec.h>'s CContainerErr
+// zPTree's primary base `zErrHandling`; that class IS <Wap32/zBitVec.h>'s zErrHandling
 // (same ctor 0x16d9c0, same dtor 0x16da60, same one-slot vtable 0x1f04cc). The separate
 // `class zErrHandling` that used to be declared here was a THIRD model of it, and it is
 // what made every store/node destructor call a ??1zErrHandling that is defined nowhere.
 // Folded onto the canonical class; the RTTI name is kept as an alias so the library-true
 // spelling still reads in the sources that use it.
-#include <Wap32/zBitVec.h> // the canonical CContainerErr (ctor 0x16d9c0 / dtor 0x16da60)
-typedef CContainerErr zErrHandling;
+#include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
 
 // The node subobject at zPTree+0x8 (a small keyed-store entry): zPTree's SECOND
 // polymorphic base. Ctor 0x16df70 auto-stamps ??_7CButeNodeEntry (retail 0x5f04d8)
@@ -77,7 +76,7 @@ public:
     // vtable pair - the signature of MSVC5 without /Gy, which emits an inline member as a
     // per-object-file static but keeps the vftable a folded COMDAT. Each copy is anchored
     // on a thin subclass; the body expands into all of them (stamp both vptrs, clear, then
-    // fold the +0x08 base ~CButeNodeEntry and the +0x00 base ~CContainerErr).
+    // fold the +0x08 base ~CButeNodeEntry and the +0x00 base ~zErrHandling).
     virtual ~zPTree() OVERRIDE {
         ClearRecursive(0);
     }

@@ -63,7 +63,7 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
 // external/no-body. CTypeColl2 (the Insert facet) is the shared def in
 // <Gruntz/TypeColl2.h>.
-// CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
+// CTypeColl was a fake view of the REAL zDArray at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 

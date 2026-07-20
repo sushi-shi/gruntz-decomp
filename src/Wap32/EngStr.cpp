@@ -1,6 +1,6 @@
 // EngStr.cpp - WAP32 engine text-render forwarder + container-error helpers around
 // the Ghidra `EngStr` text routine (C:\Proj\incs). The container classes it touches
-// (CContainerErr, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
+// (zErrHandling, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
 #include <Ints.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the real render "object" (world mgr; m_drawTarget)
 #include <DDrawMgr/DDrawSubMgrPages.h>  // the pages (m_frontPair)
@@ -39,7 +39,7 @@ void EngStr_DrawText(
     EngStr_RenderText(obj, a1, a2, pair->m_surface, a3, a4, a5, a6, a7, a8);
 }
 
-// (~CContainerErr @0x16da60 and zBitVec::SetSize @0x16e100 live in their retail
+// (~zErrHandling @0x16da60 and zBitVec::SetSize @0x16e100 live in their retail
 //  TU, the merged container obj src/Gruntz/TypeKeyColl.cpp - wave2-H.)
 
 // Size metadata for the <Wap32/EngStr.h> render-family types (hosted at .cpp EOF so the

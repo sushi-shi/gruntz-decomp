@@ -26,7 +26,7 @@
 #include <Wap32/ZVec.h>
 
 class CVariantSlot; // folded CActColl2
-// CTypeKeyColl is the REAL class of the registry at 0x6bf650 - and its fields ARE the eight
+// zDArray is the REAL class of the registry at 0x6bf650 - and its fields ARE the eight
 // scalars this header used to declare as separate globals. Needs the full definition now.
 #include <Gruntz/TypeKeyColl.h>
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
@@ -57,7 +57,7 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 // (CString::operator= 0x1b9e74).
 // ---------------------------------------------------------------------------
 DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650
+extern zDArray g_typeColl; // 0x6bf650
 
 // A CString in the resolved name slot: ~CString (0x1b9b93) frees the old entries,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.

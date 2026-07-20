@@ -104,7 +104,7 @@ static const char s_keyF[] = "F";
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
 //     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
+//   * grid/record stride - (const char*)((_zdvec*)((char*)this + (3*col+row+0xb)*0x68)),
 //     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
 //     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:

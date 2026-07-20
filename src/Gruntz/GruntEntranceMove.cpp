@@ -582,11 +582,11 @@ void CGrunt::RearmEntranceDrop() {
 
         i32 col = m_entranceCell.col;
         i32 row = m_entranceCell.row;
-        // The retail call really is zDArray::IndexToPtr(0) on the m_item CString slot
+        // The retail call really is _zdvec::IndexToPtr(0) on the m_item CString slot
         // (the two classes share the head layout); the old (3col+row+0xb)*0x68 spelling
         // was the m_cells base folded into the index - array form proven byte-identical.
         const char* name = reinterpret_cast<const char*>(
-            reinterpret_cast<zDArray*>(&m_cells[3 * col + row].m_item)->IndexToPtr(0));
+            reinterpret_cast<_zdvec*>(&m_cells[3 * col + row].m_item)->IndexToPtr(0));
         m_38->ApplyLookupSprite(name, frame);
     }
 

@@ -1,13 +1,13 @@
-// ProjActCache.h - zBitVec, a CContainerErr-derived bit-vector (the 0x16d7xx
+// ProjActCache.h - zBitVec, a zErrHandling-derived bit-vector (the 0x16d7xx
 // region; RTTI-less vtable @0x5f04c8). The ctor (0x16d790) builds the
-// CContainerErr error-tracking base (which owns the shared "Out of memory"/
+// zErrHandling error-tracking base (which owns the shared "Out of memory"/
 // "Overflow"/... diagnostic string table), stamps the derived vtable, sizes the
 // small-buffer-optimized DWORD bit-set to cover the requested bit index, then sets
 // that bit; on a SetSize failure it records the caller return address (the OOM
 // diagnostic) and fires the container's CVariantSlot error sink. The shared
 // instance is the projectile-action cache (g_projActCache).
 //
-// Names recovered from the delinked callees: CContainerErr::CContainerErr(const
+// Names recovered from the delinked callees: zErrHandling::zErrHandling(const
 // char*), zBitVec::SetSize(int), CVariantSlot::Set(void*,int,int). Layout from the
 // ctor: vptr@+0x00, the +0x04 error sink, the +0x08 capacity, the +0x0c bit-buffer
 // (an inline DWORD when capacity <= 0x20, else a heap DWORD*). Field names are
@@ -16,7 +16,7 @@
 #define GRUNTZ_PROJACTCACHE_H
 
 #include <Ints.h>
-#include <Wap32/zBitVec.h> // canonical CContainerErr + zBitVec + CVariantSlot
+#include <Wap32/zBitVec.h> // canonical zErrHandling + zBitVec + CVariantSlot
 #include <rva.h>
 
 #include <string.h> // strlen/strcmp/memcpy the trie insert lowers to inlines
@@ -43,12 +43,12 @@ struct CTrieNode {
     void* m_10;     // +0x10 stored value
 };
 
-// CContainerErr (+0x04 CVariantSlot error sink) and zBitVec : CContainerErr (the
+// zErrHandling (+0x04 CVariantSlot error sink) and zBitVec : zErrHandling (the
 // small-buffer bit-vector; SetSize 0x16e100, EnsureSize 0x1936e0) are the canonical
 // classes from <Wap32/zBitVec.h>.
 
 // The string-keyed crit-bit trie (the projectile-action name -> value map). Shares
-// the CContainerErr error-record idiom (the +0x04 CVariantSlot error sink). The
+// the zErrHandling error-record idiom (the +0x04 CVariantSlot error sink). The
 // working state spans +0x14..+0x28. Field names are placeholders.
 SIZE_UNKNOWN(CProjActMap);
 class CProjActMap {

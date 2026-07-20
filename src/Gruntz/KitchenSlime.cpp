@@ -287,7 +287,7 @@ void CKitchenSlime::RegisterType() {
 }
 
 // CKitchenSlime::RegisterRange @0x0b28c0 - seed the slime's activation table's
-// fast-range bounds via the shared zDArray registry ctor (RegisterRange(0x7d0,
+// fast-range bounds via the shared _zdvec registry ctor (RegisterRange(0x7d0,
 // 0x7da), 0x408710 through the 0x3742 ILT thunk). A static initializer; same
 // archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000b28c0, 0x15)

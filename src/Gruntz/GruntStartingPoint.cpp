@@ -75,9 +75,9 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
 //
 // This also resolves the old dual-view note (read as _zvec by the lookups, as
 // CZDArrayDerived by the range registrar): the STORAGE is a 0x24 zero-init .bss cell
-// and the runtime CLASS is the zDArray family ctor'd into it in place by Construct
+// and the runtime CLASS is the _zdvec family ctor'd into it in place by Construct
 // (0x408710) - a duality retail genuinely has, which is why both call sites cast.
-// Defining it as a _zvec/CTypeKeyColl object instead would fabricate a CRT initializer:
+// Defining it as a _zvec/zDArray object instead would fabricate a CRT initializer:
 // the dynamic-init table (30 entries @0x2096e4) has none for 0x6446d8, and the address
 // sits past .data's raw extent, so the loader zero-fills it.
 DATA(0x002446d8)
@@ -93,7 +93,7 @@ void Register6446d8Range() {
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 // CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
-// CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
+// CTypeColl was a fake view of the REAL zDArray at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

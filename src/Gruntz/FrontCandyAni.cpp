@@ -119,7 +119,7 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 // CEyeCandyAni's activation-coordinate registry singleton (@0x646060): the SAME cell
 // pinned in LogicDispatchInit.cpp as g_eyeCandyDispatch (built over the fixed
-// [2000,2010] range there via the shared zDArray dispatch-table ctor). That is its
+// [2000,2010] range there via the shared _zdvec dispatch-table ctor). That is its
 // one canonical DATA-bound symbol; here we reference it through its CActReg activation
 // facet (ResolveEntry) so the loads reloc-mask against the correctly-bound 0x246060.
 // Declared in <Gruntz/LogicFnTable.h> (included above).

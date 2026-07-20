@@ -20,7 +20,7 @@
 #include <Gruntz/LevelTimeDtor.h> // canonical CLevelTime : CTileLogic : CUserLogic (+ CGameObject/AnimWorkerObj)
 
 // The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
-// "fallback" - it is the shared CTypeKeyColl serializer ProjTypeXfer (0x16e4f0,
+// "fallback" - it is the shared zDArray serializer ProjTypeXfer (0x16e4f0,
 // owned + matched in TypeKeyColl.cpp), which resolves the handler's type-registry
 // entry and xfers it through the handler's own vtable slots. Its REAL arg is the
 // CXferArchive record (<Gruntz/XferArchive.h>, ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z);

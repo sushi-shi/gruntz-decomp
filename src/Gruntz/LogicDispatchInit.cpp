@@ -16,7 +16,7 @@
 // @identity-TODO: the 646060 table's owning leaf class is not yet pinned
 // (proximity: CEyeCandy | CFrontCandyAni; frag i513 @0xacb10 sits in the
 // frontcandyani region 0xabfa0-0xad527).
-#include <Wap32/ZVec.h>          // zDArray base
+#include <Wap32/ZVec.h>          // _zdvec base
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 // LogicFnTable (zDArray<T>, ctor 0x408710 reached via the 0x3742 ILT thunk - the
 // SAME callee as InitSimpleAnimDispatch) is the shared <Gruntz/LogicFnTable.h> shape.

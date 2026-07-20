@@ -22,13 +22,13 @@
 // __thiscall(this; obj, a, b); the delinker names 0x16d850
 // ?Set@CVariantSlot@@QAEXPAXHH@Z. The registry seeds its +0x00 callback slot and
 // stores a probe index / word / type-tag / label (used by the hot Set switch). This
-// is ALSO CContainerErr::m_errSink (<Wap32/zBitVec.h>): the container OOM paths call
-// Set here, and ~CContainerErr unregisters via Remove (0x16e360) - the old
+// is ALSO zErrHandling::m_errSink (<Wap32/zBitVec.h>): the container OOM paths call
+// Set here, and ~zErrHandling unregisters via Remove (0x16e360) - the old
 // zErrRegistry/Reg23 view of the same +0x04 object is folded in.
 SIZE_UNKNOWN(CVariantSlot);
 struct CVariantSlot {
     void Set(void* obj, i32 a, i32 b);           // 0x16d850
-    i32 Remove(void* obj, i32 flag);             // 0x16e360 (~CContainerErr unregister)
+    i32 Remove(void* obj, i32 flag);             // 0x16e360 (~zErrHandling unregister)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
     i32 m_04;                                    // +0x04 probe index slot
     u16 m_08;                                    // +0x08 word storage
@@ -52,7 +52,7 @@ struct TypeKeyRec {
 
 // CKeyFinder - the binary-search cursor over the sorted global key table (the 12-byte-
 // stride record array @0x6bf498 with its count @0x6bf618). CVariantSlot::Set drives it
-// as a cursor over its own +0x04 slot (the probe index), and ~CContainerErr reaches Add
+// as a cursor over its own +0x04 slot (the probe index), and ~zErrHandling reaches Add
 // through the error-sink; both are CVariantSlot-family objects reinterpreted through this
 // cursor facet (the +0x04 index slot is shared). Bodies in TypeKeyColl.cpp.
 SIZE_UNKNOWN(CKeyFinder);

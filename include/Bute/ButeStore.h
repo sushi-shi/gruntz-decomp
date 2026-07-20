@@ -3,7 +3,7 @@
 // CButeStore IS zPTree. The binary says so: the store's destructor (all three copies of
 // it - 0x174d70, 0x21310, 0x21570) stamps the vtable pair 0x1e94ac / 0x1e949c, and RTTI
 // names 0x1e94ac `zPTree`; the zPTree constructor (0x16dff0) stamps the same pair. Same
-// vtables, same 0x2c layout, same two bases (CContainerErr @0x00 + CButeNodeEntry @0x08)
+// vtables, same 0x2c layout, same two bases (zErrHandling @0x00 + CButeNodeEntry @0x08)
 // - one class, two reconstruction names. It is now ONE class: `CButeStore` is an alias,
 // so the ~dozen call sites across the engine that spell it CButeStore keep compiling and
 // mangle to the single real symbol (?ClearRecursive@zPTree@@ @0x16e070).

@@ -36,7 +36,7 @@ extern "C" {}
 
 #include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>               // zDArray (the command-dispatch tables)
+#include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
 #include <Gruntz/LogicFnTable.h>      // the shared LogicFnTable dispatch-table shape
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Globals.h>
@@ -62,7 +62,7 @@ extern "C" {}
 
 // ===========================================================================
 // The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
-// registration thunks construct + populate. The ctor (zDArray::Construct, the
+// registration thunks construct + populate. The ctor (_zdvec::Construct, the
 // 0x408710 method: stride-4 base init + the 0x5e70fc vptr stamp) reloc-masks.
 // Their static-init thunks below build each table over the index band [0x7d0,
 // 0x7da].  Shared shape: <Gruntz/LogicFnTable.h>.
@@ -111,8 +111,8 @@ extern i32 IconAction_403c06();
 extern i32 IconState_40370b();
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
-// the freshly-grown region (the zDArray::IndexToPtr body).
-static inline char* ResolveNameSlot(zDArray* v, i32 idx) {
+// the freshly-grown region (the _zdvec::IndexToPtr body).
+static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
@@ -646,7 +646,7 @@ void InitIconActionTable() {
 // slot for the key index, load the handler member-fn-ptr.
 // ---------------------------------------------------------------------------
 // @early-stop
-// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family, see
+// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family, see
 // ZVec.cpp + RegisterTextLogic): both register blocks + the CString-ctor fixup
 // loops are reconstructed faithfully, but cl pins the index/this/base across the
 // grow branches differently than retail. Logic + find/insert + the fn-ptr stores
@@ -712,7 +712,7 @@ void CToyPeek::FireActivation(i32 id) {
 // resolve the table slot for the key index, load the handler member-fn-ptr.
 // ---------------------------------------------------------------------------
 // @early-stop
-// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family, see
+// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family, see
 // ZVec.cpp + RegisterTextLogic ~96%): faithfully reconstructed; cl's index/this
 // register assignment across the grow branches differs from retail and is not
 // source-steerable. Logic + find/insert + the fn-ptr store correct.
@@ -1174,7 +1174,7 @@ void CInGameText::FireActivation(i32 idx) {
 // and load it with the handler member-fn-ptr (FUN_00402013).
 // ---------------------------------------------------------------------------
 // @early-stop
-// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family - see
+// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family - see
 // ZVec.cpp's IndexToPtr/GrowTo @early-stops, ~80%): the two inlined accessors +
 // the CString-ctor fixup loop are reconstructed faithfully, but cl pins the
 // index/this/base across the grow branches differently than retail and permutes

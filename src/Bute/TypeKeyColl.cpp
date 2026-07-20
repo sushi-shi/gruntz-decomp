@@ -7,18 +7,18 @@
 // (TU_MIGRATION 0x16d000, weave 0.31; typekeycoll's own 7-frag init run
 // @0x16d6f0 sits MID-interval between userbaselink's 0x16d3a0 and 0x16d710 -
 // one obj), plus the seven in-interval strays proven by first-link contiguity:
-// zBitVec(i32,i32) (ex ProjActCache.cpp), _zvec::GrowTo + ~zDArray (ex
+// zBitVec(i32,i32) (ex ProjActCache.cpp), _zvec::GrowTo + ~_zdvec (ex
 // ZVec.cpp), CButeNodeEntry/zPTree ctors (ex ButeNode.cpp),
 // CButeStore::ClearRecursive (ex ButeStoreClear.cpp), zBitVec::SetSize +
-// ~CContainerErr (ex EngStr.cpp), and Reg23::Add (ex Registry23.cpp - Reg23 IS
+// ~zErrHandling (ex EngStr.cpp), and Reg23::Add (ex Registry23.cpp - Reg23 IS
 // CKeyFinder: its Find was the same 0x16e1d0, its m_4 the same +0x04 index;
 // folded onto the one class here).
 //
-// STILL ELSEWHERE (documented walls): the CContainerErr/zErrHandling ctor
+// STILL ELSEWHERE (documented walls): the zErrHandling/zErrHandling ctor
 // (0x16d9c0) stays in GameText.cpp - it needs the deliberately NON-virtual
 // (the old "GameText.h and zBitVec.h never coexist" wall is DEAD - GameText.h had one
-//  includer; its duplicate CContainerErr view is folded onto zBitVec.h's)
-// in one TU). The CZArrayRoot/zErrHandling/CContainerErr and CZArray2D/zDArray
+//  includer; its duplicate zErrHandling view is folded onto zBitVec.h's)
+// in one TU). The CZArrayRoot/zErrHandling/zErrHandling and CZArray2D/_zdvec
 // dual models are a known pending dedup (one real class each).
 //
 // All callees into the deeper engine (the base ctor, the error/insert helper,
@@ -30,7 +30,7 @@
 #include <Bute/ButeTree.h>  // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
 #include <Bute/PTreeNode.h> // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
 #include <Bute/ButeStore.h> // CButeStore / CButeStoreNode (the keyed-store family)
-#include <Wap32/zBitVec.h>  // CContainerErr / zBitVec + the container-error globals
+#include <Wap32/zBitVec.h>  // zErrHandling / zBitVec + the container-error globals
 #include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
 #include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
@@ -44,7 +44,7 @@
 #pragma function(memcpy)
 
 #include <Gruntz/StringNode.h>    // the type-name teardown slot
-#include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
+#include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/zDArray (one shape)
 #include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
@@ -54,20 +54,20 @@
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
 //
-// The CZArrayRoot/CZArray2D/CTypeKeyColl vtables (0x5f04cc/0x5f04d4/0x5f04d0) are
+// The CZArrayRoot/CZArray2D/zDArray vtables (0x5f04cc/0x5f04d4/0x5f04d0) are
 // NO LONGER externs: that 1-slot-each construction hierarchy is now modeled as
 // REAL polymorphic C++ (virtual dtor per level), so cl emits the implicit ??_7
 // vptr stamp in each ctor (reloc-masked) instead of a manual stamp. Likewise
-// ~zDArray below auto-emits ??_7zDArray (bound at the retail dtor-vtable RVA).
+// ~_zdvec below auto-emits ??_7zDArray (bound at the retail dtor-vtable RVA).
 // ===========================================================================
 // g_keyFinderVtbl is NOT a vtable: 0x16e220 is a FUNCTION in .text (the default
 // callback the CKeyFinder/CVariantSlot +0x00 slot is seeded with) - stored as a
 // plain fn-ptr field init, not a polymorphic vptr, so it stays a manual store.
 
 // The live zDArray<...> vtable Destroy() re-stamps lives with Destroy in
-// ZVec.cpp; ~zDArray's emitted ??_7zDArray is bound at the retail dtor-entry
+// ZVec.cpp; ~_zdvec's emitted ??_7zDArray is bound at the retail dtor-entry
 // vtable RVA here (the annotation moved with the dtor).
-VTBL(zDArray, 0x001f04d4); // ~zDArray-entry vtable (0x5f04d4)
+VTBL(_zdvec, 0x001f04d4); // ~_zdvec-entry vtable (0x5f04d4)
 
 // ===========================================================================
 // The registry globals (BSS / .data; DATA-pinned so the loads reloc-mask).
@@ -96,7 +96,7 @@ u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zAr
 DATA(0x002bf45c)
 void* g_projActName2; // 0x6bf45c
 
-// g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the CContainerErr base-ctor
+// g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the zErrHandling base-ctor
 // name arg the zBitVec ctors pass. Bound via @data-symbol (the char[] extern mangles
 // `?g_containerName@@3PADA` under cl; scanned per-.cpp so it lives here, not the header).
 // g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
@@ -124,10 +124,10 @@ const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h
 // <Gruntz/TypeKeyColl.h> shape.
 // The CKSlimeColl2 dispatcher the type-name lookup grows the collection through.
 
-// The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl and
+// The _zdvec construction hierarchy CZArrayRoot <- CZArray2D <- zDArray and
 // the leaf ??_7CTypeKeyColl @0x5f04d0 are the shared <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650
+extern zDArray g_typeColl; // 0x6bf650
 
 // The engine heap alloc/free ARE the global operator new (0x1b9b46 = ??2) / operator
 // delete (0x1b9b82 = ??3); called as ::operator new/delete (no decl needed).
@@ -281,7 +281,7 @@ void* CButeTree::Find(const char* key) {
 
 // ===========================================================================
 // zBitVec::~zBitVec() (0x16d2a0) - free the heap band when out of SBO range,
-// then chain ~CContainerErr (implicit).
+// then chain ~zErrHandling (implicit).
 // ===========================================================================
 RVA(0x0016d2a0, 0x26)
 zBitVec::~zBitVec() {
@@ -337,7 +337,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 // pass-1 assignment; no source lever reaches the allocator here. ~79.8%, logic
 // complete; deferred to the final sweep.
 RVA(0x0016d3a0, 0x344)
-zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerName) {
+zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(g_containerName) {
     i32 maxv = 0;
     const char* start;
     const char* q;
@@ -471,7 +471,7 @@ badchar: {
 // set. INLINE so it folds into CUserBaseLink::CUserBaseLink() (0x16d710), the
 // only site that default-constructs the link's zBitVec name.
 // ===========================================================================
-inline zBitVec::zBitVec() : CContainerErr(g_containerName) {
+inline zBitVec::zBitVec() : zErrHandling(g_containerName) {
     if (!SetSize(g_defaultProjActSize)) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -486,14 +486,14 @@ CUserBaseLink::CUserBaseLink() {}
 
 // ===========================================================================
 // zBitVec(idx, sizehint) (0x16d790, ex ProjActCache.cpp) - construct the
-// CContainerErr error-tracking base (cl re-stamps the implicit most-derived
+// zErrHandling error-tracking base (cl re-stamps the implicit most-derived
 // ??_7zBitVec vptr after it returns), size the bit-vector to cover `idx`, then
 // set bit `idx`; on a sizing failure record the caller return address and fire
 // the error sink. The destructible polymorphic base forces the /GX frame.
 // ===========================================================================
 // @early-stop
 // /GX EH-epilogue + RMW-fusion wall (topic:eh topic:regalloc; see docs/patterns/
-// identical-return-epilogue-tailmerge.md). Logic, recovered types (CContainerErr/
+// identical-return-epilogue-tailmerge.md). Logic, recovered types (zErrHandling/
 // zBitVec/CVariantSlot), the const-char* base ctor, the unsigned size compares,
 // the SBO bit-buffer select and the inverted branch layout (failure inline /
 // success out-of-line) are all byte-faithful, but two MSVC5 /O2 choices diverge
@@ -506,7 +506,7 @@ CUserBaseLink::CUserBaseLink() {}
 //       +3 bytes that shift the success tail.
 // ~77.8%, logic complete; deferred to the final sweep.
 RVA(0x0016d790, 0xb1)
-zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
+zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(g_containerName) {
     u32 n = static_cast<u32>(sizehint);
     if (n == 0) {
         n = static_cast<u32>(g_defaultProjActSize);
@@ -572,7 +572,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
 }
 
 // ===========================================================================
-// CContainerErr::~CContainerErr() (0x16da60, ex EngStr.cpp) - the compiler
+// zErrHandling::~zErrHandling() (0x16da60, ex EngStr.cpp) - the compiler
 // auto-stamps ??_7CContainerErr at dtor entry (matching retail's stamp-first
 // order), then unregisters the error handler. Real-polymorphic (manual
 // vptr-field stamp drained): cl's implicit dtor-entry store lands stamp-first,
@@ -580,7 +580,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
 // stays in GameText.cpp - it needs the vptr-LAST non-virtual dual-view.)
 // ===========================================================================
 RVA(0x0016da60, 0x12)
-CContainerErr::~CContainerErr() {
+zErrHandling::~zErrHandling() {
     // 0x16e360 is CKeyFinder::Add (the cursor's insert/update/remove facet), reached on
     // the error sink; cast at the call (the sink is a CKeyFinder cursor over the key table).
     (reinterpret_cast<CKeyFinder*>(m_errSink))->Add(this, 0);
@@ -755,29 +755,29 @@ void* CButeTree::Insert(const char* key, void* value) {
 }
 
 // ===========================================================================
-// CTypeKeyColl::CTypeKeyColl (0x16dda0) - the derived ctor. Forwards the four
+// zDArray::zDArray (0x16dda0) - the derived ctor. Forwards the four
 // arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
 // the primary buffer) and the element count (hi - lo + 1). cl emits the implicit
 // ??_7CTypeKeyColl vptr stamp (was `*(void**)this = &g_typeKeyCollVtbl`). No EH
 // frame of its own (the base ctor owns the unwind state).
 // ===========================================================================
 RVA(0x0016dda0, 0x3c)
-CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
-    : zDArray(stride, lo, hi, scratch) {
+zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
+    : _zdvec(stride, lo, hi, scratch) {
     m_alloc = m_base;          // +0x1c  the fresh band base (was the m_cursor view)
     m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
 }
 
 // ===========================================================================
-// zDArray::zDArray (0x16de30) - the allocating vector ctor (this body was modelled
-// as `CZArray2D::CZArray2D` until the fold: CZArray2D IS zDArray, one class under two
-// names - its vtable 0x1f04d4 is the datum VTBL(zDArray) binds and its ??1 0x16df40 is
-// ~zDArray, both right here in this TU). Builds the CContainerErr base (0x16d9c0, was
+// _zdvec::_zdvec (0x16de30) - the allocating vector ctor (this body was modelled
+// as `CZArray2D::CZArray2D` until the fold: CZArray2D IS _zdvec, one class under two
+// names - its vtable 0x1f04d4 is the datum VTBL(_zdvec) binds and its ??1 0x16df40 is
+// ~_zdvec, both right here in this TU). Builds the zErrHandling base (0x16d9c0, was
 // the duplicate `CZArrayRoot` model), records the [lo, hi] bounds + element stride,
 // allocates the (hi-lo+1)*stride element band (+ a scratch element when none was
 // supplied), and reports a fatal "Inconsistent bounds" / "out of memory" through the
 // inherited error sink. cl emits the implicit ??_7zDArray vptr stamp and the /GX unwind
-// frame (the partially-built CContainerErr subobject must be destroyed if a later
+// frame (the partially-built zErrHandling subobject must be destroyed if a later
 // allocation throws).
 //
 // @early-stop
@@ -789,8 +789,8 @@ CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
 // sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/scratch
 // load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
-zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
-    : _zvec(&g_zArrayTag) { // -> the CContainerErr base ctor @0x16d9c0
+_zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
+    : _zvec(&g_zArrayTag) { // -> the zErrHandling base ctor @0x16d9c0
     m_spare = static_cast<char*>(scratch); // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
@@ -819,13 +819,13 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
 }
 
 // ===========================================================================
-// zDArray::~zDArray() (0x16df40, ex ZVec.cpp) - cl auto-stamps the derived dtor
+// _zdvec::~_zdvec() (0x16df40, ex ZVec.cpp) - cl auto-stamps the derived dtor
 // vtable (??_7zDArray) at entry, then frees the band and chains to the base
 // dtor. Real-polymorphic: the manual dtor-vtable stamp is drained (cl's
 // implicit dtor-entry stamp replaces it, reloc-masked); byte-exact.
 // ===========================================================================
 RVA(0x0016df40, 0x22)
-zDArray::~zDArray() {
+_zdvec::~_zdvec() {
     char* p = m_base;
     if (p) {
         free(p);
@@ -859,7 +859,7 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
 // through THIS dtor with the MI `this ? this+8 : 0` adjust. It had no definition
 // anywhere in the tree, so every one of those calls dangled; defining it here - in the
 // TU that owns the class's ctor and whose RVA band contains 0x16dfc0 (between
-// ~zDArray @0x16df40 and the zPTree ctor @0x16dff0) - binds them all.
+// ~_zdvec @0x16df40 and the zPTree ctor @0x16dff0) - binds them all.
 // ===========================================================================
 RVA(0x0016dfc0, 7)
 CButeNodeEntry::~CButeNodeEntry() {}
@@ -875,7 +875,7 @@ CButeNodeEntry::~CButeNodeEntry() {}
 // last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
-    : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, teardown) {
+    : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, teardown) {
     m_root = 0;
     m_lookupPending = 0;
 }
@@ -1146,7 +1146,7 @@ i32 FirstDiffBit(const char* a, const char* b) {
 // ===========================================================================
 // ProjTypeXfer (0x16e4f0) - serialize the type-name table entry resolved from an
 // archive record through the archive's slot dispatches. Resolves the entry id
-// (ar->m_14->m_1c) to its CTypeKeyColl entry (the inlined fast-range / Find /
+// (ar->m_14->m_1c) to its zDArray entry (the inlined fast-range / Find /
 // grow lookup), frees the stale node array, then xfers the entry name (slot
 // +0x0c) and id (slot +0x10); a second identical resolve xfers the name through
 // slot +0x14. Returns 1.
@@ -1245,7 +1245,7 @@ i32 Gap_16e6e0(void) {
 }
 
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
-// CTypeKeyColl ctor on the existing global, exactly as the retail in-place build).
+// zDArray ctor on the existing global, exactly as the retail in-place build).
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -1253,7 +1253,7 @@ inline void* operator new(u32, void* p) {
 // g_typeColl's RUNTIME-PHASE type is the canonical CTypeCollRuntime (a zDArray<CString>
 // collection; <Gruntz/TypeCollRuntime.h>) whose ??_7 @0x5f04e4 + ScalarDelete (0x16ea20)
 // are owned by src/Bute/TypeCollRuntime.cpp. After DynInitTypeColl builds g_typeColl
-// through the CTypeKeyColl ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
+// through the zDArray ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
 // re-stamps that live 1-slot runtime vtable @0x5f04e4 over it. The former .cpp-local
 // `struct CTypeCollRuntime` view (a duplicate binding of 0x1f04e4 that clashed with
 
@@ -1261,12 +1261,12 @@ inline void* operator new(u32, void* p) {
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
 // collection with the [0x7d0, 0x7da] id range, stamp its runtime vtable, then
 // free the (initially stale) node array. The construct is a placement-new of the
-// real CTypeKeyColl ctor (0x16dda0) over the global; the runtime re-stamp swaps in
+// real zDArray ctor (0x16dda0) over the global; the runtime re-stamp swaps in
 // the live g_typeCollRunVtbl over the just-built construction vtable.
 // ===========================================================================
 // @early-stop
 // placement-new null-guard + count-down-induction wall (~70%). Two residues:
-// (1) constructing g_typeColl now goes through the REAL CTypeKeyColl ctor via a
+// (1) constructing g_typeColl now goes through the REAL zDArray ctor via a
 // placement-new (the only way to invoke a ctor on the pre-pinned extern global);
 // MSVC5 emits the placement null-guard `mov eax,&g_typeColl; test eax,eax; je`
 // that retail's direct in-place build lacks - intrinsic to placement-new of a
@@ -1277,7 +1277,7 @@ inline void* operator new(u32, void* p) {
 // Deferred to the final sweep.
 RVA(0x0016e730, 0x51)
 void DynInitTypeColl() {
-    new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, reinterpret_cast<void*>(1));
+    new (&g_typeColl) zDArray(4, 0x7d0, 0x7da, reinterpret_cast<void*>(1));
     CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     if (nodes != 0) {
@@ -1299,7 +1299,7 @@ void DynInitTypeColl() {
 // g_typeColl's runtime vptr (0x5f04e4), frees the node array (the same count-down loop
 // calling the element dtor 0x1b8cde), then drains g_typeColl @0x6bf650 via 0x16cf40. A
 // COMPILER-GENERATED atexit thunk (same restructure blocker as ??__Fg_buteTree above);
-// homed pending g_typeColl defined with its real ~CTypeKeyColl chain.
+// homed pending g_typeColl defined with its real ~zDArray chain.
 RVA(0x0016e7a0, 0x48)
 i32 Gap_16e7a0(void) {
     return 0;

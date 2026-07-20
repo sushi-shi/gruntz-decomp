@@ -703,7 +703,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 // CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
-// table's fast-range bounds via the shared zDArray registry ctor
+// table's fast-range bounds via the shared _zdvec registry ctor
 // (RegisterRange(0x7d0, 0x7da), 0x408710 through the 0x3742 ILT thunk). The
 // Construct body of this class's static-registry triple ($E frag @0xc6b30,
 // atexit thunk 0xc6b80); same archetype as CProjectile::RegisterRange (0x0df920).

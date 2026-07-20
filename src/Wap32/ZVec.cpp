@@ -3,7 +3,7 @@
 // hierarchy  zDArray<int (CUserLogic::*)(void)> : _zdvec : _zvec : zErrHandling.
 //
 // REAL-POLYMORPHIC now: the virtual dtor lets cl emit ??_7zDArray and auto-stamp
-// the implicit vptr at ~zDArray entry (VTBL binds it at the retail dtor-vtable RVA).
+// the implicit vptr at ~_zdvec entry (VTBL binds it at the retail dtor-vtable RVA).
 // The one manual store that survives is Destroy()'s re-stamp of the LIVE vtable
 // (0x5e70fc) - a NON-ctor/dtor re-stamp cl cannot express (the vtable-realization-
 // ctor-boundary wall), so it stays as an explicit `*(void**)this` store of the
@@ -20,7 +20,7 @@
 #include <string.h> // memcpy (0x121960), memset (rep stos)
 
 // The live zDArray<...> vtable (0x5e70fc) Destroy() re-stamps (reloc-masked address
-// operand). ~zDArray (0x16df40) and its emitted ??_7zDArray + the VTBL binding
+// operand). ~_zdvec (0x16df40) and its emitted ??_7zDArray + the VTBL binding
 // moved to the merged container TU (src/Gruntz/TypeKeyColl.cpp, wave2-H) along
 // with _zvec::GrowTo (0x16da80) - their retail home.
 extern void* const zDArrayLiveTable; // 0x5e70fc
@@ -37,30 +37,30 @@ extern void* const zDArrayLiveTable; // 0x5e70fc
 // (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.
 
 // ---------------------------------------------------------------------------
-// zDArray::Destroy() - re-stamp the live vtable, then run ~zDArray. 0x8750.
-// @interleaver zDArray::Destroy emitted-in <boundary: ZDArrayDerived.cpp Construct
+// _zdvec::Destroy() - re-stamp the live vtable, then run ~_zdvec. 0x8750.
+// @interleaver _zdvec::Destroy emitted-in <boundary: ZDArrayDerived.cpp Construct
 // @0x8710 (before) + crt ??_G__non_rtti_object @0x8780 (after)>. A template-accessor
 // COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
 // @early-stop
 // 21B dead-store oddity: retail reserves a stack slot (push ecx; mov [esp],
-// m_base) for a discarded local then `call ~zDArray`; cl folds our local into a
+// m_base) for a discarded local then `call ~_zdvec`; cl folds our local into a
 // callee-saved reg (i32 form) or tail-jmps (void form). The spilled-but-unread
-// m_base local is not source-recoverable. Logic (re-stamp + run ~zDArray) exact.
+// m_base local is not source-recoverable. Logic (re-stamp + run ~_zdvec) exact.
 RVA(0x00008750, 0x15)
-i32 zDArray::Destroy() {
+i32 _zdvec::Destroy() {
     i32 tmp = reinterpret_cast<i32>(m_base);
     *reinterpret_cast<void**>(this) = const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
-    this->~zDArray();
+    this->~_zdvec();
     return tmp;
 }
 
-// zDArray::IndexToPtr(i) - the base accessor plus the per-slot member-ptr fixup
+// _zdvec::IndexToPtr(i) - the base accessor plus the per-slot member-ptr fixup
 // over the freshly-grown region. 0x310f0.
-// @interleaver zDArray::IndexToPtr emitted-in <boundary: BattlezMapConfig.cpp
+// @interleaver _zdvec::IndexToPtr emitted-in <boundary: BattlezMapConfig.cpp
 // Method_030f20 @0x30f20 (before) + FreeNodePool.cpp Push @0x311b0 (after)>. A
 // template-accessor COMDAT the /Gy linker placed by first-use between two OTHER units.
 RVA(0x000310f0, 0x8d)
-char* zDArray::IndexToPtr(i32 i) {
+char* _zdvec::IndexToPtr(i32 i) {
     char* r;
     m_grown = 0;
     if (i >= m_lo && i <= m_hi) {
@@ -117,6 +117,6 @@ char* _zvec::IndexToPtr(i32 idx) {
 
 // ZVec.h + local class metadata (hosted at .cpp EOF; header untouched).
 SIZE_UNKNOWN(_zvec);          // dynamic-vector base (partial: no true base chain)
-SIZE_UNKNOWN(zDArray);        // derived; adds override, no storage
+SIZE_UNKNOWN(_zdvec);        // derived; adds override, no storage
 SIZE_UNKNOWN(zErrHandling);   // error-reporter subobject view
 SIZE_UNKNOWN(zMemberPtrSlot); // member-ptr slot fixup view

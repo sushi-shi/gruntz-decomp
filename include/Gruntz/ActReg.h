@@ -1,5 +1,5 @@
 // ActReg.h - the activation-registrar archetype: CActReg IS the real registry class
-// (the CTypeKeyColl : zDArray : _zvec : CContainerErr chain == retail's RTTI chain
+// (the zDArray : _zdvec : _zvec : zErrHandling chain == retail's RTTI chain
 // zDArray<T> : _zdvec : _zvec : zErrHandling, docs/rtti-vtable-catalog.tsv). The
 // registries are lazily built .bss singletons (extern + DATA, no CRT init entry -
 // only g_typeColl has a real dynamic-init ctor call in retail), constructed through
@@ -13,13 +13,13 @@
 
 #include <rva.h>
 
-#include <Gruntz/TypeKeyColl.h> // the real registry chain (CTypeKeyColl : zDArray : _zvec)
+#include <Gruntz/TypeKeyColl.h> // the real registry chain (zDArray : _zdvec : _zvec)
 
-// The registry IS-A CTypeKeyColl: fields (m_lo/m_hi/m_base/m_spare/m_stride/m_alloc/
-// m_grown + the CContainerErr {vptr, m_errSink} head) and Construct/BaseConstruct/
+// The registry IS-A zDArray: fields (m_lo/m_hi/m_base/m_spare/m_stride/m_alloc/
+// m_grown + the zErrHandling {vptr, m_errSink} head) and Construct/BaseConstruct/
 // GrowTo/Destroy are all inherited from the real chain. This subclass only spells
 // the inline fast-range lookup the leaf dispatchers expand.
-struct CActReg : public CTypeKeyColl {
+struct CActReg : public zDArray {
     // 0x464e0 (defined out-of-line in FortressFlag.cpp, inside that band): the
     // STANDALONE copy of ResolveEntry below - same body. The two big act-register
     // fns (RegisterWarlordActions, RegisterActs_644af0) CALL it via ILT 0x3544

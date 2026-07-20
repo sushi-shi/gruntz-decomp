@@ -70,9 +70,9 @@ void SpawnPosSound(PosSoundObj* obj);
 // ~CUserBase (<Gruntz/UserLogic.h>), now bound by @rva-symbol in ActionArea.cpp
 // (RVA-adjacent; its obj emits the COMDAT). The former placeholder here
 // (`CUserBase87b0`, VTBL'd at 0x1e70fc) was a CONFLATION built on a broken thunk
-// chase: 0x1e70fc's slot-0 sdd (0x8780) calls thunk 0x2ea5 -> 0x8750 (the zDArray
+// chase: 0x1e70fc's slot-0 sdd (0x8780) calls thunk 0x2ea5 -> 0x8750 (the _zdvec
 // dtor), NOT 0x87b0 - and 0x1e70fc's RTTI COL names
-// .?AV?$zDArray@P8CUserLogic@@AEHXZ@@ (the PMF zDArray instantiation), so binding
+// .?AV?$_zdvec@P8CUserLogic@@AEHXZ@@ (the PMF _zdvec instantiation), so binding
 // it to any plain-identifier class was wrong by construction. 0x87b0's real
 // identity is proven by its ~150 EH-unwind-funclet callers (every CUserBase-family
 // ctor's partial-unwind calls it via thunk 0x1343) + its body: stamp ??_7CUserBase

@@ -188,7 +188,7 @@ i32 CueVisible(i32 viewport, i32 x, i32 y);
 SIZE_UNKNOWN(CGruntCell);
 class CGruntCell {
 public:
-    // GetName @0x310f0 IS zDArray::IndexToPtr; cast at each call.
+    // GetName @0x310f0 IS _zdvec::IndexToPtr; cast at each call.
 };
 
 // (The entrance-animation player @CGrunt+0x154 (== CGruntBehaviorLeaf::m_drawState,
@@ -235,10 +235,10 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 // via <Gruntz/UserLogic.h> -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h> (included above).
 
 // The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650
-// (RTTI CTypeKeyColl, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
+// (RTTI zDArray, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
 // (GetNameRecord/GetNameRecords/ScratchResolve/Probe/Reserve/MapCell*) now live on
-// the canonical CTypeKeyColl, and the consuming grunt TUs reference `g_typeColl`
-// (extern CTypeKeyColl, DATA 0x002bf650) directly. GetNameRecord (thunk 0x4310f0)
+// the canonical zDArray, and the consuming grunt TUs reference `g_typeColl`
+// (extern zDArray, DATA 0x002bf650) directly. GetNameRecord (thunk 0x4310f0)
 // maps an anim-set node to a record whose +0 is the anim-name char*; GetNameRecords
 // (thunk 0x4312a0) resolves into the ((CAnimScratchString*)g_typeColl.m_alloc) CString[] (torn down per reject,
 // the loop-strength-reduction wall from docs/patterns).

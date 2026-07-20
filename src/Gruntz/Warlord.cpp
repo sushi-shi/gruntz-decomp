@@ -46,7 +46,7 @@
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>            // the shared CActReg (g_actionTable @0x644610)
-#include <Gruntz/TypeKeyColl.h>       // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h>       // the shared zDArray (g_typeColl @0x6bf650)
 #include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_buteTree/GruntRand
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog; Lookup 0x1b8438)
@@ -124,7 +124,7 @@ static const char s_keyF[] = "F";
 // g_typeColl is the parallel growable key collection; g_actionTable holds the
 // per-type action-handler pointer slots.
 
-// CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
+// zDArray (SetAtGrow == grow + assign, inlined in retail) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
 
 // g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.

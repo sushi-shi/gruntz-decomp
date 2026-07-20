@@ -168,7 +168,7 @@ i32 g_movingSeed;
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
 //     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
+//   * grid/record stride - (const char*)((_zdvec*)((char*)this + (3*col+row+0xb)*0x68)),
 //     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
 //     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
@@ -923,7 +923,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
-            const char* nm = reinterpret_cast<const char*>((reinterpret_cast<zDArray*>(&m_cells[index]))->IndexToPtr(0));
+            const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0));
             m_38->ApplyLookupSprite(nm, frame);
         }
         goto store;
@@ -960,7 +960,7 @@ idle:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<zDArray*>(&m_cells[index].m_idle))->IndexToPtr(0));
+        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index].m_idle))->IndexToPtr(0));
         m_38->ApplyLookupSprite(nm, frame);
     }
     goto store;
@@ -974,7 +974,7 @@ walk:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<zDArray*>(&m_cells[index].m_walk))->IndexToPtr(0));
+        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index].m_walk))->IndexToPtr(0));
         m_38->ApplyName(nm);
     }
 

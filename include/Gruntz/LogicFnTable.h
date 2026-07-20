@@ -1,6 +1,6 @@
 // LogicFnTable.h - the per-logic-class command-dispatch table, the single shared
 // shape of the zDArray<int (CUserLogic::*)(void)> registry every per-class logic
-// module builds (RTTI ULogicFnTable / .?AV?$zDArray@P8CUserLogic@@AEHXZ@@). Each
+// module builds (RTTI ULogicFnTable / .?AV?$_zdvec@P8CUserLogic@@AEHXZ@@). Each
 // concrete dispatch global (g_wormholeDispatch, g_simpleAnimDispatch, the icon
 // action/state tables, the g_logicDispatch_* set) keeps its own DATA-pinned symbol
 // but shares this one definition. Constructed over the index band [0x7d0, 0x7da]
@@ -11,7 +11,7 @@
 
 #include <Wap32/ZVec.h> // the zDArray<member-fn-ptr> base
 
-struct LogicFnTable : public zDArray {
+struct LogicFnTable : public _zdvec {
     LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
 };
 

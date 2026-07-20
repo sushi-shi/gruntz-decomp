@@ -917,7 +917,7 @@ static const char s_strRBrack[] = "]";
 // only because neither subclass adds destructible state. The inline ~zPTree
 // expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@CButeStore@@
 // @0x16e070), fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
-// (~CContainerErr 0x16da60). __thiscall, /GX.
+// (~zErrHandling 0x16da60). __thiscall, /GX.
 // 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
 // second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
 // ===========================================================================

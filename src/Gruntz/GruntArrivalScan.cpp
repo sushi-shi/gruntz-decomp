@@ -38,7 +38,7 @@
 
 // Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
 // GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call
-// 0x437c -> zDArray::IndexToPtr @0x310f0). Canonical CTypeKeyColl model, no casts.
+// 0x437c -> _zdvec::IndexToPtr @0x310f0). Canonical zDArray model, no casts.
 
 // g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.

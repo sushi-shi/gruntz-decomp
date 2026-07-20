@@ -64,7 +64,7 @@
 #include <Gruntz/GruntPuddle.h>    // CGruntPuddle (the m_baseList spawn-candidate element)
 #include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
 #include <Gruntz/QueueDrainHost.h> // the level's game-object collection + its cells
-#include <Wap32/zBitVec.h>         // CContainerErr (the zvec error-report target)
+#include <Wap32/zBitVec.h>         // zErrHandling (the zvec error-report target)
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LevelInfo.h>      // the canonical CLevelInfo (LoadConfig arg1)
 #include <Bute/ButeMgr.h>          // CButeMgr (LoadConfig reads the g_buteMgr singleton)
@@ -936,7 +936,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //   * the CORE is a long, highly REGULAR chain of eligibility-gated type-dispatch
 //     arms, each of the shape:
 //        if (unit->m_entranceCommitted == 0) goto handler;            // + m_368/m_1e4/m_220 guards
-//        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // CTypeKeyColl lookup
+//        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // zDArray lookup
 //        if (strcmp(name, "<CODE>") == 0) goto handler;     // MSVC5-inlined strcmp
 //     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / s_codeI /
 //     s_codeG / s_codeL / s_codeP / k_60bebc / k_60cc90 / k_60cc94), each arm then
@@ -944,7 +944,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //     geometry, CRect clamps, CButeMgr::GetIntDef config reads, and hand-offs to the
 //     sibling state-machine methods in this TU).
 // callees (all named, reloc-masked): winapi_02c140/02ae00/02e3a0/031ca0/032060 (the
-//   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (CTypeKeyColl, x52),
+//   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (zDArray, x52),
 //   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
 //   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion32ce0,
 //   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
@@ -5326,11 +5326,11 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 // (((CVariantSlot*)this->m_err)->Set((void*)this, sentinel, code)). This is the inlined zvec overflow
 // path lifted out as a standalone helper.
 // ===========================================================================
-// The receiver IS CContainerErr (<Wap32/zBitVec.h>): vptr @+0x00, CVariantSlot*
+// The receiver IS zErrHandling (<Wap32/zBitVec.h>): vptr @+0x00, CVariantSlot*
 // m_errSink @+0x04 - exactly the `ZErrTarget` view's two slots, and the body is the
 // verbatim tail of the inlined grow-on-miss path (CActReg::ResolveEntry). View
 RVA(0x00034960, 0x24)
-void CContainerErr::Report(i32 sentinel, i32 code) {
+void zErrHandling::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(static_cast<void*>(this), sentinel, code);
 }

@@ -17,7 +17,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x64556c singleton (CGameRegistry; m_68/m_world/view bounds)
-#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h> // the shared zDArray (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
@@ -39,7 +39,7 @@
 // so `p++` advances by 4; the ctor is ??0CString@@QAE@XZ @0x1b9b93, reloc-masked). The
 // former EngStr4 view IS the real MFC CString (m_pszData@+0 == CString's LPTSTR); used
 // directly (CString comes from <Gruntz/Grunt.h>'s <Mfc.h>).
-// CTypeKeyColl (IndexToPtr == thunk 0x403864 -> node) is the shared
+// zDArray (IndexToPtr == thunk 0x403864 -> node) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
