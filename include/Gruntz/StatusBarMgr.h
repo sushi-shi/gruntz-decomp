@@ -190,27 +190,9 @@ struct CSbiStatObj {
 };
 SIZE_UNKNOWN(CSbiStatObj);
 
-// The element type of the +0x204 pointer array: an engine object whose vtable
-// slot 0x30 (index 12) is a __thiscall void(int) notifier.
-class CSbiSlotPtr {
-public:
-    virtual void Destroy();      // slot 0  scalar-deleting dtor
-    virtual void Serialize();    // slot 1
-    virtual void Setup();        // slot 2
-    virtual void ClearFrame();   // slot 3
-    virtual void Poll();         // slot 4
-    virtual void Tick();         // slot 5
-    virtual void HitHandlerA();  // slot 6
-    virtual void HitHandlerB();  // slot 7
-    virtual void HitHandlerC();  // slot 8
-    virtual void HitHandlerD();  // slot 9
-    virtual void Refresh();      // slot 10
-    virtual void Configure();    // slot 11
-    virtual void Notify(i32 on); // +0x30 (slot 12)
-    char m_pad4[0x14 - 0x4];
-    i32 m_rect14[4]; // +0x14  falling-item rect (UpdateFallingItemStatusBar)
-};
-SIZE_UNKNOWN(CSbiSlotPtr);
+// (CSbiSlotPtr is GONE - the +0x204 elements are the real CSBI_ImageSet family;
+// its "slot 12" Notify(i32) is CSBI_ImageSet's own slot-12 virtual, slot 10 is
+// CStatusBarItem::SetSubtype. See docs task #22 / the vtable atlas.)
 
 // A singly-linked notify node (the +0xbc list element): next ptr at +0, the
 // payload object at +8. The payload's vtable slot 0 is a __thiscall void(int).
