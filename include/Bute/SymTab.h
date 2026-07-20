@@ -28,7 +28,7 @@
 //   +0x30/+0x34      : link words (zero-init).
 //   +0x38  m_subTabs : CHashB - child-scope table (destructed at trylevel -1).
 //   +0x40  m_symbols : CHash  - leaf-symbol table (destructed at trylevel 0).
-//   +0x48  m_buf48   : char* - a second owned buffer (freed in dtor).
+//   +0x48  m_mappedBuf : char* - the owned mapped/shared buffer (freed in dtor; nonzero = mapping active).
 #ifndef SRC_BUTE_SYMTAB_H
 #define SRC_BUTE_SYMTAB_H
 
@@ -170,41 +170,14 @@ public:
 };
 SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
-// ---------------------------------------------------------------------------
-// CSymLeafBuilder - the leaf-VALUE-record parse slot Build (0x139710) populates from a
-// parse-stream record and ~CSymRec/AddNodeSubEntry tear down via Teardown (0x1397a0).
-// The owning scope at +0x10, the symbol-record back-ptr at +0x04, three parse values
-// (f1/f2/f3) at +0x14/+0x08/+0x0c, the source stream at +0x34, a self-ptr at +0x30, two
-// zeroed counters (+0x18/+0x38). Build's rec/str/stream args are void* in retail (its
-// 11-arg __thiscall signature), so the record/stream slots stay void*. TU-local method
-// bodies live in SymTab.cpp. Field names are placeholders.
-struct CSymLeafBuilder {
-    void Build(
-        CSymTab* owner,
-        const char* name,
-        void* f4,
-        void* rec,
-        void* str2,
-        void* f3,
-        void* f1,
-        void* f2,
-        void* f6,
-        void* arr,
-        void* stream
-    );                     // 0x139710
-    void Teardown();       // 0x1397a0 (leaf-value teardown; called by ~CSymRec + AddNodeSubEntry)
-    char* m_name;          // +0x00  strdup(name) (or null)
-    void* m_record;        // +0x04  rec
-    void* m_typeTag;       // +0x08  the Build f2 type-tag slot (opaque per retail's void* sig)
-    i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
-    CSymTab* m_ownerScope; // +0x10  owning scope (Teardown reads its m_buf48)
-    i32 m_14;              // +0x14  f1   (read by ApplyRange)
-    i32 m_18;              // +0x18  = 0
-    CHashElement m_node;   // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
-    void* m_sourceStream;  // +0x34  source stream
-    void* m_valueBuf;      // +0x38  the owned leaf-value buffer (0 in Build; Teardown frees)
-};
-SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
+// (CSymLeafBuilder is GONE - the 0x3c "parse slot" IS CParseSource through its
+// lifecycle: Build fills the record the stream methods then read. Offset for offset:
+// m_record==m_entry, m_typeTag==+0x08, f3==m_length, m_ownerScope==m_owner (the
+// owning scope - the SAME +0x10 both phases store; the ex-ParseMappedSource "mapped
+// source" WAS the scope: baseOffset==CSymTab::m_baseOffset, mapping==m_mappedBuf),
+// f1==m_base, +0x18==m_cursor, m_node==m_node1c, m_sourceStream==m_reader,
+// m_valueBuf==m_buffer. Build/Teardown are CParseSource methods now.)
+struct CParseSource; // <Gruntz/ParseSource.h>
 
 // ---------------------------------------------------------------------------
 // CSymTab - the recursive scope node.
@@ -328,7 +301,8 @@ public:
     // The void* was what forced the `(i32)sub->m_04` / `(i32)sub->m_08` reads.
     i32 m_dataOff;       // +0x04  sub-scope data offset in the stream
     i32 m_dataSize;      // +0x08  sub-scope data byte count
-    i32 m_0c;            // +0x0c  min-accumulator in ApplyRange (starts at -1)
+    i32 m_baseOffset;    // +0x0c  the scope's base file offset (ApplyRange min-accumulates it,
+                         //        seed -1; the parse-stream side reads it as the mapped-window base)
     i32 m_10;            // +0x10  sum-accumulator in ApplyRange
     // +0x14 the name-keyed clock seed: every construction site passes
     // `(void*)owner->MakeSeed()`, and MakeSeed (0x13ba70) returns i32 - the cast existed
@@ -350,7 +324,7 @@ public:
     CSymTabNode m_node20; // +0x20
     CHashB m_subTabs;     // +0x38  child-scope table (Walk 0x13c3f0; destructed last)
     CHash m_symbols;      // +0x40  leaf-symbol table (Walk 0x13c270; destructed first)
-    char* m_buf48;        // +0x48
+    char* m_mappedBuf;    // +0x48  owned mapped/shared buffer (nonzero = mapping active)
 };
 SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 

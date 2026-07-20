@@ -86,17 +86,17 @@ struct CParserObjList : public CObjList {
 SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
 
 // The parse-slot record block CSlotNode owns is an array of n*0x3c-byte leaf-record
-// slots - the same 0x3c CSymLeafBuilder record (m_node @+0x1c) the parser fills and
+// slots - the same 0x3c CParseSource record (m_node1c @+0x1c) the parser fills and
 // re-files; defined in SymTab.cpp. (A freshly-popped slot is init'd as a CParseSource
 // parse stream and later repurposed as a leaf value record - one 0x3c memory, two views.)
-struct CSymLeafBuilder;
+struct CParseSource; // the 0x3c leaf parse record (ex 'CSymLeafBuilder')
 
 // A node owned by the +0x88 DSoundList m_nodes: its intrusive chain link is at +0x00
 // (so the list head points straight at it) and it owns a buffer at +0x08; the
 // list uses the shared DSoundList::InsertHead/Unlink (0x1390e0/0x1391e0) ops.
 struct CSlotNode {
     DSoundLink m_link;         // +0x00  intrusive chain node { next, prev }
-    CSymLeafBuilder* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
+    CParseSource* m_buffer;    // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(CSlotNode, 0xc);
 
@@ -200,7 +200,7 @@ public:
     // table is empty, Rez-alloc a fresh block of m_parseSlotBlockCount parse slots, init each, stamp
     // their self-ptrs + register them into m_hash, link the block into m_nodes, then
     // pop the first. Returns the popped record (or 0 on allocation failure).
-    CSymLeafBuilder* PopParseSlot(); // 0x13c0c0  (pops a leaf-record parse slot from the pool)
+    CParseSource* PopParseSlot(); // 0x13c0c0  (pops a leaf parse record from the pool)
 
     // MakeSeed: the name-keyed clock-seed builder (0x13ba70), __thiscall on the parser
     // (ecx = this; body ignores it, returning time(&t)). The real method - every caller

@@ -34,12 +34,10 @@ typedef enum ParseEntryTag {
 
 // The +0x10 mapped-source object: m_baseOffset is its base file offset, m_mapping the
 // live mapping pointer (0 when not mapped). External shape, accessed by offset.
-struct ParseMappedSource {
-    char pad_00[0x0c];
-    i32 m_baseOffset; // +0x0c base file offset
-    char pad_10[0x48 - 0x10];
-    i32 m_mapping; // +0x48 mapping base (0 = inactive)
-};
+// (ParseMappedSource is GONE - the "mapped source" at +0x10 IS the owning CSymTab
+// scope: its +0x0c "baseOffset" is CSymTab::m_baseOffset and its +0x48 "mapping"
+// is CSymTab::m_mappedBuf, same 0-gate. One +0x10 field, one pointee.)
+class CSymTab; // <Bute/SymTab.h>
 
 // The +0x34 virtual reader: its vtable slot 2 (+0x08) is Read(base, pos, len,
 // dst) -> bytes read. Modeled as a polymorphic class so the `mov edx,[ecx];
@@ -107,15 +105,21 @@ struct CParseSource {
     // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
     // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
     CParseSource* Init();
+    // The leaf-record fill/teardown pair (0x139710/0x1397a0, bodies in SymTab.cpp with
+    // the rest of this class's band; the ex-CSymLeafBuilder methods).
+    void Build(CSymTab* owner, const char* name, void* f4, void* rec, void* str2, i32 f3,
+               i32 f1, void* f2, void* f6, void* arr, struct ParseVReader* stream);
+    void Teardown();
     i32 SetPos(i32 pos); // 0x139ae0 (out-of-line: m_cursor = pos; return 1)
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
     char* m_name;                      // +0x00 source name
     void* m_entry;                     // +0x04 keyed-store entry (first dword = tag)
-    i32 m_08;                          // +0x08 (role unproven)
+    void* m_typeTag;                   // +0x08  type tag (the Build f2 slot)
     u32 m_length;                      // +0x0c total byte length / limit
-    ParseMappedSource* m_mapped;       // +0x10 mapped source
+    CSymTab* m_owner;                  // +0x10  owning scope (Build stores it; the stream side
+                                       //        reads its m_baseOffset/m_mappedBuf as the mapped window)
     i32 m_base;                        // +0x14 source base ptr
     i32 m_cursor;                      // +0x18 read cursor
     // +0x1c embedded parse-slot hash-node (0x18 B, vptr @0x5ef740, spans +0x1c..+0x33).

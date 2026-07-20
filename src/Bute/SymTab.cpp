@@ -3,7 +3,7 @@
 // cremusreadstream (ParseSource.cpp), symrec (SymRec.cpp) and symparser
 // (SymParser.cpp) units were text-A-B-A-woven slices of this file and are folded
 // in, in retail-RVA order: CParseSource (the positioned byte-reader / parse
-// slot), CSymLeafBuilder, CSymRec (the leaf record), CSymTab (the scope tree)
+// slot), CParseSource, CSymRec (the leaf record), CSymTab (the scope tree)
 // and CSymParser (the parser/owner) - plus two stray fns that carry Rez names
 // but whose text AND private .data cells sit inside this obj's band
 // (Load@CRezDirNode 0x13a0f0, FindEntry@CRezDir 0x13c080; @identity-TODO).
@@ -72,7 +72,7 @@ RVA(0x001396f0, 0x1a)
 CParseSource* CParseSource::Init() {
     new (&m_node1c) CParseSlotHashNode; // stamps the vptr + zeroes m_record (+0x30)
     m_reader = 0;
-    m_mapped = 0;
+    m_owner = 0;
     m_name = 0;
     m_node1c.m_record = this; // the element's record IS this source (key = m_name @+0)
     return this;
@@ -84,10 +84,10 @@ CParseSource* CParseSource::Init() {
 // values (f1/f2/f3) at +0x14/+0x08/+0x0c, the source stream at +0x34, a self-pointer
 // at +0x30, and two zeroed counters (+0x18/+0x38). ApplyRange reads +0x0c (added into
 // m_10) and +0x14 (the min/max accumulator key) back out. Field names are placeholders.
-// CSymLeafBuilder (the leaf-record parse slot) now lives in <Bute/SymTab.h> (included
+// CParseSource (the leaf-record parse slot) now lives in <Bute/SymTab.h> (included
 // above) - a real class belongs in the module header. Method bodies stay here.
 
-// CSymLeafBuilder::Build (0x139710): populate a freshly-popped leaf-record slot from a
+// CParseSource::Build (0x139710): populate a freshly-popped leaf-record slot from a
 // parse-stream record. The name is duplicated through the throwing ::operator new
 // (0x1b9b46) when present, else stored as-is (null). __thiscall, callee-cleans its 11
 // stack args (ret 0x2c). f4/str2/f6/arr are forwarded by the caller but consumed by a
@@ -98,21 +98,21 @@ CParseSource* CParseSource::Init() {
 // `call rel32` pairing base's ??2@YAPAXI@Z against the delinker's name for 0x1b9b46
 // (RezAlloc) - the same documented scoring artifact the CSymTab ctor below carries.
 RVA(0x00139710, 0x8d)
-void CSymLeafBuilder::Build(
+void CParseSource::Build(
     CSymTab* owner,
     const char* name,
     void* f4,
     void* rec,
     void* str2,
-    void* f3,
-    void* f1,
+    i32 f3,
+    i32 f1,
     void* f2,
     void* f6,
     void* arr,
-    void* stream
+    ParseVReader* stream
 ) {
-    m_sourceStream = stream;
-    m_ownerScope = owner;
+    m_reader = stream;
+    m_owner = owner;
     if (name == 0) {
         m_name = const_cast<char*>(name);
     } else {
@@ -121,49 +121,49 @@ void CSymLeafBuilder::Build(
             strcpy(m_name, name);
         }
     }
-    m_record = rec;
-    m_0c = reinterpret_cast<i32>(f3);
-    m_14 = reinterpret_cast<i32>(f1);
+    m_entry = rec;
+    m_length = f3;
+    m_base = f1;
     m_typeTag = f2;
-    m_valueBuf = 0;
-    m_18 = 0;
-    m_node.m_record = this;
+    m_buffer = 0;
+    m_cursor = 0;
+    m_node1c.m_record = this;
 }
 
 // ---------------------------------------------------------------------------
-// CSymLeafBuilder::Teardown (0x1397a0, RVA-adjacent to CSymLeafBuilder::Build): the
+// CParseSource::Teardown (0x1397a0, RVA-adjacent to CParseSource::Build): the
 // leaf-VALUE-record teardown. Free the strdup'd name (m_name); then free the owned
-// value buffer (m_valueBuf) UNLESS the owning scope's shared buffer is live (m_ownerScope &&
-// m_ownerScope->m_buf48 != 0); then clear nine fields. __thiscall, void (the two
-// `if (m_valueBuf) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
+// value buffer (m_buffer) UNLESS the owning scope's shared buffer is live (m_owner &&
+// m_owner->m_mappedBuf != 0); then clear nine fields. __thiscall, void (the two
+// `if (m_buffer) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
 // m_valTable payload and by CSymTab::AddNodeSubEntry (0x13a530) when a stale value key
-// is re-scanned - proving the record is the leaf VALUE record CSymLeafBuilder::Build
+// is re-scanned - proving the record is the leaf VALUE record CParseSource::Build
 // fills.
 RVA(0x001397a0, 0x57)
-void CSymLeafBuilder::Teardown() {
+void CParseSource::Teardown() {
     if (m_name) {
         ::operator delete(m_name);
     }
-    if (m_ownerScope != 0) {
-        if (m_ownerScope->m_buf48 == 0) {
-            if (m_valueBuf) {
-                ::operator delete(m_valueBuf);
+    if (m_owner != 0) {
+        if (m_owner->m_mappedBuf == 0) {
+            if (m_buffer) {
+                ::operator delete(reinterpret_cast<void*>(m_buffer));
             }
         }
     } else {
-        if (m_valueBuf) {
-            ::operator delete(m_valueBuf);
+        if (m_buffer) {
+            ::operator delete(reinterpret_cast<void*>(m_buffer));
         }
     }
     m_name = 0;
-    m_record = 0;
+    m_entry = 0;
     m_typeTag = 0;
-    m_0c = 0;
-    m_valueBuf = 0;
-    m_ownerScope = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_node.m_record = 0;
+    m_length = 0;
+    m_buffer = 0;
+    m_owner = 0;
+    m_base = 0;
+    m_cursor = 0;
+    m_node1c.m_record = 0;
 }
 
 // ===========================================================================
@@ -215,8 +215,8 @@ i32 Gap_139950(void) {
 // ===========================================================================
 RVA(0x00139960, 0x6b)
 i32 CParseSource::BeginParse() {
-    if (m_mapped->m_mapping != 0) {
-        return m_base - m_mapped->m_baseOffset + m_mapped->m_mapping;
+    if (m_owner->m_mappedBuf != 0) {
+        return m_base - m_owner->m_baseOffset + reinterpret_cast<i32>(m_owner->m_mappedBuf);
     }
     if (m_buffer != 0) {
         return m_buffer;
@@ -255,9 +255,9 @@ i32 CParseSource::EndParse() {
 // ===========================================================================
 RVA(0x00139a40, 0x95)
 i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
-    ParseMappedSource* sd = m_mapped;
-    if (sd->m_mapping != 0) {
-        memcpy(dst, reinterpret_cast<const void*>((m_base - sd->m_baseOffset + pos + sd->m_mapping)), len);
+    CSymTab* sd = m_owner;
+    if (sd->m_mappedBuf != 0) {
+        memcpy(dst, sd->m_mappedBuf + (m_base - sd->m_baseOffset + pos), len);
         return 1;
     }
     if (m_buffer != 0) {
@@ -301,9 +301,9 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
         want = m_length - pos;
     }
     if (want != 0) {
-        ParseMappedSource* sd = m_mapped;
-        if (sd->m_mapping) {
-            const char* base = reinterpret_cast<const char*>((m_base - sd->m_baseOffset + sd->m_mapping + pos));
+        CSymTab* sd = m_owner;
+        if (sd->m_mappedBuf) {
+            const char* base = sd->m_mappedBuf + (m_base - sd->m_baseOffset + pos);
             memcpy(dst, base, want);
             m_cursor += want;
             return want;
@@ -353,7 +353,7 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
 
 // ~CSymRec (0x139cf0): drain m_keyTable when the owning parser's m_6c flag is
 // set, then drain m_valTable - re-filing each node's payload (tearing it down
-// via CSymLeafBuilder::Teardown @0x1397a0 above) back to the parser's free pool -
+// via CParseSource::Teardown @0x1397a0 above) back to the parser's free pool -
 // then zero the key + the node payload. The two CHash members auto-
 // destruct after the body (reverse declaration order, /GX trylevels).
 RVA(0x00139cf0, 0xd7)
@@ -371,7 +371,7 @@ CSymRec::~CSymRec() {
         CHashElement* cur = n;
         n = cur->Next();
         m_valTable.Remove(cur);
-        (static_cast<CSymLeafBuilder*>(cur->m_record))->Teardown();
+        (static_cast<CParseSource*>(cur->m_record))->Teardown();
         m_scope->m_owner->AddNode(cur->m_record);
     }
     m_key = 0;
@@ -411,8 +411,8 @@ CSymTab::CSymTab(
     m_dataOff = dataOff;
     m_owner = owner;
     m_10 = 0;
-    m_0c = 0;
-    m_buf48 = 0;
+    m_baseOffset = 0;
+    m_mappedBuf = 0;
     m_parent = parent;
     m_node20.m_record = this;
 }
@@ -448,16 +448,16 @@ CSymTab::~CSymTab() {
     if (m_name) {
         ::operator delete(m_name);
     }
-    if (m_buf48) {
-        ::operator delete(m_buf48);
+    if (m_mappedBuf) {
+        ::operator delete(m_mappedBuf);
     }
     m_name = 0;
     m_seed = 0;
     m_dataSize = 0;
     m_dataOff = 0;
     m_10 = 0;
-    m_0c = 0;
-    m_buf48 = 0;
+    m_baseOffset = 0;
+    m_mappedBuf = 0;
     m_owner = 0;
     m_parent = 0;
     m_node20.m_record = 0;
@@ -544,9 +544,9 @@ i32 CRezDirNode::Load(i32 childFlag) {
 // `recurse` is set, descend into every child scope (m_subTabs). Returns 1.
 RVA(0x0013a190, 0x94)
 i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
-    if (m_buf48 != 0) {
-        ::operator delete(m_buf48);
-        m_buf48 = 0;
+    if (m_mappedBuf != 0) {
+        ::operator delete(m_mappedBuf);
+        m_mappedBuf = 0;
     } else {
         void* rec = FirstSym();
         while (rec) {
@@ -702,7 +702,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_68 == 0) != 0) {
         return 0;
     }
-    CSymLeafBuilder* slot = m_owner->PopParseSlot();
+    CParseSource* slot = m_owner->PopParseSlot();
     slot->Build(
         this,
         static_cast<const char*>(name),
@@ -714,12 +714,12 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
         reinterpret_cast<void*>(m_owner->MakeSeed()),
         0,
         0,
-        m_owner->m_activeNode
+        reinterpret_cast<ParseVReader*>(m_owner->m_activeNode) // the active rez item IS the +0x34 virtual reader (slot-2 Read); fold TODO
     );
     if (slot == 0) {
         return 0;
     }
-    rec->m_valTable.Insert(&slot->m_node);
+    rec->m_valTable.Insert(&slot->m_node1c);
     u32 len = strlen(static_cast<char*>(name));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
@@ -728,7 +728,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
 }
 
 // AddNodeEntry (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
-// from this leaf record (the 11-arg CSymLeafBuilder::Build with the MakeSymSeed leftover-
+// from this leaf record (the 11-arg CParseSource::Build with the MakeSymSeed leftover-
 // args trick: f2 = the seed, str2/f3/f1 = 0, f6/arr/stream the carried leftover slots),
 // splice the built slot's +0x1c hash node into rec's (+0x24) sub-table, then bump the
 // parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen). Returns the popped slot. Non-EH
@@ -738,12 +738,12 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
 // builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
 RVA(0x0013a4b0, 0x75)
 i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
-    CSymLeafBuilder* slot = m_owner->PopParseSlot();
+    CParseSource* slot = m_owner->PopParseSlot();
     if (slot == 0) {
         return reinterpret_cast<i32>(slot);
     }
-    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, a3);
-    (static_cast<CSymRec*>(a2))->m_valTable.Insert(&slot->m_node);
+    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, reinterpret_cast<ParseVReader*>(a3));
+    (static_cast<CSymRec*>(a2))->m_valTable.Insert(&slot->m_node1c);
     u32 len = strlen(static_cast<char*>(a1));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
@@ -751,8 +751,8 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     return reinterpret_cast<i32>(slot);
 }
 
-// The removed value-entry's teardown (0x1397a0 = CSymLeafBuilder::Teardown, defined in
-// full above in this TU): `found` is the leaf VALUE record CSymLeafBuilder::Build fills.
+// The removed value-entry's teardown (0x1397a0 = CParseSource::Teardown, defined in
+// full above in this TU): `found` is the leaf VALUE record CParseSource::Build fills.
 
 // CSymTab::AddNodeSubEntry (0x13a530): the
 // leaf-merge helper ApplyRange calls when a value key already exists in a leaf record's
@@ -764,7 +764,7 @@ RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
     m_10 -= *reinterpret_cast<i32*>((reinterpret_cast<char*>(found) + 0xc));
     (static_cast<CSymRec*>(rec))->m_valTable.Remove(reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(found) + 0x1c)));
-    (static_cast<CSymLeafBuilder*>(found))->Teardown();
+    (static_cast<CParseSource*>(found))->Teardown();
     m_owner->AddNode(found);
     m_owner->m_08 = 0;
     return 1;
@@ -810,7 +810,7 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 // virtual; the `mov eax,[a0]; call [eax+8]` dispatch falls out of the base with no local
 // view.
 
-// CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
+// CParseSource (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
 
 // PopParseSlot is CSymParser::PopParseSlot (0x13c0c0); ApplyRange/AddNodeEntry call it
@@ -827,7 +827,7 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
-    m_0c = -1;
+    m_baseOffset = -1;
     i32 maxVal = 0;
     char* buf = static_cast<char*>(::operator new(static_cast<u32>(a2)));
     if (!buf) {
@@ -911,15 +911,15 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = 0;
             }
             if (!skip) {
-                CSymLeafBuilder* slot = m_owner->PopParseSlot();
-                slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, reinterpret_cast<void*>(a0));
-                rec->m_valTable.Insert(&slot->m_node);
-                m_10 = m_10 + slot->m_0c;
-                if (static_cast<u32>(slot->m_14) < static_cast<u32>(m_0c)) {
-                    m_0c = slot->m_14;
+                CParseSource* slot = m_owner->PopParseSlot();
+                slot->Build(this, name1, f4, rec, str2, reinterpret_cast<i32>(f3), reinterpret_cast<i32>(f1), f2, f6, arr, reinterpret_cast<ParseVReader*>(a0));
+                rec->m_valTable.Insert(&slot->m_node1c);
+                m_10 = m_10 + slot->m_length;
+                if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
+                    m_baseOffset = slot->m_base;
                 }
-                if (static_cast<u32>(slot->m_14) > static_cast<u32>(maxVal)) {
-                    maxVal = slot->m_14;
+                if (static_cast<u32>(slot->m_base) > static_cast<u32>(maxVal)) {
+                    maxVal = slot->m_base;
                 }
             }
             if (arr) {
@@ -1779,7 +1779,7 @@ i32 CRezDir::FindEntry(char* name) {
     return (*reinterpret_cast<i32*>((rec.raw + 6)) & 0x4000) == 0x4000;
 }
 
-// A parse-slot record is the 0x3c CSymLeafBuilder leaf record (m_node @+0x1c, self-ptr
+// A parse-slot record is the 0x3c CParseSource leaf record (m_node @+0x1c, self-ptr
 // @+0x30 == m_node.m_record). A freshly-popped slot is init'd as a CParseSource parse
 // stream (Init @0x1396f0 stamps its node vtable + nulls the body; reloc-masked
 // __thiscall) and later repurposed by Build into a leaf value record - one 0x3c memory,
@@ -1793,7 +1793,7 @@ i32 CRezDir::FindEntry(char* name) {
 // + the slot-block down-counter init loop idiom diverge, and the hash-method reloc
 // operands are differently named. Banked for the final sweep.
 RVA(0x0013c0c0, 0x14b)
-CSymLeafBuilder* CSymParser::PopParseSlot() {
+CParseSource* CSymParser::PopParseSlot() {
     CHashElement* e = m_hash.First();
     void* rec = e ? e->m_record : 0;
     if (rec == 0) {
@@ -1802,15 +1802,15 @@ CSymLeafBuilder* CSymParser::PopParseSlot() {
             return 0;
         }
         i32 n = m_parseSlotBlockCount;
-        CSymLeafBuilder* arr = static_cast<CSymLeafBuilder*>(RezAlloc(n * 0x3c));
+        CParseSource* arr = static_cast<CParseSource*>(RezAlloc(n * 0x3c));
         if (arr) {
-            CSymLeafBuilder* p = arr;
+            CParseSource* p = arr;
             i32 i = n;
             i--;
             if (i >= 0) {
                 i++;
                 do {
-                    (reinterpret_cast<CParseSource*>(p))->Init();
+                    p->Init();
                     p++;
                     i--;
                 } while (i);
@@ -1822,18 +1822,18 @@ CSymLeafBuilder* CSymParser::PopParseSlot() {
             return 0;
         }
         for (i32 j = 0; static_cast<u32>(j) < static_cast<u32>(m_parseSlotBlockCount); j++) {
-            CSymLeafBuilder* el = &node->m_buffer[j];
-            el->m_node.m_record = el;
-            m_hash.Insert(&el->m_node);
+            CParseSource* el = &node->m_buffer[j];
+            el->m_node1c.m_record = el;
+            m_hash.Insert(&el->m_node1c);
         }
         m_nodes.InsertHead(&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }
     if (rec) {
-        m_hash.Remove(&(static_cast<CSymLeafBuilder*>(rec))->m_node);
+        m_hash.Remove(&(static_cast<CParseSource*>(rec))->m_node1c);
     }
-    return static_cast<CSymLeafBuilder*>(rec);
+    return static_cast<CParseSource*>(rec);
 }
 
 // AddNode (0x13c210): splice a parse-slot record's intrusive node (its m_node @0x1c)
@@ -1841,7 +1841,7 @@ CSymLeafBuilder* CSymParser::PopParseSlot() {
 RVA(0x0013c210, 0x1a)
 void CSymParser::AddNode(void* rec) {
     if (rec) {
-        m_hash.Insert(&(static_cast<CSymLeafBuilder*>(rec))->m_node);
+        m_hash.Insert(&(static_cast<CParseSource*>(rec))->m_node1c);
     }
 }
 

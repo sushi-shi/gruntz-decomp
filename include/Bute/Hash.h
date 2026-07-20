@@ -86,7 +86,7 @@ SIZE(CHashSlot, 0x10);
 
 // A stored record's hash-element prefix: the vtable-bearing key-hash node the
 // engine splices into a bucket chain. Records EMBED one as a member (CSymRec::
-// m_symNode @+0x04, CSymLeafBuilder::m_node @+0x1c). Its slot-0 virtual
+// m_symNode @+0x04, CParseSource::m_node1c @+0x1c). Its slot-0 virtual
 // returns the bucket index for the element's key; Insert dispatches it and stamps
 // the owning table (+0xc) and computed bucket (+0x10); the payload sits at +0x14.
 // Hash() is left DECLARED-but-undefined (not pure) so the class is embeddable AND
