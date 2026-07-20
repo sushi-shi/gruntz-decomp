@@ -20,7 +20,7 @@
 #include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_childGroup
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CTmCell
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
-#include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
+#include <Gruntz/Ufo.h> // the REAL CUFO (the ex-L_13400 shell is dissolved)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h> // CActName (shared)
@@ -134,19 +134,18 @@ extern i32 VTrigLogic_11a700();
 // @early-stop
 // @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
 // ~CUFO, but retail's /O2 collapsed the CUFO:CPathHazard:CUserLogic dtor chain to a
-// FLAT CUserLogic teardown - it stamps ONLY 0x5e705c (CUserLogic vtable) then 0x5e70b4
-// (CUserBase vtable), never CUFO's (0x5e72b4) or CPathHazard's vptr (the intermediate
-// stamps are dead stores, eliminated). The real CUFO:CPathHazard model (Ufo.h) emits
-// those intermediate stamps -> byte-proven crater to 4.7%. This flat `: CUserLogic`
-// L_13400 model is the SAME faithful shape as the sibling CPathHazard leaf. 100%
-// byte-exact. A future pass could rename to CUFO by remodeling Ufo.h as a flat leaf.
-// Kept an EXPLICIT dtor body (not the implicit+pin form the CWapX-converted leaves
-// use): nothing constructs an L_13400, so no TU emits its vtable/??_G and an implicit
-// dtor would have no emitter for a pin to bind to. Its class is also NOT CWapX-converted
-// (unresolved identity - see BoundaryLeafLogicViews.h), so no base EH state exists to
-// block the restamp elision: the explicit body stays byte-exact here.
-RVA(0x00013400, 0x44)
-L_13400::~L_13400() {}
+// ~CUFO @0x13400 (ex the L_13400 flat-leaf shell): retail's dtor stamps ONLY the
+// CUserBase vtable - the intermediate CUFO/CPathHazard stamps are dead-store-
+// eliminated. An EXPLICIT chained dtor emits them (byte-proven 4.7% crater); the
+// IMPLICIT compiler-generated dtor gets the elision (the CDoNothingNormal
+// precedent). Nothing else constructs a CUFO in reconstructed code, so this
+// unpaired Realize emitter forces the ??_G/??1 COMDATs (the RealizeCDoNothingNormal
+// pattern); the ??1 is pinned by name below.
+// @rva-symbol: ??1CUFO@@UAE@XZ 0x00013400 0x44
+void RealizeUfoDtor(CUFO* p);
+void RealizeUfoDtor(CUFO* p) {
+    p->CUFO::~CUFO(); // qualified direct call - odr-uses the implicit ??1CUFO COMDAT
+}
 
 // --- CVoiceTrigger no-arg ctor (0x013470) --- the deserialize-path ctor: base
 // prologue + link + leaf vptr stamp (the empty body is enough for cl). It anchors

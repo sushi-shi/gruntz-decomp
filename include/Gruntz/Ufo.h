@@ -16,7 +16,11 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CUFO(CGameObject* obj);
-    virtual ~CUFO() OVERRIDE;    // slot 0
+    // NO user-declared dtor: retail's ??1 @0x13400 stamps ONLY the CUserBase vtable
+    // (all intermediate CUFO/CPathHazard stamps dead-store-eliminated) - the IMPLICIT
+    // compiler-generated dtor reproduces that elision (the CDoNothingNormal precedent);
+    // an explicit body emits the intermediate stamps (byte-proven 4.7% crater).
+    // Emitter + @rva-symbol pin: src/Gruntz/GruntVoice.cpp (the 0x13400 band's TU).
     virtual i32 Tick() OVERRIDE; // slot 16
     // CUFO::SerializeMove (slot 1, 0xb4c40) is the real override (defined in
     // GameObjectCtors.cpp): it wraps this non-virtual field-transfer helper and, on

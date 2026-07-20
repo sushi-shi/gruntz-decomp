@@ -23,36 +23,9 @@
 // funclets odr-use ~CUserLogic out-of-line, so the COMDAT is emitted and the body
 // is pinned by @rva-symbol in src/Gruntz/ActionArea.cpp.)
 
-// L_13400 - a REAL, distinct CUserLogic leaf: its own vtable is ??_7L_13400 @0x1e72b4
-// (slot 0 -> sdd 0x133d0 -> the dtor 0x13400; slot 1 = 0xb4c40; slot 2 = the GetTypeTag
-// at 0x133b0 returning LOGIC_VOICETRIGGER 0x426). @identity-TODO: that type tag says the
-// class is CVoiceTrigger, but CVoiceTrigger's own out-of-line dtor is already matched at
-// 0x135a0 with vtable 0x1e885c - i.e. ONE of the two bindings is wrong and the conflict
-// needs the CUFO/CVoiceTrigger/CPathHazard leaf-vtable family re-audited as a whole (see
-// the GruntVoice.cpp note). The vtable rva below is binary-proven either way.
-// NOT converted to the CWapX second base (MI1, 2026-07-17), deliberately: this
-// class's IDENTITY is unresolved (see the @identity-TODO above), and CWapX is a
-// per-CLASS RTTI fact - asserting it on a shell whose real class is unknown would
-// be a fabrication. The +0x34..0x3c triple stays flat, exactly as the ex-TILE_LOGIC_TAIL
-// spelled it, and the dtor stays an explicit body (nothing constructs an L_13400, so
-// no TU emits its vtable/??_G - an implicit dtor would have no emitter to pin).
-// Resolve the identity first (the CUFO/CVoiceTrigger/CPathHazard vtable-family audit);
-// the CWapX conversion follows for free once the real class is named.
-class L_13400 : public CUserLogic {
-public:
-    CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL)
-    CGameObject* m_38;   // +0x38
-    AnimWorkerObj* m_3c; // +0x3c
-public:
-    virtual ~L_13400() OVERRIDE;
-};
-SIZE_UNKNOWN(L_13400);
-// Its OWN vtable is 0x1e72b4 (slot0 -> sdd 0x133d0 -> the dtor 0x13400) and the audit
-// resolves that rva's RTTI name to CUFO - confirming the GruntVoice.cpp note. It stays
-// RELOC_VTBL (not VTBL) because binding it would force the CUFO rename + its 9 own slots,
-// and the real CUFO:CPathHazard:CUserLogic model is BYTE-PROVEN to crater this dtor to
-// 4.7% (MSVC5 /O2 collapses the chain to a flat CUserLogic teardown). @identity-TODO:
-// L_13400 == CUFO; the fold needs Ufo.h remodeled as a flat leaf.
-RELOC_VTBL(L_13400, 0x001e72b4); // its OWN vtable (== ??_7CUFO; see above)
+// (L_13400 is GONE - the audit's own verdict stood: it IS CUFO (RTTI names 0x1e72b4
+// ??_7CUFO). The dtor is CUFO's IMPLICIT compiler-generated one (the elision that
+// matches retail's flat CUserBase-only stamp), force-emitted by the RealizeCUFO
+// device + @rva-symbol pin in GruntVoice.cpp. The last RELOC_VTBL dies with it.)
 
 #endif // GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H
