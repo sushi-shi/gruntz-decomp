@@ -26,7 +26,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A, RVA 0x24556c /
 // VA 0x64556c). Update gates the play on the +0x54 active-level object's armed/

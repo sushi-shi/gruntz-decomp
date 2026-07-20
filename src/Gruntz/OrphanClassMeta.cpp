@@ -15,7 +15,6 @@
 // ActNameRegistry.h
 SIZE_UNKNOWN(CActName);
 // CGameRegistry.h
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CFocusSlot, 0x238);
 SIZE_UNKNOWN(CTileGrid);
@@ -25,7 +24,6 @@ SIZE_UNKNOWN(CState);
 SIZE_UNKNOWN(GruntzVolumeAttenuation);
 // GruntIndicatorSprite.h
 SIZE_UNKNOWN(CIndicatorActReg);
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CIndicatorSyncHelper);
 // LogicTypeTableInline.h
 SIZE_UNKNOWN(CLogicTypeBuilder);

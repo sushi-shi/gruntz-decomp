@@ -21,7 +21,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 // left == AMBIENT_BOX_UNBOUNDED in either box means "no box / always in range":
 // the listener test for that box is skipped and the source is treated as audible

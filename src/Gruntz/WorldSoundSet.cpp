@@ -22,6 +22,7 @@
 //
 // Field names are placeholders; the OFFSETS + emitted code bytes are load-bearing.
 #include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BoundaryLeafLogicViews.h> // the boundary leaf-dtor views (L_8860 dissolved)
 #include <Gruntz/AmbientSound.h>           // canonical CAmbientSound / CAmbientPosSound

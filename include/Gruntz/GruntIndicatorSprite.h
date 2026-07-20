@@ -83,7 +83,7 @@ extern "C" u32 g_engineFrameDelta; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta
 // NOTE: the g_gameReg singleton is NOT declared here - a header extern would force the
 // CGameRegistry view on every includer, clashing with the WwdGameReg view Grunt.cpp uses
 // (which now includes the concrete HUD-sprite headers). The consuming .cpp files declare
-// `extern "C" CGameRegistry* g_gameReg;` locally.
+// `#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)` locally.
 
 // ---------------------------------------------------------------------------
 // CIndicatorActReg - the per-class activation-coordinate registry singleton each
