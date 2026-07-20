@@ -210,15 +210,14 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_34 == 3) {
         return 1;
     }
-    CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c); // the mgr through its tab-host view (fold TODO)
+    // m_2c IS the owning CStatusBarMgr (the ex CMiTabHost view is DISSOLVED): the tab
+    // ops are its own methods, and m_10c is its m_activeTab latch @+0x10c.
     if (state == 3) {
-        (reinterpret_cast<CStatusBarMgr*>(host))->ClearTabGroup();
-        host->m_10c = m_cmd;
-        (reinterpret_cast<CStatusBarMgr*>(host))->LoadTabSprites();
-        (reinterpret_cast<CStatusBarMgr*>(host))->Deactivate();
+        m_2c->ClearTabGroup();
+        m_2c->m_activeTab = m_cmd;
+        m_2c->LoadTabSprites();
+        m_2c->Deactivate();
     } else if (state == 2 && a) {
-        // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
-        // cue facet's map @+0x10 differs from CDDrawSubMgrLeafScan's install map).
         // The sound registry IS the cue host - no view: m_10 is its keyed cue map
         // (CMapStringToPtr, Ptr band), m_30 its busy/gate guard.
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;

@@ -49,17 +49,10 @@ SIZE_UNKNOWN(CMiCue);
 // was a mis-read - it is the ONE +0x10 Ptr-band map. The cue play reads m_soundRegistry
 // directly; SBI_MenuItem.cpp includes <DDrawMgr/DDrawSubMgrLeafScan.h>.)
 
-// The owning rect-only host at m_2c: SetState drives its tab state through three
-// sibling thunks (all ILT-reloc-masked). m_10c is the active-tab latch.
-struct CMiTabHost {
-    // TabBegin @0x100b00 IS CSBI_RectOnly::ClearTabGroup; cast at the call.
-    // TabRefresh @0x102250 IS CStatusBarMgr::LoadTabSprites; cast at the call.
-    // TabCommit @0x100cb0 IS CSBI_RectOnly::Deactivate; cast at the call.
-    char m_pad0[0x10c];
-    i32 m_10c; // +0x10c  active-tab latch
-};
-SIZE_UNKNOWN(CMiTabHost);
-
+// (CMiTabHost DISSOLVED 2026-07-20: it was a duplicate view of m_2c, whose real type
+// is already CStatusBarMgr* (CStatusBarItem::m_2c). SetState drives the tab state
+// through CStatusBarMgr's own ClearTabGroup/LoadTabSprites/Deactivate, and the ex
+// m_10c active-tab latch is CStatusBarMgr::m_activeTab @+0x10c - all cast-free now.)
 
 // The frame-name reverse-lookup (0x155630) on the config registry is
 // CImageRegistry::ReadField (mgr->m_10, <Gruntz/ResMgr.h>); the former CMiNameReg
