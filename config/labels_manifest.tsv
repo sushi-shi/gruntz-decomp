@@ -159,7 +159,7 @@ gruntwingztimesprite	4
 gruntzapp	9
 gruntzcmdmgr	40
 gruntzmapmgr	3
-gruntzmgr	152
+gruntzmgr	153
 gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	5
@@ -266,7 +266,7 @@ rezcoll	13
 rezfile	36
 rezlist	5
 rezmgr	3
-rezsync	4
+rezsync	3
 rockbreakeffectupdate	1
 rollingball	8
 savegame	33

@@ -3,7 +3,7 @@
 // path assembler (0x08b740 / 0x08e470 / 0x91670). The former "RezMgr" facet view
 // of CGruntzMgr is DISSOLVED (2026-07-16): every method/member here is proven
 // CGruntzMgr's own (see the per-method notes; the frame-clock base methods
-// 0x13ddc0-0x13df00 are WAP32::CGameMgr's, defined in src/Wap32/GameApp.cpp).
+// 0x13ddc0-0x13df00 are CGameMgr's, defined in src/Wap32/GameApp.cpp).
 //
 // The CRez* archive-container file-system family (ONE contiguous retail .text obj at
 // 0x13c4e0-0x13ceec: CRezItmBase/CRezItm/CRezDir/CRezParseNode directory nodes +
@@ -27,10 +27,10 @@
 // ---------------------------------------------------------------------------
 
 // The base class, aliased at file scope: MSVC 5.0 rejects the namespace-qualified
-// base-call spelling `WAP32::CGameMgr::PerFrameTick()` inside a member (C2352,
+// base-call spelling `CGameMgr::PerFrameTick()` inside a member (C2352,
 // the same lookup bug GameApp.cpp works around); the typedef-qualified call
 // devirtualizes identically (direct `call 0x13ddc0`).
-typedef WAP32::CGameMgr CGameMgrBase;
+typedef CGameMgr CGameMgrBase;
 
 // The per-frame accumulators PerFrameTick reads/writes are SHARED WAP32 globals
 // (0x245580..0x2455a0), not rezmgr file-statics: multi/projectile/gruntzmgr/

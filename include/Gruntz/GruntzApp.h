@@ -40,7 +40,7 @@ public:
     }
     // Shows the MESSAGE dialog with an arbitrary message string.
     void ShowMessage(char* msg, HWND hParent);
-    virtual WAP32::CGameMgr* InitializeGameManager() OVERRIDE;
+    virtual CGameMgr* InitializeGameManager() OVERRIDE;
     static INT_PTR CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     // Boolified forward: calls the switch-down-sprite loader on `this` (thiscall,

@@ -76,7 +76,7 @@ void ShowHudMessageAlt(
 // GruntzMgr.h>), and every object this TU reaches through it already has a canonical
 // class - so its objects map to the real classes, offset for offset:
 //     BzGameReg / CGlitterMgr / CBootyGameReg  -> CGruntzMgr
-//     BzGameWnd        (+0x04, HWND @+0x04)    -> CGameWnd     (WAP32::CGameMgr::m_gameWnd,
+//     BzGameWnd        (+0x04, HWND @+0x04)    -> CGameWnd     (CGameMgr::m_gameWnd,
 //                                                               <Wap32/Wap32.h>: m_hwnd @+0x04)
 //     BootySndWorld / CBootyMusicHost /
 //       CGlitterMgrM30 (all +0x30)             -> CWorldZ      (m_8 == CDDrawChildGroup* the

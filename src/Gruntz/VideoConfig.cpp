@@ -68,7 +68,7 @@ i32 g_videoResolutionMode = 1; // retail .data initial value 1
 // retail's calls there go to ?SetSoundVolume@CGruntzMgr@@QAEXH@Z (0x0919d0) and
 // ?SetVoiceVolume@CGruntzMgr@@QAEHH@Z (0x091a10) - which gruntzmgr already defines.
 // Typing the pointer correctly binds both calls to the real bodies and the casts fall
-// out on their own. Every member this TU touches is on CGruntzMgr or its WAP32::CGameMgr
+// out on their own. Every member this TU touches is on CGruntzMgr or its CGameMgr
 // base at the same offsets (m_soundEnabled +0x10, m_musicEnabled +0x14, m_savedModeW/H
 // +0x94/+0x98, ...), so the swap is byte-neutral.
 extern "C" {

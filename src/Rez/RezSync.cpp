@@ -1,5 +1,5 @@
 // RezSync.cpp - CGruntzMgr::Run(CGameWnd*, char* cmdLine) @ RVA 0x00083450
-// (6445 B), the boot override of WAP32::CGameMgr::Run - SLOT-PROVEN: CGruntzMgr's
+// (6445 B), the boot override of CGameMgr::Run - SLOT-PROVEN: CGruntzMgr's
 // retail vtable (0x1e9b64) slot 1 is ILT thunk 0x249b -> jmp 0x83450. `this` (ebp)
 // is the 0xa30 CGruntzMgr singleton; returns 1 on success / 0 on every early error
 // 2026-07-16 - every field was a canonical <Gruntz/GruntzMgr.h> member.)
@@ -19,7 +19,6 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
-#include <Rez/RezSyncViews.h> // the global ::CGameMgr out-of-line-dtor emitter (scaffolding)
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
@@ -30,7 +29,7 @@
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
-#include <Wap32/Wap32.h>              // WAP32::CGameMgr (the base ~CGameMgr tail-calls its Close)
+#include <Wap32/Wap32.h>              // CGameMgr (the base ~CGameMgr tail-calls its Close)
 #include <Bute/ButeMgr.h>             // canonical CButeMgr / CButeStore (one shape)
 #include <Bute/SymParser.h>           // the ONE CSymParser (m_symParser; ParseBuffer/...)
 #include <Gruntz/GruntzMgr.h>         // CGruntzMgr - the class this whole TU implements
@@ -173,11 +172,6 @@ extern "C" {
 
 extern "C" char* StrUpr(char*); // 0x18d330
 
-// The real 0x2c engine base, aliased at file scope: MSVC 5.0's class-scope lookup
-// of the WAP32 namespace misparses a qualified `WAP32::CGameMgr::` call inside a
-// member function (both Run's base call and the placeholder ~CGameMgr below need it).
-typedef WAP32::CGameMgr CGameMgrBase;
-
 extern "C" void cb_403193();
 extern "C" void cb_401bc2();
 extern char g_lab504358[]; // 0x504358
@@ -255,7 +249,7 @@ i32 g_appHInstance;
 // ??0ostrstream@@QAE@PADHH@Z (both FID-anchored LIBCIMT); the trailing `1` arg at
 // each retail call site is the virtual-base most-derived ctor flag. The whole
 //   Init          == this Run override (vtable slot 1 -> 0x83450)
-//   Run(0x13dd50) == WAP32::CGameMgr::Run (the base call)
+//   Run(0x13dd50) == CGameMgr::Run (the base call)
 //   Error2 0x346d == ReportError            Error1 0x3f80 == ReportWorldStatus
 //   Fn2db0  -> 0x115810 InitializeFonts     Fn4214 -> 0x8fa70 GetGruntzDriveLetter
 //   Fn2112  -> 0x8eca0 InitializeLobbyConnectionSettings
@@ -309,7 +303,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_coordPool.m_linkOffset = 4;
 
     // --- Phase 2: base game init + timers + cursor -------------------
-    if (!CGameMgrBase::Run(pGameWnd, szCmdLine)) { // the base WAP32::CGameMgr::Run (0x13dd50)
+    if (!CGameMgr::Run(pGameWnd, szCmdLine)) { // the base CGameMgr::Run (0x13dd50)
         ReportError(0x800a, 0x462);
         return 0;
     }
@@ -812,26 +806,9 @@ CString CGruntzMgr::GetRezPath() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x085540 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the base CGameMgr
-// destructor: restamp the base vtable (0x5e9b8c) then tail-call the base teardown
-// (0x13ddb0 == Close). __thiscall. The delinker names its vtable ??_7CGameMgr@@6B@
-// globally (config/vtable_names.csv), so cl's implicit entry vptr-store emits it
-// (masks 0x5e9b8c). This is the GLOBAL-namespace ??1CGameMgr@@ that retail keeps at
-// 0x85540; the reconstruction's real manager is modeled as the namespaced
-// WAP32::CGameMgr (to disambiguate CGruntzMgr), so this distinct global placeholder is
-// the byte-necessary out-of-line emitter. RVA-contiguous with RezSync::Init (this TU
-// is the CGameMgr bootstrap). (The scalar-deleting twin 0x855a0 was a separate inline
-// dtor COMDAT emitter in the now-deleted src/Stub/BoundaryLowerThunks.cpp; it was
-// dropped - it can only be emitted by an inline dtor whose ??_G inlines it, which
-// conflicts with this TU's out-of-line ~CGameMgr, so no clean single-TU home exists.)
-// The global-namespace ::CGameMgr placeholder (the byte-necessary out-of-line emitter of
-// the ??1CGameMgr@WAP32@@ dtor below) is defined in <Rez/RezSyncViews.h> (included above):
-// genuine inline-XOR-out-of-line dtor-wall scaffolding - it IS WAP32::CGameMgr but its
-// out-of-line dtor here would collide with WAP32::CGameMgr's load-bearing inline dtor. The
-// RELOC_VTBL there binds the emitted vptr restamp to the retail ??_7CGameMgr@WAP32@@ (0x1e9b8c).
-RVA(0x00085540, 0xb)
-CGameMgr::~CGameMgr() {
-    // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call
-    // binds the reloc directly to ?Close@CGameMgr@WAP32@@UAEXXZ (this@+0 == the base).
-    (reinterpret_cast<CGameMgrBase*>(this))->CGameMgrBase::Close();
-}
+// 0x085540 - the base ~CGameMgr out-of-line copy: cl emits it AUTOMATICALLY (the
+// COMDAT copy of Wap32.h's inline `~CGameMgr() { Close(); }` that the emitted
+// ??_G/vtable machinery references) - vptr restamp (0x5e9b8c) + devirtualized Close
+// tail-call, 0xb bytes. The old RezSyncViews.h ::CGameMgr scaffold (the pre-pin-era
+// dtor-emitter with its RELOC_VTBL) is GONE; the compiler copy is emitted (and
+// @rva-symbol-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries the COMDAT.

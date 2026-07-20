@@ -1,6 +1,6 @@
 // GruntzCommandId.h - the WM_COMMAND / accelerator + cheat-code id space handled by
 // CGruntzMgr::HandleCommand (0x862f0) and offered up the two command virtuals
-// (CGameApp::HandleCommand slot 10, WAP32::CGameMgr::HandleCommand slot 5).
+// (CGameApp::HandleCommand slot 10, CGameMgr::HandleCommand slot 5).
 //
 // NOTE: `enum GruntzCommand` (this file) is the command-ID space; it is NOT the
 // unrelated command-pattern class `CGruntzCommand` in <Gruntz/GruntzCommand.h>

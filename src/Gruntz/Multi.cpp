@@ -1982,7 +1982,7 @@ i32 CMulti::DetectConnectionConfig() {
 // three temporaries' dtors run under the C++ EH frame (=> /GX).
 RVA(0x000b85a0, 0xd2)
 void CMulti::ApplyCmdDelayDefaults() {
-    Utils::RegistryHelper* reg = (reinterpret_cast<CGameMgr*>(g_gameReg))->m_38;
+    Utils::RegistryHelper* reg = g_gameReg->m_settings;
 
     CString cmdDelayName = m_598 + "_CmdDelay";
     CString resendName = m_598 + "_Resend";

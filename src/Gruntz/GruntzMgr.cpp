@@ -1,7 +1,7 @@
 // GruntzMgr.cpp - CGruntzMgr, the Gruntz game manager (the real derived
-// WAP32::CGameMgr; C:\Proj\Gruntz). This is the 0xa30-byte game manager that
+// CGameMgr; C:\Proj\Gruntz). This is the 0xa30-byte game manager that
 // CGruntzApp::InitializeGameManager allocates (`new CGruntzMgr`); the base
-// WAP32::CGameMgr is the genuine 0x2c engine class.
+// CGameMgr is the genuine 0x2c engine class.
 //
 // Reconstructed here:
 //   CGruntzMgr::ReportError        - forwards to the app's ReportError (m_8
@@ -481,10 +481,8 @@ extern "C" {
 // (Neither name was ever referenced by any obj; they were a fake identity, not a
 // binding.)
 //
-// The base WAP32::CGameMgr vtable (0x1e9b8c): the CGruntzMgr dtor + its scalar-deleting
-// ??_G restore the base subobject's vptr to it during teardown. Namespaced vtable, so
-// bound via @data-symbol (VTBL() only lowers simple global-namespace class names).
-// @data-symbol: ??_7CGameMgr@WAP32@@6B@ 0x001e9b8c
+// (The base CGameMgr vtable 0x1e9b8c binding lives on the class itself now -
+// VTBL(CGameMgr) in <Wap32/Wap32.h>; the class is global-namespace per RTTI.)
 
 // -------------------------------------------------------------------------
 // The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
@@ -2974,10 +2972,10 @@ CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
-// WAP32::CGameMgr::IsActive (0x85560, base vtable 0x5e9b8c slot 3): the
+// CGameMgr::IsActive (0x85560, base vtable 0x5e9b8c slot 3): the
 // "active?" gate - nonzero iff a game window is bound (m_gameWnd != 0).
 RVA(0x00085560, 0xb)
-i32 WAP32::CGameMgr::IsActive() {
+i32 CGameMgr::IsActive() {
     return m_gameWnd != 0;
 }
 
@@ -2997,17 +2995,18 @@ i32 CGruntzMgr::IsActive() {
     return 0;
 }
 
-// WAP32::CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
+// CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
 // no-op command sink (CGruntzMgr overrides it at 0x862f0). Returns 0 (unhandled).
 RVA(0x00085580, 0x5)
-i32 WAP32::CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
+i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-// The WAP32::CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
+// The CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
 // cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
 // at this RVA (homed by matcher-5, unmatched sweep).
-// @rva-symbol: ??_GCGameMgr@WAP32@@UAEPAXI@Z 0x000855a0 0x24
+// @rva-symbol: ??_GCGameMgr@@UAEPAXI@Z 0x000855a0 0x24
+// @rva-symbol: ??1CGameMgr@@UAE@XZ 0x00085540 0xb
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's

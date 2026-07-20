@@ -6,7 +6,7 @@
 // FULLY CANONICAL: the former `namespace GruntzMgrCmd` view-world (a namespaced
 // CGruntzMgr shadow + the GZ* per-TU views: GZLogic/GZBoard/GZGrunt/GZGruntLevel/
 // GZLevel/GZInput/GZSoundZ/GZMgrSettings/GZDeath*/GZPtrMap/GZSel/GZCell/GZStr/
-//   this            = ::CGruntzMgr (GruntzMgr.h; base WAP32::CGameMgr gives
+//   this            = ::CGruntzMgr (GruntzMgr.h; base CGameMgr gives
 //                     m_gameWnd/m_frameGate/m_soundEnabled/m_musicEnabled)
 //   m_curState      = CState (Update() slot 4 == the old vf10; Vslot15 == vf54);
 //                     downcast per proven state id: CPlay (3), CMenuState (5,

@@ -35,7 +35,7 @@ typedef enum GruntzAppResId {
 // CGruntzMgr (0x0a30 bytes; definition in <Gruntz/GruntzMgr.h>) then runs its
 // throwing constructor under a C++ EH frame. `new CGruntzMgr` => operator
 // new(0xa30) + ??0CGruntzMgr@@QAE@XZ; the pointer is upcast to the base
-// WAP32::CGameMgr* the slot returns (a no-op since CGameMgr is the first base).
+// CGameMgr* the slot returns (a no-op since CGameMgr is the first base).
 // ---------------------------------------------------------------------------
 #include <Gruntz/GruntzMgr.h>
 
@@ -184,10 +184,10 @@ void CGruntzApp::ShowError() {
 // `return new CGruntzMgr;` - operator new(0xa30) then the throwing CGruntzMgr
 // ctor under a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving
 // one dword of locals for the new pointer / EH-tracked object; `this` is never
-// read. The CGruntzMgr* is returned as the base WAP32::CGameMgr* the virtual
+// read. The CGruntzMgr* is returned as the base CGameMgr* the virtual
 // slot is typed to (no-op upcast; CGameMgr is the first base).
 RVA(0x00080a20, 0x5a)
-WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
+CGameMgr* CGruntzApp::InitializeGameManager() {
     return new CGruntzMgr;
 }
 

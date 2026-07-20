@@ -85,7 +85,7 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 //          drawTarget->m_10           -> CDDrawSubMgrPages::SurfaceA (its +0x10/+0x14 pixel
 //                                        extent is now named there; see the disasm cited
 //                                        in ResMgr.h) - the default RECT is (0,0,w-1,h-1).
-//   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (WAP32::CGameWnd +0x04).
+//   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (CGameWnd +0x04).
 //
 // The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
 // before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands

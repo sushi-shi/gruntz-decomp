@@ -625,7 +625,7 @@ i32 CRezFile::CloseFile() {
 RVA(0x0013cef0, 0x1)
 void CRezFile::Noop() {}
 
-// (WAP32::CGameMgr::PerFrameTick @0x13ddc0 (ex "RezMgr::UpdateClock"; the base
+// (CGameMgr::PerFrameTick @0x13ddc0 (ex "RezMgr::UpdateClock"; the base
 // vtable slot 4), SpinWaitUntil @0x13dec0, SetFrameRate @0x13dee0, TrySetFrameRate
 // @0x13df00 and ::WaitKeyEdge @0x13df30 live in src/Wap32/GameApp.cpp (wave4-K):
 // their text is A-B-A-woven into the GameApp obj between CGameMgr::Close/

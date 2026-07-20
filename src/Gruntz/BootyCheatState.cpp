@@ -54,7 +54,7 @@ extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical
 // (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
 //    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is
 //                     really CGruntzMgr::RestoreVideoMode (0x8ddd0) - a real method.
-//    BcPumpHost    -> CGruntzMgr's +0x04 == the CGameWnd it inherits from WAP32::CGameMgr
+//    BcPumpHost    -> CGruntzMgr's +0x04 == the CGameWnd it inherits from CGameMgr
 //                     (m_gameWnd), and its "Pump" is CGameWnd::PumpMessages (0x13d4e0).
 //    BcRegSet      -> CState::m_8 is CBankMgr*; its Register @0x13c030 IS
 //                     CSymParser::ResolvePath.

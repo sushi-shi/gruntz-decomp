@@ -1,8 +1,8 @@
 // GruntzMgr.h - CGruntzMgr, the Gruntz game manager (C:\Proj\Gruntz). It is the
-// REAL derived game manager: `CGruntzMgr : public WAP32::CGameMgr`, 0xa30 bytes,
+// REAL derived game manager: `CGruntzMgr : public CGameMgr`, 0xa30 bytes,
 // with its own vftable (??_7CGruntzMgr@@6B@ @0x5e9b64). CGruntzApp::Initialize-
 // GameManager (@0x080a20) does `new CGruntzMgr` => operator new(0xa30) + the
-// CGruntzMgr ctor.  The base WAP32::CGameMgr is the genuine 0x2c engine class;
+// CGruntzMgr ctor.  The base CGameMgr is the genuine 0x2c engine class;
 // all the 0xa30 of per-game state lives HERE.
 //
 // SAME OBJECT AS THE g_gameReg SINGLETON (*0x24556c): CGruntzMgr is the RTTI-true,
@@ -171,7 +171,7 @@ class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h
 
 SIZE(CGruntzMgr, 0xa30);
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
-class CGruntzMgr : public WAP32::CGameMgr {
+class CGruntzMgr : public CGameMgr {
 public:
     CGruntzMgr();
     virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)

@@ -6,6 +6,7 @@
 #define WAP32_H
 
 #include <Ints.h>
+#include <rva.h> // VTBL
 
 // <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, CREATESTRUCTA,
 // USER32/GDI32 imports), the MFC-controlled way (afx.h first).
@@ -122,8 +123,11 @@ public:
 // (@0x13dbc0) does `new CGameMgr` => `push 0x2c`. The two managers no longer
 // share one (padded) class - the base is its true size and the derived game
 // manager carries the 0xa30 of game state.
-namespace WAP32 {
-    class CGameMgr {
+// (the  namespace wrapper is GONE: retail RTTI descriptor .?AVCGameMgr@@
+// proves the class is GLOBAL-namespace - docs/rtti-class-census.txt)
+    class CGameMgr;
+VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
+class CGameMgr {
     public:
         CGameMgr();
         // ~CGameMgr is INLINE: it re-stores the base vftable then runs Close
@@ -176,7 +180,6 @@ namespace WAP32 {
         // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
         // where cl already emits that COMDAT.)
     };
-} // namespace WAP32
 
 // CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
 
@@ -260,7 +263,7 @@ public:
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34
-    virtual WAP32::CGameMgr* InitializeGameManager();    // +0x38  (0x13dbc0: new CGameMgr)
+    virtual CGameMgr* InitializeGameManager();    // +0x38  (0x13dbc0: new CGameMgr)
     virtual void InitializeDefaultWindowClass();         // +0x3c
     virtual void InitializeDefaultCreateStruct();        // +0x40
 
@@ -273,7 +276,7 @@ public:
     void RunModal(const char* msg, HWND hwnd);
 
     CGameWnd* m_gameWnd;          // +0x04  the game window (deleted by CloseResources)
-    WAP32::CGameMgr* m_gameMgr;   // +0x08  the game manager (deleted by CloseResources)
+    CGameMgr* m_gameMgr;   // +0x08  the game manager (deleted by CloseResources)
     HINSTANCE m_hInstance;        // +0x0c  hInstance
     HACCEL m_hAccel;              // +0x10  accelerator table
     GameInfo m_gameInfo;          // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)

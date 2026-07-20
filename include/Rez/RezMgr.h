@@ -328,7 +328,7 @@ extern "C" i32 RezFileExists(const char* szPath);
 // (2026-07-16). RezMgr WAS CGruntzMgr (<Gruntz/GruntzMgr.h>), byte-verified:
 // retail ??_7CGruntzMgr @0x5e9b64 slot 4 = thunk 0x1c7b -> 0x8b740 PerFrameTick,
 // and the base ??_7CGameMgr @0x5e9b8c slot 4 = 0x13ddc0, the base
-// WAP32::CGameMgr::PerFrameTick (ex "UpdateClock"; frame-pacing family declared in
+// CGameMgr::PerFrameTick (ex "UpdateClock"; frame-pacing family declared in
 // <Wap32/Wap32.h>, bodies in src/Wap32/GameApp.cpp). CGameMode was CState,
 // RezMgrOwner the base's m_gameWnd (CGameWnd), CheckDbgVal == RunModalDialog
 // (thunk 0x2bb7 -> 0x90260), g_rezLowDetail a divergent duplicate of

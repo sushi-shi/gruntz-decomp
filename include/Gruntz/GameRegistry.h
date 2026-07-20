@@ -10,7 +10,7 @@
 // mode-width cmp [reg+0x8c],0x280 (640) in RestoreVideoMode 0x08ddd0).
 //
 // WHY TWO HEADERS (a NECESSARY split, not a mistake): CGruntzMgr is an MFC class
-// (`: public WAP32::CGameMgr`, CString/CByteArray members) so <Gruntz/GruntzMgr.h>
+// (`: public CGameMgr`, CString/CByteArray members) so <Gruntz/GruntzMgr.h>
 // pulls <Mfc.h>/afx. THIS header is included by ~60 TUs, many of which are pure-
 // Win32 (they `#include <Win32.h>` -> windows.h). afx forbids a prior windows.h
 // (`C1189: MFC apps must not #include <windows.h>`), so this canonical view MUST

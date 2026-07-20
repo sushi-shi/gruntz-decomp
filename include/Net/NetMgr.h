@@ -92,16 +92,9 @@ struct GruntRec;        // the lobby-sync grunt-state record (defined below CNet
 class CDDrawSurfaceMgr; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
 // ---------------------------------------------------------------------------
-// The game-manager singleton - only its +0x38 RegistryHelper is
-// touched here (the config persistence target). Modeled as a tiny struct with
-// the member at the right offset.
-// ---------------------------------------------------------------------------
-struct CGameMgr {
-    char m_pad0[0x38];
-    Utils::RegistryHelper* m_38; // +0x38  the per-game registry config writer
-};
-SIZE_UNKNOWN(CGameMgr);     // partial view (only +0x38 pinned) - full retail size TBD
-VTBL(CGameMgr, 0x001e9b8c); // vtable_names -> code (RTTI game class)
+// (The tiny +0x38 CGameMgr facet view is GONE - the real global-ns CGameMgr lives
+// in <Wap32/Wap32.h> (which owns the ??_7 binding); the one consumer reads the
+// typed g_gameReg->m_settings directly.)
 
 // ---------------------------------------------------------------------------
 // The multiplayer command dispatcher IS CMulti::RunErrorDialog (0xbc250): the

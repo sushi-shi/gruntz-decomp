@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <Globals.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
-// 0x13ddc0-0x13df00 are WAP32::CGameMgr's own - declared in <Wap32/Wap32.h>,
+// 0x13ddc0-0x13df00 are CGameMgr's own - declared in <Wap32/Wap32.h>,
 // defined below inside CGameMgr's contiguous retail method block. 0x13ddc0 is the
 // base PerFrameTick: retail ??_7CGameMgr @0x5e9b8c slot 4 holds it directly.)
 
@@ -43,7 +43,7 @@ i32 CGameApp::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-// (0x133380 used to live here as a fake `WAP32::CGameMgr::vector_deleting_destructor`
+// (0x133380 used to live here as a fake `CGameMgr::vector_deleting_destructor`
 // over a fabricated `deviceConfigRootTable` global and a local CInputDevRoot view. It is
 // neither: it is CInputDevRoot's SCALAR-DELETING DESTRUCTOR `??_GCInputDevRoot@@UAEPAXI@Z`
 // - the vptr it stamps, 0x1ef670, IS ??_7CInputDevRoot@@6B@, and retail emits the COMDAT
@@ -362,12 +362,12 @@ CGameWnd* CGameApp::InitializeGameWindow() {
 
 // -------------------------------------------------------------------------
 // CGameApp::InitializeGameManager (vtbl +0x38) - the base engine's manager
-// factory: `return new WAP32::CGameMgr;` (operator new(0x2c) then the CGameMgr
+// factory: `return new CGameMgr;` (operator new(0x2c) then the CGameMgr
 // ctor at 0x13dd10, under the C++ EH frame). The CGameMgr-allocation analog of
 // InitializeGameWindow; CGruntzApp overrides it (new CGruntzMgr) in GruntzApp.cpp.
 RVA(0x0013dbc0, 0x57)
-WAP32::CGameMgr* CGameApp::InitializeGameManager() {
-    return new WAP32::CGameMgr;
+CGameMgr* CGameApp::InitializeGameManager() {
+    return new CGameMgr;
 }
 
 // -------------------------------------------------------------------------
@@ -458,7 +458,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 // the m_soundEnabled/m_musicEnabled stores (and the InitTimeFields `reset=1` argument push) above
 // the vptr store.
 RVA(0x0013dd10, 0x35)
-WAP32::CGameMgr::CGameMgr() {
+CGameMgr::CGameMgr() {
     m_soundEnabled = 1;
     m_musicEnabled = 1;
     m_gameWnd = 0;
@@ -495,7 +495,7 @@ i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
 // reseeds the frame clock, and primes the two run-timing globals to 100.
 // Bails (returning 0) if there is no window, or the window has no OS HWND yet.
 RVA(0x0013dd50, 0x54)
-i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
+i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
     }
@@ -517,7 +517,7 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 // CGameMgr::Close  (vtable +0x08)
 // Clears the two manager-owned pointers/handles.
 RVA(0x0013ddb0, 0x9)
-void WAP32::CGameMgr::Close() {
+void CGameMgr::Close() {
     m_gameWnd = 0;
     m_owner = 0;
 }
@@ -544,7 +544,7 @@ void WAP32::CGameMgr::Close() {
 // deleted; the call below is a plain same-class member call that binds to the
 // real ?InitTimeFields@CGameMgr@WAP32@@ at 0x13de70.)
 RVA(0x0013ddc0, 0xaa)
-i32 WAP32::CGameMgr::PerFrameTick() {
+i32 CGameMgr::PerFrameTick() {
     // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
     // reuses it across the three samples (call edi), exactly as retail does.
     DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
@@ -584,7 +584,7 @@ i32 WAP32::CGameMgr::PerFrameTick() {
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
 // Zeroes the frame counter, samples the fps-window start tick, and (when reset) arms m_fps.
 RVA(0x0013de70, 0x23)
-void WAP32::CGameMgr::InitTimeFields(i32 reset) {
+void CGameMgr::InitTimeFields(i32 reset) {
     m_frameCounter = 0;
     m_windowStartTick = timeGetTime();
     if (reset) {
@@ -596,7 +596,7 @@ void WAP32::CGameMgr::InitTimeFields(i32 reset) {
 // CGameMgr::InitializeTimeGlobal
 // Seeds the frame clock from timeGetTime and clears its deltas.
 RVA(0x0013dea0, 0x18)
-void WAP32::CGameMgr::InitializeTimeGlobal() {
+void CGameMgr::InitializeTimeGlobal() {
     g_wap32Now = timeGetTime();
     g_wap32FrameDelta = 0;
     g_wap32ClockReset = 0;
@@ -613,7 +613,7 @@ void WAP32::CGameMgr::InitializeTimeGlobal() {
 // them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
 // flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
-void WAP32::CGameMgr::SpinWaitUntil(i32 ms) {
+void CGameMgr::SpinWaitUntil(i32 ms) {
     DWORD(WINAPI * fn)(void) = ::timeGetTime;
     u32 now = fn();
     u32 end = now + static_cast<u32>(ms);
@@ -629,7 +629,7 @@ void WAP32::CGameMgr::SpinWaitUntil(i32 ms) {
 // the pacing gate (m_pacingGate @+0x1c) and, when positive, derive the per-frame
 // budget (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg.
 RVA(0x0013dee0, 0x1b)
-void WAP32::CGameMgr::SetFrameRate(i32 fps) {
+void CGameMgr::SetFrameRate(i32 fps) {
     m_pacingGate = fps;
     if (fps > 0) {
         m_frameBudgetMs = 1000 / fps;
@@ -641,7 +641,7 @@ void WAP32::CGameMgr::SetFrameRate(i32 fps) {
 // SetFrameRate(0) and fail with 0); otherwise configure to fps and succeed
 // (return 1). __thiscall, 1 arg.
 RVA(0x0013df00, 0x25)
-i32 WAP32::CGameMgr::TrySetFrameRate(i32 fps) {
+i32 CGameMgr::TrySetFrameRate(i32 fps) {
     if (m_pacingGate > 0) {
         SetFrameRate(0);
         return 0;
@@ -719,7 +719,7 @@ void ForceEmitCGameAppDtor() {
 #pragma inline_depth()
 
 // size 0x2c recovered from operator-new sites (gruntz.analysis.news)
-SIZE(WAP32::CGameMgr, 0x2c);
+SIZE(CGameMgr, 0x2c);
 
 // Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
 // engine header stays untouched; EOF append is line-/parse-shift-neutral).
