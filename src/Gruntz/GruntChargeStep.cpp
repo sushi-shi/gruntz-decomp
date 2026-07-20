@@ -28,6 +28,7 @@
 //        (0x1640, the free __stdcall), "Snap"=SetEntrancePos @0x4d060 (0x1401),
 //        "Notify"=CGruntSpawnConfig::SpawnVoiceDriver @0x11b3b0 (0x39f4),
 //        "GruntLos1127"=CGameLevel::PointInBounds @0x6b330 (0x1127, static).
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Ints.h>
 #include <Gruntz/WwdGameRegPtr.h>
 #include <rva.h>
@@ -189,8 +190,8 @@ i32 CGrunt::ChargeStep() {
                     baseY += rand() % spanY;
                 }
                 WwdGameReg* mgr = g_gameReg;
-                if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_c)
-                    && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_10)) {
+                if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
+                    && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (m_31c.GetCount() != 0) {

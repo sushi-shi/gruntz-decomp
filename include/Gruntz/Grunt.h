@@ -318,13 +318,9 @@ extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 // first dword carries the occupancy/flag bits) and m_c/m_10 the x/y in-bounds
 // limits. Reloc-masked DATA; a struct (mangles `U`) gives the retail name.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(GruntBoard);
-struct GruntBoard {
-    char m_pad0[0x8];
-    char** m_8; // +0x08  row table: m_8[y][x] -> tile record
-    i32 m_c;    // +0x0c  x bound
-    i32 m_10;   // +0x10  y bound
-};
+// (GruntBoard is FOLDED: the +0x70 board IS CGruntzMapMgr : CMapMgr, whose
+// +0x08 m_rowBytes / +0x0c m_width / +0x10 m_height are this view's fields -
+// <Gruntz/MapMgr.h>. The 0x1c-stride byte-cell walks keep the char** arm.)
 // The entrance-cell triple at CGrunt+0x43c: {col, row, reason}. Several CGrunt step
 // methods take a by-value copy of it (GruntEntranceCell cell = *ptr) before indexing
 // the m_cells table by 3*col+row; MSVC5 /O2 loads all three ints and dead-spills the

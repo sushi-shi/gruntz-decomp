@@ -16,6 +16,7 @@
 // its 31 private cells sit inside this TU's band).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -120,11 +121,11 @@ static void GruntScratchTeardown();
 // inline the GruntSteps TU carries for StepCompassMove).
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
-static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
 void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
@@ -915,12 +916,12 @@ i32 CGrunt::UpdateEntranceAnim() {
     WwdGameReg* g = g_gameReg;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
-    GruntBoard* board = g->m_tileGrid;
+    CGruntzMapMgr* board = g->m_tileGrid;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(board->m_c) || static_cast<u32>(ty) >= static_cast<u32>(board->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(board->m_width) || static_cast<u32>(ty) >= static_cast<u32>(board->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(board->m_8[ty]))[tx * 7];
+        flags = (reinterpret_cast<i32*>(board->m_rowBytes[ty]))[tx * 7];
     }
 
     if (flags & 0x80) {
@@ -1297,16 +1298,16 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
     WwdGameReg* g = g_gameReg;
     void* sub2c = *reinterpret_cast<void**>((reinterpret_cast<char*>(g) + 0x2c));
-    GruntBoard* b = g->m_tileGrid;
+    CGruntzMapMgr* b = g->m_tileGrid;
     CGameObject* h = m_10;
-    i32 xbound = b->m_c;
+    i32 xbound = b->m_width;
     i32 tileY = h->m_screenY >> 5;
     i32 tileX = h->m_screenX >> 5;
     i32 dir;
-    if (static_cast<u32>(tileX) >= static_cast<u32>(xbound) || static_cast<u32>(tileY) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(tileX) >= static_cast<u32>(xbound) || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
         dir = 0;
     } else {
-        dir = (reinterpret_cast<i32*>(b->m_8[tileY]))[tileX * 7 + 3];
+        dir = (reinterpret_cast<i32*>(b->m_rowBytes[tileY]))[tileX * 7 + 3];
     }
 
     i32 sel = *reinterpret_cast<i32*>((reinterpret_cast<char*>(sub2c) + 0x20));

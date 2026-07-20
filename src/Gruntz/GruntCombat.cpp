@@ -1,5 +1,6 @@
 #include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
@@ -756,7 +757,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 //
 // @early-stop
 // single-instruction scheduling coin-flip: logic/CFG/offsets/board-deref/both returns
-// byte-exact. Residue = cl loads board->m_c (`mov ecx,[ebx+0xc]`) one slot earlier
+// byte-exact. Residue = cl loads board->m_width (`mov ecx,[ebx+0xc]`) one slot earlier
 // than retail (retail defers it past `add eax,0x10`) and reads g_gameReg before m_10
 // vs retail's m_10-first; the rest is identical. ~93%. Final sweep.
 RVA(0x00057aa0, 0x9b)
@@ -768,17 +769,17 @@ i32 CGrunt::TryPowerupAtTile() {
     CGameObject* h = m_10;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
-    GruntBoard* b = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 px = (mx & ~0x1f) + 0x10;
     i32 py = (my & ~0x1f) + 0x10;
     i32 tx = px >> 5;
     i32 ty = py >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+        flags = (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
     }
     if ((flags & 0x939) || (flags & 2)) {
         return 0;
@@ -1871,15 +1872,15 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 0;
     }
     {
-        GruntBoard* bd = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_c)
-            || static_cast<u32>(ty) >= static_cast<u32>(bd->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
+            || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(bd->m_8[ty]))[tx * 7];
+            flags = (reinterpret_cast<i32*>(bd->m_rowBytes[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             return 0;

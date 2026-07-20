@@ -72,6 +72,7 @@
 // return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h> // CGameLevel + CLevelPlane (m_world->m_level->m_mainPlane rect)
@@ -1149,7 +1150,7 @@ i32 CGrunt::StepGruntMovement() {
     i32 flagHead;
     i32 reason12, reason16, reason0e;
     i32 tgtTileX, tgtTileY;
-    GruntBoard* bd;
+    CGruntzMapMgr* bd;
 
     {
         i32 entX = m_entrancePxX;
@@ -1229,8 +1230,8 @@ i32 CGrunt::StepGruntMovement() {
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> 5;
     tgtTileY = tgtPxY >> 5;
-    if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_c) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_10)) {
-        flagHead = (reinterpret_cast<i32*>(bd->m_8[tgtTileY]))[tgtTileX * 7];
+    if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
+        flagHead = (reinterpret_cast<i32*>(bd->m_rowBytes[tgtTileY]))[tgtTileX * 7];
     } else {
         flagHead = 1;
     }
@@ -1262,8 +1263,8 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastFlag;
         i32 ltx = m_lastTilePxX >> 5;
         i32 lty = m_lastTilePxY >> 5;
-        if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_c) && static_cast<u32>(lty) < static_cast<u32>(bd->m_10)) {
-            lastFlag = (reinterpret_cast<i32*>(bd->m_8[lty]))[ltx * 7];
+        if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_width) && static_cast<u32>(lty) < static_cast<u32>(bd->m_height)) {
+            lastFlag = (reinterpret_cast<i32*>(bd->m_rowBytes[lty]))[ltx * 7];
         } else {
             lastFlag = 1;
         }
@@ -1356,8 +1357,8 @@ i32 CGrunt::StepGruntMovement() {
                 rec.m_8 = g_voiceN.m_8;
             }
         }
-        GruntBoard* bd = g_gameReg->m_tileGrid;
-        if ((reinterpret_cast<i32*>(bd->m_8[cy]))[cx * 7] & 0x20000000) {
+        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
+        if ((reinterpret_cast<i32*>(bd->m_rowBytes[cy]))[cx * 7] & 0x20000000) {
             PlaySound(0x3e8, rec);
             SetEntrancePos(1, 0);
             return 0;
@@ -1372,8 +1373,8 @@ i32 CGrunt::StepGruntMovement() {
 label_4c68b:
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
-        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_c) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_10)) {
-            owner = (reinterpret_cast<i32*>(bd->m_8[tgtTileY]))[tgtTileX * 7 + 1];
+        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
+            owner = (reinterpret_cast<i32*>(bd->m_rowBytes[tgtTileY]))[tgtTileX * 7 + 1];
         } else {
             owner = -1;
         }
@@ -1431,9 +1432,9 @@ label_4c6e4:
         i32 btx = beyondPxX >> 5;
         i32 bty = beyondPxY >> 5;
         i32 beyondFlag;
-        GruntBoard* bd = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(btx) < static_cast<u32>(bd->m_c) && static_cast<u32>(bty) < static_cast<u32>(bd->m_10)) {
-            beyondFlag = (reinterpret_cast<i32*>(bd->m_8[bty]))[btx * 7];
+        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
+        if (static_cast<u32>(btx) < static_cast<u32>(bd->m_width) && static_cast<u32>(bty) < static_cast<u32>(bd->m_height)) {
+            beyondFlag = (reinterpret_cast<i32*>(bd->m_rowBytes[bty]))[btx * 7];
         } else {
             beyondFlag = 1;
         }
@@ -1465,18 +1466,18 @@ label_4c92b: {
     tgtTileX = tgtPxX >> 5;
     i32 lastTileY = m_lastTilePxY >> 5;
     tgtTileY = tgtPxY >> 5;
-    GruntBoard* bd = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
     if (lastTileX == tgtTileX && lastTileY == tgtTileY) {
         goto label_4cb4b;
     }
-    i32 xbound = bd->m_c;
+    i32 xbound = bd->m_width;
     if (static_cast<u32>(tgtTileX) >= static_cast<u32>(xbound)) {
         goto label_4cb2a;
     }
-    if (static_cast<u32>(tgtTileY) >= static_cast<u32>(bd->m_10)) {
+    if (static_cast<u32>(tgtTileY) >= static_cast<u32>(bd->m_height)) {
         goto label_4cb2a;
     }
-    char** rowtable = bd->m_8;
+    char** rowtable = bd->m_rowBytes;
     i32* tgtT = &(reinterpret_cast<i32*>(rowtable[tgtTileY]))[tgtTileX * 7];
     i32 tgtFlag = *tgtT;
     i32 mask = m_arrivalFlags & tgtFlag;
@@ -1576,7 +1577,7 @@ label_4cb4b:
         m_commitPxY = m_lastTilePxY;
         i32 lastTileX = m_lastTilePxX >> 5;
         i32 lastTileY = m_lastTilePxY >> 5;
-        GruntBoard* bdl = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
         // Two separate row-table walks: the byte-store may alias m_8, so retail
         // reloads the row table between them.
         *(reinterpret_cast<u8*>(&(reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7]) + 3) &= 0xdf;
@@ -1584,7 +1585,7 @@ label_4cb4b:
 
         tgtTileX = tgtPxX >> 5;
         tgtTileY = tgtPxY >> 5;
-        GruntBoard* bd2 = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
         (reinterpret_cast<i32*>(bd2->m_8[tgtTileY]))[tgtTileX * 7] |= 0x20000000;
         (reinterpret_cast<i32*>(bd2->m_8[tgtTileY]))[tgtTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
@@ -1927,7 +1928,7 @@ void CGrunt::MovingSlot16() {
         if (eq && CoordCount() != 0) {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
-            i32 fl = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_8[co->m_y]))[co->m_x * 7];
+            i32 fl = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[co->m_y]))[co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
@@ -1942,7 +1943,7 @@ void CGrunt::MovingSlot16() {
                     m_entrancePxY = (h2->m_y << 5) + 0x10;
                     if (CoordCount() != 0) {
                         GruntCoord* h3 = (CoordHead())->m_coord;
-                        i32 fl2 = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_8[h3->m_y]))[h3->m_x * 7];
+                        i32 fl2 = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[h3->m_y]))[h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;
                             NotifyDrop();

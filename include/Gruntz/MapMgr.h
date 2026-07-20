@@ -204,6 +204,8 @@ public:
     union {
         BrickzCell** m_rows; // +0x08  row table (m_rows[row] -> that row's cells)
         i32** m_8;           //        (same table; cell = (i32*)m_8[y] + x*7)
+        char** m_rowBytes;   //        (same table, byte-addressed: the grunt step/arrival
+                             //         machines walk rows[y] + x*0x1c - the ex GruntBoard view)
     };
     union {
         u32 m_width; // +0x0c  grid width (columns)

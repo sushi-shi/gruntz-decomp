@@ -13,6 +13,7 @@
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr
@@ -788,8 +789,8 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < static_cast<u32>((reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_c)
-                && ly < static_cast<u32>((reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_10)) {
+            if (lx < g_gameReg->m_tileGrid->m_width
+                && ly < g_gameReg->m_tileGrid->m_height) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {
@@ -1052,8 +1053,8 @@ i32 CGrunt::UpdateArrival() {
                     if (ay != 0) {
                         lo2 = lo2 + GruntRand() % ay;
                     }
-                    if (lo < static_cast<u32>((reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_c)
-                        && lo2 < static_cast<u32>((reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_10)) {
+                    if (lo < g_gameReg->m_tileGrid->m_width
+                        && lo2 < g_gameReg->m_tileGrid->m_height) {
                         TileSwitch(static_cast<i32>(lo), static_cast<i32>(lo2), 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
@@ -1116,7 +1117,7 @@ i32 CGrunt::UpdateArrival() {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         GruntCoord* cell = this->CoordHead()->m_coord;
-        u8* flags = reinterpret_cast<u8*>(((reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_8[cell->m_y] + cell->m_x * 0x1c));
+        u8* flags = reinterpret_cast<u8*>((g_gameReg->m_tileGrid->m_rowBytes[cell->m_y] + cell->m_x * 0x1c));
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
@@ -1937,8 +1938,8 @@ i32 CGrunt::StepArrivalDefense() {
                 if (spanY != 0) {
                     outY += GruntRand() % spanY;
                 }
-                if (outX < (reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_c
-                    && outY < (reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid))->m_10) {
+                if (outX < g_gameReg->m_tileGrid->m_width
+                    && outY < g_gameReg->m_tileGrid->m_height) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = CoordCount();
@@ -2844,8 +2845,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 if (spanY != 0) {
                     outY += GruntRand() % spanY;
                 }
-                GruntBoard* bd = reinterpret_cast<GruntBoard*>(g_gameReg->m_tileGrid);
-                if (static_cast<u32>(outX) < static_cast<u32>(bd->m_c) && static_cast<u32>(outY) < static_cast<u32>(bd->m_10)) {
+                CMapMgr* bd = g_gameReg->m_tileGrid;
+                if (static_cast<u32>(outX) < static_cast<u32>(bd->m_width) && static_cast<u32>(outY) < static_cast<u32>(bd->m_height)) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = CoordCount();

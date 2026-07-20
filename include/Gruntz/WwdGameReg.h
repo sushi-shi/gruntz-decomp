@@ -32,7 +32,7 @@ class CState;           // +0x2c  current game state (== GameRegistry m_curState
 class CDDrawSurfaceMgr; // +0x30  the ONE world/resource holder (<DDrawMgr/DDrawSurfaceMgr.h>)
 class CGruntSpawnConfig;
 typedef CGruntSpawnConfig CGruntCueSink;    // +0x60  on-screen cue receiver
-struct GruntBoard;      // +0x70  level tile board
+class CGruntzMapMgr;    // +0x70  level tile board (the RTTI-real CMapMgr-derived map mgr)
 class CSpriteRefTable;  // +0x74  sprite/animation ref table (GetSel)
 class CBattlezData;     // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
 struct tagRECT;         // GetMessageBounds in/out (== Win32 RECT)
@@ -60,7 +60,7 @@ struct WwdGameReg {
     i32 m_68;   // +0x68  reused slot (cast: CGruntTileMgr* / PlaceGridMgr* / CTriggerProbe*)
     class CGruntzCmdMgr* m_6c; // +0x6c  the cmd sub-mgr (twin of CGameRegistry
                                //        m_cmdSubMgr; the StartCmdMgr casts are its facet)
-    GruntBoard* m_tileGrid;   // +0x70  level tile board (grunt facet; cast: WwdGameGrid*)
+    CGruntzMapMgr* m_tileGrid;   // +0x70  level tile board (grunt facet; cast: WwdGameGrid*)
     CSpriteRefTable* m_74;    // +0x74  sprite/animation ref table (GetSel)
     class CLightFxMgr* m_78;  // +0x78  the logic pump (twin of CGruntzMgr m_logicPump)
     CBattlezData* m_scoreHud; // +0x7c  (same slot/name as the CGameRegistry sibling view;

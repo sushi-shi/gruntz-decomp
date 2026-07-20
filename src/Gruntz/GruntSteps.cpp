@@ -19,6 +19,7 @@
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
+#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
@@ -74,18 +75,18 @@ static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
 static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
-static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
 // True if a move from the grunt's current tile to (moveX, moveY) is committable:
 // the target is in-bounds + unoccupied (the arrival/owner flag-word test) AND, for a
 // diagonal step, neither cardinal corner tile carries the wall bit (0x2000).
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
-    GruntBoard* board = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 tx = g->m_lastTilePxX >> 5;
     i32 ty = g->m_lastTilePxY >> 5;
     i32 mtx = moveX >> 5;
@@ -94,10 +95,10 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (tx == mtx && ty == mty) {
         return 1;
     }
-    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
+    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width) || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
         return 0;
     }
-    i32* tgt = &(reinterpret_cast<i32*>(board->m_8[mty]))[mtx * 7];
+    i32* tgt = &(reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7];
     i32 tflags = *tgt;
     i32 hit = arr & tflags;
     if (hit & 0x20000000) {
@@ -114,9 +115,9 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (dx == 0 || dy == 0) {
         return 1;
     }
-    char* cur = board->m_8[ty] + tx * 7 * 4;
+    char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
     char* tg = reinterpret_cast<char*>(tgt);
-    i32 stride = board->m_c * 7 * 4; // bytes per board row
+    i32 stride = board->m_width * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
             if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
@@ -188,11 +189,11 @@ static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
 // A grunt board-tile flag fetch (g_gameReg->m_tileGrid board, tile = row[y][x*7]); the
 // out-of-bounds path returns 1 (so any flag test passes). Shared by all five.
 static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
-    GruntBoard* b = g_gameReg->m_tileGrid;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
 // CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
@@ -337,7 +338,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
     i32 code = (((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                    ->m_tileGrid->m_8[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
+                    ->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc.
@@ -582,7 +583,7 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 // (3) the /GX trylevel transitions for the CString + CToyTileBag temps. Final sweep.
 RVA(0x00051c00, 0xc7b)
 i32 CGrunt::StepCompassMove() {
-    GruntBoard* board = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 x = m_lastTilePxX;
     i32 y = m_lastTilePxY;
     i32 tx = x >> 5;
@@ -594,7 +595,7 @@ i32 CGrunt::StepCompassMove() {
 
     if (s_TileFlags(board, tx, ty) & 0x80) {
         // The current tile carries a move command at field +0x10 (4th dword).
-        i32 cmd = (reinterpret_cast<i32*>(board->m_8[ty]))[tx * 7 + 4];
+        i32 cmd = (reinterpret_cast<i32*>(board->m_rowBytes[ty]))[tx * 7 + 4];
         switch (cmd - 0xb) {
             case 0:
             case 4:
@@ -664,10 +665,10 @@ i32 CGrunt::StepCompassMove() {
             // The target is occupied by another owner: notify the tile mgr (the tile's
             // +0x4 owner id is split into its low two bytes).
             i32 owner;
-            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
+            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width) || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
                 owner = -1;
             } else {
-                owner = (reinterpret_cast<i32*>(board->m_8[mty]))[mtx * 7 + 1];
+                owner = (reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7 + 1];
             }
             m_tileMgr
                 ->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
@@ -823,19 +824,19 @@ commit:
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
     {
-        GruntBoard* b = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 ox = m_lastTilePxX >> 5;
         i32 oy = m_lastTilePxY >> 5;
-        b->m_8[oy][ox * 7 * 4 + 3] &= 0xdf;
-        *reinterpret_cast<i32*>(&b->m_8[oy][ox * 7 * 4 + 4]) = -1;
+        b->m_rowBytes[oy][ox * 7 * 4 + 3] &= 0xdf;
+        *reinterpret_cast<i32*>(&b->m_rowBytes[oy][ox * 7 * 4 + 4]) = -1;
     }
     {
-        GruntBoard* b = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> 5;
         i32 ny = moveY >> 5;
         i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-        b->m_8[ny][nx * 7 * 4 + 3] |= 0x20;
-        *reinterpret_cast<i32*>(&b->m_8[ny][nx * 7 * 4 + 4]) = owner;
+        b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
+        *reinterpret_cast<i32*>(&b->m_rowBytes[ny][nx * 7 * 4 + 4]) = owner;
     }
     m_lastTilePxX = moveX;
     m_lastTilePxY = moveY;
@@ -862,7 +863,7 @@ commit:
 // both engine calls byte-exact; residue = (1) the 8-way direction switch tail-merges
 // the overlapping +-0x20 delta arms in a .text layout no source case-order pins, and
 // (2) the x/y move-coords held across both calls + the level-board double-deref
-// (g_gameReg->m_tileGrid->m_8[ty]) land in a different callee-saved-reg/stack-spill
+// (g_gameReg->m_tileGrid->m_rowBytes[ty]) land in a different callee-saved-reg/stack-spill
 // assignment than retail (retail spills the pre-switch x/y to [esp+0x18/0x1c] for the
 // default arm and keeps x=ebx/y=edi). The memory-RMW byte twiddle is matched
 // (55.8%->61.6%); the rest is the documented regalloc/scheduling plateau. Final sweep.
@@ -903,14 +904,14 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    GruntBoard* b = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(b->m_8[ty]))[tx * 7];
+        flags = (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
     }
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -927,7 +928,7 @@ i32 CGrunt::ClaimSwitchTile() {
     // its owner record to -1.
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
-    GruntBoard* gb = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePxX >> 5;
     i32 oldTy = m_lastTilePxY >> 5;
     gb->m_8[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
