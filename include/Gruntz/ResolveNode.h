@@ -81,8 +81,9 @@ public:
     i32 m_50;                 // +0x50  (SetPosition reseeds 1)
     char _pad54[0x58 - 0x54]; // +0x54..+0x57
     i32 m_58;                 // +0x58  (SetPosition zeroes)
-    i32 m_5c;                 // +0x5c  screen/position X (INT_MIN = unset)
-    i32 m_60;                 // +0x60  screen/position Y
+    i32 m_screenX;            // +0x5c  screen/position X (INT_MIN = unset; the flat
+                              //        CGameObject model's m_screenX - name converged)
+    i32 m_screenY;            // +0x60  screen/position Y
     i32 m_64;                 // +0x64  = INT_MIN (clip-rect left sentinel)
 };
 SIZE_UNKNOWN(CResolveNode);

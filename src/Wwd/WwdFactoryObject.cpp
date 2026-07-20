@@ -75,7 +75,7 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
     m_0c = owner;
     m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
-    m_5c = static_cast<i32>(0x80000000);
+    m_screenX = static_cast<i32>(0x80000000);
     m_64 = static_cast<i32>(0x80000000);
     m_3c = 0;
     m_40 = 0;
@@ -140,7 +140,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 RVA(0x0015b390, 0x128)
 CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b, c) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    m_5c = static_cast<int>(0x80000000);
+    m_screenX = static_cast<int>(0x80000000);
     m_78 = 0;
     m_7c = new AnimWorkerObj(a, b);
     m_98 = 0;
@@ -161,7 +161,7 @@ CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b
 // byte-identical EXCEPT the single immediate vptr restamp store position.
 RVA(0x00154a50, 0x23)
 CResolveNode::~CResolveNode() {
-    m_5c = static_cast<i32>(0x80000000);
+    m_screenX = static_cast<i32>(0x80000000);
     m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
 }

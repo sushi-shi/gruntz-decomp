@@ -41,6 +41,7 @@
 #include <rva.h>
 #include <Gruntz/ResolveNode.h>      // CResolveNode - the REAL base (+0x00..+0x67)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - A's +0x1a0 member
+#include <Gruntz/WwdGridIter.h>      // WwdRegion - the embedded +0x9c spatial-grid node
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj - the owned +0x7c..+0x90 workers
 
 class
@@ -83,7 +84,7 @@ public:
         WORKER_FREE(m_90);
         m_c0 = static_cast<i32>(0x80000000);
         m_d8 = -1;
-        m_5c = static_cast<i32>(0x80000000);
+        m_screenX = static_cast<i32>(0x80000000);
         m_20 = static_cast<i32>(0x80000000);
         m_38 = -1;
         // retail leaves eax = the INT_MIN it just materialized for the stores
@@ -115,13 +116,29 @@ public:
                          //         CDDrawChildGroup::InsertSorted orders the list by it)
     i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
                          //         TickKillCues/RemoveAndDelete unlink through it)
-    AnimWorkerObj* m_7c; // +0x7c  the owned worker/logic record
-    AnimWorkerObj* m_80; // +0x80  lazily-built Hit handler worker
-    char _p84[0x88 - 0x84];
-    AnimWorkerObj* m_88; // +0x88  lazily-built Attack handler worker
-    char _p8c[0x90 - 0x8c];
-    AnimWorkerObj* m_90;    // +0x90  lazily-built Bump/collide handler worker
-    char _p94[0xb8 - 0x94]; // +0x94..+0xb7 (the +0x9c region node - see CWwdSlot9c)
+    // The worker/partner PAIR scheme (CollideBroadcast @0x159f00 is the proof): each
+    // lazily-built handler worker at +0x80/+0x88/+0x90 has its partner slot right
+    // after it - the OTHER object of the pending event, stored just before the
+    // worker's m_notify fires. (+0x94 is the flat model's m_hitOther.)
+    AnimWorkerObj* m_7c;       // +0x7c  the owned worker/logic record
+    AnimWorkerObj* m_80;       // +0x80  lazily-built Hit handler worker
+    CWwdGameObjectE* m_84;     // +0x84  Hit partner (RECT-phase mask1 hit)
+    AnimWorkerObj* m_88;       // +0x88  lazily-built Attack handler worker
+    CWwdGameObjectE* m_8c;     // +0x8c  Attack partner (RECT mask2 / BOX mask2b hit)
+    AnimWorkerObj* m_90;       // +0x90  lazily-built Bump/collide handler worker
+    CWwdGameObjectE* m_hitOther; // +0x94  collide partner (stored just before
+                                 //        m_90's m_collideNotify fires - BroadPhase)
+    CWwdGameObjectE* m_carrier;  // +0x98  latched carrier (a category-0x80 platform
+                                 //        object; StepAxisAlt stores it + sets flags
+                                 //        bit4; CMovingLogic::Update then advances
+                                 //        m_screenX/Y by the carrier's m_deltaX/Y).
+                                 //        Also the serialized linked object (Sub151b90
+                                 //        resolves it from the key m_184).
+    WwdRegion m_region;          // +0x9c..+0xb7  the embedded spatial-grid region
+                                 //        node: m_x/m_y (+0xac/+0xb0) are the position
+                                 //        copies Setup refreshes, m_object (+0xb4) the
+                                 //        self back-pointer (the CWwdSlot9c* records
+                                 //        below are its placement-ctor views)
     i32 m_b8;               // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
     i32 m_bc;               // +0xbc  shadow dirty-rect y
     i32 m_c0;               // +0xc0  shadow dirty-rect corner (INT_MIN sentinel)
@@ -129,9 +146,64 @@ public:
     i32 m_d0;                // +0xd0  shadow dirty-rect size x
     i32 m_d4;                // +0xd4  shadow dirty-rect size y
     i32 m_d8;                // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
-    CString m_dc;            // +0xdc  the object's name (dtor 0x1b9cde folds in ~E)
-    char _pe0[0x18c - 0xe0]; // +0xe0..+0x18b serialized state block (named on the
-                             //  flat model until the flat merge)
+    CString m_dc; // +0xdc  the object's name (dtor 0x1b9cde folds in ~E)
+    // +0xe0..+0x18b  the serialized state block (field knowledge merged from the
+    // flat CGameObject model - same offsets, one object).
+    i32 m_e0;           // +0xe0
+    // +0xe4  movement-resolution mode (CGameLevel::DispatchMove kinds 1..8):
+    // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,
+    // 3 -> B, 4 -> C, 8 -> B/C by direction, 6 -> D (two-probe recovery); the
+    // handlers transition 1 <-> 4 <-> 6 as moves land/fall/block.
+    i32 m_moveMode;     // +0xe4
+    u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
+                        //        BroadPhase tests other->m_collCategory & t->m_collMask)
+    i32 m_ec;           // +0xec  CollideBroadcast RECT-phase receive mask
+    i32 m_f0;           // +0xf0  CollideBroadcast BOX-phase receive mask (the
+                        //        entrance-sprite ctor seeds 1)
+    u32 m_collMask;     // +0xf4  which categories this object collides with
+    i32 m_strideX;      // +0xf8  tile-probe stride X (the move steppers' scan step)
+    i32 m_strideY;      // +0xfc  tile-probe stride Y
+    i32 m_100;          // +0x100
+    i32 m_104;          // +0x104
+    i32 m_108;          // +0x108
+    i32 m_10c;          // +0x10c
+    i32 m_110;          // +0x110
+    i32 m_114;          // +0x114  (teleporter spawn: source-tile coordinate mirror)
+    i32 m_118;          // +0x118  CSpotLight ctor: pi/0 mode gate
+    i32 m_11c;          // +0x11c  CSpotLight ctor: settings-table index
+    i32 m_120;          // +0x120  CSpotLight ctor: SpotLightTime override; ALSO the
+                        //         damage amount CollideBroadcast subtracts from the
+                        //         other party's m_placeMode budget
+    i32 m_124;          // +0x124  sprite-selector row key (leaf ctors -> ApplyLookupSprite)
+    i32 m_placeMode;    // +0x128  visibility/place mode (1 or 2; the on-screen gate
+                        //         discriminator); ALSO the flag-bit-8 damage budget
+                        //         CollideBroadcast decrements (worker error state on
+                        //         underflow)
+    i32 m_12c;          // +0x12c  CSpotLight ctor: m_58 scale gate
+    i32 m_130;          // +0x130  (CUFO ctor: seeds the spotlight's m_120)
+    // +0x134..+0x140  signed per-side collision extents around (m_screenX, m_screenY):
+    // left/top/right/bottom. Trigger ctors store TILE spans (world box = pos +/-
+    // extent<<5 +/- 7); the movement steppers read them as PIXEL offsets (L stored
+    // negative). 0x80000000 = unset (the collision pumps skip the object).
+    RECT m_extent;      // +0x134  L/T/R/B (a REAL RECT - the broad-phase overlap
+                        //         helpers take it BY VALUE as tagRECT); .bottom is
+                        //         the feet line (WalkColumnDown ground-snaps from it)
+    RECT m_area;        // +0x144  derived activation/stand box (world-space in the
+                        //         trigger initializers; .top is a platform's stand
+                        //         surface row; CollideBroadcast's oi-side test box)
+    RECT m_switchRect;  // +0x154  the tile-switch registrar rect (BY-VALUE arg of
+                        //         RegisterSwitchLogic; CollideBroadcast's oj-side box)
+    i32 m_164;          // +0x164
+    i32 m_168;          // +0x168
+    i32 m_16c;          // +0x16c
+    i32 m_170;          // +0x170
+    i32 m_deltaX;       // +0x174  per-frame movement delta X (carrier-ride advance)
+    i32 m_deltaY;       // +0x178  per-frame movement delta Y
+    i32 m_17c;          // +0x17c
+    i32 m_180;          // +0x180
+    i32 m_184;          // +0x184  serialized linked-object key (Sub151b90 -> m_carrier)
+    i32 m_188;          // +0x188  object id (the manager's CMapPtrToPtr key -
+                        //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
 
 // ---------------------------------------------------------------------------

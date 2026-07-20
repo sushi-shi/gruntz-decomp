@@ -729,7 +729,7 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // Forward decl for the Slot40 body (definition follows at 0x15a130 in RVA order):
 // the box-overlap predicate over two CGameObjects (<Gruntz/UserLogic.h>; the old
 // CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
-i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
+i32 __stdcall BoxesOverlap_15a130(CWwdGameObjectE* a1, CWwdGameObjectE* a2);
 
 // NOTE: the inner-pair body is flattened with `continue` guards (identical CFG;
 // MSVC5's parser corrupts its state on the fully-nested spelling in THIS include
@@ -739,65 +739,68 @@ RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (outer != 0) {
-        char* oi = reinterpret_cast<char*>(outer->m_obj);
+        CWwdGameObjectE* oi = outer->m_obj;
         CDDrawGroupNode* nextOuter = outer->m_next;
-        if (!(*reinterpret_cast<i32*>((oi + 8)) & 1)) {
+        if (!(oi->m_08 & 1)) {
             CDDrawGroupNode* inner = nextOuter;
             for (; inner != 0; inner = inner->m_next) {
-                char* oj = reinterpret_cast<char*>(inner->m_obj);
-                i32 fj = *reinterpret_cast<i32*>((oj + 8));
+                CWwdGameObjectE* oj = inner->m_obj;
+                i32 fj = oj->m_08;
                 if (fj & 1) {
                     continue;
                 }
-                i32 fi = *reinterpret_cast<i32*>((oi + 8));
+                i32 fi = oi->m_08;
                 if ((fi ^ fj) & 0x40000) {
                     continue;
                 }
                 // --- RECT PHASE (skipped when i&4 or j&0x80) ---
                 if (!(fi & 4) && !(fj & 0x80)) {
-                    i32 mask1 = *reinterpret_cast<i32*>((oj + 0xe8)) & *reinterpret_cast<i32*>((oi + 0xec));
-                    i32 mask2 = *reinterpret_cast<i32*>((oi + 0xe8)) & *reinterpret_cast<i32*>((oj + 0xf0));
+                    i32 mask1 = static_cast<i32>(oj->m_collCategory) & oi->m_ec;
+                    i32 mask2 = static_cast<i32>(oi->m_collCategory) & oj->m_f0;
                     if (mask1 || mask2) {
                         i32 overlap;
-                        if (*reinterpret_cast<i32*>((oj + 0x154)) == static_cast<i32>(0x80000000)) {
+                        if (oj->m_switchRect.left == static_cast<i32>(0x80000000)) {
                             overlap = 0;
-                        } else if (*reinterpret_cast<i32*>((oi + 0x144)) == static_cast<i32>(0x80000000)) {
+                        } else if (oi->m_area.left == static_cast<i32>(0x80000000)) {
                             overlap = 0;
                         } else {
                             CDDrawRect ra, rb;
-                            i32 xi = *reinterpret_cast<i32*>((oi + 0x5c));
-                            i32 yi = *reinterpret_cast<i32*>((oi + 0x60));
-                            ra.left = *reinterpret_cast<i32*>(oi + 0x144) + xi;
-                            ra.top = *reinterpret_cast<i32*>(oi + 0x148) + yi;
-                            ra.right = *reinterpret_cast<i32*>(oi + 0x14c) + xi;
-                            ra.bottom = *reinterpret_cast<i32*>(oi + 0x150) + yi;
-                            i32 xj = *reinterpret_cast<i32*>((oj + 0x5c));
-                            i32 yj = *reinterpret_cast<i32*>((oj + 0x60));
-                            rb.left = *reinterpret_cast<i32*>(oj + 0x154) + xj;
-                            rb.top = *reinterpret_cast<i32*>(oj + 0x158) + yj;
-                            rb.right = *reinterpret_cast<i32*>(oj + 0x15c) + xj;
-                            rb.bottom = *reinterpret_cast<i32*>(oj + 0x160) + yj;
+                            i32 xi = oi->m_screenX;
+                            i32 yi = oi->m_screenY;
+                            ra.left = oi->m_area.left + xi;
+                            ra.top = oi->m_area.top + yi;
+                            ra.right = oi->m_area.right + xi;
+                            ra.bottom = oi->m_area.bottom + yi;
+                            i32 xj = oj->m_screenX;
+                            i32 yj = oj->m_screenY;
+                            rb.left = oj->m_switchRect.left + xj;
+                            rb.top = oj->m_switchRect.top + yj;
+                            rb.right = oj->m_switchRect.right + xj;
+                            rb.bottom = oj->m_switchRect.bottom + yj;
                             overlap = RectsOverlap_15bfb0(&ra, &rb);
                         }
                         if (overlap) {
                             if (mask2) {
-                                AnimWorkerObj* nf = *reinterpret_cast<AnimWorkerObj**>((oj + 0x88));
+                                AnimWorkerObj* nf = oj->m_88;
                                 if (nf != 0) {
-                                    *reinterpret_cast<void**>((oj + 0x8c)) = oi;
+                                    oj->m_8c = oi;
+                                    // (the E*->CGameObject* respell dies at the flat-merge typedef)
                                     nf->m_notify(reinterpret_cast<CGameObject*>(oj));
                                 }
                             }
                             if (mask1) {
-                                if (*reinterpret_cast<i32*>((oi + 8)) & 8) {
-                                    i32 v = *reinterpret_cast<i32*>(oi + 0x128) - *reinterpret_cast<i32*>((oj + 0x120));
-                                    *reinterpret_cast<i32*>((oi + 0x128)) = v;
+                                if (oi->m_08 & 8) {
+                                    i32 v = oi->m_placeMode - oj->m_120;
+                                    oi->m_placeMode = v;
                                     if (v <= 0) {
-                                        *reinterpret_cast<i32*>((*reinterpret_cast<char**>(oi + 0x7c) + 0x1c)) = 0x1c;
+                                        // latch the worker's error/death state (m_1c is
+                                        // the documented int|ptr role-union)
+                                        oi->m_7c->m_1c = reinterpret_cast<void*>(0x1c);
                                     }
                                 } else {
-                                    AnimWorkerObj* nf = *reinterpret_cast<AnimWorkerObj**>((oi + 0x80));
+                                    AnimWorkerObj* nf = oi->m_80;
                                     if (nf != 0) {
-                                        *reinterpret_cast<void**>((oi + 0x84)) = oj;
+                                        oi->m_84 = oj;
                                         nf->m_notify(reinterpret_cast<CGameObject*>(oi));
                                     }
                                 }
@@ -806,24 +809,24 @@ void CDDrawChildGroup::CollideBroadcast() {
                     }
                 }
                 // --- BOX PHASE (skipped when j&4 or i&0x80) ---
-                if (*reinterpret_cast<i32*>((oj + 8)) & 4) {
+                if (oj->m_08 & 4) {
                     continue;
                 }
-                if (*reinterpret_cast<i32*>((oi + 8)) & 0x80) {
+                if (oi->m_08 & 0x80) {
                     continue;
                 }
-                i32 mask1b = *reinterpret_cast<i32*>((oj + 0xec)) & *reinterpret_cast<i32*>((oi + 0xe8));
-                i32 mask2b = *reinterpret_cast<i32*>((oj + 0xe8)) & *reinterpret_cast<i32*>((oi + 0xf0));
-                if ((mask1b || mask2b) && BoxesOverlap_15a130(reinterpret_cast<CGameObject*>(oj), reinterpret_cast<CGameObject*>(oi))) {
+                i32 mask1b = oj->m_ec & static_cast<i32>(oi->m_collCategory);
+                i32 mask2b = static_cast<i32>(oj->m_collCategory) & oi->m_f0;
+                if ((mask1b || mask2b) && BoxesOverlap_15a130(oj, oi)) {
                     if (mask2b) {
-                        AnimWorkerObj* nf = *reinterpret_cast<AnimWorkerObj**>((oi + 0x88));
+                        AnimWorkerObj* nf = oi->m_88;
                         if (nf != 0) {
-                            *reinterpret_cast<void**>((oi + 0x8c)) = oj;
+                            oi->m_8c = oj;
                             nf->m_notify(reinterpret_cast<CGameObject*>(oi));
                         }
                     }
                     if (mask1b) {
-                        (reinterpret_cast<CWwdGameObjectE*>(oj))->Notify_15b650(oi);
+                        oj->Notify_15b650(oi);
                     }
                 }
             }
@@ -842,14 +845,13 @@ void CDDrawChildGroup::CollideBroadcast() {
 // 3 spilled box edges, our cl reuses the incoming arg stack slots - shifting every
 // spill offset + rotating esi/edi. A non-steerable codegen heuristic
 // (zero-register-pinning family).
-// The two boxes are CGameObjects (<Gruntz/UserLogic.h>) - the `CWwdBox` view is gone. Every
-// field it declared is a canonical CGameObject member at the same offset: the screen
-// position (m_screenX @+0x5c / m_screenY @+0x60) and the two 4-dword boxes at +0x144 and
-// +0x154 (m_area.left/T/R/B - "the derived activation/stand box L/T/R/B" - and the m_154 quad).
-// The 0x80000000 "invalid" sentinel this reads is the SAME unset marker CGameObject's
-// extent/area block documents.
+// The two boxes are wide game objects (CWwdGameObjectE family) - the `CWwdBox` view is
+// gone. Every field is a canonical member at the same offset: the screen position
+// (m_screenX @+0x5c / m_screenY @+0x60, CResolveNode) and the two 4-dword boxes
+// m_area (+0x144) / m_switchRect (+0x154) on E. The 0x80000000 "invalid" sentinel is
+// the family's documented unset marker.
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
+i32 __stdcall BoxesOverlap_15a130(CWwdGameObjectE* a1, CWwdGameObjectE* a2) {
     if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
         return 0;
     }

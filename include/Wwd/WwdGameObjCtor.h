@@ -26,7 +26,7 @@ struct WwdCtorBase {
         m_20 = static_cast<int>(0x80000000);
         m_38 = -1;
         // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efbc0
-        m_5c = static_cast<int>(0x80000000);
+        m_screenX = static_cast<int>(0x80000000);
         m_64 = static_cast<int>(0x80000000);
         m_3c = 0;
         m_40 = 0;
@@ -43,7 +43,7 @@ struct WwdCtorBase {
     char _p24[0x38 - 0x24];
     int m_38, m_3c, m_40;
     char _p44[0x5c - 0x44];
-    int m_5c;
+    int m_screenX; // +0x5c (node m_screenX)
     char _p60[0x64 - 0x60];
     int m_64;
     char _p68[0x78 - 0x68];

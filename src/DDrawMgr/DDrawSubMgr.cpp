@@ -437,7 +437,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pLo = -1;
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    m_5c = static_cast<i32>(0x80000000);
+    m_screenX = static_cast<i32>(0x80000000);
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
@@ -499,7 +499,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pLo = -1;
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    m_5c = static_cast<i32>(0x80000000);
+    m_screenX = static_cast<i32>(0x80000000);
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
@@ -544,7 +544,7 @@ i32 CDDrawWorkerBase::Unload() {
     // register doubles as the return value; the dev body was likely return-less).
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
-    m_5c = v;
+    m_screenX = v;
     m_20 = v;
     m_38 = -1;
     return v;

@@ -784,14 +784,14 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
 // edx and reuses one `mov eax,1` for both m_50 and the return. ~90%.
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
-    m_5c = x;
+    m_screenX = x;
     m_10 = 0;
     m_14 = 0;
     m_40 = 0;
     m_44 = 0;
     m_4c = 0;
     m_58 = 0;
-    m_60 = y;
+    m_screenY = y;
     m_48 = 0x32;
     m_50 = 1;
     m_3c = reinterpret_cast<i32>(OwnerMgr()->m_level); // the mgr's +0x24 CGameLevel, held as the int handle
@@ -1358,10 +1358,10 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 RVA(0x00165fa0, 0x93)
 void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
-        i32 x = m_5c;
+        i32 x = m_screenX;
         char c = m_78b;
         CDDSurface* s = b->m_surface;
-        i32 y = m_60;
+        i32 y = m_screenY;
         char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_b0 * x + s->m_pitch * y] = c;
@@ -1370,8 +1370,8 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
     {
         char c = m_78b;
-        i32 y = m_60;
-        i32 x = m_5c;
+        i32 y = m_screenY;
+        i32 x = m_screenX;
         CDDSurface* s = a->m_surface;
         char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
