@@ -313,8 +313,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
                 BzSoundEntry* res = 0;
-                (reinterpret_cast<CMapStringToPtr*>(&ss->m_findTable))
-                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", reinterpret_cast<void*&>(res));
+                ss->m_findTable.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", reinterpret_cast<void*&>(res));
                 if (res != 0) {
                     (reinterpret_cast<LeafCue*>(res))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }

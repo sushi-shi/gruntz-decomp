@@ -202,8 +202,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
                 BzSoundEntry* res = 0;
-                (reinterpret_cast<CMapStringToPtr*>(&ss->m_findTable))
-                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+                ss->m_findTable.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
                 if (res != 0) {
                     (reinterpret_cast<LeafCue*>(res))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -214,8 +213,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (m_soundStarted != 0) {
         BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
         BzSoundEntry* res = 0;
-        (reinterpret_cast<CMapStringToPtr*>(&ss->m_findTable))
-            ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+        ss->m_findTable.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
         if (res == 0) {
             return 1;
         }
@@ -249,7 +247,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
                     if (ss->m_playing == 0) {
                         BzSoundEntry* res = 0;
-                        (reinterpret_cast<CMapStringToPtr*>(&ss->m_findTable))->Lookup("GAME_FLAGRISE", reinterpret_cast<void*&>(res));
+                        ss->m_findTable.Lookup("GAME_FLAGRISE", reinterpret_cast<void*&>(res));
                         if (res != 0 && g_sndEnabled != 0) {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_lastPlayed >= res->m_interval) {

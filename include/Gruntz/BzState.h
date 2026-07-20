@@ -13,6 +13,7 @@
 #define GRUNTZ_GRUNTZ_BZSTATE_H
 
 #include <Ints.h>
+#include <Mfc.h> // CMapStringToPtr (the embedded find table)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created idle-grunt sprites)
 
@@ -63,8 +64,8 @@ SIZE_UNKNOWN(BzSoundEntry);
 
 struct BzSoundSet {
     char m_pad00[0x10];
-    i32 m_findTable; // +0x10 (CMapStringToPtr body starts here; cast at Find)
-    char m_pad14[0x30 - 0x14];
+    CMapStringToPtr m_findTable;  // +0x10  the name->cue find table (real MFC, 0x1c B)
+    char m_pad2c[0x30 - 0x2c];
     i32 m_playing; // +0x30  is-playing gate
 };
 SIZE_UNKNOWN(BzSoundSet);
