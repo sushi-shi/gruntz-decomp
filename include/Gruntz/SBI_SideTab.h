@@ -22,38 +22,10 @@
 #include <Gruntz/SbiConfig.h>         // canonical CDDrawSurfaceMgr (the configure's arg2)
 #include <Image/CImage.h> // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 
-// A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
-// Only the stat fields BuildHandle reads are modeled.
-struct CSideTabGruntRec {
-    char m_pad0[0x170];
-    i32 m_170; // +0x170  ability level
-    char m_pad174[0x198 - 0x174];
-    i32 m_198; // +0x198  override badge
-    i32 m_19c; // +0x19c  ability cap (used when level > 0x16)
-    char m_pad1a0[0x3ec - 0x1a0];
-    i32 m_3ec; // +0x3ec  health
-};
-SIZE_UNKNOWN(CSideTabGruntRec);
-
-// The per-frame unit-record table (g_gameReg->m_68): a flat array of grunt-record
-// pointers at +0x1c indexed by (col + 15*row).
-struct CSideTabUnitTable {
-    char m_pad0[0x1c];
-    CSideTabGruntRec* m_units[1]; // +0x1c  per-cell grunt-record pointers
-};
-SIZE_UNKNOWN(CSideTabUnitTable);
-
-// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c) viewed by the
-// SideTab paths: m_30 is the canonical resource manager (CDDrawSurfaceMgr), m_68 the per-frame
-// unit-record table the sampled grunt record is indexed out of. Both slots are typed
-// here so the render/glyph and sampling paths reach them with no reinterpret cast.
-struct CSideTabGameReg {
-    char m_pad00[0x30];
-    CDDrawSurfaceMgr* m_world; // +0x30  resource manager
-    char m_pad34[0x68 - 0x34];
-    CSideTabUnitTable* m_unitTable; // +0x68  per-frame unit-record table
-};
-SIZE_UNKNOWN(CSideTabGameReg);
+// (The CSideTabGruntRec/CSideTabUnitTable/CSideTabGameReg view trio is FOLDED:
+// the "unit table" at g_gameReg+0x68 IS CTriggerMgr (m_cmdGrid), its +0x1c record
+// array IS m_grid (CTmCell == CGrunt), and the stat fields are CGrunt's
+// m_entranceReason (the multiplexed tool kind), m_19c, m_198 and m_health.)
 
 // CSBI_SideTab - the side-tab status-bar item. Derives directly from
 // CStatusBarItem. Fields are placeholders; the offsets + code bytes are the

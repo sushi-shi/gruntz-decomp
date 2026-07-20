@@ -10,6 +10,7 @@
 // code bytes are load-bearing. The CShadeTableCache builders, the global-table
 // registrar (0x14dcf0), and the CImageSet frame accessors are external/no-body so
 // their calls reloc-mask. No destructible stack locals -> plain /O2 (base flags).
+#include <Gruntz/GruntzMgr.h> // the one manager type
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/GameRegistry.h> // the singleton Init binds (m_world/m_shadeCache)
 
@@ -35,7 +36,7 @@ void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 // additive + eight subtractive color tables, and register the grey table (key 9).
 // ===========================================================================
 RVA(0x0009dad0, 0x14a)
-i32 CLightFxMgr::Init(CGameRegistry* reg, CGruntzMgr* owner) {
+i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     if (!reg) {
         return 0;
     }

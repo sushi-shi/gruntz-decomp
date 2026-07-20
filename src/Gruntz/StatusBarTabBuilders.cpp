@@ -11,6 +11,8 @@
 // body / by-address DATA externs).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <Mfc.h>       // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_cmdGrid) + CTmCell (the placed grid grunt)
+#include <Gruntz/Grunt.h> // complete CGrunt (CTmCell == CGrunt; the stat fields)
 #include <rva.h>
 #include <Ints.h>
 
@@ -43,7 +45,8 @@
 // m_drawTarget (+0x04) -> m_14 surface context, and the side-tab unit table
 // m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
 // the builders' namespace-scoped CGameRegistry decl below is its own symbol).
-extern "C" CSideTabGameReg* g_gameReg;
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 namespace StatusBarTabBuilders {
 
@@ -57,7 +60,6 @@ namespace StatusBarTabBuilders {
     // CSbWorldSlot) are cast locally at the deref sites. C++-namespaced (its OWN symbol,
     // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
     // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
-    extern CGameRegistry* g_gameReg;
     extern "C" i32
         g_curPlayer; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
 
@@ -139,15 +141,15 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     i32 sel =
-        (static_cast<CSpriteRefTable*>(StatusBarTabBuilders::g_gameReg->m_spriteFactory))
+        g_gameReg->m_spriteFactory
             ->GetSel(
-                (reinterpret_cast<StatusBarTabBuilders::CSbWorldSlot*>((reinterpret_cast<char*>(StatusBarTabBuilders::g_gameReg)
+                (reinterpret_cast<StatusBarTabBuilders::CSbWorldSlot*>((reinterpret_cast<char*>(g_gameReg)
                                                        + 0x138)))[StatusBarTabBuilders::g_curPlayer]
                     .m_toolId,
                 0
             );
     if (sel == 0) {
-        sel = (static_cast<CSpriteRefTable*>(StatusBarTabBuilders::g_gameReg->m_spriteFactory))->GetSel(1, 0);
+        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     m_30->SetAllTypes(10);
     m_30->SetAllFormats(sel);
@@ -532,14 +534,14 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 0) {
         return 0;
     }
-    CSideTabGruntRec* unit = g_gameReg->m_unitTable->m_units[m_40 + 15 * m_rowIndex];
+    CTmCell* unit = g_gameReg->m_cmdGrid->m_grid[m_40 + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
     if (unit == 0) {
         (reinterpret_cast<CStatusBarMgr*>(m_2c))->ClearStat(m_40);
         return 0;
     }
     i32 val;
     if (mode == 2) {
-        i32 level = unit->m_170;
+        i32 level = unit->m_entranceReason; // the multiplexed current-tool kind (>0x16 = melee)
         if (level > 0x16) {
             val = unit->m_19c;
             if (val == 0) {
@@ -558,7 +560,7 @@ i32 CSBI_SideTab::BuildHandle() {
         }
     }
     if (m_44 == 1) {
-        i32 hp = unit->m_3ec;
+        i32 hp = unit->m_health;
         if (hp >= 0x50) {
             val = 0x24;
         } else if (hp >= 0x28) {
