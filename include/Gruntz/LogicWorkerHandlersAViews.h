@@ -74,7 +74,15 @@ struct DnnOwner {
 };
 
 // HandlerA9E00's record ctor stamps 0x1e859c == CDoNothingNormal's bound table
-// (DnnRec IS the DoNothingNormal record); its ??_7 reloc-masks it.
-// (RELOC_VTBL removed - TESTING whether the annotation is gate-load-bearing)
+// (DnnRec IS the DoNothingNormal record); its ??_7 reloc-masks it. (The RELOC_VTBL
+// annotation is REMOVED - gate-verified redundant, coverage is target-driven.)
+//
+// DISSOLUTION ATTEMPTED AND REFUTED (2026-07-20): rewriting HandlerA9E00 as
+// LOGIC_WORKER_PUMP(CDoNothingNormal) with the real MI class is refuted by THREE
+// independent byte facts: (1) retail news 0x54, the CUserLogic+CWapX MI shape is
+// 0x68; (2) retail's frame has NO ctor-throw EH state, the real (dtor-bearing)
+// CUserLogic base adds the fs:0 registration; (3) retail CALLS the out-of-line
+// 0x58cd0 base ctor, the header-inline subset folds instead. The scaffold stays
+// until the focused audit recovers the 0x54 no-throw CWapX-subset shape.
 
 #endif // GRUNTZ_LOGICWORKERHANDLERSAVIEWS_H
