@@ -46,7 +46,7 @@ namespace modeinit {
     // CState::LoadGameAssetNamespaces (0xf9ea0); IsModeReady @0x35da IS
     // CPlay::LoadCursorSprites (0xd0120). The Parent view was CGruntzMgr (m_chatLog/
     // m_saveInfoRec/m_114), Arg1 the CGruntzMgr singleton (m_options[0] gates m_020/
-    // m_014 - the ex-CNetChannel m_active/m_14 view of the same +0x150 record),
+    // m_014 - the ex-GruntzPlayer m_active/m_14 view of the same +0x150 record),
     // Peer the CGameObject m_scrollSink (m_stateFlags bit0), Ctl1c the CChatBoxOwner,
     // Rec78 the CTileTriggerContainer, Rec50 the CTimer.
     //
@@ -112,8 +112,8 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         if (sub == 0) {
             return 0;
         }
-        sub->m_liveGate = 1; // live gate  (== the ex-CNetChannel::m_active view)
-        sub->m_014 = 1;      // armed gate (== the ex-CNetChannel::m_14 view)
+        sub->m_liveGate = 1; // live gate  (== the ex-GruntzPlayer::m_active view)
+        sub->m_014 = 1;      // armed gate (== the ex-GruntzPlayer::m_14 view)
         m_region0Gate = 0;
         m_region1Gate = 0;
         m_region2Gate = 0;

@@ -196,28 +196,13 @@ SIZE_UNKNOWN(CNetPlayerSlot); // m_4-relative slot view (3 gate/latency dwords p
 // (0xba810..0xbb190) addresses it +0x150-relative. Only the touched fields are
 // pinned. The +0x4 member is a CString (the channel's name); +0x18 a dword id;
 // +0x20 the "active" gate.
-struct CNetChannel {
-    i32 m_id;       // +0x00  id/header dword (serialized at packet+8)
-    CString m_name; // +0x04  channel name (CString)
-    i32 m_slotId;   // +0x08  net-slot id (SetNetSlot key) / player word
-    i32 m_c;        // +0x0c
-    i32 m_10;       // +0x10
-    i32 m_14;       // +0x14  (== CNetMgr::m_4+0x164 gate A)
-    i32 m_playerId; // +0x18  owner player id (compared vs m_localPlayerId)
-    i32 m_flag;     // +0x1c  flag (0/1)
-    i32 m_active;   // +0x20  "active" gate (== CNetMgr::m_4+0x170 gate B)
-    char m_pad24[0x228 - 0x24];
-    i32 m_228;     // +0x228
-    i32 m_latency; // +0x22c  the slot's latency value (== CNetMgr::m_4+0x37c)
-    i32 m_230;     // +0x230
-    char m_pad234[0x238 - 0x234];
-
-    // The channel's name (m_name @+0x04) is fetched via the folded GetName routine
-    // at 0x1f450 - identical +0x04 CString read that COMDAT-folds with
-    // GruntzPlayer::GetName in retail (one address). Callers reach it as
-    // ((GruntzPlayer*)ch)->GetName() (cast at the call; cannot dup the RVA).
-};
-SIZE(CNetChannel, 0x238); // one inline channel descriptor (array stride 0x238)
+// (CNetChannel is GONE - the channel record IS GruntzPlayer, the 0x238 conflation
+// record (m_channels == CGruntzMgr::m_options, both at +0x150): id==m_playerIndex,
+// name==m_name, slotId==m_008, +0x10==m_configId, +0x14==m_014, playerId==m_slotKey,
+// flag==m_readyFlag, active==m_liveGate, +0x228==m_comboSel, latency==m_latency.
+// The "COMDAT-folded GetName at one address" was the tell: MSVC5 has NO ICF - one
+// address means ONE class.)
+#include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
 
 // A payload entry found through the m_58 player list. FindPlayerById matches on
 // the entry's +0x4 id field.
@@ -972,7 +957,7 @@ struct CNetGameMgr {
     char m_pad118[0x12c - 0x118];
     i32 m_12c; // +0x12c  custom-vs-stock level flag (Setup sets 0 custom / 1 stock)
     char m_pad130[0x150 - 0x130];
-    CNetChannel m_channels[4]; // +0x150  the inline per-channel slot array (stride 0x238)
+    GruntzPlayer m_channels[4]; // +0x150  the inline per-player slot array (== CGruntzMgr::m_options)
 };
 SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); retail size TBD
 
@@ -1288,7 +1273,7 @@ public:
     i32 RegisterChannelRec(void* rec);        // 0xbac40  unpack rec -> RegisterChannel
     i32 RemoveChannel(i32 idx);               // 0xbac90  free channel[idx]
     i32 OnPauseChannel();                     // 0xbad00  m_580 ? SendStatFlag+OnMultiPause
-    i32 BroadcastOneChannel(CNetChannel* ch); // 0xbaf00  serialize one channel -> 0x2c packet
+    i32 BroadcastOneChannel(GruntzPlayer* ch); // 0xbaf00  serialize one channel -> 0x2c packet
     i32 ParseOneChannel(void* rec);           // 0xbaff0  parse one record -> channel[rec.idx]
     i32 SendChannelStat422();                 // 0xbb0b0  build {0x422} -> SetGroupDataFrom
     i32 SendChannelStat423();                 // 0xbb120  build {0x423} -> SetGroupDataFrom

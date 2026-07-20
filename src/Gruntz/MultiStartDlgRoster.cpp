@@ -863,7 +863,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             if (slot->m_liveGate) {
                 {
-                    CString name = (reinterpret_cast<GruntzPlayer*>(slot))->GetName();
+                    CString name = slot->GetName();
                     LPCTSTR pch = static_cast<LPCTSTR>(name);
                     force = 0;
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
@@ -904,7 +904,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 // message, and tears down. Field/class names are placeholders; g_multiState/g_gameReg
 // reuse this TU's canonical decls.
 // ===========================================================================
-// The watchdog reads three fields (m_14 present / m_20 active / m_22c display value)
+// The watchdog reads three fields (m_14 present / m_20 active / m_latency display value)
 // per player off the canonical CGameRegistry::m_focusSlots[] (GameRegistry.h, +0x150,
 // stride 0x238).
 
@@ -984,7 +984,7 @@ void CMultiStartDlg::Watchdog() {
             }
             if (slot->m_liveGate != 0 && slot->m_014 != 0) {
                 char buf[0x20];
-                wsprintfA(buf, "%d", slot->m_22c);
+                wsprintfA(buf, "%d", slot->m_latency);
                 item1->SetWindowTextA(buf);
                 item2->SetWindowTextA("R");
             } else {

@@ -87,7 +87,7 @@ public:
     i32 m_focusY;                 // +0x224  = 0 (snapped focus y)
     i32 m_comboSel;               // +0x228  = 0xf in the ctor/Clear seed; the battlez
                                   //          dialog's per-slot dropdown selection (+1)
-    i32 m_22c;                    // +0x22c  = 0
+    i32 m_latency;                // +0x22c  = 0  net-slot latency (== CNetPlayerSlot m_4+0x37c; the roster watchdog displays it)
     i32 m_230;                    // +0x230  = 0
     char m_pad234[0x238 - 0x234]; // +0x234
 }; // 0x238

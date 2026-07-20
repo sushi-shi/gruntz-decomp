@@ -2899,7 +2899,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
         if (s != 0) {
             s->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
         }
-        s = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(s) + 0x238));
+        s++;
     }
 }
 
@@ -2940,7 +2940,7 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
             return slot;
         }
         i++;
-        slot = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(slot) + 0x238));
+        slot++;
     } while (i < 4);
     return 0;
 }
@@ -3098,7 +3098,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         if (slot == 0 || (reinterpret_cast<CTriggerMgr*>(slot))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
             return 0;
         }
-        slot = reinterpret_cast<GruntzPlayer*>((reinterpret_cast<char*>(slot) + 0x238));
+        slot++;
     }
 
     if (m_cmdGrid->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {

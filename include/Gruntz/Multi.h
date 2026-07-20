@@ -59,7 +59,7 @@ struct CNetPlayerEntry; // the local-player descriptor stored at +0x5bc
 struct CNetStatPacket; // the 0x10-byte stat packet the Send* family ships
 struct CNetCtrlMsg;    // control-message arg (HandleControlMsg)
 struct CNetVersionMsg; // version-check message arg (HandleVersionCheck)
-struct CNetChannel;    // per-channel record (BroadcastOneChannel)
+class GruntzPlayer;    // the 0x238 per-player/channel record (BroadcastOneChannel)
 struct CNetSession;    // the +0x520 command-session facet (Session() accessor)
 
 // The CGruntzMgr game-manager singleton (*0x64556c) - the CState owner at CMulti+0x04

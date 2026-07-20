@@ -3480,7 +3480,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper);
 // (same family as the CWarlord dtor wall).
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
     m_playerIndex = -1;
     m_slotKey = -2;
@@ -3495,7 +3495,7 @@ GruntzPlayer::GruntzPlayer() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
 }
 
@@ -3538,7 +3538,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
     return 1;
 }
@@ -3583,7 +3583,7 @@ void GruntzPlayer::Clear() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
 }
 
@@ -3613,7 +3613,7 @@ i32 GruntzPlayer::Reset() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
     return 1;
 }
@@ -3629,7 +3629,7 @@ i32 GruntzPlayer::ClearRoundState_0daa60() {
     m_readyFlag = 0;
     m_doneFlag = 0;
     m_030 = 0;
-    m_22c = 0;
+    m_latency = 0;
     m_230 = 0;
     return 1;
 }
