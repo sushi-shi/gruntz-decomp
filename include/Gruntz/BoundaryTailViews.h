@@ -33,16 +33,8 @@
 // (<Gruntz/RandomAmbientSound.h>) - the same +0x10 ::CMapStringToPtr holder and
 // +0x10 DirectSoundMgr* record the SetupFromMap path already used.)
 
-// 0x118330 - populate an output record from three successive iterator reads.
-struct Node118330 {
-    char _0[0xc];
-    i32 m_c, m_10, m_14; // 0xc,0x10,0x14
-};
-SIZE_UNKNOWN(Node118330);
-struct Iter118330 {
-    void* pos;
-    Node118330* GetNext(int x); // 0x1b30f0 (__thiscall)
-};
-SIZE_UNKNOWN(Iter118330);
+// (Node118330/Iter118330 are GONE - the 0x1b30f0 "iterator" is MFC CTime::GetLocalTm
+// and the record is struct tm (mday/mon/year - the date-string builder); the ONE user
+// (GameInfoString.cpp) already models it with the real CTime. ZERO uses remained.)
 
 #endif // GRUNTZ_BOUNDARYTAILVIEWS_H

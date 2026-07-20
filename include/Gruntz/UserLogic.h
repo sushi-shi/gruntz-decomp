@@ -114,6 +114,9 @@ struct CGameObject {
     void ApplyName(const char* name);                   // 0x150540 (first-frame cache)
     i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
     i32 LookupAnimSprite(const char* name);             // 0x150610  (anim-set cache)
+    // 0x151d20: stash/replace the aux's m_1c with arg, fire its m_notify(this),
+    // restore m_1c if unchanged (the hooked-callback notify; ex the B_151d20 view).
+    i32 NotifyHooked_151d20(void* arg);
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60 (the
     // geometry source IS the resolved CAniElement - the body feeds it straight to
     // the +0x1a0 cursor Setup)

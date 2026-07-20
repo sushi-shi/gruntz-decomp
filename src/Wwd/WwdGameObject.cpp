@@ -1116,20 +1116,19 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x151d20 - notify a hooked callback (placeholder-identity object RVA-adjacent to
-// this TU): stash/replace m_7c->m_1c with arg, invoke the +0x10 callback(this),
-// restore m_1c if unchanged. __thiscall, 1 arg. The +0x7c hook-owner class carries no
-// recoverable edge, so the B_151d20/Cb151d20 views (in BoundaryUpperViews.h, already
-// included above) stand in. Re-homed from src/Stub/BoundaryUpper.cpp.
+// 0x151d20 - CGameObject::NotifyHooked (ex the B_151d20/Cb151d20 views): the "+0x7c
+// hook owner" IS the AnimWorkerObj aux - fn@+0x10 is m_notify, +0x1c is the m_1c
+// role-union slot. Stash/replace m_1c with arg, fire m_notify(this), restore if
+// unchanged. __thiscall, 1 arg. Re-homed from src/Stub/BoundaryUpper.cpp.
 RVA(0x00151d20, 0x3a)
-i32 B_151d20::Notify(void* arg) {
-    Cb151d20* p = m_7c;
+i32 CGameObject::NotifyHooked_151d20(void* arg) {
+    AnimWorkerObj* p = m_7c;
     if (!p) {
         return 0;
     }
     void* saved = p->m_1c;
     p->m_1c = arg;
-    m_7c->fn(this);
+    m_7c->m_notify(this);
     if (m_7c->m_1c == arg) {
         m_7c->m_1c = saved;
     }

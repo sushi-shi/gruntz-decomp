@@ -17,20 +17,9 @@
 // `mov [this],&g_wapObjectDtorVtbl; ret` leaf. Three distinct leaf classes share it.
 SIZE_UNKNOWN(C16be60);
 
-// 0x151d20 - notify a hooked callback (stash/replace m_7c->m_1c).
-struct Cb151d20 {
-    char _0[0x10];
-    void(__cdecl* fn)(void*); // +0x10
-    char _14[0x1c - 0x14];
-    void* m_1c; // 0x1c
-};
-SIZE_UNKNOWN(Cb151d20);
-struct B_151d20 {
-    char _0[0x7c];
-    Cb151d20* m_7c; // 0x7c
-    i32 Notify(void* arg);
-};
-SIZE_UNKNOWN(B_151d20);
+// (Cb151d20/B_151d20 are GONE - the 0x151d20 notify is CGameObject::NotifyHooked:
+// the "+0x7c hook owner" was the AnimWorkerObj aux (fn@+0x10 == m_notify, +0x1c ==
+// the m_1c role-union slot).)
 
 // --- vtable catalog ---
 

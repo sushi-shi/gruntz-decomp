@@ -57,13 +57,8 @@
 // 0x0cef50 - teardown of the +0x04 owner + inner close chain.
 SIZE_UNKNOWN(Ccef50);
 
-// 0x0db200 - swap the +0x08 holder to `arg` (validate + toggle old/new).
-struct Cdb200 {
-    char pad0[8];
-    void* m_8; // +0x08
-    i32 M(void* arg);
-};
-SIZE_UNKNOWN(Cdb200);
+// (Cdb200 is GONE - 0xdb200 IS GruntzPlayer::SwapChannel, xref-proven in Multi.cpp;
+// this copy was a stale orphan of that fold.)
 
 // 0x0db2f0 - finalize: run the +0x38 teardown iff +0x14 clear, then reset +0x20.
 SIZE_UNKNOWN(Cdb2f0);
