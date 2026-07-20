@@ -157,7 +157,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // slot 5 (0x185520): the m_width of the sprite's representative frame (index 2).
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CMenuSprite* s = reinterpret_cast<CMenuSprite*>(m_sprite);
+    CImageSet* s = static_cast<CImageSet*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -171,7 +171,7 @@ i32 CMenuItem::GetFrameWidth() {
 // the menu-page layout uses this as each row's vertical step (y += GetWidth()/2).
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetWidth() {
-    CMenuSprite* s = reinterpret_cast<CMenuSprite*>(m_sprite);
+    CImageSet* s = static_cast<CImageSet*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -297,17 +297,17 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     sprintf(name, "%s_NORMAL", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteNormal = reinterpret_cast<CMenuSprite*>(sprite);
+    m_spriteNormal = static_cast<CImageSet*>(sprite);
 
     sprintf(name, "%s_SELECTED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteSelected = reinterpret_cast<CMenuSprite*>(sprite);
+    m_spriteSelected = static_cast<CImageSet*>(sprite);
 
     sprintf(name, "%s_DISABLED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteDisabled = reinterpret_cast<CMenuSprite*>(sprite);
+    m_spriteDisabled = static_cast<CImageSet*>(sprite);
 
     return 1;
 }
@@ -353,7 +353,7 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
 }
 // CMenuItem2::GetCurrentSprite (0x185950) - the sprite for the current state.
 RVA(0x00185950, 0x1b)
-CMenuSprite* CMenuItem2::GetCurrentSprite() {
+CImageSet* CMenuItem2::GetCurrentSprite() {
     switch (m_state) {
         case 1:
             return m_spriteNormal;
@@ -373,7 +373,7 @@ CMenuSprite* CMenuItem2::GetCurrentSprite() {
 // every return epilogue differs by a pop. docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00185970, 0x4d)
 CImage* CMenuItem2::GetCurrentFrame() {
-    CMenuSprite* s = GetCurrentSprite();
+    CImageSet* s = GetCurrentSprite();
     if (!s) {
         return 0;
     }
@@ -381,7 +381,7 @@ CImage* CMenuItem2::GetCurrentFrame() {
     if (f) {
         return f;
     }
-    m_frameIdx = s->m_firstFrame;
+    m_frameIdx = s->m_minIndex;
     return s->GetAt(m_frameIdx);
 }
 // advance the cursor one frame; when the looping flag (0x10000) is clear
@@ -393,9 +393,9 @@ i32 CMenuItem2::NextFrame() {
     }
     m_frameIdx = m_frameIdx + 1;
     if (m_flags & 0x10000) {
-        CMenuSprite* s = GetCurrentSprite();
+        CImageSet* s = GetCurrentSprite();
         if (s) {
-            if (m_frameIdx > s->m_lastFrame) {
+            if (m_frameIdx > s->m_maxIndex) {
                 m_frameIdx = m_frameIdx - 1;
                 return 1;
             }

@@ -37,24 +37,10 @@
 // draw-offset pair at m_18/m_1c, blitted by CImage::RenderFrame (0x153790,
 // __thiscall). Modeled by the shared <Image/CImage.h> definition.
 
-// The per-state sprite (a CImageSet): a frame table at m_14 indexed by a signed
-// frame index gated to [m_64, m_68]. GetAt is the bounds-checked accessor the cursor
-// helpers inline (same shape as CImageSet::GetAt).
-struct CMenuSprite {
-    char m_pad0[0x14];
-    CImage** m_frames; // +0x14  frame table
-    char m_pad18[0x64 - 0x18];
-    i32 m_firstFrame; // +0x64  frame-index range lo
-    i32 m_lastFrame;  // +0x68  frame-index range hi
-
-    CImage* GetAt(i32 idx) {
-        if (idx < m_firstFrame || idx > m_lastFrame) {
-            return 0;
-        }
-        return m_frames[idx];
-    }
-};
-SIZE_UNKNOWN(CMenuSprite);
+// (CMenuSprite is GONE - it was the FOURTH view of the 0x6c CDDrawWorker (==
+// CImageSet): same +0x14 frame table (the CObArray m_pData), same [m_minIndex,
+// m_maxIndex] gate @+0x64/+0x68, and its GetAt was byte-for-byte CImageSet::GetAt.)
+#include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE real class)
 
 class CMenuItem2 : public CMenuItem {
 public:
@@ -71,13 +57,13 @@ public:
     virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)
 
     // Non-virtual __thiscall frame-cursor helpers (bodies in MenuItem2.cpp):
-    CMenuSprite* GetCurrentSprite(); // 0x185950
+    CImageSet* GetCurrentSprite(); // 0x185950
     CImage* GetCurrentFrame();       // 0x185970
     i32 NextFrame();                 // 0x1859c0
 
-    CMenuSprite* m_spriteNormal;   // +0x5c  NORMAL-state sprite (m_state 1)
-    CMenuSprite* m_spriteSelected; // +0x60  SELECTED-state sprite (m_state 2)
-    CMenuSprite* m_spriteDisabled; // +0x64  DISABLED-state sprite (m_state 3)
+    CImageSet* m_spriteNormal;   // +0x5c  NORMAL-state sprite (m_state 1)
+    CImageSet* m_spriteSelected; // +0x60  SELECTED-state sprite (m_state 2)
+    CImageSet* m_spriteDisabled; // +0x64  DISABLED-state sprite (m_state 3)
     i32 m_frameIdx;                // +0x68  current frame cursor
     i32 m_6c;                      // +0x6c  (zeroed by Init; role unproven)
     i32 m_70;                      // +0x70  seeded to 0x64 (role unproven)
