@@ -12,6 +12,8 @@
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <DDrawMgr/DDrawPtrCollections.h> // m_ptrColl full type (m_surf0 -> FlipToGDISurface)
+#include <ddraw.h> // IDirectDraw2::FlipToGDISurface (the ex manual +0x28 dispatch)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
@@ -1452,8 +1454,9 @@ i32 CMulti::StartTitle() {
     // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
     // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
     m_c->m_drawTarget->Method_158dc0();
-    void* vobj = *static_cast<void**>((*reinterpret_cast<void**>((reinterpret_cast<char*>(m_c) + 0x1c))));
-    (*reinterpret_cast<void(__stdcall**)(void*)>((reinterpret_cast<char*>(*static_cast<void**>(vobj)) + 0x28)))(vobj); // vfn +0x28(vobj)
+    // The +0x1c chain is m_ptrColl->m_surf0 (the held DirectDraw device); slot +0x28
+    // with no args is FlipToGDISurface - flip to GDI before the ShowCursor loop below.
+    m_c->m_ptrColl->m_surf0->FlipToGDISurface();
     m_2c = saved;
     while (::ShowCursor(1) < 0) {
     }

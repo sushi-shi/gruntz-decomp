@@ -50,6 +50,7 @@
 #include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
 #include <Ints.h>
 #include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
+#include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
 #include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
                                     // PalEntry base; was the PalHolder/FInitPal/FrImageSrc views)
@@ -1314,12 +1315,10 @@ void CFaderRadial::RenderFrame(i32 frame) {
         }
     }
 
-    // Inlined UnlockThunk: m_8->vtbl[0x80](m_8, 0) on both surfaces (dispatched by slot
-    // on the forward-declared IDirectDrawSurface*).
-    void* s8 = m_srcSurface->m_8;
-    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*reinterpret_cast<void***>(s8) + 0x20)))(s8, 0);
-    void* d8 = dst->m_8;
-    (*reinterpret_cast<void(__stdcall**)(void*, i32)>((*reinterpret_cast<void***>(d8) + 0x20)))(d8, 0);
+    // Inlined UnlockThunk: IDirectDrawSurface::Unlock(NULL) on both surfaces (COM slot
+    // 32, byte +0x80 - the ex void**-element "+0x20" spelling of the same slot).
+    m_srcSurface->m_8->Unlock(0);
+    dst->m_8->Unlock(0);
     RezFree(scratch);
 }
 
