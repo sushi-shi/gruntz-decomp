@@ -814,25 +814,25 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
     // the constant branch stays a mov/mov copy instead of a folded fld/fstp).
     CMotionState* m = Motion();
     m->Init();
-    i32 lo0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_2c;
+    i32 lo0 = m_objAux->m_2c;
     if (lo0 == 0) {
         m->m_70 = g_movingLogicMin;
     } else {
         m->m_70 = static_cast<double>(lo0);
     }
-    i32 lo1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_34;
+    i32 lo1 = m_objAux->m_34;
     if (lo1 == 0) {
         m->m_78 = g_movingLogicMin;
     } else {
         m->m_78 = static_cast<double>(lo1);
     }
-    i32 hi0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_30;
+    i32 hi0 = m_objAux->m_30;
     if (hi0 == 0) {
         m->m_88 = g_movingLogicMax;
     } else {
         m->m_88 = static_cast<double>(hi0);
     }
-    i32 hi1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_38;
+    i32 hi1 = m_objAux->m_38;
     if (hi1 == 0) {
         m->m_90 = g_movingLogicMax;
     } else {

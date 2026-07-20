@@ -51,16 +51,9 @@ extern "C" u32 g_frameTime;         // 0x645588
 extern const double g_motionZScale; // 0x5eaa88
 extern u32 g_defaultZ;              // 0x5f04e8
 
-// The per-type config the 1-arg ctor reads its coordinate bounds from
-// (CUserLogic::m_14, the bound object's +0x7c aux). Only the four bound ints.
-SIZE_UNKNOWN(CProjBoundCfg);
-struct CProjBoundCfg {
-    char _00[0x2c];
-    i32 m_2c; // +0x2c  -> lo bound A (0 => default MIN)
-    i32 m_30; // +0x30  -> hi bound A (0 => default MAX)
-    i32 m_34; // +0x34  -> lo bound B (0 => default MIN)
-    i32 m_38; // +0x38  -> hi bound B (0 => default MAX)
-};
+// (CProjBoundCfg is GONE - the "per-type bound config" IS the AnimWorkerObj aux the
+// receiver already holds typed: its m_2c/m_30/m_34/m_38 spawn-record params ARE the
+// coordinate bounds in the projectile role. Same names, same offsets, zero casts.)
 
 // ---------------------------------------------------------------------------
 // CMovingLogic : CTileLogic - moving-object motion state.
@@ -202,25 +195,25 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild. Written as if/else (not ?:) so the constant branch stays a
     // mov/mov dword copy instead of being unified into an x87 fld/fstp.
-    i32 lo0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_2c;
+    i32 lo0 = m_objAux->m_2c;
     if (lo0 == 0) {
         m_a8 = g_movingLogicMin;
     } else {
         m_a8 = static_cast<double>(lo0);
     }
-    i32 lo1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_34;
+    i32 lo1 = m_objAux->m_34;
     if (lo1 == 0) {
         m_b0 = g_movingLogicMin;
     } else {
         m_b0 = static_cast<double>(lo1);
     }
-    i32 hi0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_30;
+    i32 hi0 = m_objAux->m_30;
     if (hi0 == 0) {
         m_c0 = g_movingLogicMax;
     } else {
         m_c0 = static_cast<double>(hi0);
     }
-    i32 hi1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_38;
+    i32 hi1 = m_objAux->m_38;
     if (hi1 == 0) {
         m_c8 = g_movingLogicMax;
     } else {
