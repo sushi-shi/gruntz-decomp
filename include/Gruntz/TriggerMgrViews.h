@@ -47,17 +47,8 @@ struct CTmNode {
 // whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
 struct CTmGoal;
 
-// The display sub-object hung at a grid cell's +0x10: the world position (m_5c/m_60),
-// the archive id (m_188) and the clickable/hit gate (m_198). Reached as cell->m_10.
-struct CTmDisplay {
-    char p0[0x5c];
-    i32 m_5c; // +0x5c  world x
-    i32 m_60; // +0x60  world y
-    char p64[0x188 - 0x64];
-    i32 m_188; // +0x188  archive/serialize id
-    char p18c[0x198 - 0x18c];
-    i32 m_198; // +0x198  clickable/hit gate
-};
+// (CTmDisplay is GONE - dead decl; its m_5c/m_60/m_188/m_198 were CGameObject's
+// m_screenX/m_screenY/m_188/m_layer, and the hit-test already reads them typed.)
 
 // (CTmCell is a typedef for ::CGrunt in <Gruntz/TriggerMgr.h>, so the leaves dispatch on
 //  a placed grid grunt through the real ?X@CGrunt@@ bodies. Its proven-but-unnamed
@@ -175,21 +166,10 @@ struct CTmRecNode {
 // interface, not a modeled shared base. Kept as a documented genuine interface view (the
 // task's "else leave"); RebuildOverlay is byte-exact (100%) so a speculative retype would
 // only risk it.
-struct CTmOverlaySrc {
-    virtual void vf00();
-    virtual void vf01();
-    virtual void vf02();
-    virtual void vf03();
-    virtual void vf04();
-    virtual void vf05();
-    virtual void vf06();
-    virtual void vf07();
-    virtual void vf08();
-    virtual void vf09();
-    virtual void vf10();
-    virtual void GetA(void* dst, i32 n); // [11] vtbl +0x2c
-    virtual void GetB(void* dst, i32 n); // [12] vtbl +0x30
-};
+// (CTmOverlaySrc is GONE - its 13-slot table with GetA@+0x2c/GetB@+0x30 IS the
+// CSerialArchive Read/Write scheme, and the call site already held the SAME object
+// as a CSerialArchive. Not speculative: the slot offsets are the proven pair.)
+struct CTmOverlaySrc_tombstone;
 
 // The world's report/spawn sub-mgrs ResetGroup dispatches through (gameReg+0x6c reporter,
 // +0x68 fx-mgr, +0x60 cursor-mgr), all reloc-masked.

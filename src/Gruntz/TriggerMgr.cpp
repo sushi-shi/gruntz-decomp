@@ -1199,38 +1199,38 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
             return 0;
         }
     }
-    CTmOverlaySrc* src = static_cast<CTmOverlaySrc*>(obj);
+    CSerialArchive* src = static_cast<CSerialArchive*>(obj); // slots +0x2c/+0x30 ARE Read/Write (the ex-CTmOverlaySrc 13-slot view was the CSerialArchive scheme)
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
     // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
     char* blk0 = reinterpret_cast<char*>(&m_timerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->GetA(blk0, 8);
-            src->GetA(blk0 + 8, 8);
+            src->Read(blk0, 8);
+            src->Read(blk0 + 8, 8);
         }
     } else {
-        src->GetB(blk0, 8);
-        src->GetB(blk0 + 8, 8);
+        src->Write(blk0, 8);
+        src->Write(blk0 + 8, 8);
     }
     char* blk1 = reinterpret_cast<char*>(&m_gooTimerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->GetA(blk1, 8);
-            src->GetA(blk1 + 8, 8);
+            src->Read(blk1, 8);
+            src->Read(blk1 + 8, 8);
         }
     } else {
-        src->GetB(blk1, 8);
-        src->GetB(blk1 + 8, 8);
+        src->Write(blk1, 8);
+        src->Write(blk1 + 8, 8);
     }
     char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->GetA(blk2, 8);
-            src->GetA(blk2 + 8, 8);
+            src->Read(blk2, 8);
+            src->Read(blk2 + 8, 8);
         }
     } else {
-        src->GetB(blk2, 8);
-        src->GetB(blk2 + 8, 8);
+        src->Write(blk2, 8);
+        src->Write(blk2 + 8, 8);
         return 1;
     }
     return 1;
