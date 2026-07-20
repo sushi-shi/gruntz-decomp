@@ -29,8 +29,8 @@
 #include <Ints.h>
 #include <Mfc.h> // real MFC CObject (the primary-facet base)
 
-struct CAniMapOwner;
-class CAniRecordOwner;
+class CDDrawSubMgrLeafScan; // the token-map ctx (ex CAniMapOwner - its +0x10 Ptr map is m_10)
+class CDDrawSurfaceMgr;     // the record owner (ex CAniRecordOwner - m_ptrColl/m_drawTarget)
 
 // The ANI frame record. cl inherits GetRuntimeClass/Serialize/AssertValid/Dump (the
 // shared CObject defaults) and OVERRIDES only slot 1 (the real teardown dtor 0x1657a0
@@ -42,7 +42,7 @@ struct CAniRecordView : public CObject {
 
     i32 Parse(void* ctx, const i16* src);                      // 0x168c60
     i32 GetSize();                                             // 0x168e50
-    void ResolveIndices(CAniMapOwner* owner, const char* str); // 0x168d00
+    void ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str); // 0x168d00
     void* AllocBufMakeB(i32 size, i32 flag);                   // 0x168ee0  (pool MakeB)
     void* AllocBufCreate(i32 handle, i32 flag);                // 0x168f20  (pool Create, slot 9)
     void* AllocBufMakeB2(i32 size, i32 flag);                  // 0x168ea0  (pool MakeB2)
@@ -55,14 +55,14 @@ struct CAniRecordView : public CObject {
     inline CAniRecordView() {
         m_count = 0;
         m_indices = 0;
-        m_owner = reinterpret_cast<CAniRecordOwner*>(0xffff);
+        m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(0xffff);
     }
 
     // vptr implicit at +0x00
     u16 m_flags;              // +0x04  status word (bit 1 scaled, bit 2 has-name)
     u16 m_06;                 // +0x06
     i32 m_08;                 // +0x08
-    CAniRecordOwner* m_owner; // +0x0c  owner node (seeded 0xffff)
+    CDDrawSurfaceMgr* m_owner; // +0x0c  the owning surface mgr (seeded 0xffff sentinel)
     i32 m_buf;                // +0x10  pool work buffer
     i32 m_seedFrame;          // +0x14  parsed seed/start frame (SetAnimEx reads record[0]'s)
     i32 m_frameCount;         // +0x18  frame count (GetSize)

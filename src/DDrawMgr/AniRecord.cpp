@@ -1,4 +1,8 @@
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // the record owner (m_ptrColl/m_drawTarget)
+#include <DDrawMgr/DDrawSubMgrPages.h>  // m_drawTarget full type (m_frontPair)
+#include <DDrawMgr/DDrawSurfacePair.h>  // the front pair (m_bpp/m_surface)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the token-map ctx (m_10)
 #include <Wap32/Object.h>
 // AniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
 // CAniElement (src/Gruntz/AniElement.cpp) into a CObArray of these. The
@@ -117,7 +121,7 @@ CAniRecordView::~CAniRecordView() {
     if (r->m_indices != 0) {
         ::operator delete(r->m_indices);
     }
-    r->m_owner = reinterpret_cast<CAniRecordOwner*>(0xffff);
+    r->m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(0xffff); // sentinel
     r->m_count = 0;
     r->m_indices = 0;
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
@@ -146,7 +150,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
-    m_owner = reinterpret_cast<CAniRecordOwner*>(*p++);
+    m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(*p++); // serialized handle
     m_buf = *p++;
     m_seedFrame = *p++;
     m_frameCount = *p++;
@@ -160,7 +164,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     if (m_flags & 0x2) {
         const char* name = reinterpret_cast<const char*>(p);
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
-        ResolveIndices(static_cast<CAniMapOwner*>(ctx), name);
+        ResolveIndices(static_cast<CDDrawSubMgrLeafScan*>(ctx), name);
     }
     return 1;
 }
@@ -178,7 +182,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
 // cl flips them - not decl-order-steerable) + reloc operand names. Documented
 // regalloc/slot wall - parked for the final sweep.
 RVA(0x00168d00, 0x14c)
-void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
+void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str) {
     if (owner == 0 || str == 0) {
         return;
     }
@@ -213,7 +217,7 @@ void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
             // "cannot re-emit the real method" wall was WRONG.)
             CString t = tokens.GetAt(i);
             void* v = 0;
-            owner->m_map.Lookup(t, v);
+            owner->m_10.Lookup(t, v);
             m_indices[i] = reinterpret_cast<i32>(v);
         }
     }
@@ -245,7 +249,7 @@ i32 CAniRecordView::GetSize() {
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_pool->MakeB2(size, 0x44);
+    CDDPalette* buf = m_owner->m_ptrColl->MakeB2(size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0); // tail returns 1 only on the success path below
@@ -262,7 +266,7 @@ void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_pool->MakeB(reinterpret_cast<void*>(size), 0x44);
+    CDDPalette* buf = m_owner->m_ptrColl->MakeB(reinterpret_cast<void*>(size), 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -278,7 +282,7 @@ void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
 // 0x168f20 (slot 9): as 0x168ea0 but through CDDrawPtrCollections::Create. Frameless leaf.
 RVA(0x00168f20, 0x40)
 void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
-    CDDPalette* buf = m_owner->m_pool->Create(handle, 0x44);
+    CDDPalette* buf = m_owner->m_ptrColl->Create(handle, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -294,7 +298,7 @@ void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
 // 0x168f60: the three-arg buffer allocator (CDDrawPtrCollections::MakeB3, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_pool->MakeB3(a, size, 0x44);
+    CDDPalette* buf = m_owner->m_ptrColl->MakeB3(a, size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -313,7 +317,7 @@ RVA(0x00168fb0, 0x1f)
 void CAniRecordView::FreeBuf() {
     i32 buf = m_buf;
     if (buf != 0) {
-        m_owner->m_pool->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
+        m_owner->m_ptrColl->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
         m_buf = 0;
     }
 }
@@ -329,19 +333,15 @@ void CAniRecordView::FreeBuf() {
 // result; otherwise return 1. __thiscall, no args (ret).
 RVA(0x00168fd0, 0x24)
 i32 CAniRecordView::PushPalette() {
-    AniSurfDesc* sd = (reinterpret_cast<AniImageHost*>(m_owner->m_04))->m_10;
-    if (sd->m_18 != 8) {
+    CDDrawSurfacePair* sd = m_owner->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
+    if (sd->m_bpp != 8) {
         return 1;
     }
-    return sd->m_2c->SetPalette(reinterpret_cast<CDDPalette*>(m_buf), 0);
+    return sd->m_surface->SetPalette(reinterpret_cast<CDDPalette*>(m_buf), 0);
 }
 
 // TU-level SIZE rows for the by-offset owner/surface models (defs in
 // <DDrawMgr/AniRecordViews.h>); sizes are unknown (only touched offsets modeled).
-SIZE_UNKNOWN(CAniMapOwner);
-SIZE_UNKNOWN(CAniRecordOwner);
-SIZE_UNKNOWN(AniSurfDesc);
-SIZE_UNKNOWN(AniImageHost);
 
 // (Both facets' VTBL rows live with their canonical class defs in the headers:
 // CAniRecordView in <Gruntz/AniRecordView.h>, CAniRecordBase2 in
