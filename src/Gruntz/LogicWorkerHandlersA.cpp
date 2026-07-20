@@ -45,6 +45,7 @@
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
 // are load-bearing (campaign doctrine).
+#define USERLOGIC_OOL_CTOR // retail CALLS ??0CUserLogic (0x58cd0) at this TU case-0; decl-only base ctor
 #include <rva.h>
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SingleFrameMessage.h>
@@ -98,20 +99,9 @@ i32 HandlerA9CC0(CGameObject* owner) {
 // The inline-XOR-out-of-line ctor-wall scaffolding (CUserLogicOOL / DnnRec / EngRec /
 // DnnWorker / DnnOwner) lives in <Gruntz/LogicWorkerHandlersAViews.h> - genuine matching
 // scaffolding for a real MSVC5 codegen limitation, not fakes to fold.
-#include <Gruntz/LogicWorkerHandlersAViews.h>
+#include <Gruntz/DoNothingNormalDtor.h> // the real CDoNothingNormal leaf (ex the DnnRec pen)
 
-// The engine default message pump (0x16e4f0) taking the DnnRec view: a C++
-// overload of the extern "C" Worker_DefaultPump above (one address, two views;
-// both undefined externs, reloc-masked rel32).
-void Worker_DefaultPump(DnnRec* rec); // 0x16e4f0
 
-// case 0: the inlined CDoNothingNormal leaf ctor (base OOL ctor + leaf tail).
-inline DnnRec::DnnRec(DnnOwner* owner) : CUserLogicOOL(owner) {
-    m_34 = owner;
-    m_38 = owner;
-    m_3c = owner->m_7c;
-    m_38->m_08 |= 1;
-}
 
 // The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range checks
 // as unsigned ja/jbe, matching retail byte-for-byte (switch-key-unsigned-ja-vs-jg).
@@ -130,42 +120,7 @@ inline DnnRec::DnnRec(DnnOwner* owner) : CUserLogicOOL(owner) {
 // cast-through-pointer vptr write - all identical codegen). Parked for the final
 // sweep.
 RVA(0x000a9e00, 0x10c)
-i32 HandlerA9E00(DnnOwner* owner) {
-    DnnWorker* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case 0: {
-            rec->m_1c = 0x3e8;
-            DnnRec* sub = new DnnRec(owner);
-            (reinterpret_cast<EngRec*>(sub))->Activate();
-            rec->m_18 = sub;
-            break;
-        }
-        case 0x1d:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V2C();
-            break;
-        case 0x1e:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V28();
-            break;
-        case 0x50:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V38();
-            break;
-        case 0x53:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V3C();
-            break;
-        case 0x52:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V30();
-            break;
-        case 0x51:
-            (reinterpret_cast<EngRec*>(rec->m_18))->V34();
-            break;
-        case 0x3e8:
-            break;
-        default:
-            Worker_DefaultPump(rec->m_18);
-            break;
-    }
-    return 1;
-}
+i32 HandlerA9E00(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothingNormal)}
 
 RVA(0x000a9f60, 0xf1)
 i32 HandlerA9F60(CGameObject* owner){LOGIC_WORKER_PUMP(CSimpleAnimation)}
@@ -200,8 +155,4 @@ i32 HandlerAAAA0(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
 RVA(0x000aabe0, 0xf1)
 i32 HandlerAABE0(CGameObject* owner){LOGIC_WORKER_PUMP(CGuardPoint)}
 
-SIZE_UNKNOWN(CUserLogicOOL);
-SIZE_UNKNOWN(DnnRec);
-SIZE_UNKNOWN(EngRec);
-SIZE_UNKNOWN(DnnOwner);
-SIZE_UNKNOWN(DnnWorker);
+

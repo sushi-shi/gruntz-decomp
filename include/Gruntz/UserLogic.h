@@ -606,6 +606,10 @@ VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 // inline base ctor is folded into the derived ctors. The tile-logic leaves' 0x30-0x3c
 // tail is seeded by CTileLogic(obj) below (retail: each leaf sets m_34/m_38/m_3c right
 // after this folded base init, e.g. CTeleporter @0x410f9).
+// A TU that needs retail's OUT-OF-LINE `call ??0CUserLogic` (0x58cd0) instead of the
+// folded inline (the SBI_ITEM_OWN_CTOR device pattern) #defines USERLOGIC_OOL_CTOR
+// before including this header; the one real body stays in UserLogicCtorEmit.cpp.
+#ifndef USERLOGIC_OOL_CTOR
 inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_0c = obj;
     m_object = obj;
@@ -623,6 +627,7 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_28 = 0x3e9;
     m_2c = 2;
 }
+#endif // USERLOGIC_OOL_CTOR
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {
