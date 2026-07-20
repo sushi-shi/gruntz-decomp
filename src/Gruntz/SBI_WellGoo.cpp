@@ -27,7 +27,8 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Tick reads (surface context + back-buffer) is modeled.
-extern "C" CGooGameReg* g_gameReg;
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type
+#include <Gruntz/GruntzMgr.h>
 
 // ---------------------------------------------------------------------------
 // vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo::Setup, the slot-2 override
@@ -77,7 +78,7 @@ i32 CSBI_WellGoo::Tick() {
         return 1;
     }
 
-    CGooRenderCtx* ctx = g_gameReg->m_gameMgr->m_drawable->m_renderCtx;
+    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_rect14.m_c + 3)), 0);
 
     // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
@@ -94,7 +95,7 @@ i32 CSBI_WellGoo::Tick() {
 
     m_drawGuard++;
     m_blitGuard++;
-    ctx->m_backBuffer->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
+    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
     m_blitGuard--;
     m_drawGuard--;
 
@@ -128,8 +129,8 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
     if (arc == 0) {
         return 0;
     }
-    CGooGameMgr* mgr =
-        g_gameReg->m_gameMgr; // cached across the calls (retail spills it @[esp+0x14])
+    CDDrawSurfaceMgr* mgr =
+        g_gameReg->m_world; // cached across the calls (retail spills it @[esp+0x14])
     if (mgr == 0) {
         return 0;
     }
@@ -150,8 +151,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_fgFrame != 0) {
-                mgr->m_frameSetRegistry
-                    ->AnyValueMatches_155630(m_fgFrame, buf, &idx);
+                mgr->m_imageRegistry->AnyValueMatches_155630(m_fgFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -159,8 +159,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_baseFrame != 0) {
-                mgr->m_frameSetRegistry
-                    ->AnyValueMatches_155630(m_baseFrame, buf, &idx);
+                mgr->m_imageRegistry->AnyValueMatches_155630(m_baseFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -178,11 +177,11 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CSbiFrameSet* set = 0;
-                (reinterpret_cast<CMapStringToPtr*>((reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10)))
+                CImageSet* set = 0;
+                (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
                     ->Lookup(buf, reinterpret_cast<void*&>(set));
-                if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
-                    m_fgFrame = set->m_frames[idx];
+                if (set != 0) {
+                    m_fgFrame = set->GetAt(idx); // same bounds gate, inline
                 } else {
                     m_fgFrame = 0;
                 }
@@ -193,11 +192,11 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CSbiFrameSet* set = 0;
-                (reinterpret_cast<CMapStringToPtr*>((reinterpret_cast<char*>(mgr->m_frameSetRegistry) + 0x10)))
+                CImageSet* set = 0;
+                (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
                     ->Lookup(buf, reinterpret_cast<void*&>(set));
-                if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
-                    m_baseFrame = set->m_frames[idx];
+                if (set != 0) {
+                    m_baseFrame = set->GetAt(idx); // same bounds gate, inline
                 } else {
                     m_baseFrame = 0;
                 }
@@ -208,14 +207,14 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
         }
         case 8: {
             // RESOLVE (post-load): remake the goo surface + rebind each frame's shade node.
-            m_gooSrc = mgr->m_surfacePool->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+            m_gooSrc = mgr->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158 + (g_curPlayer * 71) * 8));
-            i32 node = g_gameReg->m_refTable->GetSel(sel, 0);
+            i32 sel = g_gameReg->m_options[g_curPlayer].m_008; // ex the '+0x158 selector table' raw read (0x150 + 8 + i*0x238)
+            i32 node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
             if (node == 0) {
-                node = g_gameReg->m_refTable->GetSel(1, 0);
+                node = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CImage* fr = m_30;
             if (fr->m_owned != 0) {

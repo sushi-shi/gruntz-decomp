@@ -39,66 +39,20 @@ class CImage;
 class CDDSurface;
 class CDDrawShadeBlit;
 
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only the touched members are
-// load-bearing; every call through them is reloc-masked).
-
-// The render context reached via drawable->m_14: the object RenderFrame draws
-// through (passed by value as its `a` arg) that also holds the DirectDraw
-// back-buffer surface at +0x2c (the BltEx `this`). Retail keeps this pointer in a
-// callee-saved reg across the whole Tick and reuses it for both RenderFrames + the
-// BltEx receiver (ctx->m_2c), so the shared local below re-derives nothing.
-struct CGooRenderCtx {
-    char m_pad0[0x2c];
-    CDDSurface* m_backBuffer; // +0x2c  back-buffer surface (BltEx `this`)
-};
-SIZE_UNKNOWN(CGooRenderCtx);
-
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 is the render
-// context (RenderFrame arg + the back-buffer holder above).
-struct CGooDrawable {
-    char m_pad0[0x14];
-    CGooRenderCtx* m_renderCtx; // +0x14  render context
-};
-SIZE_UNKNOWN(CGooDrawable);
-
-// Serialize (0xe64c0) callee facets on the same game-manager chain: m_30->m_10 the
-// name->frame-set registry (Serialize's Lookup + AnyValueMatches reverse-lookup),
-// m_30->m_1c the surface pool (mode-8 MakeAndAddB), m_74 the sprite-ref table
-// (mode-8 GetSel). (These extend the goo view of the canonical CGameRegistry; the
-// fold onto it is deferred.)
-class CDDrawWorkerRegistry; // <DDrawMgr/DDrawWorkerRegistry.h>
-class CDDrawPtrCollections; // <DDrawMgr/DDrawPtrCollections.h>
-class CSpriteRefTable;      // <Gruntz/SpriteRefTable.h>
-
-// The name->frame-set map value: a frame-pointer array (+0x14) bounded by the
-// inclusive frame-index range [m_64, m_68] the read path indexes into.
-SIZE_UNKNOWN(CSbiFrameSet);
-struct CSbiFrameSet {
-    char m_pad0[0x14];
-    CImage** m_frames; // +0x14  frame pointer array (indexed by the serialized frame index)
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  low frame index
-    i32 m_68; // +0x68  high frame index
-};
-
-struct CGooGameMgr {
-    char m_pad0[0x4];
-    CGooDrawable* m_drawable; // +0x04  active drawable
-    char m_pad8[0x10 - 0x8];
-    CDDrawWorkerRegistry* m_frameSetRegistry; // +0x10  name->frame-set registry (Serialize)
-    char m_pad14[0x1c - 0x14];
-    CDDrawPtrCollections* m_surfacePool; // +0x1c  surface pool (Serialize mode-8 MakeAndAddB)
-};
-SIZE_UNKNOWN(CGooGameMgr);
-struct CGooGameReg {
-    char m_pad0[0x30];
-    CGooGameMgr* m_gameMgr; // +0x30  active game manager
-    char m_pad34[0x74 - 0x34];
-    CSpriteRefTable* m_refTable; // +0x74  sprite/animation ref table (Serialize mode-8 GetSel)
-    // +0x158  the g_focusedGruntSentinel-keyed selector table (mode-8; raw offset access)
-};
-SIZE_UNKNOWN(CGooGameReg);
+// (The five "goo view" structs are GONE - every one was a canonical class:
+//   CGooGameReg    == CGruntzMgr      (m_gameMgr@+0x30==m_world, m_refTable@+0x74==m_spriteFactory)
+//   CGooGameMgr    == CDDrawSurfaceMgr (drawable@+0x04==m_drawTarget, registry@+0x10==m_imageRegistry,
+//                                       pool@+0x1c==m_ptrColl)
+//   CGooDrawable   == CDDrawSubMgrPages (renderCtx@+0x14==m_backPair)
+//   CGooRenderCtx  == CDDrawSurfacePair (backBuffer@+0x2c==m_surface)
+//   CSbiFrameSet   == CImageSet (the FIFTH view of the 0x6c CDDrawWorker frame shape)
+// and the "+0x158 selector table" was m_options[g_curPlayer].m_008 all along.)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE frame-set class)
+#include <Gruntz/SpriteRefTable.h>
 
 // ---------------------------------------------------------------------------
 // CSBI_WellGoo - the well-goo status-bar item. Real RTTI base is CSBI_Image (see
