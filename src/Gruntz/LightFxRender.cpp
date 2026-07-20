@@ -1,5 +1,6 @@
 #include <Mfc.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/DDSurface.h>
 // LightFxRender.cpp - software light/glow/overlay renderer (ex tracer placeholder

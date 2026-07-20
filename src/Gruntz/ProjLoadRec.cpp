@@ -7,7 +7,8 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)

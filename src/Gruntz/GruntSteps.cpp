@@ -20,7 +20,8 @@
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -1182,7 +1183,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             }
             break;
         case 8:
-            m_tileMgr = reinterpret_cast<CTriggerMgr*>(g_gameReg->m_68); // WwdGameReg view keeps m_68 as i32
+            m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
     (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);

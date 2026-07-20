@@ -1,6 +1,7 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>

@@ -16,7 +16,8 @@
 // (0x49c60), ResetGate136b = ResetEntranceAnimation (0x62e10). The +0x154 anim player's
 // type node resolves to a CAnimNameRecord (<Gruntz/TypeKeyColl.h>).
 #include <Mfc.h> // afx-first: CString + <windows.h>; keep before any Win32 header
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>

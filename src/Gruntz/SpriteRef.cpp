@@ -6,7 +6,8 @@
 // <DDrawMgr/ShadeTableCache.h>; CShadeTableCache::FindRemove is modeled NO-body so
 // Free()'s `call` reloc-masks.
 #include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Gruntz/SpriteRefTable.h>

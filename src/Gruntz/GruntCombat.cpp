@@ -1,7 +1,8 @@
 #include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
 // the grunt combat / struck-voice / attack / ability-tuning / spawn family,
@@ -687,7 +688,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 // CGrunt::SelectMoveIcon(a)   @0x57800   (__thiscall, ret 4)
 // Update the move-cursor icon index (m_1f4_moveIcon). No-op if unchanged; else
 // clamp to [0, 0x11), resolve the matching sprite from the registry sprite-ref
-// table (g_gameReg->m_74->GetSel(icon, reason>=0x17)) and stamp it onto the HUD
+// table (g_gameReg->m_spriteFactory->GetSel(icon, reason>=0x17)) and stamp it onto the HUD
 // (m_10->m_4c = sprite, m_50 = 0xa, m_58 = 1).
 RVA(0x00057800, 0x64)
 void CGrunt::SelectMoveIcon(i32 a) {
@@ -698,7 +699,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
     if (a < 0 || a >= 0x11) {
         m_1f4_moveIcon = 0;
     }
-    i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
     CGameObject* h = m_10;
     h->m_drawActive = 1;
     h->m_drawFillCmd = 0xa;
@@ -825,7 +826,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (sample == 0) {
         return;
     }
-    sample->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+    sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
 // CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
@@ -842,7 +843,7 @@ void CGrunt::ClearSubA() {
 // struck-voice sound sample. Bails if already created (the +0x428 slot ClearSubB
 // frees). Looks `key` up in the global sound table (g_gameReg->m_world->m_soundRegistry->m_10),
 // clones a sample from the entry's factory (GetItem), stores it into +0x428, and
-// plays it on the sound channel (g_gameReg->m_11c). __thiscall, ret 4. Same
+// plays it on the sound channel (g_gameReg->m_soundVolume). __thiscall, ret 4. Same
 // sound-lookup shape as CProjectile::LaunchSound (0xe2190).
 //
 // @early-stop
@@ -872,7 +873,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample == 0) {
         return;
     }
-    sample->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+    sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
 // CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.
@@ -887,7 +888,7 @@ void CGrunt::ClearSubB() {
 
 // CGrunt::ReapplyVoiceParams() @0x57d10 - when the registry sound gate
 // (g_gameReg->m_10) is set, re-apply the current sound-channel params
-// (g_gameReg->m_11c) to both the struck-slot (+0x424) and struck-voice (+0x428)
+// (g_gameReg->m_soundVolume) to both the struck-slot (+0x424) and struck-voice (+0x428)
 // samples via DirectSoundMgr::ApplyAndPlay. __thiscall, no args. Same sample-play
 // shape as EnsureStruckSlot/EnsureStruckVoice.
 //
@@ -907,11 +908,11 @@ void CGrunt::ReapplyVoiceParams() {
     }
     DirectSoundMgr* a = m_424;
     if (a != 0) {
-        a->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+        a->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
     DirectSoundMgr* b = m_428;
     if (b != 0) {
-        b->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+        b->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
 }
 
@@ -1399,7 +1400,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[this->m_entranceReason * 23 + a0];
-    WwdGameReg* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
+    CGruntzMgr* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;

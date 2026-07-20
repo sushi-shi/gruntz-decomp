@@ -12,7 +12,8 @@
 //     reads m_pNodeHead @+4, byte-identical to the old (MgrFindList*)cmdGrid->m_4 read.
 #include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmRecNode (MFC-first)
 #include <Gruntz/GruntPuddle.h>      // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 

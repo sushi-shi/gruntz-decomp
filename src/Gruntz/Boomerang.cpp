@@ -16,7 +16,8 @@
 // its `call` reloc-masks to 0xdec60 via thunk 0x37d8). Replaces the old fabricated
 // `CProjectileBase` stand-in.
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <Globals.h>             // g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime

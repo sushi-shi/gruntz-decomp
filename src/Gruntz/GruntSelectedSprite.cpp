@@ -9,7 +9,8 @@
 // 0x5e70b4 vptr and tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -126,7 +127,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 // LOGIC is unchanged - only more register-name divergence in the same wall.)
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_arrived != 0) {
         m_38->m_1a0.Advance(g_engineFrameDelta);

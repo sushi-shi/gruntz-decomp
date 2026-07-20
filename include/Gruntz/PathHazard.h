@@ -79,7 +79,7 @@ extern const double g_pathOne; // VA 0x5ea410
 // g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
 // reached here transitively via <Bute/ButeMgr.h>.
 #include <Bute/ButeMgr.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 // sqrt lowers inline (d9 fa); __ftol (0x11f570) lowers the (int) casts.
 extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed)

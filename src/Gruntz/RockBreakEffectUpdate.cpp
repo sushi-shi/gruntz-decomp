@@ -13,7 +13,8 @@
 // dominant-unit heuristic only. Left in its own unit pending stronger evidence
 // (@identity-TODO).
 #include <Ints.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)

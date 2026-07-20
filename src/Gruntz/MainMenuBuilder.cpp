@@ -31,7 +31,8 @@
 // final sweep.
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
                  // real CMapStringToOb. Still supplies RECT (credits-text rect @0x645d88).
 #include <rva.h>

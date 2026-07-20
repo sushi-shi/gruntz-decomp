@@ -18,7 +18,8 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Net/InterfaceObject.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)

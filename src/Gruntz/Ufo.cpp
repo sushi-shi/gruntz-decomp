@@ -14,6 +14,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
 
 // The game registry / settings singleton (*0x24556c). Modeled by PathHazard.h as

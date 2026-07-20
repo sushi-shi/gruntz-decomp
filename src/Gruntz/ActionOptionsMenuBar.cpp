@@ -1,5 +1,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Image/CImage.h> // CImage::RenderFrameClipped (0x153810) - m_frame's clipped blit
@@ -398,7 +399,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg == 0) {
         return 0;
     }
@@ -497,7 +498,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CGameRegistry* gr = g_gameReg;
+    CGruntzMgr* gr = g_gameReg;
     if (gr == 0) {
         return 0;
     }

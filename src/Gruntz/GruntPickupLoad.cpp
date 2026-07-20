@@ -7,7 +7,8 @@
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/Grunt.h>
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Wap32/ZVec.h>
@@ -244,7 +245,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
             break;
         case PICKUP_MEGAPHONE: {
-            MegaHolder* mh = reinterpret_cast<MegaHolder*>(g_gameReg->m_2c);
+            MegaHolder* mh = reinterpret_cast<MegaHolder*>(g_gameReg->m_curState);
             a4 = 0;
             m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", reinterpret_cast<void*&>(a4));
             m_pickupGeoSrc = a4;
@@ -450,7 +451,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (id != 0) {
         CGameObject* hud = m_10;
-        WwdGameReg* g = g_gameReg;
+        CGruntzMgr* g = g_gameReg;
         if ((hud->m_screenX < g->m_viewOriginR && hud->m_screenX >= g->m_viewOriginL
              && hud->m_screenY < g->m_viewOriginB && hud->m_screenY >= g->m_viewOriginT)
             || a2 != 0) {

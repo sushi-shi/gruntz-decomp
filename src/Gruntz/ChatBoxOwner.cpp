@@ -3,7 +3,8 @@
 // active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <Mfc.h> // MFC (afx brings windows.h the controlled way) - MUST precede <ddraw.h> (ChatBoxOwner.h is an MFC header)

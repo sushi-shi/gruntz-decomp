@@ -13,7 +13,8 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>   // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h>  // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -177,7 +178,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     if (Chain(static_cast<CSerialArchive*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
         return 0;
     }
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     CSerialArchive* s = static_cast<CSerialArchive*>(arc);
     switch (mode) {
         case 4: // Write
@@ -293,7 +294,7 @@ extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 // Update_0b1ee0 carry). Logic complete; the frame/regalloc/fp codegen is the wall.
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick_0b1af0() {
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || *reinterpret_cast<i32*>((reinterpret_cast<char*>(reg) + 0x134)) != 1) {
         char* o = reinterpret_cast<char*>(m_object);
         CGrunt* tgt =

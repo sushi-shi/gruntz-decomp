@@ -13,7 +13,8 @@
 // masked externals/$SG literals on the same singleton (*0x64556c) as its siblings.
 
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
@@ -45,7 +46,7 @@
 RVA(0x00110860, 0x25f)
 void CTileTriggerLogic::LoadBridgeMove(i32 type) {
     i32 px, py;
-    CGameRegistry* r;
+    CGruntzMgr* r;
     CDDrawSubMgrLeafScan* set;
     switch (type) {
         case 93:

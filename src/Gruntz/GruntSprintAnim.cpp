@@ -4,7 +4,7 @@
 // (g_gameReg->m_world->m_childGroup) for a "SimpleAnimation" sprite, caches its first frame
 // from the directional walk-cycle name "GRUNTZ_NORMALGRUNT_<DIR>_WALK", applies
 // the "GAME_GRUNTSPRINT" cycle geometry, stamps a few fixed fields (the
-// g_gameReg->m_74 sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
+// g_gameReg->m_spriteFactory sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
 // +0x58) and the per-direction sub-tile origin from the sibling geometry helper
 // (PerDirGeometry @0x019cd0). The 8 sprites are stored in this->m_204[0..7].
 //
@@ -20,7 +20,8 @@
 // offsets / code bytes are load-bearing (campaign doctrine).
 
 #include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
@@ -36,7 +37,7 @@
 // CGameObject. The world holder is the canonical CDDrawSurfaceMgr
 // (<Gruntz/GameRegistry.h>) - no local holder view.
 
-// The g_gameReg->m_74 lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
+// The g_gameReg->m_spriteFactory lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
 // The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
 // i32-typed here (no cast at the store).
@@ -59,7 +60,7 @@
 // @early-stop
 // regalloc/scheduling wall (~80%): complete + correct, verified instruction-by-
 // instruction vs retail. The prologue, /GX exception frame (sub esp,0x18; the EH
-// state thread at [esp+0x30]/0x34/0x3c), the g_gameReg->m_74 lookup, the whole
+// state thread at [esp+0x30]/0x34/0x3c), the g_gameReg->m_spriteFactory lookup, the whole
 // CString jump-table build ("GRUNTZ_NORMALGRUNT_" + dir + "_WALK"), the two
 // operator+ temps, both CacheFirstFrame/ApplyLookupGeometry receivers, and the
 // this=ebp / array=esi induction all match byte-for-byte (modulo reloc names).

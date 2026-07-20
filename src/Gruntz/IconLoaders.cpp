@@ -1,5 +1,6 @@
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/String.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup + CDDrawGroupNode shape

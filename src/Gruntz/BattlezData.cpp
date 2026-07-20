@@ -4,7 +4,8 @@
 // two 4x4 int grids (a head-to-head win matrix and a flag matrix) and an array
 // of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>

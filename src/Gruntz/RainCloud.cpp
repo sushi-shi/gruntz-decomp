@@ -10,6 +10,7 @@
 // CUserBaseLink, so the leaf emits the /GX EH frame.
 #include <Gruntz/RainCloud.h> // CRainCloud : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
 #include <Gruntz/LightFxMgr.h> // reg->m_logicPump (+0x78): the shade-table pump the fill arg reads
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
 
 // The game registry / settings singleton (*0x24556c) is modeled by PathHazard.h as

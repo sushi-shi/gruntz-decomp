@@ -32,7 +32,8 @@
 //   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
 //   0x047350 E::FireActivation  0x0474b0 RegisterXLogic_6447f8
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -44,7 +45,7 @@
 #include <Gruntz/UserLogic.h>      // CUserLogic leaves the worker handlers build
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
-#include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74->GetSel)
+#include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_spriteFactory->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -72,7 +73,7 @@ extern "C" u32 g_engineFrameDelta;
 // the tag-8 fixup reads its +0x124 sprite-selector key and re-seeds the
 // +0x4c/+0x50/+0x58 state trio directly (all modeled on CGameObject).
 
-// The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (0xe23c0) returns
+// The level sprite-ref table (g_gameReg->m_spriteFactory). GetSel(i, bAlt) (0xe23c0) returns
 // the selected sprite handle for ref-row i; the body lives in
 // src/Gruntz/SpriteRefTable.cpp (reloc-masked). CSpriteRefTable is the shared
 // <Gruntz/SpriteRefTable.h> shape.
@@ -260,7 +261,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
     i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[m_object->m_124 * 71].m_idx;
-    i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CGameObject* spr = m_object;
     spr->m_drawActive = 1;
     spr->m_drawFillCmd = 0xa;
@@ -347,7 +348,7 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (tag == 8) {
         CGameObject* spr = m_object;
         i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[spr->m_124 * 71].m_idx;
-        i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+        i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
         spr->m_drawFillCmd = 0xa;

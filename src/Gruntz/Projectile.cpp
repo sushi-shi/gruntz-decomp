@@ -1,5 +1,6 @@
 #include <Mfc.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Grunt.h>
@@ -611,7 +612,7 @@ void CProjectile::MovingSlot16() {
 
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
         CGameObject* owner = m_object;
-        CGameRegistry* reg = g_gameReg;
+        CGruntzMgr* reg = g_gameReg;
         if (owner->m_screenX < reg->m_viewOriginR && owner->m_screenX >= reg->m_viewOriginL
             && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
@@ -734,7 +735,7 @@ void CProjectile::MovingSlot16() {
     m_arrived = 1;
     i32 tier = 0;
     if (m_kind != 0x16) {
-        CGameRegistry* reg = g_gameReg;
+        CGruntzMgr* reg = g_gameReg;
         CTileGrid* plane = reg->m_tileGrid;
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
@@ -1326,7 +1327,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (m_sound != 0) {
         return 0;
     }
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_soundEnabled == 0) {
         return 0;
     }

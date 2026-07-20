@@ -1,5 +1,6 @@
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>      // g_sndEnabled/g_sndCueTag
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)

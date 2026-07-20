@@ -10,7 +10,8 @@
 // reached by raw offset (the documented naming-independent-codegen exception).
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Bute/ButeTree.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
@@ -117,7 +118,7 @@ enum GruntDeathType {
 // Fire the on-screen death cue (CueA) when the grunt point is visible.
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
-        CGameRegistry* _g = g_gameReg;                                                             \
+        CGruntzMgr* _g = g_gameReg;                                                             \
         if (GruntPointVisible(                                                                     \
                 reinterpret_cast<i32>(&_g->m_world->m_level->m_mainPlane->m_originX),                              \
                 m_10->m_screenX,                                                                   \
@@ -411,7 +412,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->m_1a0.Setup_15c2d0(m_poseDeath);
             m_38->ApplyName(*reinterpret_cast<char**>(&m_44c));
             {
-                CGameRegistry* g = g_gameReg;
+                CGruntzMgr* g = g_gameReg;
                 CCueRect* r = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
                 i32 x = m_10->m_screenX;
                 i32 y = m_10->m_screenY;
@@ -430,7 +431,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 pathA:
     m_38->ApplyName(*reinterpret_cast<char**>(&m_44c));
     {
-        CGameRegistry* g = g_gameReg;
+        CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
                 m_10->m_screenX,

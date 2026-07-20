@@ -13,7 +13,8 @@
 // code bytes are load-bearing; the surface/pool/config callees are reloc-masked
 // __thiscall externals declared-only in their canonical headers.
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h) // wsprintfA
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections (MakeAndAddB/RemoveItemA) + CDDSurface
@@ -77,7 +78,7 @@ i32 SaveScreenshot(
         return 0;
     }
 
-    CGameRegistry* mgr = g_gameReg;
+    CGruntzMgr* mgr = g_gameReg;
     descA[0] = 0;
     descA[1] = 0;
     descA[2] = 0;

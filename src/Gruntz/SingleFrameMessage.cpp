@@ -4,7 +4,8 @@
 //
 // CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Mfc.h> // RECT / CopyRect (the ctor centers the object in a bounds rect)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype

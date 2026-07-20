@@ -23,7 +23,8 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS, control IDs, and code
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg (defined below; DATA home is this TU)
 #include <EmptyString.h>  // g_emptyString
 #include <Ints.h>

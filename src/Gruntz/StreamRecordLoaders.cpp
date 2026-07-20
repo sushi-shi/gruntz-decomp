@@ -16,7 +16,8 @@
 // CSprite frame resolve CSBI_Image::SerializeFields runs.
 #include <rva.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)

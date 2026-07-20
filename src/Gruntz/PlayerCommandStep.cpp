@@ -17,7 +17,8 @@
 // m_arrivalReroll* / m_tileClaimed / m_arrivalState / mask m_arrivalFlags)
 // repeats across most cases. All engine helpers are external (reloc-masked).
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 
 #include <rva.h>

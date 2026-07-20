@@ -32,7 +32,7 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
 #include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix_152c50 / ScanTree_152ad0)
-#include <Gruntz/SpriteRefTable.h>    // the shared CSpriteRefTable (g_gameReg->m_74)
+#include <Gruntz/SpriteRefTable.h>    // the shared CSpriteRefTable (g_gameReg->m_spriteFactory)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry == CDDrawWorkerRegistry (InstallTree)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class

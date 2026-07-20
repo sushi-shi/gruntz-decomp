@@ -9,7 +9,8 @@
 // (this method's fields m_558..m_56c and SetMode all live there); the former per-TU
 // minimal `class CStatusBarMgr {}` view was folded onto it (P1 view fold).
 #include <Bute/ButeMgr.h>        // canonical CButeMgr (one shape)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>         // canonical CPlay (one shape; ArmSnapshot is reached here)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr big host
 #include <rva.h>

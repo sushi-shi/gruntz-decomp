@@ -1,5 +1,6 @@
 #include <Mfc.h> // real ::CPtrArray (CGruntzMapMgr::m_arr) - MFC umbrella kept first
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr : CMapMgr (the +0x70 grid container)

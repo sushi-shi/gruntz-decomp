@@ -11,6 +11,7 @@
 // the hazard reads the bound CGameObject (m_10/m_38) directly. Only offsets /
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
+#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/RainCloud.h>  // CRainCloud (its dtor 0x13340 lives in this obj)
@@ -264,7 +265,7 @@ i32 CPathHazard::Tick() {
     rect[1] = obj->m_screenY - obj->m_layer->m_anchorY + 7;
     rect[3] = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
         CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
@@ -434,7 +435,7 @@ i32 CPathHazard::SiblingTick() {
     rect[1] = obj->m_screenY - obj->m_layer->m_anchorY + 7;
     rect[3] = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
@@ -492,7 +493,7 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
     CGameObject* obj = m_object;
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     i32 y = obj->m_screenY;
     i32 x = obj->m_screenX;
     if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB

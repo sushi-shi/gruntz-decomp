@@ -1,6 +1,7 @@
 #include <Mfc.h>           // real MFC CString (direction-name match temp; reloc-masked)
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/TypeKeyColl.h>
@@ -324,7 +325,7 @@ RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CGameObject* lvl = Level();
         i32 outX, outY;

@@ -51,7 +51,8 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Mfc.h> // PtInRect (via <windows.h>), the CString diagnostic temp
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h> // this TU's class (LoadTileArrivalFx is a CTriggerMgr method)
 

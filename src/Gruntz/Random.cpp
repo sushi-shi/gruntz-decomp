@@ -3,7 +3,8 @@
 // reached through ILT jmp-thunks; the primary state lives in src/Globals.cpp
 // (g_randSeeded/g_randSeed), the second generator's state (g_rng2*) is here.
 #include <Gruntz/Random.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h> // superset of Win32.h; GameRegistry.h pulls afx via SoundCue.h
 #include <rva.h>
@@ -133,7 +134,7 @@ namespace Rng {
     SYMBOL(?GetAmbientId@CPlay@@QAEHXZ)
     RVA(0x000da200, 0x9b)
     i32 CoinFlip::Flip() {
-        CGameRegistry* gr = g_gameReg;
+        CGruntzMgr* gr = g_gameReg;
         if (gr->m_134 == 1 && gr->m_130 == 0) {
             return (m_1c + 1) % 2;
         }

@@ -17,7 +17,8 @@
 //   (the ex-"CGameModeBase" cleanup pair 0x0de140/0x0f9840 is homed to
 //    LevelPreview.cpp / SplashState.cpp - see the fold note at EOF.)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
 #include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
@@ -162,11 +163,11 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // ===========================================================================
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
-    i32 handleA = g_gameReg->m_74->GetSel(0, 0);
+    i32 handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (handleA == 0) {
         return 0;
     }
-    i32 handleB = g_gameReg->m_74->GetSel(0, 1);
+    i32 handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
 
     void* img = m_gruntzBank->ResolvePath("IMAGEZ_GOKARTGRUNT");
     if (img == 0) {
@@ -192,7 +193,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         return 0;
     }
     i32 tint = reinterpret_cast<i32>(
-        g_gameReg->m_78->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]);
+        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]);
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CGameObject* p318 = m_icons[7];

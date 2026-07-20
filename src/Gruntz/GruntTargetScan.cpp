@@ -32,7 +32,8 @@
 // Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
 #include <Gruntz/GruntSpawnConfig.h> // complete type for the cue calls
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <string.h>
 

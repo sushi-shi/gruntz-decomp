@@ -30,7 +30,8 @@
 //        "GruntLos1127"=CGameLevel::PointInBounds @0x6b330 (0x1127, static).
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Ints.h>
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 #include <stdlib.h> // rand (0x11fee0)
@@ -158,7 +159,7 @@ i32 CGrunt::ChargeStep() {
                         m_arrivalRow = g->m_tileOwnerLo;
                         m_defenderState = 1;
                         CGameObject* mp = m_10;
-                        WwdGameReg* mgr = g_gameReg;
+                        CGruntzMgr* mgr = g_gameReg;
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
                         i32 los = CGameLevel::PointInBounds(
@@ -189,7 +190,7 @@ i32 CGrunt::ChargeStep() {
                 if (spanY != 0) {
                     baseY += rand() % spanY;
                 }
-                WwdGameReg* mgr = g_gameReg;
+                CGruntzMgr* mgr = g_gameReg;
                 if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
                     && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);

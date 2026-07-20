@@ -18,7 +18,8 @@
 //
 // Field names now come from the real class; only offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches_155630)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)

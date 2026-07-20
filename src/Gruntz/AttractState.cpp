@@ -26,7 +26,8 @@
 //   Vslot07()            0x0147b0  slot 7  host/paint poll
 // Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Attract.h>
 #include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)

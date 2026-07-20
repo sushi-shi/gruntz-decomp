@@ -20,7 +20,8 @@
 // (0x4b320), ReportObjectAt 0x3030 -> CTriggerMgr::ApplyTriggerB (0x6e120).
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CLevelPlane (m_mainPlane +0x5c)
@@ -77,7 +78,7 @@ i32 CGrunt::StepPeerTracking() {
             return 1;
         }
         CGameObject* c = m_10;
-        CGameRegistry* g = g_gameReg;
+        CGruntzMgr* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
         CLevelPlane* r = g->m_world->m_level->m_mainPlane;

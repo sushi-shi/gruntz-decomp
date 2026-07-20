@@ -15,7 +15,8 @@
 // canonical CSpotLight (SpotLight.h). The SpotM10/SpotM14/SpotM98 views were CGameObject/
 // AnimWorkerObj/CGameObject facets and MgrObj68 was CTriggerMgr::m_grid - all dissolved.)
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>
 #include <math.h>
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA (the "A" name->node bute map)

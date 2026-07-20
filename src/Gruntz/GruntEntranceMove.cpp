@@ -17,7 +17,8 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
-#include <Gruntz/WwdGameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
@@ -913,7 +914,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     SetMoveStateA(m_19c, 1, 0, 0);
     m_entranceActive = 0;
 
-    WwdGameReg* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     CGruntzMapMgr* board = g->m_tileGrid;
@@ -1296,7 +1297,7 @@ RVA(0x0006a060, 0x43d)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_400 = 16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
 
-    WwdGameReg* g = g_gameReg;
+    CGruntzMgr* g = g_gameReg;
     void* sub2c = *reinterpret_cast<void**>((reinterpret_cast<char*>(g) + 0x2c));
     CGruntzMapMgr* b = g->m_tileGrid;
     CGameObject* h = m_10;

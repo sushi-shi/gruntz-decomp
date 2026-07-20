@@ -11,7 +11,8 @@
 // coordinate registry (g_actColl @0x644688 / g_secretActReg @0x644598) + the
 // SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
 #include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
@@ -350,7 +351,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_118 = m_object->m_118;
             spr->m_placeMode = 0;
             CGameObject* eo = hit->m_10;
-            CGameRegistry* g = g_gameReg;
+            CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
             CLevelPlane* rc = g->m_world->m_level->m_mainPlane;

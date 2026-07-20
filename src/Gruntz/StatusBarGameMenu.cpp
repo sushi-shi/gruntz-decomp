@@ -43,7 +43,8 @@
 // Both are documented codegen walls (docs/patterns/gx-frame-outofline-ctor.md);
 // re-attack in the final sweep.
 #include <rva.h>
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 #include <Mfc.h>
 #include <Gruntz/GameRegistry.h>

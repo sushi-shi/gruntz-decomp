@@ -20,7 +20,8 @@
 // <Gruntz/TriggerMgrViews.h>. /GX profile kept from the parent unit (no EH
 // temps in these leaves; byte-neutral).
 #include <Gruntz/Grunt.h> // CTmCell IS CGrunt (folded) - the cells are dereferenced here
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
