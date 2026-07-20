@@ -109,7 +109,7 @@ void CParseSource::Build(
     void* f2,
     void* f6,
     void* arr,
-    ParseVReader* stream
+    CRezItmBase* stream
 ) {
     m_reader = stream;
     m_owner = owner;
@@ -714,7 +714,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
         reinterpret_cast<void*>(m_owner->MakeSeed()),
         0,
         0,
-        reinterpret_cast<ParseVReader*>(m_owner->m_activeNode) // the active rez item IS the +0x34 virtual reader (slot-2 Read); fold TODO
+        m_owner->m_activeNode
     );
     if (slot == 0) {
         return 0;
@@ -742,7 +742,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     if (slot == 0) {
         return reinterpret_cast<i32>(slot);
     }
-    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, reinterpret_cast<ParseVReader*>(a3));
+    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, static_cast<CRezItmBase*>(a3));
     (static_cast<CSymRec*>(a2))->m_valTable.Insert(&slot->m_node1c);
     u32 len = strlen(static_cast<char*>(a1));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
@@ -912,7 +912,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             }
             if (!skip) {
                 CParseSource* slot = m_owner->PopParseSlot();
-                slot->Build(this, name1, f4, rec, str2, reinterpret_cast<i32>(f3), reinterpret_cast<i32>(f1), f2, f6, arr, reinterpret_cast<ParseVReader*>(a0));
+                slot->Build(this, name1, f4, rec, str2, reinterpret_cast<i32>(f3), reinterpret_cast<i32>(f1), f2, f6, arr, reinterpret_cast<CRezItmBase*>(a0)); // a0 rides as the retail i32 arg
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
@@ -1861,4 +1861,3 @@ void CSymParser::AddNode(void* rec) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CParseSource);
 SIZE_UNKNOWN(ParseMappedSource);
-SIZE_UNKNOWN(ParseVReader);

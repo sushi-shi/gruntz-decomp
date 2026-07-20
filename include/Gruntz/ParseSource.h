@@ -39,15 +39,10 @@ typedef enum ParseEntryTag {
 // is CSymTab::m_mappedBuf, same 0-gate. One +0x10 field, one pointee.)
 class CSymTab; // <Bute/SymTab.h>
 
-// The +0x34 virtual reader: its vtable slot 2 (+0x08) is Read(base, pos, len,
-// dst) -> bytes read. Modeled as a polymorphic class so the `mov edx,[ecx];
-// call [edx+8]` thiscall dispatch falls out with no cast.
-class ParseVReader {
-public:
-    char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    virtual void VSlot1();
-    virtual i32 Read(i32 base, i32 pos, u32 len, void* dst);
-};
+// (ParseVReader is GONE - the +0x34 "virtual reader" IS CRezItmBase (<Rez/RezMgr.h>):
+// same slot [2] (+0x08) Read(i32,i32,u32,void*), and the value stored there is the
+// parser's active rez node. The old shim faked the dispatch with a vptr pad.)
+class CRezItmBase;
 
 // The intrusive hash-node prefix embedded at CParseSource+0x1c: the parse-slot table
 // hashes on this node. IDENTITY PROVEN (VW2 2026-07-16) - it IS a CHashElement
@@ -108,7 +103,7 @@ struct CParseSource {
     // The leaf-record fill/teardown pair (0x139710/0x1397a0, bodies in SymTab.cpp with
     // the rest of this class's band; the ex-CSymLeafBuilder methods).
     void Build(CSymTab* owner, const char* name, void* f4, void* rec, void* str2, i32 f3,
-               i32 f1, void* f2, void* f6, void* arr, struct ParseVReader* stream);
+               i32 f1, void* f2, void* f6, void* arr, CRezItmBase* stream);
     void Teardown();
     i32 SetPos(i32 pos); // 0x139ae0 (out-of-line: m_cursor = pos; return 1)
     i32 ReadAt(void* dst, i32 pos, u32 len);
@@ -126,7 +121,7 @@ struct CParseSource {
     // Its m_record (+0x30) is the ex "m_selfLink": Init points it at this record, whose
     // first dword (m_name) is the hash key.
     CParseSlotHashNode m_node1c;
-    ParseVReader* m_reader; // +0x34 virtual reader
+    CRezItmBase* m_reader; // +0x34  the providing rez node (slot-2 virtual Read)
     i32 m_buffer;                      // +0x38 lazily-allocated inline byte buffer (as int address)
 };
 
