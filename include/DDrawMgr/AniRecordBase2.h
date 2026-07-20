@@ -2,10 +2,10 @@
 #define GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H
 
 #include <Ints.h>
-#include <Wap32/Object.h> // CObject - the shared engine grand-base
+#include <Wap32/WapObj.h> // CWapObj : CObject - slots 5/6 (IsLoaded/IsReady default)
 #include <rva.h>
 
-struct CAniRecordBase2 : public CObject {
+struct CAniRecordBase2 : public CWapObj {
     i32 m_04, m_08, m_0c; // +0x04..0x0f CObject-header fields (base-2 dtor resets them)
     i32 m_10;             // +0x10  owned work buffer (slot-7 FreeBuf frees it)
 
@@ -24,8 +24,9 @@ struct CAniRecordBase2 : public CObject {
     }
 
     virtual ~CAniRecordBase2() OVERRIDE; // [1] 0x165dd0 (AniRecord.cpp); ??_G 0x165db0
-    virtual void IsLoaded();        // [5] 0x165d90
-    virtual void IsValidImage();         // [6] 0x001c08 (CWapObj-family marker slot)
+    virtual i32 IsLoaded() OVERRIDE;     // [5] 0x165d90 (overrides CWapObj)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
+    // via the 0x001c08 thunk); not redeclared (that was a phantom own "IsValidImage").
     virtual void FreeBuf();              // [7] 0x168fb0 (bound as CAniRecordView::FreeBuf)
     virtual void GetClassId();        // [8] 0x165da0
     virtual void AllocBufCreate();       // [9] 0x168f20 (bound as CAniRecordView::AllocBufCreate)

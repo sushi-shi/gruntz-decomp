@@ -4,40 +4,25 @@
 #include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject - the real grand-base
 
 struct SoundStream;  // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
 struct LeafCue;      // the 0x1c cache element / map value (<Gruntz/LeafCue.h>)
 class CSymTab;       // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
 struct CParseSource; // the element's draw-source (BeginParse/EndParse; STRUCT key = the def)
 
-class LeafScanBase : public CObject {
+// LeafScanBase DISSOLVED: it was a duplicate view of CLoadable (identical m_04/-1
+// +0x08/0 m_0c/0 header + field-reset dtor + the SAME CDDrawSurfaceMgr OwnerMgr()
+// accessor); slot-6 IsReady is CWapObj's default, slot-8 GetClassId is CLoadable's.
+// The scan sub-manager now derives from the real CLoadable.
+
+class CDDrawSubMgrLeafScan : public CLoadable {
 public:
-    virtual ~LeafScanBase()
-        OVERRIDE; // [1] scalar-deleting dtor; slots 0/2/3/4 inherited from CObject
-
-    i32 m_04;                  // +0x04  -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent/root handle
-    // Same +0x0c owner-context truth as CLoadable::OwnerMgr(): the handle IS the
-    // CDDrawSurfaceMgr for this family; typed once here.
-    class CDDrawSurfaceMgr* OwnerMgr() { return reinterpret_cast<class CDDrawSurfaceMgr*>(m_0c); }
-    LeafScanBase() {}
-};
-
-inline LeafScanBase::~LeafScanBase() {
-    m_04 = -1;
-    *reinterpret_cast<i32*>(&m_pad08[0]) = 0; // +0x08 = 0
-    m_0c = 0;
-}
-
-class CDDrawSubMgrLeafScan : public LeafScanBase {
-public:
-    // 9-slot vtable (??_7CDDrawSubMgrLeafScan @0x5efca0): 5 shared LeafScanBase slots
-    // (slot 1 = the virtual dtor below), then 4 leaf virtuals at slots 5..8. Slots
-    // 5/7 point to functions in the sibling CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0);
-    // 6/8 are unreconstructed -> declared-only, reloc-masked vtable references.
+    // 9-slot vtable (??_7CDDrawSubMgrLeafScan @0x5efca0): the CObject slots + slots 5/7
+    // overriding CLoadable's, slot 6 IsReady INHERITED from CWapObj, slot 8 GetClassId
+    // INHERITED from CLoadable. Slot 5/7 bodies live in the sibling CDDrawSubMgrLeaf TU.
     RVA(0x00157530, 0x17)
-    virtual i32 IsReady() {
+    virtual i32 IsLoaded() OVERRIDE { // [5] overrides CLoadable::IsLoaded (the worker-gate)
         if (m_2c != 0) {
             return 1;
         }
@@ -46,10 +31,12 @@ public:
         }
         return 0;
     }
-    virtual void IsValidImage(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void
-    ClearContext(); // [7] 0x157ae0 (defined in DDrawSubMgr.cpp - this class's own slot)
-    virtual void GetTypeId(); // [8] 0x154a00 (shared, declared-only)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0); not
+    // redeclared (the old "IsValidImage" was a phantom own-decl of that shared body).
+    virtual i32
+    Unload() OVERRIDE; // [7] 0x157ae0 (overrides CLoadable::Unload; clears the map; def in DDrawSubMgr.cpp)
+    // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
+    // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 
     i32 RefreshAsset_114120(const char* key);
     LeafCue* CreateEntry_157d70(const char* key, void* arg2);
@@ -73,7 +60,7 @@ public:
     i32 MatchSub_1584f0(LeafCue* arg1, i32 arg2);
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
-    void ClearMap(); // 0x157bc0 (non-virtual map teardown)
+    i32 ClearMap(); // 0x157bc0 (non-virtual map teardown; i32 residue feeds Unload)
 
     virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
     // The `??_G` scalar-deleting destructor (vtable slot 1 @0x157550): run the real
@@ -103,7 +90,6 @@ public:
     i32 m_34; // +0x34  redraw arg
 };
 
-SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 
 VTBL(

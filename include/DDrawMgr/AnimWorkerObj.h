@@ -2,7 +2,7 @@
 #define GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H
 
 #include <Ints.h>
-#include <Wap32/Object.h>
+#include <Wap32/WapObj.h> // CWapObj : CObject - slots 5/6 (IsLoaded/IsReady default)
 #include <rva.h>
 
 class CUserLogic;
@@ -14,12 +14,13 @@ typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
 class CDDrawSurfaceMgr;
 
-struct AnimWorkerObj : public CObject {
+struct AnimWorkerObj : public CWapObj {
     // slot 1 deleting dtor ??_G @0x151d80; body @0x151da0 (was ~CLogicRecord):
     // free the m_14 payload, `delete` the bound logic leaf, zero the live fields.
     virtual ~AnimWorkerObj() OVERRIDE; // 0x151da0 (/GX; slots 0/2/3/4 CObject)
-    virtual void IsLoaded();      // slot 5  0x151d60
-    virtual void IsValidImage();       // slot 6  0x001c08
+    virtual i32 IsLoaded() OVERRIDE;   // slot 5  0x151d60 (overrides CWapObj)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
+    // via the 0x001c08 thunk); not redeclared (that was a phantom own "IsValidImage").
     virtual void Clear();              // slot 7  0x151e70 (reset/reuse hook)
     virtual void GetClassId();      // slot 8  0x151d70
     // slot 9 - bind the fire callback + frame stamp, zero the working fields

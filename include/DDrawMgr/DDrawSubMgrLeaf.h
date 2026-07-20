@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <rva.h>
-#include <Wap32/Object.h>
+#include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject - the real leaf grand-base
 
 class CCatalogNode {
 public:
@@ -13,41 +13,27 @@ public:
 };
 SIZE_UNKNOWN(CCatalogNode);
 
-class CDDrawSubMgrGrandBase : public CObject {
-public:
-    virtual ~CDDrawSubMgrGrandBase() OVERRIDE; // [1] real teardown dtor
+// CDDrawSubMgrGrandBase DISSOLVED: it was a duplicate view of CLoadable (identical
+// m_04/-1 m_flags/0 m_0c/0 header + field-reset dtor + CDDrawSurfaceMgr owner @+0x0c);
+// slot-8 GetClassId (@0x154a00) IS CLoadable::GetClassId, slot-7 the CLoadable::Unload
+// slot. The leaf now derives from the real CLoadable; the typed owner is OwnerMgr().
 
-    i32 m_04; // +0x04  -1 when inactive
-    i32 m_08; // +0x08
-    // +0x0c  the owning CDDrawSurfaceMgr (the world/display root). Typed (was an
-    // i32 "parent/root handle"): the ANI factory reads its +0x28 m_soundRegistry as the
-    // element Configure ctx, the same owner every family sibling binds at +0x0c.
-    class CDDrawSurfaceMgr* m_0c;
-    CDDrawSubMgrGrandBase() {}
-};
-inline CDDrawSubMgrGrandBase::~CDDrawSubMgrGrandBase() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
-SIZE_UNKNOWN(CDDrawSubMgrGrandBase);
-
-class CDDrawSubMgrLeaf : public CDDrawSubMgrGrandBase {
+class CDDrawSubMgrLeaf : public CLoadable {
 public:
-    // The leaf vtable (??_7CDDrawSubMgrLeaf @0x5efc78) is 9 slots: 5 shared CObject
-    // slots from CDDrawSubMgrGrandBase (slot 1 overridden below), then 4 leaf
-    // virtuals at slots 5..8 in declaration order.
-    virtual i32 IsLoaded();       // [5] 0x1577a0 (G obj; the worker-gate - CWapObj-scheme slot 5)
-    virtual i32 IsReady();        // [6] 0x152640 (S2 obj; own return-1 copy of the scheme default)
-    virtual void Cleanup();       // [7] 0x152650 (S2 obj; tail-calls FreeAll)
-    virtual void GetTypeId(); // [8] 0x154a00 (shared, declared-only)
+    // 9-slot vtable (??_7CDDrawSubMgrLeaf @0x5efc78): the CObject slots + slots 5/6/7
+    // overriding CLoadable's, then slot 8 GetClassId INHERITED from CLoadable.
+    virtual i32 IsLoaded() OVERRIDE; // [5] 0x1577a0 (overrides CLoadable::IsLoaded)
+    virtual i32 IsReady() OVERRIDE;  // [6] 0x152640 (own return-1, overrides CWapObj::IsReady)
+    virtual i32 Unload() OVERRIDE;   // [7] 0x152650 (overrides CLoadable::Unload; tail-returns FreeAll)
+    // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
+    // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 
     // Non-vtable members.
     // (ClearContext @0x157ae0 belongs to the sibling CDDrawSubMgrLeafScan - it is that
     // class's slot-7 virtual; it operated on a LeafScan `this`, so it was re-homed there.)
     CObject* LookupValue_06b2a0(const char* key);
     void RemoveValue_152660(CCatalogNode* target);
-    void FreeAll_152720();
+    i32 FreeAll_152720(); // i32 residue feeds the slot-7 Unload override
     i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
     i32 HasKeyPrefix_152c50(const char* str);
     CString KeyOfValue_152d30(CObject* target);

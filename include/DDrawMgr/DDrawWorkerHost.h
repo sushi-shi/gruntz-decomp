@@ -2,7 +2,7 @@
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
 #include <Ints.h>
-#include <Wap32/Object.h>         // CObject (pulls <Mfc.h>/windows.h: RECT + ::CObArray)
+#include <Wap32/WapObj.h>         // CWapObj : CObject (pulls <Mfc.h>/windows.h: RECT + ::CObArray)
 #include <DDrawMgr/DDrawWorker.h> // CLoadable (m_frameSets is the real MFC ::CObArray)
 #include <rva.h>
 
@@ -20,7 +20,7 @@ class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWor
 typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
-class CDDrawWorkerHost : public CObject {
+class CDDrawWorkerHost : public CWapObj {
 public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE; // slot 1 (scalar-deleting dtor) 0x163af0
@@ -33,9 +33,10 @@ public:
 
     // --- own vtable slots 5..11 (retail ??_7 @0x1f0270 is 12 slots; per-slot RTTI
     // map from `vtable_hierarchy --class CDDrawWorkerHost`). ------------------------
-    virtual i32 IsLoaded();      // slot 5  (+0x14) 0x163a90 "plane loaded?" gate
-                                 //         (the ValidateTiles gate; declared-only)
-    virtual void VtSlot6_1c08(); // slot 6  (+0x18) 0x001c08 shared CWapObj-family default
+    virtual i32 IsLoaded() OVERRIDE; // slot 5  (+0x14) 0x163a90 "plane loaded?" gate
+                                     //         (the ValidateTiles gate; overrides CWapObj)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
+    // via the 0x001c08 thunk); not redeclared (that was a phantom own "VtSlot6_1c08").
     // slot 7 (+0x1c) 0x161bf0 - free the spatial worker (PruneCount then delete) and
     // the two owned grid buffers. (Ex the LevelPlane.cpp-local "CImageSet3" pocket.)
     virtual void Cleanup_161bf0();

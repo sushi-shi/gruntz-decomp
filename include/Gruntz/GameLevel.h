@@ -86,9 +86,9 @@ struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
 class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.h>)
 
-class CGameLevel : public CObject {
+class CGameLevel : public CWapObj {
 public:
-    i32 m_04, m_08;         // +0x04..0x0b (merged from CLoadable base)
+    i32 m_04, m_08;         // +0x04..0x0b (the CLoadable base header words, kept inline)
     CDDrawSurfaceMgr* m_0c; // +0x0c  the owning world/display root (the CLoadable
                             //        owner slot; BroadPhase/StepAxisAlt walk its
                             //        m_childGroup, MovingLogic hops m_level)
@@ -103,9 +103,10 @@ public:
     // default-extents block, then dispatch the corresponding load virtual (slot
     // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
     // run Unload (slot +0x1c, the fail/reset hook).
-    virtual ~CGameLevel() OVERRIDE; // [1] +0x04 (dtor 0x1611e0; ??_G 0x1611c0 pinned in .cpp)
-    virtual i32 IsLoaded();         // [5]  +0x14  0x161190 (own; was CWapObj slot)
-    virtual i32 IsReady();          // [6]  +0x18  0x001c08 (own; was CWapObj slot, declared-only)
+    virtual ~CGameLevel() OVERRIDE;  // [1] +0x04 (dtor 0x1611e0; ??_G 0x1611c0 pinned in .cpp)
+    virtual i32 IsLoaded() OVERRIDE; // [5]  +0x14  0x161190 (overrides CWapObj)
+    // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
+    // via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
     virtual i32 Unload();           // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
     RVA(0x001611b0, 0x6)
     virtual i32 GetClassId() {

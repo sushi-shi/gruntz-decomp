@@ -12,15 +12,16 @@ class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
 SIZE(CDDrawSubMgrPages, 0x1c);
-class CDDrawSubMgrPages : public CObject {
+class CDDrawSubMgrPages : public CWapObj {
 public:
     virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0)
     // The `??_G` scalar-deleting destructor (slot 1 @0x1574b0): run the real
     // ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this. Hand-written
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
     void* ScalarDtor(u32 flags);    // 0x1574b0
-    virtual i32 IsLoaded();         // slot 5 (@0x14) 0x157480 ("all children present?")
-    virtual i32 IsReady();          // slot 6 (@0x18) the shared family default 0x001c08
+    virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x157480 ("all children present?")
+    // slot 6 IsReady INHERITED from CWapObj (the shared `return 1` default @0xd5da0,
+    // reached via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
     virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
     RVA(0x001574a0, 0x6)
     virtual StateId GetStateId() {

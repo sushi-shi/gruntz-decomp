@@ -460,11 +460,11 @@ void* CDDrawSubMgrLeafScan::ScalarDtor(u32 flags) {
 // names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
-    // VM18 (0x157ae0) is slot [7] of this class's own vtable (ClearContext); a
-    // virtual call on `this` inside the dtor devirtualizes to the retail direct
-    // rel32, so no view cast is needed.
-    ClearContext();
-    // m_10 (CMapStringToPtr) member dtor auto-fires here, then the LeafScanBase
+    // Unload (0x157ae0) is slot [7] of this class's own vtable; a virtual call on
+    // `this` inside the dtor devirtualizes to the retail direct rel32, so no view
+    // cast is needed.
+    Unload();
+    // m_10 (CMapStringToPtr) member dtor auto-fires here, then the ~CLoadable base
     // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }
 
@@ -644,9 +644,10 @@ i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
 }
 
 RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeafScan::ClearContext() {
-    ClearMap();
-    m_0c = 0;
+i32 CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clears the map)
+    i32 r = ClearMap();              // eax = ClearMap's residue -> this slot's i32
+    m_2c = 0;                        // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
+    return r;
 }
 
 // ===========================================================================
@@ -691,7 +692,7 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
 // store position + the reloc-masked EH-state push (same family wall as
 // FreeAll_152720). docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
-void CDDrawSubMgrLeafScan::ClearMap() {
+i32 CDDrawSubMgrLeafScan::ClearMap() {
     void* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -704,6 +705,8 @@ void CDDrawSubMgrLeafScan::ClearMap() {
         } while (pos != 0);
     }
     m_10.RemoveAll();
+    return reinterpret_cast<i32>(val); // i32 (Unload's residue-carrier): retail returns the
+                                       // trailing ~CString(key) eax; val (0 at exit) stands in.
 }
 
 RVA(0x00157c70, 0xf8)

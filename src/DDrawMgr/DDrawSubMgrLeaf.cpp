@@ -44,8 +44,8 @@ i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;
 }
 RVA(0x00152650, 0x5)
-void CDDrawSubMgrLeaf::Cleanup() {
-    FreeAll_152720();
+i32 CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override)
+    return FreeAll_152720();     // tail-jmp to FreeAll (whose eax residue IS this slot's i32)
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
 // EH-state push. The surrounding symbol set re-rolls the allocator; the identical
 // sibling source matched 100% elsewhere. docs/patterns/zero-register-pinning.md.
 RVA(0x00152720, 0xa2)
-void CDDrawSubMgrLeaf::FreeAll_152720() {
+i32 CDDrawSubMgrLeaf::FreeAll_152720() {
     void* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -102,6 +102,9 @@ void CDDrawSubMgrLeaf::FreeAll_152720() {
         } while (pos != 0);
     }
     m_10.RemoveAll();
+    return reinterpret_cast<i32>(val); // i32 (the CLoadable::Unload slot type): retail returns
+                                       // the trailing ~CString(key) eax residue; val (0 at exit)
+                                       // stands in - unused by every caller.
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +159,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry_1528d0(const char* key, void* entr
     if (el == 0) {
         return 0;
     }
-    if (el->Configure_1655c0(m_0c->m_soundRegistry, entry, 0) == 0) {
+    if (el->Configure_1655c0(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -178,7 +181,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* ent
     if (el == 0) {
         return 0;
     }
-    if (el->LoadFile_165620(m_0c->m_soundRegistry, entry, 0) == 0) {
+    if (el->LoadFile_165620(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;

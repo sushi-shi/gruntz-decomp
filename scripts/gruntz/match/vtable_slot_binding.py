@@ -189,11 +189,14 @@ def base_closure(name, classes, seen=None):
 def resolve_slot(symbols, raw, body):
     """The symbol our source binds for a slot, as (rva, name, unit) or None.
 
-    Tries the thunk-chased BODY first (where a reconstruction normally lands), then the
-    raw slot value: a handful of RVA() annotations in the tree are written on the ILT
-    thunk itself, and both addresses denote the same function.
+    The vtable reloc points at the RAW slot value, so a symbol defined THERE is the
+    binding - honour it first. Only when raw is an anonymous linker ILT thunk (no
+    symbol) do we chase to the BODY, where an ordinary reconstruction lands. This
+    order also keeps a genuine tail-call virtual correct: e.g. slot 7 binds a real
+    5-byte `Unload` (`jmp FreeAll`) at raw - the override IS Unload, not the FreeAll
+    helper the jmp lands on. (Chasing body-first would mis-attribute it to FreeAll.)
     """
-    for r in (body, raw):
+    for r in (raw, body):
         if r in symbols:
             return (r, *symbols[r])
     return None
