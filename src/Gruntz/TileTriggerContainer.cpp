@@ -228,17 +228,17 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
 ) {
     CTileTriggerLogic* obj = 0;
     switch (logicType) {
-        case 0x15:
-        case 0x18:
+        case TRIGID_TILE_TRIGGER_21:
+        case TRIGID_TILE_TRIGGER_24:
             obj = new CTileTriggerLogic;
             break;
-        case 0x19:
+        case TRIGID_SECRET_TRIGGER_25:
             obj = new CTileSecretTriggerLogic;
             break;
-        case 0x1a:
+        case TRIGID_COVERED_POWERUP_26:
             obj = new CCoveredPowerupLogic;
             break;
-        case 0x17:
+        case TRIGID_TIME_TRIGGER_23:
             obj = new CTileTimeTriggerLogic;
             break;
     }
@@ -270,7 +270,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj->m_dutyOn = 0;
             obj->m_28 = a7;
             obj->m_30 = a9;
-            if (logicType != 0x1a && a9 == 0) {
+            if (logicType != TRIGID_COVERED_POWERUP_26 && a9 == 0) {
                 obj->m_30 = a7;
             }
             obj->m_24 = g_frameTime;
@@ -283,9 +283,9 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
         return 0;
     }
 
-    TtcObList* list = logicType == 0x17 ? &m_list2 : &m_list1;
+    TtcObList* list = logicType == TRIGID_TIME_TRIGGER_23 ? &m_list2 : &m_list1;
     list->AddTail(obj);
-    if (logicType == 0x15 && (a1 == 0x67 || a1 == 0x68)) {
+    if (logicType == TRIGID_TILE_TRIGGER_21 && (a1 == 0x67 || a1 == 0x68)) {
         m_70 = obj;
     }
     return obj;

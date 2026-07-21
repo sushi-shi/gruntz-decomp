@@ -615,11 +615,11 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
     {
         u32 period = m_30 + m_28;
         if (elapsed > period) {
-            if (m_typeTag == 0x18) {
+            if (m_typeTag == TRIGID_TILE_TRIGGER_24) {
                 Tick();
                 return 0;
             }
-            if (m_typeTag != 0x17) {
+            if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
                 if (m_dutyOn == 1) {
                     Tick();
                 }
@@ -633,7 +633,7 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
             }
             Tick();
             m_dutyOn = 1;
-            if (m_typeTag == 0x18) {
+            if (m_typeTag == TRIGID_TILE_TRIGGER_24) {
                 return 0;
             }
             goto ret1;
@@ -643,7 +643,7 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
         }
         Tick();
         m_dutyOn = 0;
-        if (m_typeTag == 0x17) {
+        if (m_typeTag == TRIGID_TIME_TRIGGER_23) {
             goto ret1;
         }
         return -1;
