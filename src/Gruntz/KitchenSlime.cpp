@@ -360,10 +360,10 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gy = tileY >> 5;
         i32 tileFlags;
         CTileGrid* map = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_c) || static_cast<u32>(gy) >= static_cast<u32>(map->m_10)) {
+        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width) || static_cast<u32>(gy) >= static_cast<u32>(map->m_height)) {
             tileFlags = 1;
         } else {
-            tileFlags = ((map->m_8[gy]))[gx * 7];
+            tileFlags = ((map->m_rowInts[gy]))[gx * 7];
         }
 
         if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right && tileY <= lvl->m_extent.bottom

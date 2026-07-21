@@ -107,8 +107,8 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     i32 total = t4 + g_buteMgr.GetInt("Brickz", "Black");
 
     BrickzCell* cell = m_cellPool;
-    for (i32 col = 0; col < static_cast<i32>(m_10); col++) {
-        for (i32 row = 0; row < static_cast<i32>(m_c); row++, cell++) {
+    for (i32 col = 0; col < static_cast<i32>(m_height); col++) {
+        for (i32 row = 0; row < static_cast<i32>(m_width); row++, cell++) {
             i32 tileId = grid->m_tileGrid[grid->m_colOffsets[col] + row];
             if (tileId != -1) {
                 tileId &= 0xffff;
@@ -277,13 +277,13 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
 
             // 8-neighbour diagonal-passability walk over the 3x3 block.
             if ((cell->m_0 & 0x100) != 0) {
-                i32 colCount = m_c;
+                i32 colCount = m_width;
                 for (i32 r = row - 1; r <= row + 1; r++) {
-                    if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_c)) {
+                    if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_width)) {
                         continue;
                     }
                     for (i32 c = col - 1; c <= col + 1; c++) {
-                        if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_10)) {
+                        if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_height)) {
                             continue;
                         }
                         BrickzCell* nc = &m_rows[c][r];
@@ -294,7 +294,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                         }
                         BrickzCell* up = (r != 0) ? nc - 1 : 0;
                         BrickzCell* down = (r < colCount - 1) ? nc + 1 : 0;
-                        BrickzCell* right = (c < static_cast<i32>(m_10) - 1) ? nc + colCount : 0;
+                        BrickzCell* right = (c < static_cast<i32>(m_height) - 1) ? nc + colCount : 0;
                         BrickzCell* left = (c != 0) ? nc - colCount : 0;
                         BrickzCell* ur = (up && right) ? up + colCount : 0;
                         BrickzCell* dl = (down && left) ? down - colCount : 0;
@@ -356,9 +356,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             for (i32 k = 0; k < m_arr.GetSize(); k++) {
                 Coord* elem = static_cast<Coord*>(m_arr[k]);
-                if (elem != 0 && static_cast<u32>(elem->m_x) < static_cast<u32>(m_c) && static_cast<u32>(elem->m_y) < static_cast<u32>(m_10)) {
-                    m_cellPool[elem->m_y * m_c + elem->m_x].m_0 = 0x10;
-                    m_cellPool[elem->m_y * m_c + elem->m_x].m_c = 0;
+                if (elem != 0 && static_cast<u32>(elem->m_x) < static_cast<u32>(m_width) && static_cast<u32>(elem->m_y) < static_cast<u32>(m_height)) {
+                    m_cellPool[elem->m_y * m_width + elem->m_x].m_0 = 0x10;
+                    m_cellPool[elem->m_y * m_width + elem->m_x].m_c = 0;
                     // Recycle: recover the raw node (payload - m_linkOffset) and relink onto
                     // the free-list head (the Grunt.cpp void** idiom).
                     CoordPoolNode* node = g_coordPool.NodeOf(elem);

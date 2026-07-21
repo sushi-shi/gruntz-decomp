@@ -260,8 +260,8 @@ i32 CRollingBall::Update() {
             CTileGrid* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
             i32 cy = logic->m_screenY >> 5;
-            if (static_cast<u32>(cx) < map->m_c && static_cast<u32>(cy) < map->m_10) {
-                i32** row = map->m_8;
+            if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
+                i32** row = map->m_rowInts;
                 i32 ix = cx * 7;
                 row[cy][ix] &= 0xefffffff;
             }
@@ -304,8 +304,8 @@ i32 CRollingBall::Update() {
         i32 cx = m_targetX >> 5;
         i32 cy = m_targetY >> 5;
         i32 terrain;
-        if (static_cast<u32>(cx) < map->m_c && static_cast<u32>(cy) < map->m_10) {
-            i32** row = map->m_8;
+        if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
+            i32** row = map->m_rowInts;
             i32 ix = cx * 7;
             terrain = row[cy][ix];
         } else {

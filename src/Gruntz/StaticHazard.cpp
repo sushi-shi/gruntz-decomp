@@ -271,8 +271,8 @@ i32 CStaticHazard::LoadAttributes() {
             }
             // clear the hazard cell's bit-0x8000000
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
-                grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+                grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
             return 0;
         }
@@ -328,13 +328,13 @@ dispatch:
             m_object->m_flags |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
-            grid->m_8[m_tileRow][m_tileCol * 7] |= 0x8000000;
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[m_tileRow][m_tileCol * 7] |= 0x8000000;
         }
     } else {
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
-            grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
         if (m_object->m_sortKey != 0) {
             m_object->m_sortKey = 0;
@@ -353,8 +353,8 @@ dispatch:
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
-                grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+                grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
         }
     }

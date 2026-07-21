@@ -1366,14 +1366,14 @@ label_4cb4b:
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
         // Two separate row-table walks: the byte-store may alias m_8, so retail
         // reloads the row table between them.
-        *(reinterpret_cast<u8*>(&(reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7]) + 3) &= 0xdf;
-        (reinterpret_cast<i32*>(bdl->m_8[lastTileY]))[lastTileX * 7 + 1] = -1;
+        *(reinterpret_cast<u8*>(&(reinterpret_cast<i32*>(bdl->m_rows[lastTileY]))[lastTileX * 7]) + 3) &= 0xdf;
+        (reinterpret_cast<i32*>(bdl->m_rows[lastTileY]))[lastTileX * 7 + 1] = -1;
 
         tgtTileX = tgtPxX >> 5;
         tgtTileY = tgtPxY >> 5;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
-        (reinterpret_cast<i32*>(bd2->m_8[tgtTileY]))[tgtTileX * 7] |= 0x20000000;
-        (reinterpret_cast<i32*>(bd2->m_8[tgtTileY]))[tgtTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+        (reinterpret_cast<i32*>(bd2->m_rows[tgtTileY]))[tgtTileX * 7] |= 0x20000000;
+        (reinterpret_cast<i32*>(bd2->m_rows[tgtTileY]))[tgtTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
         m_lastTilePxX = rec.m_0;
         m_lastTilePxY = rec.m_4;

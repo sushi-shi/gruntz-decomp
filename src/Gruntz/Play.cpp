@@ -3104,10 +3104,10 @@ i32 CPlay::ClearPlacedObjects() {
             CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
             CTileGrid* grid = g_gameReg->m_tileGrid;
             i32* cellObj = 0;
-            if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_c)
-                && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_height)) {
                 i32 stride = obj->m_0 * 7;
-                i32* row = grid->m_8[obj->m_4];
+                i32* row = grid->m_rowInts[obj->m_4];
                 cellObj = reinterpret_cast<i32*>(row[stride + 2]);
             }
             if (cellObj == 0) {
@@ -3125,12 +3125,12 @@ i32 CPlay::ClearPlacedObjects() {
             if (result == 0) {
                 // cell vacated: clear the cell's occupant + flag bit and unlink.
                 CTileGrid* g = g_gameReg->m_tileGrid;
-                if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_c)
-                    && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_10)) {
+                if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_width)
+                    && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_height)) {
                     i32 stride = obj->m_0 * 7;
-                    i32* row = g->m_8[obj->m_4];
+                    i32* row = g->m_rowInts[obj->m_4];
                     row[stride + 2] = 0;
-                    i32* row2 = g->m_8[obj->m_4];
+                    i32* row2 = g->m_rowInts[obj->m_4];
                     row2[stride] &= 0xfffbffff;
                 }
                 rec->RemoveAt(i, 1);

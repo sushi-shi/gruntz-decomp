@@ -131,24 +131,17 @@ public:
     // @fold-TODO: converge those consumers onto the semantic names (needs a TYPED sweep -
     // a blind rename would hit the identically-named members of other classes), then drop
     // the placeholder halves.
+    BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells; Reset frees it)
+    // +0x08  the row table - THREE arms, each a PROVEN retail arithmetic shape
+    // (typed 0x1c-stride / int *7-walk / byte 0x1c-walk); retyping any arm breaks
+    // its sites' bytes (the GruntBoard faithful floor). Same one table.
     union {
-        BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells)
-        MapCell* m_4;           //        (same pointer; Reset frees it)
+        BrickzCell** m_rows; // typed rows (m_rows[y][x])
+        i32** m_rowInts;     // the *7-int-walk sites (rowInts[y][x*7 + n])
+        char** m_rowBytes;   // the byte-walk sites (rows[y] + x*0x1c)
     };
-    union {
-        BrickzCell** m_rows; // +0x08  row table (m_rows[row] -> that row's cells)
-        i32** m_8;           //        (same table; cell = (i32*)m_8[y] + x*7)
-        char** m_rowBytes;   //        (same table, byte-addressed: the grunt step/arrival
-                             //         machines walk rows[y] + x*0x1c - the ex GruntBoard view)
-    };
-    union {
-        u32 m_width; // +0x0c  grid width (columns)
-        u32 m_c;
-    };
-    union {
-        u32 m_height; // +0x10  grid height (rows)
-        u32 m_10;
-    };
+    u32 m_width;  // +0x0c  grid width (columns)
+    u32 m_height; // +0x10  grid height (rows)
     u32 m_cellCount;        // +0x14  total cell count (width*height)
     BrickzNode* m_openList; // +0x18  sorted open/lookup list head
     i32 m_1c;               // +0x1c

@@ -552,10 +552,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
         i32 attr;
-        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_c) || static_cast<u32>(ty) >= static_cast<u32>(plane->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width) || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
             attr = 1;
         } else {
-            attr = plane->m_8[ty][tx * 7];
+            attr = plane->m_rowInts[ty][tx * 7];
         }
         if ((attr & 0x939) != 0 || (attr & 2) != 0) {
             world->LoadCursorSprites(pfk, 0);
@@ -879,10 +879,10 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         tile = 1;
     } else {
-        tile = grid->m_8[ty][tx * 8 - tx];
+        tile = grid->m_rowInts[ty][tx * 8 - tx];
     }
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
         Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
@@ -929,8 +929,8 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.m_y >> 5;
     i32 colByte = (pt.m_x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
-    (reinterpret_cast<char*>(tg->m_8[rowIdx]))[colByte + 0x3] &= 0xdf;
-    *reinterpret_cast<i32*>((reinterpret_cast<char*>(tg->m_8[rowIdx]) + colByte + 0x4)) = -1;
+    (reinterpret_cast<char*>(tg->m_rows[rowIdx]))[colByte + 0x3] &= 0xdf;
+    *reinterpret_cast<i32*>((reinterpret_cast<char*>(tg->m_rows[rowIdx]) + colByte + 0x4)) = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
     if (z != 0) {

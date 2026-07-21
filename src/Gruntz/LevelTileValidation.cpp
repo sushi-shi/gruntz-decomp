@@ -560,7 +560,7 @@ i32 CPlay::ValidateLevelTiles() {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
+                    if (static_cast<u32>(gx) >= gg->m_width || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
                     i32 kind = obj->m_124;
@@ -585,10 +585,10 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
+                    if (static_cast<u32>(gx) >= gg->m_width || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow = reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_8[0]) + ofs));
+                    i32* cellRow = reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_rows[0]) + ofs));
                     *reinterpret_cast<i32*>((reinterpret_cast<char*>(cellRow) + ebp)) |= bit;
                 }
             }
@@ -596,7 +596,7 @@ i32 CPlay::ValidateLevelTiles() {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 cy = obj->m_screenX >> 5;
             i32 cx = obj->m_screenY >> 5;
-            if (static_cast<u32>(cy) < gg->m_c && static_cast<u32>(cx) < gg->m_10) {
+            if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
                 // poke the cell
             }
         } else if (who == reinterpret_cast<void*>(0x401f0a)) {

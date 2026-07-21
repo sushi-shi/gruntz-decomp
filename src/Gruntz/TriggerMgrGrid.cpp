@@ -107,10 +107,10 @@ i32 CTriggerMgr::PlaceObject(
     }
     CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
-    if ((ax >> 5) >= plane->m_c || (ay >> 5) >= plane->m_10) {
+    if ((ax >> 5) >= plane->m_width || (ay >> 5) >= plane->m_height) {
         attr = 1;
     } else {
-        attr = plane->m_8[ay >> 5][(ax >> 5) * 7];
+        attr = plane->m_rowInts[ay >> 5][(ax >> 5) * 7];
     }
     if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
         return -1;

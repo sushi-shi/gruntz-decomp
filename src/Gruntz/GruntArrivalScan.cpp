@@ -704,10 +704,10 @@ i32 CGrunt::WanderStep() {
                 return 1;
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(px) >= static_cast<u32>(grid->m_c)) {
+            if (static_cast<u32>(px) >= static_cast<u32>(grid->m_width)) {
                 return 1;
             }
-            if (static_cast<u32>(py) >= static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(py) >= static_cast<u32>(grid->m_height)) {
                 return 1;
             }
             TileSwitch(px, py, 0, m_arrivalFlags, 1, 0);

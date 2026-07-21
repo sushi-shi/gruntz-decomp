@@ -835,7 +835,7 @@ i32 CGrunt::PathScan57db0() {
                 i32 cf = 1;
                 if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height)
                     && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
-                    cf = ((grid->m_8[rr]))[cc];
+                    cf = ((grid->m_rowInts[rr]))[cc];
                 }
                 if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
                     continue;
@@ -1460,7 +1460,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (static_cast<u32>(nyt) >= static_cast<u32>(grid->m_height)) {
                 return 1;
             }
-            i32* cell = grid->m_8[nyt] + nxt * 7;
+            i32* cell = grid->m_rowInts[nyt] + nxt * 7;
             i32 t = flags & cell[0];
             if (t & 0x20000000) {
                 return 1;
@@ -1468,7 +1468,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (t != 0 && (cell[0] & (this->m_24c | 0x18000482)) == 0) {
                 return 1;
             }
-            i32* ocell = grid->m_8[oyt] + oxt * 7;
+            i32* ocell = grid->m_rowInts[oyt] + oxt * 7;
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
@@ -1516,13 +1516,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CBrickzGrid* g2 = static_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // GruntBoard==CBrickzGrid facet
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
-        i32* oc = g2->m_8[oy] + ox * 7;
+        i32* oc = g2->m_rowInts[oy] + ox * 7;
         *(reinterpret_cast<unsigned char*>(oc) + 3) &= 0xdf;
-        i32* oc2 = g2->m_8[oy] + ox * 7;
+        i32* oc2 = g2->m_rowInts[oy] + ox * 7;
         oc2[1] = -1;
-        i32* nc = g2->m_8[nyt] + nxt * 7;
+        i32* nc = g2->m_rowInts[nyt] + nxt * 7;
         *(reinterpret_cast<unsigned char*>(nc) + 3) |= 0x20;
-        i32* nc2 = g2->m_8[nyt] + nxt * 7;
+        i32* nc2 = g2->m_rowInts[nyt] + nxt * 7;
         nc2[1] = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
 
         if (m_31c.GetCount() != 0) {

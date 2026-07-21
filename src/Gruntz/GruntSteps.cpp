@@ -837,13 +837,13 @@ i32 CGrunt::ClaimSwitchTile() {
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePxX >> 5;
     i32 oldTy = m_lastTilePxY >> 5;
-    gb->m_8[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
-    *reinterpret_cast<i32*>(&gb->m_8[oldTy][oldTx * 7 * 4 + 4]) = -1;
+    gb->m_rowInts[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
+    *reinterpret_cast<i32*>(&gb->m_rowInts[oldTy][oldTx * 7 * 4 + 4]) = -1;
 
     // Claim the new tile: set bit 5 of its flag byte, stamp the owner id.
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-    gb->m_8[ty][tx * 7 * 4 + 3] |= 0x20;
-    *reinterpret_cast<i32*>(&gb->m_8[ty][tx * 7 * 4 + 4]) = owner;
+    gb->m_rowInts[ty][tx * 7 * 4 + 3] |= 0x20;
+    *reinterpret_cast<i32*>(&gb->m_rowInts[ty][tx * 7 * 4 + 4]) = owner;
 
     m_lastTilePxX = x;
     m_lastTilePxY = y;

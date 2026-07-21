@@ -265,9 +265,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     m_94 = 6;
     m_98 = 6;
     m_a4 = 8;
-    m_ac = m_dims->m_c / 3;
-    m_b0 = m_dims->m_c / 3;
-    m_c0 = m_dims->m_c >> 2;
+    m_ac = m_dims->m_width / 3;
+    m_b0 = m_dims->m_width / 3;
+    m_c0 = m_dims->m_width >> 2;
     m_140 = 0;
 
     // --- the per-item spawn-budget running totals (each = prev_total + GetInt). ---

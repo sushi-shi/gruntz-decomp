@@ -444,11 +444,11 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_c)
-        && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
-        char* cell = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
+    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+        char* cell = reinterpret_cast<char*>(grid->m_rowInts[row]) + col * 0x1c;
         *reinterpret_cast<i32*>((cell + 8)) = mv;
-        char* cell0 = reinterpret_cast<char*>(grid->m_8[row]) + col * 0x1c;
+        char* cell0 = reinterpret_cast<char*>(grid->m_rowInts[row]) + col * 0x1c;
         if (mv != 0) {
             *reinterpret_cast<i32*>(cell0) |= 0x40000;
         } else {
@@ -631,9 +631,9 @@ i32 CInGameIcon::RefreshCell() {
     if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
-        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
-            i32* row = grid->m_8[tileX];
+        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
+            i32* row = grid->m_rowInts[tileX];
             cell = row[tileY * 8 - tileY + 2];
         } else {
             cell = 0;
@@ -675,17 +675,17 @@ i32 CInGameIcon::PeekCycle() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> 5;
         i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
-            cell = grid->m_8[tileY][tileX * 7];
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            cell = grid->m_rowInts[tileY][tileX * 7];
         } else {
             cell = 1;
         }
         if ((cell & 0x939) != 0 || (cell & 2) != 0) {
-            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
-                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
-                grid->m_8[tileY][tileX * 7 + 2] = 0;
-                grid->m_8[tileY][tileX * 7] &= ~0x40000;
+            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+                grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
+                grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
             }
             m_38->m_flags |= 0x10000;
         }
@@ -726,13 +726,13 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
     i32 tileY = owner->m_screenX >> 5;
-    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c)
-        && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_8) + rowByte)));
+        char* cell0 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte)));
         *reinterpret_cast<i32*>((cell0 + cellOff + 8)) = 0;
-        char* cell1 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_8) + rowByte)));
+        char* cell1 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte)));
         *reinterpret_cast<i32*>((cell1 + cellOff)) &= ~0x40000;
     }
 }
@@ -887,9 +887,9 @@ i32 CInGameIcon::Reposition() {
         i32 tileY = obj->m_screenY >> 5;
         CTileGrid* grid = reg->m_tileGrid;
         i32 cellVal;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
-            cellVal = grid->m_8[tileY][tileX * 7 + 2];
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            cellVal = grid->m_rowInts[tileY][tileX * 7 + 2];
         } else {
             cellVal = 0;
         }
@@ -903,23 +903,23 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
-            grid->m_8[tileY][tileX * 7 + 2] = 0;
-            grid->m_8[tileY][tileX * 7] &= ~0x40000;
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
+            grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
         }
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
         i32 tileX2 = obj->m_screenX >> 5;
         i32 tileY2 = obj->m_screenY >> 5;
         i32 mv = obj->m_188;
-        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_10)) {
-            grid->m_8[tileY2][tileX2 * 7 + 2] = mv;
+        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[tileY2][tileX2 * 7 + 2] = mv;
             if (mv != 0) {
-                grid->m_8[tileY2][tileX2 * 7] |= 0x40000;
+                grid->m_rowInts[tileY2][tileX2 * 7] |= 0x40000;
             } else {
-                grid->m_8[tileY2][tileX2 * 7] &= ~0x40000;
+                grid->m_rowInts[tileY2][tileX2 * 7] &= ~0x40000;
             }
         }
     }

@@ -638,11 +638,11 @@ void CProjectile::MovingSlot16() {
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
-        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_c)
-            || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_10)) {
+        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_width)
+            || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_height)) {
             flags = 1;
         } else {
-            flags = plane->m_8[tileY][tileX * 7]; // cell dword 0 = terrain flags
+            flags = plane->m_rowInts[tileY][tileX * 7]; // cell dword 0 = terrain flags
         }
         if (flags & 0x900) {
             // water tile: spill a splash then hide the projectile
@@ -990,8 +990,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 cx = m_object->m_screenX >> 5;
     i32 cy = m_object->m_screenY >> 5;
     CTileGrid* g = g_gameReg->m_tileGrid;
-    if (cx < g->m_c && cy < g->m_10) {
-        char* row = reinterpret_cast<char*>(g->m_8[cy]);
+    if (cx < g->m_width && cy < g->m_height) {
+        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
         *reinterpret_cast<i32*>((row + cx * 0x1c)) |= 0x1000000;
     }
     m_object->m_124 = -1;
@@ -1003,9 +1003,9 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-        char* row = reinterpret_cast<char*>(g->m_8[cy]);
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
+        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
         return *reinterpret_cast<i32*>((row + cx * 0x1c));
     }
     return 1;
@@ -1014,9 +1014,9 @@ static inline void TBombGridClear(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-        char* row = reinterpret_cast<char*>(g->m_8[cy]);
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
+        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
         *reinterpret_cast<i32*>((row + cx * 0x1c)) &= ~0x1000000;
     }
 }

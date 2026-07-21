@@ -125,10 +125,10 @@ CMapArrayB::~CMapArrayB() {
 
 RVA(0x0009e940, 0x73)
 CMapMgr::CMapMgr() {
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
+    m_cellPool = 0;
+    m_rows = 0;
+    m_width = 0;
+    m_height = 0;
     m_openList = 0;
     m_1c = 0;
     m_edgeMask = 0;
@@ -206,20 +206,20 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, void (*callback)()) {
 
 RVA(0x0009ec30, 0x4b)
 void CMapMgr::Reset() {
-    if (m_4) {
-        ::operator delete(m_4);
+    if (m_cellPool) {
+        ::operator delete(m_cellPool);
     }
-    if (m_8) {
-        ::operator delete(m_8);
+    if (m_rows) {
+        ::operator delete(m_rows);
     }
 
     m_colA.~CMapArrayA();
     m_colB.~CMapArrayB();
 
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
+    m_cellPool = 0;
+    m_rows = 0;
+    m_width = 0;
+    m_height = 0;
     m_openList = 0;
     m_1c = 0;
 }
@@ -557,7 +557,7 @@ BrickzNode* CBrickzGrid::PopFront() {
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::CellPush - allocate a bucket node from the m_40 free list and link it
-// into the grid cell m_8[node->m_4][node->m_0]; record the slot in node->m_20.
+// into the grid cell m_rows[node->m_4][node->m_0]; record the slot in node->m_20.
 // @early-stop
 // regalloc/scheduling wall: branch shape + free-list pop byte-match; only the
 // arg-pointer register (retail defers the `node` load past the 3 pushes -> edi;
@@ -646,7 +646,7 @@ void CBrickzGrid::Drain() {
 // @early-stop
 // regalloc/addressing wall (same family as Drain): retail materializes
 // &node->m_8 as a callee-saved base ptr (lea + extra reg) and commutes the
-// m_10*m_c imul operand order; recompile uses direct offsets. Logic
+// m_height*m_width imul operand order; recompile uses direct offsets. Logic
 // byte-correct (loop structure + unsigned counter match), ~65%.
 RVA(0x0009f5d0, 0x81)
 void CBrickzGrid::ResetCells() {
@@ -706,7 +706,7 @@ void CBrickzGrid::Unlink(BrickzNode* node) {
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::CellPop - remove node's bucket slot (node->m_20) from its grid cell's
-// doubly-linked bucket list (m_4 = prev, m_8 = next), clear node's links, return
+// doubly-linked bucket list (m_cellPool = prev, m_rows = next), clear node's links, return
 // the slot to the m_40 free list, and (if flag) push node onto the m_30 list.
 // @early-stop
 // sibling-guard-retest wall (same as Unlink): the 4-way prev/next dispatch keeps
@@ -769,24 +769,24 @@ i32 CMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 }
 
 // CMapMgr::Save (slot 2, 0x09f840): stream the scalar bookkeeping members out, then
-// the whole cell grid (m_4[j*m_c + i], 0x1c bytes each) row-major over m_c x m_10.
+// the whole cell grid (m_cellPool[j*m_width + i], 0x1c bytes each) row-major over m_width x m_height.
 // @early-stop
 // commutative-imul operand-materialization coin-flip (99.92%, docs/patterns/
 // commutative-imul-operand-in-eax.md): the whole body is byte-faithful (null gate,
-// the 12 field Write()s, ebp=&m_c base-pointer, the doubly-nested grid loop). The
-// sole residue is the inner index `j*m_c`: retail loads j (`mov eax,edi`) then
-// `imul eax,[ebp](m_c)`; cl loads m_c (`mov eax,[ebp]`) then `imul eax,edi` - both
-// re-read m_c from memory, same 6 bytes, only which operand lands in eax differs.
+// the 12 field Write()s, ebp=&m_width base-pointer, the doubly-nested grid loop). The
+// sole residue is the inner index `j*m_width`: retail loads j (`mov eax,edi`) then
+// `imul eax,[ebp](m_width)`; cl loads m_width (`mov eax,[ebp]`) then `imul eax,edi` - both
+// re-read m_width from memory, same 6 bytes, only which operand lands in eax differs.
 // MSVC5 canonicalizes the commutative multiply regardless of source form (tried
-// `j*m_c`, `m_c*j`, `i+m_c*j`, compound `idx=j;idx*=m_c` + permute - all identical).
+// `j*m_width`, `m_width*j`, `i+m_width*j`, compound `idx=j;idx*=m_width` + permute - all identical).
 // Not source-steerable; parked for the final sweep.
 RVA(0x0009f840, 0x110)
 i32 CMapMgr::Save(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Write(&m_c, 4);
-    ar->Write(&m_10, 4);
+    ar->Write(&m_width, 4);
+    ar->Write(&m_height, 4);
     ar->Write(&m_cellCount, 4);
     ar->Write(&m_startX, 8);
     ar->Write(&m_goalX, 8);
@@ -797,9 +797,9 @@ i32 CMapMgr::Save(CSerialArchive* ar) {
     ar->Write(&m_bounds.left, 0x10);
     ar->Write(&m_gridW, 4);
     ar->Write(&m_gridH, 4);
-    for (u32 i = 0; i < m_c; i++) {
-        for (u32 j = 0; j < m_10; j++) {
-            ar->Write(&m_4[j * m_c + i], 0x1c);
+    for (u32 i = 0; i < m_width; i++) {
+        for (u32 j = 0; j < m_height; j++) {
+            ar->Write(&m_cellPool[j * m_width + i], 0x1c);
         }
     }
     return 1;
@@ -817,8 +817,8 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Read(&m_c, 4);
-    ar->Read(&m_10, 4);
+    ar->Read(&m_width, 4);
+    ar->Read(&m_height, 4);
     ar->Read(&m_cellCount, 4);
     ar->Read(&m_startX, 8);
     ar->Read(&m_goalX, 8);
@@ -829,10 +829,10 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     ar->Read(&m_bounds.left, 0x10);
     ar->Read(&m_gridW, 4);
     ar->Read(&m_gridH, 4);
-    for (u32 i = 0; i < m_c; i++) {
-        for (u32 j = 0; j < m_10; j++) {
-            ar->Read(&m_4[j * m_c + i], 0x1c);
-            m_4[j * m_c + i].m_18 = 0;
+    for (u32 i = 0; i < m_width; i++) {
+        for (u32 j = 0; j < m_height; j++) {
+            ar->Read(&m_cellPool[j * m_width + i], 0x1c);
+            m_cellPool[j * m_width + i].m_head = 0;
         }
     }
     return 1;

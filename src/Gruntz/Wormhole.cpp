@@ -491,9 +491,9 @@ i32 CGruntPuddle::Remove() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
         i32 flags;
-        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c)
-            && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-            flags = ((grid->m_8[ty]))[tx * 7];
+        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
+            flags = ((grid->m_rowInts[ty]))[tx * 7];
         } else {
             flags = 1;
         }

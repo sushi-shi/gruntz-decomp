@@ -363,18 +363,18 @@ void CGrunt::LoadEntranceConfig() {
         i32 ty = h->m_screenY >> 5;
 
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
             flags = 1;
         } else {
-            flags = ((grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_rowInts[ty]))[tx * 7];
         }
 
         if (flags & 0x20000000) {
             i32 owner;
-            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
                 owner = -1;
             } else {
-                owner = ((grid->m_8[ty]))[tx * 7 + 1];
+                owner = ((grid->m_rowInts[ty]))[tx * 7 + 1];
             }
             i32 b = (owner >> 8) & 0xff;
             i32 a = owner & 0xff;
@@ -396,13 +396,13 @@ void CGrunt::LoadEntranceConfig() {
 
         if (oldX != -1 && m_lastTilePxY != -1) {
             CTileGrid* og = g_gameReg->m_tileGrid; // implicit upcast (the one board class)
-            (reinterpret_cast<char*>(&og->m_8[oldTileY][oldTileX * 7]))[3] &= ~0x20;
-            og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
+            (reinterpret_cast<char*>(&og->m_rowInts[oldTileY][oldTileX * 7]))[3] &= ~0x20;
+            og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
             CTileGrid* ng = static_cast<CTileGrid*>(g_gameReg->m_tileGrid);
-            (reinterpret_cast<char*>(&ng->m_8[newTileY][newTileX * 7]))[3] |= 0x20;
-            ng->m_8[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+            (reinterpret_cast<char*>(&ng->m_rowInts[newTileY][newTileX * 7]))[3] |= 0x20;
+            ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
         m_lastTilePxX = newPxX;
         m_lastTilePxY = newPxY;

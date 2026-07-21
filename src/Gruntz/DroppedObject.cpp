@@ -364,15 +364,15 @@ i32 CObjectDropper::Update() {
                         i32 cx = fx >> 5;
                         i32 cy = fy >> 5;
                         u32 flags;
-                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_c)
-                            || static_cast<u32>(cy) >= static_cast<u32>(plane->m_10)) {
+                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_width)
+                            || static_cast<u32>(cy) >= static_cast<u32>(plane->m_height)) {
                             flags = 1;
                         } else {
                             // the row table is typed i32** on CMapMgr; the row's cells are
                             // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
                             // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
                             // BrickzCell** tree-wide.
-                            flags = static_cast<u32>((reinterpret_cast<BrickzCell*>(plane->m_8[cy]))[cx].m_0);
+                            flags = static_cast<u32>((reinterpret_cast<BrickzCell*>(plane->m_rows[cy]))[cx].m_0);
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
@@ -626,9 +626,9 @@ i32 CDroppedObject::ActA() {
         {
             i32 cx = x >> 5;
             i32 cy = m_landY >> 5;
-            if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
-                && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
-                cell = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_8[cy]) + cx * 0x1c));
+            if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
+                && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
+                cell = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_rows[cy]) + cx * 0x1c));
             } else {
                 cell = 1;
             }

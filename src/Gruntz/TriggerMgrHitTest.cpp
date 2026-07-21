@@ -87,10 +87,10 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
     i32 ix = x >> 5;
     i32 iy = y >> 5;
     i32 attr;
-    if (ix >= plane->m_c || iy >= plane->m_10) {
+    if (ix >= plane->m_width || iy >= plane->m_height) {
         attr = -1;
     } else {
-        attr = plane->m_8[iy][ix * 7 + 1];
+        attr = plane->m_rowInts[iy][ix * 7 + 1];
     }
     if (attr == -1) {
         return 0;
@@ -163,16 +163,16 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
     for (i32 x = tcol - span->left - 1; static_cast<u32>(x) <= static_cast<u32>(xEnd); x++) {
         i32 yEnd = span->bottom + trow + 1;
         for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
-            if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_c)) {
+            if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                 continue;
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(y) >= static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(y) >= static_cast<u32>(grid->m_height)) {
                 continue;
             }
             i32 val;
-            if (static_cast<u32>(x) < static_cast<u32>(grid->m_c) && static_cast<u32>(y) < static_cast<u32>(grid->m_10)) {
-                val = *reinterpret_cast<i32*>((reinterpret_cast<char*>(grid->m_8[y]) + x * 0x1c + 4));
+            if (static_cast<u32>(x) < static_cast<u32>(grid->m_width) && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
+                val = *reinterpret_cast<i32*>((reinterpret_cast<char*>(grid->m_rows[y]) + x * 0x1c + 4));
             } else {
                 val = -1;
             }

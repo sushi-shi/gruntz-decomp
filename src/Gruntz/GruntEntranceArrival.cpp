@@ -86,10 +86,10 @@ static const char s_animKeyK[] = "K";
 static void GruntScratchTeardown();
 
 static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return ((b->m_8[ty]))[tx * 7];
+    return ((b->m_rowInts[ty]))[tx * 7];
 }
 
 // ===========================================================================
@@ -875,10 +875,10 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
             flags = 1;
         } else {
-            flags = ((grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_rowInts[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -1128,10 +1128,10 @@ void CGrunt::ResolveEntranceArrival() {
         i32 tx = m_10->m_screenX >> 5;
         i32 ty = m_10->m_screenY >> 5;
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
             flags = 1;
         } else {
-            flags = ((grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_rowInts[ty]))[tx * 7];
         }
         if (!(flags & 0x80)) {
             m_entranceActive = 0;
@@ -1257,10 +1257,10 @@ i32 CGrunt::StepEntranceReinit() {
     GruntCoord* co = static_cast<GruntCoord*>(m_31c.GetHead());
     CTileGrid* b = g_gameReg->m_tileGrid;
     i32 flag;
-    if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_c) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_width) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_height)) {
         flag = 1;
     } else {
-        flag = ((b->m_8[co->m_y]))[co->m_x * 7];
+        flag = ((b->m_rowInts[co->m_y]))[co->m_x * 7];
     }
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_14->m_1c;
@@ -1272,10 +1272,10 @@ i32 CGrunt::StepEntranceReinit() {
         i32 tx = m_10->m_screenX >> 5;
         i32 ty = m_10->m_screenY >> 5;
         i32 flag2;
-        if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
             flag2 = 1;
         } else {
-            flag2 = ((b->m_8[ty]))[tx * 7];
+            flag2 = ((b->m_rowInts[ty]))[tx * 7];
         }
         if (!(flag2 & 0x80)) {
             return 0;
@@ -1435,10 +1435,10 @@ void CGrunt::LoadVehicleGruntAnimations() {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
             flags = 1;
         } else {
-            flags = ((grid->m_8[ty]))[tx * 7];
+            flags = ((grid->m_rowInts[ty]))[tx * 7];
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
@@ -1887,10 +1887,10 @@ i32 CGrunt::StepArrivalCommitA() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         flags = 1;
     } else {
-        flags = ((grid->m_8[ty]))[tx * 7];
+        flags = ((grid->m_rowInts[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
@@ -1932,10 +1932,10 @@ i32 CGrunt::StepArrivalCommitB() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         flags = 1;
     } else {
-        flags = ((grid->m_8[ty]))[tx * 7];
+        flags = ((grid->m_rowInts[ty]))[tx * 7];
     }
     if (flags & 0x80) {
         return 0;
@@ -2154,10 +2154,10 @@ i32 CGrunt::StepEntranceRelatchB() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 f1;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         f1 = 1;
     } else {
-        f1 = ((grid->m_8[ty]))[tx * 7];
+        f1 = ((grid->m_rowInts[ty]))[tx * 7];
     }
     if (f1 & 0x2000000) {
         BuildGruntLoseItemAnimation();
@@ -2165,10 +2165,10 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     grid = g->m_tileGrid;
     void* cellObj;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         cellObj = 0;
     } else {
-        cellObj = reinterpret_cast<void*>(((grid->m_8[ty]))[tx * 7 + 2]);
+        cellObj = reinterpret_cast<void*>(((grid->m_rowInts[ty]))[tx * 7 + 2]);
     }
     if (cellObj == 0) {
         return 0;
@@ -2187,9 +2187,9 @@ i32 CGrunt::StepEntranceRelatchB() {
         return 0;
     }
     grid = g_gameReg->m_tileGrid;
-    if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
-        ((grid->m_8[ty]))[tx * 7 + 2] = 0;
-        ((grid->m_8[ty]))[tx * 7] &= ~0x40000;
+    if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width) && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
+        ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
+        ((grid->m_rowInts[ty]))[tx * 7] &= ~0x40000;
     }
     return 0;
 }
