@@ -68,7 +68,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[2])
 SCRIPTS            = REPO / "scripts"
 PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
-BUILD              = PKG / "build"            # cc_wrap, labels, structs, synth_pdb, delink, ...
+BUILD              = PKG / "build"            # labels, structs, synth_pdb, delink, ...
 GHIDRA             = PKG / "ghidra"           # the PyGhidra driver (a normal runnable module)
 GHIDRA_DRIVER      = GHIDRA / "ghidra_metadata_apply.py" # PyGhidra driver: import/analyze + apply + export
 # GhidraScripts run INSIDE Ghidra (PyGhidra injects currentProgram/monitor/state);

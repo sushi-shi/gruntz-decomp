@@ -35,10 +35,9 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
-CC_WRAP = SCRIPT_DIR / "cc_wrap.py"
+CC_WRAP = SCRIPT_DIR.parent / "core" / "cc_wrap.py"
 
-sys.path.insert(0, str(SCRIPT_DIR))
-import codeview  # noqa: E402
+from gruntz.core import codeview  # noqa: E402
 
 
 def log(msg):

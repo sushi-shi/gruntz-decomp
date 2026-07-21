@@ -5,7 +5,7 @@ Single source of truth: config/units.toml (per-TU). This script reads it and
 emits, from one manifest:
 
   * build.ninja            - the native incremental build graph (Linux ninja
-                             driving `wine cl` via scripts/gruntz/build/cc_wrap.py).
+                             driving `wine cl` via scripts/gruntz/core/cc_wrap.py).
   * build/objdiff/objdiff.json - the objdiff project pairing each recompiled
                              base obj against its delinked target obj BY SYMBOL
                              NAME.
@@ -95,7 +95,7 @@ import ninja_syntax  # noqa: E402
 
 # --- paths (all relative to the repo root, which is the ninja build root) ----
 PY = "python3"
-CC_WRAP = "scripts/gruntz/build/cc_wrap.py"
+CC_WRAP = "scripts/gruntz/core/cc_wrap.py"
 DELINK = "scripts/gruntz/build/delink.py"
 LINK = "scripts/gruntz/build/link.py"
 # Data-symbol normalization: rewrite compiler-private ($SG/$T/$S) data names +

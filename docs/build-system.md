@@ -12,7 +12,7 @@ config/units.toml  (per-TU manifest: unit, source, flags profile)
 build.ninja  +  build/objdiff/objdiff.json
         |  ninja
         +-- PHASE 1 (compile): each unit -> build/objdiff/base/<unit>.obj
-        |       via the `cl` rule -> scripts/gruntz/build/cc_wrap.py -> `wine cl /c ... /Fo`
+        |       via the `cl` rule -> scripts/gruntz/core/cc_wrap.py -> `wine cl /c ... /Fo`
         +-- TARGET (delink): scripts/gruntz/build/delink.py
         |       synth_pdb.py -> vostok-delinker -> build/objdiff/target/<unit>.c.obj
         v
@@ -210,11 +210,11 @@ default — a generation detail; the manifest still names it on every unit.)
 
 ```ninja
 rule cl
-  command = python3 scripts/gruntz/build/cc_wrap.py --out $out --src $in -- $cflags
+  command = python3 scripts/gruntz/core/cc_wrap.py --out $out --src $in -- $cflags
   description = cl $unit
 ```
 
-`scripts/gruntz/build/cc_wrap.py` is the Linux->Wine bridge. For each TU it:
+`scripts/gruntz/core/cc_wrap.py` is the Linux->Wine bridge. For each TU it:
 
 1. resolves `CL.EXE` under `$MSVC_DIR/bin` (case-insensitive) and checks `wine`,
 2. keeps a persistent `wineserver -p` alive (so `ninja -j` parallelism does not

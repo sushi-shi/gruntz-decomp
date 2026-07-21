@@ -3,7 +3,7 @@
 
 Invoke via `gruntz clangd`. This is ADDITIVE editor tooling that runs ALONGSIDE
 the real matching build; it does not touch it. The matching build compiles with
-MSVC 5.0's CL.EXE under wine (scripts/gruntz/build/cc_wrap.py), which clangd -
+MSVC 5.0's CL.EXE under wine (scripts/gruntz/core/cc_wrap.py), which clangd -
 being clang-based - cannot invoke. So we
 emit our OWN compilation database, in clang-cl driver form, that points clang at
 the toolchain's MSVC/MFC/DirectX headers and asks it to *emulate* MSVC 5.0

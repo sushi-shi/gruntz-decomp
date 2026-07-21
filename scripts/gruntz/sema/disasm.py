@@ -126,7 +126,7 @@ def _debug_obj_for(unit: str, source: str, flags: list):
         return obj  # fresh
     obj.parent.mkdir(parents=True, exist_ok=True)
     # in-process (sema spawns no python child); cc_wrap itself runs `wine cl`.
-    rc = call_main("gruntz.build.cc_wrap",
+    rc = call_main("gruntz.core.cc_wrap",
                    ["--out", str(obj), "--src", str(src), "--", *flags, "/Z7"])
     if rc != 0 or not obj.is_file():
         sys.stderr.write(f"[--rich] /Z7 compile of {unit} failed (wine/cl missing?); "
@@ -157,7 +157,7 @@ def rich(rva: str, want_lite: bool) -> str:
     if udef and source.startswith("src/"):
         dbg = _debug_obj_for(unit, source, flags_for(udef))
         if dbg is not None:
-            from gruntz.build import codeview
+            from gruntz.core import codeview
             info = codeview.parse_lines(str(dbg)).get(name)
             if info:
                 linemap, bf = info["lines"], info["bf"]

@@ -563,7 +563,7 @@ def compile_object(
     command = [
         sys.executable,
         "-m",
-        "gruntz.build.cc_wrap",
+        "gruntz.core.cc_wrap",
         "--out",
         str(output),
         "--src",

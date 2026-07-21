@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""cc_wrap.py - the `wine cl` compiler wrapper that ninja's `cl` rule invokes.
+"""gruntz.core.cc_wrap - the `wine cl` compiler wrapper.
+
+Shared toolchain engine: ninja's `cl` rule invokes it by path (configure.py),
+the permute climbers spawn it per variant, and `gruntz sema disasm --rich`
+calls it in-process for the /Z7 debug obj.
 
 ninja drives the base/recompile side natively on Linux; the actual compiler is
 MSVC 5.0's CL.EXE run under Wine. This wrapper does the Windows-path translation
@@ -12,8 +16,9 @@ That last check matters because Wine spews unrelated driver/EGL noise and can
 return a non-cl exit code; the real success signal is "the .obj exists".
 
 Toolchain + prefix come from the environment that `nix develop` exports
-(MSVC_DIR, WINEPREFIX). Run scripts/setup-toolchain.py once to initialise the
-prefix (PATH/INCLUDE/LIB in the Wine registry) before the first build.
+(MSVC_DIR, WINEPREFIX). `gruntz init` (scripts/gruntz/init/toolchain.py)
+initialises the prefix (PATH/INCLUDE/LIB in the Wine registry) before the
+first build.
 
 A persistent wineserver is kept alive (`wineserver -p`) so each TU's `wine cl`
 reuses one server instead of paying the cold-start cost per object - this is

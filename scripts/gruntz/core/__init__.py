@@ -10,6 +10,12 @@ imported by more than one package lives here.
     vtable_hierarchy.py  per-class vtable topology (sema class + build gate)
     class_meta.py    src/+include/ class-definition scanner (cleanliness gates
                      + vtable_hierarchy)
+    ir.py            clang MSVC-compat flags + emit_ir/load_compdb (labels,
+                     caller_callee)
+    cc_wrap.py       the `wine cl` compiler wrapper (ninja's cl rule, permute,
+                     sema disasm --rich)
+    codeview.py      MSVC 5.0 CodeView reader: /Z7 locals + line tables
+                     (harvest_locals, sema disasm --rich)
     exe_map.py       queryable .text space map (sema map + the docs/exe-map suite)
     clangd_query.py  the clangd LSP client (sema refs/hover/rename, fingerprints)
     data_audit.py    data-section attribution engine (`gruntz data-audit` + build)

@@ -113,7 +113,7 @@ def score(text):
     """Recompile <SRC>=text (bytes) and return the objdiff match_percent for SYM (-1 on fail)."""
     with open(SRC, "wb") as fh:
         fh.write(text)
-    r = subprocess.run(["python3", "-m", "gruntz.build.cc_wrap", "--out", OBJ, "--src", SRC, "--", *FLAGS],
+    r = subprocess.run(["python3", "-m", "gruntz.core.cc_wrap", "--out", OBJ, "--src", SRC, "--", *FLAGS],
                        capture_output=True, text=True)
     if r.returncode != 0:
         return -1.0

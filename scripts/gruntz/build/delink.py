@@ -16,7 +16,7 @@ This is the TARGET (delink) half of the matching pipeline, run as one ninja rule
     collect the in-scope <unit>.c.obj into <target-dir>/
 
 The base/compile half (cl /O2 /MT under wine) is a separate ninja graph driven
-by scripts/gruntz/build/cc_wrap.py; the two are paired BY SYMBOL NAME in the
+by scripts/gruntz/core/cc_wrap.py; the two are paired BY SYMBOL NAME in the
 objdiff project (configure.py), no symbol_mappings. KEEP
 scripts/gruntz/build/synth_pdb.py - this script orchestrates it, it does not
 replace it.
