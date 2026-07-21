@@ -37,12 +37,12 @@ import bisect
 import concurrent.futures
 import csv
 import os
+import re
 import struct
 import sys
 from pathlib import Path
 
 from gruntz.analysis import xref
-from gruntz.analysis.caller_audit import parse_mangled, _tu_edges, _ir_name
 from gruntz.build import labels
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -54,6 +54,89 @@ OUT_MD = REPO / "config" / "caller-callee-reconcile.md"
 # special-member member tokens parse_mangled emits (ctor/dtor/deleting dtors/operators):
 # their name is generic so a view's `??1V@@` cannot be tied to R by member name.
 _SPECIAL = {"ctor", "dtor", "vec-dtor", "scalar-dtor", "op"}
+
+
+# --- mangling / IR helpers (ex caller_audit, archived; the metric stays live) ---
+# special member codes we can still attribute to a class (ctor/dtor/deleting
+# dtors/operators). `?_7`/`?_8`/`?_R*` are vftable/RTTI DATA - skip.
+_CTORDTOR = {"?0": "ctor", "?1": "dtor", "?_G": "vec-dtor", "?_E": "scalar-dtor"}
+
+
+def parse_mangled(m):
+    """(class_or_None, member_or_None, access_char_or_None) for a MSVC function
+    mangling. No templates in this binary, so `find('@@')` reliably terminates
+    the qualified name. Returns None for non-C++ / data-ish symbols."""
+    if not m.startswith("?"):
+        return None                        # extern "C" (_foo, _foo@N)
+    b = m[1:]
+    special = None
+    if b.startswith("?"):
+        b = b[1:]
+        if b.startswith("_"):
+            special = "?_" + b[1:2]
+            b = b[2:]
+        else:
+            special = "?" + b[:1]
+            b = b[1:]
+        if special.startswith("?_") and special not in _CTORDTOR:
+            return None                    # ?_7 vftable, ?_R0 RTTI, ... = data
+    end = b.find("@@")
+    if end < 0:
+        return None
+    tokens = b[:end].split("@")
+    rest = b[end + 2:]
+    access = rest[0] if rest else None
+    if special is not None:
+        cls = tokens[0] if tokens else None
+        member = _CTORDTOR.get(special, "op")
+        return (cls, member, access)
+    member = tokens[0] if tokens else None
+    cls = tokens[1] if len(tokens) > 1 else None   # None => free function
+    return (cls, member, access)
+
+
+_DEF_RE = re.compile(r'^define\b[^@\n]*@("(?:[^"\\]|\\.)*"|[-\w.$?@]+)\s*\(', re.M)
+# an instruction line that is a call/invoke (labels sit at col 0; instructions
+# are indented and start with an optional `%res =` then call/invoke).
+_CALL_RE = re.compile(r'^\s+(?:%\S+\s*=\s*)?(?:tail |musttail |notail )?'
+                      r'(?:call|invoke)\b')
+_CALL_TGT_RE = re.compile(r'@("(?:[^"\\]|\\.)*"|[-\w.$?@]+)\s*(?:\(|to\b)')
+
+
+def _ir_name(tok):
+    if tok.startswith('"') and tok.endswith('"'):
+        tok = tok[1:-1]
+    if tok.startswith("\\01"):
+        tok = tok[3:]
+    return tok
+
+
+def _tu_edges(args):
+    """(caller_mangled -> set(callee_mangled)) for one TU, or None if IR failed.
+
+    A function body spans `define ... {` .. the closing `}` at column 0; basic-block
+    labels also sit at column 0, so scope is tracked by define/`}` only."""
+    clang, tu, cl_flags = args
+    ir = labels.emit_ir(clang, tu, [], cl_flags)
+    if not ir:
+        return tu, None
+    out = {}
+    cur = None
+    for line in ir.splitlines():
+        dm = _DEF_RE.match(line)
+        if dm:
+            cur = _ir_name(dm.group(1))
+            out.setdefault(cur, set())
+            continue
+        if cur is None:
+            continue
+        if line.startswith("}"):
+            cur = None                       # end of the function body
+            continue
+        if _CALL_RE.match(line):
+            for tok in _CALL_TGT_RE.findall(line):
+                out[cur].add(_ir_name(tok))
+    return tu, out
 
 
 # --- symbol data -----------------------------------------------------------

@@ -203,10 +203,16 @@ _CALLER_CALLEE_LABELS = ("caller-callee FAKE-VIEW",)
 def _caller_callee_counts() -> dict[str, int]:
     import subprocess
     try:
-        out = subprocess.run(
+        proc = subprocess.run(
             [sys.executable, "-m", "gruntz.analysis.caller_callee", "--metric"],
             capture_output=True, text=True, timeout=600, cwd=str(REPO),
-        ).stdout
+        )
+        if proc.returncode != 0:
+            # a crashed tool exits non-zero with empty stdout; without this check the
+            # empty parse below returns {} with NO message - the silent-skip hole.
+            tail = (proc.stderr or "").strip().splitlines()[-1:] or ["no stderr"]
+            raise RuntimeError(f"exit {proc.returncode}: {tail[0]}")
+        out = proc.stdout
     except Exception as exc:
         # Say so. Returning {} drops these rows from the scoreboard, and a silently
         # absent ratcheted metric is indistinguishable from a clean 0 (see
