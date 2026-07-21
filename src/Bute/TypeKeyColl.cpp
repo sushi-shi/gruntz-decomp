@@ -433,8 +433,8 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(g_containerName) {
 
 RVA(0x0016d850, 0x11e)
 void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
-    if (m_0c == 4) {
-        m_08 = static_cast<u16>(arg3);
+    if (m_typeTag == 4) {
+        m_valueWord = static_cast<u16>(arg3);
         return;
     }
     i32 idx;
@@ -444,18 +444,18 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
         idx = -1;
     }
     if (idx == -1) {
-        if (m_0c == 2) {
+        if (m_typeTag == 2) {
             char buf[0x94];
-            strcpy(buf, m_14);
+            strcpy(buf, m_label);
             Format_18d0f0(buf, arg2, 0x4f);
             m_callback(buf, arg3);
-        } else if (m_0c == 1) {
-            m_08 = static_cast<u16>(arg3);
+        } else if (m_typeTag == 1) {
+            m_valueWord = static_cast<u16>(arg3);
         }
     } else {
-        if (m_0c == 2) {
+        if (m_typeTag == 2) {
             (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(arg2, arg3);
-        } else if (m_0c == 1) {
+        } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
     }

@@ -10,11 +10,11 @@ struct CVariantSlot {
     i32 Remove(void* obj, i32 flag);             // 0x16e360 (~zErrHandling unregister)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
     i32 m_04;                                    // +0x04 probe index slot
-    u16 m_08;                                    // +0x08 word storage
+    u16 m_valueWord;                                    // +0x08 word storage
     u16 m_0a;                                    // +0x0a
-    i32 m_0c;                                    // +0x0c type tag (1/2/4)
+    i32 m_typeTag;                                    // +0x0c type tag (1/2/4)
     i32 m_10;                                    // +0x10
-    char* m_14;                                  // +0x14 label / format text
+    char* m_label;                                  // +0x14 label / format text
 };
 
 SIZE_UNKNOWN(TypeKeyRec);
