@@ -454,7 +454,7 @@ CDemo::~CDemo() {
 
 RVA(0x0008d850, 0x83)
 i32 CGruntzMgr::GoToNextLevel() {
-    if (m_curState->Update() != 3) {
+    if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
     m_strWorldFile.Empty();
@@ -476,7 +476,7 @@ i32 CGruntzMgr::GoToNextLevel() {
 
 RVA(0x0008d910, 0x82)
 i32 CGruntzMgr::GoToPrevLevel() {
-    if (m_curState->Update() != 3) {
+    if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
     m_strWorldFile.Empty();
@@ -627,10 +627,10 @@ i32 CGruntzMgr::CheckPlayState() {
     if (m_curState == 0) {
         return 0;
     }
-    if (m_curState->Update() == 3) {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
         return 1;
     }
-    return m_curState->Update() == 0x11;
+    return m_curState->Update() == GAMESTATE_NONE;
 }
 
 RVA(0x0008eca0, 0x164)
@@ -854,7 +854,7 @@ i32 __stdcall LaunchWebBrowser(char* url) {
 
 RVA(0x0008f2f0, 0x1b)
 i32 CGruntzMgr::PollUnlessIdle() {
-    if (m_curState->Update() != 5) {
+    if (m_curState->Update() != GAMESTATE_MENU) {
         CheckPlayState();
     }
     return 0;
@@ -879,7 +879,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::RefreshGameClock() {
-    if (m_curState && m_curState->Update() == 0x11) {
+    if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
         return;
     }
 
@@ -1246,7 +1246,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (m_curState == 0) {
         return 0;
     }
-    if (m_curState->Update() != 3) {
+    if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
     if (m_world == 0) {
@@ -1326,7 +1326,7 @@ i32 CGruntzMgr::WarpCheat() {
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
     i32 wy = m_settings->GetValueDword(key, -1);
     if (wx != -1 && wy != -1) {
-        if (m_curState->Update() != 3) {
+        if (m_curState->Update() != GAMESTATE_PLAY) {
             i32 last = m_settings->GetValueDword("Last Warp Level", -1);
             if (last != -1) {
                 if (!PassClickToPlayState(last, 0, 1)) {
@@ -1349,7 +1349,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_curState == 0) {
         return 0;
     }
-    if (m_curState->Update() != 3) {
+    if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
     if (m_world == 0) {
@@ -1397,7 +1397,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 // tie with no source spelling that flips it.
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
-    if (m_curState && m_curState->Update() == 3 && m_world) {
+    if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = static_cast<CImageSet*>(found);
@@ -1456,7 +1456,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 // downstream. No source spelling forces MSVC's esi/edi assignment (regalloc family).
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
-    if (m_curState && m_curState->Update() == 3 && m_world) {
+    if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = static_cast<CImageSet*>(found);
@@ -2095,7 +2095,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_saveSink == 0) {
         return 0;
     }
-    if (m_curState->Update() != 3) {
+    if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
     if (m_cheatMgr->m_124 != 0) {
@@ -2147,7 +2147,7 @@ i32 CGruntzMgr::Quickload() {
 RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
-    if (m_curState->Update() == 3) {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
         ran = RunModalDialog("DEBUG_GRUNTTYPE", static_cast<void*>(GruntzDebugGruntTypeProc), 1);
     }
     return ran != 0;
@@ -2605,7 +2605,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
 // reuse/stack-offset shift; see docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
-    if (m_curState && m_curState->Update() == 0x11) {
+    if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
         PlayStatusSlot* base = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
         char* p = reinterpret_cast<char*>(base) + 0x20;
         i32 done = 0;
@@ -2713,7 +2713,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         m_cmdGrid->DestroyAllAnims();
     }
     if (m_world) {
-        if (notify && m_curState && m_curState->Update() != 5) {
+        if (notify && m_curState && m_curState->Update() != GAMESTATE_MENU) {
             m_curState->NotifyExit(0x32);
         } else {
             notify = 0;
@@ -2798,10 +2798,10 @@ i32 CGruntzMgr::SwitchToNextState() {
 RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     i32 inPlay = 0;
-    if (m_curState->Update() == 3) {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
         inPlay = 1;
     }
-    if (m_curState->Update() == 0x11) {
+    if (m_curState->Update() == GAMESTATE_NONE) {
         inPlay = 1;
     }
     if (inPlay && a1 == 0) {
@@ -3277,7 +3277,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         m_cmdGrid->DestroyAllAnims();
     }
     if (m_world) {
-        if (flag && m_curState && m_curState->Update() != 5) {
+        if (flag && m_curState && m_curState->Update() != GAMESTATE_MENU) {
             m_curState->NotifyExit(0x32);
         } else {
             flag = 0;
@@ -3425,7 +3425,7 @@ void* CGruntzMgr::ScalarDeletingDtor(u32 flags) {
 // SetVideoMode (0x8df00) - they pair when those siblings get named.
 RVA(0x0008e1d0, 0xa5)
 i32 CGruntzMgr::CheckDisplayBoundsA() {
-    if (m_curState->Update() != 3 && m_curState->Update() != 0x11) {
+    if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_NONE) {
         return 1;
     }
     CDdModePair pt;
@@ -3451,7 +3451,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
 // (0x8df00).
 RVA(0x0008e2b0, 0xb1)
 i32 CGruntzMgr::CheckDisplayBoundsB() {
-    if (m_curState->Update() != 3 && m_curState->Update() != 0x11) {
+    if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_NONE) {
         return 1;
     }
     CDdModePair pt;
@@ -3603,7 +3603,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (m_world == 0) {
         return 0;
     }
-    if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
+    if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_NONE) {
         if (m_world->m_level != 0) {
             CPlaneRender* f = m_world->m_level->m_mainPlane;
             if (f != 0) {
@@ -3643,7 +3643,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     m_modeW = w;
     m_modeH = h;
-    if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
+    if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_NONE) {
         if (flag) {
             m_savedModeW = w;
             m_savedModeH = h;

@@ -148,14 +148,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND: // 0x111
             switch (wParam) {
                 case 2: // IDCANCEL: discard
-                    if (g_gameReg->m_curState->Update() == 0x11) {
+                    if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit
-                    if (g_gameReg->m_curState->Update() == 0x11) {
+                    if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
                     ReadMenuOptionsDialog(hDlg);
@@ -213,8 +213,8 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_optHwndCk7 = GetDlgItem(hDlg, 0x470);
             g_optHwndCk8 = GetDlgItem(hDlg, 0x476);
 
-            if (g_gameReg->m_curState->Update() != 3) {
-                if (g_gameReg->m_curState->Update() == 0x11) {
+            if (g_gameReg->m_curState->Update() != GAMESTATE_PLAY) {
+                if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                     (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat422();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
