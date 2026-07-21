@@ -7,8 +7,8 @@
 //
 // THE ANCHOR PATTERN IS RETIRED for copies our own cl also emits: when the base obj already
 // carries the compiler-emitted symbol (??1zPTree in butemgr), a `// @rva-symbol:` pin in the
-// owning .cpp names the retail copy directly and NO anchor class (and no RELOC_VTBL alias)
-// is needed - see ButeMgr.cpp 0x212e0/0x21310/0x21600 (the ~zPTree sdd/dtor/adjustor trio)
+// owning .cpp names the retail copy directly and NO anchor class is needed - see
+// ButeMgr.cpp 0x212e0/0x21310/0x21600 (the ~zPTree sdd/dtor/adjustor trio)
 // and 0x21570 (~CBSecStream). The two ex "dtor copy" siblings were real subclasses' dtors
 // all along (0x174d70 = ~CButeNode, 0x21570 = ~CBSecStream; vtable-owner sdd proof).
 //
@@ -25,8 +25,7 @@
 // there, delete this anchor + ButeStoreClear.cpp + the butestoreclear unit. Until that
 // emitter exists, the anchor method below reproduces the expansion verbatim
 // (ClearRecursive(0), then zero the root / the +0x28 field / node count) and owns the
-// RVA. It is a plain method on a ctor/dtor-free subclass: no vtable emission, no
-// RELOC_VTBL.
+// RVA. It is a plain method on a ctor/dtor-free subclass: no vtable emission.
 #ifndef SRC_BUTE_BUTESTOREDTORCOPIES_H
 #define SRC_BUTE_BUTESTOREDTORCOPIES_H
 

@@ -1,4 +1,10 @@
-# MSVC 5.0 emits a distinct vtable per polymorphic class — `RELOC_VTBL` is fake
+# MSVC 5.0 emits a distinct vtable per polymorphic class — `RELOC_VTBL` was fake
+
+> **Status (2026-07):** the `RELOC_VTBL` macro is now DELETED — every site has been
+> dissolved (to a real per-class vtable, or, for a library COMDAT, a
+> `config/library_labels.csv` carve). The toolchain finding below stands; it is kept
+> as the proof behind the campaign rule. `RELOC_VTBL(...)` no longer exists in the
+> tree, so treat any mention as historical.
 
 **Verdict (empirically confirmed, 2026-07-10):** MSVC 5.0 emits a **separate
 `??_7<Class>@@6B@` vtable for every polymorphic class** — the base *and* every

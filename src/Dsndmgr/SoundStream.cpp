@@ -31,8 +31,7 @@ extern "C" {
 // obj additionally emits this copy because its EH unwind funclet (0x1e0950) takes
 // the dtor's address (an EH shape this TU does not yet reproduce, so the retail fn
 // is target-side-named only). First fn of the DSndMgSR.cpp obj (the 0x137330 file
-// boundary; see interval-dossiers.md). Was the fake placeholder CAbstract137330
-// (RELOC_VTBL alias) - dissolved onto the real class.
+// boundary; see interval-dossiers.md).
 // @rva-symbol: ??1PureSoundElem@@QAE@XZ 0x00137330 0x7
 
 RVA(0x00137340, 0x33)

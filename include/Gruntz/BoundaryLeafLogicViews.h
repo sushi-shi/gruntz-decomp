@@ -16,6 +16,6 @@
 // (L_13400 is GONE - the audit's own verdict stood: it IS CUFO (RTTI names 0x1e72b4
 // ??_7CUFO). The dtor is CUFO's IMPLICIT compiler-generated one (the elision that
 // matches retail's flat CUserBase-only stamp), force-emitted by the RealizeCUFO
-// device + @rva-symbol pin in GruntVoice.cpp. The last RELOC_VTBL dies with it.)
+// device + @rva-symbol pin in GruntVoice.cpp.)
 
 #endif // GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H

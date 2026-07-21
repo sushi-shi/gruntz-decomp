@@ -134,8 +134,7 @@ CFxModeT6::CFxModeT6() {
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
-// 0x17e990 - ~CFaderMesh (the real class dtor; was the C17e990 placeholder trio
-// EmbedBase17e990/EmbedSub17e990/C17e990, three RELOC_VTBL fake views). Empty body:
+// 0x17e990 - ~CFaderMesh (the real class dtor). Empty body:
 // cl stamps ??_7CFaderMesh (masks 0x5f07c0), destroys the m_58 CRezBufferObject
 // member, then chains ~CFader (0x17e4a0). /GX frame from the destructible member
 // + base.

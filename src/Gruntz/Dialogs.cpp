@@ -944,7 +944,6 @@ void CBattlezDlg::OnOkCommand() {
 // (The old "three DISTINCT image-holder classes" story here was RTTI-refuted: the
 // vtables 0x1e8cb4/0x1e8cd4/0x1e8cf4/0x1ea2a4 carry RTTI COLs naming CObject/
 // CGdiObject/CBrush/CRgn - the real MFC GDI family, whose ??1/??_G/??_7 COMDATs
-// this TU (and the rect/creditz TUs for CRgn) first-instantiated. The VTBL/
-// RELOC_VTBL rows are gone; the ??_7 datums auto-name from config/vtable_names.csv
-// when this obj emits the real COMDATs, and the function COMDATs are pinned by the
-// @rva-symbol block above.)
+// this TU (and the rect/creditz TUs for CRgn) first-instantiated. The ??_7 datums
+// auto-name from config/vtable_names.csv when this obj emits the real COMDATs, and
+// the function COMDATs are pinned by the @rva-symbol block above.)

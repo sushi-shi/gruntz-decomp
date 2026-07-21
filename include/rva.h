@@ -87,7 +87,6 @@
 // future sweep could read VTBL from @llvm.global.annotations; the text scan is
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
-#define RELOC_VTBL(type, addr) GRUNTZ_META("relocvtbl:" #addr " class:" #type)
 
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
@@ -100,7 +99,6 @@
 #define SIZE(type, bytes)
 #define SIZE_UNKNOWN(type)
 #define VTBL(type, addr)
-#define RELOC_VTBL(type, addr)
 
 #endif
 

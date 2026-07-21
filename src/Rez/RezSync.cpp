@@ -644,6 +644,6 @@ CString CGruntzMgr::GetRezPath() {
 // 0x085540 - the base ~CGameMgr out-of-line copy: cl emits it AUTOMATICALLY (the
 // COMDAT copy of Wap32.h's inline `~CGameMgr() { Close(); }` that the emitted
 // ??_G/vtable machinery references) - vptr restamp (0x5e9b8c) + devirtualized Close
-// tail-call, 0xb bytes. The old RezSyncViews.h ::CGameMgr scaffold (the pre-pin-era
-// dtor-emitter with its RELOC_VTBL) is GONE; the compiler copy is emitted (and
-// @rva-symbol-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries the COMDAT.
+// tail-call, 0xb bytes. No dtor-emitter scaffold is needed; the compiler copy is
+// emitted (and @rva-symbol-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries
+// the COMDAT.

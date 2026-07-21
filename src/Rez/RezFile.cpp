@@ -273,8 +273,7 @@ CRezDir::~CRezDir() {
 // <Rez/RezList.h>), emitted in this obj because ~CRezDir's EH unwind funclets
 // (0x1e0cb8/0x1e0cc3, the two member states) take the dtor's address. 7 bytes:
 // the own-vtable stamp is dead-store-eliminated into the inlined ~CObjListBase
-// base stamp (`mov [ecx],??_7CObjListBase; ret`). (Was the fake placeholder
-// CAbstract13ca30, a RELOC_VTBL alias.)
+// base stamp (`mov [ecx],??_7CObjListBase; ret`).
 // @rva-symbol: ??1CRezList@@QAE@XZ 0x0013ca30 0x7
 
 RVA(0x0013ca40, 0x5)

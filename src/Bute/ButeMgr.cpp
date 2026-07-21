@@ -815,9 +815,8 @@ static const char s_strRBrack[] = "]";
 // without /Gy emits an inline member per obj while folding the vftable COMDAT).
 // Our cl emits the same ??1zPTree/??_GzPTree/??_EzPTree trio in this obj on its
 // own (the TU deletes stores); the @rva-symbol pins below just NAME the retail
-// copies for the delink carve - the ex CButeStoreDtorCopyMgrA anchor class and its
-// RELOC_VTBL(0x1e94ac) are DISSOLVED (no anchor is needed for compiler-emitted
-// copies). Its two ex-siblings were never copies at all: 0x174d70 is the real
+// copies for the delink carve (no anchor is needed for compiler-emitted copies).
+// Its two ex-siblings were never copies at all: 0x174d70 is the real
 // ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - byte-identical
 // only because neither subclass adds destructible state. The inline ~zPTree
 // expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@CButeStore@@

@@ -145,7 +145,7 @@ def owner_of(fn_rva):
 # ---------------------------------------------------------------------------
 # what src claims
 # ---------------------------------------------------------------------------
-_VTBL_RE = re.compile(r"\b(RELOC_)?VTBL\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)", re.S)
+_VTBL_RE = re.compile(r"\bVTBL\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)", re.S)
 # an RVA()-annotated definition of a destructor:  RVA(0xa, 0xb)\n Class::~Class(
 _DTOR_RE = re.compile(
     r"RVA\(\s*(0x[0-9a-fA-F]+)\s*,[^)]*\)\s*(?://[^\n]*\n\s*)*([A-Za-z_]\w*)\s*::\s*~\s*\2\s*\(", re.S
@@ -160,7 +160,7 @@ def _src_files():
 
 
 def src_claims():
-    """({class: (rva, kind, file:line)}, {class: (dtor_rva, file:line)})
+    """({class: (rva, file:line)}, {class: (dtor_rva, file:line)})
 
     Comments are BLANKED first: a `VTBL(...)` quoted in prose (e.g. "the old
     VTBL(CButeStore, ..) bound them to a class that no longer exists") is not a
@@ -169,9 +169,8 @@ def src_claims():
     for p in _src_files():
         txt = blank_comments(p.read_text(errors="ignore"))
         for m in _VTBL_RE.finditer(txt):
-            kind = "RELOC_VTBL" if m.group(1) else "VTBL"
             line = txt.count("\n", 0, m.start()) + 1
-            vtbl[m.group(2)] = (int(m.group(3), 16), kind, f"{p.relative_to(REPO)}:{line}")
+            vtbl[m.group(1)] = (int(m.group(2), 16), f"{p.relative_to(REPO)}:{line}")
         for m in _DTOR_RE.finditer(txt):
             line = txt.count("\n", 0, m.start()) + 1
             dtor[m.group(2)] = (int(m.group(1), 16), f"{p.relative_to(REPO)}:{line}")
@@ -195,7 +194,7 @@ def _slot_digest(v, n=4):
 
 
 def explain(rva, vtbl_by_class):
-    by_rva = {r: (c, k, w) for c, (r, k, w) in vtbl_by_class.items()}
+    by_rva = {r: (c, w) for c, (r, w) in vtbl_by_class.items()}
     print("RVA 0x%06x  %s" % (rva, vs.fn_label(rva) or ""))
     hits = owner_of(rva)
     if not hits:
@@ -214,7 +213,7 @@ def explain(rva, vtbl_by_class):
         print("      slots: %s" % _slot_digest(v))
         claim = by_rva.get(v["start"])
         if claim:
-            print("      src binds this rva: %s(%s)  [%s]" % (claim[1], claim[0], claim[2]))
+            print("      src binds this rva: VTBL(%s)  [%s]" % (claim[0], claim[1]))
         else:
             print("      src binds this rva: (nothing)")
 
@@ -233,18 +232,15 @@ def rtti_leaf(decorated):
 
 
 def rtti_check(vtbl):
-    """RTTI cross-check: for every VTBL/RELOC_VTBL claim whose rva carries an RTTI
-    Complete Object Locator, the COL's class name is GROUND TRUTH. A VTBL(cls, rva)
-    whose RTTI leaf differs from `cls` - or whose COL says base_off != 0 (an MI
-    secondary vtable, whose mangled name embeds the base and can never be the plain
+    """RTTI cross-check: for every VTBL claim whose rva carries an RTTI Complete
+    Object Locator, the COL's class name is GROUND TRUTH. A VTBL(cls, rva) whose
+    RTTI leaf differs from `cls` - or whose COL says base_off != 0 (an MI secondary
+    vtable, whose mangled name embeds the base and can never be the plain
     ??_7cls@@6B@ that VTBL emits) - is a MISBINDING the dtor-based audit cannot see
     when the class has no RVA()-bound destructor (the CWorker39f20/CMovieScratch
-    conflation at 0x1e971c == CArray<PLAYLISTINFOSTRUCT*> was exactly this).
-    RELOC_VTBL disagreements are reported informationally: that macro DOCUMENTS an
-    alias onto another class's datum, so the RTTI naturally names the other class."""
+    conflation at 0x1e971c == CArray<PLAYLISTINFOSTRUCT*> was exactly this)."""
     bad = 0
-    notes = []
-    for cls, (rva, kind, where) in sorted(vtbl.items(), key=lambda kv: kv[1][0]):
+    for cls, (rva, where) in sorted(vtbl.items(), key=lambda kv: kv[1][0]):
         v = vs.vtable_at(rva)
         dec = v["decorated"] if v else None
         if not dec:
@@ -256,24 +252,15 @@ def rtti_check(vtbl):
         why = ("RTTI names %r (leaf %s)" % (dec, leaf)) if leaf != cls else \
               ("RTTI base_off=%d: an MI secondary vtable (its mangled name embeds "
                "the base; a plain ??_7%s@@6B@ row is the wrong symbol)" % (boff, cls))
-        if kind == "VTBL":
-            bad += 1
-            print("  RTTI-MISBOUND %s" % cls)
-            print("      src : VTBL(0x%06x)   %s" % (rva, where))
-            print("      rtti: %s" % why)
-        else:
-            notes.append("  (reloc-alias) %-24s -> 0x%06x  RTTI: %s  %s"
-                         % (cls, rva, leaf, where))
-    if notes:
-        print("  RELOC_VTBL aliases whose target RTTI names another class (expected"
-              " for a\n  documented alias; listed so no fold hides behind silence):")
-        for n in notes:
-            print(n)
+        bad += 1
+        print("  RTTI-MISBOUND %s" % cls)
+        print("      src : VTBL(0x%06x)   %s" % (rva, where))
+        print("      rtti: %s" % why)
     return bad
 
 
 def audit(show_all=False):
-    """Re-derive every src VTBL()/RELOC_VTBL() binding from the binary.
+    """Re-derive every src VTBL() binding from the binary.
 
     For a class that owns an RVA()-bound destructor, the binary KNOWS which vtable
     dispatches to it. If src binds that class to a different rva, the binding is a
@@ -287,7 +274,7 @@ def audit(show_all=False):
     for cls, (drva, dwhere) in sorted(dtor.items()):
         if cls not in vtbl:
             continue
-        claimed, kind, where = vtbl[cls]
+        claimed, where = vtbl[cls]
         hits = owner_of(drva)
         starts = {v["start"] for (v, _k, _t, _s) in hits}
         if not starts:
@@ -299,17 +286,17 @@ def audit(show_all=False):
         if claimed in starts:
             agree += 1
             if show_all:
-                print("  OK %-28s %s(0x%06x)  <- dtor 0x%06x" % (cls, kind, claimed, drva))
+                print("  OK %-28s VTBL(0x%06x)  <- dtor 0x%06x" % (cls, claimed, drva))
             continue
         bad += 1
         print("  MISBOUND %s" % cls)
-        print("      src : %s(0x%06x)   %s" % (kind, claimed, where))
+        print("      src : VTBL(0x%06x)   %s" % (claimed, where))
         print("      dtor: 0x%06x   %s" % (drva, dwhere))
         for v, k, _t, sdd in hits:
             via = " (via sdd 0x%06x)" % sdd if sdd is not None else ""
             print("      binary: ??_7 @0x%06x slot %d%s  RTTI: %s"
                   % (v["start"], k, via, _vt_label(v)))
-        owner = next(( (c, r) for c, (r, _k, _w) in vtbl.items() if r in starts and c != cls), None)
+        owner = next(( (c, r) for c, (r, _w) in vtbl.items() if r in starts and c != cls), None)
         if owner:
             print("      (0x%06x is currently bound to %s - one of the two is wrong)"
                   % (owner[1], owner[0]))
