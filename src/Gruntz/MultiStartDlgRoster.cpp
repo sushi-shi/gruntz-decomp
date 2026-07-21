@@ -4,7 +4,6 @@
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <EmptyString.h>       // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet

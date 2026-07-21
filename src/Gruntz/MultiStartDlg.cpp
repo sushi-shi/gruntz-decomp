@@ -7,7 +7,6 @@
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Net/LatencyList.h>     // CLatencyList (m_slotList; Dispatch/FillCombo/SelectItem)
 #include <Bute/SymTab.h>
-#include <Gruntz/NetDlgHost.h>    // CMultiStartDlg::m_host (its +0x34 m_registry is a CSymParser)
 #include <Bute/SymParser.h>       // CSymParser::ResolvePath (0x13c030), the world name registry
 #include <Utils/RegistryHelper.h> // g_gameReg->m_settings (the config registry: GetValue*/SetValue*)
 #include <string.h>               // inline strcmp (empty-text WM_SETTEXT gate / name resync)
