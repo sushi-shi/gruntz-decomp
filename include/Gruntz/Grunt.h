@@ -279,6 +279,21 @@ extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-mask
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
+// IDENTITY PROVEN (2026-07-21): CGruntMovingBase IS the Gruntz-module REVISION of
+// CMovingLogic. The 0x5e87ac "??_7CMovingLogic" vtable is stamped by FIVE ctors
+// (??0CMovingLogic 0x13940, both ??0CProjectile, SerialObjectFactory - the FAT
+// 0x150-spine revision - AND ??0CGrunt @0x47a4e over THIS lean 0x30 base): retail
+// had two same-named class revisions across module boundaries whose selectany
+// ??_7CMovingLogic COMDATs the linker folded to one datum. The 1-arg ctors differ
+// too (this one: SetZ + g_gruntSpawnScale; the fat one: inline Z stores +
+// g_motionZScale) - two header snapshots, not one class. Dissolution path: split
+// the include graph so the Grunt family sees ONLY this lean revision under the
+// real name CMovingLogic (per-TU definitions, COMDAT-folding exactly like retail);
+// blocked today because Grunt.h itself pulls <Gruntz/MovingLogic.h> and
+// Projectile.cpp needs Grunt.h + the fat def in one TU. Until that split, the
+// ctor's intermediate vptr stamp emits the unbindable ??_7CGruntMovingBase
+// (0x1e87ac is VTBL-bound to CMovingLogic) and MovingSlot16 stays declared-only -
+// the LAST view-debt/VTBL-catalog entries, both encoding this one retail truth.
 SIZE_UNKNOWN(CGruntMovingBase);
 class CGruntMovingBase : public CUserLogic {
 public:
