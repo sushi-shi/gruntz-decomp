@@ -418,7 +418,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         CString msg; // [esp+0x30] diagnostic temp
         msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
         g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-        g_gameReg->ReportError(0x80dd, 0x3eb);
+        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, 0x3eb);
         return 0;
     }
     sw->SwitchDown(); // virtual slot 2 on the found switch element
@@ -446,7 +446,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         CString msg;
         msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
         g_gameReg->EnterModalUI(static_cast<const char*>(msg));
-        g_gameReg->ReportError(0x80de, 0x3ec);
+        g_gameReg->ReportError(TRIGERR_LINK_BROKEN, 0x3ec);
         return 0;
     }
     return 1;
@@ -512,7 +512,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        g_gameReg->ReportError(0x80dd, 0x3f7);
+        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, 0x3f7);
         return 0;
     }
     obj->SwitchUp(); // vtbl slot 3 (+0xc) - retail calls it NO-ARG here (the SwitchLogic
