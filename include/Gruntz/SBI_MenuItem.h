@@ -37,7 +37,7 @@ public:
     CSBI_MenuItem() {
         m_kind = 2;
         m_state = 0;
-        m_30 = 0;
+        m_frame = 0;
         m_record = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).

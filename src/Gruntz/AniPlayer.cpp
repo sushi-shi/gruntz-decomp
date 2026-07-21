@@ -84,7 +84,7 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     } else {
         cel = 0;
     }
-    m_30 = cel;
+    m_frame = cel;
     if (cel != 0) {
         i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
         cel->RenderFrame(

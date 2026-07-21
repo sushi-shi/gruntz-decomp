@@ -2709,7 +2709,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         } else {
             v = 0;
         }
-        mp->m_30 = v;
+        mp->m_frame = v;
         mp->m_enabled = 0;
         mp->SetSubtype(); // slot 10 (the view called it "Refresh")
     }
@@ -3149,8 +3149,8 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
         return 1;
     }
     w->Update(a1, a2, a3);
-    i32 cmd = w->m_c;
-    switch (w->m_10) {
+    i32 cmd = w->m_cmdId;
+    switch (w->m_widgetKind) {
         case 0:
             if (m_hitTestDisabled != 0) {
                 return 1;

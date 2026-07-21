@@ -21,7 +21,7 @@ class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     // tag 0xb (the multiplayer WARLORDHEAD slot).
     CSBI_WarlordHead() {
-        m_30 = 0;
+        m_frame = 0;
         m_kind = 0xb;
         m_34 = 0;
     }

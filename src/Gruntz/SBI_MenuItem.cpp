@@ -51,7 +51,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_24 = host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
     m_tab = a4;
     m_kind = 2;
-    m_30 = 0;
+    m_frame = 0;
     m_rect14.m_0 = rc.left;
     m_28 = 0;
     m_rect14.m_4 = rc.top;
@@ -65,7 +65,7 @@ i32 CSBI_MenuItem::SetupImage(
 
 RVA(0x000e81a0, 0x8)
 void CSBI_MenuItem::ClearFrame2() {
-    m_30 = 0;
+    m_frame = 0;
 }
 
 // CSBI_MenuItem::ResolveFrame - look up the keyed config record in the host's
@@ -94,15 +94,15 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CImageSet* r = rec;
     if (a == -1) {
         i32 lo = r->m_minIndex;
-        m_30 = static_cast<CImage*>(r->m_items.GetAt(lo));
-        return m_30 != 0;
+        m_frame = static_cast<CImage*>(r->m_items.GetAt(lo));
+        return m_frame != 0;
     }
     if (a >= r->m_minIndex && a <= r->m_maxIndex) {
         CImage* v = static_cast<CImage*>(r->m_items.GetAt(a));
-        m_30 = v;
+        m_frame = v;
         return v != 0;
     }
-    m_30 = 0;
+    m_frame = 0;
     return 0;
 }
 
@@ -127,7 +127,7 @@ RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {
         m_28--;
-        CImage* f = m_30;
+        CImage* f = m_frame;
         if (f) {
             f->RenderFrame(
                 static_cast<void*>(g_gameReg->m_world->m_drawTarget->m_backPair),
@@ -197,7 +197,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     } else {
         frame = 0;
     }
-    m_30 = frame;
+    m_frame = frame;
     m_state = state;
     SetSubtype(); // slot 10 (+0x28); the CMiSelf view called it "Refresh"
     return 1;

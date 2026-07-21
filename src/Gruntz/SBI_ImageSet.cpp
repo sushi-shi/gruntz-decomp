@@ -71,9 +71,9 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_38 = f;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        m_30 = static_cast<CImage*>(rec->m_items.GetAt(f));
+        m_frame = static_cast<CImage*>(rec->m_items.GetAt(f));
     } else {
-        m_30 = 0;
+        m_frame = 0;
     }
     return 1;
 }
@@ -81,7 +81,7 @@ i32 CSBI_ImageSet::SetupImage(
 RVA(0x000e7400, 0x9)
 void CSBI_ImageSet::ResetCounters() {
     m_34 = 0;
-    m_30 = 0;
+    m_frame = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
         } else {
             cel = 0;
         }
-        m_30 = cel;
+        m_frame = cel;
         if (cel != 0) {
             cel->RenderFrame(
                 reinterpret_cast<void*>(reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)),

@@ -24,7 +24,7 @@ public:
     // tag 7 (the Gruntz-tab WELLGOO widget).
     CSBI_WellGoo() {
         m_kind = 7;
-        m_30 = 0;
+        m_frame = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eadfc, 12 slots; overrides 0/1/2/3/4/5).
     // The out-of-line ~ (0x104bb0) lives in SBI_WellGoo.cpp via the CHAIN-DTOR device

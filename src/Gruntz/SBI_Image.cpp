@@ -57,23 +57,23 @@ i32 CSBI_Image::SetupImage(
     m_rect14.m_c = rc.bottom;
     m_cmd = a3;
     if (key == 0) {
-        m_30 = 0;
+        m_frame = 0;
         return 0 != 0;
     }
     CImageSet* rec = 0;
     (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
-        m_30 = 0;
+        m_frame = 0;
         return 0 != 0;
     }
     CImage* val = static_cast<CImage*>(rec->m_items.GetAt(1));
-    m_30 = val;
+    m_frame = val;
     return val != 0;
 }
 
 RVA(0x000e6d90, 0x8)
 void CSBI_Image::ClearFrame() {
-    m_30 = 0;
+    m_frame = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ RVA(0x000e6dd0, 0x45)
 i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
     if (m_28 > 0) {
         m_28--;
-        CImage* cel = m_30;
+        CImage* cel = m_frame;
         if (cel != 0) {
             cel->RenderFrame(
                 reinterpret_cast<void*>(reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)),
@@ -139,12 +139,12 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
                 mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
                 CSprite* r = static_cast<CSprite*>(r_ob);
                 if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
-                    m_30 = static_cast<CImage*>(r->m_items.GetAt(idx));
+                    m_frame = static_cast<CImage*>(r->m_items.GetAt(idx));
                 } else {
-                    m_30 = 0;
+                    m_frame = 0;
                 }
             } else {
-                m_30 = 0;
+                m_frame = 0;
             }
             break;
         case 4:
@@ -153,8 +153,8 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             idx = 0;
             g_serialCounter++;
             memset(name, 0, sizeof(name));
-            if (m_30) {
-                mgr->m_imageRegistry->AnyValueMatches_155630(m_30, name, &idx);
+            if (m_frame) {
+                mgr->m_imageRegistry->AnyValueMatches_155630(m_frame, name, &idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

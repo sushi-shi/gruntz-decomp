@@ -133,7 +133,7 @@ i32 CSBI_WarlordHead::Render() {
     cfg = m_34;
     i32 idx = m_38;
     CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
-    m_30 = g;
+    m_frame = g;
     if (g) {
         g->RenderFrame(
             reinterpret_cast<void*>(ctx),

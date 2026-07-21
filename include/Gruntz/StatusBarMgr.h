@@ -556,8 +556,8 @@ public:
     virtual void Tick();                      // slot 5
     virtual void Update(i32 a, i32 b, i32 c); // +0x18 (slot 6)
     char m_pad4[0xc - 0x4];
-    i32 m_c;  // +0xc  command id
-    i32 m_10; // +0x10  widget kind (outer switch key, 0..6)
+    i32 m_cmdId;  // +0xc  command id
+    i32 m_widgetKind; // +0x10  widget kind (outer switch key, 0..6)
 };
 SIZE_UNKNOWN(CSbiHiWidget);
 

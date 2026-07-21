@@ -202,12 +202,12 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             if (node == 0) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
-            CImage* fr = m_30;
+            CImage* fr = m_frame;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
-            if (node != 0 && m_30->m_owned != 0) {
-                m_30->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(node);
+            if (node != 0 && m_frame->m_owned != 0) {
+                m_frame->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(node);
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {

@@ -63,11 +63,11 @@ i32 CSBI_ImageSetAni::Init(
                 m_frameEnd = (b1 == -1) ? (b4 >= 0 ? tbl->m_maxIndex : tbl->m_minIndex) : b1;
                 m_38 = m_frameStart;
                 if (m_frameStart < tbl->m_minIndex || m_frameStart > tbl->m_maxIndex) {
-                    m_30 = 0;
+                    m_frame = 0;
                     return 0;
                 }
-                m_30 = static_cast<CImage*>(tbl->m_items.GetAt(m_frameStart));
-                return m_30 != 0;
+                m_frame = static_cast<CImage*>(tbl->m_items.GetAt(m_frameStart));
+                return m_frame != 0;
             }
         }
     }
@@ -95,7 +95,7 @@ i32 CSBI_ImageSetAni::Tick() {
         } else {
             cel = 0;
         }
-        m_30 = cel;
+        m_frame = cel;
         if (cel != 0) {
             i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
             cel->RenderFrame(

@@ -10,7 +10,7 @@ public:
     // tag 8 + the ani window seeded (m_interval = 0x64); the `new CSBI_ImageSetAni`
     // ctor leg the Resource-tab conveyor builders fold at each new-site.
     CSBI_ImageSetAni() {
-        m_30 = 0;
+        m_frame = 0;
         m_kind = 8;
         m_34 = 0;
         m_step = 0;

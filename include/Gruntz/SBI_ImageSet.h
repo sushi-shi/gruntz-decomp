@@ -16,7 +16,7 @@ public:
     // tag 4 + the resolved-record slot cleared (the `new CSBI_ImageSet` ctor leg the tab
     // builders fold at each new-site, over the out-of-line CSBI_RectOnly base ctor).
     CSBI_ImageSet() {
-        m_30 = 0;
+        m_frame = 0;
         m_kind = 4;
         m_34 = 0;
     }

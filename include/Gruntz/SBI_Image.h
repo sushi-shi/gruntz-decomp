@@ -54,7 +54,7 @@ public:
     // retail calls first. Inline, so the builders fold it at the new-site like retail.
     CSBI_Image() {
         m_kind = 3;
-        m_30 = 0;
+        m_frame = 0;
     }
     virtual ~CSBI_Image() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eac0c thunk 0x2077 -> 0xe6e40): the CSBI_Image serialize leg;
@@ -94,7 +94,7 @@ public:
     i32 TickRenderCurrent_0e6dd0(); // 0xe6dd0
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
-    CImage* m_30; // +0x30  latched/resolved frame (the config value; ex i32)
+    CImage* m_frame; // +0x30  latched/resolved frame (the config value; ex i32)
 };
 SIZE(CSBI_Image, 0x34);
 VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
