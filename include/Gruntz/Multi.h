@@ -192,7 +192,7 @@ public:
     void ReportAckLatency();        // 0x0bd000
     i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
     i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
-    void AutoTuneCmdDelay();                   // 0x0bcc10
+    i32 AutoTuneCmdDelay();                    // 0x0bcc10 (returns int; early 1 / tail WriteCmdDelay)
     // (CPlay::ReleaseResources @0xc8700, the CPlay slot-2 body ex "CPlayDtorBody",
     // is inherited - CMulti::ReleaseResources chains it with the qualified CPlay::
     // spelling, binding the real CPlay method.)
@@ -287,9 +287,9 @@ public:
     void HandleVersionCheck(CNetVersionMsg* msg);                                // 0x0bd0b0
     void AnnounceVersion(i32 param);                                             // 0x0bd180
     // External thunked helpers the cluster fires (no body here so the call reloc-masks).
-    i32 MeasurePing();            // round-trip sample
-    i32 ProbeLatency(i32 flag);   // secondary latency probe
-    void WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload
+    i32 MeasurePing();           // round-trip sample
+    // (ProbeLatency moved to CGruntzMgr - retail probes it on m_4, called via Mgr())
+    i32 WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload (returns int; tail-returned)
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag); // stat dispatcher
     void ShowChatLine(void* hWnd, const char* text);                        // 0xbb3e0 (external)
     void HandleSpriteMsg(CNetCtrlMsg* msg);                                 // 0xba620 (external)

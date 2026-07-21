@@ -3788,34 +3788,34 @@ i32 CMulti::WaitForConnect() {
 // m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
 // persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
 // @early-stop
-// regalloc + integer-division-idiom wall (~68%): the logic is reproduced (the m_530
-// gate, the /9 + 2 clamp(min 3), the ProbeLatency>2 bump, the m_5a4 store, the
-// <=5/>8 resend selection, the two WriteCmdDelay persists) but retail keeps this in
-// edi, folds the divide with a different /9 magic (0x38e38e39;shr1 vs cl's
-// 0x88888889;shr4) and folds the (>2?1:0)+1 bump into a single lea - none steerable
-// from C source. Final sweep (an optimizer-math idiom).
+// this/quotient register-coloring wall (~80%): logic + math now byte-faithful after
+// four fixes - the divide is /30 (0x88888889;shr4, was wrongly /9), the resend is
+// (base>8 ? 30 : 20) (was inverted), the fn returns int (early `return 1` / tail
+// `return WriteCmdDelay(0)`, which shrink-wraps the edi push), and ProbeLatency is
+// called on the m_4 game mgr (Mgr(), `mov ecx,[this+4]`), not on `this`. Residual:
+// retail pins this=esi / quotient=edi; our MSVC5 /O2 pins this=edi / quotient=esi,
+// a swap that cascades. Not source-steerable. Final sweep.
 RVA(0x000bcc10, 0x8e)
-void CMulti::AutoTuneCmdDelay() {
+i32 CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
-        return;
+        return 1;
     }
 
     u32 ping = static_cast<u32>(MeasurePing());
-    i32 base = static_cast<i32>((ping / 9)) + 2;
+    i32 base = static_cast<i32>((ping / 30)) + 2;
     if (base < 3) {
         base = 3;
     }
 
-    i32 probe = ProbeLatency(0);
+    i32 probe = Mgr()->ProbeLatency(0); // retail calls the probe on m_4 (the game mgr)
     base += (probe > 2 ? 1 : 0) + 1;
     m_5a4 = base;
     if (base <= 5) {
         m_drainReload = 0xa;
-        WriteCmdDelay(0);
-        return;
+        return WriteCmdDelay(0);
     }
-    m_drainReload = (base > 8 ? 0x14 : 0x1e);
-    WriteCmdDelay(0);
+    m_drainReload = (base > 8 ? 0x1e : 0x14);
+    return WriteCmdDelay(0);
 }
 
 extern "C" CMulti* g_connectRptMgr; // 0x648cf8

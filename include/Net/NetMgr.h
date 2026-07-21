@@ -733,14 +733,13 @@ public:
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
     i32 DropChannelPlayer(i32 idx); // 0xbb510  drop the player on channel[idx]
     i32 LoadConfig(void* cfg);      // 0xbce80  copy the command-timing config in
-    void AutoTuneCmdDelay();        // 0xbcc10  derive m_cmdDelay/m_resend from the ping
+    i32 AutoTuneCmdDelay();         // 0xbcc10  derive m_cmdDelay/m_resend from the ping
 
     // AutoTuneCmdDelay's external probes (incremental-link thunks; no body here so
-    // the call rel32 reloc-masks). MeasurePing samples the round-trip; ProbeLatency
-    // returns a secondary latency class; WriteCmdDelay persists the tuned pair.
-    i32 MeasurePing();            // 0x... (thunked) round-trip sample
-    i32 ProbeLatency(i32 flag);   // 0x... secondary latency probe
-    void WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend
+    // the call rel32 reloc-masks). MeasurePing samples the round-trip; WriteCmdDelay
+    // persists the tuned pair. (ProbeLatency moved to CGruntzMgr - probed on m_4.)
+    i32 MeasurePing();           // 0x... (thunked) round-trip sample
+    i32 WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend (returns int; tail-returned)
 
     // The provider/group cluster (0x178xxx). InitFromProvider DirectPlayCreate's a
     // fresh DP object for a selected service-provider GUID + queries IDirectPlay4;
