@@ -371,11 +371,11 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // frame clock is the cached ::timeGetTime fn-ptr. (The BLOCKING fade twin of the
 // per-frame StartFadeToColor/Tick machinery below.)
 // @early-stop
-// timing-loop scheduling tail (~97%; permuter no gain): the snapshot copy, the
-// per-channel (target-cur)*t/duration lerp, the recompute-only-on-tick guard, the
-// SetEntries/SetRange calls and the final RezFree are all byte-faithful. Residual is
-// MSVC5's exact [esp+N] slot choices + register schedule across the rotated timing
-// loop (the elapsed/prev/t0 live-range packing). Not source-steerable.
+// SIB copy-loop wall (99.93%): the snapshot copy, the per-channel (target-cur)*t/duration
+// lerp (signed imul/idiv), the unsigned elapsed<duration guard (jb/jbe), the
+// SetEntries/SetRange calls and the final RezFree are all byte-faithful. Sole residual is
+// the snapshot copy loop's SIB base/index roles (retail [dst+i] with i as index; cl makes
+// i the base) - a 1-byte-per-insn encoding choice, same family as Create's copy loop.
 RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
@@ -388,7 +388,10 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     }
     i32 t0 = ::timeGetTime();
     i32 prev = 9;
-    for (i32 t = 10; t < durationMs; t = ::timeGetTime() - t0) {
+    // Retail compares elapsed t<durationMs UNSIGNED (jb/jbe) but keeps the lerp
+    // arithmetic signed (imul/idiv), so t is a signed int with only the loop guard
+    // done unsigned (durationMs is a signed param, unchanged).
+    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = ::timeGetTime() - t0) {
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
                 m_cacheA[j * 4 + 0] =
