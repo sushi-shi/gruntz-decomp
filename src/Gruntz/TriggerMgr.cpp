@@ -288,17 +288,14 @@ void CTriggerMgr::ResetAll() {
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
-    if (n == 0) {
-        return 0;
-    }
-    do {
+    while (n != 0) {
         CTmNode* cur = n;
         n = n->m_next;
         i32* p = cur->m_payload;
         if (p[0] == x && p[1] == y) {
             return 1;
         }
-    } while (n != 0);
+    }
     return 0;
 }
 
