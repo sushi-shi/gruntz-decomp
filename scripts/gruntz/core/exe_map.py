@@ -120,9 +120,8 @@ def _load_units():
     if not UNITS_TOML.is_file():
         return out
     try:
-        import tomllib
-        data = tomllib.loads(UNITS_TOML.read_text())
-        for u in data.get("unit", []):
+        from gruntz.core import manifest
+        for u in manifest.units():
             if u.get("unit"):
                 out[u["unit"]] = u.get("source", "")
         return out

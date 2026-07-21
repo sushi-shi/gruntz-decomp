@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import subprocess
-import tomllib
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -54,9 +53,8 @@ def _sha12(text: str) -> str:
 
 
 def load_manifest() -> dict[str, str]:
-    with open(MANIFEST, "rb") as f:
-        data = tomllib.load(f)
-    return {u["unit"]: u.get("source", "") for u in data.get("unit", [])}
+    from gruntz.core import manifest
+    return {u["unit"]: u.get("source", "") for u in manifest.units()}
 
 
 def unit_mangled() -> dict[str, set]:

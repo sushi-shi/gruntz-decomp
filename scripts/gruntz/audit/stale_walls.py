@@ -48,7 +48,7 @@ def _find_repo():
 
 
 REPO = _find_repo()
-IMAGE_BASE = 0x400000
+from gruntz.core.pe import IMAGEBASE as IMAGE_BASE
 
 # ---------------------------------------------------------------------------
 # the retail image

@@ -45,7 +45,7 @@ EXE = _require(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE",
 FUNCS = _require(REPO / "build/ghidra-enrich/exports/functions.csv", "run `gruntz init`")
 SYMS = _require(REPO / "build/ghidra-enrich/exports/symbols.csv", "run `gruntz init`")
 SRC = _require(REPO / "src", "not a gruntz checkout?")
-IMAGEBASE = 0x400000
+from gruntz.core.pe import IMAGEBASE
 
 # the ONE shared EXE load: gruntz.core.pe (no second parse in this process)
 from gruntz.core import get_context as _get_context

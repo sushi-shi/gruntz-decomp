@@ -122,7 +122,9 @@ class Func:
         return self.meth or "?"
 
 
-def _psize(s: str) -> int:
+def _parse_size(s: str) -> int:
+    # NOT core.symbols._psize: inputs are regex-guaranteed valid, so garbage must
+    # RAISE (loud bug), and a literal 0 stays 0 - different contract, not a dup.
     return int(s, 16) if s.lower().startswith("0x") else int(s)
 
 
@@ -137,7 +139,7 @@ def load_funcs(src: Path = SRC) -> list[Func]:
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
             if m:
-                rva, size = int(m.group(1), 16), _psize(m.group(2))
+                rva, size = int(m.group(1), 16), _parse_size(m.group(2))
             else:
                 mu = RVAU_RE.search(ln)
                 if not mu:

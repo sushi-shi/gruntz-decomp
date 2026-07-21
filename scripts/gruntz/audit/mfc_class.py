@@ -84,10 +84,9 @@ import os
 import re
 import struct
 import sys
-import tomllib
 from pathlib import Path
 
-IMAGEBASE = 0x400000
+from gruntz.core.pe import IMAGEBASE
 
 
 # Resolve REPO from the CWD first: in a worktree the shell's PYTHONPATH can point at
@@ -613,7 +612,8 @@ def audit(mm, args):
     # LIVE units only: build/objdiff/base/ keeps the .obj of a unit that has since
     # been renamed/removed from units.toml, and a stale COMDAT reports long-fixed
     # defects forever (ddrawsubmgrleafscan.obj / playdtor.obj did exactly that).
-    live = {u["unit"] for u in tomllib.load(open(REPO / "config/units.toml", "rb"))["unit"]}
+    from gruntz.core import manifest
+    live = manifest.unit_names()
     objs = sorted(o for o in glob.glob(str(REPO / "build/objdiff/base/*.obj"))
                   if Path(o).stem in live)
     if not objs:

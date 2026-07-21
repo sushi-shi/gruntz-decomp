@@ -34,7 +34,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from gruntz.audit.tu_layout import RVA_RE, RVAU_RE, SIG_RE, _psize, pooled
+from gruntz.audit.tu_layout import RVA_RE, RVAU_RE, SIG_RE, _parse_size, pooled
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -70,7 +70,7 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
             if m:
-                rva, size = int(m.group(1), 16), _psize(m.group(2))
+                rva, size = int(m.group(1), 16), _parse_size(m.group(2))
             else:
                 mu = RVAU_RE.search(ln)
                 if not mu:

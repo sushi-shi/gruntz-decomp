@@ -61,7 +61,6 @@ import shutil
 import subprocess
 import sys
 import time
-import tomllib
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -148,8 +147,8 @@ def run(cmd: list, **kw) -> subprocess.CompletedProcess:
 
 
 def units() -> list[dict]:
-    with MANIFEST.open("rb") as f:
-        return tomllib.load(f).get("unit", [])
+    from gruntz.core import manifest
+    return manifest.units()
 
 
 def _record_build_time(mode: str, total_s: float, ninja_s: float, gates_s: float) -> None:

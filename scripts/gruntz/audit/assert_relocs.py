@@ -53,7 +53,7 @@ def _find_repo():
 
 
 REPO = str(_find_repo())
-IMAGE_BASE = 0x400000
+from gruntz.core.pe import IMAGEBASE as IMAGE_BASE
 THRESHOLD = 99.5  # a wrong reloc costs ~0.005% -> audit NEAR-exact, not just ==100
 
 # ---------------------------------------------------------------------------

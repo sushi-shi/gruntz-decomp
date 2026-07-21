@@ -215,9 +215,8 @@ def current_unit_objs():
     """Only objs of CURRENT units - build/objdiff/base/ accumulates stale orphan objs
     from retired/renamed units, and a stale COMDAT would fake a divergence."""
     try:
-        import tomllib
-        units = {u["unit"] for u in
-                 tomllib.loads((REPO / "config/units.toml").read_text()).get("unit", [])}
+        from gruntz.core import manifest
+        units = manifest.unit_names()
     except Exception:
         units = None
     out = []

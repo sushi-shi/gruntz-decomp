@@ -78,7 +78,6 @@ import argparse
 import json
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -290,10 +289,9 @@ from gruntz.match.fingerprints import cpp_hash, load_cache as load_fp_cache
 # --------------------------------------------------------------------------- #
 def load_units() -> dict[str, dict]:
     """unit stem -> {source, module} from config/units.toml."""
-    with open(MANIFEST, "rb") as f:
-        data = tomllib.load(f)
+    from gruntz.core import manifest
     out: dict[str, dict] = {}
-    for u in data.get("unit", []):
+    for u in manifest.units():
         name, source = u.get("unit"), u.get("source", "")
         out[name] = {"source": source, "module": module_of(source)}
     return out

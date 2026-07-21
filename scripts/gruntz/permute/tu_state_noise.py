@@ -50,7 +50,7 @@ from typing import Iterable
 from gruntz.permute.tu_state_metrics import read_coff
 
 
-IMAGE_BASE = 0x400000
+from gruntz.core.pe import IMAGEBASE as IMAGE_BASE
 
 
 def project_root():

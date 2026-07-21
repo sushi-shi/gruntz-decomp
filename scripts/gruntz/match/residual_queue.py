@@ -19,7 +19,7 @@ import json
 import os
 import pathlib
 
-IMAGE_BASE = 0x400000
+from gruntz.core.pe import IMAGEBASE as IMAGE_BASE
 
 # Anchor on the CWD's repo root (flake.nix), NOT the package location: run from a
 # worktree, we must read THAT tree's build/ artifacts, never main (PYTHONPATH can

@@ -32,7 +32,6 @@ Usage:
 import argparse
 import json
 import re
-import tomllib
 from collections import defaultdict
 from pathlib import Path
 
@@ -47,9 +46,9 @@ ARRAY_DIM = re.compile(r"\[\s*(0x[0-9a-fA-F]+|\d+)\s*\]")
 
 def _src_to_unit():
     """src-path -> unit name, from config/units.toml."""
-    doc = tomllib.loads((REPO / "config/units.toml").read_text())
+    from gruntz.core import manifest
     m = {}
-    for u in doc.get("unit", []):
+    for u in manifest.units():
         for key in ("source", "sources"):
             v = u.get(key)
             for s in ([v] if isinstance(v, str) else (v or [])):

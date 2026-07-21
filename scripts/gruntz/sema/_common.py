@@ -5,7 +5,6 @@ usage log. Sema modules import from here only; nothing here imports cli.py
 (dependency direction: cli -> sema -> core).
 """
 import sys
-import tomllib
 from pathlib import Path
 
 from gruntz.core import call_main  # noqa: F401  (re-export for the sema modules)
@@ -25,16 +24,7 @@ def die(msg: str) -> None:
     sys.exit(2)
 
 
-def units() -> list[dict]:
-    with MANIFEST.open("rb") as f:
-        return tomllib.load(f).get("unit", [])
-
-
-def flags_for(udef: dict) -> list:
-    """Resolve a unit's flags-profile name to its cl flag list (units.toml [flags])."""
-    with MANIFEST.open("rb") as f:
-        profiles = tomllib.load(f).get("flags", {})
-    return list(profiles.get(udef.get("flags", ""), []))
+from gruntz.core.manifest import flags_for, units  # noqa: F401  (re-export)
 
 
 def csv_find(path: Path, rva: int, key: str = "rva"):
