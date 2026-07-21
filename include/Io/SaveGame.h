@@ -10,18 +10,35 @@
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
+// The ONE 0x100 save record (the ex-SaveInfo twin is MERGED here: same layout,
+// the in-memory quickload code's role names live as union arms).
 struct SaveSlot {
-    i32 m_type;             // +0x00  (1 = normal, 3 = custom-world)
-    i32 m_levelId;          // +0x04  level id (BuildLevelRezPath id arg)
-    i32 m_count;            // +0x08  (init 0)
-    i32 m_active;           // +0x0c  (init 1)
-    i32 m_checksum;         // +0x10  (Register(this) result)
-    char m_name[0x20];      // +0x14  short display name (strncpy'd 0x20)
-    char m_pad34;           // +0x34
-    char m_savePath[0x40];  // +0x35  ".sav" file name (wsprintf'd)
-    char m_levelName[0x83]; // +0x75  level path name (read by Register/VerifySlot)
-    i32 m_pathLo;           // +0xf8  BuildLevelRezPath `lo` arg
-    i32 m_pathHi;           // +0xfc  BuildLevelRezPath `hi` arg
+    union {
+        i32 m_type; // +0x00  (1 = normal, 3 = custom-world)
+        u8 m_flags; //        low byte: bit 0 = record valid (the Quickload/0x807e gate)
+    };
+    i32 m_levelId;  // +0x04  level id (BuildLevelRezPath id arg / PassClickToPlayState)
+    i32 m_count;    // +0x08  (init 0)
+    i32 m_active;   // +0x0c  (init 1)
+    i32 m_checksum; // +0x10  (Register(this) result)
+    union {
+        char m_name[0x20];     // +0x14  short display name (strncpy'd 0x20)
+        char m_snapshot[0x20]; //        snapshot block (FillSaveInfo EngineCopy dst)
+    };
+    char m_pad34; // +0x34
+    union {
+        char m_savePath[0x40]; // +0x35  ".sav" file name (wsprintf'd)
+        char m_serial[0x40];   //        serial/name buffer (ParseSerial; 0x81a7 notify)
+    };
+    char m_levelName[0x83]; // +0x75  level path name (Register/VerifySlot; quickload strcpy)
+    union {
+        i32 m_pathLo; // +0xf8  BuildLevelRezPath `lo` arg
+        i32 m_f8;     //        mirror of the manager's m_130 sub-mode gate
+    };
+    union {
+        i32 m_pathHi; // +0xfc  BuildLevelRezPath `hi` arg
+        i32 m_isWon;  //        "won" flag (FillSaveInfo writes m_134 == 3)
+    };
 };
 
 class CSaveGame {

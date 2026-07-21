@@ -618,7 +618,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             return 0;
         // ---- remaining UI command bodies (physically after the epilogue) ----
         case kCmdLoadSavedGame: {
-            SaveInfo* si = m_saveInfoRec;
+            SaveSlot* si = m_saveInfoRec;
             if (!si) {
                 return 1;
             }

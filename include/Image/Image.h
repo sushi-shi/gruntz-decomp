@@ -122,7 +122,6 @@ SIZE(CFileImageSurface, 0xc0);
 VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
 class CFileImageSurface : public CDDSurface {
 public:
-    void* ScalarDelete(u32 flags);         // 0x142340 (`??_G` scalar-deleting destructor)
     virtual ~CFileImageSurface() OVERRIDE; // slot 0  0x142360
     virtual i32 GetPoolKind() OVERRIDE;    // slot 6  0x143cc0 (POOLKIND_FILEIMAGE)
     // The three init-tail slots. xref-proven REAL virtuals (zero direct callers -
@@ -155,10 +154,10 @@ public:
 class CFileImageSrc {
 public:
     char _00[0x04];
-    i16 m_boxTop; // +0x04  box top
-    i16 m_boxLeft; // +0x06  box left
+    i16 m_boxTop;    // +0x04  box top
+    i16 m_boxLeft;   // +0x06  box left
     i16 m_boxBottom; // +0x08  box bottom
-    i16 m_boxRight; // +0x0a  box right
+    i16 m_boxRight;  // +0x0a  box right
     char _0c[0x41 - 0x0c];
     u8 m_format; // +0x41  format (1 = 8-bit, 3 = 24-bit)
 };

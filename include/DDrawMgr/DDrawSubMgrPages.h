@@ -18,7 +18,6 @@ public:
     // The `??_G` scalar-deleting destructor (slot 1 @0x1574b0): run the real
     // ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this. Hand-written
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
-    void* ScalarDtor(u32 flags);    // 0x1574b0
     virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 IsReady INHERITED from CWapObj (the shared `return 1` default @0xd5da0,
     // reached via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
@@ -30,19 +29,25 @@ public:
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
-    i32 Method_158b10(struct CParseSource* src, i32 arg2); // 0x158b10 (ResolveImage the page from the parse record)
-    i32 Method_158b40(struct CParseSource* src, i32 arg2); // 0x158b40 (LoadImage the page from the parse record)
-    void Method_158b90();                      // 0x158b90
-    i32 PagesReady();                       // 0x158bc0
+    i32 Method_158b10(
+        struct CParseSource* src,
+        i32 arg2
+    ); // 0x158b10 (ResolveImage the page from the parse record)
+    i32 Method_158b40(
+        struct CParseSource* src,
+        i32 arg2
+    );                    // 0x158b40 (LoadImage the page from the parse record)
+    void Method_158b90(); // 0x158b90
+    i32 PagesReady();     // 0x158bc0
     i32 Method_158bf0(i32 a1, i32 a2, i32 a3); // 0x158bf0
     i32 Method_158cb0(i32 a1, i32 a2);         // 0x158cb0
     void Method_158d50(i32 a1);                // 0x158d50
-    i32 BlitPage(CDDrawSurfacePair* dst); // 0x158c70
+    i32 BlitPage(CDDrawSurfacePair* dst);      // 0x158c70
     i32 Method_158d20();                       // 0x158d20
     i32 Method_158dc0();                       // 0x158dc0
-    i32 TransEnter();                       // 0x158e40
-    i32 TransTitle();                       // 0x158e90
-    i32 TransExit();                       // 0x158ee0
+    i32 TransEnter();                          // 0x158e40
+    i32 TransTitle();                          // 0x158e90
+    i32 TransExit();                           // 0x158ee0
 
     // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
     i32 m_04;                         // +0x04  (reset to -1 on teardown)

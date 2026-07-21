@@ -36,13 +36,12 @@ public:
 };
 VTBL(CStaticHazard, 0x001e7824);
 
-typedef void (CUserLogic::*HaznHandler)();
+// ONE entry type: the registered handlers (LoadAttributes/LoadAttributes2) return
+// i32; the dispatcher ignores the result. (The ex-CHaznEntry2 void-return twin was
+// the same 4-byte slot.)
+typedef i32 (CUserLogic::*HaznHandler)();
 struct CHaznEntry {
     HaznHandler m_fn;
-};
-typedef i32 (CUserLogic::*HaznHandler2)();
-struct CHaznEntry2 {
-    HaznHandler2 m_fn;
 };
 
 #endif // GRUNTZ_CSTATICHAZARD_H

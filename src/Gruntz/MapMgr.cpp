@@ -86,30 +86,28 @@ CMapArrayB::CMapArrayB() {
 // source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
-    MapElemB* block = static_cast<MapElemB*>(::operator new(count * sizeof(MapElemB)));
+    BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
     m_0 = block;
     if (!block) {
         return 0;
     }
 
-    // @fold-TODO: MapElemB (0x0c B) is the bucket node the grid code reaches as a
-    // BrickzNode* - it only ever touches its first three dwords (child/back/next).
-    m_block = reinterpret_cast<BrickzNode*>(block);
+    m_block = block;
     m_count = count;
     block->m_prev = 0;
 
-    MapElemB* e = block;
+    BrickzNode* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == reinterpret_cast<MapElemB*>(m_block)) {
+        if (e == m_block) {
             e->m_prev = 0;
         } else {
             e->m_prev = e - 1;
         }
-        e->m_0 = 0;
+        e->m_child = 0;
         e->m_next = e + 1;
         ++e;
     }
-    (reinterpret_cast<MapElemB*>(m_block))[m_count - 1].m_next = 0;
+    m_block[m_count - 1].m_next = 0;
     return 1;
 }
 
@@ -839,7 +837,6 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
 }
 
 SIZE_UNKNOWN(MapElemA);
-SIZE_UNKNOWN(MapElemB);
 SIZE_UNKNOWN(BrickzFreeRec);
 
 RVA(0x0009fe10, 0x29)

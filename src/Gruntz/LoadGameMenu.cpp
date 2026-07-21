@@ -1,6 +1,6 @@
-#include <Mfc.h>         // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
+#include <Mfc.h> // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot/SaveInfo
+#include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/PickPlayOrPausedState/m_saveSink/m_gameWnd/m_saveInfoRec)
 #include <Gruntz/Play.h> // CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown @+0x510)
 
@@ -179,7 +179,8 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = reinterpret_cast<i32>(dlg->GetSlot(idx));
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", static_cast<void*>(LoadDeleteDlgProc), 0);
+            i32 r =
+                g_gameReg->RunModalDialog("GAME_DELETE", static_cast<void*>(LoadDeleteDlgProc), 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);
@@ -227,7 +228,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             i32 r = dlg->VerifySlot(slot);
             EnableWindow(hwnd, TRUE);
             if (r) {
-                g_gameReg->m_saveInfoRec = reinterpret_cast<SaveInfo*>(slot);
+                g_gameReg->m_saveInfoRec = slot;
                 PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
                 EndDialog(hwnd, 1);
             }

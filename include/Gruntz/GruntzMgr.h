@@ -3,11 +3,11 @@
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Wap32.h>
 #include <Gruntz/String.h>
-#include <Gruntz/GameLevel.h>     // CByteArray
-#include <Gruntz/State.h>         // CState (m_curState game-state; Update() at slot 4)
-#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
+#include <Gruntz/GameLevel.h>      // CByteArray
+#include <Gruntz/State.h>          // CState (m_curState game-state; Update() at slot 4)
+#include <Dsndmgr/GruntzSoundZ.h>  // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
-#include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec)
+#include <Io/SaveGame.h>           // SaveSlot (m_saveInfoRec; the ex-SaveInfo twin)
 #include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink
 #include <Gruntz/GruntzMapMgr.h>
 class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
@@ -44,7 +44,7 @@ namespace Utils {
 class CFontConfig; // +0x5c chat/message log (AddItem @0x21c60 - FontConfig.h)
 struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 class CTriggerMgr;
-class CPlay; // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
+class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
 SIZE(CGruntzMgr, 0xa30);
@@ -54,13 +54,12 @@ public:
     CGruntzMgr();
     virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)
     virtual i32 Run(CGameWnd*, char*) OVERRIDE; // slot 1 (declared-only)
-    virtual i32 IsActive() OVERRIDE;  // slot 3 @0x083300 (thunk 0x40d9):
+    virtual i32 IsActive() OVERRIDE;            // slot 3 @0x083300 (thunk 0x40d9):
                                                 // m_world && m_curState
     // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
     // holds): run the dtor body, then operator delete when the low flag bit is set;
     // returns this. Modeled by hand (MSVC's own ??_G mangling differs from the retail
     // label the delinker emits, so this carries the RVA).
-    void* ScalarDeletingDtor(u32 flags); // @0x083330
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
     virtual void Close() OVERRIDE; // @0x0855e0 (member teardown)
@@ -202,14 +201,16 @@ public:
     // (reloc-masked). CuePrep @0x40cd00 + the Rand pair: KNOWN-UNDECIDABLE OWNER
     // (bodies never touch `this`; member-vs-free is byte-identical; do not force).
     void CuePrep();
-    tagRECT* GetMessageBounds(tagRECT* out); // 0x2cb1 thunk (on-screen message bounds; ported from the dead views)
-    i32 Rand();                    // game-mgr RNG
+    tagRECT* GetMessageBounds(
+        tagRECT* out
+    );          // 0x2cb1 thunk (on-screen message bounds; ported from the dead views)
+    i32 Rand(); // game-mgr RNG
     i32 RandRange(i32 lo, i32 hi); // game-mgr RNG range
-    i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
-    void SetSoundVolume(i32 v); // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24
-                                //  live global + push into the m_inputState sound set)
-    void UnloadSoundChain();    // @0x08f740 (m_world->m_soundRegistry->m_2c teardown + StopBank2)
-    void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
+    i32 SetVoiceVolume(i32 v);     // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
+    void SetSoundVolume(i32 v);    // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24
+                                   //  live global + push into the m_inputState sound set)
+    void UnloadSoundChain();  // @0x08f740 (m_world->m_soundRegistry->m_2c teardown + StopBank2)
+    void ClearOptionsSlots(); // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
     RVA(0x000928c0, 0x23)
     CString GetWorldFileName() {
         return m_strWorldFile;
@@ -234,7 +235,7 @@ public:
     // OnInitDialog (0x1bac5e) / OnOK (0x1bacc3).
     i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
-    i32 FillSaveInfo(SaveInfo* dst, void* snapshot); // @0x0927b0
+    i32 FillSaveInfo(SaveSlot* dst, void* snapshot); // @0x0927b0
     i32 SaveState(CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
     i32 LoadState(CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
@@ -297,8 +298,8 @@ public:
 
     // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
     // largest function; body in GruntzMgrCmd.cpp).
-    virtual i32
-    HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) OVERRIDE; // @0x0862f0 slot 5
+    virtual i32 HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam)
+        OVERRIDE; // @0x0862f0 slot 5
     // (LaunchWebBrowser @0x8f120 is a free __stdcall function, not a CGruntzMgr method -
     //  declared at namespace scope below the class.)
 
@@ -320,13 +321,13 @@ public:
     // AutoTuneCmdDelay's secondary latency probe (thunked; reloc-masked). Retail calls
     // it on the game mgr (CMulti's m_4), NOT on the CMulti itself.
     i32 ProbeLatency(i32 flag);
-    GruntzPlayer* FindOptionsSlot(i32 x);     // @0x092e80 (slot whose m_18 == x)
-    i32 ResetOptionsSlot(i32 idx);            // @0x092da0 (reset slot idx if loaded)
-    void ResetAllOptionsSlots();              // @0x092df0 (reset all 4 slots)
-    i32 IsStandardMode();                     // @0x08f980 (mode == 640x480)
-    i32 DebugJumpLevel();                     // @0x08e780 (DEBUG_JUMPLEVEL dialog)
-    i32 PostSlotCommandB1(i32 slot);          // @0x0920e0 (post WM_COMMAND 0x80b1, slot)
-    i32 PostSlotCommandB6(i32 slot);          // @0x092130 (post WM_COMMAND 0x80b6, slot)
+    GruntzPlayer* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
+    i32 ResetOptionsSlot(i32 idx);        // @0x092da0 (reset slot idx if loaded)
+    void ResetAllOptionsSlots();          // @0x092df0 (reset all 4 slots)
+    i32 IsStandardMode();                 // @0x08f980 (mode == 640x480)
+    i32 DebugJumpLevel();                 // @0x08e780 (DEBUG_JUMPLEVEL dialog)
+    i32 PostSlotCommandB1(i32 slot);      // @0x0920e0 (post WM_COMMAND 0x80b1, slot)
+    i32 PostSlotCommandB6(i32 slot);      // @0x092130 (post WM_COMMAND 0x80b6, slot)
     // Sibling reached by Quicksave (reloc-masked): plays the save-feedback sprite.
     i32 LoadSaveMessageSprite();
 
@@ -376,8 +377,8 @@ public:
                                   //         0x8174 restarts at its m_maxLevel)
     CFontConfig* m_chatLog;       // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
     CGruntSpawnConfig* m_cueSink; // +0x60  the spawn-config / cue-sink / per-frame poll object
-                                  //         (ONE class; ex "m_timer"/"TimerObj"; Stop/Tick; m_2c mirror)
-    i32 m_64;    // +0x64
+    //         (ONE class; ex "m_timer"/"TimerObj"; Stop/Tick; m_2c mirror)
+    i32 m_64;                         // +0x64
     CTriggerMgr* m_cmdGrid;           // +0x68  world command/trigger grid (CTriggerMgr)
     CGruntzCmdMgr* m_cmdSubMgr;       // +0x6c  command sub-manager (REAL class CGruntzCmdMgr)
     CGruntzMapMgr* m_tileGrid;        // +0x70  the tile/map board - the REAL class
@@ -404,7 +405,7 @@ public:
     //        (LoadWorldMode arms it around the mode-switch teardown)
     i32 m_b4;                         // +0xb4
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
-    SaveInfo* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
+    SaveSlot* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)
     u8* m_connSettings;               // +0xc4  the launch connection-settings byte blob
                                       //        (DPLCONNECTION-shaped; sized by

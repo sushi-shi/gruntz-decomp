@@ -31,7 +31,7 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    struct MapElemB* m_0; // +0x00  the owned element block (the dtor frees it)
+    BrickzNode* m_0;     // +0x00  the owned element block (the dtor frees it)
     BrickzNode* m_block; // +0x04  the 0x0c-byte bucket-node pool (was void*)
     u32 m_count;         // +0x08
 };
@@ -77,8 +77,8 @@ public:
     // IsCellClear, so the vtable binds to real bodies now. Definitions stay where they
     // are (MapMgr.cpp / Brickz.cpp / the Brickz* leaf TUs) - MSVC5 mangles a member
     // defined through the `CBrickzGrid` typedef as CMapMgr::, so no body moved.
-    void Clip(const tagRECT* r);                        // 0x02b340 board dirty-rect clip
-    void ComputeCellFlags(i32 x, i32 y, i32 id3);       // 0x077790 terrain cell-flag compute
+    void Clip(const tagRECT* r);                              // 0x02b340 board dirty-rect clip
+    void ComputeCellFlags(i32 x, i32 y, i32 id3);             // 0x077790 terrain cell-flag compute
     i32 AllocGrid(i32 width, i32 height, void (*callback)()); // 0x09ea60 grid allocator/initializer
     i32 SearchEdge(
         i32 xA,
@@ -140,8 +140,8 @@ public:
         i32** m_rowInts;     // the *7-int-walk sites (rowInts[y][x*7 + n])
         char** m_rowBytes;   // the byte-walk sites (rows[y] + x*0x1c)
     };
-    u32 m_width;  // +0x0c  grid width (columns)
-    u32 m_height; // +0x10  grid height (rows)
+    u32 m_width;            // +0x0c  grid width (columns)
+    u32 m_height;           // +0x10  grid height (rows)
     u32 m_cellCount;        // +0x14  total cell count (width*height)
     BrickzNode* m_openList; // +0x18  sorted open/lookup list head
     i32 m_1c;               // +0x1c
@@ -175,12 +175,6 @@ public:
 };
 
 typedef CMapMgr CBrickzGrid;
-
-struct MapElemB {
-    void* m_0;        // +0x00
-    MapElemB* m_prev; // +0x04
-    MapElemB* m_next; // +0x08
-};
 
 struct BrickzFreeRec {
     i32 m_0; // +0x00  next-free link

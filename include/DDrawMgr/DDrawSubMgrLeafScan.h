@@ -32,8 +32,8 @@ public:
     }
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0); not
     // redeclared (the old "IsValidImage" was a phantom own-decl of that shared body).
-    virtual i32
-    Unload() OVERRIDE; // [7] 0x157ae0 (overrides CLoadable::Unload; clears the map; def in DDrawSubMgr.cpp)
+    virtual i32 Unload()
+        OVERRIDE; // [7] 0x157ae0 (overrides CLoadable::Unload; clears the map; def in DDrawSubMgr.cpp)
     // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
     // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 
@@ -68,7 +68,6 @@ public:
     // The `??_G` scalar-deleting destructor (vtable slot 1 @0x157550): run the real
     // ~CDDrawSubMgrLeafScan (direct call), conditionally RezFree, return this. Hand-written
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
-    void* ScalarDtor(u32 flags); // 0x157550
 
     // 0x1581b0: fire the named CAniBlitTrigger held in the cache, gated on the parent
     // (m_0c) being live and this sub-manager not busy (m_30 == 0). It has NO caller in
@@ -86,7 +85,7 @@ public:
     // TUs' "live-surface/emit gate" (m_emitGate; must be 0 to emit). Anonymous union
     // so both spellings bind the one field.
     i32 m_emitGate; // +0x30  live-surface/emit gate (must be 0 to emit; ex "m_30")
-    i32 m_34; // +0x34  redraw arg
+    i32 m_34;       // +0x34  redraw arg
 };
 
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);

@@ -2148,7 +2148,7 @@ i32 CGruntzMgr::Quickload() {
         // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
         // the record IS a SaveSlot (elsewhere this file casts g_gameReg->m_saveSink
         // to CSaveGame). Bind to the real callee so the reloc is faithful.
-        if (m_saveSink->VerifySlot(reinterpret_cast<SaveSlot*>(m_saveInfoRec)) == 0) {
+        if (m_saveSink->VerifySlot(m_saveInfoRec) == 0) {
             return 1;
         }
         ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
@@ -2581,7 +2581,7 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
 // match; the residual is the m_134 compare landing in esi here vs retail's edi
 // (freed by the inline-strcpy rep-movs) - a pure esi<->edi naming swap.
 RVA(0x000927b0, 0xc4)
-i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
+i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     if (dst == 0) {
         return 0;
     }
@@ -2600,10 +2600,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
     // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
-    m_saveSink->CopySlot(
-        reinterpret_cast<SaveSlot*>(dst),
-        reinterpret_cast<const SaveSlot*>((src + 0x1d0))
-    );
+    m_saveSink->CopySlot(dst, reinterpret_cast<const SaveSlot*>((src + 0x1d0)));
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
@@ -3435,14 +3432,9 @@ CGruntzMgr::CGruntzMgr() {
     m_optionsCount = 3;
 }
 
-RVA(0x00083330, 0x1e)
-void* CGruntzMgr::ScalarDeletingDtor(u32 flags) {
-    this->CGruntzMgr::~CGruntzMgr(); // qualified -> direct (non-virtual) dtor call
-    if (flags & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// 0x83330 is the compiler-generated scalar-deleting destructor - cl auto-emits the
+// COMDAT with the vtable; the ex hand-written ScalarDeletingDtor stand-in is GONE.
+// @rva-symbol: ??_GCGruntzMgr@@UAEPAXI@Z 0x00083330 0x1e
 
 // @early-stop
 // reloc-masked plateau (~97%): code bytes exact; the only residual is the

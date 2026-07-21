@@ -1,7 +1,7 @@
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -37,10 +37,16 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
-    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) { // slow lookup == _zvec::GrowTo @0x16da80
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+    if (reinterpret_cast<i32>(
+            (static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0)
+        )) { // slow lookup == _zvec::GrowTo @0x16da80
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -83,7 +89,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+        CAniRecordView* e =
+            d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     // snap the bound object's screen position to tile center.
@@ -170,7 +177,7 @@ void CStaticHazard::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStaticHazard::LoadAttributes2);
+    HaznLookup(id)->m_fn = static_cast<HaznHandler>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -188,7 +195,7 @@ void CStaticHazard::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHaznEntry2*>(HaznLookup(id2)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStaticHazard::LoadAttributes);
+    HaznLookup(id2)->m_fn = static_cast<HaznHandler>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------
@@ -224,7 +231,8 @@ i32 CStaticHazard::LoadAttributes2() {
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
-        CAniRecordView* e = d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+        CAniRecordView* e =
+            d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -261,8 +269,9 @@ i32 CStaticHazard::LoadAttributes() {
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_38->m_1a0.m_14;
-                CAniRecordView* e =
-                    d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+                CAniRecordView* e = d->m_records.GetSize() > 0
+                                        ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
+                                        : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_sortKey != 0) {
@@ -271,7 +280,8 @@ i32 CStaticHazard::LoadAttributes() {
             }
             // clear the hazard cell's bit-0x8000000
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
                 grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
             return 0;
@@ -281,8 +291,9 @@ i32 CStaticHazard::LoadAttributes() {
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = m_38->m_1a0.m_14;
-            CAniRecordView* e =
-                d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+            CAniRecordView* e = d->m_records.GetSize() > 0
+                                    ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
+                                    : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_sortKey != 0) {
@@ -304,8 +315,9 @@ i32 CStaticHazard::LoadAttributes() {
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = m_38->m_1a0.m_14;
-            CAniRecordView* e =
-                d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+            CAniRecordView* e = d->m_records.GetSize() > 0
+                                    ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
+                                    : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_sortKey != 0) {
@@ -328,12 +340,14 @@ dispatch:
             m_object->m_flags |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[m_tileRow][m_tileCol * 7] |= 0x8000000;
         }
     } else {
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
         if (m_object->m_sortKey != 0) {
@@ -348,12 +362,14 @@ dispatch:
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_38->m_1a0.m_14;
-                CAniRecordView* e =
-                    d->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(d->m_records.GetAt(0)) : 0;
+                CAniRecordView* e = d->m_records.GetSize() > 0
+                                        ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
+                                        : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
                 grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
         }
@@ -392,7 +408,12 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;

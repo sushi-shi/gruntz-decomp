@@ -10,11 +10,20 @@ struct tagRECT;     // Win32 RECT (CBrickzGrid::Clip arg)
 
 struct BrickzNode {
     // m_0/m_4 are a (key1,key2) pair when the node is in the lookup list, and a
-    // (child-ptr, free-list back-ptr) pair when the node is a cell-bucket node;
-    // typed int here (Find compares them as ints), reinterpreted in Reset.
-    i32 m_0;          // +0x00  key1 / col / child ptr
-    i32 m_4;          // +0x04  key2 / row / back-link (free list)
-    BrickzNode* m_8;  // +0x08  fwd-link (free/active list) / bucket next / g cost
+    // (child-ptr, back-ptr) pair when the node is a cell-bucket node - both roles
+    // as union arms (the ex-MapElemB twin is MERGED here).
+    union {
+        i32 m_0;       // +0x00  key1 / col
+        void* m_child; //         bucket child ptr (the pool-init null)
+    };
+    union {
+        i32 m_4;            // +0x04  key2 / row
+        BrickzNode* m_prev; //        free-list back-link
+    };
+    union {
+        BrickzNode* m_8;    // +0x08  fwd-link (free/active list) / g cost
+        BrickzNode* m_next; //        bucket next (same slot, pool-walk name)
+    };
     i32 m_c;          // +0x0c  priority key
     i32 m_10;         // +0x10  sort key / total f
     BrickzNode* m_14; // +0x14  list link A (prev / next)

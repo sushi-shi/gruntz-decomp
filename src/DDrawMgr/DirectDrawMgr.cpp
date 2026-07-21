@@ -393,7 +393,10 @@ i32 CDirectDrawMgr::CreateDevice(
     // real SDK type so the dwSize/dwCaps fields are named, not magic indices.
     (reinterpret_cast<LPDDCAPS>(m_driverCaps))->dwSize = sizeof(DDCAPS);
     (reinterpret_cast<LPDDCAPS>(m_helCaps))->dwSize = sizeof(DDCAPS);
-    hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_driverCaps), reinterpret_cast<LPDDCAPS>(m_helCaps));
+    hr = m_device->GetCaps(
+        reinterpret_cast<LPDDCAPS>(m_driverCaps),
+        reinterpret_cast<LPDDCAPS>(m_helCaps)
+    );
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
@@ -439,7 +442,8 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
         return 0;
     }
     g_ddCreateCtx = 0;
-    i32 hr = DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
+    i32 hr =
+        DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
@@ -522,16 +526,8 @@ CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return item;
 }
 
-RVA(0x00142340, 0x1e)
-void* CFileImageSurface::ScalarDelete(u32 flags) {
-    // Qualified call -> direct (non-virtual) dispatch to the 0x142360 teardown copy,
-    // matching retail's ??_G which calls the non-deleting dtor directly.
-    this->CFileImageSurface::~CFileImageSurface();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
+// 0x142340 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
+// @rva-symbol: ??_GCFileImageSurface@@UAEPAXI@Z 0x00142340 0x1e
 
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {}
@@ -873,7 +869,12 @@ void CDirectDrawMgr::SetupCaps() {
     }
     m_poolItems.SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_device->EnumDisplayModes(0, 0, 0, reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback));
+    i32 hr = m_device->EnumDisplayModes(
+        0,
+        0,
+        0,
+        reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback)
+    );
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -1132,7 +1133,12 @@ i32 RestoreLostSurfaces_1437f0() {
 // by value would pollute every includer for a 43-byte forwarder. Deferred.
 RVA(0x00143810, 0x2b)
 i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
-    return m_device->GetAvailableVidMem(reinterpret_cast<LPDDSCAPS>(&caps), reinterpret_cast<LPDWORD>(total), reinterpret_cast<LPDWORD>(free)) == 0;
+    return m_device->GetAvailableVidMem(
+               reinterpret_cast<LPDDSCAPS>(&caps),
+               reinterpret_cast<LPDWORD>(total),
+               reinterpret_cast<LPDWORD>(free)
+           )
+           == 0;
 }
 
 RVA(0x00143840, 0x32)
@@ -1226,7 +1232,9 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_940 = z;
-    return reinterpret_cast<CDDPalette*>(1); // retail returns the success flag as the CDDPalette* result
+    return reinterpret_cast<CDDPalette*>(
+        1
+    ); // retail returns the success flag as the CDDPalette* result
 }
 
 // ---------------------------------------------------------------------------

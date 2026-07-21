@@ -1,4 +1,4 @@
-#include <Mfc.h>        // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
+#include <Mfc.h>                  // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -105,7 +105,8 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
-        if (obj->m_targetType == static_cast<u8>(typeByte) && obj->m_targetIndex == static_cast<u8>(indexByte)) {
+        if (obj->m_targetType == static_cast<u8>(typeByte)
+            && obj->m_targetIndex == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
             obj->Deselect();
             return;
@@ -346,7 +347,15 @@ i32 CGruntzCommand::ApplyMask(CPlay* p) {
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *reinterpret_cast<u16*>(&m_10)) {
-            if (!p->ExecCommand(m_targetIndex, static_cast<char>(i), m_5, m_8, m_a, 0, m_targetType)) {
+            if (!p->ExecCommand(
+                    m_targetIndex,
+                    static_cast<char>(i),
+                    m_5,
+                    m_8,
+                    m_a,
+                    0,
+                    m_targetType
+                )) {
                 ok = 0;
             }
         }
@@ -377,14 +386,8 @@ i32 CGruntzCommand::Vslot05() {
     return 1;
 }
 
-RVA(0x00024330, 0x20)
-void* CGruntzCommand::ScalarDtor(u32 flags) {
-    this->CGruntzCommand::~CGruntzCommand();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
+// 0x24330 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
+// @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x00024330 0x20
 
 RVA(0x00024360, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
@@ -598,8 +601,9 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     }
     i32 count = m_base.GetCount();
     stream->Write(&count, 4);
-    GzCmdNode* node =
-        reinterpret_cast<GzCmdNode*>(m_base.GetHeadPosition()); // MFC-protected m_pNodeHead via the inline accessor
+    GzCmdNode* node = reinterpret_cast<GzCmdNode*>(
+        m_base.GetHeadPosition()
+    ); // MFC-protected m_pNodeHead via the inline accessor
     while (node) {
         CGruntzCommand* cmd = node->m_8;
         node = node->m_0;

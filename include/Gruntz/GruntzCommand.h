@@ -45,24 +45,23 @@ public:
     // against (u8)-cast params and retail emits the ZERO-extending `movzx` - a signed
     // `char` here makes cl emit `movsx` and drops that fn 100 -> 78.47 (the ex-GzTargetObj
     // view, which matched 100%, declared them u8; the binary is the arbiter).
-    u8 m_targetIndex;          // +0x04  per-team index byte
-    char m_5;        // +0x05
-    u8 m_targetType;          // +0x06  type/key byte
-    char m_7;        // +0x07 (unused by this cluster)
-    i16 m_8;         // +0x08
-    i16 m_a;         // +0x0a
-    i32 m_submitted; // +0x0c  submit-context latch (serialized by Save/Load): net
-                     //         parse path sets =1, the cmd-mgr sets =2 (playing) /
-                     //         =4 (ready) by game state before enqueue
-    char m_10;       // +0x10
-    char m_11;       // +0x11
-    i16 m_12;        // +0x12 (pad -> 0x14)
+    u8 m_targetIndex; // +0x04  per-team index byte
+    char m_5;         // +0x05
+    u8 m_targetType;  // +0x06  type/key byte
+    char m_7;         // +0x07 (unused by this cluster)
+    i16 m_8;          // +0x08
+    i16 m_a;          // +0x0a
+    i32 m_submitted;  // +0x0c  submit-context latch (serialized by Save/Load): net
+                      //         parse path sets =1, the cmd-mgr sets =2 (playing) /
+                      //         =4 (ready) by game state before enqueue
+    char m_10;        // +0x10
+    char m_11;        // +0x11
+    i16 m_12;         // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (the non-deleting dtor; trivial -> vptr stamp only)
     // The `??_G` scalar-deleting destructor (vtable slot 0 @0x24330): run the trivial
     // ~CGruntzCommand (inlined vptr stamp), conditionally RezFree, return this. Modeled
     // as a hand-written non-virtual method pinned by RVA (the CFileImageSurface pattern).
-    void* ScalarDtor(u32 flags); // 0x24330
     // slot 1 - the (de)serialize dispatcher: on mode 4 call Save (slot 2), on
     // mode 7 call Load (slot 3), both through the vtable. The leaves override it
     // (Single 0x0244d0 / Multi 0x0246c0); the base anchor returns 1.

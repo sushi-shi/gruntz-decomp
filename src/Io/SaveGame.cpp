@@ -468,10 +468,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         }
     }
     obj->FillSlotByIndex(slot, reinterpret_cast<i32>(name), g_gameReg);
-    g_gameReg->FillSaveInfo(
-        reinterpret_cast<SaveInfo*>(reinterpret_cast<i32>(obj->GetSlot(slot))),
-        static_cast<void*>(name)
-    );
+    g_gameReg->FillSaveInfo(obj->GetSlot(slot), static_cast<void*>(name));
     EndDialog(hDlg, 1);
     if (!obj->Save(reinterpret_cast<i32>(obj->GetSlot(slot)) + 0x35, 0x81a6)) {
         g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");

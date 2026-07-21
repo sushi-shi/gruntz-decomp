@@ -48,8 +48,8 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawWorkerHost.h> // CLevelPlane (the m_ctx geometry chain)
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
-#include <DDrawMgr/AniAdvance.h>          // CAniBlitTrigger (the per-frame sound trigger)
-#include <Wap32/WapObj.h>                 // CWapObj : CObject
+#include <DDrawMgr/AniAdvance.h>      // CAniBlitTrigger (the per-frame sound trigger)
+#include <Wap32/WapObj.h>             // CWapObj : CObject
 #include <Globals.h>
 
 void operator delete(void*);
@@ -66,7 +66,6 @@ DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
 
 extern char g_emptyString[]; // 0x2293f4
-
 
 void* operator new(u32 n);
 void operator delete(void* p);
@@ -233,7 +232,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
         }
         return 0;
     }
-    m_workers.AddTail(static_cast<::CObject*>(w));
+    m_workers.AddTail(static_cast< ::CObject*>(w));
     return w;
 }
 
@@ -290,9 +289,9 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<::CObject*>(w));
+        m_workers.AddHead(static_cast< ::CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast<::CObject*>(w));
+        m_workers.AddTail(static_cast< ::CObject*>(w));
     }
     return w;
 }
@@ -378,9 +377,9 @@ void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<::CObject*>(w));
+        m_workers.AddHead(static_cast< ::CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast<::CObject*>(w));
+        m_workers.AddTail(static_cast< ::CObject*>(w));
     }
     return w;
 }
@@ -395,9 +394,9 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<::CObject*>(w));
+        m_workers.AddHead(static_cast< ::CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast<::CObject*>(w));
+        m_workers.AddTail(static_cast< ::CObject*>(w));
     }
     return w;
 }
@@ -418,14 +417,8 @@ fail:
     return 0;
 }
 
-RVA(0x001574b0, 0x1e)
-void* CDDrawSubMgrPages::ScalarDtor(u32 flags) {
-    this->CDDrawSubMgrPages::~CDDrawSubMgrPages();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
+// 0x1574b0 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
+// @rva-symbol: ??_GCDDrawSubMgrPages@@UAEPAXI@Z 0x001574b0 0x1e
 
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
@@ -436,14 +429,8 @@ CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     // implicit ~CWapObj -> ~CObject folds the grand-base re-stamp (0x5e8cb4) last.
 }
 
-RVA(0x00157550, 0x1e)
-void* CDDrawSubMgrLeafScan::ScalarDtor(u32 flags) {
-    this->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
+// 0x157550 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
+// @rva-symbol: ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z 0x00157550 0x1e
 
 // ---------------------------------------------------------------------------
 // 0x157570: the (non-deleting) destructor. Now a real virtual dtor: cl stamps
@@ -901,7 +888,8 @@ i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
-            return (static_cast<CAniBlitTrigger*>(val))->TriggerBlit_1587f0(pos, -1, range1, range2);
+            return (static_cast<CAniBlitTrigger*>(val))
+                ->TriggerBlit_1587f0(pos, -1, range1, range2);
         }
     }
     return 0;
@@ -1282,7 +1270,10 @@ void CDDrawSubMgrPages::Method_158b90() {
     CDDrawSurfaceMgr* n = m_0c;
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
-    c->WalkDispatch30(reinterpret_cast<i32>(s->m_backPair), reinterpret_cast<i32>(s->m_overlayPair));
+    c->WalkDispatch30(
+        reinterpret_cast<i32>(s->m_backPair),
+        reinterpret_cast<i32>(s->m_overlayPair)
+    );
 }
 
 RVA(0x00158bc0, 0x2e)
