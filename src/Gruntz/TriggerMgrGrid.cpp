@@ -520,16 +520,16 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     return 1;
 }
 
+// retail 0x6da60/0x6daa0 end at the void EnqueueSingle call with NO eax write, so void
+// (a `return 0` adds a spurious xor eax,eax). Orphan copies - no caller in the tree.
 RVA(0x0006da60, 0x27)
-i32 __stdcall GridAction6(i32 a, i32 b) {
+void __stdcall GridAction6(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
-    return 0;
 }
 
 RVA(0x0006daa0, 0x27)
-i32 __stdcall GridAction7(i32 a, i32 b) {
+void __stdcall GridAction7(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
-    return 0;
 }
 
 // 0x6dae0: ApplyTriggerA(a18, col, row, a24, a28, a2c) - look up grid[a18*15+col]; if live,
