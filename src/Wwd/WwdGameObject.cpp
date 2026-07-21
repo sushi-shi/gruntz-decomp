@@ -49,8 +49,6 @@
 // Fields are typed named members at their retail offsets (matching-neutral); only
 // the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-extern void* operator new(u32 size);
-extern void operator delete(void* p);
 
 
 static inline void StampWorkerVtbl(AnimWorkerObj* w) {

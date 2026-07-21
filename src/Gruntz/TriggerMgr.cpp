@@ -575,26 +575,17 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 // matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
 // ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
 // @early-stop
-// MISRECONSTRUCTED (not a regalloc wall) - the current body is structurally wrong and
-// needs a from-scratch redo (739 B, deferred to final sweep). Retail truth from
-// disasm 0x79520:
-//   * a28 is a SELECTOR value, not a boolean: when a28!=0 the code uses `sel = a28`
-//     directly; only when a28==0 does it classify by hit/cell.
-//   * classify -> sel via: hit==0 => sel=1; hit==cell => INLINE (m_2a8=0;
-//     LoadCursorSprites(0,0); PlaceA(o->m_screenX,o->m_screenY,a18,a14); return 1);
-//     hit!=cell => sel=2; the cell==0/owner!=player else-branch => sel = hit?2:1.
-//   * dispatch is a `dec ecx; je` ladder on sel: 1->stanzaA, 2->stanzaB, 3->stanzaC,
-//     else->return 1. (There is NO sel==0; my current sel=0 a28-boolean path is wrong.)
-//   * stanzaA (sel==1): ReportRecordsA-shape call(this,1,a14,a18) @0x3bc0; CreateSprite
-//     ("LightFx",0xf4240); notify(m_7c+0x10); Arm(str1,str2, kind=2, 1).
-//   * stanzaB (sel==2): hit-owner gate + m_170/m_19c(0xf/0x13) tile checks; on fail
-//     SpawnVoiceDriver ReportError(0x324,...) return 0; else ReportRecordsB-shape @0x4340;
-//     CreateSprite; Arm(...,kind=1,1).
-//   * stanzaC (sel==3): hit-owner + m_198==0x1e gate; EnqueueSingle Report @0x2095;
-//     CreateSprite; Arm(...,kind=3,1).
-//   * shared arm tail @0x797e2: Arm("GAME_LIGHTING_TARGETCURSOR","GAME_TARGETCURSOR",
-//     kind,1) on m_7c->m_18; ret 1. Strings 0x60f12c/0x60f14c.
-// topic:wall topic:misreconstruction.
+// Reconstructed from-scratch 46.7->75.6% (was structurally wrong: a boolean-a28
+// sel=0/1/2 dispatch). a28 is a SELECTOR: when nonzero sel=a28; else classify by
+// hit/cell into sel 1/2/3, dispatched by a dec-ladder switch to three stanzas that
+// report (ReportRecordsA / ReportRecordsB(flag) / EnqueueSingle) then per-stanza
+// CreateSprite("LightFx")+notify with kindArg 2/1/3, sharing the Arm tail; stanzaB/C
+// hit-owner gates funnel to a shared SpawnVoiceDriver reportError. Two block-layout
+// inversions were needed (cell-decode je-layout, classify cell!=0-inline). Residual is
+// the this/hit callee-saved coloring (retail this=edi/hit=esi, cl this=esi/hit=edi) and
+// the a14/a18 register-vs-stack-spill in the PlaceA/CreateSprite calls - an intra-fn
+// coloring wall that cascades through every operand; not source-steerable. topic:wall
+// topic:regalloc.
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c) {
     static_cast<void>(a1c);
@@ -835,7 +826,6 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
 }
 
 extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
-extern void __cdecl operator delete(void*);
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {

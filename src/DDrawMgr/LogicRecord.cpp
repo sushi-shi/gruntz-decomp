@@ -8,8 +8,6 @@
 
 extern "C" void Engine_Delete(void* p);
 
-extern void* operator new(u32 size);
-
 // ---------------------------------------------------------------------------
 // Dispatch (0x164830, __thiscall). Run one of the record's six actions selected
 // by `mode` (3..8): refresh the cached value (m_174 from m_170->m_188), Load,
