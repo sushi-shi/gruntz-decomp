@@ -5,7 +5,6 @@ class CSBI_ImageSet; // notify-field element (slot-12 Notify receiver)
 class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine; // <Gruntz/SBI_GruntMachine.h> - m_machineDisplay's real type
-class DSoundCloneInst;   // <Dsndmgr/DirectSoundMgr.h> - pooled cue play-factory
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the DirectSound clone (destruct-button voice)
 
 #include <Ints.h>
@@ -90,11 +89,9 @@ public:
 };
 SIZE_UNKNOWN(CSbiNotifyPayload);
 
-struct CSbiSpriteCfg {
-    char m_pad0[0x10];
-    DSoundCloneInst* m_playFactory; // +0x10  pooled cue play-factory (GetItem -> DirectSoundMgr)
-};
-SIZE_UNKNOWN(CSbiSpriteCfg);
+// (CSbiSpriteCfg DISSOLVED 2026-07-21: it was a partial .cpp-reached view of LeafCue -
+// its m_playFactory @+0x10 IS LeafCue::m_10, the pooled cue play-factory. See
+// <Gruntz/LeafCue.h>.)
 
 SIZE(CWarpStoneFly, 0x40);
 
@@ -475,13 +472,10 @@ public:
 };
 SIZE(CStatusBarMgr, 0x630);
 
-struct CSbiCueRecord {
-    char m_pad0[0x10];
-    DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;              // +0x14  last draw-clock
-    i32 m_18;              // +0x18  interval
-};
-SIZE_UNKNOWN(CSbiCueRecord);
+// (CSbiCueRecord DISSOLVED 2026-07-21: it was a .cpp-reached view of LeafCue - the
+// cue-map value class in <Gruntz/LeafCue.h>. m_10/m_14/m_18 ARE LeafCue's player/
+// last-clock/interval; the SBI_RectOnly cue-throttle blocks are LeafCue::PlayIfElapsed
+// inlined, and CPlay::Vslot10 already uses the canonical LeafCue on this same map.)
 
 struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 SIZE_UNKNOWN(CSbiSeqMap);

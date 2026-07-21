@@ -9,14 +9,9 @@
 
 class CDDrawSurfaceMgr;
 
-class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
-struct CMiCue {
-    char m_pad0[0x10];
-    DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;              // +0x14  last draw-clock
-    i32 m_18;              // +0x18  interval
-};
-SIZE_UNKNOWN(CMiCue);
+// (CMiCue DISSOLVED 2026-07-21: it was a .cpp-reached view of LeafCue - the cue-map
+// value class in <Gruntz/LeafCue.h>. m_10/m_14/m_18 are LeafCue's player/last-clock/
+// interval; SetState's throttle block IS LeafCue::PlayIfElapsed inlined.)
 
 class CSBI_MenuItem : public CSBI_Image {
 public:

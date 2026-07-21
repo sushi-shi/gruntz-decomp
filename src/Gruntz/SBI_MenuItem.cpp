@@ -13,6 +13,7 @@
 #include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CImageRegistry + CSprite)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_soundRegistry's real class (the cue host: m_10 cue map + m_30 gate)
+#include <Gruntz/LeafCue.h>            // the cue-map value class (ex the CMiCue view)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (one shape)
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
@@ -171,17 +172,17 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         // (CMapStringToPtr, Ptr band), m_30 its busy/gate guard.
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_30 == 0) {
-            CMiCue* found = 0;
+            LeafCue* found = 0;
             void* foundP = 0;
             // the cue map is the Ptr band (void* values), so the element read is a
             // plain from-void cast, not a class-to-class cross-cast.
             mh->m_10.Lookup("GAME_TABHIGHLIGHT2", foundP);
-            found = reinterpret_cast<CMiCue*>(foundP);
+            found = reinterpret_cast<LeafCue*>(foundP);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CMiCue* p = found;
+                    LeafCue* p = found;
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
