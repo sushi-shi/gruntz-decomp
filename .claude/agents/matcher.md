@@ -221,26 +221,33 @@ are assigned is game/engine code, so you never identify or handle library yourse
 2. **Push every function to 100%.** A plateau is almost always fixable. FIRST fix any
    codegen-SHAPE bug in your source by hand — wrong control-flow, wrong types, a cast
    standing in for a real class, wrong calling convention (the permuter CANNOT fix these;
-   hand-fix them first). THEN, when the STRUCTURE is already correct and the only thing
-   left is codegen residue — **including a "register-coloring / regalloc wall" on a 95%+
-   function** — run the **permuter to BREAK the wall**. A regalloc wall is NOT a dead end:
-   MSVC5's register/scheduling/frame choices ARE steerable — you nudge the compiler by
-   perturbing the source (operand order, decl order, and especially the TU-state emitted
-   *before* the function), and SOME perturbation makes `cl` pick the SAME regalloc as
-   retail → 100%. The permuter explores many ideas at once. Because we track **MAX fuzzy
-   (best-ever)**, the instant ONE variant hits 100% the win is banked forever — you do not
-   need it to be stable, just reachable once.
-   - **Fast first pass** (operand-order / reassoc / decl-split, whole TU top-down):
-     `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>` /
-     `python3 -m gruntz.match.permute_sweep <unit>`.
-   - **Wall-breaker — use this on 95%+ regalloc/scheduling/frame walls** (the exhaustive
-     engine, which the fast pass cannot reach): `python3 -m gruntz.match.match_variants
-     <src.cpp> <rva> --state-trials 64 --max-depth 3 --limit 512 -o /tmp/m.json --run --top 12`.
-     Its `--state-trials` search injects declarations/includes before the target to shift
-     `cl`'s cumulative regalloc state — the one lever that moves register-coloring — and
-     tries the whole Cartesian product of AST mutations × TU-states, reporting the best
-     (exact closure = objdiff 100 + size == retail + ordered relocs == retail). See the
-     **`permute` skill**.
+   hand-fix them first). THEN, when the STRUCTURE is already correct and only codegen
+   residue remains, pick the lever by what KIND of residue it is:
+   - **FIRST, suspect a MISLABELED CORRECTNESS BUG (highest yield — empirically the real
+     win).** A large fraction of `@early-stop` "regalloc walls" are actually a hidden
+     source bug the diff masks: a signedness slip (`jl/jle` where retail has `jb/jbe` —
+     cast the loop guard to `u32`), a wrong magic constant (`objdiff --diff` MASKS large
+     immediates as `<addr>`, so a wrong `/9`-vs-`/30` divisor shows only as a downstream
+     `sar`/`shr` shift — VERIFY every constant with `--base`), a missed CSE, a dropped
+     member/vtable stamp, a by-value-vs-by-pointer return. These are hand-fixable and bank
+     permanently (FadeRange 99.1→99.9 was a signedness bug mislabeled as a scheduling wall;
+     AutoTuneCmdDelay's "wall" was a `/9`-vs-`/30` divisor). Re-audit the disasm before
+     believing "regalloc wall".
+   - **Fast permuter pass** (operand-order / reassoc / decl-split residue on a genuinely
+     correct body): `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>` /
+     `permute_sweep <unit>`.
+   - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
+     exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
+     ONLY walls whose codegen depends on cross-function composition (inlining budget,
+     COMDAT/string ordering, cross-function scheduling). It is **structurally immune to
+     INTRA-function walls** — register *coloring* (`ebx` vs `edi` for `this`), SIB base/index
+     role, a spill decision, partial-register width (`and al` vs `and eax`), callee-saved
+     coalescing — because those come from the function's OWN dataflow, which TU-state does
+     not change (empirically 0/4 wall families moved, even at 1024 variants). So DON'T spend
+     `--state-trials` on a documented intra-function regalloc/SIB/spill/width wall; only
+     reach for it when the residue plausibly depends on TU-cumulative state.
+     `python3 -m gruntz.match.match_variants <src.cpp> <rva> --state-trials 64 --max-depth 3
+     --limit 512 -o /tmp/m.json --run --top 12`. See the **`permute` skill**.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
    reconstruction (full body, all logic) where EITHER (a) you have PROVEN with
    `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact and

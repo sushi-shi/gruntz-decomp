@@ -25,21 +25,28 @@ Do **NOT** reach for it to paper over a wrong reconstruction. It cannot fix:
   restructuring done by hand — the permuter does not restructure control flow), or
 - **wrong types / a cast-hacked view** (fix the class model first — matcher.md rule 0).
 
-**It CAN break a register-coloring / scheduling / frame-size "wall" on a 95%+ function.**
-This is its second, high-value job: you don't fix the regalloc directly, you *nudge the
-compiler into a different one*. MSVC5's register/frame choices are downstream of the
-source and the cumulative TU-state, so perturbing either (operand order, decl order, and
-especially declarations/includes emitted *before* the function via `--state-trials`)
-makes `cl` re-color — and SOME perturbation lands on the SAME coloring as retail → 100%.
-The permuter tries many such ideas at once. Because the campaign tracks **MAX fuzzy
-(best-ever per fn)**, the instant one variant reaches 100% the win is banked forever — it
-need not be a stable/obvious spelling, only reachable once. So a 95%+ "regalloc wall" is
-a permuter TARGET, not an `@early-stop`; only call it a wall after the wall-breaker
-(`match_variants --state-trials`, below) genuinely exhausts.
+**`match_variants --state-trials` moves ONLY cross-function-dependent walls — it is
+structurally immune to INTRA-function regalloc (empirically proven).** The exhaustive
+engine's `--state-trials` perturbs the TU content emitted *before* the target
+(declarations/includes), so it can only change codegen that depends on cross-function
+composition: inlining budget, COMDAT/string ordering, cross-function scheduling. It
+CANNOT move a wall that comes from the function's OWN dataflow — register *coloring*
+(`ebx` vs `edi` for `this`), SIB base/index role, a spill decision, partial-register
+width (`and al` vs `and eax`), callee-saved coalescing (frame `0x80` vs `0x70`). A
+wall-breaker experiment ran 4 such families (one at 1024 variants) and moved **zero**.
+So do NOT spend `--state-trials` on a documented intra-function regalloc/SIB/spill/width
+wall; reserve it for residue that plausibly depends on TU-cumulative state.
 
-The fast `permute` pass (operand-order/reassoc/decl-split) gives *incremental* nudges;
-the exhaustive `match_variants --state-trials` engine is the one that moves register
-coloring (it searches TU-state, the lever the fast pass lacks).
+**The real high-yield move on a "regalloc wall" is to suspect a MISLABELED CORRECTNESS
+BUG.** A large fraction of `@early-stop` "walls" are a hidden source bug the diff masks:
+a signedness slip (`jl/jle` vs retail `jb/jbe` — cast the loop guard to `u32`), a wrong
+magic constant (`objdiff --diff` masks large immediates as `<addr>` — verify with
+`--base`; a `/9`-vs-`/30` divisor showed only as a downstream shift), a missed CSE, a
+dropped member/vtable stamp. Those are hand-fixable and bank permanently (FadeRange
+99.1→99.9 was a mislabeled signedness bug). Re-audit the disasm before believing "wall".
+
+The fast `permute` pass (operand-order/reassoc/decl-split) still gives *incremental*
+nudges on a genuinely-correct body; MAX fuzzy (best-ever) banks any 100% it reaches.
 
 ## THE methodology: top-down in source order
 
