@@ -7,21 +7,21 @@
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
-    // tag 8 + the ani window seeded (m_3c = 0x64 interval); the `new CSBI_ImageSetAni`
+    // tag 8 + the ani window seeded (m_interval = 0x64); the `new CSBI_ImageSetAni`
     // ctor leg the Resource-tab conveyor builders fold at each new-site.
     CSBI_ImageSetAni() {
         m_30 = 0;
         m_kind = 8;
         m_34 = 0;
-        m_44 = 0;
-        m_3c = 0x64;
+        m_step = 0;
+        m_interval = 0x64;
     }
     // Real vtable shape (sema class: vtbl@0x1ead6c, 15 slots; overrides 0/1/4/5,
     // news 13/14). The out-of-line ~ (0x1047f0) lives in SBI_ImageSetAni.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_ImageSetAni() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1ead6c thunk 0x2829 -> 0xe7cd0): serialize the six persistent ints
-    // (m_3c..m_50) through the stream, then chain CSBI_ImageSet::SerializeFields.
+    // (m_interval..m_frameEnd) through the stream, then chain CSBI_ImageSet::SerializeFields.
     // CImageSetStream is a typedef of CSerialArchive == the real CFileMemBase, so this is
     // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
     virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
@@ -58,15 +58,15 @@ public:
     //  SerializeFields override declared above.)
 
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
-    // advance within [m_4c, m_50]. Ex CAniPlayer::Tick (dossier #16 identity fold).
+    // advance within [m_frameStart, m_frameEnd]. Ex CAniPlayer::Tick (dossier #16 identity fold).
     i32 Tick(); // 0xe7b00
 
-    i32 m_3c; // +0x3c  persistent serialized ints (Serialize save/load block)
-    i32 m_40; // +0x40
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
+    i32 m_interval; // +0x3c  persistent serialized ints (Serialize save/load block)
+    i32 m_lastTime; // +0x40
+    i32 m_step; // +0x44
+    i32 m_loop; // +0x48
+    i32 m_frameStart; // +0x4c
+    i32 m_frameEnd; // +0x50
 };
 SIZE_UNKNOWN(CSBI_ImageSetAni);
 VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)

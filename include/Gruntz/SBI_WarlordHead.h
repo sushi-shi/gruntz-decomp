@@ -30,7 +30,7 @@ public:
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1ead24 thunk 0x3cd8 -> 0xeb970): serialize the head's direction
-    // (m_3c), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
+    // (m_direction), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
     virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
     virtual void SbiSlot5() OVERRIDE; // slot 5 (the Render below)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
@@ -61,7 +61,7 @@ public:
 
     // 0xeb740: drive the show/hide of the two anchor frames (frame table slots 1/2).
     i32 ShowFrames(i32 show, ShadeDescr* palDescr);
-    // 0xeb830: latch the raw direction (m_3c) + the derived state (m_38 = 1 or 2).
+    // 0xeb830: latch the raw direction (m_direction) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.
     i32 Render(); // 0-arg: body ends `retl` (cleans 0); the ex-`i32 z` was fabricated + unused
@@ -73,7 +73,7 @@ public:
     // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
     // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
     // m_34 (config, the base's CImageSet*), m_38 (state index).
-    i32 m_3c; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
+    i32 m_direction; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
 SIZE_UNKNOWN(CSBI_WarlordHead);
 VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)

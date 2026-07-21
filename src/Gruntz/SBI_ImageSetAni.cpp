@@ -56,17 +56,17 @@ i32 CSBI_ImageSetAni::Init(
             (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(tbl));
             m_34 = tbl;
             if (tbl != 0) {
-                m_3c = b2;
-                m_48 = b3;
-                m_44 = b4;
-                m_4c = (b0 == -1) ? (b4 >= 0 ? tbl->m_minIndex : tbl->m_maxIndex) : b0;
-                m_50 = (b1 == -1) ? (b4 >= 0 ? tbl->m_maxIndex : tbl->m_minIndex) : b1;
-                m_38 = m_4c;
-                if (m_4c < tbl->m_minIndex || m_4c > tbl->m_maxIndex) {
+                m_interval = b2;
+                m_loop = b3;
+                m_step = b4;
+                m_frameStart = (b0 == -1) ? (b4 >= 0 ? tbl->m_minIndex : tbl->m_maxIndex) : b0;
+                m_frameEnd = (b1 == -1) ? (b4 >= 0 ? tbl->m_maxIndex : tbl->m_minIndex) : b1;
+                m_38 = m_frameStart;
+                if (m_frameStart < tbl->m_minIndex || m_frameStart > tbl->m_maxIndex) {
                     m_30 = 0;
                     return 0;
                 }
-                m_30 = static_cast<CImage*>(tbl->m_items.GetAt(m_4c));
+                m_30 = static_cast<CImage*>(tbl->m_items.GetAt(m_frameStart));
                 return m_30 != 0;
             }
         }
@@ -106,26 +106,26 @@ i32 CSBI_ImageSetAni::Tick() {
             );
         }
         u32 now = timeGetTime();
-        if (now - static_cast<u32>(m_40) > static_cast<u32>(m_3c)) {
-            m_38 += m_44;
-            m_40 = timeGetTime();
+        if (now - static_cast<u32>(m_lastTime) > static_cast<u32>(m_interval)) {
+            m_38 += m_step;
+            m_lastTime = timeGetTime();
         }
-        if (m_44 > 0) {
-            if (m_38 > m_50) {
-                if (m_48 != 0) {
-                    m_38 = m_4c;
+        if (m_step > 0) {
+            if (m_38 > m_frameEnd) {
+                if (m_loop != 0) {
+                    m_38 = m_frameStart;
                     return 1;
                 }
-                m_38 = m_50;
+                m_38 = m_frameEnd;
                 m_28--;
             }
-        } else if (m_44 < 0) {
-            if (m_38 < m_50) {
-                if (m_48 != 0) {
-                    m_38 = m_4c;
+        } else if (m_step < 0) {
+            if (m_38 < m_frameEnd) {
+                if (m_loop != 0) {
+                    m_38 = m_frameStart;
                     return 1;
                 }
-                m_38 = m_50;
+                m_38 = m_frameEnd;
                 m_28--;
             }
         } else {
@@ -149,23 +149,23 @@ i32 CSBI_ImageSetAni::Tick() {
 RVA(0x000e7c30, 0x7d)
 void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
     if (start != -1) {
-        m_4c = start;
+        m_frameStart = start;
     } else {
-        m_4c = (step >= 0) ? m_34->m_minIndex : m_34->m_maxIndex;
+        m_frameStart = (step >= 0) ? m_34->m_minIndex : m_34->m_maxIndex;
     }
     if (end != -1) {
-        m_50 = end;
+        m_frameEnd = end;
     } else {
-        m_50 = (step >= 0) ? m_34->m_maxIndex : m_34->m_minIndex;
+        m_frameEnd = (step >= 0) ? m_34->m_maxIndex : m_34->m_minIndex;
     }
     if (interval != -1) {
-        m_3c = interval;
+        m_interval = interval;
     }
-    m_44 = step;
-    m_48 = loop;
-    m_38 = m_4c;
+    m_step = step;
+    m_loop = loop;
+    m_38 = m_frameStart;
     m_28 = 2;
-    m_40 = ::timeGetTime();
+    m_lastTime = ::timeGetTime();
 }
 
 RVA(0x000e7cd0, 0xf8)
@@ -178,20 +178,20 @@ i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
     }
     switch (mode) {
         case 7:
-            s->Read(&m_3c, 4);
-            s->Read(&m_40, 4);
-            s->Read(&m_44, 4);
-            s->Read(&m_48, 4);
-            s->Read(&m_4c, 4);
-            s->Read(&m_50, 4);
+            s->Read(&m_interval, 4);
+            s->Read(&m_lastTime, 4);
+            s->Read(&m_step, 4);
+            s->Read(&m_loop, 4);
+            s->Read(&m_frameStart, 4);
+            s->Read(&m_frameEnd, 4);
             break;
         case 4:
-            s->Write(&m_3c, 4);
-            s->Write(&m_40, 4);
-            s->Write(&m_44, 4);
-            s->Write(&m_48, 4);
-            s->Write(&m_4c, 4);
-            s->Write(&m_50, 4);
+            s->Write(&m_interval, 4);
+            s->Write(&m_lastTime, 4);
+            s->Write(&m_step, 4);
+            s->Write(&m_loop, 4);
+            s->Write(&m_frameStart, 4);
+            s->Write(&m_frameEnd, 4);
             break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call

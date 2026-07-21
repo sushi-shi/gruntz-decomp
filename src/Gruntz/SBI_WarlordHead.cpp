@@ -87,11 +87,11 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
 RVA(0x000eb830, 0x31)
 i32 CSBI_WarlordHead::SetState(i32 dir) {
     if (dir == 0 || dir == 1) {
-        m_3c = dir;
+        m_direction = dir;
         m_38 = 1;
         return 1;
     }
-    m_3c = dir;
+    m_direction = dir;
     m_38 = 2;
     return 1;
 }
@@ -116,7 +116,7 @@ i32 CSBI_WarlordHead::Render() {
 
     CImageSet* cfg = m_34;
     CImage* f;
-    if (m_3c == 1) {
+    if (m_direction == 1) {
         f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(3));
     } else {
         f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(4));
@@ -164,9 +164,9 @@ i32 CSBI_WarlordHead::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
         return 0;
     }
     if (mode == 4) {
-        s->Write(&m_3c, 4);
+        s->Write(&m_direction, 4);
     } else if (mode == 7) {
-        s->Read(&m_3c, 4);
+        s->Read(&m_direction, 4);
     }
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
