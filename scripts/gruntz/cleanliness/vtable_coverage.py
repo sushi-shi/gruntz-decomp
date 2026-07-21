@@ -78,7 +78,7 @@ def covered_rvas():
                 named.add(rva)
     # source VTBL() rvas, tree-wide (robust to symbol_names staleness)
     try:
-        from gruntz.cleanliness.class_meta import vtbl_annotations
+        from gruntz.core.class_meta import vtbl_annotations
         for _name, rva, _path, _ln in vtbl_annotations():
             named.add(rva)
     except Exception:

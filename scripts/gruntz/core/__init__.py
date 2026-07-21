@@ -8,6 +8,8 @@ imported by more than one package lives here.
     report.py        the objdiff report.json accessor
     vtable_scan.py   recover every vtable in the EXE (gates/sema/build import it)
     vtable_hierarchy.py  per-class vtable topology (sema class + build gate)
+    class_meta.py    src/+include/ class-definition scanner (cleanliness gates
+                     + vtable_hierarchy)
     exe_map.py       queryable .text space map (sema map + the docs/exe-map suite)
     clangd_query.py  the clangd LSP client (sema refs/hover/rename, fingerprints)
     data_audit.py    data-section attribution engine (`gruntz data-audit` + build)

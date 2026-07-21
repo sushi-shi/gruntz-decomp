@@ -35,43 +35,23 @@ import re
 import sys
 from collections import defaultdict
 
-from gruntz.cleanliness.class_meta import (
+from gruntz.core.class_meta import (
+    MANUAL_STAMP_RE,
     REPO,
     iter_class_defs,
     rel,
+    rtti_vtables,
     source_files,
     vtbl_absent_names,
     vtbl_annotated_names,
     vtbl_annotations,
 )
-
-_RTTI_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
-_MANUAL_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
 # A ??_7<Class>@@6B... datum named via a `// @data-symbol:` / `// @rva-symbol:` label
 # (the escape hatch for the MI-decorated ??_7<Class>@@6B<Base>@@@ names a plain
 # VTBL()'s ??_7<Class>@@6B@ cannot express - e.g. zPTree @0x1e94ac). The datum IS
 # named for the delinker, so the class IS catalogued.
 _DATA_SYM_VTBL_RE = re.compile(
     r"@(?:data|rva)-symbol:\s*\?\?_7([A-Za-z_]\w*)@@6B")
-
-
-def rtti_vtables():
-    """{class_name: rva} for the simple (global-namespace) ??_7 vtables in
-    config/vtable_names.csv."""
-    out = {}
-    path = REPO / "config" / "vtable_names.csv"
-    if not path.exists():
-        return out
-    for r in csv.reader(path.open()):
-        if not r or r[0].strip() in ("", "name") or r[0].lstrip().startswith("#"):
-            continue
-        m = _RTTI_RE.match(r[0].strip())
-        if m:
-            try:
-                out[m.group(1)] = int(r[1], 16)
-            except (ValueError, IndexError):
-                pass
-    return out
 
 
 def present_rvas():
@@ -164,7 +144,7 @@ def main() -> int:
         where.setdefault(name, (path, lineno))
         if re.search(r"\bvirtual\b", body):
             virtual[name] = True
-        if _MANUAL_RE.search(body):
+        if MANUAL_STAMP_RE.search(body):
             manual[name] = True
 
     # A VTBL_ABSENT claim contradicting a positive binding (VTBL/RTTI) is itself a

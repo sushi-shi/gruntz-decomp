@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import sys
 
-from gruntz.cleanliness.class_meta import _blank_comments, rel, source_files
+from gruntz.core.class_meta import _blank_comments, rel, source_files
 from gruntz.cleanliness.board import METRICS
 
 # Pull the four vtable regexes straight from the cleanliness scoreboard so the guard

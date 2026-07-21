@@ -28,7 +28,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from gruntz.cleanliness.class_meta import _blank_comments, source_files
+from gruntz.core.class_meta import _blank_comments, source_files
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)

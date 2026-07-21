@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Shared source scanner for the class-metadata completeness checks.
+"""gruntz.core.class_meta - the shared src/+include/ class-definition scanner.
 
-Consumed by the two runnable checks:
-  * ``python -m gruntz.cleanliness.class_sizes``   - every class has SIZE/SIZE_UNKNOWN.
-  * ``python -m gruntz.cleanliness.class_vtables``  - every vtable-bearing class is
-                                                catalogued (VTBL / manual / RTTI).
+Consumed by the gruntz/cleanliness gates (class_sizes, class_vtables,
+vtable_bans, vtable_virtuality, vtable_slot_binding) and by
+gruntz.core.vtable_hierarchy - it lives in core/ so no core module imports a
+tool package upward.
 
-SCOPING RULES (documented once here; identical for both checks, so a class is
-never in one worklist under a stricter definition than the other):
+SCOPING RULES (documented once here; identical for every consumer, so a class
+is never in one worklist under a stricter definition than another):
 
   * Scan ``src/`` + ``include/`` only. ``vendor/`` is NEVER read (pristine
     third-party TUs carry no rva.h macros and are not ours to annotate).
@@ -163,6 +163,33 @@ def vtbl_absent_names() -> set:
     classes whose ??_7 datum is PROVEN absent from the retail image (never-emitted
     bases / never-constructed dispatch facets). Catalogued, not gaps."""
     return _annotated(_VTBL_ABSENT_RE)
+
+# The manual-vtable stamp idiom in a class BODY: an ``&...Vtbl`` / ``&..._vftable``
+# address-of or an ``m_vtbl`` / ``m_vptr`` field (the WAP-engine hand-rolled-vtable
+# signal shared by class_vtables and vtable_hierarchy).
+MANUAL_STAMP_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
+
+_RTTI_VTBL_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
+
+
+def rtti_vtables() -> dict:
+    """{class_name: rva} for the simple (global-namespace) ``??_7<Name>@@6B@``
+    vtables in config/vtable_names.csv."""
+    import csv
+    out = {}
+    path = REPO / "config" / "vtable_names.csv"
+    if not path.exists():
+        return out
+    for r in csv.reader(path.open()):
+        if not r or r[0].strip() in ("", "name") or r[0].lstrip().startswith("#"):
+            continue
+        m = _RTTI_VTBL_RE.match(r[0].strip())
+        if m:
+            try:
+                out[m.group(1)] = int(r[1], 16)
+            except (ValueError, IndexError):
+                pass
+    return out
 
 
 # VTBL(name, 0xrva) with BOTH arguments captured, for rva-uniqueness auditing.

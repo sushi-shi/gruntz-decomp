@@ -37,7 +37,8 @@ import unittest
 from pathlib import Path
 
 from gruntz.cleanliness import board as cleanliness
-from gruntz.cleanliness import class_meta, class_sizes
+from gruntz.cleanliness import class_sizes
+from gruntz.core import class_meta
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun

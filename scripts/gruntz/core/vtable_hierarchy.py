@@ -52,8 +52,8 @@ import csv
 import re
 import sys
 
+from gruntz.core import class_meta
 from gruntz.core import vtable_scan as vs
-from gruntz.cleanliness import class_meta, class_vtables
 
 IB = vs.IMAGEBASE
 REPO = vs.REPO
@@ -541,7 +541,7 @@ def structural_anchor(body, size_by_start, slots_cache):
 
 class Audit:
     """Everything the coverage / name-audit walks need, computed once. Enumerates
-    every vtable-bearing src class (class_meta/class_vtables scoping) and resolves
+    every vtable-bearing src class (gruntz.core.class_meta scoping) and resolves
     each to a vtable rva through a layered anchor cascade."""
 
     def __init__(self):
@@ -551,7 +551,7 @@ class Audit:
         self.slots = {v["start"]: slots_of(v["start"], v["size"]) for v in vs.VTABLES}
         self.stamp = stamp_global_rvas()
         self.vtbl_ann = class_meta.vtbl_annotated_names()
-        self.rtti_cfg = class_vtables.rtti_vtables()
+        self.rtti_cfg = class_meta.rtti_vtables()
         # per-class NAME signals, keeping EVERY per-TU body (the FUN_ transcription
         # may live in only one of a class's several shim definitions).
         self.virtual, self.manual, self.vtbl_field = set(), set(), set()
@@ -575,7 +575,7 @@ class Audit:
                 self.src_base[name] = m.group(1).split("::")[-1] if m else None
             if re.search(r"\bvirtual\b", body):
                 self.virtual.add(name)
-            if class_vtables._MANUAL_RE.search(body):
+            if class_meta.MANUAL_STAMP_RE.search(body):
                 self.manual.add(name)
             if _VTBLFIELD_RE.search(body):
                 self.vtbl_field.add(name)

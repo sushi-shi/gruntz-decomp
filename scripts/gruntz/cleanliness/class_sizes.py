@@ -38,7 +38,7 @@ from pathlib import Path
 
 import sys
 
-from gruntz.cleanliness.class_meta import (_blank_comments, iter_class_defs, rel,
+from gruntz.core.class_meta import (_blank_comments, iter_class_defs, rel,
                                      size_annotated_names, source_files, unique_class_defs)
 
 _SIZE_DECL_RE = re.compile(r"\bSIZE\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
