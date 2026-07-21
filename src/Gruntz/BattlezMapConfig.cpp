@@ -4949,12 +4949,13 @@ void zErrHandling::Report(i32 sentinel, i32 code) {
 // its coord list, and resets its target coord (-1,-1) + state. Returns 1.
 // ===========================================================================
 // @early-stop
-// deep-chain regalloc plateau: the board-tile lookup, the budget gate, the
+// deep-chain regalloc plateau (~72%): the board-tile lookup, the budget gate, the
 // Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_coordPool.m_freeHead) and the
-// reset block are reconstructed in shape + order, but retail pins the unit in edi /
-// the zero const in ebx and the tile-index math (m_arrivalCol*7, m_arrivalRow row) spills to
-// different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
-// offset. Deferred to the final sweep.
+// reset block are reconstructed in shape + order. The `m_dwell <= m_reserveBudget`
+// budget gate was a SIGNEDNESS bug (retail jbe, we emitted jle) - now cast to u32
+// (68->72). Residual: retail pins the unit in edi / the zero const in ebx (zero-register
+// pin) and the tile-index math (m_arrivalCol*7) spills to different stack slots than
+// MSVC5 here. Foreign unit/board chains modeled by raw offset. Deferred to final sweep.
 RVA(0x00034c70, 0x133)
 i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
@@ -4965,7 +4966,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
     i32 y = unit->m_arrivalRow;
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[y]))[x];
     if (tile->m_0 & 0x20) {
-        if (unit->m_dwell <= m_reserveBudget) {
+        if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
         if (unit->TileSwitch(unit->m_arrivalCol, unit->m_arrivalRow, 0, 0xd87, 0, 0) != 0) {
