@@ -593,16 +593,16 @@ struct CNetGameMgr {
     // AMBIENT%d cue through it; it was reached via a `WaitLogic` +0x48 view.
     class CGruntzSoundZ* m_sound; // +0x48
     char m_pad4c[0x5c - 0x4c];
-    CFontConfig* m_5c; // +0x5c  the chat/text display (the real class; ex-CNetChatLog view)
+    CFontConfig* m_chatDisplay; // +0x5c  the chat/text display (the real class; ex-CNetChatLog view)
     char m_pad60[0x6c - 0x60];
-    CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
+    CGruntzCmdMgr* m_cmdMgr; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
     char m_pad70[0xac - 0x70];
-    i32 m_ac; // +0xac  connect-in-progress guard (the CMulti slot-1 driver toggles 1/0 per phase)
+    i32 m_connectGuard; // +0xac  connect-in-progress guard (the CMulti slot-1 driver toggles 1/0 per phase)
     char m_padb0[0x110 - 0xb0];
-    i32 m_110; // +0x110  session-armed gate (Setup saves the old value into CMulti::m_590)
+    i32 m_sessionArmed; // +0x110  session-armed gate (Setup saves the old value into CMulti::m_590)
     i32 m_114; // +0x114
     char m_pad118[0x12c - 0x118];
-    i32 m_12c; // +0x12c  custom-vs-stock level flag (Setup sets 0 custom / 1 stock)
+    i32 m_customLevel; // +0x12c  custom-vs-stock level flag (Setup sets 0 custom / 1 stock)
     char m_pad130[0x150 - 0x130];
     GruntzPlayer m_channels[4]; // +0x150  the inline per-player slot array (== CGruntzMgr::m_options)
 };

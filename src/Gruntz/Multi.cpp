@@ -364,16 +364,16 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_netGate = reinterpret_cast<CMultiReportGate*>(peer);
     g_groupEnumMgr = peer;
 
-    NetGameMgr()->m_ac = 1;
+    NetGameMgr()->m_connectGuard = 1;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() != 0) {
-            NetGameMgr()->m_ac = 0;
+            NetGameMgr()->m_connectGuard = 0;
             ReleaseResources(); // slot 2 (+0x08) virtual dispatch, ex "Abort"
             return 0;
         }
     } else {
         if (Open() != 0) {
-            NetGameMgr()->m_ac = 0;
+            NetGameMgr()->m_connectGuard = 0;
             while (::ShowCursor(0) >= 0) {
             }
             return 0;
@@ -383,7 +383,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (m_isHost != 0) {
         m_58c = 1;
     }
-    NetGameMgr()->m_ac = 0;
+    NetGameMgr()->m_connectGuard = 0;
     // rep stos: zero 0x40 dwords from this+0x1d0
     {
         i32* p = &m_1d0;
@@ -391,8 +391,8 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
             p[i] = 0;
         }
     }
-    m_590 = NetGameMgr()->m_110;
-    NetGameMgr()->m_110 = 1;
+    m_590 = NetGameMgr()->m_sessionArmed;
+    NetGameMgr()->m_sessionArmed = 1;
     if (LoadImageBanks() == 0) { // slot 29 (+0x74) virtual dispatch, ex "OnStart"
         return 0;
     }
@@ -412,10 +412,10 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     // --- custom-level path ---
     if (m_5b0 != 0) {
-        NetGameMgr()->m_12c = 0;
+        NetGameMgr()->m_customLevel = 0;
         *reinterpret_cast<CString*>((reinterpret_cast<char*>(NetGameMgr()) + 0xc8)) = "custom\\" + GetConfigNameB();
     } else {
-        NetGameMgr()->m_12c = 1;
+        NetGameMgr()->m_customLevel = 1;
         *reinterpret_cast<CString*>((reinterpret_cast<char*>(NetGameMgr()) + 0xc8)) = GetConfigNameA();
     }
     if (Mgr()->GetWorldFileName().GetLength() == 0) {
@@ -429,7 +429,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
     // Deactivate+RezFree+return-0 teardown CPlay::LoadGameAssetNamespaces has. The Attach `== 0` guard
     // is REAL: Attach returns a failure signal (see ChatBoxOwner.cpp).
-    if (iface->Attach(m_c, NetGameMgr()->m_5c) == 0) {
+    if (iface->Attach(m_c, NetGameMgr()->m_chatDisplay) == 0) {
         CChatBoxOwner* io = m_hitTest;
         if (io == 0) {
             return 0;
@@ -494,7 +494,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     g_lastNow = 0;
     g_frameTime = 0;
     m_savedClock = 0;
-    NetGameMgr()->m_5c->FreeNodes();
+    NetGameMgr()->m_chatDisplay->FreeNodes();
     m_connected = 1;
     return 1;
 }
@@ -2136,7 +2136,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            (static_cast<CFontConfig*>(NetGameMgr()->m_5c))->AddItem(msg->m_c, 0x30, player->m_008);
+            (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(msg->m_c, 0x30, player->m_008);
             CSndHost* host = m_c->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
@@ -2367,7 +2367,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (g_sharedFlag != 0) {
                 ShowChatLine(reinterpret_cast<void*>(g_sharedFlag), result);
             } else {
-                (static_cast<CFontConfig*>(NetGameMgr()->m_5c))->AddItem(result, 0, 0x11);
+                (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(result, 0, 0x11);
             }
             break;
         }
@@ -2452,7 +2452,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     ChannelSlots_Set(slot->m_008, 1);
 
     CString line = (reinterpret_cast<CNetMgr*>(slot))->GetName() + " has left the game.";
-    (static_cast<CFontConfig*>(NetGameMgr()->m_5c))->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
+    (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
 
     if (blob != 0) {
         Peer()->RemovePlayerObj(blob);
@@ -2927,7 +2927,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         } else {
             GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
             if (player != 0) {
-                (static_cast<CFontConfig*>(NetGameMgr()->m_5c))->AddItem(line, 0x30, player->m_008);
+                (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(line, 0x30, player->m_008);
             }
         }
     }
@@ -3911,7 +3911,7 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
-        NetGameMgr()->m_6c->Dispatch(*slot->m_cmdHead, seq);
+        NetGameMgr()->m_cmdMgr->Dispatch(*slot->m_cmdHead, seq);
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
     }
     slot->ResetTriple(slot->m_rangeA);
