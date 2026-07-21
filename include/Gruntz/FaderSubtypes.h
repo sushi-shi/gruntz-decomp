@@ -132,7 +132,7 @@ public:
         return ::operator new(0x206c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
-    void SubFree180630();            // 0x180630 (dtor member teardown; reloc-masked)
+    void SubFree();            // 0x180630 (dtor member teardown; reloc-masked)
     // The radial shade-remap blit (ghidra "Render", CircleShadeBlit.cpp). Walks the
     // circular light band and remaps boundary pixels through the 2D displacement table
     // arg, reading m_surface/m_3c pitch, the centre and the surf w/h. Non-virtual,
@@ -180,7 +180,7 @@ public:
     // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
     // at 0x17d9c0 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x17fa40 (apply the built default init)
-    void FreeBuffer17fc40();         // 0x17fc40 (dtor: free the m_cells buffer)
+    void FreeBuffer();         // 0x17fc40 (dtor: free the m_cells buffer)
 
     // The radial distance-field state. ApplyInit (0x17fa40) resolves the source/dest
     // surfaces from the CFxModeT4 descriptor, builds the base's shade table through the
@@ -195,7 +195,7 @@ public:
     float m_fadeDivisor;      // +0x4c  radius->fade divisor (width * 0.5)
     // +0x50..+0x58 were MISSING before the fold: RenderFrame (0x17fc60) reads all three off `this`,
     // and they carry the object to its retail size 0x5c (the `new CFaderRadial` push).
-    CFaderRadialCell* m_cells; // +0x50  width*height cell buffer (freed by FreeBuffer17fc40)
+    CFaderRadialCell* m_cells; // +0x50  width*height cell buffer (freed by FreeBuffer)
     i32 m_centerX;             // +0x54
     i32 m_centerY;             // +0x58
 };

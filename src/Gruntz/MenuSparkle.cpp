@@ -136,7 +136,7 @@ i32 CMenuSparkle::AdvanceAnim() {
     i32 active = m_38->m_1a0.m_28;
     if (active != 0 && anim->m_20 == 0) {
         if (anim != 0) {
-            anim->Recompute_15c320(1);
+            anim->Recompute(1);
         }
         m_3c->m_20 = rand() % 0xfa1 + 0x3e8;
     }

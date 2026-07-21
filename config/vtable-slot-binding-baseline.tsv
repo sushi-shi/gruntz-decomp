@@ -32,9 +32,9 @@ WIRING	0x1eab4c	CSBI_MenuItem	5	0x0e82a0	?DecCounter@CSBI_MenuItem@@QAEHXZ	sbi_m
 WIRING	0x1eab8c	CSBI_RectOnly	3	0x0e8760	?DtorRect@CSBI_RectOnly@@QAEXXZ	sbi_rectonlybase
 WIRING	0x1eabcc	CStatusBarItem	3	0x10bfa0	?DtorStatus@CStatusBarItem@@QAEXXZ	sbi_menuitem
 WIRING	0x1eac0c	CSBI_Image	3	0x0e6d90	?ClearFrame@CSBI_Image@@QAEXXZ	sbi_image
-WIRING	0x1eac0c	CSBI_Image	5	0x0e6dd0	?TickRenderCurrent_0e6dd0@CSBI_Image@@QAEHXZ	sbi_image
+WIRING	0x1eac0c	CSBI_Image	5	0x0e6dd0	?TickRenderCurrent@CSBI_Image@@QAEHXZ	sbi_image
 WIRING	0x1eac4c	CSBI_ImageSet	3	0x0e7400	?ResetCounters@CSBI_ImageSet@@QAEXXZ	sbi_imageset
-WIRING	0x1eac4c	CSBI_ImageSet	5	0x0e7440	?TickRenderFrame_0e7440@CSBI_ImageSet@@QAEHXZ	sbi_imageset
+WIRING	0x1eac4c	CSBI_ImageSet	5	0x0e7440	?TickRenderFrame@CSBI_ImageSet@@QAEHXZ	sbi_imageset
 WIRING	0x1eac94	CSBI_StatzTabArrow	3	0x0e7400	?ResetCounters@CSBI_ImageSet@@QAEXXZ	sbi_imageset
 WIRING	0x1eac94	CSBI_StatzTabArrow	5	0x0e7b00	?Tick@CSBI_ImageSetAni@@QAEHXZ	sbi_imagesetani
 WIRING	0x1eace4	CSBI_StatzTabGruntBar	3	0x0ea470	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	sbi_statztabgruntbar
@@ -62,7 +62,7 @@ WIRING	0x1efbe8	CDDrawWorker	7	0x151eb0	?DeleteAll@CDDrawWorker@@QAEXXZ	wwdgameo
 WIRING	0x1efca0	CDDrawSubMgrLeafScan	1	0x157550	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	ddrawsubmgr
 WIRING	0x1efd00	CDDrawWorkerCache	7	0x165210	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	ddrawsurfacepair
 WIRING	0x1efe08	CDDrawSubMgrPages	1	0x1574b0	?ScalarDtor@CDDrawSubMgrPages@@QAEPAXI@Z	ddrawsubmgr
-MISBOUND	0x1effa0	CDrawSubWorker	9	0x158fd0	?SetGeometry_158fd0@CDDrawSurfacePair@@UAEHHHH@Z	ddrawsubmgr
+MISBOUND	0x1effa0	CDrawSubWorker	9	0x158fd0	?SetGeometry@CDDrawSurfacePair@@UAEHHHH@Z	ddrawsubmgr
 MISBOUND	0x1effd0	CWwdGameObjectC	10	0x150d60	?Setup@CWwdGameObject@@UAEHHHHH@Z	wwdgameobject
 WIRING	0x1effd0	CWwdGameObjectC	11	0x1660f0	?RenderDot@CWwdGameObject@@QAEXPAVCDDrawSurfacePair@@@Z	wwdgameobjectrender
 WIRING	0x1effd0	CWwdGameObjectC	15	0x151150	?Play@CWwdGameObject@@QAEHHHHH@Z	wwdgameobject

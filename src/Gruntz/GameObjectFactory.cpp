@@ -255,7 +255,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker(CreateWormhole, "Wormhole", 4);
     RegisterWormholeLogic();
     ctx->m_workerCache->CreateWorker(CreateGruntPuddle, "GruntPuddle", 4);
-    RegisterLogic_6445e8();
+    RegisterLogic();
     ctx->m_workerCache->CreateWorker(CreateRollingBall, "RollingBall", 4);
     CRollingBall::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateObjectDropper, "ObjectDropper", 4);

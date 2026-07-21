@@ -255,7 +255,7 @@ void CGrunt::FinalizeStep(i32 arg) {
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
+    m_38->m_1a0.Setup(m_poseAttackIdle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     i32* elem =
@@ -419,7 +419,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
-    p->m_1a0.Setup_15c2d0((&m_poseAttack1)[idx]);
+    p->m_1a0.Setup((&m_poseAttack1)[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
@@ -454,7 +454,7 @@ i32 CGrunt::RearmAttackAnim2() {
 
     CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
-    p->m_1a0.Setup_15c2d0(m_poseAttack2);
+    p->m_1a0.Setup(m_poseAttack2);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
@@ -794,7 +794,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("L"));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_38->m_1a0.Setup(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
         i32 colv = cell.row + cell.col * 2;
         i32 basev = cell.col + colv;
@@ -843,7 +843,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     CAniElement* want = (&m_poseToy1)[sel];
     if (cur != want) {
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(want);
+        m_38->m_1a0.Setup(want);
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* el =
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
@@ -921,7 +921,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             m_toyTimeSprite = 0;
         }
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseToyBreak);
+        m_38->m_1a0.Setup(m_poseToyBreak);
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
@@ -1032,7 +1032,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     if (notIdle && cycle == 0) {
         // Re-anchor the idle timer to a randomized IdleDelay window.
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[0]);
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
@@ -1042,14 +1042,14 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     } else if (m_poseIdle[1] == 0) {
         // Single geometry source: re-arm it (no flag set).
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[0]);
     } else if (cycle == 0) {
         // Already on this source? nothing to do.
         if (m_38->m_1a0.m_14 == m_poseIdle[0]) {
             goto latch;
         }
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[0]);
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
@@ -1093,7 +1093,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             }
         }
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseIdle[idx]);
+        m_38->m_1a0.Setup(m_poseIdle[idx]);
         m_resetApplied = 1;
         applied = 1;
     }
@@ -1293,7 +1293,7 @@ i32 CGrunt::StepEntranceReinit() {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_38->m_1a0.Setup(m_poseWalk);
     } else {
         // The grunt's own HUD point is unobstructed (the 0x80 walkable bit).
         i32 tx = m_object->m_screenX >> 5;
@@ -1312,7 +1312,7 @@ i32 CGrunt::StepEntranceReinit() {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_38->m_1a0.Setup(m_poseWalk);
     }
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
@@ -1610,7 +1610,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
         found = static_cast<CSprite*>(
-            m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE)
+            m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
         );
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
@@ -1622,7 +1622,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     } else if (r > 0xa0) {
         found = static_cast<CSprite*>(
-            m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO)
+            m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_TWO)
         );
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
@@ -1634,7 +1634,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     } else {
         found = static_cast<CSprite*>(
-            m_38->OwnerMgr()->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE)
+            m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_THREE)
         );
         CGruntzMgr* g = g_gameReg;
         if (GruntPointVisible(
@@ -1647,7 +1647,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(reinterpret_cast<i32>(found), 0);
-    i32* elem = reinterpret_cast<i32*>(m_38->m_1a0.m_14->AtChecked_06b270(0));
+    i32* elem = reinterpret_cast<i32*>(m_38->m_1a0.m_14->AtChecked(0));
     i32 frame = elem[0x14 / 4];
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;
@@ -1769,7 +1769,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
             m_value = m_38->m_1a0.m_14;
-            m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+            m_38->m_1a0.Setup(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
             i32 col = cell.row + cell.col * 2;
             i32 base = cell.col + col;
@@ -1881,7 +1881,7 @@ tail:
     m_combatActive = 0;
     CAniElement* pose = (&m_poseStruck1)[a1];
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(pose);
+    m_38->m_1a0.Setup(pose);
     i32 frame;
     {
         CAniElement* desc = m_38->m_1a0.m_14;
@@ -2103,7 +2103,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0((&m_poseItem)[poseIdx]);
+    m_38->m_1a0.Setup((&m_poseItem)[poseIdx]);
 
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
@@ -2280,7 +2280,7 @@ RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
-    anim->Setup_15c2d0(reinterpret_cast<CAniElement*>(a));
+    anim->Setup(reinterpret_cast<CAniElement*>(a));
     if (b != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }

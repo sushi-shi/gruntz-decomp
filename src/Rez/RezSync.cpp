@@ -602,17 +602,17 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isInterlaced = vInterlaced;
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vEasy;
-    if (!m_world->m_soundRegistry->HasKeyEqual_1583c0("GAME")) {
+    if (!m_world->m_soundRegistry->HasKeyEqual("GAME")) {
         void* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sz), "GAME", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sz), "GAME", "_");
     }
     {
         void* mv = 0;
         m_world->m_soundRegistry->m_10.Lookup("GAME_MOVIE", mv);
-        m_world->m_soundRegistry->MatchSub_1584f0(static_cast<LeafCue*>(mv), 0);
+        m_world->m_soundRegistry->MatchSub(static_cast<LeafCue*>(mv), 0);
     }
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
@@ -622,7 +622,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             }
         } else {
             RunFromState();
-            if (ChangeState_8fab0(2)) {
+            if (ChangeState(2)) {
                 ++m_numMovies;
             }
         }

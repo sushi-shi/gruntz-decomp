@@ -147,7 +147,7 @@ i32 CSBI_ImageSetAni::Tick() {
 // m_34 load per else-arm and stores in each branch, cl computes the value into a
 // register and does one store at the merge (explicit if/else made it worse). Final sweep.
 RVA(0x000e7c30, 0x7d)
-void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
+void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
     if (start != -1) {
         m_frameStart = start;
     } else {

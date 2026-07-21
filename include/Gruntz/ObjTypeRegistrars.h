@@ -74,7 +74,7 @@ void ActReg4RegisterType();
 void RegisterIconActions();
 void RegisterTextLogic();
 void RegisterWormholeLogic();
-void RegisterLogic_6445e8();
+void RegisterLogic();
 void CTeleporter_RegisterActs();
 void RegisterActs_646188();
 void RegisterWarlordActions();

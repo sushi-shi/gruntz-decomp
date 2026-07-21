@@ -10,7 +10,7 @@
 
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>               // CSymParser::ResolvePath (0x13c030) on m_8
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::ScanTree_157ee0 (0x157ee0)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::ScanTree (0x157ee0)
 #include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
 #include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
 #include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
@@ -40,7 +40,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             m_world->m_soundRegistry
-                ->ScanTree_157ee0(static_cast<CSymTab*>(set), "PREVIEW", "_");
+                ->ScanTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }
     }
     m_1bc = "PREVIEW0";
@@ -67,12 +67,12 @@ void CPreviewState::ResetPreview() {
     if (m_world->m_soundRegistry->m_2c != 0) {
         m_world->m_soundRegistry->m_2c->Stop();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual_157c70("PREVIEW", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual("PREVIEW", "_");
     CState::ReleaseResources();
 }
 
 RVA(0x000de190, 0x35)
-i32 CPreviewState::NextScreenCmd_0de190(i32 param) {
+i32 CPreviewState::NextScreenCmd(i32 param) {
     while (ShowCursor(FALSE) >= 0) {
     }
     LoadLevelPreviewScreen();
@@ -112,7 +112,7 @@ i32 CPreviewState::Tick() {
 }
 
 RVA(0x000de2c0, 0x5c)
-i32 CPreviewState::Refade_0de2c0() {
+i32 CPreviewState::Refade() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
@@ -124,7 +124,7 @@ i32 CPreviewState::Refade_0de2c0() {
 }
 
 RVA(0x000de340, 0x56)
-i32 CPreviewState::RefadeVirtual_0de340() {
+i32 CPreviewState::RefadeVirtual() {
     if (IsActive() == 0) {
         return 0;
     }
@@ -136,7 +136,7 @@ i32 CPreviewState::RefadeVirtual_0de340() {
 }
 
 RVA(0x000de3c0, 0x2d)
-i32 CPreviewState::OnKey_0de3c0(i32 key, i32 param) {
+i32 CPreviewState::OnKey(i32 key, i32 param) {
     if (key == 0x1b) {
         Cancel();
     }

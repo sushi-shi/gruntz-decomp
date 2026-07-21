@@ -1,7 +1,7 @@
 #include <Mfc.h>                      // CString (KeyOfValue temp) + CObject
 #include <Gruntz/UserLogic.h>         // CWapX (the owner class) + CGameObject
 #include <Gruntz/SerialArchive.h>     // the archive (Read/Write slots)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // the name registry (m_10 Lookup / KeyOfValue_152d30)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // the name registry (m_10 Lookup / KeyOfValue)
 #include <Gruntz/AniElement.h>        // full CAniElement (m_value upcasts to CObject at KeyOfValue)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_7c->m_0c (the world root)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -53,7 +53,7 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
             (reinterpret_cast<i32*>(name))[i] = 0;
         }
         if (m_value != 0) {
-            CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue_152d30(m_value);
+            CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue(m_value);
             strcpy(name, static_cast<const char*>(nm));
         }
         arc->Write(name, 0x80);

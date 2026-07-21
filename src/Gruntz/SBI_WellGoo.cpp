@@ -10,7 +10,7 @@
 #include <Image/CImage.h> // CImage::RenderFrame (0x153790) - the m_40/m_3c frames + m_owned
 #include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter; Notify + m_1c
 #include <DDrawMgr/DDSurface.h> // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
-#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches_155630 + the +0x10 name map (Serialize)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches + the +0x10 name map (Serialize)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections::MakeAndAddB (Serialize mode-8)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable::GetSel (Serialize mode-8)
 #include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -137,7 +137,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_fgFrame != 0) {
-                mgr->m_imageRegistry->AnyValueMatches_155630(m_fgFrame, buf, &idx);
+                mgr->m_imageRegistry->AnyValueMatches(m_fgFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -145,7 +145,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_baseFrame != 0) {
-                mgr->m_imageRegistry->AnyValueMatches_155630(m_baseFrame, buf, &idx);
+                mgr->m_imageRegistry->AnyValueMatches(m_baseFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);

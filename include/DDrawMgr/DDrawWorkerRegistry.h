@@ -43,19 +43,19 @@ public:
     // [20] 0x155280 - drop a worker from the registry by its +0x24 key and destroy it.
     virtual void RemoveWorker(CDDrawWorker* worker);
     virtual void RemoveByKey(const char* key); // [21] 0x156ec0 (DDrawSubMgr.cpp)
-    virtual void MapTeardown_1552b0();         // [22] 0x1552b0 (destroy every map value)
+    virtual void MapTeardown();         // [22] 0x1552b0 (destroy every map value)
 
     CMapStringToOb m_10map; // +0x10  the name -> worker/sprite hash table
 
     // Non-virtual map-scan helpers (direct-called from the worker code region).
     void DestroyAll();
-    i32 RemoveKeysEqual_155360(const char* base, const char* str);
-    i32 SumSizesEqual_155460(const char* str, i32 a2);
-    i32 HasKeyEqual_155550(const char* str);
+    i32 RemoveKeysEqual(const char* base, const char* str);
+    i32 SumSizesEqual(const char* str, i32 a2);
+    i32 HasKeyEqual(const char* str);
     // Reverse frame lookup: scan every map value (a CImageSet) for `frame`; on a hit
     // copy the set name into outName + the frame index into outIndex (FindFrame).
-    i32 AnyValueMatches_155630(CImage* frame, char* outName, i32* outIndex);
-    // FindKeyOfValue_165360 (0x165360) moved to CDDrawWorkerCache (its true owner: the
+    i32 AnyValueMatches(CImage* frame, char* outName, i32* outIndex);
+    // FindKeyOfValue (0x165360) moved to CDDrawWorkerCache (its true owner: the
     // only callers reverse-look-up a worker in the +0x14 worker cache, xref-confirmed).
     // 0x155630 (frame-name reverse lookup; reloc-masked direct call).
     void ReadField(i32 handle, char* tmp, i32* outZero);

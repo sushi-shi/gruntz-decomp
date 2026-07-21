@@ -44,7 +44,7 @@ public:
     // slot 9 (+0x24) = the per-frame kill-cue tick (0x159a70, ret 4 = 1 arg; body in
     // WwdObjMgr.cpp). CMulti/CPlay's frame pump dispatches it here with the frame
     // delta, then slot 16 below.
-    virtual void TickKillCues_159a70(i32 advance);                // slot 9  +0x24
+    virtual void TickKillCues(i32 advance);                // slot 9  +0x24
     virtual void WalkDispatch2C(class CDDrawSurfacePair* target); // slot 10 0x159c90 (child Render)
     virtual void WalkDispatch30(i32 a1, i32 a2);         // slot 11 0x159cc0 (child BltDirty)
     virtual void WalkDispatch34(i32 a1, i32 a2, i32 a3); // slot 12 0x159cf0 (child BltDirtyEx)
@@ -84,34 +84,34 @@ public:
     i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
 
     // List / map ops.
-    void RemoveAll_15ab30(i32 pos, CWwdGameObject* obj);
-    void RemoveByPosition_15ab70(i32 pos, CWwdGameObject* obj);
-    void AddToMap48_15aba0(CWwdGameObject* obj);
-    void PruneList_15aa90();
-    i32 CountActive_15abc0();
-    i32 ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3);
-    i32 ForEachProbe_15acb0(i32 a1, i32 a2);
-    i32 ForEachSerialize_15b020(class CFileMemBase* ar, i32 a2);
-    i32 Deserialize_15b0e0(class CFileMemBase* ar, u32 count, i32 flag);
-    i32 PruneOrphans_15b1d0();
-    void RemoveAndDelete_159db0(CWwdGameObject* obj);   // 0x159db0
-    void ReinsertUnflagged_159e10(CWwdGameObject* obj); // 0x159e10
-    void InsertSorted_159e40(CGameObject* obj, i32 addToMaps);
-    i32 CheckSortOrder_15a780();
-    CWwdGameObject* FindByType04_15a7f0(i32 type);
-    CWwdGameObject* FindByTypeProbe_15a810(i32 type);
-    CWwdGameObject* FindByWorker_15a860(i32 type, void* key);
-    CWwdGameObject* FindByField_15a940(i32 type, void* key);
+    void RemoveAll(i32 pos, CWwdGameObject* obj);
+    void RemoveByPosition(i32 pos, CWwdGameObject* obj);
+    void AddToMap48(CWwdGameObject* obj);
+    void PruneList();
+    i32 CountActive();
+    i32 ForEachDispatch(i32 a1, i32 a2, i32 a3);
+    i32 ForEachProbe(i32 a1, i32 a2);
+    i32 ForEachSerialize(class CFileMemBase* ar, i32 a2);
+    i32 Deserialize(class CFileMemBase* ar, u32 count, i32 flag);
+    i32 PruneOrphans();
+    void RemoveAndDelete(CWwdGameObject* obj);   // 0x159db0
+    void ReinsertUnflagged(CWwdGameObject* obj); // 0x159e10
+    void InsertSorted(CGameObject* obj, i32 addToMaps);
+    i32 CheckSortOrder();
+    CWwdGameObject* FindByType04(i32 type);
+    CWwdGameObject* FindByTypeProbe(i32 type);
+    CWwdGameObject* FindByWorker(i32 type, void* key);
+    CWwdGameObject* FindByField(i32 type, void* key);
     // 0x15a8c0 - first child whose type tag (vtable slot 8) == 5, whose +0x04 id ==
     // `id`, and whose +0x7c sub-object's +0x10 matches the object the worker-cache
     // name map yields for `key`.
-    void* Find_15a8c0(i32 id, const char* key);
-    CWwdGameObject* FindByKey_15a9a0(void* key); // 0x15a9a0 first obj with m_key==key
+    void* Find(i32 id, const char* key);
+    CWwdGameObject* FindByKey(void* key); // 0x15a9a0 first obj with m_key==key
     CWwdGameObject*
-    FindByStatusKey_15a9d0(void* key); // 0x15a9d0 first status-5 obj with m_key==key
-    i32 IsKindUnique_15aa20(i32 kind); // 0x15aa20 1 unless 2+ objs share m_04==kind
-    i32 CountByKind_15aa60(i32 kind);  // 0x15aa60 count of objs with m_04==kind
-    i32 SumWeighted_15aaf0();          // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
+    FindByStatusKey(void* key); // 0x15a9d0 first status-5 obj with m_key==key
+    i32 IsKindUnique(i32 kind); // 0x15aa20 1 unless 2+ objs share m_04==kind
+    i32 CountByKind(i32 kind);  // 0x15aa60 count of objs with m_04==kind
+    i32 SumWeighted();          // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
     i32 m_status;  // +0x04  initialized to -1 when inactive
     i32 m_flags08; // +0x08  flags (bit 0x200000 = draw per-object debug counts)
@@ -130,12 +130,12 @@ public:
     // +0x64  transient list walk cursor (seeded from the list head;
     // CGruntzMapMgr::LoadAttributes footprint pass @0x0810f0).
     CDDrawGroupNode* m_walkCursor;
-    // +0x68  second walk cursor: the battlez spawn-scan pop cursor Drain_031250 drains
+    // +0x68  second walk cursor: the battlez spawn-scan pop cursor Drain drains
     // (re-seeded from the list head). Ex the CQueueDrainHost::m_scan view field.
     CDDrawGroupNode* m_scanCursor;
 
     // Engine-label backlog stub.
-    void DrawObjectCounts_15a650(); // 0x15a650  per-object debug-count overlay
+    void DrawObjectCounts(); // 0x15a650  per-object debug-count overlay
 
     // 0x159ef0 - non-virtual entry that virtual-dispatches slot 15 (DestroyChildren):
     // `mov eax,[ecx]; jmp [eax+0x3c]`. Receiver byte-proven = holder+0x08 (this class):
@@ -146,8 +146,8 @@ public:
 
     // 0x31250 (body in QueueDrainHost.cpp): the battlez spawn-scan drain - pop nodes off
     // m_scanCursor until one whose payload GetClassId() (vtable slot 8) is CLASSID_SERIALREF;
-    // 0 when exhausted. Ex CQueueDrainHost::Drain_031250 (that view IS this class).
-    CGameObject* Drain_031250();
+    // 0 when exhausted. Ex CQueueDrainHost::Drain (that view IS this class).
+    CGameObject* Drain();
 };
 
 struct WwdObjDesc {

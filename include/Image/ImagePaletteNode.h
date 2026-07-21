@@ -17,7 +17,7 @@ namespace ApiCallerStubs {
         i32 m_systemTuned;                      // +0x40c  1 when reserved system range snapshotted
         POSITION m_listPosition;                // +0x410  cached AddTail POSITION
         i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (imagepool)
-        void Tune1770e0();                                          // 0x1770e0 (imagepool)
+        void Tune();                                          // 0x1770e0 (imagepool)
         i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (imagepool)
         i32 ProcessPalQuad(void* bgr, i32 flags);                   // 0x176ec0 (imagepool)
         i32 ProcessPalBGR(void* bgr, i32 flags);                    // 0x176f30 (imagepool)

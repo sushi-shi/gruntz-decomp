@@ -175,8 +175,8 @@ public:
     // it present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache
     // held by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a
     // caller-supplied RGBQ array.
-    void SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag); // 0x143900
-    void SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag);     // 0x1439b0
+    void SetDisplayPaletteFrom(CDDPalette* pal, i32 tag); // 0x143900
+    void SetDisplayPaletteDirect(i32* rgbq, i32 tag);     // 0x1439b0
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
     i32 ComputeColorMasks(); // 0x143b20

@@ -425,7 +425,7 @@ public:
     i32 TryPowerupAtTile();                            // @0x57aa0 (ret 0) probe move tile
     // @0x57db0 (ret 0, /GX) - the per-tick grunt path-cell scan (GruntPathScan.cpp):
     // 5x5 dirty box, tracked-coord list scan firing the plane trigger, freelist recycle.
-    i32 PathScan57db0();
+    i32 PathScan();
 
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();

@@ -66,7 +66,7 @@ void CDDrawChildGroup::DestroyChildren() {
         // unification: slots 9/10 of ??_7CDDrawWorkerHost are CLevelPlane methods).
         CDDrawWorkerHost* q = static_cast<CDDrawWorkerHost*>(p->m_mainPlane);
         if (q != 0) {
-            q->Prune_1628d0();
+            q->Prune();
         }
     }
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -127,7 +127,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1); // the launder dies - base-typed param
     if (a7 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
@@ -198,7 +198,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1); // the launder dies - base-typed param
     if (a4 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
@@ -220,7 +220,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 // ===========================================================================
 // 0x159600 - CDDrawChildGroup::CreateObject (a.k.a. CDDrawChildGroup::CreateSpriteImpl):
 // allocate + construct a 0x1dc-byte CWwdGameObject, register it in the manager
-// (InsertSorted_159e40), and (when `flags & 0x200000`) kick its worker's
+// (InsertSorted), and (when `flags & 0x200000`) kick its worker's
 // slot +0x10. __thiscall, 6 stack args, ret 0x18.
 // @early-stop
 // RezAlloc + placement-construct EH-frame wall (docs/patterns/rezalloc-placement-
@@ -272,7 +272,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1); // the launder dies - base-typed param
     if (flags & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
@@ -336,9 +336,9 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!obj->Setup(a1, a2, a3, reinterpret_cast<i32>(tmpl))) {
         return 0;
     }
-    // 0x159e40 is CDDrawChildGroup::InsertSorted_159e40 (the factory IS the object manager -
-    // same `this`); bind the real method (reloc-masked ?InsertSorted_159e40@CDDrawChildGroup).
-    this->InsertSorted_159e40(obj, 1);
+    // 0x159e40 is CDDrawChildGroup::InsertSorted (the factory IS the object manager -
+    // same `this`); bind the real method (reloc-masked ?InsertSorted@CDDrawChildGroup).
+    this->InsertSorted(obj, 1);
     if (flags & 0x200000) {
         // the worker fire callback - the same slot TickKillCues fires
         obj->m_7c->m_notify(static_cast<CGameObject*>(obj));
@@ -383,7 +383,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1); // the launder dies - base-typed param
     if (a6 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
@@ -423,7 +423,7 @@ CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char*
 // pins the count in EAX (compact `a1` moffs32 form), our cl uses ecx/edx (`8b 0d`),
 // a 1-byte-per-load size slip that cascades the tail offsets.
 RVA(0x00159a70, 0x200)
-void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
+void CDDrawChildGroup::TickKillCues(i32 advance) {
     static CObArray killQueue; // 0x6bf3a8  the 0x10000 (destroy) queue
     static CObArray sortQueue; // 0x6bf390  the 0x20000 (re-sort) queue
     killQueue.SetSize(0, -1);
@@ -484,7 +484,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(sortQueue.GetData()[i]);
         obj->m_flags &= ~0x20000;
         m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
-        InsertSorted_159e40(obj, 0);
+        InsertSorted(obj, 0);
     }
 }
 
@@ -560,7 +560,7 @@ void CDDrawChildGroup::ResetChildD8() {
 }
 
 RVA(0x00159db0, 0x5e)
-void CDDrawChildGroup::RemoveAndDelete_159db0(CWwdGameObject* obj) {
+void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
     if (obj->m_flags & 0x800) {
         delete obj;
         return;
@@ -572,10 +572,10 @@ void CDDrawChildGroup::RemoveAndDelete_159db0(CWwdGameObject* obj) {
 }
 
 RVA(0x00159e10, 0x2e)
-void CDDrawChildGroup::ReinsertUnflagged_159e10(CWwdGameObject* obj) {
+void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     obj->m_flags &= 0xfffdffff;
     m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
-    InsertSorted_159e40(obj, 0);
+    InsertSorted(obj, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -588,7 +588,7 @@ void CDDrawChildGroup::ReinsertUnflagged_159e10(CWwdGameObject* obj) {
 // artifact on the two CMapPtrToPtr::operator[] calls (REL32 vs cl's DIR32 vs a
 // differently-named symbol). docs/patterns + objdiff-reloc-scoring.
 RVA(0x00159e40, 0xaa)
-void CDDrawChildGroup::InsertSorted_159e40(CGameObject* obj, i32 addToMaps) {
+void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
         obj->m_posCache = 0;
         return;
@@ -637,7 +637,7 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // Forward decl for the Slot40 body (definition follows at 0x15a130 in RVA order):
 // the box-overlap predicate over two CGameObjects (<Gruntz/UserLogic.h>; the old
 // CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
-i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
+i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2);
 
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
@@ -681,7 +681,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                             rb.top = oj->m_switchRect.top + yj;
                             rb.right = oj->m_switchRect.right + xj;
                             rb.bottom = oj->m_switchRect.bottom + yj;
-                            overlap = RectsOverlap_15bfb0(&ra, &rb);
+                            overlap = RectsOverlap(&ra, &rb);
                         }
                         if (overlap) {
                             if (mask2) {
@@ -721,7 +721,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                 }
                 i32 mask1b = oj->m_ec & static_cast<i32>(oi->m_collCategory);
                 i32 mask2b = static_cast<i32>(oj->m_collCategory) & oi->m_f0;
-                if ((mask1b || mask2b) && BoxesOverlap_15a130(oj, oi)) {
+                if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
                         AnimWorkerObj* nf = oi->m_88;
                         if (nf != 0) {
@@ -730,7 +730,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                     }
                     if (mask1b) {
-                        oj->Notify_15b650(oi);
+                        oj->Notify(oi);
                     }
                 }
             }
@@ -761,7 +761,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 // coord adds/stores differently and colours the a2.switchRect.left probe into ebp);
 // pure /O2 scheduling/regalloc, not source-steerable (caching the .left probes regressed).
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
+i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
     if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
@@ -796,7 +796,7 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
 
 // @early-stop
 // 0x15a210 (1074 B) = a CDDrawChildGroup-family debug OVERLAY, twin of
-// DrawObjectCounts_15a650 (same subsystem, both dead-in-retail). __thiscall, gated
+// DrawObjectCounts (same subsystem, both dead-in-retail). __thiscall, gated
 // on a +0x08 debug flag; walks the +0x14 child list and per object draws debug
 // geometry via CPlaneRender::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
 // DrawCross(x,y), ResLoaders::DrawHost2_164420::DrawLabel(RECT*,char*) (falling
@@ -819,7 +819,7 @@ i32 Gap_15a210(void) {
 // values through edx/ecx/eax/ebx where our cl picks ecx/eax/edx/ebx, and
 // allocates one fewer scratch slot - flipping the ModRM byte of most accesses.
 RVA(0x0015a650, 0x12c)
-void CDDrawChildGroup::DrawObjectCounts_15a650() {
+void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags08 & 0x200000)) {
         return;
     }
@@ -888,7 +888,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
 // becomes the header). Tried while / for(;;) / do-while / explicit-goto - a
 // codegen loop-rotation wall, not a source-shape bug.
 RVA(0x0015a780, 0x70)
-i32 CDDrawChildGroup::CheckSortOrder_15a780() {
+i32 CDDrawChildGroup::CheckSortOrder() {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(node->m_obj);
     node = node->m_next;
@@ -934,7 +934,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
 }
 
 RVA(0x0015a7f0, 0x20)
-CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
+CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -948,7 +948,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
 }
 
 RVA(0x0015a810, 0x42)
-CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
+CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -970,7 +970,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
 // retail bottom-tests `jne looptop` and falls through to a SEPARATE `xor eax,eax`
 // return-0, our cl shares one return-0. The documented loop-epilogue-merge wall.
 RVA(0x0015a860, 0x57)
-CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
@@ -1007,10 +1007,10 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
 // were CDDrawChildGroup's own - m_parent @+0x0c is m_0c (the CDDrawSurfaceMgr owner, whose
 // +0x14 worker cache holds the name map this looks the key up in, exactly as
 // CreateNamed_1593e0/1595b0 do) and m_listHead @+0x14 is m_10's head node (the CObList sits
-// at +0x10). So Find_15a8c0 is a plain CDDrawChildGroup method, walking the same list with the
+// at +0x10). So Find is a plain CDDrawChildGroup method, walking the same list with the
 // same `reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition())` idiom every sibling FindBy* here uses.
 RVA(0x0015a8c0, 0x7d)
-void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
+void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
     m_parent->m_workerCache->m_10.Lookup(key, found);
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1031,11 +1031,11 @@ void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15a940: the +0xe8-field twin of FindByWorker_15a860.
+// 0x15a940: the +0xe8-field twin of FindByWorker.
 // @early-stop
-// 85% - same loop-epilogue-merge wall as FindByWorker_15a860.
+// 85% - same loop-epilogue-merge wall as FindByWorker.
 RVA(0x0015a940, 0x52)
-CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
@@ -1053,7 +1053,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
 }
 
 RVA(0x0015a9a0, 0x23)
-CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -1067,7 +1067,7 @@ CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
 }
 
 RVA(0x0015a9d0, 0x45)
-CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByStatusKey(void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -1081,7 +1081,7 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
 }
 
 RVA(0x0015aa20, 0x3c)
-i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
+i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = 0;
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
@@ -1099,7 +1099,7 @@ i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
 }
 
 RVA(0x0015aa60, 0x23)
-i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
+i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
@@ -1121,7 +1121,7 @@ i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
 // in two registers (eax+ecx); our cl keeps cur in one reg. Logic/CFG/offsets
 // exact. docs/patterns/linked-list-walk-node-eax-rotation.md.
 RVA(0x0015aa90, 0x5d)
-void CDDrawChildGroup::PruneList_15aa90() {
+void CDDrawChildGroup::PruneList() {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -1143,7 +1143,7 @@ void CDDrawChildGroup::PruneList_15aa90() {
 // commutative sum to load m_74 into the accumulator first, where retail loads m_5c
 // first. Documented add-reassociation wall (permuter no-op).
 RVA(0x0015aaf0, 0x35)
-i32 CDDrawChildGroup::SumWeighted_15aaf0() {
+i32 CDDrawChildGroup::SumWeighted() {
     i32 sum = 0;
     i32 i = 0;
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
@@ -1158,25 +1158,25 @@ i32 CDDrawChildGroup::SumWeighted_15aaf0() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll_15ab30(i32 pos, CWwdGameObject* obj) {
+void CDDrawChildGroup::RemoveAll(i32 pos, CWwdGameObject* obj) {
     m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
     m_map2c.RemoveKey(WwdKey(obj));
     m_map48.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition_15ab70(i32 pos, CWwdGameObject* obj) {
+void CDDrawChildGroup::RemoveByPosition(i32 pos, CWwdGameObject* obj) {
     m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
     m_map2c.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015aba0, 0x1a)
-void CDDrawChildGroup::AddToMap48_15aba0(CWwdGameObject* obj) {
+void CDDrawChildGroup::AddToMap48(CWwdGameObject* obj) {
     m_map48[WwdKey(obj)] = obj;
 }
 
 RVA(0x0015abc0, 0x5e)
-i32 CDDrawChildGroup::CountActive_15abc0() {
+i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
     if (pos != 0) {
@@ -1193,7 +1193,7 @@ i32 CDDrawChildGroup::CountActive_15abc0() {
 }
 
 RVA(0x0015ac20, 0x81)
-i32 CDDrawChildGroup::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
+i32 CDDrawChildGroup::ForEachDispatch(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
@@ -1212,7 +1212,7 @@ i32 CDDrawChildGroup::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
 }
 
 RVA(0x0015acb0, 0x76)
-i32 CDDrawChildGroup::ForEachProbe_15acb0(i32 a1, i32 a2) {
+i32 CDDrawChildGroup::ForEachProbe(i32 a1, i32 a2) {
     if (a1 == 0) {
         return 0;
     }
@@ -1362,7 +1362,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
 // epilogues, our cl hoists the body and merges the epilogue. An optimizer
 // CFG-shape choice; logic exact.
 RVA(0x0015b020, 0xc0)
-i32 CDDrawChildGroup::ForEachSerialize_15b020(CSerialArchive* ar, i32 a2) {
+i32 CDDrawChildGroup::ForEachSerialize(CSerialArchive* ar, i32 a2) {
     if (ar == 0) {
         return 0;
     }
@@ -1395,7 +1395,7 @@ i32 CDDrawChildGroup::ForEachSerialize_15b020(CSerialArchive* ar, i32 a2) {
 // reproducible from C without re-introducing the (here dead) name build; logic /
 // CFG / offsets are exact, the dead cleanup branch is the residual.
 RVA(0x0015b0e0, 0xec)
-i32 CDDrawChildGroup::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag) {
+i32 CDDrawChildGroup::Deserialize(CSerialArchive* ar, u32 count, i32 flag) {
     if (ar == 0) {
         return 0;
     }
@@ -1430,7 +1430,7 @@ i32 CDDrawChildGroup::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag
 // retail reads `found` into a register only on Lookup-success, our cl re-zeroes
 // the slot and compares memory. A found-slot regalloc coin-flip.
 RVA(0x0015b1d0, 0x9b)
-i32 CDDrawChildGroup::PruneOrphans_15b1d0() {
+i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
     if (pos != 0) {

@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image (: CSBI_RectOnly : CStatusBarItem)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches_155630 (SerializeChain's reverse lookup)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches (SerializeChain's reverse lookup)
 #include <Gruntz/GameRegistry.h>          // canonical g_gameReg singleton
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
@@ -87,7 +87,7 @@ void CSBI_Image::ClearFrame() {
 // global mid-sequence. Neither local nor inlined surfaceCtx flips it (RenderFrame
 // arg-eval-order/regalloc wall shared by the whole slot-5 render family). Final sweep.
 RVA(0x000e6dd0, 0x45)
-i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
+i32 CSBI_Image::TickRenderCurrent() {
     if (m_28 > 0) {
         m_28--;
         CImage* cel = m_frame;
@@ -154,7 +154,7 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
-                mgr->m_imageRegistry->AnyValueMatches_155630(m_frame, name, &idx);
+                mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

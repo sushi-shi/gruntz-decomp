@@ -33,7 +33,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
 #include <Gruntz/ActName.h>       // CActName (shared)
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup (0x15c2d0) for the m_1a0 forwarder
 
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
@@ -354,7 +354,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_fallSprite = static_cast<CAniElement*>(out);
 
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(m_frame1);
+    m_38->m_1a0.Setup(m_frame1);
     m_38->ApplyName(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
@@ -564,9 +564,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x4;
                 if (m_38->m_1a0.m_14 != m_frame1) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup_15c2d0(m_frame1);
+                    m_38->m_1a0.Setup(m_frame1);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup_15c2d0(m_frame1);
+                        m_shadow->m_1a0.Setup(m_frame1);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
@@ -574,9 +574,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x8;
                 if (m_38->m_1a0.m_14 != m_frame2) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup_15c2d0(m_frame2);
+                    m_38->m_1a0.Setup(m_frame2);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup_15c2d0(m_frame2);
+                        m_shadow->m_1a0.Setup(m_frame2);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
@@ -584,9 +584,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0xc;
                 if (m_38->m_1a0.m_14 != m_frame3) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup_15c2d0(m_frame3);
+                    m_38->m_1a0.Setup(m_frame3);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup_15c2d0(m_frame3);
+                        m_shadow->m_1a0.Setup(m_frame3);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
@@ -594,9 +594,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x10;
                 if (m_38->m_1a0.m_14 != m_frame4) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup_15c2d0(m_frame4);
+                    m_38->m_1a0.Setup(m_frame4);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup_15c2d0(m_frame4);
+                        m_shadow->m_1a0.Setup(m_frame4);
                     }
                 }
             } else {
@@ -604,9 +604,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x14;
                 if (m_38->m_1a0.m_14 != m_frame5) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup_15c2d0(m_frame5);
+                    m_38->m_1a0.Setup(m_frame5);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup_15c2d0(m_frame5);
+                        m_shadow->m_1a0.Setup(m_frame5);
                     }
                 }
             }
@@ -700,7 +700,7 @@ void CProjectile::MovingSlot16() {
         return;
     }
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(sprite);
+    m_38->m_1a0.Setup(sprite);
 }
 
 RVA(0x000e05e0, 0x4e)

@@ -29,12 +29,12 @@ public:
     // Non-vtable members.
     // (ClearContext @0x157ae0 belongs to the sibling CDDrawSubMgrLeafScan - it is that
     // class's slot-7 virtual; it operated on a LeafScan `this`, so it was re-homed there.)
-    CObject* LookupValue_06b2a0(const char* key);
-    void RemoveValue_152660(CAniElement* target);
-    i32 FreeAll_152720(); // i32 residue feeds the slot-7 Unload override
-    i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
-    i32 HasKeyPrefix_152c50(const char* str);
-    CString KeyOfValue_152d30(CObject* target);
+    CObject* LookupValue(const char* key);
+    void RemoveValue(CAniElement* target);
+    i32 FreeAll(); // i32 residue feeds the slot-7 Unload override
+    i32 RemoveKeysEqual(const char* base, const char* str);
+    i32 HasKeyPrefix(const char* str);
+    CString KeyOfValue(CObject* target);
     virtual ~CDDrawSubMgrLeaf() OVERRIDE; // slot 1 (real ~ @0x1577e0; cl auto ??_G @0x1577c0)
 
     // The ANI catalog method set (the ex `CDDrawSubMgrAni` twin class, MERGED
@@ -53,11 +53,11 @@ public:
     //      mfc_class 0x1b847c => Ptr band for CreateAniEntry2's operator[]), and
     //      the retail image has NO Ani ctor / vtable / RTTI - nothing ever
     //      constructed a second class.
-    // ScanTree_152ad0 is the ANIZ tree installer (recurses CSymTab scopes and
-    // caches each 'ANI'-tagged record via CreateAniEntry_1528d0).
-    class CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
-    class CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
-    i32 ScanTree_152ad0(class CSymTab* tree, const char* prefix, const char* suffix);
+    // ScanTree is the ANIZ tree installer (recurses CSymTab scopes and
+    // caches each 'ANI'-tagged record via CreateAniEntry).
+    class CAniElement* CreateAniEntry(const char* key, void* entry);
+    class CAniElement* CreateAniEntry2(const char* key, void* entry);
+    i32 ScanTree(class CSymTab* tree, const char* prefix, const char* suffix);
 
     CMapStringToPtr m_10; // +0x10  m_map
 };

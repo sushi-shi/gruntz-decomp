@@ -33,7 +33,7 @@ void* operator new(u32 n);
 void operator delete(void*);
 
 RVA(0x0006b2a0, 0x23)
-CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
+CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
     void* val = 0;
     m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
     return static_cast<CObject*>(val);
@@ -45,7 +45,7 @@ i32 CDDrawSubMgrLeaf::IsReady() {
 }
 RVA(0x00152650, 0x5)
 i32 CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override)
-    return FreeAll_152720();     // tail-jmp to FreeAll (whose eax residue IS this slot's i32)
+    return FreeAll();     // tail-jmp to FreeAll (whose eax residue IS this slot's i32)
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +61,7 @@ i32 CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override)
 // pos=[esp+0x8], ours the reverse) - the stack-slot-coalesce coin-flip, only the
 // [esp+N] displacement bytes differ. docs/patterns/stack-slot-coalesce-frame-4b.md.
 RVA(0x00152660, 0xb2)
-void CDDrawSubMgrLeaf::RemoveValue_152660(CAniElement* target) {
+void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     if (target == 0) {
         return;
     }
@@ -81,7 +81,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CAniElement* target) {
 // ---------------------------------------------------------------------------
 // Free-all: iterate every entry in m_10 via GetNextAssoc, destroying each value
 // via its scalar-deleting destructor (vtbl +0x4 arg 1), then RemoveAll the map.
-// Same source as the 100%-matched CDDrawWorkerRegistry::MapTeardown_1552b0.
+// Same source as the 100%-matched CDDrawWorkerRegistry::MapTeardown.
 // @early-stop
 // store-scheduling coin-flip (~94.7%) - complete & correct: byte-identical to
 // retail EXCEPT the `CObject* val = 0` store position (retail schedules it after
@@ -89,7 +89,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CAniElement* target) {
 // EH-state push. The surrounding symbol set re-rolls the allocator; the identical
 // sibling source matched 100% elsewhere. docs/patterns/zero-register-pinning.md.
 RVA(0x00152720, 0xa2)
-i32 CDDrawSubMgrLeaf::FreeAll_152720() {
+i32 CDDrawSubMgrLeaf::FreeAll() {
     void* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -115,10 +115,10 @@ i32 CDDrawSubMgrLeaf::FreeAll_152720() {
 // @early-stop
 // regalloc wall (~91%) - complete & correct: logic/CFG/all calls/args/offsets
 // reproduced. Residue is the val/loop-flag stack-slot swap + reloc-masked EH-state
-// push, identical to the sibling CDDrawWorkerRegistry::RemoveKeysEqual_155360.
+// push, identical to the sibling CDDrawWorkerRegistry::RemoveKeysEqual.
 // docs/patterns/zero-register-pinning.md.
 RVA(0x001527d0, 0xf8)
-i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) {
+i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
     match = str;
     i32 len = match.GetLength();
@@ -154,12 +154,12 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001528d0, 0xdd)
-CAniElement* CDDrawSubMgrLeaf::CreateAniEntry_1528d0(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (el->Configure_1655c0(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
+    if (el->Configure(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -169,19 +169,19 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry_1528d0(const char* key, void* entr
 }
 
 // ---------------------------------------------------------------------------
-// 0x1529b0: the element factory variant - byte-for-byte twin of CreateAniEntry_1528d0
+// 0x1529b0: the element factory variant - byte-for-byte twin of CreateAniEntry
 // except the element configure goes through the second Configure (0x165620).
 // @early-stop
-// ~99.99% - twin of CreateAniEntry_1528d0's wall; the only residue is the appended
+// ~99.99% - twin of CreateAniEntry's wall; the only residue is the appended
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001529b0, 0xdd)
-CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (el->LoadFile_165620(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
+    if (el->LoadFile(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -191,7 +191,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* ent
 }
 
 RVA(0x00152ad0, 0x17f)
-i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
+i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
     char* buf = static_cast<char*>(operator new(0x100));
     if (buf == 0) {
@@ -205,7 +205,7 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
         } else {
             strcpy(buf, node->m_name);
         }
-        count += ScanTree_152ad0(node, buf, suffix);
+        count += ScanTree(node, buf, suffix);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     void* grp = tree->FirstSym();
@@ -219,7 +219,7 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
                     } else {
                         strcpy(buf, fn->m_name);
                     }
-                    if (CreateAniEntry_1528d0(buf, fn) != 0) {
+                    if (CreateAniEntry(buf, fn) != 0) {
                         ++count;
                     }
                 }
@@ -233,7 +233,7 @@ i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const c
 }
 
 RVA(0x00152c50, 0xdc)
-i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
+i32 CDDrawSubMgrLeaf::HasKeyPrefix(const char* str) {
     i32 len = strlen(str);
     CString key;
     void* val = 0;
@@ -248,7 +248,7 @@ i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
 }
 
 RVA(0x00152d30, 0xd4)
-CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
+CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
     CString key;
     if (target == 0) {
         return key;

@@ -36,7 +36,7 @@ static CString g_worldName[8] = {
 DATA(0x002451a8)
 extern CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)
-void Register82aa0() {
+void Register() {
     g_actRegCaption.Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);
 }
 
@@ -49,7 +49,7 @@ void Register82aa0() {
 // "CButeSection" were the same 280-B config object; the twin class is dissolved and
 // the (CButeSection*) conflation cast fell out with it.)
 RVA(0x00082b20, 0xa)
-void InitResButeMgr82b20() {
+void InitResButeMgr() {
     (&g_buteMgr)->CButeMgr::CButeMgr();
 }
 

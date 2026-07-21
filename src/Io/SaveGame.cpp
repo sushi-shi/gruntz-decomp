@@ -14,7 +14,7 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-int TempFileExists_e5700(SaveSlot* p); // 0x0e5700 (defined below)
+int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 char* g_areaNames[8]; // 0x6454e8
@@ -26,7 +26,7 @@ DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
 void* g_previewImage;                           // 0x64c868  (CRezImage* previewed DIB)
-i32 __stdcall CloseTempFile_e5550(SaveSlot* r); // defined below (0x0e5550)
+i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
 void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
@@ -179,7 +179,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 return 1;
             }
             if (wParam == 1) {
-                CloseTempFile_e5550(reinterpret_cast<SaveSlot*>(g_slotState));
+                CloseTempFile(reinterpret_cast<SaveSlot*>(g_slotState));
                 (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->Save(0, 0x81a6);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -452,7 +452,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     if (_strcmpi(name, "(Empty)") == 0) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
-    if (TempFileExists_e5700(obj->GetSlot(slot))) {
+    if (TempFileExists(obj->GetSlot(slot))) {
         g_slotState = reinterpret_cast<i32>(obj->GetSlot(slot));
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
@@ -868,7 +868,7 @@ i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
 }
 
 RVA(0x000e5550, 0x9a)
-int __stdcall CloseTempFile_e5550(SaveSlot* p) {
+int __stdcall CloseTempFile(SaveSlot* p) {
     if (p == 0) {
         return 0;
     }
@@ -935,7 +935,7 @@ void CSaveGame::SetMagic() {
 }
 
 RVA(0x000e5700, 0x9e)
-int TempFileExists_e5700(SaveSlot* p) {
+int TempFileExists(SaveSlot* p) {
     if (p != 0 && (p->m_type & 1)) {
         CFileIO file;
         if (file.Open(p->m_savePath, 0, 0)) {
@@ -949,7 +949,7 @@ int TempFileExists_e5700(SaveSlot* p) {
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
-    if (TempFileExists_e5700(item)) {
+    if (TempFileExists(item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
         flag = 1;
     } else {

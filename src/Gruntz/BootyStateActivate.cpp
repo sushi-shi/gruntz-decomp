@@ -5,8 +5,8 @@
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (Booty/MultiBooty ReleaseResources)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual (Booty/MultiBooty ReleaseResources)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
@@ -55,10 +55,10 @@ void CBootyState::ReleaseResources() {
     if (r) {
         r->Stop();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
-    m_world->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
-    m_world->m_imageRegistry->RemoveKeysEqual_155360("BOOTY", "_");
-    m_world->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_WANDGRUNT", "_");
+    m_world->m_imageRegistry->RemoveKeysEqual("BOOTY", "_");
+    m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_GOKARTGRUNT", "_");
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
@@ -502,7 +502,7 @@ void CMultiBootyState::ReleaseResources() {
     if (r) {
         r->Stop();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
     // m_4 (CState::m_4) IS the CGruntzMgr singleton; the sub-object it tears down here is
     // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
@@ -799,7 +799,7 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
         m_1b8 = 0xc7;
     }
-    m_world->m_childGroup->TickKillCues_159a70(1);
+    m_world->m_childGroup->TickKillCues(1);
     m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
 
     // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the

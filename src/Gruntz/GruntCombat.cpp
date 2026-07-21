@@ -21,14 +21,14 @@
 //     inside this interval.
 //   * 4 EH sites in the interval -> /GX (flags "eh").
 // In-interval folds: LoadGruntAbilityTuning @0x57100 (ex GruntAssetLoaders.cpp),
-// PathScan57db0 @0x57db0 (ex GruntPathScan.cpp), LoadGruntCombatAnimations
+// PathScan @0x57db0 (ex GruntPathScan.cpp), LoadGruntCombatAnimations
 // @0x597a0 (ex GruntCombatAnim.cpp), GruntSpawnPump @0x5baf0 (ex
 // GruntSpawnPump.cpp), ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0
 // @0x5be30 (LogicActRegistrars). NOT folded (COMDAT-at-usage emissions):
 // ApplyGeometryDirect @0x58b60 (spriteresource),
 // CMotionState::SetParams/SetZ @0x58bc0/0x58ca0 (motionstate), ??0CUserLogic
 // @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
-// (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
+// (trirecordserialize), Lookup @0x5b7e0 (ddrawsubmgrleafscan).
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
@@ -55,7 +55,7 @@
 #include <Gruntz/Brickz.h> // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (rehomed here)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries
 #include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
@@ -1150,7 +1150,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
             CSndHost* host = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
             if (host->m_emitGate == 0) {
-                LeafCue* cc = static_cast<LeafCue*>(host->Lookup_05b7e0(s_CONVERSIONHIT));
+                LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != 0) {
                     cc->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -1815,7 +1815,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 }
 
 RVA(0x0005b7e0, 0x23)
-CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
+CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
     void* val = 0;
     m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
     return static_cast<CObject*>(val);

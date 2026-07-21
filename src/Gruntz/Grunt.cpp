@@ -795,7 +795,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
+        m_38->m_1a0.Setup(m_poseAttackIdle);
         {
             CAniElement* desc = m_38->m_1a0.m_14;
             i32* elem = desc->m_records.GetSize() > 0
@@ -828,7 +828,7 @@ codeI:
     m_entranceCell.row = rec.m_4;
     m_entranceCell.reason = rec.m_8;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(m_poseIdle[1]);
+    m_38->m_1a0.Setup(m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
     return;
 
@@ -856,7 +856,7 @@ walk:
     // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
     // from the incoming record (cell table base 0x470), set it by name only.
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+    m_38->m_1a0.Setup(m_poseWalk);
     {
         i32 col = rec.m_0;
         i32 row = rec.m_4;
@@ -1505,7 +1505,7 @@ label_4cb4b:
     }
     if (reason0e) {
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_38->m_1a0.Setup(m_poseWalk);
         return 1;
     }
     goto label_ret1;

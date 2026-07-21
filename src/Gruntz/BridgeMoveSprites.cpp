@@ -47,7 +47,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 && py >= r->m_viewOriginT) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
-                    LeafCue* e = static_cast<LeafCue*>(set->Lookup_05b7e0("GAME_PYRAMIDMOVE"));
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
@@ -63,7 +63,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
                 && py >= r->m_viewOriginT) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
-                    LeafCue* e = static_cast<LeafCue*>(set->Lookup_05b7e0("LEVEL_WATERBRIDGEMOVE"));
+                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
@@ -77,7 +77,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
-                r->m_world->m_soundRegistry->RefreshAsset_114120("LEVEL_WATERBRIDGEMOVE");
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case 109:
@@ -87,7 +87,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
-                r->m_world->m_soundRegistry->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case 115:
@@ -97,7 +97,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
-                r->m_world->m_soundRegistry->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case 111:
@@ -107,7 +107,7 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
-                r->m_world->m_soundRegistry->RefreshAsset_114120("LEVEL_CRUMBLE");
+                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_CRUMBLE");
             }
             return;
     }

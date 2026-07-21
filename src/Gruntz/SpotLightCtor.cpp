@@ -218,7 +218,7 @@ extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
 extern char s_LEVEL_UFOHAZARDLASER[];  // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 
-// CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
+// CSpotLight::Tick @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
 // non-self target; if found, re-resolve the "B" bute node, copy the target's coords,
 // and either (m_object->m_114 == 1) emit the cell sound-cue + spawn a numbered
@@ -235,9 +235,9 @@ extern char s_LEVEL_UFOHAZARDLASER[];  // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 // every [esp+N] slot + register assignment shifts, cascading through the whole body.
 // Compounded by the inlined seed*0x343fd+0x269ec3 rand LCG (lea-chain) and the
 // fld/fsin/fcos/fxch rotation stack-scheduling (the SAME wall the CSpotLight ctor +
-// Update_0b1ee0 carry). Logic complete; the frame/regalloc/fp codegen is the wall.
+// Update carry). Logic complete; the frame/regalloc/fp codegen is the wall.
 RVA(0x000b1af0, 0x318)
-i32 CSpotLight::Tick_0b1af0() {
+i32 CSpotLight::Tick() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;

@@ -30,7 +30,7 @@ public:
     // and 15 (0x1522b0, @early-stop regalloc wall) are HOMED in DDrawWorker.cpp: they
     // walk a CSymTab scope and self-dispatch InsertFrame (slot 14) / ReloadFrame
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
-    virtual i32 SetKey_155810(const char* key);            // slot 9  @0x155810 (key copy)
+    virtual i32 SetKey(const char* key);            // slot 9  @0x155810 (key copy)
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
     virtual CImage* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3); // slot 11 @0x152110
     virtual CImage* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3); // slot 12 @0x152060
@@ -86,10 +86,10 @@ public:
         m_0c = reinterpret_cast<i32>(p);
     }
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
-    void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
+    void AddFrameAt(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
     ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
-    char m_name[0x40];   // +0x24  registry key buffer (SetKey_155810 strncpy's it,
+    char m_name[0x40];   // +0x24  registry key buffer (SetKey strncpy's it,
                         //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
     i32 m_minIndex;           // +0x64  cached-index sentinel (DeleteAll seeds 99999)
     i32 m_maxIndex;           // +0x68

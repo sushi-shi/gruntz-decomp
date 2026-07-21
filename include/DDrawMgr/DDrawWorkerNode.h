@@ -92,7 +92,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
 
     // Non-virtual: look up a named object in the owner map, fetch element[idx] when
     // in range, cache at m_78, return whether it is non-null.
-    i32 Helper_166040(i32 key, i32 idx); // 0x166040
+    i32 Helper(i32 key, i32 idx); // 0x166040
     // +0x78 int frame/node = the base union's m_78.
 };
 SIZE(CDDrawWorkerB, 0x7c);

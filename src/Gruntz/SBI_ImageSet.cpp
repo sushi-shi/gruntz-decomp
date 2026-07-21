@@ -91,10 +91,10 @@ void CSBI_ImageSet::ResetCounters() {
 // present - blit it. Returns 1. Ex CAniPlayer view (dossier #16).
 // @early-stop
 // 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
-// chain regalloc as TickRenderCurrent_0e6dd0 plus the record-table range-test register
+// chain regalloc as TickRenderCurrent plus the record-table range-test register
 // pairing. Final sweep.
 RVA(0x000e7440, 0x5e)
-i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
+i32 CSBI_ImageSet::TickRenderFrame() {
     if (m_28 > 0) {
         m_28--;
         CImageSet* tbl = m_34;

@@ -55,7 +55,7 @@ char* _zdvec::IndexToPtr(i32 i) {
 }
 
 // _zvec::IndexToPtr(idx) - the plain accessor; grows on a bounds miss. 0x312a0.
-// @interleaver _zvec::IndexToPtr emitted-in <boundary: QueueDrainHost.cpp Drain_031250
+// @interleaver _zvec::IndexToPtr emitted-in <boundary: QueueDrainHost.cpp Drain
 // @0x31250 (before) + BattlezMapConfig.cpp Step @0x31610 (after)>. A template-accessor
 // COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
 // @early-stop

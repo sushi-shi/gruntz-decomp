@@ -523,23 +523,23 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     if (w == 0) {
         return;
     }
-    // 0x155460 is CDDrawWorkerRegistry::SumSizesEqual_155460 - the registry key helper.
+    // 0x155460 is CDDrawWorkerRegistry::SumSizesEqual - the registry key helper.
     // CImageRegistry and CDDrawWorkerRegistry
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
-    w->m_imageRegistry->SumSizesEqual_155460(0, 1);
-    w->m_soundRegistry->SumField_1580b0(0);
+    w->m_imageRegistry->SumSizesEqual(0, 1);
+    w->m_soundRegistry->SumField(0);
     w->m_ptrColl->GetCapsChecked();
     w->m_ptrColl->GetCapsChecked();
-    w->m_imageRegistry->SumSizesEqual_155460(0, 1);
-    w->m_imageRegistry->SumSizesEqual_155460("GRUNTZ", 1);
-    w->m_imageRegistry->SumSizesEqual_155460("GAME", 1);
-    w->m_imageRegistry->SumSizesEqual_155460("LEVEL", 1);
-    w->m_imageRegistry->SumSizesEqual_155460("ACTION", 1);
-    w->m_soundRegistry->SumField_1580b0(0);
-    w->m_soundRegistry->SumField_1580b0("GRUNTZ");
-    w->m_soundRegistry->SumField_1580b0("GAME");
-    w->m_soundRegistry->SumField_1580b0("LEVEL");
+    w->m_imageRegistry->SumSizesEqual(0, 1);
+    w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
+    w->m_imageRegistry->SumSizesEqual("GAME", 1);
+    w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
+    w->m_imageRegistry->SumSizesEqual("ACTION", 1);
+    w->m_soundRegistry->SumField(0);
+    w->m_soundRegistry->SumField("GRUNTZ");
+    w->m_soundRegistry->SumField("GAME");
+    w->m_soundRegistry->SumField("LEVEL");
 }
 
 // -------------------------------------------------------------------------
@@ -1108,7 +1108,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
 
 RVA(0x00090200, 0x8)
 i32 CGruntzMgr::RunFromState() {
-    return ChangeState_8fab0(1);
+    return ChangeState(1);
 }
 
 RVA(0x00090980, 0x18)
@@ -1686,7 +1686,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         g_enableHiColor = 1;
     }
 
-    m_world->Cleanup_155e20(); // slot 7: pre-mode-change teardown
+    m_world->Cleanup(); // slot 7: pre-mode-change teardown
     i32 kind = (g_disableAudio == 0) ? 1 : 5;
     if (m_world->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind) == 0) {
         ReportWorldStatus(0x43f);
@@ -2266,13 +2266,13 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::ChangeState_8fab0 (0x08fab0) - deferred big method; the thin
+// CGruntzMgr::ChangeState (0x08fab0) - deferred big method; the thin
 // RunFromState wrapper calls it (reloc-masked). Migrated from Discovered.cpp.
 // @confidence: high
 // @source: call-xref
 // @stub
 RVA(0x0008fab0, 0x318)
-i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
+i32 CGruntzMgr::ChangeState(i32 /*arg*/) {
     return 0;
 }
 
@@ -2935,7 +2935,7 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (!opt->m_038.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
-            opt->m_038.Clear_02ade0();
+            opt->m_038.Clear();
             opt++;
             idx++;
             opt->m_014 = 0;

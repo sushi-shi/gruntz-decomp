@@ -68,7 +68,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 RVA(0x001147e0, 0x15)
-void CToobSpikez::Register_1147e0() {
+void CToobSpikez::Register() {
     g_toobColl.Construct(0x7d0, 0x7da);
 }
 

@@ -730,7 +730,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 // callees (all named, reloc-masked): winapi_02c140/02ae00/02e3a0/031ca0/032060 (the
 //   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (zDArray, x52),
 //   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
-//   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion32ce0,
+//   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion,
 //   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
 //   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
 // ===========================================================================
@@ -1445,9 +1445,9 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
 // stack-slot schedule (the rand-offset dest coords + the dead maybe-null box branch
 // retail emits, shared with winapi_02c140/02dfa0) and the foreign unit/level chains
 // modeled by raw offset. Deferred to the final sweep.
-// Clear_02ade0 (0x2ade0) - clear the active flag.
+// Clear (0x2ade0) - clear the active flag.
 RVA(0x0002ade0, 0x7)
-void CBattlezMapConfig::Clear_02ade0() {
+void CBattlezMapConfig::Clear() {
     m_active = 0;
 }
 
@@ -1557,7 +1557,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
 }
 
 RVA(0x0002b420, 0x419)
-i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
+i32 CBattlezMapConfig::Serialize(void* arArg) {
     CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
     if (ar == 0) {
         return 0;
@@ -1649,8 +1649,8 @@ i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Deserialize_02b950  @0x02b950
-// The read mirror of Serialize_02b420: pull every config scalar back out of the
+// CBattlezMapConfig::Deserialize  @0x02b950
+// The read mirror of Serialize: pull every config scalar back out of the
 // archive through its Read(buf,count) vtable slot (+0x2c), then the four growable
 // arrays + the inline 4-dword block. The two CDWordArrays read a count then that
 // many dwords; the two CPtrArrays first recycle their current element nodes onto
@@ -1666,7 +1666,7 @@ i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
 // identical alloc loops compiling to BOTH (0x7ad40 direct-ecx vs 0x7ad9b
 // edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
 RVA(0x0002b950, 0x513)
-i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
+i32 CBattlezMapConfig::Deserialize(void* arArg) {
     CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
     if (ar == 0) {
         return 0;
@@ -1801,12 +1801,12 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {
         case 4:
-            if (this->Serialize_02b420(obj) == 0) { // kind-4 validator @0x2b420
+            if (this->Serialize(obj) == 0) { // kind-4 validator @0x2b420
                 return 0;
             }
             break;
         case 7:
-            if (this->Deserialize_02b950(obj) == 0) { // kind-7 validator @0x2b950
+            if (this->Deserialize(obj) == 0) { // kind-7 validator @0x2b950
                 return 0;
             }
             break;
@@ -1916,7 +1916,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     // Iterate the scene collection for kind-matching units inside the box.
     CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
     coll->m_scanCursor = reinterpret_cast<CDDrawGroupNode*>(coll->m_list.GetHeadPosition());
-    CGameObject* g = static_cast<CGameObject*>(coll->Drain_031250());
+    CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != 0) {
         if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(Handler_0040288d)
             && (g->m_stateFlags & 1) == 0) {
@@ -2008,7 +2008,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             if (pp->GetClassId() == CLASSID_SERIALREF) {
                 g = pp;
             } else {
-                g = static_cast<CGameObject*>(c->Drain_031250());
+                g = static_cast<CGameObject*>(c->Drain());
             }
         }
     }
@@ -4838,7 +4838,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
 // +0x31c CPtrList's RemoveAll. Skips everything when the list's count is zero.
 // ===========================================================================
 // @early-stop
-// 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize_02b950's
+// 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize's
 // recycle loops: retail's `g_coordPool.m_freeHead = head` store reads esi (head's callee-saved home,
 // which also holds slot after `head=slot`); our cl folds it to `mov g_coordPool.m_freeHead,eax`
 // (slot's register). 1-byte residual (89 35 vs a3), pure operand selection - proven a

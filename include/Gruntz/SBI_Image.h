@@ -91,7 +91,7 @@ public:
     void ClearFrame(); // 0xe6d90
     // slot-5 body (vtbl 0x1eac0c slot [5], thunk 0x16e5): one play step rendering the
     // CURRENT resolved frame m_30 (no table re-lookup). Ex CAniPlayer view (dossier #16).
-    i32 TickRenderCurrent_0e6dd0(); // 0xe6dd0
+    i32 TickRenderCurrent(); // 0xe6dd0
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     CImage* m_frame; // +0x30  latched/resolved frame (the config value; ex i32)

@@ -81,7 +81,7 @@ public:
     virtual i32 Unload() OVERRIDE;     // [7] 0x159080 (declared-only, unreconstructed)
     virtual i32 GetClassId() OVERRIDE; // [8] 0x158f80 (declared-only, unreconstructed)
     // [9] 0x158fd0: cache the {w,h,bpp} geometry + src rect. The BODY is bound as
-    // CDDrawSurfacePair::SetGeometry_158fd0 until the pair re-bases here (one
+    // CDDrawSurfacePair::SetGeometry until the pair re-bases here (one
     // claim per rva); this base decl + ChildA's override reloc-mask.
     virtual i32 SetGeometry(i32 w, i32 h, i32 bpp); // [9] 0x158fd0
     // [10] 0x159020: SetGeometry with bpp-in-{8,16,24,32} validation (G obj def).

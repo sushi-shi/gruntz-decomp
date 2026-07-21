@@ -318,7 +318,7 @@ CFaderLight::CFaderLight() {
 
 RVA(0x00180450, 0x4f)
 CFaderLight::~CFaderLight() {
-    SubFree180630();
+    SubFree();
 }
 
 DATA(0x001f0888)
@@ -412,7 +412,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 }
 
 RVA(0x00180630, 0x1)
-void CFaderLight::SubFree180630() {}
+void CFaderLight::SubFree() {}
 
 // @early-stop
 // CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B): the light fader's per-frame
@@ -492,11 +492,11 @@ CFaderRadial::CFaderRadial() {
 
 RVA(0x0017f9f0, 0x4f)
 CFaderRadial::~CFaderRadial() {
-    FreeBuffer17fc40();
+    FreeBuffer();
 }
 
 RVA(0x0017fc40, 0x11)
-void CFaderRadial::FreeBuffer17fc40() {
+void CFaderRadial::FreeBuffer() {
     if (m_cells) {
         ::operator delete(m_cells);
     }

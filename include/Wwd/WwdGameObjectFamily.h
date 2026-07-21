@@ -67,8 +67,8 @@ public:
 
     // 0x15b650: per-tick notify - under flag bit 0x8 decrement the +0x128 budget
     // (latch the worker's error state on underflow); else fire the +0x80
-    // notifier's m_notify with the owner. (Ex CWwdFactoryObject::Notify_15b650.)
-    void Notify_15b650(void* p); // 0x15b650
+    // notifier's m_notify with the owner. (Ex CWwdFactoryObject::Notify.)
+    void Notify(void* p); // 0x15b650
 
     // The engine base-object ctor (0x15b390; declared-only here - the body is the
     // CWwdGameObjBaseCtor view's /GX ctor in WwdFactoryObject.cpp, a fold pending
@@ -88,7 +88,7 @@ public:
     void AddLogicHit(char* key);                 // 0x150f50
     void AddLogicAttack(char* key);              // 0x151030
     void AddLogicBump(char* key);                // 0x151110
-    i32 NotifyHooked_151d20(void* arg);          // 0x151d20  hooked notify via the +0x7c aux
+    i32 NotifyHooked(void* arg);          // 0x151d20  hooked notify via the +0x7c aux
 
     i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup stores a3;
                          //         CDDrawChildGroup::InsertSorted orders the list by it)
@@ -234,7 +234,7 @@ public:
     };
     CImage* m_layer; // +0x198  cached frame POINTER (the flat model name)
     union {          // +0x19c  role-union (mirrors +0x194): resolved sound-cue value
-                     //         (ReadState -> FindKeyOfValue_158570) vs the cached anim
+                     //         (ReadState -> FindKeyOfValue) vs the cached anim
                      //         sprite (LookupAnimSprite); WwdFile stamps 0
         LeafCue* m_19c;
         CSprite* m_19cSprite;
@@ -252,7 +252,7 @@ public:
     // INLINE so ~B folds it; the out-of-line copy lands at 0x15bf00.
     RVA(0x0015bf00, 0xa1)
     virtual i32 Unload() OVERRIDE {
-        Clear_166810(); // 0x166810 destroy the m_1dc children + RemoveAll
+        Clear(); // 0x166810 destroy the m_1dc children + RemoveAll
         m_1f8 = 0;
         m_18c = -1;
         m_190 = -1;
@@ -272,15 +272,15 @@ public:
         OVERRIDE; // slot 14 0x166950
     // slot 15 INHERITED from A (retail table: 0x150a70).
 
-    void Clear_166810();                            // 0x166810 (destroy m_1dc list + RemoveAll)
-    i32 AddChild_1667e0(CGameObject* child);    // 0x1667e0
-    i32 RemoveChild_166850(CGameObject* child); // 0x166850
-    i32 WalkChildWorkers_166880();                  // 0x166880 (per-child worker cb + count)
+    void Clear();                            // 0x166810 (destroy m_1dc list + RemoveAll)
+    i32 AddChild(CGameObject* child);    // 0x1667e0
+    i32 RemoveChild(CGameObject* child); // 0x166850
+    i32 WalkChildWorkers();                  // 0x166880 (per-child worker cb + count)
     // The child-object factory pair (bodies in WwdGameObjectRender.cpp; the ex-CWwdObjMgrL
     // view is dissolved): build a child CWwdGameObjectA and publish it into m_1dc.
-    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
+    CWwdGameObject* CreateObject(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
     CWwdGameObject*
-    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
+    CreateNamed(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
 
     CObList m_1dc; // +0x1dc  real MFC CObList (0x1c bytes; head @ +0x1e0 = m_pNodeHead;
                    // AddTail/RemoveAt = 0x1b5af6/0x1b5c2c; member dtor = ~CObList 0x1b5a2b)

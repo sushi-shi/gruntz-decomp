@@ -19,7 +19,7 @@ public:
         return LOGIC_TOOBSPIKEZ;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    void Register_1147e0();                       // 0x1147e0 (reserve the activation range)
+    void Register();                       // 0x1147e0 (reserve the activation range)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
     static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)

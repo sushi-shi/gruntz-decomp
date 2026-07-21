@@ -37,7 +37,7 @@ DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
 
 RVA(0x0013e070, 0xa)
-void ClearImageCache_13e070() {
+void ClearImageCache() {
     g_imageCache.CPtrArray::CPtrArray();
 }
 
@@ -909,7 +909,7 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
     }
 }
 
-extern i32 RestoreLostSurfaces_1437f0(); // 0x1437f0 (BoundaryUpper2.cpp)
+extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 RVA(0x0013f960, 0x22)
 i32 CDDSurface::RestoreLost() {
     if (m_b8 != 0) {
@@ -917,7 +917,7 @@ i32 CDDSurface::RestoreLost() {
             return 1;
         }
     }
-    RestoreLostSurfaces_1437f0();
+    RestoreLostSurfaces();
     return 0;
 }
 

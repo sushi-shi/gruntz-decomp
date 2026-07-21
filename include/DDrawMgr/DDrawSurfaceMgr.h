@@ -18,7 +18,7 @@ class CDDrawWorkerRegistry; // +0x10 the name->sprite registry (: CLoadable, vtb
 class CDDrawWorkerCache;    // +0x14 the string-keyed worker cache (its +0x10 map is the
 class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
 class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
-class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue_152d30 / m_10 map)
+class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 map)
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 
@@ -48,7 +48,7 @@ public:
     // display. Retail `ret 0x14` = FIVE args (the old no-arg decl under-declared it);
     // CGruntzMgr::LoadWorldMode dispatches it as its "SetVideoMode" (slot 6, +0x18).
     virtual i32 Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags);
-    virtual void Cleanup_155e20(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
+    virtual void Cleanup(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
                                    //         LoadWorldMode's pre-Init "Notify" dispatch)
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
@@ -86,7 +86,7 @@ public:
                                            //        ex "m_soundRegistry")
     CDDrawSubMgrLeaf*
         m_animRegistry;     // +0x2c  the ANI catalog / anim registry (ex "m_animRegistry";
-                            //        KeyOfValue_152d30 + the ANI factory set)
+                            //        KeyOfValue + the ANI factory set)
     HWND m_hWnd;            // +0x30  bound window / device handle
     i32 m_flags;            // +0x34  caps flags
     i32 m_lastError;        // +0x38  last-error code

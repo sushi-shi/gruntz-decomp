@@ -21,7 +21,7 @@ CImageSet3::~CImageSet3() {
 // retail's pick when the TU regained its retail /GX profile + the collapsed dtor
 // (the *Eh.cpp merge) - the codegen residue was TU-composition-sensitive, not a wall.
 RVA(0x00166e00, 0xa8)
-i32 CImageSet3::ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal) {
+i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (x > 0) {

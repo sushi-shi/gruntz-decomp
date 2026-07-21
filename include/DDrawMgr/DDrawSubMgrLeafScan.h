@@ -37,26 +37,26 @@ public:
     // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
     // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 
-    i32 RefreshAsset_114120(const char* key);
-    LeafCue* CreateEntry_157d70(const char* key, void* arg2);
-    LeafCue* CreateEntry2_157e00(const char* key, void* arg2);
-    LeafCue* AddFromSource_157e90(CParseSource* src);     // 0x157e90
-    void AddEntry_157ec0(LeafCue* elem, const char* key); // 0x157ec0
+    i32 RefreshAsset(const char* key);
+    LeafCue* CreateEntry(const char* key, void* arg2);
+    LeafCue* CreateEntry2(const char* key, void* arg2);
+    LeafCue* AddFromSource(CParseSource* src);     // 0x157e90
+    void AddEntry(LeafCue* elem, const char* key); // 0x157ec0
     // The recursive asset-tree walker. `tree` is a Bute CSymTab scope: the walker calls
     // FirstSub/NextSub (child scopes) and FirstSym/NextSym/NextSym2/NextSym3 (leaf parse
     // records) on it, and every subdir it recurses into is itself a CSymTab. The leaf
     // records it tags-and-caches are CParseSource. (Both were formerly one `DirNode` view.)
-    i32 ScanTree_157ee0(CSymTab* tree, const char* prefix, const char* suffix);
+    i32 ScanTree(CSymTab* tree, const char* prefix, const char* suffix);
 
-    CObject* Lookup_05b7e0(const char* key);
-    i32 RemoveKeysEqual_157c70(const char* base, const char* str);
-    i32 SumField_1580b0(const char* str);
-    LeafCue* GetFirstValue_158210();
-    LeafCue* NextValueAfter_1582c0(LeafCue* target);
-    i32 ProbeFirst_1584a0(i32 arg);
-    i32 HasKeyEqual_1583c0(const char* str);
-    CString FindKeyOfValue_158570(LeafCue* target);
-    i32 MatchSub_1584f0(LeafCue* arg1, i32 arg2);
+    CObject* Lookup(const char* key);
+    i32 RemoveKeysEqual(const char* base, const char* str);
+    i32 SumField(const char* str);
+    LeafCue* GetFirstValue();
+    LeafCue* NextValueAfter(LeafCue* target);
+    i32 ProbeFirst(i32 arg);
+    i32 HasKeyEqual(const char* str);
+    CString FindKeyOfValue(LeafCue* target);
+    i32 MatchSub(LeafCue* arg1, i32 arg2);
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
     i32 ClearMap(); // 0x157bc0 (non-virtual map teardown; i32 residue feeds Unload)
@@ -74,9 +74,9 @@ public:
     // the retail image (dead / inlined away), which is why it was long parked under the
     // placeholder class name `CAniTriggerMap_1581b0`; the BYTES name it though - it reads
     // m_0c/+0x30 and Lookups m_10 (`add ecx,0x10; call 0x1b8438`), and it sits between
-    // this class's RemoveKeysEqual_157c70 and GetFirstValue_158210 (which begins at
+    // this class's RemoveKeysEqual and GetFirstValue (which begins at
     // 0x158210, exactly where this body ends).
-    i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2); // 0x1581b0
+    i32 Fire(const char* key, i32 pos, i32 range1, i32 range2); // 0x1581b0
 
     CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundStream* m_2c;    // +0x2c  held DSound stream (game TUs Stop() it on teardown)

@@ -616,7 +616,7 @@ void CCheckpointTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f6a0);
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -648,7 +648,7 @@ void CCheckpointTrigger::RegisterActs() {
 // + inline rand + a level sprite-ref hit-test). Pending leaf-first reconstruction
 // (>512 B); the empty body keeps the PMF wired to the real method symbol.
 RVA(0x0010f6a0, 0x235)
-i32 CCheckpointTrigger::Act_10f6a0() {
+i32 CCheckpointTrigger::Act() {
     return 0;
 }
 
@@ -692,7 +692,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 }
 
 RVA(0x0010fc90, 0x15)
-void CTileTriggerTransition::Register_10fc90() {
+void CTileTriggerTransition::Register() {
     g_tileActReg.Construct(0x7d0, 0x7da);
 }
 

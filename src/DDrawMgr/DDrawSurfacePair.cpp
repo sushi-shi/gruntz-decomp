@@ -24,7 +24,7 @@
 #include <Gruntz/String.h>
 #include <Mfc.h>
 #include <Gruntz/ResolveNode.h>           // canonical CResolveNode (Init here, 0x1647e0)
-#include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue_165360's target)
+#include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue's target)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (m_mgr / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
@@ -48,7 +48,7 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 }
 
 RVA(0x0006b270, 0x1b)
-::CObject* CAniElement::AtChecked_06b270(i32 i) const {
+::CObject* CAniElement::AtChecked(i32 i) const {
     if (i >= 0 && i < m_records.GetSize()) {
         return m_records.GetAt(i);
     }
@@ -177,7 +177,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
 // source pins src in eax and schedules the m_surface store early. Same values/order.
 // Not source-steerable (permuter 180-iter marginal). docs/patterns/zero-register-pinning.md.
 RVA(0x00163db0, 0x64)
-i32 CDDrawSurfacePair::InitFromSurface_163db0(CDDSurface* src) {
+i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     if (src != 0) {
         i32 w = src->m_width;
         i32 bpp = src->m_bitDepth;
@@ -210,7 +210,7 @@ void CDDrawSurfacePair::TeardownSurface() {
 }
 
 RVA(0x00163e50, 0x8b)
-i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
+i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     i32 type;
     switch (static_cast<u32>(src->GetEntryTag())) {
         case 0x424d50: // 'BMP'
@@ -424,7 +424,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // (0x163c90) hits the same family. Not source-steerable (invert-condition + permuter
 // both no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x00164250, 0x12b)
-i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
         if (m_status == 2) {
@@ -474,7 +474,7 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
 // ---------------------------------------------------------------------------
 // The counter-draw pair (0x164380 / 0x164420), re-homed from
 // src/Gruntz/ResourceLoaders.cpp: retail birth-positions both dead-center in the
-// CDDrawSurfacePair block (between SetGeom_164250 and the 0x1644a0 mode-surface
+// CDDrawSurfacePair block (between SetGeom and the 0x1644a0 mode-surface
 // creator), so they compile in this TU (wave1-C).
 // [SETTLED (was @identity-TODO): the ResLoaders::DrawHost views WERE this class -
 // their +0x2c "counter window" is m_surface (CDDSurface*), whose +0x08 (m_8) is the
@@ -621,7 +621,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
 }
 
 RVA(0x00164650, 0x3)
-void CDDrawSurfacePair::BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos, i32* size) {}
+void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {}
 
 // ---------------------------------------------------------------------------
 // 0x164660: surface-lost probe (the RestoreIfLost twin).  With no surface, report
@@ -635,7 +635,7 @@ void CDDrawSurfacePair::BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos,
 // same non-steerable regalloc coin-flip as the sibling RestoreIfLost (0x163f00,
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
-i32 CDDrawSurfacePair::Probe_164660() {
+i32 CDDrawSurfacePair::Probe() {
     return m_surface == 0 || (m_surface->m_ddSurface != 0 && m_surface->m_ddSurface->IsLost() == 0)
            || m_surface->m_ddSurface->Restore() == 0 || m_surface->m_ddSurface->Restore() == 0;
 }
@@ -779,7 +779,7 @@ void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, 
 void* operator new(u32 n);
 
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerCache::FindKeyOfValue_165360(::CObject* target) {
+CString CDDrawWorkerCache::FindKeyOfValue(::CObject* target) {
     ::CObject* val = 0;
     POSITION pos = m_10.GetStartPosition();
     CString key;
@@ -811,7 +811,7 @@ CString CDDrawWorkerCache::FindKeyOfValue_165360(::CObject* target) {
 // (3) the SetAtGrow arg lands in edx (retail) vs ecx (ours) with the array-`this`
 // `lea` hoisted before the pushes (pin-local-for-callee-saved-reg.md). None steerable.
 RVA(0x00165460, 0x156)
-i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
+i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
     m_total = 0;
@@ -861,7 +861,7 @@ fail:
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
+i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
     if ((static_cast<CParseSource*>(entry))->GetEntryTag() != 0x414e49) {
         return 0;
     }
@@ -870,7 +870,7 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
     if (src == 0) {
         return 0;
     }
-    i32 r = Build_165460(ctx, static_cast<CAniSource*>(src), 0);
+    i32 r = Build(ctx, static_cast<CAniSource*>(src), 0);
     (static_cast<CParseSource*>(entry))->EndParse();
     return r;
 }
@@ -882,7 +882,7 @@ SIZE_UNKNOWN(CAniSource);
 // ---------------------------------------------------------------------------
 // 0x165620: load + build the element from a file.  Open the reader on `filename`;
 // on failure return 0.  Otherwise read the whole file into a RezAlloc'd buffer,
-// hand it to Build_165460(ctx, buf, 0), free the buffer, and return the build
+// hand it to Build(ctx, buf, 0), free the buffer, and return the build
 // result (the reader local is destroyed on every exit).  __thiscall, ret 0xc.
 // @early-stop
 // 97.29% — the whole body is byte-faithful (Open/GetLength/RezAlloc/Read/Build/
@@ -892,7 +892,7 @@ SIZE_UNKNOWN(CAniSource);
 // dtor; modeling that is matching-neutral, tested).  docs/patterns/gx-scoped-local-
 // eh-frame-size.md.
 RVA(0x00165620, 0x101)
-i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
+i32 CAniElement::LoadFile(void* ctx, void* filename, i32 a3) {
     CFile fr;
     if (fr.Open(static_cast<const char*>(filename), 0, 0) == 0) {
         return 0;
@@ -903,7 +903,7 @@ i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
         RezFree(buf);
         return 0;
     }
-    i32 r = Build_165460(ctx, static_cast<CAniSource*>(buf), 0);
+    i32 r = Build(ctx, static_cast<CAniSource*>(buf), 0);
     RezFree(buf);
     return r;
 }
@@ -1170,7 +1170,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 // ===========================================================================
-// The CDDrawWorkerA/B plot/draw T-pair (0x165fa0-0x1660b0) + Helper_166040.
+// The CDDrawWorkerA/B plot/draw T-pair (0x165fa0-0x1660b0) + Helper.
 // ===========================================================================
 // 0x165fa0 (vtable slot 10): plot the worker's marker pixel (m_78) at pixel
 // (m_5c, m_60) onto BOTH passed surface pairs - the back one (b) first.
@@ -1209,7 +1209,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // scheduling wall (topic:regalloc): body byte-exact; only residue is WHERE the
 // Lookup out-param zero-init lands (a 1-instruction reorder). ~95%.
 RVA(0x00166040, 0x66)
-i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
+i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
     CObject* obj = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), obj);
     CDDrawWorkerObj* p = reinterpret_cast<CDDrawWorkerObj*>(obj);

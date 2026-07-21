@@ -12,7 +12,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)    // canonical CImageRegistry (the +0x10 image registrar)
 #include <Gruntz/GameMode.h>           // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h>          // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
 
 char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
@@ -84,13 +84,13 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (!soundz) {
             goto fail;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
 
         void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {

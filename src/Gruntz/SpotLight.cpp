@@ -16,7 +16,7 @@
 // "A" bute re-resolve match; the residual is the rotation fld/fmul/fsub tree's fxch
 // interleave (and the frame-delta fild hoist), not source-steerable under MSVC5 /O2.
 RVA(0x000b1ee0, 0x11d)
-int CSpotLight::Update_0b1ee0() {
+int CSpotLight::Update() {
     if (m_object->m_114 == 1) {
         double c = cos(m_90);
         double s = sin(m_90);

@@ -54,7 +54,7 @@ i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310
 i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
 RVA(0x0003ac30, 0xa)
-void FreeGlobal62c25c() {
+void FreeGlobal() {
     g_pathStr.CString::CString();
 }
 

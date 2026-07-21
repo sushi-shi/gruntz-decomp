@@ -1193,7 +1193,7 @@ i32 ApiCallerStubs::CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
         d++;
     } while (--i);
     if (winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() && !(flags & 1)) {
-        Tune1770e0();
+        Tune();
         m_systemTuned = 1;
     }
     m_palette = CreatePalette(&m_pal);
@@ -1314,7 +1314,7 @@ i32 ApiCallerStubs::winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
 }
 
 RVA(0x001770e0, 0x7c)
-void ApiCallerStubs::CImagePaletteNode::Tune1770e0() {
+void ApiCallerStubs::CImagePaletteNode::Tune() {
     winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
     HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);

@@ -51,7 +51,7 @@
 // plane TU. Local view duplicated from that TU (@identity-TODO: the grid-owner's
 // name-conflation with the Gruntz CImageSet3 variant record is unresolved).
 // The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
-// CDDrawWorkerHost::Cleanup_161bf0 prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
+// CDDrawWorkerHost::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
 // complete dtor (~CWwdSpatialMgr @0x163a40, body in WwdSpatialMgr.cpp; the ex-C163a40
 // GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
@@ -94,18 +94,18 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
 //      populates the +0x9c frame-set array the Draw loop indexes by handle>>16.
 //   4. Copies the record's geometry into `this`, calls SetTileSize (0x161f00), the
 //      g_pCopyRect fn-ptr (0x6c44bc) for the bounds rect, and the DAT_005f02a0 float
-//      scale - then steps 6-9 are BYTE-IDENTICAL to InitGeometry_1619f0 (two
+//      scale - then steps 6-9 are BYTE-IDENTICAL to InitGeometry (two
 //      operator_new allocations: the tile grid + the column-offset table, then the
 //      tail-call to RecomputePlaneCoords 0x161c90).
 //   5. Finally drives RebuildPlanes (0x1628f0) for the object block.
 //
 // WHAT BLOCKS IT (not a model wall - a cost/plateau judgment): its steps 6-9 ARE
-// InitGeometry_1619f0, and that sibling is itself parked at 78.33% on the documented
+// InitGeometry, and that sibling is itself parked at 78.33% on the documented
 // zero-register-pinning wall (docs/patterns/zero-register-pinning.md - retail's
 // arg->register rotation over the ~20 field seeds is not source-steerable). A faithful
 // 930-B reconstruction here would inherit that same plateau over its largest span, and
 // a PARTIAL body is worse than a stub (it under-counts AND diverges the TU's regalloc).
-// The honest sequencing is leaf-first: crack InitGeometry_1619f0's register pinning,
+// The honest sequencing is leaf-first: crack InitGeometry's register pinning,
 // then this body follows mechanically from the structure above.
 // @confidence: high
 // @source: vtable_hierarchy-slot-map+ReadPlane-dispatch+full-disasm-decode
@@ -115,7 +115,7 @@ i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
     return 0;
 }
 
-// CDDrawWorkerHost::InitGeometry_1619f0 (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
+// CDDrawWorkerHost::InitGeometry (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
 // seed tile/wrap/origin/shift fields from the 8 args, log2 the tile shifts, strcpy
 // the name, alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
 // __thiscall, 8 args (ret 0x20), returns 1.
@@ -129,7 +129,7 @@ i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
 // with the m_30/m_34 products differently.  Same values, same stores; no source
 // lever picks the arg->register map (docs/patterns/zero-register-pinning.md).
 RVA(0x001619f0, 0x1f7)
-i32 CDDrawWorkerHost::InitGeometry_1619f0(
+i32 CDDrawWorkerHost::InitGeometry(
     i32 w,
     i32 h,
     i32 tileW,
@@ -206,7 +206,7 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
 }
 
 RVA(0x00161bf0, 0x5e)
-void CDDrawWorkerHost::Cleanup_161bf0() {
+void CDDrawWorkerHost::Cleanup() {
     if (m_scroll != 0) {
         m_scroll->PruneCount();
     }
@@ -226,16 +226,16 @@ void CDDrawWorkerHost::Cleanup_161bf0() {
 // 0x161c50 - RegisterNamed(index, key): resolve `key` to a named object through the
 // owner context's map (m_mapData -> sub-manager -> +0x10 CMapStringToOb) and cache the
 // result (or null on a miss) at m_frameSets[index] (SetAtGrow). __thiscall, ret 8.
-// Same lookup chain as CDDrawWorkerB::Helper_166040. m_mapData is the CLoadable base's
+// Same lookup chain as CDDrawWorkerB::Helper. m_mapData is the CLoadable base's
 // +0x0c owner context (declared i32; the reinterpret is the CLoadable ctx handle).
 // ===========================================================================
 // @early-stop
 // 90.48%: identical Lookup out-param zero-init reorder wall as CDDrawWorkerB::
-// Helper_166040 - retail emits the `mov [esp+N],0` (val=0) AFTER both Lookup arg
+// Helper - retail emits the `mov [esp+N],0` (val=0) AFTER both Lookup arg
 // pushes (push &val / push key), cl emits it BETWEEN them. Verified byte-exact
 // elsewhere (llvm-objdump -dr): the only differing bytes are that 1-instruction
 // slot. Logic/offsets/both call sites/movsbl-narrowed index all match. Not
-// source-steerable (same as Helper_166040's documented note).
+// source-steerable (same as Helper's documented note).
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val = 0;
@@ -564,7 +564,7 @@ inline void* operator new(u32, void* p) {
 } // placement (embedded sub-object ctor)
 
 RVA(0x001628d0, 0x12)
-i32 CDDrawWorkerHost::Prune_1628d0() {
+i32 CDDrawWorkerHost::Prune() {
     if (m_scroll == 0) {
         return 0;
     }
@@ -975,7 +975,7 @@ i32 CDDrawWorkerHost::CenterScrollB() {
 }
 
 RVA(0x001633e0, 0x12)
-i32 CDDrawWorkerHost::GetSize_1633e0() {
+i32 CDDrawWorkerHost::GetSize() {
     if (m_scroll == 0) {
         return 0;
     }

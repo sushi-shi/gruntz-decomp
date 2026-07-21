@@ -949,7 +949,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
-                LeafCue* snd = static_cast<LeafCue*>(g_gameReg->m_world->m_soundRegistry->Lookup_05b7e0(
+                LeafCue* snd = static_cast<LeafCue*>(g_gameReg->m_world->m_soundRegistry->Lookup(
                     "GRUNTZ_NORMALGRUNT_IMPACTMM3"
                 ));
                 if (snd != 0) {

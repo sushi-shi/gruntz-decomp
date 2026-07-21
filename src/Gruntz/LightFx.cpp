@@ -122,7 +122,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         node = 0;
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(node));
+        m_38->m_1a0.Setup(reinterpret_cast<CAniElement*>(node));
         RebindNode();
     }
     return 0;

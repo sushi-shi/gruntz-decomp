@@ -16,7 +16,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr (m_8 key table, m_10 image registry) + CDDrawChildGroup
 #include <Gruntz/Sprite.h>                // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/Timer.h>                 // CTimer + CImage (canonical; def was local here)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches_155630)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches)
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
@@ -385,7 +385,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinTens) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameMinTens, tmp, &zero);
+            mgr->m_imageRegistry->AnyValueMatches(m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -396,7 +396,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinOnes) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameMinOnes, tmp, &zero);
+            mgr->m_imageRegistry->AnyValueMatches(m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -407,7 +407,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecTens) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameSecTens, tmp, &zero);
+            mgr->m_imageRegistry->AnyValueMatches(m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -418,7 +418,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecOnes) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameSecOnes, tmp, &zero);
+            mgr->m_imageRegistry->AnyValueMatches(m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -429,7 +429,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameColon) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameColon, tmp, &zero);
+            mgr->m_imageRegistry->AnyValueMatches(m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

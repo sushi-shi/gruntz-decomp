@@ -46,7 +46,7 @@ VTBL(CDDrawSurfaceMgr, 0x001efc58);
 
 RVA(0x001558b0, 0x46)
 CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
-    Cleanup_155e20();
+    Cleanup();
 }
 
 // 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) —
@@ -90,7 +90,7 @@ i32 CDDrawSurfaceMgr::Init(void* /*hWnd*/, i32 /*w*/, i32 /*h*/, i32 /*bpp*/, i3
 }
 
 RVA(0x00155e20, 0xd1)
-void CDDrawSurfaceMgr::Cleanup_155e20() {
+void CDDrawSurfaceMgr::Cleanup() {
     if (m_level) {
         delete m_level;
         m_level = 0;
@@ -250,7 +250,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_mday;
     *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = m_childGroup->CountActive_15abc0();
+    i32 probe = m_childGroup->CountActive();
     *reinterpret_cast<u32*>((header + 0x114)) = g_wwdObjIdCounter;
     *reinterpret_cast<i32*>((header + 0x118)) = probe;
     S.Write(static_cast<const void*>(header), 0x120);
@@ -259,13 +259,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachProbe_15acb0(reinterpret_cast<i32>(&S), arg3) == 0) {
+    if (m_childGroup->ForEachProbe(reinterpret_cast<i32>(&S), arg3) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 3, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 3, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 3, 0, 0) == 0) {
@@ -274,7 +274,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachSerialize_15b020(&S, arg3) == 0) {
+    if (m_childGroup->ForEachSerialize(&S, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 4, 0, 0) == 0) {
@@ -283,7 +283,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 5, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 5, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 5, 0, 0) == 0) {
@@ -347,7 +347,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 6, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 6, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
@@ -356,7 +356,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize_15b0e0(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
+    if (m_childGroup->Deserialize(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
@@ -365,7 +365,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch_15ac20(reinterpret_cast<i32>(&S), 8, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 8, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 8, 0, 0) == 0) {

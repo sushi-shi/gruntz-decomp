@@ -38,7 +38,7 @@ struct CParseSource {
     // 0x139800: return the first dword of the keyed-store entry (*(int*)m_entry).
     // NON-inline (declared here, defined in ParseSource.cpp): retail keeps it a
     // real out-of-line 6-byte function CALLED at all 8 sites (CImage::Resolve,
-    // LoadImage_163e50, ...), never inlined - an inline body here would inline it.
+    // LoadImage, ...), never inlined - an inline body here would inline it.
     i32 GetEntryTag();
     i32 BeginParse();
     i32 EndParse();

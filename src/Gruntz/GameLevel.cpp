@@ -467,7 +467,7 @@ RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
+    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
         == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)

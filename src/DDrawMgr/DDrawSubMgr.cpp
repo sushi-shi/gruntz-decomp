@@ -75,7 +75,7 @@ static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
 }
 
 RVA(0x00114120, 0x70)
-i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
+i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -330,7 +330,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 
 RVA(0x00157280, 0x30)
 i32 CDDrawWorkerB::PlaceBound(i32 a1, i32 a2, i32 a3, i32 a4) {
-    Helper_166040(a3, a4);
+    Helper(a3, a4);
     m_refCount = 2;
     return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
@@ -546,7 +546,7 @@ RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
     // retail's dtor calls the non-virtual map teardown (0x152720) DIRECTLY, not the
     // virtual Cleanup slot (0x152650, which merely tail-calls it) - bind to 0x152720.
-    FreeAll_152720();
+    FreeAll();
     // implicit: ~m_10 (CMapStringToPtr), then ~CDDrawSubMgrGrandBase (resets the three
     // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
@@ -605,7 +605,7 @@ void CFileMem::Reset() {
 }
 
 RVA(0x00157a80, 0x51)
-i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
+i32 CAniAdvanceCursor::SelectCue(void* force) {
     char* mgr = reinterpret_cast<char*>(m_0c); // the +0x0c owner (cue-role: the sub-manager)
     if (mgr == 0) {
         return 0;
@@ -678,7 +678,7 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
 // @early-stop
 // store-scheduling coin-flip (~94%): byte-identical to retail except the `val = 0`
 // store position + the reloc-masked EH-state push (same family wall as
-// FreeAll_152720). docs/patterns/zero-register-pinning.md.
+// FreeAll). docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
 i32 CDDrawSubMgrLeafScan::ClearMap() {
     void* val = 0;
@@ -698,7 +698,7 @@ i32 CDDrawSubMgrLeafScan::ClearMap() {
 }
 
 RVA(0x00157c70, 0xf8)
-i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* str) {
+i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
     match = str;
     i32 len = match.GetLength();
@@ -733,7 +733,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
 // same stores, same order; not source-steerable (tried count-first / handle-first /
 // helper-extracted reads). docs/patterns/zero-register-pinning.md.
 RVA(0x00157d70, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -741,7 +741,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
     if (e == 0) {
         return 0;
     }
-    if (e->Configure_158760(static_cast<CParseSource*>(arg2)) == 0) {
+    if (e->Configure(static_cast<CParseSource*>(arg2)) == 0) {
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
@@ -752,17 +752,17 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
 
 // ---------------------------------------------------------------------------
 // 0x157e00: the second cache-element factory. Byte-for-byte twin of
-// CreateEntry_157d70 except the element configure goes through the file-path
+// CreateEntry except the element configure goes through the file-path
 // LoadSoundB (0x158720) instead of the parsed Configure (0x158760): allocate +
 // seed the element from the map count (this+0x1c) and handle (this+0x0c), run
 // Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
 // link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
 // @early-stop
-// register-naming coin-flip (twin of CreateEntry_157d70's 99.81%): every code byte
+// register-naming coin-flip (twin of CreateEntry's 99.81%): every code byte
 // matches retail EXCEPT the ecx<->edx assignment for the two seed reads. Same
 // values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00157e00, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -780,24 +780,24 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) 
 }
 
 RVA(0x00157e90, 0x23)
-LeafCue* CDDrawSubMgrLeafScan::AddFromSource_157e90(CParseSource* src) {
+LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
     if (m_emitGate != 0) {
         return 0;
     }
     if (src == 0) {
         return 0;
     }
-    return CreateEntry_157d70(src->m_name, src);
+    return CreateEntry(src->m_name, src);
 }
 
 RVA(0x00157ec0, 0x20)
-void CDDrawSubMgrLeafScan::AddEntry_157ec0(LeafCue* elem, const char* key) {
+void CDDrawSubMgrLeafScan::AddEntry(LeafCue* elem, const char* key) {
     m_10[key] = elem;
     elem->m_18 = m_34;
 }
 
 RVA(0x00157ee0, 0x1c6)
-i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, const char* suffix) {
+i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -814,7 +814,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
         } else {
             strcpy(buf, node->m_name);
         }
-        count += ScanTree_157ee0(node, buf, suffix);
+        count += ScanTree(node, buf, suffix);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     // `file` stays void*: the outer leaf-table record has its next-link at +0x04 (NextSym)
@@ -834,7 +834,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
                     void* val = 0;
                     m_10.Lookup(buf, val);
                     if (val == 0) {
-                        if (CreateEntry_157d70(buf, fn) != 0) {
+                        if (CreateEntry(buf, fn) != 0) {
                             ++count;
                         }
                     }
@@ -861,7 +861,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
 // where our cl emits test/cmp-imm - regalloc coin-flip, docs/patterns/zero-
 // register-pinning.md. No source lever.
 RVA(0x001580b0, 0xf6)
-i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
+i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -882,21 +882,21 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
     return sum;
 }
 RVA(0x001581b0, 0x5b)
-i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
+i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
     char* p24 = reinterpret_cast<char*>(OwnerMgr()->m_level);
     if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_emitGate == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
             return (static_cast<CAniBlitTrigger*>(val))
-                ->TriggerBlit_1587f0(pos, -1, range1, range2);
+                ->TriggerBlit(pos, -1, range1, range2);
         }
     }
     return 0;
 }
 
 RVA(0x00158210, 0xaa)
-LeafCue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
+LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -911,7 +911,7 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
 }
 
 RVA(0x001582c0, 0xf6)
-LeafCue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafCue* target) {
+LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
     if (target == 0) {
         return 0;
     }
@@ -939,7 +939,7 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafCue* target) {
 }
 
 RVA(0x001583c0, 0xdc)
-i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
+i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
     i32 len = strlen(str);
     CString key;
     void* val = 0;
@@ -954,11 +954,11 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
 }
 
 RVA(0x001584a0, 0x43)
-i32 CDDrawSubMgrLeafScan::ProbeFirst_1584a0(i32 arg) {
+i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
     if (m_2c == 0) {
         return 0;
     }
-    LeafCue* val = GetFirstValue_158210();
+    LeafCue* val = GetFirstValue();
     if (val == 0) {
         return 0;
     }
@@ -967,11 +967,11 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst_1584a0(i32 arg) {
     if (val->m_10 == 0) {
         return 0;
     }
-    return MatchSub_1584f0(val, arg) != 0;
+    return MatchSub(val, arg) != 0;
 }
 
 RVA(0x001584f0, 0x80)
-i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafCue* arg1, i32 arg2) {
+i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
     if (arg1 == 0) {
         return reinterpret_cast<i32>(arg1);
     }
@@ -995,7 +995,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafCue* arg1, i32 arg2) {
 }
 
 RVA(0x00158570, 0xd4)
-CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue* target) {
+CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     CString key;
     if (target == 0) {
         return key;
@@ -1060,7 +1060,7 @@ i32 LeafCue::LoadSoundB(void* src) {
 // src->edi and reuses esi as the return carrier, computing ok eagerly before
 // EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
 RVA(0x00158760, 0x59)
-i32 LeafCue::Configure_158760(CParseSource* src) {
+i32 LeafCue::Configure(CParseSource* src) {
     i32 blob = src->BeginParse();
     if (blob == 0) {
         return 0;
@@ -1117,7 +1117,7 @@ i32 LeafCue::Unload() {
 // the ModRM byte of nearly every access. No source lever picks ebp for `this`
 // (docs/patterns/zero-register-pinning.md).
 RVA(0x001587f0, 0xf1)
-i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 range2) {
+i32 CAniBlitTrigger::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (g_sndEnabled == 0) {
         return 0;
     }
@@ -1261,7 +1261,7 @@ i32 CDDrawSubMgrPages::Method_158b40(CParseSource* src, i32 arg2) {
             return 0;
         }
     }
-    return p->LoadImage_163e50(src);
+    return p->LoadImage(src);
 }
 
 RVA(0x00158b90, 0x28)
@@ -1278,7 +1278,7 @@ void CDDrawSubMgrPages::Method_158b90() {
 
 RVA(0x00158bc0, 0x2e)
 i32 CDDrawSubMgrPages::PagesReady() {
-    if (m_frontPair && !m_frontPair->Probe_164660()) {
+    if (m_frontPair && !m_frontPair->Probe()) {
         return 0;
     }
     if (m_overlayPair && !m_overlayPair->RestoreIfLost()) {
@@ -1291,14 +1291,14 @@ RVA(0x00158bf0, 0x7f)
 i32 CDDrawSubMgrPages::Method_158bf0(i32 a1, i32 a2, i32 a3) {
     CDDrawSurfacePair* p = m_frontPair;
     if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
-        if (!m_frontPair->SetGeom_164250(a1, a2, a3)) {
+        if (!m_frontPair->SetGeom(a1, a2, a3)) {
             return 0;
         }
-        if (!m_backPair->SetGeom_164250(a1, a2, a3)) {
+        if (!m_backPair->SetGeom(a1, a2, a3)) {
             return 0;
         }
         if (m_overlayPair && m_overlayPair->IsLoaded()) {
-            if (!m_overlayPair->SetGeom_164250(a1, a2, a3)) {
+            if (!m_overlayPair->SetGeom(a1, a2, a3)) {
                 return 0;
             }
         }
@@ -1490,7 +1490,7 @@ CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
 // 83.86% - regalloc coin-flip: retail materializes bpp up-front into edi; the
 // /O2 scheduler on identical source keeps bpp in eax and loads it lazily.
 RVA(0x00158fd0, 0x41)
-i32 CDDrawSurfacePair::SetGeometry_158fd0(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfacePair::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }

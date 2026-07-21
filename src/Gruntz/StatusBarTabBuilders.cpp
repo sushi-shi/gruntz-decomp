@@ -235,7 +235,7 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // gated to rec->m_frames[idx] (the family's [m_minIndex..m_maxIndex] resolve),
 // with the raw m_40 between the first two. Mode 4 (write): m_30 round-trips by
 // name only (strcpy of its +0x24 m_name); each frame reverse-looks-up its
-// name+index through AnyValueMatches_155630. Both arms tail-chain the QUALIFIED
+// name+index through AnyValueMatches. Both arms tail-chain the QUALIFIED
 // CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
 // ===========================================================================
 // @early-stop
@@ -276,7 +276,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_frameA != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_frameA, buf, &v);
+                reg->m_imageRegistry->AnyValueMatches(m_frameA, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -286,7 +286,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_frameB != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_frameB, buf, &v);
+                reg->m_imageRegistry->AnyValueMatches(m_frameB, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -295,7 +295,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_standaloneFrame != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_standaloneFrame, buf, &v);
+                reg->m_imageRegistry->AnyValueMatches(m_standaloneFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -606,7 +606,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_topFrame != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_topFrame, buf, &v);
+                reg->m_imageRegistry->AnyValueMatches(m_topFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -615,7 +615,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_bottomFrame != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_bottomFrame, buf, &v);
+                reg->m_imageRegistry->AnyValueMatches(m_bottomFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -695,15 +695,15 @@ RVA(0x000ea0f0, 0x5c)
 void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
     if (a == 0) {
         if (b == 0) {
-            SetRange_0e7c30(4, -1, 0, 0, -1);
+            SetRange(4, -1, 0, 0, -1);
         } else {
-            SetRange_0e7c30(-1, -1, 1, 0, -1);
+            SetRange(-1, -1, 1, 0, -1);
         }
     } else {
         if (b == 0) {
-            SetRange_0e7c30(1, -1, 0, 0, -1);
+            SetRange(1, -1, 0, 0, -1);
         } else {
-            SetRange_0e7c30(-1, -1, -1, 0, -1);
+            SetRange(-1, -1, -1, 0, -1);
         }
     }
 }
@@ -712,15 +712,15 @@ RVA(0x000ea170, 0x5c)
 void CSBI_StatzTabArrow::SetDirectionAlt(i32 a1, i32 a2) {
     if (a1 == 0) {
         if (a2 == 0) {
-            SetRange_0e7c30(1, -1, 0, 0, -1);
+            SetRange(1, -1, 0, 0, -1);
         } else {
-            SetRange_0e7c30(-1, -1, -1, 0, -1);
+            SetRange(-1, -1, -1, 0, -1);
         }
     } else {
         if (a2 == 0) {
-            SetRange_0e7c30(4, -1, 0, 0, -1);
+            SetRange(4, -1, 0, 0, -1);
         } else {
-            SetRange_0e7c30(-1, -1, 1, 0, -1);
+            SetRange(-1, -1, 1, 0, -1);
         }
     }
 }

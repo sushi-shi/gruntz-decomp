@@ -98,21 +98,21 @@ struct CImageSet3 : CObject {
     // from the pixel at (x,y); report its column + value. Was a body-less `s28` placeholder
     // here while the REAL body sat in src/Image/ImageSet3.cpp as a non-virtual on a
     // 5-slot local view of this class - so the vtable pointed at a symbol nothing defined.
-    virtual i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal); // [10] 0x166e00
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal); // [10] 0x166e00
     // [11] 0x166e60: the val-gated form of ScanRunLeft (the family pairs each scan
     // with a gate variant; body is a Ghidra recovery gap, unreconstructed).
     virtual i32 ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX);
     // [12] 0x166eb0: vertical run-scan UP from (x,y) - walk to the first row whose pixel
     // at column x differs from (x,y)'s; report that row + its value.
-    virtual i32 ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
     // [13-17]: the directional scan family - UP/RIGHT/DOWN run scans (the *Gate forms
     // walk to the first pixel that EQUALS `val`, reporting only the coord).
-    virtual i32 ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY);    // [13] 0x166f20
-    virtual i32 ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal); // [14] 0x166f80
-    virtual i32 ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX); // [15] 0x166ff0
-    virtual i32 ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal);  // [16] 0x167050
-    virtual i32 ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY);  // [17] 0x1670d0
-    // (GetSize_1633e0 moved to its REAL owner CDDrawWorkerHost - the 0x1633e0 body
+    virtual i32 ScanUpGate(i32 x, i32 y, i32 val, i32* outY);    // [13] 0x166f20
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal); // [14] 0x166f80
+    virtual i32 ScanRightGate(i32 x, i32 y, i32 val, i32* outX); // [15] 0x166ff0
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);  // [16] 0x167050
+    virtual i32 ScanDownGate(i32 x, i32 y, i32 val, i32* outY);  // [17] 0x1670d0
+    // (GetSize moved to its REAL owner CDDrawWorkerHost - the 0x1633e0 body
     // reads +0xb0, which this 0x18-byte record cannot hold; Play.cpp's grid-owner
     // casts were a mis-attribution and now target CDDrawWorkerHost.)
 

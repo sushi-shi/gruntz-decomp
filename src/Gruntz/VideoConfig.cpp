@@ -92,7 +92,7 @@ void OnToggleCk5Option(HWND hDlg);                                 // 0x036df0 (
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x0370a0
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
-void DialogInit37870(HWND hDlg);                                           // 0x037870
+void DialogInit(HWND hDlg);                                           // 0x037870
 void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
 void ApplyGameOptions(); // the dlgproc's free-call shape of ?ApplyGameOptions@CPlay@@ (0x036be0)
 namespace ApiCallerStubs {
@@ -660,7 +660,7 @@ RVA(0x000377e0, 0x6a)
 BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            DialogInit37870(hDlg);
+            DialogInit(hDlg);
             return TRUE;
         case WM_COMMAND:
             switch (wParam) {
@@ -677,7 +677,7 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return FALSE;
 }
 
-// 0x37870 (re-homed from src/Stub/BoundaryMisc.cpp): DialogInit37870 - seed the two
+// 0x37870 (re-homed from src/Stub/BoundaryMisc.cpp): DialogInit - seed the two
 // video option checkboxes (IDC 0x46f / 0x4d5) from the settings singleton's
 // m_isHighDetail / m_isEffectsEnabled flags, via the cached CheckDlgButton import.
 // @early-stop
@@ -686,7 +686,7 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 // CheckDlgButton calls, the arg tuples and the null guard are byte-exact; the
 // edi/esi assignment is not source-steerable.
 RVA(0x00037870, 0x3c)
-void DialogInit37870(HWND hDlg) {
+void DialogInit(HWND hDlg) {
     if (g_gameReg == 0) {
         return;
     }

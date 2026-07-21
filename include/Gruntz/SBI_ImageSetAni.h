@@ -48,7 +48,7 @@ public:
     );
     // slot 14 (new) 0xe7c30: re-arm with a new frame window without re-resolving the
     // record. The Statz-arrow direction setters below drive exactly this slot.
-    virtual void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval);
+    virtual void SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval);
     // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
     // ~CSBI_ImageSetAni calls it at its own level and again at the folded ImageSet level
     // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view

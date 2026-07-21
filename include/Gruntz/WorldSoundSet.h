@@ -40,15 +40,15 @@ public:
     // run its one-time Init, and (on success) append it to m_list. The `this` is
     // this CWorldSoundSet owner (the rtti-vptr heuristic once mislabeled them onto
     // the channel classes whose vtables their inlined ctors stamp).
-    CAmbientSound* CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    CAmbientSound* CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    CAmbientPosSound* CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    CAmbientPosSound* CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientSound* CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientSound* CreateAmbient5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientPosSound* CreatePos6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientPosSound* CreatePos5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
     CRandomAmbientSound*
-    CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
+    CreateRandom(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
     // 0xba00: CRandomAmbientSound with a validated (x,y) bounding box; ::operator new.
     CRandomAmbientSound*
-    CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
+    CreateRandomBox(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     CRandomAmbientWorld* m_world; // +0x00
     i32 m_volume;                 // +0x04  sound volume (0-100) threaded to each channel (ctor default kSoundVolumeMax)

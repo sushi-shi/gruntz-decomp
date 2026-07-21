@@ -166,7 +166,7 @@ CGameObject::~CGameObject() {
 // vs retail `testb mem`) and the budget subtract (mem-operand vs reg-load first).
 // Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
-void CGameObject::Notify_15b650(void* p) {
+void CGameObject::Notify(void* p) {
     if (m_flags & 0x8) {
         i32 d = m_placeMode - (static_cast<CGameObject*>(p))->m_120;
         m_placeMode = d;
@@ -261,13 +261,13 @@ i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
 // variants) - not source-steerable.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
-    Unload(); // devirtualized -> the inline B pass (Clear_166810 + geometry + E release)
+    Unload(); // devirtualized -> the inline B pass (Clear + geometry + E release)
     // m_1dc (CObList) member-destroys, then ~A folds (retail: the A-phase spills
     // to `call 0x15b5d0` and the bottom keeps the 0x5efbc0 stamp + `call 0x429b`).
 }
 
 RVA(0x0015bfb0, 0x4a)
-i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
+i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
     if (a->left > b->right) {
         return 0;
     }
@@ -325,7 +325,7 @@ i32 CAniAdvanceCursor::Unload() {
 }
 
 RVA(0x0015c2d0, 0x45)
-void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
+void CAniAdvanceCursor::Setup(CAniElement* src) {
     CAniDesc* e;
     i32 v;
     m_14 = src;
@@ -351,7 +351,7 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
 }
 
 RVA(0x0015c320, 0x40)
-void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
+void CAniAdvanceCursor::Recompute(i32 a1) {
     CAniElement* src = m_14;
     if (src == 0) {
         return;
@@ -496,7 +496,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_frameCursor = idx;
                 c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
-                    c->ClampLast_15cc90();
+                    c->ClampLast();
                 }
                 break;
             }
@@ -511,7 +511,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_frameCursor = idx;
                 c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
-                    c->ClampFirst_15cc50();
+                    c->ClampFirst();
                 }
                 break;
             }
@@ -574,7 +574,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    (reinterpret_cast<CAniBlitTrigger*>(this))->TriggerBlit_1587f0(cue, 0, 0, 0);
+                    (reinterpret_cast<CAniBlitTrigger*>(this))->TriggerBlit(cue, 0, 0, 0);
                 }
             } else {
                 i32* tbl;
@@ -617,7 +617,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_14 != 0) {
                     m_index = 0;
-                    m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
+                    m_element = static_cast<CAniDesc*>(m_14->AtChecked(0));
                     m_28 = 0;
                     m_scale = 1.0f;
                     m_pendingDraw = m_element->m_drawValue;
@@ -627,10 +627,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 7: { // hold on the first two descriptors (m_index = 1 then 0)
                 m_index = 1;
-                m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(1));
+                m_element = static_cast<CAniDesc*>(m_14->AtChecked(1));
                 if (m_element == 0) {
                     m_index = 0;
-                    m_element = static_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
+                    m_element = static_cast<CAniDesc*>(m_14->AtChecked(0));
                 }
                 if (m_element != 0) {
                     m_28 = 0;
@@ -647,10 +647,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
                         m_index = j;
-                        m_element = static_cast<CAniDesc*>(a->AtChecked_06b270(j));
+                        m_element = static_cast<CAniDesc*>(a->AtChecked(j));
                         if (m_element == 0) {
                             m_index = 0;
-                            m_element = static_cast<CAniDesc*>(a->AtChecked_06b270(0));
+                            m_element = static_cast<CAniDesc*>(a->AtChecked(0));
                         }
                         if (m_element != 0) {
                             m_curDraw = m_pendingDraw;
@@ -698,7 +698,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     m_element = nd;
                     if (nd == 0) {
                         m_index = 0;
-                        m_element = static_cast<CAniDesc*>(arr->AtChecked_06b270(0));
+                        m_element = static_cast<CAniDesc*>(arr->AtChecked(0));
                     }
                     if (m_element != 0) {
                         m_curDraw = m_pendingDraw;
@@ -779,7 +779,7 @@ i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
         case 3:
             break;
         case 4:
-            if (Serialize_15c970(ar) == 0) {
+            if (Serialize(ar) == 0) {
                 return 0;
             }
             break;
@@ -788,7 +788,7 @@ i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
         case 6:
             break;
         case 7:
-            if (Deserialize_15ca70(ar) == 0) {
+            if (Deserialize(ar) == 0) {
                 return 0;
             }
             break;
@@ -811,7 +811,7 @@ i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
 // strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
 // returned CString. Entropy tail; no source lever.
 RVA(0x0015c970, 0xfe)
-i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -829,8 +829,8 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     }
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
-        // KeyOfValue_152d30 returns the label for the map VALUE m_14 (CAniElement : CObject).
-        CString label = OwnerMgr()->m_animRegistry->KeyOfValue_152d30(m_14);
+        // KeyOfValue returns the label for the map VALUE m_14 (CAniElement : CObject).
+        CString label = OwnerMgr()->m_animRegistry->KeyOfValue(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -838,10 +838,10 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15ca70: deserialize the blit-param (the Serialize_15c970 twin). Reads the
+// 0x15ca70: deserialize the blit-param (the Serialize twin). Reads the
 // eight dwords from the archive, reads the 0x80-byte label buffer, and - when the
 // label is non-empty - looks it up in the worker sub-object's +0x10 map to recover
-// the worker into m_srcRef. Then the Setup_15c2d0-style tail. __thiscall, ret 0x4.
+// the worker into m_srcRef. Then the Setup-style tail. __thiscall, ret 0x4.
 // @early-stop
 // 89.9% - every instruction/CFG/offset present and the logic is byte-faithful;
 // residual is a register-allocation cascade seeded at the first field read:
@@ -849,7 +849,7 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
 // (frame 0x94) and rotates eax/ebp through the eight reads + the index tail.
 // docs/patterns/pin-local-for-callee-saved-reg.md / zero-register-pinning.md.
 RVA(0x0015ca70, 0x15b)
-i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Deserialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -916,7 +916,7 @@ i32 CSprite::GetFrame(i32 n) {
 // esi-pop epilogue inline per exit; cl hoists push esi to the prologue and
 // tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
-void CAniRenderCtx::ClampFirst_15cc50() {
+void CAniRenderCtx::ClampFirst() {
     CSprite* seq = m_frameSeq;
     if (seq == 0) {
         return;
@@ -933,7 +933,7 @@ void CAniRenderCtx::ClampFirst_15cc50() {
 // @early-stop
 // shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
-void CAniRenderCtx::ClampLast_15cc90() {
+void CAniRenderCtx::ClampLast() {
     CSprite* seq = m_frameSeq;
     if (seq == 0) {
         return;

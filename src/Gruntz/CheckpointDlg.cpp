@@ -40,6 +40,6 @@ void Init238d0() {
     (static_cast<CPtrList*>(&g_singleCmdList))->CPtrList::CPtrList(0xa);
 }
 RVA(0x00023960, 0xd)
-void InitGlobalObList62b640() {
+void InitGlobalObList() {
     (static_cast<CPtrList*>(&g_multiCmdList))->CPtrList::CPtrList(0xa);
 }

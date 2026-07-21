@@ -12,7 +12,7 @@ i32 IsGruntzCDInAnyDrive() {
 }
 
 RVA(0x0001fd70, 0x45)
-i32 FileExistsCopy1FD70(char* szPath) {
+i32 FileExistsCopy(char* szPath) {
     OFSTRUCT of;
 
     if (!szPath) {
@@ -113,7 +113,7 @@ char GetGruntzDriveLetter() {
                 sprintf(drivePath, "%c:\\", letter);
                 if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {
                     sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
-                    if (FileExistsCopy1FD70(exePath)) {
+                    if (FileExistsCopy(exePath)) {
                         goto found;
                     }
                 }
@@ -124,7 +124,7 @@ char GetGruntzDriveLetter() {
             sprintf(drivePathScan, "%c:\\", letter);
             if (GetDriveTypeA(drivePathScan) == 5 /*DRIVE_CDROM*/) {
                 sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
-                if (FileExistsCopy1FD70(exePath)) {
+                if (FileExistsCopy(exePath)) {
                     goto found;
                 }
             }

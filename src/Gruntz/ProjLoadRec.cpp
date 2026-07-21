@@ -144,7 +144,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_animRegistry->KeyOfValue_152d30(m_1e0[wi]);
+                    CString nm = reg->m_animRegistry->KeyOfValue(m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);
@@ -178,7 +178,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_15c != 0) {
-            CString nm = m_158->m_0c->m_animRegistry->KeyOfValue_152d30(m_15c);
+            CString nm = m_158->m_0c->m_animRegistry->KeyOfValue(m_15c);
             strcpy(blob, nm);
         }
         s->Write(blob, 0x80);

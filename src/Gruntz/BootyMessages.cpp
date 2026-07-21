@@ -355,7 +355,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (sub != 0) {
             sub->Stop();
         }
-        g_gameReg->ChangeState_8fab0(3); // g_gameReg IS the CGruntzMgr singleton (see below)
+        g_gameReg->ChangeState(3); // g_gameReg IS the CGruntzMgr singleton (see below)
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8021, 0);
     } else {
         // 0x8d780: DISASM-PROVEN receiver ecx = *0x24556c (the CGruntzMgr singleton),

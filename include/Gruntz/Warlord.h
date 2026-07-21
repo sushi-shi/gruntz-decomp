@@ -110,7 +110,7 @@ public:
     // and stashing the result here (0 when absent).
     // The eleven per-state anim descriptors, each looked up as a CAniElement* out of
     // the bound object's m_animRegistry CMapStringToPtr (macro WARLORD_ANIM_LOOKUP:
-    // `dst = (CAniElement*)h`, the sole driver; CreateAniEntry_1528d0 returns CAniElement*).
+    // `dst = (CAniElement*)h`, the sole driver; CreateAniEntry returns CAniElement*).
     CAniElement* m_animIdle1;      // +0x58
     CAniElement* m_animIdle2;      // +0x5c
     CAniElement* m_animIdle3;      // +0x60

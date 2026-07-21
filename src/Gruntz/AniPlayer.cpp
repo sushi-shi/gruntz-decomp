@@ -56,7 +56,7 @@ i32 CAniPlayer::Start(
 // entropy tail shared by the timed-play family. Final sweep.
 // ===========================================================================
 RVA(0x000e5b90, 0x51)
-i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
+i32 CAniPlayer::TickToggle(i32 param) {
     if (static_cast<__int64>(g_frameTime) - *reinterpret_cast<__int64*>(&m_58) >= *reinterpret_cast<__int64*>(&m_60)) {
         m_38 = (m_38 == m_frameStart) ? m_frameEnd : m_frameStart;
         m_60 = m_interval;
@@ -76,7 +76,7 @@ i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
 // pairing in the range test (same regalloc entropy tail as the slot-5 Ticks). Final sweep.
 // ===========================================================================
 RVA(0x000e5c10, 0x54)
-i32 CAniPlayer::RenderCel_0e5c10() {
+i32 CAniPlayer::RenderCel() {
     CImageSet* tbl = m_34;
     CImage* cel;
     if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {

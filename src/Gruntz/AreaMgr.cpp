@@ -10,7 +10,7 @@
 extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (the per-spawn registry holder)
 
@@ -18,7 +18,7 @@ DATA(0x002459b0)
 CAreaMgr g_areaMgr;
 
 RVA(0x00099b80, 0xa)
-void TokenMgrReset99b80() {
+void TokenMgrReset() {
     g_areaMgr.CAreaMgr::CAreaMgr();
 }
 
@@ -449,7 +449,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+            entry->m_soundRegistry->ScanTree(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -498,7 +498,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        entry->m_animRegistry->RemoveValue_152660(static_cast<CAniElement*>(obj)); // m_animRegistry is CDDrawSubMgrLeaf*
+        entry->m_animRegistry->RemoveValue(static_cast<CAniElement*>(obj)); // m_animRegistry is CDDrawSubMgrLeaf*
     }
     toAdd.RemoveAll();
 
@@ -520,7 +520,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+            entry->m_animRegistry->ScanTree(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {

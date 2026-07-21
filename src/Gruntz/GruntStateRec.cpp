@@ -2,7 +2,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches_155630)
+#include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
 #include <Gruntz/Sprite.h> // CSprite - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
@@ -17,7 +17,7 @@
 // an index, Lookup'd to a glyph map, then gated to (CImage*)map->m_items.GetAt(index) (the same
 // name -> Lookup -> [m_minIndex..m_maxIndex] -> frame idiom CSBI_Image::SerializeFields
 // runs against the real CSprite). Mode 4 (write) reverse-looks-up each glyph's name +
-// index through the registry (AnyValueMatches_155630) and writes them back. The two
+// index through the registry (AnyValueMatches) and writes them back. The two
 // glyph MAPS themselves (m_glyphMap/m_timerGlyphMap) round-trip by name only.
 //
 // The stream is the shared WAP32 CSerialArchive: Read at vtable +0x2c (mode 7) and
@@ -53,7 +53,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     memset(buf, 0, sizeof(buf));                                                                   \
     v = 0;                                                                                         \
     if (field != 0) {                                                                              \
-        reg->m_imageRegistry->AnyValueMatches_155630(field, buf, &v);                                       \
+        reg->m_imageRegistry->AnyValueMatches(field, buf, &v);                                       \
     }                                                                                              \
     s->Write(buf, 0x80);                                                                           \
     s->Write(&v, 4)

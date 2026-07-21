@@ -25,14 +25,14 @@ public:
     ~CBattlezMapConfig();
     void FreeArrays();
     i32 Method_025c20();
-    void Clear_02ade0(); // 0x02ade0
+    void Clear(); // 0x02ade0
     i32 Method_02c0a0(i32, i32);
     i32 Method_030530(i32);
     i32 Method_0305b0(i32, i32, i32);
     i32 Method_02bfc0(i32, void*, i32, i32);
     i32 Method_02ed90(i32); // 0x02ed90
-    i32 Serialize_02b420(void*);
-    i32 Deserialize_02b950(void*);
+    i32 Serialize(void*);
+    i32 Deserialize(void*);
     i32 Method_030730(i32, i32, i32, i32);
     i32 Method_030990(i32, i32);
     i32 Method_0350d0(i32);

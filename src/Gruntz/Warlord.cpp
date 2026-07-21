@@ -291,7 +291,7 @@ CWarlord::CWarlord(i32 arg)
 //   3. header field (m_40 handle + m_44 0x10 blob):
 //        mode 7 LOAD : ar->Read(hbuf,0x80); ar->Read(&m_44,0x10); m_34=m_38=a4;
 //                      m_3c=a4->m_7c; m_40 = strlen(hbuf)? reg->m_10.Lookup(hbuf):0
-//        mode 4 SAVE : memset(buf); if(m_40) strcpy(buf, reg->KeyOfValue_152d30(m_40));
+//        mode 4 SAVE : memset(buf); if(m_40) strcpy(buf, reg->KeyOfValue(m_40));
 //                      ar->Write(buf,0x80); ar->Write(&m_44,0x10)
 //   4. body (2nd switch on mode):
 //        mode 7 LOAD : ++g_serialCounter;Read(buf,0x80);m_54=buf; then 11 handles
@@ -303,7 +303,7 @@ CWarlord::CWarlord(i32 arg)
 //   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
 //   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
 //   ->m_0c (CDDrawSurfaceMgr) ->m_animRegistry (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_object
-//   forward-Lookups a key (0x1b8438) and KeyOfValue_152d30 (RVO CString) reverses it.
+//   forward-Lookups a key (0x1b8438) and KeyOfValue (RVO CString) reverses it.
 //   Every callee/field/mode/chain above was verified against the retail disasm.
 //
 // FRAME WALL (why it is parked at STUB, not landed): retail's frame is 0x130 because
@@ -565,7 +565,7 @@ i32 CGrunt::ResolveMovingAnimation() {
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__MOVING);
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup_15c2d0(m_movingGeoSrc);
+    m_animPlayer->m_1a0.Setup(m_movingGeoSrc);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyB);
@@ -601,7 +601,7 @@ i32 CGrunt::ResolveDeathAnimation() {
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup_15c2d0(m_deathGeoSrc);
+    m_animPlayer->m_1a0.Setup(m_deathGeoSrc);
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__DEATH);
 
@@ -630,7 +630,7 @@ i32 CGrunt::ResolveAnimation() {
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup_15c2d0(m_joyGeoSrc);
+    m_animPlayer->m_1a0.Setup(m_joyGeoSrc);
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__JOY);
 
@@ -661,7 +661,7 @@ i32 CGrunt::ResolveIdleAnimation() {
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup_15c2d0(m_idleGeoSrc[idx]);
+    m_animPlayer->m_1a0.Setup(m_idleGeoSrc[idx]);
 
     CAniElement* desc = m_animPlayer->m_1a0.m_14;
     CAniDesc* elem =
@@ -697,7 +697,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup_15c2d0(m_battlecryGeoSrc[idx]);
+    m_animPlayer->m_1a0.Setup(m_battlecryGeoSrc[idx]);
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 

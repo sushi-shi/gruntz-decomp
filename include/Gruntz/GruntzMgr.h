@@ -284,7 +284,7 @@ public:
     void SetRunState(i32 v); // @0x092340 (set base m_10 run-state + side-effects)
     i32 CheckSavedMode();    // @0x08de70 (saved==live mode test)
     i32 IsLobbyHostReady();  // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
-    i32 RunFromState();      // 0x090200 (out-of-line: ChangeState_8fab0(1))
+    i32 RunFromState();      // 0x090200 (out-of-line: ChangeState(1))
     // Returns the concrete PLAY/paused state (FindStateById(3) is always a CPlay);
     // typed CPlay* so the ~12 cheat-dispatch callers drop their (CPlay*) downcast.
     // CState is CPlay's offset-0 base -> the cast is a no-op reinterpret (byte-neutral).
@@ -340,7 +340,7 @@ public:
     // Larger sibling reached by RunFromState's reloc-masked call; body still a
     // @stub in GruntzMgr.cpp (migrated from src/Stub/Discovered.cpp) so the call
     // binds to a CGruntzMgr symbol at 0x08fab0.
-    i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
+    i32 ChangeState(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     CState* m_curState;                // +0x2c  current game-state (Update() -> state id)

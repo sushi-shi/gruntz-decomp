@@ -79,7 +79,7 @@ void CWorldSoundSet::Teardown() {
 }
 
 RVA(0x0000b6a0, 0x83)
-CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientSound* CWorldSoundSet::CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
@@ -98,7 +98,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
 // @rva-symbol: ??1CAmbientSound@@UAE@XZ 0x0000b790 0xf
 
 RVA(0x0000b7b0, 0x80)
-CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientSound* CWorldSoundSet::CreateAmbient5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
@@ -112,7 +112,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
 }
 
 RVA(0x0000b850, 0x83)
-CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientPosSound* CWorldSoundSet::CreatePos6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
@@ -131,7 +131,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
 // @rva-symbol: ??1CAmbientPosSound@@UAE@XZ 0x0000b940 0xf
 
 RVA(0x0000b960, 0x80)
-CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientPosSound* CWorldSoundSet::CreatePos5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
@@ -150,7 +150,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
 // append, return. (a8 unused.)
 RVA(0x0000ba00, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::
-    CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+    CreateRandomBox(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
     if (static_cast<u32>(a5) < static_cast<u32>(a4)) {
         return 0;
     }
@@ -180,7 +180,7 @@ CRandomAmbientSound* CWorldSoundSet::
 
 RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::
-    CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+    CreateRandom(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == 0) {
         return 0;

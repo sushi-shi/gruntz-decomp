@@ -46,7 +46,7 @@
 //      two, and the incoming-arg slot is recycled as the hit counter - slot
 //      schedule diverges. Logic/offsets correct; re-attack leaf-first in sweep.
 RVA(0x00032ce0, 0x448)
-i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
+i32 CScanMgr::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
         if (g->CoordCount() != 0) {
             GruntTilePos* c = reinterpret_cast<GruntTilePos*>(g->CoordTail()->m_coord);

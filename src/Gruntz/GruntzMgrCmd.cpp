@@ -44,7 +44,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c =                                                                              \
-            static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup_05b7e0(TAG));       \
+            static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -138,7 +138,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
                 while (::ShowCursor(0) >= 0) {                                                     \
                 }                                                                                  \
         }                                                                                          \
-        ChangeState_8fab0(N);                                                                      \
+        ChangeState(N);                                                                      \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
             if (::ShowCursor(1) < 0)                                                               \
@@ -155,7 +155,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
             mus = static_cast<CMenuState*>(m_curState);                                                         \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                                           \
         }                                                                                          \
-        ChangeState_8fab0(N);                                                                      \
+        ChangeState(N);                                                                      \
         if (mus)                                                                                   \
             mus->StartMusic();                                                                     \
         return 1;                                                                                  \
@@ -229,7 +229,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
                                 static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup_05b7e0("GAME_MINORCHEAT"));
+                                    ->Lookup("GAME_MINORCHEAT"));
                             if (_c) {
                                 _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                             }
@@ -490,7 +490,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
                                 static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup_05b7e0("GAME_WAWA"));
+                                    ->Lookup("GAME_WAWA"));
                             if (_c) {
                                 _c->PlayIfElapsed(0x64, 0, 0, 0);
                             }

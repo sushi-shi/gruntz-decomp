@@ -7,7 +7,7 @@
 
 class CDDSurface;       // +0x2c held surface (CFileImageSurface); <DDrawMgr/DDSurface.h>
 class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
-struct CParseSource;    // LoadImage_163e50 arg (the 0x139xxx byte-reader)
+struct CParseSource;    // LoadImage arg (the 0x139xxx byte-reader)
 
 // (CSurfacePairBase DELETED: dead scaffolding - nothing derived it and nothing
 // constructed it; CDDrawSurfacePair derives CWapObj directly and owns the fields.)
@@ -42,11 +42,11 @@ public:
     // --- own vtable slots 7..14 (declared-only where the body lives elsewhere) ---
     virtual void TeardownSurface();                        // slot 7  (@0x1c) 0x163e20
     virtual void GetClassId();                          // slot 8  (@0x20) 0x1590c0
-    virtual i32 SetGeometry_158fd0(i32 w, i32 h, i32 bpp); // slot 9 (@0x24) 0x158fd0
-    virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp);     // slot 10 (@0x28) 0x164250
-    virtual i32 InitFromSurface_163db0(CDDSurface* src);   // slot 11 (@0x2c) 0x163db0
+    virtual i32 SetGeometry(i32 w, i32 h, i32 bpp); // slot 9 (@0x24) 0x158fd0
+    virtual i32 SetGeom(i32 w, i32 h, i32 bpp);     // slot 10 (@0x28) 0x164250
+    virtual i32 InitFromSurface(CDDSurface* src);   // slot 11 (@0x2c) 0x163db0
     virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3);     // slot 12 (@0x30) 0x163c90
-    virtual i32 LoadImage_163e50(CParseSource* src);       // slot 13 (@0x34) 0x163e50
+    virtual i32 LoadImage(CParseSource* src);       // slot 13 (@0x34) 0x163e50
     virtual i32 ResolveImage_163ee0(CParseSource* src);    // slot 14 (@0x38) 0x163ee0
 
     virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
@@ -64,8 +64,8 @@ public:
     // 0x164650 - empty dirty-rect blit hook (retail `ret 0xc` no-op): the
     // CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region on
     // the front pair. Reconstructed as an empty body so the 3-byte stub matches.
-    void BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos, i32* size);
-    i32 Probe_164660(); // 0x164660  (surface-lost probe)
+    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+    i32 Probe(); // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_width;           // +0x10  width

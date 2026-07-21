@@ -218,8 +218,8 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);        // shadow record
+            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record
+            a->BlitDirtyRect(b, &m_b8, &m_d0);        // shadow record
         } else {
             i32 left = m_lastX < m_b8 ? m_lastX : m_b8; // min x
             i32 top = m_lastY < m_bc ? m_lastY : m_bc;  // min y
@@ -229,12 +229,12 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             size[0] = dx;
             pos[1] = top;
             pos[0] = left;
-            a->BlitDirtyRect_164650(b, pos, size);
+            a->BlitDirtyRect(b, pos, size);
         }
     } else if (m_dirtyArmed != -1) {
-        a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
+        a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
-        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
+        a->BlitDirtyRect(b, &m_b8, &m_d0); // shadow record only
     }
 }
 
@@ -264,7 +264,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // ===========================================================================
 RVA(0x00166640, 0x13b)
 CWwdGameObject*
-CWwdGameObject::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
@@ -311,13 +311,13 @@ CWwdGameObject::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int 
     return static_cast<CWwdGameObject*>(static_cast<void*>(result));
 }
 
-// CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
+// CreateNamed (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
 // nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
 // @early-stop
 // 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
-CWwdGameObject::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
+CWwdGameObject::CreateNamed(int a1, int a2, int a3, int a4, const char* name, int a6) {
     CObject* val = 0;
     // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
     // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
@@ -326,11 +326,11 @@ CWwdGameObject::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* n
     if (val == 0) {
         return 0;
     }
-    return CreateObject_166640(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
+    return CreateObject(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
 }
 
 RVA(0x001667e0, 0x2f)
-i32 CWwdGameObject::AddChild_1667e0(CGameObject* child) {
+i32 CWwdGameObject::AddChild(CGameObject* child) {
     if (child == 0) {
         return 0;
     }
@@ -343,7 +343,7 @@ i32 CWwdGameObject::AddChild_1667e0(CGameObject* child) {
 }
 
 RVA(0x00166810, 0x32)
-void CWwdGameObject::Clear_166810() {
+void CWwdGameObject::Clear() {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     while (n) {
         CDDrawGroupNode* cur = n;
@@ -356,7 +356,7 @@ void CWwdGameObject::Clear_166810() {
 }
 
 RVA(0x00166850, 0x29)
-i32 CWwdGameObject::RemoveChild_166850(CGameObject* child) {
+i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     if (child == 0) {
         return 0;
     }
@@ -369,7 +369,7 @@ i32 CWwdGameObject::RemoveChild_166850(CGameObject* child) {
 }
 
 RVA(0x00166880, 0x29)
-i32 CWwdGameObject::WalkChildWorkers_166880() {
+i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
     for (CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition()); n != 0;) {
         CDDrawGroupNode* cur = n;

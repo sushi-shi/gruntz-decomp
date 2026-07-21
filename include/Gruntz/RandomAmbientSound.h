@@ -71,7 +71,7 @@ public:
     // 0) and is pinned by @rva-symbol in WorldSoundSet.cpp.
     virtual ~CRandomAmbientSound() OVERRIDE {}
     // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the box factory
-    // (CWorldSoundSet::CreateRandomBox_ba00; unreconstructed, reloc-masked).
+    // (CWorldSoundSet::CreateRandomBox; unreconstructed, reloc-masked).
     void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
 
     // --- layout (sizeof 0x58) -------------------------------------------------

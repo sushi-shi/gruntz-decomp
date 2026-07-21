@@ -31,11 +31,11 @@ public:
     // blit path - reinterpreted internally, so it stays void* (one mangled
     // symbol across both).
     void Construct(void* src);                  // 0x15c290
-    void Setup_15c2d0(CAniElement* src);        // 0x15c2d0  bind a resolved geo source
-    void Recompute_15c320(i32 a1);              // 0x15c320  re-derive from the bound m_14
-    i32 SelectCue_157a80(void* force);          // 0x157a80  (cue-role: writes m_2c/m_pendingDraw)
-    i32 Serialize_15c970(CSerialArchive* ar);   // 0x15c970
-    i32 Deserialize_15ca70(CSerialArchive* ar); // 0x15ca70
+    void Setup(CAniElement* src);        // 0x15c2d0  bind a resolved geo source
+    void Recompute(i32 a1);              // 0x15c320  re-derive from the bound m_14
+    i32 SelectCue(void* force);          // 0x157a80  (cue-role: writes m_2c/m_pendingDraw)
+    i32 Serialize(CSerialArchive* ar);   // 0x15c970
+    i32 Deserialize(CSerialArchive* ar); // 0x15ca70
     i32 Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4); // 0x15c900
     i32 Advance(u32 elapsed);                               // 0x15c360 (advance / set-geo-source)
 

@@ -52,7 +52,7 @@ public:
     // 0x0db200 (ex "Cdb200::Swap", a 7th name for this class - see Play.cpp): move the
     // player onto sound/voice channel `channel` if it is free, releasing the old one.
     i32 SwapChannel(i32 channel);
-    i32 ClearRoundState_0daa60(); // 0x0daa60 (marks active, clears per-round scalars)
+    i32 ClearRoundState(); // 0x0daa60 (marks active, clears per-round scalars)
     RVA(0x0001f450, 0x20)
     CString GetName() {
         return m_name;
@@ -81,14 +81,15 @@ public:
     // The REAL embedded spawn/board bundle. Proven by the array element ctor/dtor
     // (0x0da790 / 0x083260), whose +0x38 member calls are ??0/??1CBattlezMapConfig
     // (0x024dc0 / 0x024f80) - and by every consumer, all of which cast this block to
-    // CBattlezMapConfig* to call LoadConfig / FreeArrays / Clear_02ade0.
-    CBattlezMapConfig m_038; // +0x038  (0x1e8 B, ends at 0x220)
-    i32 m_focusX;            // +0x220  = 0 (snapped focus x)
-    i32 m_focusY;            // +0x224  = 0 (snapped focus y)
-    i32 m_comboSel;          // +0x228  = 0xf in the ctor/Clear seed; the battlez
-                             //          dialog's per-slot dropdown selection (+1)
-    i32 m_latency; // +0x22c  = 0  net-slot latency (the roster watchdog displays it; ex the CNetPlayerSlot +0x37c view)
-    i32 m_230;     // +0x230  = 0
+    // CBattlezMapConfig* to call LoadConfig / FreeArrays / Clear.
+    CBattlezMapConfig m_038;      // +0x038  (0x1e8 B, ends at 0x220)
+    i32 m_focusX;                 // +0x220  = 0 (snapped focus x)
+    i32 m_focusY;                 // +0x224  = 0 (snapped focus y)
+    i32 m_comboSel;               // +0x228  = 0xf in the ctor/Clear seed; the battlez
+                                  //          dialog's per-slot dropdown selection (+1)
+    i32 m_latency;                // +0x22c  = 0  net-slot latency (the roster watchdog
+                                  //          displays it; ex the CNetPlayerSlot +0x37c view)
+    i32 m_230;                    // +0x230  = 0
     char m_pad234[0x238 - 0x234]; // +0x234
 }; // 0x238
 

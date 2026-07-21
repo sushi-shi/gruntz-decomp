@@ -6,7 +6,7 @@
 #include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject (m_04/m_08/m_0c + reset dtor)
 
 class DSoundCloneInst; // the pooled cue player/buffer (Dsndmgr/DirectSoundMgr.h)
-struct CParseSource;   // the parsed draw-source Configure_158760 reads (STRUCT key = the def)
+struct CParseSource;   // the parsed draw-source Configure reads (STRUCT key = the def)
 
 struct LeafCue : public CLoadable {
     // [5] 0x158650: loaded iff the buffer slot is armed (was a Ghidra size-0
@@ -31,7 +31,7 @@ struct LeafCue : public CLoadable {
     // m_soundStream is the SoundDevice they acquire through.
     i32 LoadSoundA(void* riff);              // 0x1586e0  SoundDevice::Acquire(riff)
     i32 LoadSoundB(void* src);               // 0x158720  SoundDevice::AcquireFile(path)
-    i32 Configure_158760(CParseSource* src); // 0x158760  BeginParse -> Acquire -> EndParse
+    i32 Configure(CParseSource* src); // 0x158760  BeginParse -> Acquire -> EndParse
 
     // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,
     // restamp the clock and forward the 4 args to the player's ConfigureItem.

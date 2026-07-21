@@ -588,7 +588,7 @@ public:
         m_savedZonedSound; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
-    void PlayBacklog08c9d0();
+    void PlayBacklog();
     // (winapi_0cdb10_PostMessageA 0x0cdb10 folded onto the slot-14 virtual Vslot0e.)
     // (HandleTileClick 0xceae0 folded onto the slot-17 virtual Vslot11: the menu/
     // pause-state pointer-click handler - the mouse-input twin of OnKeyCommand.

@@ -6,7 +6,7 @@
 #include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>  // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual_1527d0)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>  // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
@@ -63,7 +63,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
+    m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
 
     CSymTab* midiz = static_cast<CSymTab*>(SymTab2c()->ResolvePath("MIDIZ"));
     if (midiz) {
@@ -108,11 +108,11 @@ void CCreditsState::ReleaseResources() {
         if (r) {
             (static_cast<SoundStream*>(r))->Stop();
         }
-        m_world->m_soundRegistry->RemoveKeysEqual_157c70("CREDITZ", "_");
-        m_world->m_imageRegistry->RemoveKeysEqual_155360("CREDITZ", "_");
+        m_world->m_soundRegistry->RemoveKeysEqual("CREDITZ", "_");
+        m_world->m_imageRegistry->RemoveKeysEqual("CREDITZ", "_");
         // retail: `mov ecx,[edx+0x2c]; call 0x1527d0` - the Leaf's own remove (the old
         // (CDDrawWorkerRegistry*) cast MISBOUND this call to the +0x10 twin's 0x155360).
-        m_world->m_animRegistry->RemoveKeysEqual_1527d0("CREDITZ", "_");
+        m_world->m_animRegistry->RemoveKeysEqual("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).

@@ -10,8 +10,8 @@ class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/Dir
 
 class CAniRenderCtx {
 public:
-    void ClampFirst_15cc50(); // 0x15cc50  __thiscall on the context (I obj)
-    void ClampLast_15cc90();  // 0x15cc90  __thiscall on the context (I obj)
+    void ClampFirst(); // 0x15cc50  __thiscall on the context (I obj)
+    void ClampLast();  // 0x15cc90  __thiscall on the context (I obj)
     char m_pad00[0x08];       // +0x00..0x07
     i32 m_flags;              // +0x08  flags (bit 0x2000000 tested)
     char m_pad0c[0x10 - 0x0c];
@@ -52,7 +52,7 @@ SIZE_UNKNOWN(CAniDesc);
 
 class CAniBlitTrigger {
 public:
-    i32 TriggerBlit_1587f0(
+    i32 TriggerBlit(
         i32 pos,
         i32 center,
         i32 range1,

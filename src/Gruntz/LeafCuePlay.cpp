@@ -7,7 +7,7 @@
 
 
 // @early-stop
-// 66% -- split-epilogue wall (twin of RefreshAsset_114120's 100% idiom, but 4-arg):
+// 66% -- split-epilogue wall (twin of RefreshAsset's 100% idiom, but 4-arg):
 // the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the
 // identical 4-arg push sequence into ConfigureItem all match. MSVC5 here MERGES the
 // two guard-failure `return 0` exits into one shared `pop esi; ret 0x10` tail

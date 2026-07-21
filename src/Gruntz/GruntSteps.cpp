@@ -988,7 +988,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_38->m_1a0.Setup(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
         // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
         GruntEntranceCell cell = m_entranceCell;
@@ -1217,7 +1217,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseWalk;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1227,7 +1227,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttack1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1237,7 +1237,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttack2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1247,7 +1247,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseAttackIdle;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1257,7 +1257,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseStruck1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1267,7 +1267,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseStruck2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1277,7 +1277,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[0];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1287,7 +1287,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[1];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1297,7 +1297,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle[2];
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1307,7 +1307,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle4;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1317,7 +1317,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseIdle5;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1327,7 +1327,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseDeath;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1337,7 +1337,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToy1;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1347,7 +1347,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToy2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1357,7 +1357,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseToyBreak;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1367,7 +1367,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseItem;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1377,7 +1377,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         CAniElement* id = m_poseItem2;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(static_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(static_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }
@@ -1387,7 +1387,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_pickupGeoSrc;
         if (id) {
-            CString nm = catalog->KeyOfValue_152d30(reinterpret_cast<CObject*>(id));
+            CString nm = catalog->KeyOfValue(reinterpret_cast<CObject*>(id));
             strcpy(buf, nm);
         }
     }

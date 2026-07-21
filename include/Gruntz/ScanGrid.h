@@ -45,7 +45,7 @@ struct CTileScan {
 SIZE_UNKNOWN(CTileScan);
 
 // @identity-TODO: the 10x10 tile-region scan owner (GruntTileScan.cpp
-// CScanMgr::ScanRegion32ce0 @0x32ce0) - a sibling orphan scan-owner of CTileScan (both
+// CScanMgr::ScanRegion @0x32ce0) - a sibling orphan scan-owner of CTileScan (both
 // own a CScanGrid at +0x0c) whose only reference is an ILT thunk-band that dead-ends;
 // kept a DISTINCT shape (its threshold is at +0xcc vs CTileScan's +0xc8, and it adds the
 // +0xf4/+0xf8 goal table) pending proof they are the same class. Homed here (shape belongs
@@ -62,9 +62,9 @@ struct CScanMgr {
     char _10[0xcc - 0x10];
     u32 m_cc; // +0xcc  idle threshold
     char _d0[0xf4 - 0xd0];
-    CScanGoal** m_f4;               // +0xf4  goal table
-    i32 m_f8;                       // +0xf8  goal count
-    i32 ScanRegion32ce0(CGrunt* g); // 0x32ce0
+    CScanGoal** m_f4; // +0xf4  goal table
+    i32 m_f8;         // +0xf8  goal count
+    i32 ScanRegion(CGrunt* g); // 0x32ce0
 };
 SIZE_UNKNOWN(CScanGoal);
 SIZE_UNKNOWN(CScanMgr);

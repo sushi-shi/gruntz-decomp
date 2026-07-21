@@ -37,13 +37,13 @@ public:
     // via the 0x001c08 thunk); not redeclared (that was a phantom own "VtSlot6_1c08").
     // slot 7 (+0x1c) 0x161bf0 - free the spatial worker (PruneCount then delete) and
     // the two owned grid buffers. (Ex the LevelPlane.cpp-local "CImageSet3" pocket.)
-    virtual void Cleanup_161bf0();
+    virtual void Cleanup();
     virtual void VtSlot8_163ab0(); // slot 8  (+0x20) 0x163ab0 (role unrecovered)
     // slot 9 (+0x24) 0x1619f0 - the geometry init / object-plane reader
     // CGameLevel::ReadObjectPlane dispatches: seed tile/wrap/origin/shift
     // fields from the 8 args, log2 the tile shifts, strcpy the name, alloc the tile
     // grid + column-offset table, tail-call RecomputePlaneCoords.
-    virtual i32 InitGeometry_1619f0(
+    virtual i32 InitGeometry(
         i32 w,
         i32 h,
         i32 tileW,
@@ -72,10 +72,10 @@ public:
     void SetTileSize(i32 tileW, i32 tileH);       // 0x161f00 derive wrap dims/fill/shifts
     void SetTileSizeFromImageSet(CImageSet* set); // 0x161fa0 seed tile size from a frame
     void Draw(CPlaneDrawCtx* ctx);                // 0x162010 the tile-grid render (ex "Sync")
-    i32 Prune_1628d0();                           // 0x1628d0 forward the grid's Prune
+    i32 Prune();                           // 0x1628d0 forward the grid's Prune
     i32 CenterScrollA();                          // 0x163300 (ex "QueryA")
     i32 CenterScrollB();                          // 0x163370 (ex "QueryB")
-    i32 GetSize_1633e0();                         // 0x1633e0 forward the grid's GetSize
+    i32 GetSize();                         // 0x1633e0 forward the grid's GetSize
     void InitScrollRects();                       // 0x163420 seed the scroll rects (ex "Notify")
     i32 ValidateTiles(char* errOut);              // 0x163510 scan the tile grid for bad refs
     void ResolveColorKey();                       // 0x163670 pack +0x144 to RGB565 (ex "Refresh")

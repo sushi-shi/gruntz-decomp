@@ -51,7 +51,7 @@
 #include <Gruntz/CBrickz.h>           // CBrickz::LoadAttributes
 #include <Gruntz/Brickz.h>            // CBrickzGrid::UpdateDiagonals
 #include <Gruntz/ParseSource.h>       // CParseSource::BeginParse/EndParse
-#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner)
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize (the plane/grid-owner)
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
 #include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
 #include <Globals.h>
@@ -77,7 +77,7 @@ class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);                  // 0x0ebd70
 
-void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 
 typedef enum {
     CUE_INTERVAL_MS = 0x1f4,           // 500 ms  ambient/win-lose cue toggle
@@ -295,7 +295,7 @@ i32 CPlay::Render() {
         g_engineFrameDelta = g_frameDelta;
 
         // --- shared world-draw block #1 ---
-        m_world->m_childGroup->TickKillCues_159a70(0); // slot 9 [+0x24]
+        m_world->m_childGroup->TickKillCues(0); // slot 9 [+0x24]
         m_world->m_level->VisitVisible(
             m_world->m_drawTarget->m_backPair,
             m_world->m_childGroup
@@ -1100,10 +1100,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // finalize the world planes
     self->m_mgr->RecomputeViewScale();
     if (self->m_world->m_level->m_mainPlane != 0) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize_1633e0();
+        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize();
     }
     if (self->m_world->m_level->m_mainPlane != 0) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize_1633e0();
+        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize();
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
@@ -1203,7 +1203,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     set = self->m_world->m_childGroup->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
     self->m_scrollSink = static_cast<CWwdGameObjectA*>(set);
     if (set != 0) {
-        self->m_world->m_childGroup->TickKillCues_159a70(0); // vtable +0x24, the real slot 9
+        self->m_world->m_childGroup->TickKillCues(0); // vtable +0x24, the real slot 9
         if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
             CStatusBarMgr* tiles = self->m_guts;
@@ -1224,7 +1224,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 )                                                        /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
-                self->m_world->m_childGroup->TickKillCues_159a70(0);
+                self->m_world->m_childGroup->TickKillCues(0);
                 self->m_guts->winapi_107d00_SetRect();
                 (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                 while (ShowCursor(0) >= 0)
@@ -1232,11 +1232,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 self->m_mgr->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
                 if (self->m_world->m_level->m_mainPlane != 0) {
                     (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-                        ->GetSize_1633e0();
+                        ->GetSize();
                 }
                 if (self->m_world->m_level->m_mainPlane != 0) {
                     (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-                        ->GetSize_1633e0();
+                        ->GetSize();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {
@@ -1362,7 +1362,7 @@ void CPlay::OnExit() {
 // relocs); the view ptr is re-read before every block (no cached local).
 // (The CExitV58/CExitV44/CExitView/CExitWorld views + their FABRICATED padded
 // vtables are GONE: the +0x10 slot-22 teardown is the canonical CDDrawWorkerRegistry
-// device (CDDrawWorkerRegistry::MapTeardown_1552b0) and the +0x24 slot-17
+// device (CDDrawWorkerRegistry::MapTeardown) and the +0x24 slot-17
 // teardown is CGameLevel::ReleaseChildren - a REAL virtual on the real class.)
 // ===========================================================================
 // @early-stop
@@ -1390,10 +1390,10 @@ void CPlay::ModeCleanup() {
         m_mgr->m_inputState->Teardown();
     }
     if (m_world) {
-        m_world->m_imageRegistry->MapTeardown_1552b0(); // slot 22 (+0x58)
+        m_world->m_imageRegistry->MapTeardown(); // slot 22 (+0x58)
     }
     if (m_world) {
-        m_world->m_animRegistry->FreeAll_152720(); // @0x152720
+        m_world->m_animRegistry->FreeAll(); // @0x152720
     }
     if (m_world) {
         m_world->m_level->ReleaseChildren(); // slot 17 (+0x44) - real CGameLevel virtual
@@ -1590,7 +1590,7 @@ i32 g_lastLevelNum = -1;
 // CArchiveLoadRec was a full-object 0x514 placeholder of CPLAY ITSELF (the fn is
 // CPlay::SyncWrite19fb, SyncState's mode-4 serializer, called `mov ecx,edi; push ar`),
 // its "manager" CArchiveMgr was the CState::m_c holder (the +0x10 registry probe is
-// CDDrawWorkerRegistry::AnyValueMatches_155630 - the frame-name reverse lookup over
+// CDDrawWorkerRegistry::AnyValueMatches - the frame-name reverse lookup over
 // m_gridCurFrame), its "+0x24 inline name" object was CPlay::m_grid (the CImageSet's
 // config name), the "+0x188 default-int" object was the CursorSnapSprite game object
 // (CGameObject::m_188, the archive-cue id) and the element arrays are the
@@ -1665,7 +1665,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         memset(buf, 0, sizeof(buf));
         i32 v = 0;
         if (m_gridCurFrame != 0) {
-            mc->m_imageRegistry->AnyValueMatches_155630(m_gridCurFrame, buf, &v);
+            mc->m_imageRegistry->AnyValueMatches(m_gridCurFrame, buf, &v);
         }
         s->Write(buf, 0x80);
         s->Write(&v, 4);
@@ -1864,7 +1864,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     // resolve the current grid frame by (set name, frame index) through the image
     // registry's name map: the record IS a ::CImageSet (frames @+0x14, populated
     // range m_minIndex/m_maxIndex) - the inverse of the Write twin's
-    // AnyValueMatches_155630 reverse lookup.
+    // AnyValueMatches reverse lookup.
     g_serialCounter++;
     char buf80a[0x80];
     ar->Read(buf80a, 0x80);
@@ -2212,7 +2212,7 @@ i32 CPlay::OnRegion3(i32 z) // (region-2 / gate m_region2Gate, timer +0x450)
     if (z != 0) {
         m_region2Gate = 1;
         RegionEnter();
-        Cmd_ApplyScrollParams_0ec1c0(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
+        Cmd_ApplyScrollParams(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
     } else {
         m_region2Gate = 0;
         RegionLeave();
@@ -2502,7 +2502,7 @@ void CPlay::DrawWorldFrame() {
     }
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
-    m_world->m_childGroup->TickKillCues_159a70(0); // m_c->m_childGroup->vtbl[+0x24](0)
+    m_world->m_childGroup->TickKillCues(0); // m_c->m_childGroup->vtbl[+0x24](0)
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(
         static_cast<i32>(g_frameDelta)
     ); // 0x3017 -> 0x6eb80 per-frame grid step
@@ -2558,7 +2558,7 @@ i32 CPlay::DrawWorldFrames() {
             if (m_world->m_level->m_mainPlane != 0) {
                 m_world->m_level->m_mainPlane->CenterScrollA();
             }
-            m_world->m_childGroup->TickKillCues_159a70(0);
+            m_world->m_childGroup->TickKillCues(0);
             m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_134 == 3) {
                 (g_gameReg)->AdvanceOptionsCycle(); // 0x933e0
@@ -2662,7 +2662,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 deactMs = static_cast<i32>((tg() - t3));
 
     u32 t5 = tg();
-    m_world->m_childGroup->TickKillCues_159a70(1);
+    m_world->m_childGroup->TickKillCues(1);
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
     i32 updateMs = static_cast<i32>((tg() - t5));
@@ -3364,7 +3364,7 @@ i32 GruntzPlayer::Reset() {
 }
 
 RVA(0x000daa60, 0x24)
-i32 GruntzPlayer::ClearRoundState_0daa60() {
+i32 GruntzPlayer::ClearRoundState() {
     m_liveGate = 1;
     m_readyFlag = 0;
     m_doneFlag = 0;
@@ -3574,7 +3574,7 @@ i32 GruntzPlayer::Deactivate() {
         return 0;
     }
     if (m_014 == 0) {
-        (static_cast<CBattlezMapConfig*>(&m_038))->Clear_02ade0();
+        (static_cast<CBattlezMapConfig*>(&m_038))->Clear();
     }
     m_liveGate = 0;
     return 1;
@@ -4033,7 +4033,7 @@ i32 CPlay::BuildHelpReveal(i32 final) {
 // @source: rtti-vptr
 // @stub
 RVA(0x0008c9d0, 0x2bd)
-void CPlay::PlayBacklog08c9d0() {}
+void CPlay::PlayBacklog() {}
 
 RVA(0x0008c930, 0x3)
 i32 CPlay::Vslot1a() {
@@ -4539,14 +4539,14 @@ i32 CPlay::DrawWorldPresent() {
     if (m_world->m_level->m_mainPlane != 0) {
         m_world->m_level->m_mainPlane->CenterScrollA();
     }
-    m_world->m_childGroup->TickKillCues_159a70(1);
+    m_world->m_childGroup->TickKillCues(1);
     if (m_world->m_level->m_mainPlane != 0) {
         m_world->m_level->m_mainPlane->CenterScrollB();
     }
     if (m_world->m_level->m_mainPlane != 0) {
         m_world->m_level->m_mainPlane->CenterScrollA();
     }
-    m_world->m_childGroup->TickKillCues_159a70(1);
+    m_world->m_childGroup->TickKillCues(1);
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
     m_world->m_workerList->PruneWorkers(
         m_world->m_drawTarget->m_backPair,
@@ -4684,7 +4684,7 @@ i32 CPlay::QuitToMenu() {
         if (m_world->m_drawTarget->Method_158d20() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
-        m_mgr->ChangeState_8fab0(3);
+        m_mgr->ChangeState(3);
     }
     return 1;
 }
@@ -5262,14 +5262,14 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     }
     if (!force
         && (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-               ->HasKeyEqual_155550("ACTION")) {
+               ->HasKeyEqual("ACTION")) {
         return 1;
     }
 
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-        ->RemoveKeysEqual_155360("ACTION", g_emptyString);
+        ->RemoveKeysEqual("ACTION", g_emptyString);
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-        ->RemoveKeysEqual_155360("BACK", g_emptyString);
+        ->RemoveKeysEqual("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
     void* tiles = (self->m_levelBank)->ResolvePath("TILEZ");
@@ -5288,19 +5288,19 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     }
     if (!force
         && (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-               ->HasKeyEqual_1583c0("LEVEL")) {
+               ->HasKeyEqual("LEVEL")) {
         return 1;
     }
 
     (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-        ->RemoveKeysEqual_157c70("LEVEL", "_");
+        ->RemoveKeysEqual("LEVEL", "_");
 
     void* sounds = (self->m_levelBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
     (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-        ->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "LEVEL", "_");
+        ->ScanTree(static_cast<CSymTab*>(sounds), "LEVEL", "_");
     return 1;
 }
 
@@ -5310,16 +5310,16 @@ i32 CPlay::LoadLevelAnims(i32 force) {
         return 0;
     }
     if (force == 0) {
-        if (m_world->m_animRegistry->HasKeyPrefix_152c50("LEVEL") != 0) {
+        if (m_world->m_animRegistry->HasKeyPrefix("LEVEL") != 0) {
             return 1;
         }
     }
-    m_world->m_animRegistry->RemoveKeysEqual_1527d0("LEVEL", "_");
+    m_world->m_animRegistry->RemoveKeysEqual("LEVEL", "_");
     void* e = m_levelBank->ResolvePath("ANIZ");
     if (e == 0) {
         return 0;
     }
-    m_world->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(e), "LEVEL", "_");
+    m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(e), "LEVEL", "_");
     return 1;
 }
 
@@ -5331,12 +5331,12 @@ i32 CPlay::LoadLevelImages(i32 force) {
     }
     if (!force
         && (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-               ->HasKeyEqual_155550("LEVEL")) {
+               ->HasKeyEqual("LEVEL")) {
         return 1;
     }
 
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-        ->RemoveKeysEqual_155360("LEVEL", "_");
+        ->RemoveKeysEqual("LEVEL", "_");
     g_resourceInstallActive = 0;
 
     void* images = (self->m_levelBank)->ResolvePath("IMAGEZ");
@@ -5355,7 +5355,7 @@ i32 CPlay::LoadGameImages(i32 force) {
         return 0;
     }
     if ((static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-            ->HasKeyEqual_155550("GAME")) {
+            ->HasKeyEqual("GAME")) {
         return 1;
     }
 
@@ -5376,7 +5376,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 0;
     }
     if ((static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-            ->HasKeyEqual_1583c0("GAME")) {
+            ->HasKeyEqual("GAME")) {
         return 1;
     }
 
@@ -5385,7 +5385,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 0;
     }
     (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-        ->ScanTree_157ee0(static_cast<CSymTab*>(sounds), "GAME", "_");
+        ->ScanTree(static_cast<CSymTab*>(sounds), "GAME", "_");
     return 1;
 }
 
@@ -5395,7 +5395,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if (self->m_world->m_animRegistry->HasKeyPrefix_152c50("GAME")) {
+    if (self->m_world->m_animRegistry->HasKeyPrefix("GAME")) {
         return 1;
     }
 
@@ -5403,7 +5403,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    self->m_world->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(anims), "GAME", "_");
+    self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(anims), "GAME", "_");
     return 1;
 }
 
@@ -5482,68 +5482,68 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     }
 
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_NORMALGRUNT")) {
+             ->HasKeyEqual("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
+             ->HasKeyEqual("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_ENTRANCEZ")) {
+             ->HasKeyEqual("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
+             ->HasKeyEqual("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_GRUNTPUDDLE")) {
+             ->HasKeyEqual("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_PICKUPS")) {
+             ->HasKeyEqual("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!(static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-             ->HasKeyEqual_1583c0("GRUNTZ_BOMBGRUNT")) {
+             ->HasKeyEqual("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
         if (s) {
             (static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-                ->ScanTree_157ee0(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
+                ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -5574,7 +5574,7 @@ i32 CState::BuildAssetNamespacePrefixes(
 ) {
     i32 result;
     if (mode != 0) {
-        if (m_world->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) == 0) {
+        if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
             g_gameReg->m_cueSink->DtorBody();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
@@ -5607,39 +5607,39 @@ i32 CState::BuildAssetNamespacePrefixes(
                 (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
             }
         }
-        if (m_world->m_soundRegistry->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
+        if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
             void* tree = m_gruntzBank->ResolvePath("SOUNDZ_" + name);
             if (tree != 0) {
                 // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
                 // `tree` is the real CSymTab - DirNode was a view of it.
                 m_world->m_soundRegistry
-                    ->ScanTree_157ee0(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
+                    ->ScanTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
             }
         }
-        if (m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
+        if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name) == 0) {
             void* tree = m_gruntzBank->ResolvePath("ANIZ_" + name);
             if (tree == 0) {
                 result = 0;
                 goto done;
             }
             m_world->m_animRegistry
-                ->ScanTree_152ad0(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
+                ->ScanTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;
     }
 
-    if (m_world->m_imageRegistry->HasKeyEqual_155550("GRUNTZ_" + name) != 0) {
-        m_world->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_" + name, "_");
+    if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
+        m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
         if (finishGate != 0) {
             (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
         }
     }
-    if (m_world->m_soundRegistry->HasKeyEqual_1583c0("GRUNTZ_" + name) != 0) {
-        m_world->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_" + name, "_");
+    if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
+        m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
     }
-    if (m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_" + name) != 0) {
-        m_world->m_animRegistry->RemoveKeysEqual_1527d0("GRUNTZ_" + name, "_");
+    if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name) != 0) {
+        m_world->m_animRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
     }
     result = 1;
 done:
@@ -5654,7 +5654,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     g_resourceInstallActive = 1;
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
+             ->HasKeyEqual("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
@@ -5665,7 +5665,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
+             ->HasKeyEqual("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
@@ -5676,7 +5676,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
+             ->HasKeyEqual("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
@@ -5687,7 +5687,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
+             ->HasKeyEqual("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
@@ -5698,7 +5698,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
+             ->HasKeyEqual("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
@@ -5709,7 +5709,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
+             ->HasKeyEqual("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
@@ -5720,7 +5720,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-             ->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
+             ->HasKeyEqual("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
@@ -5740,79 +5740,79 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     if (!self->m_world) {
         return 0;
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_DEATHZ")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_EXITZ")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_PICKUPS")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->ScanTree_152ad0(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
+            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6050,7 +6050,7 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_cueSink->ClearSprites();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
     m_world->m_level->ReleaseChildren(); // slot 17 (+0x44) - the real CGameLevel virtual
-    (m_world->m_childGroup)->PruneList_15aa90();
+    (m_world->m_childGroup)->PruneList();
     if (m_guts != 0) {
         m_guts->ResetWidgets(0);
     }
@@ -6101,7 +6101,7 @@ void CPlay::FreeListTeardown() {
     m_488.SetSize(0, -1); // CPtrArray::SetSize @0x1b52e8
     for (i = 0; i < 4; i++) {
         m_mgr->m_options[i].m_038.FreeArrays();
-        m_mgr->m_options[i].m_038.Clear_02ade0();
+        m_mgr->m_options[i].m_038.Clear();
     }
     m_49c = -1;
 }

@@ -47,7 +47,7 @@ public:
     void ResetCounters(); // 0xe7400
     // slot-5 body (vtbl 0x1eac4c slot [5], thunk 0x2e78): one play step re-resolving the
     // frame from the record table. Ex CAniPlayer view (dossier #16).
-    i32 TickRenderFrame_0e7440(); // 0xe7440
+    i32 TickRenderFrame(); // 0xe7440
 
     CImageSet* m_34; // +0x34  resolved config record (the real image-registry CImageSet)
     i32 m_38;      // +0x38  serialized config id (4 bytes)

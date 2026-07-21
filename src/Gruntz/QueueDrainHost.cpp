@@ -9,7 +9,7 @@
 // back-edge (CSE) and splits the epilogues. Logic/CFG/offsets exact
 // (docs/patterns/reread-member-view-pointer.md).
 RVA(0x00031250, 0x33)
-CGameObject* CDDrawChildGroup::Drain_031250() {
+CGameObject* CDDrawChildGroup::Drain() {
     while (m_scanCursor != 0) {
         CDDrawGroupNode* head = m_scanCursor;
         m_scanCursor = head->m_next;

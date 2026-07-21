@@ -1,5 +1,5 @@
 // FileIOOwner.h - FileIOOwner, a per-transition file/level loader context (ctor
-// 0x8fea0), built as a STACK-LOCAL inside CGruntzMgr::ChangeState_8fab0.
+// 0x8fea0), built as a STACK-LOCAL inside CGruntzMgr::ChangeState.
 //
 // @identity-TODO: its RTTI class name is unrecovered (Ghidra placeholder). VERIFIED
 // not a CGruntzMgr method and not CFileIO: the caller constructs it as a stack

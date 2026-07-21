@@ -312,7 +312,7 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 RVA(0x00141c80, 0xa)
-void ClearModeArray_141c80() {
+void ClearModeArray() {
     g_modeArray.CPtrArray::CPtrArray();
 }
 
@@ -1111,7 +1111,7 @@ void RelayHwnd(i32 (*handler)()) {
 }
 
 RVA(0x001437f0, 0x1b)
-i32 RestoreLostSurfaces_1437f0() {
+i32 RestoreLostSurfaces() {
     if (g_restoreHandler) {
         return g_restoreHandler();
     }
@@ -1188,7 +1188,7 @@ IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
 // null checks. Not source-steerable (permuter 150-iter marginal). Regalloc-coloring
 // residue; see the 0x143950 note. docs/patterns/zero-register-pinning.md family.
 RVA(0x00143900, 0x4d)
-void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag) {
+void CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     if (pal == 0) {
         return;
     }
@@ -1247,7 +1247,7 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
 // 1 into a reused reg; MSVC on this source mirrors src/dst and stores the immediate.
 // Not source-steerable (permuter 150-iter marginal). docs/patterns/zero-register-pinning.md.
 RVA(0x001439b0, 0x3d)
-void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
+void CDDrawPtrCollections::SetDisplayPaletteDirect(i32* rgbq, i32 tag) {
     if (rgbq == 0) {
         return;
     }

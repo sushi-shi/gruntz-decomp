@@ -22,10 +22,10 @@ public:
     // a plain method - the base placeholder blocks the int-arg OVERRIDE spelling.
     virtual void FireActivation(i32 id) OVERRIDE;
     // The per-tick laser/rotation update (0x0b1af0).
-    i32 Tick_0b1af0();
+    i32 Tick();
     // The per-tick offset-rotation + grid-cell "A" bute re-resolve (0x0b1ee0);
     // body in SpotLight.cpp.
-    int Update_0b1ee0();
+    int Update();
 
     char m_pad54[0x58 - 0x54];
     double m_58;          // +0x58  per-tick angular rate (Update: angleStep advancing m_90)

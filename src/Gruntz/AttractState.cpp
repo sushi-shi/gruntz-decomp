@@ -48,7 +48,7 @@ i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(sound), "ATTRACT", "_");
+    menuRoot()->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -71,7 +71,7 @@ void CAttract::ReleaseResources() {
     if (reg->m_2c) {
         reg->m_2c->Stop();
     }
-    menuRoot()->m_soundRegistry->RemoveKeysEqual_157c70("ATTRACT", "_");
+    menuRoot()->m_soundRegistry->RemoveKeysEqual("ATTRACT", "_");
     // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
     // CState vtable slot 2 default body; qualified -> direct call).
     CState::ReleaseResources();

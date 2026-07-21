@@ -29,10 +29,10 @@ public:
         m_name = 0;
     }
     virtual ~CAniElement() OVERRIDE;          // 0x152e30 (DDrawSubMgrLeaf.cpp)
-    ::CObject* AtChecked_06b270(i32 i) const; // 0x06b270 (MFC ::CObject array element)
-    i32 Build_165460(void* ctx, CAniSource* src, i32 flags); // 0x165460
-    i32 Configure_1655c0(void* ctx, void* entry, i32 flags); // 0x1655c0
-    i32 LoadFile_165620(void* ctx, void* filename, i32 a3);  // 0x165620 (eh TU)
+    ::CObject* AtChecked(i32 i) const; // 0x06b270 (MFC ::CObject array element)
+    i32 Build(void* ctx, CAniSource* src, i32 flags); // 0x165460
+    i32 Configure(void* ctx, void* entry, i32 flags); // 0x1655c0
+    i32 LoadFile(void* ctx, void* filename, i32 a3);  // 0x165620 (eh TU)
     void DeleteAll();                                        // 0x165730 (CAniElementCollection.cpp)
 
     i32 m_flags;               // +0x04

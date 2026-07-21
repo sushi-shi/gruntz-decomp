@@ -11,7 +11,7 @@ struct CWwdGridShell : public CObject {
     virtual ~CWwdGridShell() OVERRIDE; // [1] +0x04; ??_G 0x168280, ??1 0x1682a0
     // [5] 0x168060 (GameLevelMove.cpp): the concrete impl of the slot the abstract
     // CWwdGrid leaves __purecall - forward (r->m_object, 1) to the world's
-    // CDDrawChildGroup::InsertSorted_159e40 via OwnerMgr()->m_childGroup.
+    // CDDrawChildGroup::InsertSorted via OwnerMgr()->m_childGroup.
     virtual void OnFound(WwdRegion* r);
     i32 m_4; // +0x04
     char m_pad8[0x44 - 8];

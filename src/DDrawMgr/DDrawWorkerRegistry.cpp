@@ -74,7 +74,7 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
     parent->m_10map.Lookup(key, found);
     if (found == 0) {
         CDDrawWorker* worker = MakeWorker(parent);
-        if (worker->SetKey_155810(key) == 0) {
+        if (worker->SetKey(key) == 0) {
             if (worker != 0) {
                 delete worker;
             }
@@ -95,7 +95,7 @@ i32 CDDrawWorkerRegistry::IsReady() {
 
 RVA(0x00154ac0, 0x12)
 i32 CDDrawWorkerRegistry::Unload() {
-    MapTeardown_1552b0();
+    MapTeardown();
     g_resourceInstallActive = 0;
     g_surfaceColorKey = 0;
     return 0;
@@ -262,7 +262,7 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 }
 
 RVA(0x001552b0, 0xa2)
-void CDDrawWorkerRegistry::MapTeardown_1552b0() {
+void CDDrawWorkerRegistry::MapTeardown() {
     CObject* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10map.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -278,7 +278,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0() {
 }
 
 RVA(0x00155360, 0xf8)
-i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
+i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
     match = str;
     i32 len = match.GetLength();
@@ -308,7 +308,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
 // Residue: retail pins 0 in edi and holds a2 in ebx across the body where our
 // cl uses test/immediate + a per-call a2 reload - regalloc coin-flip.
 RVA(0x00155460, 0xe2)
-i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
+i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 a2) {
     CString key;
     CObject* val = 0;
     POSITION pos = m_10map.GetStartPosition();
@@ -327,7 +327,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
 }
 
 RVA(0x00155550, 0xdc)
-i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
+i32 CDDrawWorkerRegistry::HasKeyEqual(const char* str) {
     i32 len = strlen(str);
     CString key;
     CObject* val = 0;
@@ -342,7 +342,7 @@ i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
 }
 
 RVA(0x00155630, 0xc5)
-i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i32* outIndex) {
+i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* outIndex) {
     if (frame == 0) {
         return 0;
     }
@@ -408,7 +408,7 @@ CDDrawWorker::~CDDrawWorker() {
 }
 
 RVA(0x00155810, 0x23)
-i32 CDDrawWorker::SetKey_155810(const char* src) {
+i32 CDDrawWorker::SetKey(const char* src) {
     strncpy(m_name, src, 0x3f);
     m_name[0x3f] = 0;
     return 1;

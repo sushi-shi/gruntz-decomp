@@ -672,7 +672,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             return 0;
         }
         if (e->m_014 && e->m_liveGate) {
-            e->m_038.Clear_02ade0();
+            e->m_038.Clear();
         }
     }
     this->RefreshSlotTable();
@@ -892,7 +892,7 @@ i32 CMulti::PumpA() {
     } else {
         g_timer500 = 0;
     }
-    m_world->m_childGroup->TickKillCues_159a70(g_frameDelta);
+    m_world->m_childGroup->TickKillCues(g_frameDelta);
     m_world->m_childGroup->CollideBroadcast();
     Mgr()->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(g_frameDelta);

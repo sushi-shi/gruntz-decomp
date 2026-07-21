@@ -104,7 +104,7 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
         if ((w->m_flags & 0x2) || (w->m_7c->m_08 & 0x4)) {
-            m_mgr->InsertSorted_159e40(w, 1);
+            m_mgr->InsertSorted(w, 1);
             grid->Remove(obj);
             ++count;
         }
@@ -143,7 +143,7 @@ i32 CWwdSpatialMgr::PruneCount() {
         n += m_grid2->Clear();
     }
     if (m_mgr) {
-        m_mgr->PruneOrphans_15b1d0();
+        m_mgr->PruneOrphans();
     }
     return n;
 }
@@ -153,13 +153,13 @@ void CWwdSpatialMgr::RemoveObject(CWwdGameObject* obj) {
     i32 flags = obj->m_flags;
     if (flags & 0x800000) {
         m_grid1->Add(&obj->m_region);
-        m_mgr->AddToMap48_15aba0(obj);
+        m_mgr->AddToMap48(obj);
     } else if (flags & 0x1000000) {
         m_grid2->Add(&obj->m_region);
-        m_mgr->AddToMap48_15aba0(obj);
+        m_mgr->AddToMap48(obj);
     } else {
         m_grid0->Add(&obj->m_region);
-        m_mgr->AddToMap48_15aba0(obj);
+        m_mgr->AddToMap48(obj);
     }
 }
 
@@ -187,7 +187,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
-        m_mgr->InsertSorted_159e40(w, 1);
+        m_mgr->InsertSorted(w, 1);
         grid->Remove(obj);
         ++count;
     }

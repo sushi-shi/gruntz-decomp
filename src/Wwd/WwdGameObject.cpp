@@ -27,7 +27,7 @@
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_0c->m_drawTarget->m_frontPair (Test cull extent)
-#include <DDrawMgr/DDrawWorkerCache.h>    // OwnerMgr()->m_workerCache (FindKeyOfValue_165360 / m_10)
+#include <DDrawMgr/DDrawWorkerCache.h>    // OwnerMgr()->m_workerCache (FindKeyOfValue / m_10)
 #include <Gruntz/GameLevel.h>             // m_0c->m_level->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
@@ -57,7 +57,7 @@ static inline void StampWorkerVtbl(AnimWorkerObj* w) {
 
 RVA(0x00058b60, 0x2d)
 void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
-    m_1a0.Setup_15c2d0(srcSprite);
+    m_1a0.Setup(srcSprite);
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }
@@ -120,7 +120,7 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(reinterpret_cast<i32>(spr)));
+    m_1a0.Setup(reinterpret_cast<CAniElement*>(reinterpret_cast<i32>(spr)));
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }
@@ -235,15 +235,15 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             size[0] = ir.right - ir.left + 1;
             size[1] = ir.bottom - ir.top + 1;
             pos[1] = ir.top;
-            a->BlitDirtyRect_164650(b, pos, size);
+            a->BlitDirtyRect(b, pos, size);
         } else {
-            a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);        // shadow record
+            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record
+            a->BlitDirtyRect(b, &m_b8, &m_d0);        // shadow record
         }
     } else if (m_dirtyArmed != -1) {
-        a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
+        a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
-        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
+        a->BlitDirtyRect(b, &m_b8, &m_d0); // shadow record only
     }
 }
 
@@ -354,7 +354,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = OwnerMgr()->m_soundRegistry->FindKeyOfValue_158570(m_19c);
+        CString str = OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -796,21 +796,21 @@ i32 CGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_80);
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_80);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_88);
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_88);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collideWorker != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_collideWorker);
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -983,7 +983,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_10 = edi;
 
     {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue_165360(m_7c);
+        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_7c);
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
@@ -991,7 +991,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
 }
 
 RVA(0x00151d20, 0x3a)
-i32 CGameObject::NotifyHooked_151d20(void* arg) {
+i32 CGameObject::NotifyHooked(void* arg) {
     AnimWorkerObj* p = m_7c;
     if (!p) {
         return 0;
@@ -1225,7 +1225,7 @@ CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 }
 
 RVA(0x001521c0, 0x2b)
-void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
+void CDDrawWorker::AddFrameAt(void* elem, i32 index) {
     m_items.SetAtGrow(index, static_cast<CObject*>(elem)); // CObArray::SetAtGrow @0x1b5822
     if (index < m_minIndex) {
         m_minIndex = index;

@@ -75,7 +75,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (!m_world->m_imageRegistry->HasKeyEqual_155550("MENU")) {
+    if (!m_world->m_imageRegistry->HasKeyEqual("MENU")) {
         void* set = SymTab2c()->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
@@ -85,12 +85,12 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         g_resourceInstallActive = 0;
     }
 
-    if (!m_world->m_soundRegistry->HasKeyEqual_1583c0("MENU")) {
+    if (!m_world->m_soundRegistry->HasKeyEqual("MENU")) {
         void* set = SymTab2c()->ResolvePath("SOUNDZ");
         if (set == 0) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(set), "MENU", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->Method_158d20()) {
@@ -157,8 +157,8 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    m_world->m_imageRegistry->RemoveKeysEqual_155360("MENU", "_");
-    m_world->m_soundRegistry->RemoveKeysEqual_157c70("MENU", "_");
+    m_world->m_imageRegistry->RemoveKeysEqual("MENU", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual("MENU", "_");
     if (m_world) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).

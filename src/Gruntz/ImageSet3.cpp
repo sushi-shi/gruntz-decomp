@@ -45,7 +45,7 @@ i32 CImageSet3::Parse(void* record) {
 }
 
 RVA(0x00166eb0, 0x6a)
-i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
+i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (y > 0) {
@@ -66,7 +66,7 @@ i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
 // ~82% regalloc wall (same instr count; value gate + coord out compete for the
 // callee-saved reg, flipping this/base spill). docs/patterns/zero-register-pinning.md.
 RVA(0x00166f20, 0x52)
-i32 CImageSet3::ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY) {
+i32 CImageSet3::ScanUpGate(i32 x, i32 y, i32 val, i32* outY) {
     u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (y > 0) {
         p -= m_width;
@@ -85,7 +85,7 @@ i32 CImageSet3::ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY) {
 // ~78% regalloc wall: the lim (m_width-1) local competes with `this` for a callee-
 // saved reg (the lim-free ScanUp is 100%); same instrs, swapped operands.
 RVA(0x00166f80, 0x68)
-i32 CImageSet3::ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal) {
+i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     i32 lim = m_width - 1;
@@ -106,7 +106,7 @@ i32 CImageSet3::ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal) {
 // @early-stop
 // ~72% regalloc wall (lim + pointer-walk + value-gate pressure). Logic byte-faithful.
 RVA(0x00166ff0, 0x52)
-i32 CImageSet3::ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX) {
+i32 CImageSet3::ScanRightGate(i32 x, i32 y, i32 val, i32* outX) {
     i32 lim = m_width - 1;
     u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (x < lim) {
@@ -126,7 +126,7 @@ i32 CImageSet3::ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX) {
 // ~70% regalloc wall: retail keeps this in ebp (found-block m_pixels re-read) + spills
 // lim; our cl spills this + keeps lim. Same instrs. docs/patterns/zero-register-pinning.md.
 RVA(0x00167050, 0x74)
-i32 CImageSet3::ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal) {
+i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     i32 lim = m_height - 1;
@@ -147,7 +147,7 @@ i32 CImageSet3::ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal) {
 // @early-stop
 // ~94% regalloc coin-flip (lim vs this callee-saved coloring). Logic byte-faithful.
 RVA(0x001670d0, 0x5d)
-i32 CImageSet3::ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY) {
+i32 CImageSet3::ScanDownGate(i32 x, i32 y, i32 val, i32* outY) {
     i32 off = (y << m_heightLog2) + x;
     i32 lim = m_height - 1;
     while (y < lim) {

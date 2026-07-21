@@ -16,10 +16,10 @@ public:
     void LoadLevelPreviewScreen();                         // 0x0de420
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
     void ResetPreview();                                    // 0x0de140 (retail dead code)
-    i32 NextScreenCmd_0de190(i32 param);                    // 0x0de190
-    i32 Refade_0de2c0();                                    // 0x0de2c0
-    i32 RefadeVirtual_0de340();                             // 0x0de340
-    i32 OnKey_0de3c0(i32 key, i32 param);                   // 0x0de3c0
+    i32 NextScreenCmd(i32 param);                    // 0x0de190
+    i32 Refade();                                    // 0x0de2c0
+    i32 RefadeVirtual();                             // 0x0de340
+    i32 OnKey(i32 key, i32 param);                   // 0x0de3c0
 
     // CPreviewState-specific fields, past the CState base (which ends at +0x1a8):
     char m_pad1a8[0x1b8 - 0x1a8];

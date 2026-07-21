@@ -7,7 +7,7 @@
 #include <Gruntz/State.h>     // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
 #include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix_152c50 / ScanTree_152ad0)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix / ScanTree)
 #include <Gruntz/SpriteRefTable.h>    // the shared CSpriteRefTable (g_gameReg->m_spriteFactory)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry == CDDrawWorkerRegistry (InstallTree)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
@@ -50,7 +50,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (node == 0) {
         return 0;
     }
-    if (m_world->m_imageRegistry->HasKeyEqual_155550("GAME") == 0) {
+    if (m_world->m_imageRegistry->HasKeyEqual("GAME") == 0) {
         void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;
@@ -59,19 +59,19 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_world->m_soundRegistry->HasKeyEqual_1583c0("GAME") == 0) {
+    if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
-    if (m_world->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
+    if (m_world->m_animRegistry->HasKeyPrefix("GAME") == 0) {
         void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
             return 0;
         }
-        m_world->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(aniz), "GAME", "_");
+        m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(aniz), "GAME", "_");
     }
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).

@@ -35,13 +35,13 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             }
             break;
         case 4:
-            // the serialize walk (ForEachSerialize_15b020, WRITES the stream)
+            // the serialize walk (ForEachSerialize, WRITES the stream)
             if (Save(reinterpret_cast<CSerialArchive*>(a)) == 0) {
                 return 0;
             }
             break;
         case 7:
-            // the deserialize walk (Deserialize_15b0e0, READS the stream)
+            // the deserialize walk (Deserialize, READS the stream)
             if (Load(reinterpret_cast<CSerialArchive*>(a)) == 0) {
                 return 0;
             }

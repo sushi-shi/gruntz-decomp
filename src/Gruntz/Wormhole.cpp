@@ -7,7 +7,7 @@
 //     (0x403b0) / LoadColors bracket the CGruntPuddle block - impossible for
 //     separate objs at first link.
 //   * the in-interval registrar fns (InitLogicDispatch_6445e8 0x406d0,
-//     RegisterLogic_6445e8 0x408b0, CTeleporter_RegisterActs 0x41680) are
+//     RegisterLogic 0x408b0, CTeleporter_RegisterActs 0x41680) are
 //     text-contained inside the obj -> same TU.
 //   * init frags i297-i299 (wormhole @0x3ffb0, logicdispatchinit @0x406b0,
 //     teleporter @0x41480) are one contiguous CRT-table run at frag RVAs inside
@@ -24,7 +24,7 @@
 //   0x040050 W::Dispatch     0x0401b0 RegisterWormholeLogic
 //   0x0403b0 W::SpawnPartners
 //   0x040490 CGruntPuddle ctor  0x0406d0 InitLogicDispatch_6445e8
-//   0x040750 P::FireActivation  0x0408b0 RegisterLogic_6445e8
+//   0x040750 P::FireActivation  0x0408b0 RegisterLogic
 //   0x040c30 P::Place  0x040d20 P::Remove  0x040e50 P::Serialize
 //   0x041020 CTeleporter ctor  0x0411f0 W::LoadColors  0x0412c0 W::ReapplyConfig
 //   0x041350 T::Serialize  0x0414a0 T::InitActReg  0x041520 T::FireActivation
@@ -386,14 +386,14 @@ void CGruntPuddle::FireActivation(i32 id) {
 }
 
 // ===========================================================================
-// RegisterLogic_6445e8 @0x0408b0 - bind handler "A" (0x4021f8) and handler "B"
+// RegisterLogic @0x0408b0 - bind handler "A" (0x4021f8) and handler "B"
 // (0x403418) into the logic dispatch table @0x6445e8 (the CGruntPuddle logic
 // registration; moved from LogicActRegistrars.cpp - text-contained in this TU).
 // ===========================================================================
 // @early-stop
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x000408b0, 0x2ac)
-void RegisterLogic_6445e8() {
+void RegisterLogic() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
