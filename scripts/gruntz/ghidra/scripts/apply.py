@@ -50,7 +50,11 @@ GEN = SourceType.ANALYSIS           # everything apply.py generates - so the rou
 IMAGE_BASE = 0x400000
 
 import os
-ROOT = os.environ.get("GRUNTZ_DIR", "/home/sheep/Projects/gruntz")
+# $GRUNTZ_DIR override, else THIS checkout (walk up to flake.nix) - never a
+# hardcoded other-checkout path (a worktree must not read/write main; crash loud).
+import pathlib
+ROOT = os.environ.get("GRUNTZ_DIR") or str(next(
+    q for q in pathlib.Path(__file__).resolve().parents if (q / "flake.nix").exists()))
 # This script is STATELESS - no embedded layouts/enums. All data comes from these
 # generated files (+ the config CSVs):
 #   build/gen/symbol_names.csv  <- labels.py   (rva -> mangled name, unit)

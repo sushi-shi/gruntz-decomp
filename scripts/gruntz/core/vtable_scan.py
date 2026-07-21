@@ -29,17 +29,22 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-def _first(*c):
-    for x in c:
-        if x and Path(x).exists(): return Path(x)
-    return None
-EXE = _first(os.environ.get("GRUNTZ_EXE"), REPO / "build/exe/GRUNTZ.EXE",
-             "/home/sheep/Projects/gruntz/build/exe/GRUNTZ.EXE")
-FUNCS = _first(REPO / "build/ghidra-enrich/exports/functions.csv",
-               "/home/sheep/Projects/gruntz/build/ghidra-enrich/exports/functions.csv")
-SYMS = _first(REPO / "build/ghidra-enrich/exports/symbols.csv",
-              "/home/sheep/Projects/gruntz/build/ghidra-enrich/exports/symbols.csv")
-SRC = _first(REPO / "src", "/home/sheep/Projects/gruntz/src")
+
+
+def _require(p, hint):
+    """Crash LOUD on a cold worktree - never silently read another checkout's
+    (possibly stale) artifacts. See docs/gotchas.md (measure SETS, not counts)."""
+    p = Path(p)
+    if not p.exists():
+        sys.exit(f"[vtable_scan] missing {p} - {hint} in THIS worktree first")
+    return p
+
+
+EXE = _require(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE",
+               "export $GRUNTZ_EXE (nix develop) or run `gruntz init`")
+FUNCS = _require(REPO / "build/ghidra-enrich/exports/functions.csv", "run `gruntz init`")
+SYMS = _require(REPO / "build/ghidra-enrich/exports/symbols.csv", "run `gruntz init`")
+SRC = _require(REPO / "src", "not a gruntz checkout?")
 IMAGEBASE = 0x400000
 
 d = EXE.read_bytes()
