@@ -53,6 +53,7 @@ import re
 import sys
 
 from gruntz.core import class_meta
+from gruntz.core import get_context as _get_context
 from gruntz.core import vtable_scan as vs
 
 IB = vs.IMAGEBASE
@@ -63,32 +64,17 @@ REPO = vs.REPO
 # names
 # ---------------------------------------------------------------------------
 def load_symbol_names():
-    """rva -> emitted MSVC symbol (build/gen/symbol_names.csv)."""
-    m = {}
-    p = REPO / "build/gen/symbol_names.csv"
-    if p.exists():
-        with open(p) as f:
-            for r in csv.DictReader(f):
-                try:
-                    m[int(r["rva"], 16)] = r["name"]
-                except (ValueError, KeyError):
-                    pass
-    return m
+    """rva -> emitted MSVC symbol. Backed by the ONE loader (core.symbols.SymbolDb);
+    db.kind's keys are exactly the symbol_names.csv rows, in CSV order."""
+    db = _get_context().symbols
+    return {rva: db.names[rva][0] for rva in db.kind}
 
 
 def load_symbol_name_to_rva():
-    """emitted MSVC symbol -> rva (inverse of load_symbol_names). Lets us anchor a
-    class through its OWN cl-emitted ``??_7<Name>@@6B@`` vtable datum."""
-    m = {}
-    p = REPO / "build/gen/symbol_names.csv"
-    if p.exists():
-        with open(p) as f:
-            for r in csv.DictReader(f):
-                try:
-                    m[r["name"]] = int(r["rva"], 16)
-                except (ValueError, KeyError):
-                    pass
-    return m
+    """emitted MSVC symbol -> rva (inverse; anchors a class through its OWN
+    cl-emitted ``??_7<Name>@@6B@`` vtable datum)."""
+    db = _get_context().symbols
+    return {db.names[rva][0]: rva for rva in db.kind}
 
 
 SYM = load_symbol_names()

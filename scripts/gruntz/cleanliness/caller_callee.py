@@ -107,24 +107,23 @@ def _tu_edges(args):
 # --- symbol data -----------------------------------------------------------
 def load_symbols():
     """rva2sym: rva -> (mangled, unit, class, member); m2rva: mangled -> rva;
-    func_rvas: set of reconstructed function starts."""
+    func_rvas: set of reconstructed function starts. Backed by the ONE loader
+    (core.symbols.SymbolDb); db.kind's keys = the symbol_names rows, CSV order."""
+    from gruntz.core import get_context
+    db = get_context().symbols
     rva2sym, m2rva, func_rvas = {}, {}, set()
-    with open(SYMCSV) as f:
-        for r in csv.DictReader(f):
-            try:
-                rva = int(r["rva"], 16)
-            except (ValueError, KeyError):
-                continue
-            if r.get("kind") != "func":
-                m2rva.setdefault(r["name"], rva)
-                continue
-            pm = parse_mangled(r["name"])
-            cls = member = None
-            if pm:
-                cls, member, _ = pm
-            rva2sym[rva] = (r["name"], r.get("unit", ""), cls, member)
-            m2rva.setdefault(r["name"], rva)
-            func_rvas.add(rva)
+    for rva in db.kind:
+        name, unit = db.names[rva]
+        if db.kind[rva] != "func":
+            m2rva.setdefault(name, rva)
+            continue
+        pm = parse_mangled(name)
+        cls = member = None
+        if pm:
+            cls, member, _ = pm
+        rva2sym[rva] = (name, unit, cls, member)
+        m2rva.setdefault(name, rva)
+        func_rvas.add(rva)
     return rva2sym, m2rva, func_rvas
 
 
