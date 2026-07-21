@@ -1,5 +1,5 @@
 #include <Ints.h>
-#include <Net/NetMgr.h>      // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
+#include <Net/NetMgr.h>      // shared CNetCmdBuf / SlotInfo (0x238-byte command buffer)
 #include <Net/NetSessHost.h> // the shared CNetSessHost session-host facet
 #include <Gruntz/Multi.h>    // the g_multiState singleton is a CMulti (xref-proven)
 #include <rva.h>
@@ -12,7 +12,7 @@ void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0  (color-flag stamp)
 
 RVA(0x000c4b60, 0x77)
 i32 CNetSessHost::SelectColor(i32 colorIndex, i32 playerId) {
-    CColorSlot* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
+    SlotInfo* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
     if (g_multiState->m_isHost != 0) {
         i32 r = ChannelSlots_Get(playerId);
         if (r == 0) {

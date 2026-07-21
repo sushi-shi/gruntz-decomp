@@ -2479,7 +2479,7 @@ void CMulti::AckDropPlayer(i32 id) {
             slot->Touch();
             slot->FullReset();
             slot->m_state = 1;
-            slot->m_cmdHead[0xb] = 1;
+            slot->m_desc->m_dirty = 1;
         }
         return;
     }
@@ -3387,9 +3387,9 @@ i32 CMulti::CreateSession() {
 RVA(0x000bbec0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
     m_state = 0;
-    m_resetGuard = 0;
+    m_isRemote = 0;
     m_latchedSeq = 0;
-    m_cmdHead = 0;
+    m_desc = 0;
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
@@ -3434,9 +3434,9 @@ void CNetSession::ResetAll() {
     CNetCmdSlot* slot = m_slots;
     for (i = 4; i != 0; i--) {
         slot->m_state = 0;
-        slot->m_resetGuard = 0;
+        slot->m_isRemote = 0;
         slot->m_latchedSeq = 0;
-        slot->m_cmdHead = 0;
+        slot->m_desc = 0;
         slot->m_latency = 0;
         slot->m_baseSeq = 0;
         slot->m_maxSeq = 0;
@@ -3453,12 +3453,12 @@ void CNetSession::ResetAll() {
 
     memset(m_idMap, 0, sizeof(m_idMap));
 
-    CNetResyncEntry* e = m_entries;
+    GruntRec* e = m_records;
     for (i = 0x80; i != 0; i--) {
-        e->m_0 = 0;
-        e->m_8 = 0;
-        e->m_c = 0;
-        e->m_4 = 0;
+        e->m_seq = 0;
+        e->m_count = 0;
+        e->m_payloadLen = 0;
+        e->m_checksum = 0;
         e++;
     }
 }
@@ -3884,7 +3884,7 @@ i32 CMulti::LoadConfig(void* cfg) {
 // CNetMgr::ResetPlayerCommands  (__thiscall).
 // Flushes the resend buffers for one player's command slot. No-op unless
 // connected (m_connected). Looks the player's slot up in the session (m_session); if found
-// and not already reset (slot->m_resetGuard == 0), latches it, then for each command
+// and not already reset (slot->m_isRemote == 0), latches it, then for each command
 // sequence number in the slot's window ([(seq0+1)..(seq0+1)+3] scaled by the
 // per-command delay m_cmdDelay) re-dispatches the command through m_4's queue and
 // drops it from the slot. Finally clears the slot's two command ranges.
@@ -3902,7 +3902,7 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     if (slot == 0) {
         return 0;
     }
-    if (slot->m_resetGuard != 0) {
+    if (slot->m_isRemote != 0) {
         return 0;
     }
 
@@ -3910,7 +3910,7 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
-        NetGameMgr()->m_cmdMgr->Dispatch(*slot->m_cmdHead, seq);
+        NetGameMgr()->m_cmdMgr->Dispatch(slot->m_desc->m_cmdWord, seq);
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
     }
     slot->ResetTriple(slot->m_rangeA);

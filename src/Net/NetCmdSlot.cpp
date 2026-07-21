@@ -93,9 +93,9 @@ void CNetSession::ResetSync() {
         s->m_latchedSeq = 0;
         s->m_state = 0;
         s->m_desc = 0;
-        s->m_timer = 0;
+        s->m_latency = 0;
         s->m_baseSeq = 0;
-        s->m_sentSeq = 0;
+        s->m_maxSeq = 0;
         s->m_owner = 0;
         s->ClearCmds();
         s->ClearAckFlags();
@@ -154,10 +154,10 @@ void CNetSession::Reset() {
     }
     memset(m_idMap, 0, 0x200);
     for (i = 0; i < 0x80; i++) {
-        m_entries[i].m_0 = 0;
-        m_entries[i].m_8 = 0;
-        m_entries[i].m_c = 0;
-        m_entries[i].m_4 = 0;
+        m_records[i].m_seq = 0;
+        m_records[i].m_count = 0;
+        m_records[i].m_payloadLen = 0;
+        m_records[i].m_checksum = 0;
     }
 }
 
@@ -179,7 +179,7 @@ i32 CNetSession::Poll(i32 delta) {
     i32 n = 4;
     do {
         if (s->m_state == 3) {
-            s->m_timer += delta;
+            s->m_latency += delta;
         }
         s++;
     } while (--n);
@@ -231,7 +231,7 @@ i32 CNetSession::Dispatch(i32 a, LobbyMsg* b, i32 c) {
     if (!obj) {
         return 0;
     }
-    obj->m_timer = 0;
+    obj->m_latency = 0;
     CNetCmdSlot* target = obj;
     unsigned char* p = reinterpret_cast<unsigned char*>(b);
     if (!(p[0] & 0x80) && (p[0] & 1)) {
@@ -377,25 +377,25 @@ i32 CNetSession::SendBatch() {
                 }
             }
             i32 v = m_seq + 1;
-            if (s->m_sentSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
+            if (s->m_maxSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq;
-            if (s->m_sentSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
+            if (s->m_maxSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq - 1;
-            if (s->m_sentSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
+            if (s->m_maxSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq - 2;
-            if (s->m_sentSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
+            if (s->m_maxSeq < v && s->NetCmdIdFind(s->m_rangeB, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
@@ -453,7 +453,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
-    return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
+    return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel, owner) ? slot : 0;
 }
 
 RVA(0x000c0070, 0x15)
@@ -466,7 +466,7 @@ void CNetSession::ResetCmdBuffers() {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].m_cmdHead[6] == playerId) {
+        if (m_slots[i].m_desc->m_netId == playerId) {
             return &m_slots[i];
         }
     }
@@ -550,7 +550,7 @@ i32 CNetSession::Advance() {
 // @early-stop
 // slot-pointer anchor + member re-read wall (~89.5%) PLUS the delinker unpair: logic
 // byte-faithful (the per-slot state==3 / resetGuard gate, the baseSeq window test, the
-// Ready()+latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_resetGuard)
+// Ready()+latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_isRemote)
 // and re-reads it with `cmp $0,(esi)` each test; cl CSEs the read and anchors at +0x34
 // (m_baseSeq) - a non-steerable addressing-mode tie-break. (wave2-F /GX flip: 100->89.5.)
 RVA(0x000c0290, 0x63)
@@ -558,11 +558,11 @@ i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* s = &m_slots[i];
         if (s != 0) {
-            if (s->m_state == 3 && s->m_resetGuard == 0) {
+            if (s->m_state == 3 && s->m_isRemote == 0) {
                 if (s->m_baseSeq < n) {
                     return 0;
                 }
-            } else if (s->m_state == 3 && s->m_resetGuard != 0) {
+            } else if (s->m_state == 3 && s->m_isRemote != 0) {
                 if (s->Ready() == 0) {
                     return 0;
                 }
@@ -579,7 +579,7 @@ RVA(0x000c0320, 0x37)
 i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && slot->m_maxSeq < seq) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0 && slot->m_maxSeq < seq) {
             return 0;
         }
     }
@@ -631,7 +631,7 @@ CGruntzCommand* CNetSession::GetSlotPtr(i32 v) {
 }
 
 // Scan the four inline command slots for the first active (m_state==3), un-reset
-// (m_resetGuard==0) slot whose latency exceeds key (unsigned).
+// (m_isRemote==0) slot whose latency exceeds key (unsigned).
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
 // (lea/loop/guards/ja/ret all match); residual is the key<->counter register swap
@@ -641,7 +641,7 @@ RVA(0x000c0460, 0x2e)
 CNetCmdSlot* CNetSession::FindSlot(u32 key) {
     CNetCmdSlot* p = &m_slots[0];
     for (i32 i = 0; i < 4; i++, p++) {
-        if (p && p->m_state == 3 && p->m_resetGuard == 0 && static_cast<u32>(p->m_latency) > key) {
+        if (p && p->m_state == 3 && p->m_isRemote == 0 && static_cast<u32>(p->m_latency) > key) {
             return p;
         }
     }
@@ -652,7 +652,7 @@ RVA(0x000c04a0, 0x37)
 i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0
+        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0
             && static_cast<u32>(slot->m_latency) > static_cast<u32>(cap)) {
             return 0;
         }
@@ -663,13 +663,13 @@ i32 CNetSession::CheckLatency(i32 cap) {
 RVA(0x000c04f0, 0x7c)
 i32 CNetSession::Verify() {
     i32 seq = m_seq - 2;
-    CNetResyncEntry* e = &m_entries[seq % 128];
+    GruntRec* e = &m_records[seq % 128];
     if (e != 0) {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
-            if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0) {
+            if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0) {
                 CNetCmd* c = static_cast<CNetCmd*>(slot->FindCmd(seq));
-                if (c != 0 && c->m_4 != e->m_4) {
+                if (c != 0 && c->m_4 != e->m_checksum) {
                     return 0;
                 }
             }
@@ -688,7 +688,7 @@ i32 CNetSession::Verify() {
 // args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
 // the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
+i32 CNetCmdSlot::Init(i32 a1, SlotInfo* a2, i32 a3) {
     if (a2 == 0) {
         return 0;
     }
@@ -697,9 +697,9 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
     }
     m_owner = reinterpret_cast<CMulti*>(a1); // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
-    m_resetGuard = 0;
+    m_isRemote = 0;
     m_latchedSeq = 0;
-    m_cmdHead = a2;
+    m_desc = a2;
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
@@ -724,9 +724,9 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
     m_state = 0;
-    m_resetGuard = 0;
+    m_isRemote = 0;
     m_latchedSeq = 0;
-    m_cmdHead = 0;
+    m_desc = 0;
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
@@ -742,7 +742,7 @@ void CNetCmdSlot::ResetAll() {
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::FullReset (0x0c0c20, __thiscall) - partial slot reset: keep m_state /
-// m_cmdHead / m_owner, zero the sequence-tracking fields, drain the queue and splat
+// m_desc / m_owner, zero the sequence-tracking fields, drain the queue and splat
 // both command ranges. Called by CNetSession::Reset, CMulti::AckDropPlayer and
 // CNetSession::Reconcile (was the CCluster0c::Init view).
 // @early-stop
@@ -751,7 +751,7 @@ void CNetCmdSlot::ResetAll() {
 // ClearCmds call; a cl-build heuristic delta, not a source shape.
 RVA(0x000c0c20, 0x3f)
 void CNetCmdSlot::FullReset() {
-    m_resetGuard = 0;
+    m_isRemote = 0;
     m_latchedSeq = 0;
     m_latency = 0;
     m_baseSeq = 0;
@@ -790,15 +790,15 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_cmdHead[6], static_cast<char*>(rec), size);
+        return m_owner->DispatchRecvMsg(m_desc->m_netId, static_cast<char*>(rec), size);
     }
     if (odd == 0) {
-        if (m_resetGuard != 0) {
+        if (m_isRemote != 0) {
             return 1;
         }
     }
     if (odd) {
-        if (m_resetGuard == 0) {
+        if (m_isRemote == 0) {
             return 1;
         }
     }
@@ -816,13 +816,13 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     char* cursor = p + 13;
     rem -= 13;
 
-    if (m_resetGuard != 0 && odd) {
+    if (m_isRemote != 0 && odd) {
         CNetCmdSlot* slot = m_owner->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
         if (opcode & 2) {
-            i32 pid = slot->m_cmdHead[0] & 0xff;
+            i32 pid = slot->m_desc->m_cmdWord & 0xff;
             m_ackFlags[pid] = 1;
             if (seq > m_latchedSeq) {
                 m_latchedSeq = seq;
@@ -1072,7 +1072,7 @@ i32 CNetCmdSlot::Ready() {
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && m_ackFlags[i] == 0) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0 && m_ackFlags[i] == 0) {
             return 0;
         }
     }
@@ -1081,8 +1081,8 @@ i32 CNetCmdSlot::Ready() {
 
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::Touch() {
-    if (m_resetGuard == 0) {
-        m_resetGuard = 1;
+    if (m_isRemote == 0) {
+        m_isRemote = 1;
         m_latchedSeq = m_baseSeq;
     }
 }

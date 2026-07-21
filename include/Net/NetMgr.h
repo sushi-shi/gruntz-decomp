@@ -95,10 +95,13 @@ struct CNetCmd {
 };
 SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
 
+// The per-slot record embedded at CNetCmdBuf+0x150 (the ex-CColorSlot view merged
+// in - its m_slotHead was the m_cmdWord dword, its color-owner id sits at +0x08).
 struct SlotInfo {
-    char pad00[4];
-    i32 m_playerId; // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
-    char pad08[0x18 - 0x08];
+    i32 m_cmdWord;              // +0x00 current command word (Dispatch arg; low byte = pid)
+    i32 m_playerId;             // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
+    i32 m_currentOwnerPlayerId; // +0x08 current color-owner player id
+    char pad0c[0x18 - 0x0c];
     i32 m_netId; // +0x18 peer/target id (SetData `b`)
     char pad1c[0x2c - 0x1c];
     i32 m_dirty; // +0x2c set on slot re-init
@@ -107,26 +110,18 @@ SIZE_UNKNOWN(SlotInfo);
 
 struct CNetCmdSlot {
     i32 m_state; // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
-    union {
-        i32 m_resetGuard; // +0x4  command: "slot already reset" guard
-        i32 m_isRemote;   //        sync:    0 = local channel
-    };
+    i32 m_isRemote; // +0x4  0 = local channel (the ex-"m_resetGuard" ==0 tests
+                    // were the same local-channel gate - ONE role)
     // +0x8  command: latched sequence (Touch copies m_baseSeq here); sync reuses the
     // same i32 as a counter / a CNetMgr* it casts (SendGruntRecord). One canonical name.
     i32 m_latchedSeq;
-    union {
-        i32* m_cmdHead; // +0xc  command: -> command-list head value (m_cmdHead[0xb] == +0x2c flag)
-        SlotInfo* m_desc; //       sync:    player descriptor (same target, named view)
-    };
-    union {
-        i32 m_latency; // +0x10  command: latency value (CheckLatency compares vs the cap)
-        i32 m_timer;   //        sync:    activity timer
-    };
+    SlotInfo* m_desc; // +0xc  the player descriptor (the ex-"m_cmdHead" i32* reads
+                      // were its fields: [0]=m_cmdWord, [6]=m_netId, [0xb]=m_dirty)
+    i32 m_latency; // +0x10  the channel activity clock (+= elapsed; CheckLatency
+                   // compares vs the cap - the ex-"m_timer" was the same counter)
     i32 m_baseSeq; // +0x14  base command sequence number (both views)
-    union {
-        i32 m_maxSeq;  // +0x18  command: high-water sequence (RaiseMax keeps the max)
-        i32 m_sentSeq; //        sync:    highest sequence sent
-    };
+    i32 m_maxSeq; // +0x18  high-water sequence (RaiseMax keeps the max; the
+                  // ex-"m_sentSeq" reads were the same counter)
     CMulti* m_owner; // +0x1c  owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg;
                      //         sync cleared the same slot as m_1c). One canonical name.
     // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
@@ -164,7 +159,7 @@ struct CNetCmdSlot {
     i32 SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // bfc70
     CString BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32
-    Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
+    Init(i32 a1, SlotInfo* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
     // Slot-readiness check 0xc1320 (CNetSession::Verify dispatches it on each slot cursor).
     // `this` is the slot: reads m_owner (+0x1c) -> m_session -> m_slots[], gated by this
@@ -198,33 +193,16 @@ struct CNetCmdPacket {
 };
 SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
 
-struct CColorSlot {
-    i32 m_slotHead;             // +0x00 (buf+0x150)  CreateSlot's per-slot command-head target
-    char m_pad04[4];            // +0x04
-    i32 m_currentOwnerPlayerId; // +0x08 (buf+0x158)  current color owner player id
-};
-SIZE_UNKNOWN(CColorSlot); // +0x150 sub-region view; retail size TBD
-
 struct CNetCmdBuf {
     char m_pad0[0x150]; // +0x000
-    CColorSlot m_sel;   // +0x150
-    char m_pad15c[0x238 - 0x15c];
+    SlotInfo m_sel;     // +0x150  the per-slot record (ex the CColorSlot 0xc-view)
+    char m_pad180[0x238 - 0x180];
 };
 SIZE(CNetCmdBuf, 0x238); // fully-known command buffer (array stride 0x238)
 
-struct CNetResyncEntry {
-    i32 m_0;
-    i32 m_4; // +0x4
-    u8 m_8;  // +0x8  flag byte (zeroed by ResetAll)
-    char m_pad9[0xc - 9];
-    i32 m_c; // +0xc
-    char m_padc[0x410 - 0x10];
-};
-SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
-
 struct GruntRec {
-    i32 m_seq;             // +0x00 sequence number (== CNetResyncEntry::m_0)
-    i32 m_checksum;        // +0x04 state checksum (== CNetResyncEntry::m_4, Verify compare)
+    i32 m_seq;             // +0x00 sequence number
+    i32 m_checksum;        // +0x04 state checksum (the Verify compare)
     unsigned char m_count; // +0x08 grunts serialized into this record
     char pad09[3];
     i32 m_payloadLen;             // +0x0c payload length
@@ -261,10 +239,8 @@ struct CNetSession {
     CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
     CGruntzCommand*
         m_idMap[0x80]; // +0x1b0  armed-command ptr table (GetSlotPtr) / 0x200-byte resync scratch
-    union {
-        CNetResyncEntry m_entries[0x80]; // +0x3b0  command: resync entries (signed-indexed)
-        GruntRec m_records[0x80];        //        sync:    grunt-record table
-    };
+    GruntRec m_records[0x80]; // +0x3b0  the resync grunt-record ring (the ex-
+                              // CNetResyncEntry was a placeholder twin of GruntRec)
 
     CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
@@ -278,7 +254,7 @@ struct CNetSession {
     void Reset();      // bf150  re-init header/slots/scratch/entries (session-level reset)
     i32 Verify(i32 n); // c0290  slot-window validation against sequence n
     // Scan the four inline command slots for the first active (m_state==3),
-    // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned).
+    // un-reset (m_isRemote==0) slot whose latency exceeds key (unsigned).
     CNetCmdSlot* FindSlot(u32 key); // c0460
     // Wiring init (caches the owner pointers then Reset()s). a1=command-buffer array.
     i32
