@@ -64,33 +64,20 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
+
+# The clang MSVC-compat flag set + the IR/compdb helpers live in gruntz.core.ir
+# (shared with gruntz.cleanliness.caller_callee).
+from gruntz.core.ir import INC_CL, INC_GCC, MS_FLAGS, emit_ir, load_compdb  # noqa: F401
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
-INC = str(REPO / "include")   # repo-local headers (mirror src/) live here; on the clang -I path
-# Vendored third-party SDK headers live one dir deep under vendor/<sdk>/ (e.g.
-# vendor/miles/Mss32.h, vendor/smacker/smack.h) so `#include <Mss32.h>` resolves
-# like the original toolchain's SDK include dirs.
-VENDOR_INCS = sorted(str(d) for d in (REPO / "vendor").iterdir() if d.is_dir()) \
-    if (REPO / "vendor").is_dir() else []
-# DirectX 6 headers sit one level deeper (vendor/directx6/Include), like cc_wrap.py.
-if (REPO / "vendor" / "directx6" / "Include").is_dir():
-    VENDOR_INCS.append(str(REPO / "vendor" / "directx6" / "Include"))
-INC_CL = [f"/I{p}" for p in (INC, *VENDOR_INCS)]   # clang-cl driver (/I)
-INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 
 # The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
 # TRUSTED: the base obj is all unused externs (no symbols), so the authority
 # check cannot confirm them - but each name was authority-checked in the matched
 # TU it came from before `consolidate_globals` (now scripts/archive/) moved it here.
 GLOBALS_UNIT = "globals"
-
-TARGET = "i686-pc-windows-msvc"
-MSC_COMPAT = "1100"
-MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
-            "-fms-extensions"]
 
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern
 # annotations). The address is bound to the AST VarDecl below it.
@@ -243,50 +230,6 @@ def parse_ir_annotations(ir):
             if s is not None:
                 out.append((_ir_symbol_name(sym_ref), s))
     return out
-
-
-def emit_ir(clang, tu, flags, cl_flags=None):
-    """Compile a TU to textual LLVM IR.
-
-    `-emit-llvm` stops at a fatal error (unlike `-ast-dump`, which recovers), so
-    the system headers MUST resolve - the IR compile uses the clangd compdb's
-    per-TU clang-cl flags (`/imsvc` lowercase-mirror includes + defines) when
-    available, falling back to the bare MS_FLAGS otherwise.
-
-    In clang-cl driver mode `-S`/`-o -` are rejected, and `-Xclang -emit-llvm`
-    writes textual IR only to a real `-o` file - so write to a temp file and read
-    it back. The plain driver streams to stdout.
-    """
-    if cl_flags is not None:
-        # Retry once: under heavy parallel label-regen the temp .ll can go missing
-        # (clang left nothing / a tmp race), which is transient - a re-run succeeds.
-        res = None
-        for _attempt in range(2):
-            with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
-                ll = tf.name
-            try:
-                cmd = [clang, "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
-                       *cl_flags, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
-                res = subprocess.run(cmd, capture_output=True, text=True)
-                # exists-guard: getsize() FileNotFounds on a vanished temp; treat as no-IR.
-                ir = Path(ll).read_text() if (os.path.exists(ll) and os.path.getsize(ll)) else ""
-            finally:
-                try:
-                    os.unlink(ll)
-                except OSError:
-                    pass
-            if ir:
-                return ir
-        log(f"ERROR {tu}: clang -emit-llvm produced no IR\n"
-            f"{(res.stderr[:400] if res else '')}")
-        return None
-    cmd = [clang, "-DGRUNTZ_EMIT_META", *MS_FLAGS, *flags, *INC_GCC,
-           "-S", "-emit-llvm", "-o", "-", tu]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if not res.stdout:
-        log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
-        return None
-    return res.stdout
 
 
 def func_labels_from_ir(ir):
@@ -489,30 +432,6 @@ def clang_ast(clang, tu, flags, cl_flags=None):
     except json.JSONDecodeError:
         log(f"ERROR {tu}: clang produced no JSON AST\n{res.stderr[:400]}")
         return None
-
-
-def load_compdb(path):
-    """compile_commands.json -> {realpath(source): [clang-cl flags]}.
-
-    The clangd compdb carries the per-TU MS flags + `/imsvc` lowercase-mirror
-    include dirs that let clang's header lookup succeed on case-sensitive Linux.
-    We drop the driver (clang-cl), the `/c`, and the source file - emit_ir/clang_ast
-    re-add their own driver mode, action, and the TU.
-    """
-    try:
-        db = json.loads(Path(path).read_text())
-    except (OSError, json.JSONDecodeError):
-        return {}
-    out = {}
-    for e in db:
-        args = e.get("arguments") or []
-        if not args:
-            continue
-        src = e.get("file")
-        flags = [a for a in args[1:] if a != "/c" and a != src]
-        if src:
-            out[os.path.realpath(src)] = flags
-    return out
 
 
 def blank_comments(text):

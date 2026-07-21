@@ -40,7 +40,7 @@ import sys
 from pathlib import Path
 
 from gruntz.core import vtable_scan as vs
-from gruntz.build.labels import blank_comments
+from gruntz.core.class_meta import _blank_comments as blank_comments
 
 
 def _find_repo():

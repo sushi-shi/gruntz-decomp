@@ -45,7 +45,7 @@ from pathlib import Path
 from gruntz.core import pe as _pe
 from gruntz.core import symbols as _sym
 from gruntz.core.symbols import parse_mangled
-from gruntz.build import labels
+from gruntz.core import ir
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -82,7 +82,7 @@ def _tu_edges(args):
     A function body spans `define ... {` .. the closing `}` at column 0; basic-block
     labels also sit at column 0, so scope is tracked by define/`}` only."""
     clang, tu, cl_flags = args
-    ir = labels.emit_ir(clang, tu, [], cl_flags)
+    ir = ir.emit_ir(clang, tu, [], cl_flags)
     if not ir:
         return tu, None
     out = {}
@@ -202,7 +202,7 @@ def base_graph(m2rva, jobs=None):
     resolved edge; one that does NOT is kept as `unresolved` (the fake-view / external
     candidates)."""
     clang = os.environ.get("GRUNTZ_CLANG") or "clang"
-    compdb = labels.load_compdb(str(REPO / "build/clangd/compile_commands.json"))
+    compdb = ir.load_compdb(str(REPO / "build/clangd/compile_commands.json"))
     tus = sorted(k for k in compdb if k.replace("\\", "/").split("/src/")[-1] and
                  "/src/" in k.replace("\\", "/") and k.endswith(".cpp"))
     work = [(clang, tu, compdb[tu]) for tu in tus]
