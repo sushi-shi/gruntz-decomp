@@ -37,12 +37,20 @@ CAniRecordView::~CAniRecordView() {
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
 }
 
+RVA(0x00165d90, 0x9)
+i32 CAniRecordBase2::IsLoaded() {
+    return m_buf != 0;
+}
+
+RVA(0x00165da0, 0x6)
+i32 CAniRecordBase2::GetClassId() {
+    return 0x15;
+}
+
 RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
-    // The +0x10 work-buffer teardown is the CAniRecordView-bound body 0x168fb0
-    // (the documented primary/secondary facet split - see AniRecordView.h); the
-    // direct call emits the resolvable ?FreeBuf@CAniRecordView@@ symbol.
-    reinterpret_cast<CAniRecordView*>(this)->FreeBuf();
+    // Own-slot FreeBuf: in the dtor cl devirtualizes to the direct 0x168fb0 call.
+    FreeBuf();
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
@@ -146,8 +154,8 @@ i32 CAniRecordView::GetSize() {
 // @rva-symbol: ?GetAt@CStringArray@@QBE?AVCString@@H@Z 0x00168e70 0x27
 
 RVA(0x00168ea0, 0x40)
-void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_ptrColl->MakeB2(size, 0x44);
+void* CAniRecordBase2::AllocBufMakeB2(i32 size, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0); // tail returns 1 only on the success path below
@@ -160,8 +168,8 @@ void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
 }
 
 RVA(0x00168ee0, 0x40)
-void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_ptrColl->MakeB(reinterpret_cast<void*>(size), 0x44);
+void* CAniRecordBase2::AllocBufMakeB(i32 size, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(reinterpret_cast<void*>(size), 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -174,8 +182,8 @@ void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
 }
 
 RVA(0x00168f20, 0x40)
-void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
-    CDDPalette* buf = m_owner->m_ptrColl->Create(handle, 0x44);
+void* CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->Create(handle, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -188,8 +196,8 @@ void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
 }
 
 RVA(0x00168f60, 0x45)
-void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
-    CDDPalette* buf = m_owner->m_ptrColl->MakeB3(a, size, 0x44);
+void* CAniRecordBase2::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(a, size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -202,10 +210,10 @@ void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
 }
 
 RVA(0x00168fb0, 0x1f)
-void CAniRecordView::FreeBuf() {
+void CAniRecordBase2::FreeBuf() {
     i32 buf = m_buf;
     if (buf != 0) {
-        m_owner->m_ptrColl->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
+        OwnerMgr()->m_ptrColl->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
         m_buf = 0;
     }
 }
@@ -215,8 +223,8 @@ void CAniRecordView::FreeBuf() {
 // (@identity-TODO: the concrete image/descriptor classes are not yet RTTI-recovered).
 
 RVA(0x00168fd0, 0x24)
-i32 CAniRecordView::PushPalette() {
-    CDDrawSurfacePair* sd = m_owner->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
+i32 CAniRecordBase2::PushPalette() {
+    CDDrawSurfacePair* sd = OwnerMgr()->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
     if (sd->m_bpp != 8) {
         return 1;
     }

@@ -14,14 +14,8 @@ struct CAniRecordView : public CObject {
     i32 Parse(void* ctx, const i16* src);                      // 0x168c60
     i32 GetSize();                                             // 0x168e50
     void ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str); // 0x168d00
-    void* AllocBufMakeB(i32 size, i32 flag);                   // 0x168ee0  (pool MakeB)
-    void* AllocBufCreate(i32 handle, i32 flag);                // 0x168f20  (pool Create, slot 9)
-    void* AllocBufMakeB2(i32 size, i32 flag);                  // 0x168ea0  (pool MakeB2)
-    void* AllocBufMakeB3(i32 a, i32 size, i32 flag);           // 0x168f60  (pool MakeB3)
-    void FreeBuf();                                            // 0x168fb0
-    // 0x168fd0 (vtable slot 13): when the owner image is 8bpp, push the record's
-    // palette buffer (m_buf) onto the owner's surface; else return 1.
-    i32 PushPalette();
+    // (the Alloc*/FreeBuf/PushPalette pool leaves are NOT this class's - they are
+    // CAniRecordBase2's own vtable-slot bodies; see <DDrawMgr/AniRecordBase2.h>.)
 
     inline CAniRecordView() {
         m_count = 0;
