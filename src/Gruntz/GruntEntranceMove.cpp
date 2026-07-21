@@ -153,7 +153,8 @@ RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     // The +0x1a0 cursor's done-gates (m_28 paused-done, m_20 per-frame timer).
-    if (!((m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) || m_moveMode == 0)) {
+    CAniAdvanceCursor* cur = &m_38->m_1a0;
+    if (!((cur->m_28 != 0 && cur->m_20 == 0) || m_moveMode == 0)) {
         return 0;
     }
 
