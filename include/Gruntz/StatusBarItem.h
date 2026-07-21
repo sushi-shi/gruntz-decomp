@@ -99,6 +99,14 @@ public:
 };
 SIZE_UNKNOWN(CStatusBarItem);
 
+// LOAD-BEARING GATE - MEASURED, do not degate (A/B 2026-07-22): making this
+// inline body unconditional (and the leaf-chain bodies own-TU-gated only) folds
+// the base dtor in TUs where RETAIL CALLS it out-of-line - sbi_rectonlybase
+// 92.8->74.7, sbi_sidetab_build 82.5->60.7, statusbarmgr 76.5->68.2,
+// statusbargamemenu 59.0->52.4, sbi_image 3->2 exact. Retail's SBI TUs genuinely
+// split fold-vs-call per TU; SBI_DTOR_CHAIN encodes which side each TU is on.
+// (The unreferenced out-of-line copies 0x100700/0x100780/0x100870/... are the
+// COMDATs the chain TUs synthesize - RVA_COMPGEN/RVA()-bound in their owners.)
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_ITEM_OWN_DTOR)
 inline CStatusBarItem::~CStatusBarItem() {
     DtorStatus();
