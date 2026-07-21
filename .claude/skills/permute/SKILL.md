@@ -23,11 +23,23 @@ pin. This is the automated form of the by-hand spelling chase.
 Do **NOT** reach for it to paper over a wrong reconstruction. It cannot fix:
 - a **control-flow-shape** mismatch (that needs the real `for`/`goto`/`while`/early-exit
   restructuring done by hand — the permuter does not restructure control flow), or
-- **wrong types / a cast-hacked view** (fix the class model first — matcher.md rule 0), or
-- the core **register-coloring** residue (which physical reg holds a value) on `/O2`.
+- **wrong types / a cast-hacked view** (fix the class model first — matcher.md rule 0).
 
-On `/O2` (Gruntz's `base` profile) gains are usually **incremental** — treat it as a
-nudge that finishes operand-order / materialization residuals, not a guaranteed closer.
+**It CAN break a register-coloring / scheduling / frame-size "wall" on a 95%+ function.**
+This is its second, high-value job: you don't fix the regalloc directly, you *nudge the
+compiler into a different one*. MSVC5's register/frame choices are downstream of the
+source and the cumulative TU-state, so perturbing either (operand order, decl order, and
+especially declarations/includes emitted *before* the function via `--state-trials`)
+makes `cl` re-color — and SOME perturbation lands on the SAME coloring as retail → 100%.
+The permuter tries many such ideas at once. Because the campaign tracks **MAX fuzzy
+(best-ever per fn)**, the instant one variant reaches 100% the win is banked forever — it
+need not be a stable/obvious spelling, only reachable once. So a 95%+ "regalloc wall" is
+a permuter TARGET, not an `@early-stop`; only call it a wall after the wall-breaker
+(`match_variants --state-trials`, below) genuinely exhausts.
+
+The fast `permute` pass (operand-order/reassoc/decl-split) gives *incremental* nudges;
+the exhaustive `match_variants --state-trials` engine is the one that moves register
+coloring (it searches TU-state, the lever the fast pass lacks).
 
 ## THE methodology: top-down in source order
 

@@ -204,21 +204,39 @@ correct change that costs % stays.
 A prior analysis confirmed **every** worklist entry is structurally reconstructable.
 
 1. **Do NOT defer, skip, or leave a function as a bare stub.** Reconstruct it.
-2. **Push every function to 100%.** If it plateaus, that is almost always a fixable
-   codegen-shape bug in *your source*, not a wall — iterate different spellings.
-   **When you plateau and the STRUCTURE is already correct** (real types, real control
-   flow, right conventions — nothing left to fix by hand), before you settle for an
-   `@early-stop`, run the **permuter** to auto-search the remaining operand-order /
-   materialization spellings: `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>`
-   (whole TU, top-down: `python3 -m gruntz.match.permute_sweep <unit>`). See the
-   **`permute` skill**. It will NOT fix a wrong shape or a control-flow mismatch — fix
-   those by hand first; the permuter is only for a correct reconstruction's codegen residue.
+2. **Push every function to 100%.** A plateau is almost always fixable. FIRST fix any
+   codegen-SHAPE bug in your source by hand — wrong control-flow, wrong types, a cast
+   standing in for a real class, wrong calling convention (the permuter CANNOT fix these;
+   hand-fix them first). THEN, when the STRUCTURE is already correct and the only thing
+   left is codegen residue — **including a "register-coloring / regalloc wall" on a 95%+
+   function** — run the **permuter to BREAK the wall**. A regalloc wall is NOT a dead end:
+   MSVC5's register/scheduling/frame choices ARE steerable — you nudge the compiler by
+   perturbing the source (operand order, decl order, and especially the TU-state emitted
+   *before* the function), and SOME perturbation makes `cl` pick the SAME regalloc as
+   retail → 100%. The permuter explores many ideas at once. Because we track **MAX fuzzy
+   (best-ever)**, the instant ONE variant hits 100% the win is banked forever — you do not
+   need it to be stable, just reachable once.
+   - **Fast first pass** (operand-order / reassoc / decl-split, whole TU top-down):
+     `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>` /
+     `python3 -m gruntz.match.permute_sweep <unit>`.
+   - **Wall-breaker — use this on 95%+ regalloc/scheduling/frame walls** (the exhaustive
+     engine, which the fast pass cannot reach): `python3 -m gruntz.match.match_variants
+     <src.cpp> <rva> --state-trials 64 --max-depth 3 --limit 512 -o /tmp/m.json --run --top 12`.
+     Its `--state-trials` search injects declarations/includes before the target to shift
+     `cl`'s cumulative regalloc state — the one lever that moves register-coloring — and
+     tries the whole Cartesian product of AST mutations × TU-states, reporting the best
+     (exact closure = objdiff 100 + size == retail + ordered relocs == retail). See the
+     **`permute` skill**.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
-   reconstruction (full body, all logic) where you have PROVEN with
-   `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact
-   and the residual is a genuine codegen/delinker artifact — with the byte-level
-   reason written in an `// @early-stop` comment. Never a partial that under-counts
-   because you stopped early.
+   reconstruction (full body, all logic) where EITHER (a) you have PROVEN with
+   `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact and
+   the residual is a genuine delinker artifact, OR (b) it is a regalloc/scheduling/frame
+   wall AND you have run the **wall-breaker** (`match_variants --state-trials`) and it
+   genuinely exhausted without finding a variant that matches retail's regalloc. A
+   regalloc wall is NOT an `@early-stop` until the wall-breaker has failed on it — the
+   code bytes DIFFER (different register/frame choice), and that difference is exactly
+   what the `--state-trials` nudge can flip. Write the byte-level reason (and "state-trials
+   exhausted") in the `// @early-stop` comment. Never a partial that under-counts.
 4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
 5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
    tight and report the rest as not-done — do not delegate.
