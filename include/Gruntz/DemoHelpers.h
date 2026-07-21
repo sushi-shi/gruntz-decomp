@@ -30,9 +30,4 @@ struct Orient3 {
     void StepB(i32 count); // 0x3c8a0
 };
 
-struct COwnerWithSubs {
-    void DtorSubC(); // 0x3cbc0  (`this` is an ifstream; vbase adjust 0xc)
-    void DtorSub8(); // 0x3cbf0  (`this` is an ofstream; vbase adjust 0x8)
-};
-
 #endif // GRUNTZ_GRUNTZ_DEMOHELPERS_H

@@ -1,15 +1,16 @@
 #include <Gruntz/Demo.h>
-#include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 / COwnerWithSubs (the TU's helper types)
+#include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
+#include <string.h>  // strlen (inline repne scas in the editor dialog proc)
 #include <rva.h>
 
-#include <Bute/ButeMgr.h>             // CButeMgr (Parse @0x3cc20)
-#include <Bute/SymTab.h>              // the shared CSymTab (ResolveQualified 0x13be40)
-#include <Gruntz/AnimWorker.h>        // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/GameLevel.h>         // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
+#include <Bute/ButeMgr.h>         // CButeMgr (Parse @0x3cc20)
+#include <Bute/SymTab.h>          // the shared CSymTab (ResolveQualified 0x13be40)
+#include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
+#include <Gruntz/GameLevel.h>     // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialRecords.h>     // CTriRecord
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
@@ -182,7 +183,8 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
 class CGrunt;
 RVA(0x0003c7f0, 0x18)
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
-    return *reinterpret_cast<void**>((reinterpret_cast<char*>(a) + 8)) == *reinterpret_cast<void**>((reinterpret_cast<char*>(b) + 8));
+    return *reinterpret_cast<void**>((reinterpret_cast<char*>(a) + 8))
+           == *reinterpret_cast<void**>((reinterpret_cast<char*>(b) + 8));
 }
 
 DATA(0x0020d008)
@@ -258,28 +260,65 @@ i32 CTriRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
 //     CButeMgr::Parse(CString, 1) on g_resButeMgr [thunk 0x38e6 -> 0x3cc20, below];
 //     EndDialog(hDlg,1). wParam==2 (Cancel): EndDialog(hDlg,0).
 // ---------------------------------------------------------------------------
+// The editor dialog's text buffer + length word (first-referenced here).
+DATA(0x0022c450)
+i32 g_buteEditLen;
+DATA(0x0022c458)
+char g_buteEditBuf[0x10000];
+
+// 0x3c990: the "Attributez.txt" editor dialog proc (edit control 0x435).
+// WM_INITDIALOG loads attributez.txt into the edit box through a SCOPED ifstream;
+// IDOK writes the box back (Attributez.txt) through a SCOPED ofstream, re-parses
+// g_buteMgr, and closes with EndDialog(hDlg, 1); IDCANCEL EndDialog(hDlg, 0).
+// The two scoped streams are exactly what makes cl emit the ??_Difstream /
+// ??_Dofstream vbase-destructor COMDATs retail carries at 0x3cbc0/0x3cbf0
+// (byte-identical to a cl 5.0 probe; retail keeps them unreferenced - no /OPT:REF).
 // @early-stop
-// 0x3c990 ("Attributez.txt" editor). BLOCKER: the CString/ResButeMgr helper callees
-// (0x169fb0/0x16a670/0x16ab20/0x16aa50/0x16a8e0/0x16a510/0x16a3b0/0x16a240/0x169d70/
-// 0x1b9d4c) are unreconstructed, and the /GX EH trylevel machine ([esp+0x6c]=1/-1/0)
-// is driven by the exact CString-temp lifetimes - needs real MFC CString locals + the
-// real ResButeMgr method identities first (finicky EH; a focused bute-editor pass).
+// structural reconstruction (ex a `return 0` stub + two hand-written ??_D bodies);
+// the /GX trylevel schedule over the stream/CString temps still needs a matcher pass.
 RVA(0x0003c990, 0x1bc)
-i32 Gap_03c990(void) {
+INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    static_cast<void>(lParam);
+    if (msg == 0x110) { // WM_INITDIALOG
+        ifstream in("attributez.txt", ios::nocreate | ios::binary);
+        if (in.fail()) {
+            EndDialog(hDlg, 1);
+        } else {
+            in.read(g_buteEditBuf, 0xffff);
+            g_buteEditLen = in.gcount();
+            g_buteEditBuf[g_buteEditLen] = 0;
+            SetDlgItemTextA(hDlg, 0x435, g_buteEditBuf);
+            in.close();
+        }
+        return 1;
+    }
+    if (msg != 0x111) { // WM_COMMAND
+        return 0;
+    }
+    if (wParam == 1) { // IDOK
+        GetDlgItemTextA(hDlg, 0x435, g_buteEditBuf, 0xffff);
+        ofstream out("Attributez.txt", ios::binary);
+        g_buteEditLen = strlen(g_buteEditBuf);
+        out.write(g_buteEditBuf, g_buteEditLen);
+        out.close();
+        g_buteMgr.Parse("Attributez.txt", 0);
+        EndDialog(hDlg, 1);
+        return 1;
+    }
+    if (wParam == 2) { // IDCANCEL
+        EndDialog(hDlg, 0);
+        return 1;
+    }
     return 0;
 }
 
-RVA(0x0003cbc0, 0x14)
-void COwnerWithSubs::DtorSubC() {
-    (static_cast<ifstream*>(static_cast<void*>(this)))->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
-    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0xc))))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
-}
-
-RVA(0x0003cbf0, 0x14)
-void COwnerWithSubs::DtorSub8() {
-    (static_cast<ofstream*>(static_cast<void*>(this)))->ofstream::~ofstream(); // 0x16a8e0 ??1ofstream@@UAE@XZ
-    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0x8))))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
-}
+// The two 0x14-byte fns at 0x3cbc0/0x3cbf0 are the compiler-generated
+// ??_Difstream@@QAEXXZ / ??_Dofstream@@QAEXXZ vbase destructors the dialog proc's
+// unwind funclets make cl emit (COMDATs; bound below by @rva-symbol). The old
+// hand-written COwnerWithSubs::DtorSubC/DtorSub8 bodies - and their banned
+// this+0xc/+0x8 vbase-offset casts - are GONE: no dev ever wrote that code.
+// @rva-symbol: ??_Difstream@@QAEXXZ 0x0003cbc0 0x14
+// @rva-symbol: ??_Dofstream@@QAEXXZ 0x0003cbf0 0x14
 
 // @early-stop
 // 98.84% - logic + instruction-selection byte-exact (verified base-vs-target
@@ -720,5 +759,4 @@ i32 Handler03ddf0(CGameObject* owner) {
 
 SIZE_UNKNOWN(CDemoWorld);
 SIZE_UNKNOWN(CDemoSetup);
-SIZE_UNKNOWN(COwnerWithSubs);
 SIZE_UNKNOWN(CTriRecord);

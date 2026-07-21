@@ -58,7 +58,7 @@ static const i32 TILE_CLEAR = -1;
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = kTilePassable;                                                              \
         } else {                                                                                   \
-            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);                     \
+            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
@@ -92,6 +92,11 @@ class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.
 
 class CGameLevel : public CWapObj {
 public:
+    // 0x160530: probe a .wwd file header on disk (open/read/validate; touches no
+    // members - the custom-world dialog calls it on m_world->m_level; ex the
+    // WwdLevelInfoSrc view).
+    i32 IsValidWwd(const char* name, void* headerBuf);
+
     i32 m_04, m_08;         // +0x04..0x0b (the CLoadable base header words, kept inline)
     CDDrawSurfaceMgr* m_0c; // +0x0c  the owning world/display root (the CLoadable
                             //        owner slot; BroadPhase/StepAxisAlt walk its
@@ -111,7 +116,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE; // [5]  +0x14  0x161190 (overrides CWapObj)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
-    virtual i32 Unload();           // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    virtual i32 Unload(); // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
     RVA(0x001611b0, 0x6)
     virtual i32 GetClassId() {
         return CLASSID_GAMELEVEL;
@@ -362,13 +367,13 @@ public:
     // CDDrawWorkerHost::InitScrollRects builds its three scroll rects out of the
     // rect pairs. The ctor seeds (500,250)/(1000,1000)/(250,125) and 1600x1200 /
     // 2560x1920, which is what fixes the two readings as rates + extents.
-    i32 m_pairA[2]; // +0xB0  (500, 250)
-    i32 m_pairB[2]; // +0xB8  (1000, 1000)
-    i32 m_pairC[2]; // +0xC0  (250, 125)
+    i32 m_pairA[2];                  // +0xB0  (500, 250)
+    i32 m_pairB[2];                  // +0xB8  (1000, 1000)
+    i32 m_pairC[2];                  // +0xC0  (250, 125)
     i32 m_rectAWidth, m_rectAHeight; // +0xC8  (1600, 1200)
     i32 m_rectBWidth, m_rectBHeight; // +0xD0  (2560, 1920)
     i32 m_rectCWidth, m_rectCHeight; // +0xD8
-    WwdHeader m_header;         // +0xE0  (1524 B copy)
+    WwdHeader m_header;              // +0xE0  (1524 B copy)
 };
 
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);

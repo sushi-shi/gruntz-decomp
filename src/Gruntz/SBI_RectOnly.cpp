@@ -3618,7 +3618,7 @@ RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
     CSBI_ImageSet** notify = m_groupNotify;
-    SbiPhaseSlot* ph = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
+    SbiPhaseSlot* ph = m_groupSlots;
     do {
         switch (ph->m_state) {
             case 1:
@@ -3755,7 +3755,7 @@ RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     SbiPhaseSlot* pA = &m_machineB;
     SbiPhaseSlot* pB = &m_machineA;
-    SbiPhaseSlot* g = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
+    SbiPhaseSlot* g = m_groupSlots;
     if (pA->m_state == 5) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {

@@ -36,7 +36,7 @@ CString g_levelStr;
 DATA(0x0022c264)
 CString g_str62c264;
 DATA(0x0022c268)
-i32 g_dat62c268 = 0; // 0x62c268  the manager's world slot, seeded for the popup
+CDDrawSurfaceMgr* g_dat62c268 = 0; // 0x62c268  the manager's world slot, seeded for the popup
 DATA(0x0022c26c)
 HWND g_customWorldParent = 0; // 0x62c26c  launcher parent-window exchange
 DATA(0x0022c270)
@@ -89,7 +89,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
         v = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_gameWnd) + 4));
     }
     g_customWorldParent = reinterpret_cast<HWND>(v);
-    g_dat62c268 = reinterpret_cast<i32>(g_gameReg->m_world);
+    g_dat62c268 = g_gameReg->m_world;
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", static_cast<void*>(CustomWorldDlgProc), 0) == 0) {
@@ -244,8 +244,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
-    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))
-            ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if (g_gameReg->m_world->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -304,16 +303,13 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     // The world slot's +0x24 IS WwdWorldHolder::m_24 (the level-info source, WwdLevelInfoSrc*
     // - the same +0x24 FillLevelInfoDialog drives IsValidWwd on); ValidateMainBlock passes
     // that object pointer to CheckHeader's `const char* name` slot (retail's own pun).
-    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24 == 0) {
+    if (g_gameReg->m_world->m_level == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(
-            reinterpret_cast<const char*>(
-                (reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24
-            ),
-            header
-        )
+    // ValidateMainBlock passes the LEVEL OBJECT pointer into CheckHeader's
+    // `const char* name` slot - retail's own pun, kept spelled on the typed member.
+    if (WwdFile_CheckHeader(reinterpret_cast<const char*>(g_gameReg->m_world->m_level), header)
         == 0) {
         return -1;
     }
@@ -335,8 +331,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             i32 bad = 1;
             if (g_dat62c268 != 0
                 && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
-                && (reinterpret_cast<WwdWorldHolder*>(g_dat62c268))
-                       ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+                && g_dat62c268->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
                 char* p = info.levelName;

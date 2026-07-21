@@ -4,8 +4,8 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
-#include <Gruntz/Play.h>         // canonical CPlay: 0xc7ec0 IS CPlay::LoadGameAssetNamespaces (slot 1)
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
+#include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::LoadGameAssetNamespaces (slot 1)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
 #include <Gruntz/UserLogic.h>    // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
@@ -51,10 +51,11 @@ namespace modeinit {
 
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
-    m_8 = 0;
-    m_10 = 0;
-    m_c = 0;
-    m_14 = 0;
+    // zero the two 64-bit pairs in retail's lo,lo,hi,hi store order
+    m_lastLo = 0;
+    m_intervalLo = 0;
+    m_lastHi = 0;
+    m_intervalHi = 0;
 }
 
 // @early-stop

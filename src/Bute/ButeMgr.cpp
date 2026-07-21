@@ -46,12 +46,12 @@
 // engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
-#include <EmptyString.h>              // g_emptyString
+#include <EmptyString.h>      // g_emptyString
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
 
-#include <fstream.h> // the REAL CRT iostream/ios (ClearHelper tears down an embedded stream)
+#include <fstream.h> // the REAL CRT iostream/ios (the ??_Diostream emission carrier)
 #include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
 #include <stdio.h>   // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h>  // atoi (0x11ffb0)
@@ -1488,7 +1488,8 @@ bool ButeMgr::ParseAttributeFile() {
             }
             vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
-                (m_pText->accum << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
+                (m_pText->accum << s_strFloat)
+                    << static_cast<double>(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = static_cast<CButeValue*>(operator new(8));
                 if (n) {
@@ -1817,24 +1818,19 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 }
 
 // ===========================================================================
-// CButeMgr::ClearHelper
+// 0x171a40 - ??_Diostream@@QAEXXZ (the compiler-generated iostream vbase destructor)
 // ===========================================================================
-// The two-phase teardown of an embedded CRT `iostream`: the derived dtor, then the shared
-// `ios` VIRTUAL BASE dtor, both on the same vbase-adjusted `this`.
-//
-// The old model read `this+0x14` as a MEMBER OFFSET and invented a CButeIosSub receiver
-// for the two callees, with an @early-stop declaring a "library-call pairing wall" ("their
-// reloc-masked call operands only pair by exact symbol name, which a caller-side receiver's
-// method names can't reproduce"). That wall was self-inflicted: the callees are
-// ??1iostream@@UAE@XZ (0x169be0) and ??1ios@@UAE@XZ (0x169d70), the CRT libs define BOTH,
-// and naming them exactly is all it takes. 0x14 is not a member offset at all - it is
-// MSVC's virtual-base ADJUSTMENT for iostream (probe: cl emits `lea ecx,[eax+0x14]` for
-// iostream/fstream, +0xc for istream, +0x8 for ostream; 0x169be0 reads its vbtable at
-// [ecx-0x14], which pins the class). So `this` is the stream base and cl computes the
-RVA(0x00171a40, 0x14)
-void CButeMgr::ClearHelper() {
-    (static_cast<iostream*>(static_cast<void*>(this)))->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
-    (static_cast<ios*>(static_cast<void*>((reinterpret_cast<char*>(this) + 0x14))))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
+// Byte-identical to a cl 5.0 probe of the auto-emitted COMDAT (push esi; lea
+// esi,[ecx+0x14]; call ??1iostream; call ??1ios; pop esi; ret). Retail keeps it
+// UNREFERENCED (no call/DIR32 ref anywhere - no /OPT:REF): the emitting construct
+// did not survive into shipped code. The ex "CButeMgr::ClearHelper" hand-written
+// body (with its banned this+0x14 vbase-offset cast) is GONE - no dev wrote it.
+// The scoped stream below is the minimal cl-5.0 emission carrier (a throwing call
+// while the complete iostream is live -> the /GX funclet references ??_D).
+// @rva-symbol: ??_Diostream@@QAEXXZ 0x00171a40 0x14
+void EmitIostreamVbaseDtor(streambuf* b) { // non-static: cl elides unreferenced statics
+    iostream s(b);
+    s.flush();
 }
 
 // ===========================================================================

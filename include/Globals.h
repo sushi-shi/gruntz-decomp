@@ -106,7 +106,8 @@ extern i32 g_stepRun;
 extern i32 g_stepCol;
 extern i32 g_stepRow;
 extern i32 g_diffTier;
-extern i32 g_dat62c268;
+extern class CDDrawSurfaceMgr*
+    g_dat62c268;    // 0x62c268  the world holder seeded for the custom-world popup
 class CVariantSlot; // Bute/ButeTree.h (Set @0x16d850)
 extern i32 g_jitterX;
 extern i32 g_jitterY;
@@ -200,7 +201,8 @@ extern ShadeDescr* g_shadeDescr214;
 extern ShadeDescr* g_shadeDescr21c;
 extern ShadeDescr* g_shadeDescr220;
 struct _DDBLTFX;
-extern _DDBLTFX g_bltFx; // 0x2bf318  the shared BltEx DDBLTFX (dwSize=100; the mirror-flip fx block)
+extern _DDBLTFX
+    g_bltFx; // 0x2bf318  the shared BltEx DDBLTFX (dwSize=100; the mirror-flip fx block)
 extern i32 g_surfaceColorKey;
 extern i32 g_aniParsedNameLen;
 extern void* g_projActName;

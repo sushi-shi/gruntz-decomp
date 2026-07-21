@@ -38,18 +38,26 @@ SIZE(CSbiHlRow, 0x18);
 struct CSbiHlRow {
     CSbiHlRow(); // 0x0c86d0 (the address-taken COMDAT; def in ModeObjInit.cpp)
     i32 m_state; // +0x00 state
-    // +0x04: ONE field, two proven names - the hl-grid code calls it the handle it
-    // hands to the notify pointer, the group-slot code calls it the value it hands to
-    // the same notify pointer. Same role, same offset. The anonymous union keeps BOTH
-    // names live (name-preserving fold; layout unchanged) rather than silently dropping
-    // one side's knowledge.
-    i32 m_value; // +0x04  the value handed to the slot's notify sink (the hl-grid
-                 // code's "handle" was the same role - one name now)
-    i32 m_8;     // +0x08
-    i32 m_c;     // +0x0c
-    i32 m_10;    // +0x10
-    i32 m_14;    // +0x14
+    // +0x04: ONE field, two proven names (the notify value / the phase counter).
+    union {
+        i32 m_value;   // the value handed to the slot notify sink
+        i32 m_counter; // the machine-phase counter (LoadRezMachineConfig)
+    };
+    union { // +0x08  last draw-clock (64-bit; flat halves for the dword-latch sites)
+        i64 m_last;
+        struct {
+            i32 m_lastLo, m_lastHi;
+        };
+    };
+    union { // +0x10  wait interval (64-bit)
+        i64 m_interval;
+        struct {
+            i32 m_intervalLo, m_intervalHi;
+        };
+    };
 };
+// The machine-phase readers walk the SAME 0x18 record under this name.
+typedef CSbiHlRow SbiPhaseSlot;
 
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
 SIZE_UNKNOWN(CSbiRect);
@@ -124,24 +132,6 @@ public:
 SIZE_UNKNOWN(CSbiGaugeNotify);
 
 extern CButeMgr g_buteMgr;
-
-struct SbiPhaseSlot {
-    i32 m_state;   // +0x00
-    i32 m_counter; // +0x04
-    union {        // +0x08  last draw-clock (64-bit; flat halves for the dword-latch sites)
-        i64 m_last;
-        struct {
-            i32 m_lastLo, m_lastHi;
-        };
-    };
-    union { // +0x10  wait interval (64-bit)
-        i64 m_interval;
-        struct {
-            i32 m_intervalLo, m_intervalHi;
-        };
-    };
-};
-SIZE_UNKNOWN(SbiPhaseSlot);
 
 enum SbiSlotState {
     kSlotArmed = 0,

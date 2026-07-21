@@ -101,7 +101,6 @@ public:
 
     // Callback trampoline + sub-object cleanup.
     void* InvokeCallback(void* (*fn)(CButeMgr*));
-    void ClearHelper();
 
     // The default constructor (0x170210, 280 B): the 8-state /GX EH ctor that
     // default-constructs the five CStrings, the three CBSecStream sub-trees and the

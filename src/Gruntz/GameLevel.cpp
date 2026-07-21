@@ -10,7 +10,6 @@
 #include <Io/FileStream.h>             // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>          // CImageSet1/2/3 variant records + RezAlloc/RezFree
 #include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CPlane == CDDrawWorkerHost)
-#include <Gruntz/CustomWorldInfoDlg.h> // WwdLevelInfoSrc (0x160530 IsValidWwd is its method)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -1692,7 +1691,7 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
 }
 
 RVA(0x00160530, 0x125)
-i32 WwdLevelInfoSrc::IsValidWwd(const char* name, void* headerBuf) {
+i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
     if (name == 0) {
         return 0;
     }
