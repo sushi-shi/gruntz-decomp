@@ -6,7 +6,6 @@
 #include <Gruntz/Multi.h>  // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
-#include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
 #include <Net/LatencyList.h>     // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
 #include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
@@ -527,7 +526,7 @@ void CMultiStartDlg::OnColorSlot0() {
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(0, dlg.m_pickedColor)) {
+        if (SelectColor(0, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x501)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -545,7 +544,7 @@ void CMultiStartDlg::OnColorSlot1() {
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(1, dlg.m_pickedColor)) {
+        if (SelectColor(1, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x503)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -563,7 +562,7 @@ void CMultiStartDlg::OnColorSlot2() {
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(2, dlg.m_pickedColor)) {
+        if (SelectColor(2, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x505)->m_hWnd;
             ::InvalidateRect(h, 0, 1);
@@ -581,7 +580,7 @@ void CMultiStartDlg::OnColorSlot3() {
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (reinterpret_cast<CNetSessHost*>(this)->SelectColor(3, dlg.m_pickedColor)) {
+        if (SelectColor(3, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x507)->m_hWnd;
             ::InvalidateRect(h, 0, 1);

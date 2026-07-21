@@ -100,8 +100,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
             // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
             {
-                i32* aptr = reinterpret_cast<i32*>(m_slotNotify);  // +0x204, stride 4
-                i32* bptr = &m_slots[0].m_value; // +0x224, stride 0x18
+                i32* aptr = reinterpret_cast<i32*>(m_slotNotify); // +0x204, stride 4
+                i32* bptr = &m_slots[0].m_value;                  // +0x224, stride 0x18
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     it = new CSBI_ImageSet;
@@ -133,8 +133,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))->SetAllTypes(10);
-                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))->SetAllFormats(sel);
+                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                        ->SetAllTypes(10);
+                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                        ->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
@@ -339,7 +341,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(
+                it
+            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it = new CSBI_ImageSet;
             r.left = bx + 0x40;
             r.top = by + 0x11c;
@@ -361,7 +365,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(
+                it
+            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it = new CSBI_ImageSet;
             r.left = bx + 0x68;
             r.top = by + 0x11c;
@@ -383,7 +389,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(
+                it
+            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
             // rect members m_itemRectL..m_520 + bx/by; config source m_extraNotifyArg0, id 0xdf.
             it = new CSBI_ImageSet;
@@ -407,7 +415,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_extraNotify0 = static_cast<CSBI_ImageSet*>(
+                it
+            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it->m_enabled = 0;
             // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
             // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
@@ -416,7 +426,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
             // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
             {
-                i32* cfgp = &m_hlGrid[4].m_value;  // +0x3dc, stride 0x18
+                i32* cfgp = &m_hlGrid[4].m_value;                     // +0x3dc, stride 0x18
                 i32* cachep = reinterpret_cast<i32*>(&m_hlNotify[4]); // +0x4a8, stride 4
                 i32 y = by + 0x155;
                 i32 c = 0xd7;
@@ -495,7 +505,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             // MACHINE: a CSBI_GruntMachine built through BuildResourceTabStatusBar
             // (its retail ctor inlines the base -> manual vptr stamp), cross-configured
-            // from the two idx sources m_hudRectA_y/m_hudRectB_y.
+            // from the two idx sources m_machineA.m_counter/m_machineB.m_counter.
             mach = new CSBI_GruntMachine;
             r.left = bx;
             r.top = by + 0xc8;
@@ -508,8 +518,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     3,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-                    m_hudRectA_y,
-                    m_hudRectB_y
+                    m_machineA.m_counter,
+                    m_machineB.m_counter
                 )) {
                 if (mach) {
                     delete mach;
@@ -588,7 +598,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[3].AddTail(it);
-            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+            m_extraNotify1 = static_cast<CSBI_ImageSet*>(
+                it
+            ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
             it->m_enabled = 0;
             // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
             ani = new CSBI_ImageSetAni;
@@ -733,7 +745,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             {
                 i32* slot = m_61c; // +0x61c
                 i32 pi = 0;
-                GruntzPlayer* p = g_gameReg->m_options; // pointer-inducted (== retail's off += 0x238)
+                GruntzPlayer* p =
+                    g_gameReg->m_options; // pointer-inducted (== retail's off += 0x238)
                 do {
                     i32 sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
@@ -748,7 +761,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     // The cached m_61c slots ARE the four CSBI_WarlordHead items created
                     // just above; SetState/ShowFrames are that class's own helpers
                     // (0xeb830 / 0xeb740), not the fabricated base's.
-                    (reinterpret_cast<CSBI_WarlordHead*>(*slot))->ShowFrames(0xa, reinterpret_cast<ShadeDescr*>(sel));
+                    (reinterpret_cast<CSBI_WarlordHead*>(*slot))
+                        ->ShowFrames(0xa, reinterpret_cast<ShadeDescr*>(sel));
                     slot++;
                     pi++;
                     p++;

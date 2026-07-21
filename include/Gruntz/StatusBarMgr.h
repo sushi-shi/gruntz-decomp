@@ -45,10 +45,10 @@ struct CSbiHlRow {
     // one side's knowledge.
     i32 m_value; // +0x04  the value handed to the slot's notify sink (the hl-grid
                  // code's "handle" was the same role - one name now)
-    i32 m_8;  // +0x08
-    i32 m_c;  // +0x0c
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
+    i32 m_8;     // +0x08
+    i32 m_c;     // +0x0c
+    i32 m_10;    // +0x10
+    i32 m_14;    // +0x14
 };
 
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
@@ -126,10 +126,20 @@ SIZE_UNKNOWN(CSbiGaugeNotify);
 extern CButeMgr g_buteMgr;
 
 struct SbiPhaseSlot {
-    i32 m_state;    // +0x00
-    i32 m_counter;  // +0x04
-    i64 m_last;     // +0x08  last draw-clock (64-bit)
-    i64 m_interval; // +0x10  wait interval (64-bit)
+    i32 m_state;   // +0x00
+    i32 m_counter; // +0x04
+    union {        // +0x08  last draw-clock (64-bit; flat halves for the dword-latch sites)
+        i64 m_last;
+        struct {
+            i32 m_lastLo, m_lastHi;
+        };
+    };
+    union { // +0x10  wait interval (64-bit)
+        i64 m_interval;
+        struct {
+            i32 m_intervalLo, m_intervalHi;
+        };
+    };
 };
 SIZE_UNKNOWN(SbiPhaseSlot);
 
@@ -360,7 +370,8 @@ public:
     i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSBI_SideTab* m_hitRects[15]; // +0x150  the statz side-tab widgets (hit-test targets)
-    CStatusBarMgr* m_statObj[15]; // +0x18c  per-stat sub-manager array (notified on clear; ex CSbiStatObj view)
+    CStatusBarMgr* m_statObj
+        [15]; // +0x18c  per-stat sub-manager array (notified on clear; ex CSbiStatObj view)
     CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
     CSBI_MenuItem* m_tabSprite1;  // +0x1cc  ClearTabSprites in declaration order)
     CSBI_MenuItem* m_tabSprite2;  // +0x1d0
@@ -377,7 +388,7 @@ public:
     CSBI_MenuItem* m_tabSprite13; // +0x1fc
     CSBI_MenuItem* m_tabSprite14; // +0x200
     // +0x204: the five slot notifiers (ArmSlot indexes `[ecx+eax*4+0x204]`, idx 0..4).
-    CSBI_ImageSet* m_slotNotify[5];   // +0x204 .. +0x218
+    CSBI_ImageSet* m_slotNotify[5]; // +0x204 .. +0x218
     CSbiGaugeNotify* m_gaugeNotify; // +0x218  gauge notifier (vfunc 0x28)
     CSbiGaugeNotify* m_gaugeSink;   // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
     // +0x220: the five 0x18-byte slot records. ArmSlot: `lea edx,[eax+eax*2];
@@ -406,21 +417,13 @@ public:
     // +0x2c0: group-A 24-byte slot records. CSbiHlRow, NOT CSbiSlot - it shares the
     // out-of-line element ctor 0xc86d0 with m_hlGrid (the vector-ctor iterator takes
     // that one function pointer for BOTH arrays). Layout is unchanged.
-    CSbiHlRow m_groupSlots[3];     // +0x2c0
+    CSbiHlRow m_groupSlots[3];       // +0x2c0
     CSBI_ImageSet* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
-    i32 m_hudRectB_x;                    // +0x318  HUD-rect group B (x0)
-    i32 m_hudRectB_y;                    // +0x31c  (y0)
-    i32 m_hudRectB_clock;                // +0x320  (latched dword from g_dat645588)
-    i32 m_hudRectB_clockHi;              // +0x324
-    i32 m_hudRectB_z;                    // +0x328
-    i32 m_hudRectB_zHi;                  // +0x32c
-    i32 m_hudRectA_x;                    // +0x330  HUD-rect group A (x0)
-    i32 m_hudRectA_y;                    // +0x334  (y0)
-    i32 m_hudRectA_clock;                // +0x338
-    i32 m_hudRectA_clockHi;              // +0x33c
-    i32 m_hudRectA_z;                    // +0x340
-    i32 m_hudRectA_zHi;                  // +0x344
+    // +0x318/+0x330: the two rez-machine phase slots (ex the "HUD-rect group B/A"
+    // flat-dword mis-model; LoadRezMachineConfig drives them as SbiPhaseSlots).
+    SbiPhaseSlot m_machineB;             // +0x318  right machine phase slot
+    SbiPhaseSlot m_machineA;             // +0x330  left machine phase slot
     CSBI_GruntMachine* m_machineDisplay; // +0x348  the Resource-tab MACHINE widget (SetFrames)
     i32 m_34c;                           // +0x34c
     i32 m_350;                           // +0x350
@@ -428,35 +431,35 @@ public:
     i32 m_tabsBuilt;                     // +0x358  tab-widgets-built flag
     i32 m_activeSlot;                    // +0x35c  active-slot index (-1 = none)
     i32 m_pendingHlRow;                  // +0x360  pending highlight row index (-1 none)
-    CStatusBarItem* m_notify0;              // +0x364  notify targets (slot 0x28)
-    CStatusBarItem* m_notify1;              // +0x368
-    CStatusBarItem* m_notify2;              // +0x36c
-    CStatusBarItem* m_notify3;              // +0x370
+    CStatusBarItem* m_notify0;           // +0x364  notify targets (slot 0x28)
+    CStatusBarItem* m_notify1;           // +0x368
+    CStatusBarItem* m_notify2;           // +0x36c
+    CStatusBarItem* m_notify3;           // +0x370
     char m_pad374[0x378 - 0x374];
-    CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
+    CSbiHlRow m_hlGrid[12];        // +0x378  3 groups x 4 highlight rows (24B each)
     CSBI_ImageSet* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
-    i32 m_machinePhase;          // +0x4c8  (set to 1 by InitTabRects)
-    i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
-    i64 m_beltLast;              // +0x4d0  belt-drop timer last draw-clock (64-bit)
-    i64 m_beltInterval;          // +0x4d8  belt-drop timer interval (64-bit)
+    i32 m_machinePhase;            // +0x4c8  (set to 1 by InitTabRects)
+    i32 m_extraNotifyArg0;         // +0x4cc  arg for (*m_extraNotify0)->Notify
+    i64 m_beltLast;                // +0x4d0  belt-drop timer last draw-clock (64-bit)
+    i64 m_beltInterval;            // +0x4d8  belt-drop timer interval (64-bit)
     CSBI_ImageSet* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4e8 - 0x4e4];
-    i32 m_fallActive;            // +0x4e8  falling-item active flag
-    i32 m_extraNotifyArg1;       // +0x4ec  arg for (*m_extraNotify1)->Notify
-    i64 m_fallLast;              // +0x4f0  falling-item timer last draw-clock = g_dat645588
-    i64 m_fallDelay;             // +0x4f8  falling-item config delay
+    i32 m_fallActive;              // +0x4e8  falling-item active flag
+    i32 m_extraNotifyArg1;         // +0x4ec  arg for (*m_extraNotify1)->Notify
+    i64 m_fallLast;                // +0x4f0  falling-item timer last draw-clock = g_dat645588
+    i64 m_fallDelay;               // +0x4f8  falling-item config delay
     CSBI_ImageSet* m_extraNotify1; // +0x500
-    i32 m_fallRectL;             // +0x504  falling-item rect A (relative)
-    i32 m_fallRectT;             // +0x508
-    i32 m_fallRectR;             // +0x50c
-    i32 m_fallRectB;             // +0x510
-    i32 m_itemRectL;             // +0x514  streamed rect block (report origin)
-    i32 m_itemRectT;             // +0x518
-    i32 m_itemRectR;             // +0x51c
-    i32 m_itemRectB;             // +0x520
-    i32 m_itemBaseX;             // +0x524
-    i32 m_rezActive;             // +0x528  rez-machine snooze/wake active flag
-    i32 m_rezTick;               // +0x52c  rez-machine wake tick counter
+    i32 m_fallRectL;               // +0x504  falling-item rect A (relative)
+    i32 m_fallRectT;               // +0x508
+    i32 m_fallRectR;               // +0x50c
+    i32 m_fallRectB;               // +0x510
+    i32 m_itemRectL;               // +0x514  streamed rect block (report origin)
+    i32 m_itemRectT;               // +0x518
+    i32 m_itemRectR;               // +0x51c
+    i32 m_itemRectB;               // +0x520
+    i32 m_itemBaseX;               // +0x524
+    i32 m_rezActive;               // +0x528  rez-machine snooze/wake active flag
+    i32 m_rezTick;                 // +0x52c  rez-machine wake tick counter
     // +0x530  the pooled-ptr collection: a REAL MFC ::CPtrArray (0x14 -> +0x530..+0x543).
     // Its internals: m_pData @+0x534, m_nSize @+0x538, m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
     ::CPtrArray m_ptrPool;
@@ -470,7 +473,7 @@ public:
     i32 m_modeState;              // +0x55c
     i64 m_destructWarnLast;       // +0x560  destruct-warning last draw-clock
     i64 m_destructWarnDelay;      // +0x568  destruct-warning delay (config)
-    CSBI_ImageSet* m_modeNotify;    // +0x570  notify target
+    CSBI_ImageSet* m_modeNotify;  // +0x570  notify target
     i32 m_modeArmed;              // +0x574
     i32 m_578;                    // +0x578  (cleared on multiplayer/battlez reset)
     i32 m_battlezPct[38];         // +0x57c  running-sum item-percent table (battlez cfg)
@@ -538,19 +541,9 @@ SIZE_UNKNOWN(SbiTabFrame);
 struct CTabList {};
 SIZE_UNKNOWN(CTabList);
 
-struct CSbiFrameEntry {
-    char m_pad0[0x18];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
-};
-SIZE_UNKNOWN(CSbiFrameEntry);
-struct CSbiMainBarCfg {
-    char m_pad0[0x14];
-    CSbiFrameEntry** m_14; // +0x14  frame-entry table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame index
-};
-SIZE_UNKNOWN(CSbiMainBarCfg);
+// (CSbiMainBarCfg/CSbiFrameEntry DISSOLVED 2026-07-21: the stored element is the
+// main-bar CDDrawWorker strip - +0x14/+0x64 were m_items.m_pData/m_minIndex and
+// the "frame entry" +0x18/+0x1c were CImage::m_anchorX/m_anchorY.)
 class CDDrawSurfacePair; // the real main-bar draw receiver (ex the CSbiMainL2 facet)
 void __stdcall MainBarDrawFrame(CDDrawSurfacePair* obj, i32 x, i32 y, i32 flag); // 0x153790 (NOTE:
 
@@ -567,7 +560,7 @@ public:
     virtual void Tick();                      // slot 5
     virtual void Update(i32 a, i32 b, i32 c); // +0x18 (slot 6)
     char m_pad4[0xc - 0x4];
-    i32 m_cmdId;  // +0xc  command id
+    i32 m_cmdId;      // +0xc  command id
     i32 m_widgetKind; // +0x10  widget kind (outer switch key, 0..6)
 };
 SIZE_UNKNOWN(CSbiHiWidget);
@@ -589,14 +582,14 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_2b4 = 0;
     m_2b8 = 0;
     m_2bc = 0;
-    m_hudRectB_clock = 0; // +0x320  HUD-rect group B 64-bit clock + z
-    m_hudRectB_clockHi = 0;
-    m_hudRectB_z = 0;
-    m_hudRectB_zHi = 0;
-    m_hudRectA_clock = 0; // +0x338  HUD-rect group A
-    m_hudRectA_clockHi = 0;
-    m_hudRectA_z = 0;
-    m_hudRectA_zHi = 0;
+    m_machineB.m_lastLo = 0; // +0x320  HUD-rect group B 64-bit clock + z
+    m_machineB.m_lastHi = 0;
+    m_machineB.m_intervalLo = 0;
+    m_machineB.m_intervalHi = 0;
+    m_machineA.m_lastLo = 0; // +0x338  HUD-rect group A
+    m_machineA.m_lastHi = 0;
+    m_machineA.m_intervalLo = 0;
+    m_machineA.m_intervalHi = 0;
     m_beltLast = 0;     // +0x4d0  (64-bit)
     m_beltInterval = 0; // +0x4d8  (64-bit)
     m_fallLast = 0;     // +0x4f0
@@ -621,7 +614,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite12 = 0;
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
-    m_barSprite = 0;                                     // +0x08
+    m_barSprite = 0;                             // +0x08
     m_c = 0;                                     // +0x0c
     m_rect14.m_c = 0;                            // +0x20  (the rect block's 4th int; only this one)
     m_activeTab = 0;                             // +0x10c

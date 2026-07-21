@@ -53,9 +53,9 @@ public:
     virtual void OnOK() OVERRIDE;                             // slot 51  OnOK (0x174a0)
 
     class CGruntzMgr* m_slots; // +0x5c  (= a0; the manager - its m_options[] is the slot array)
-    char m_pad60[8];      // +0x60
-    i32 m_customNameFlag; // +0x68  1 = custom level name typed, 0 = picked from list
-    CString m_6c;         // +0x6c  (default CString)
+    char m_pad60[8];           // +0x60
+    i32 m_customNameFlag;      // +0x68  1 = custom level name typed, 0 = picked from list
+    CString m_6c;              // +0x6c  (default CString)
 
     // Control accessors: switch(index) -> GetDlgItem(constID). Four families,
     // each over a 4-entry control-ID table.
@@ -191,9 +191,9 @@ public:
     // GetMessageMap/OnMeasureItem) so it does not perturb the compiler-emitted vtable.
 
     class CGruntzMgr* m_slots; // +0x5c  (= a0; the manager, from parent)
-    i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
-    i32 m_pickedColor; // +0x64  (= 0; the picked value read after DoModal)
-    i32 m_68;          // +0x68  (= a2; always 0 at call sites; role unproven)
+    i32 m_slotIndex;           // +0x60  (= a1; the slot being colored)
+    i32 m_pickedColor;         // +0x64  (= 0; the picked value read after DoModal)
+    i32 m_68;                  // +0x68  (= a2; always 0 at call sites; role unproven)
 };
 
 SIZE_UNKNOWN(CMultiStartDlg);
@@ -257,7 +257,10 @@ public:
     // --- Per-slot colour handlers (bodies in MultiStartDlgColor.cpp) ---
     // Double-click a colour swatch (controls 0x501/0x503/0x505/0x507): if the slot is
     // pickable, run the modal CBattlezDlgColors picker, and on IDOK claim the colour
-    // for the slot (SelectColor, the CNetSessHost +0x5c facet), re-drive, invalidate.
+    // for the slot (SelectColor - the ex-CNetSessHost facet, now a dialog method), re-drive, invalidate.
+    // 0xc4b60: host-side colour claim on m_host->m_options[colorIndex] (the ex-
+    // CNetSessHost +0x5c facet; body in NetCmdMgr.cpp).
+    i32 SelectColor(i32 colorIndex, i32 playerId);
     void OnColorSlot0(); // 0xc3830
     void OnColorSlot1(); // 0xc3950
     void OnColorSlot2(); // 0xc3a70
@@ -298,11 +301,9 @@ public:
     // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
-    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls
-    void
-    VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level
-    void
-    ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive
+    i32 EnableControls();     // 0xc4120  re-enable the four player-config controls
+    void VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level
+    void ConnectStep();       // 0xc2a20  one connect step: reconcile slot 1 then Drive
     // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
     // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
