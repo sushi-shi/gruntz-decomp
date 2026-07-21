@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
@@ -29,7 +30,6 @@
 DATA(0x00244638)
 extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
 
-extern "C" u32 g_engineFrameDelta;
 
 DATA(0x00244870)
 extern CActReg g_partColl;

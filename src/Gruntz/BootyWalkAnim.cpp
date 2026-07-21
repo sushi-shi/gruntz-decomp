@@ -1,4 +1,5 @@
 #include <Ints.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Gruntz/BattlezData.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -14,7 +15,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 DATA(0x001e93a8)
 char g_secretChars[] = "WARP"; // "WARP"

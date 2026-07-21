@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Mfc.h>
@@ -20,8 +21,6 @@
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
 
-extern "C" u32 g_killCueClock;     // draw-clock mirror (== donor g_killCueClock, 0x2bf3c0)
-extern "C" u32 g_engineFrameDelta; // draw-delta mirror
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {

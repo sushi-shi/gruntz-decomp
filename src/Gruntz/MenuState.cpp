@@ -1,4 +1,5 @@
 #include <Gruntz/GameMode.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/MenuVersion.h> // g_versionMajor/Mid/Minor (owner-only decl header)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LeafCue.h>         // canonical LeafCue (CMenuState::m_1bc menu-music cue)
@@ -39,7 +40,6 @@ static inline CGruntzMgr* Owner(CState* s) {
 
 void operator delete(void*);
 
-extern "C" u32 g_killCueClock; // draw-clock mirror
 
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {

@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>
@@ -8,7 +9,6 @@
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (+0x68 CTriggerMgr* cmd grid)
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
 
-extern "C" unsigned g_frameDelta;    // 0x645584 frame delta (canonical ?n@@3HA; reloc-masked)
 
 // @early-stop
 // x87 fp-stack scheduling wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
@@ -21,7 +21,7 @@ int CSpotLight::Update_0b1ee0() {
         double c = cos(m_90);
         double s = sin(m_90);
         // hoist the m_90 advance so cl schedules the g_frameDelta term early (as retail)
-        double newAngle = static_cast<double>(g_frameDelta) * m_58 + m_90;
+        double newAngle = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_58 + m_90;
         m_60 = -(m_88 * s + m_80 * c);
         m_68 = m_80 * s - m_88 * c;
         if (m_focus) {

@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/ParseSource.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <rva.h>
@@ -14,7 +15,6 @@
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
-extern "C" u32 g_engineFrameDelta;
 
 enum ImageFormatTag {
     IMGTAG_PMB = 0x424d50, // "PMB" -> BMP loader (index 1)

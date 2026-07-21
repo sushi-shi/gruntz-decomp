@@ -1,4 +1,5 @@
 #include <Mfc.h>        // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
@@ -51,7 +52,6 @@
 extern void* operator new(u32 size);
 extern void operator delete(void* p);
 
-extern "C" u32 g_engineFrameDelta; // 0x2bf3bc
 
 static inline void StampWorkerVtbl(AnimWorkerObj* w) {
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)

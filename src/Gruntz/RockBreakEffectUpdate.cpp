@@ -13,6 +13,7 @@
 // dominant-unit heuristic only. Left in its own unit pending stronger evidence
 // (@identity-TODO).
 #include <Ints.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -22,7 +23,6 @@
 #include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
 #include <Gruntz/RbEffect.h>   // canonical RbEffect (the rock-break effect leaf; identity @identity-TODO)
 
-extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance ctx)
 
 // The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
 // effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real

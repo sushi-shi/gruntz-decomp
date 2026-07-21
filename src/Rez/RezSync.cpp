@@ -45,7 +45,6 @@ void* operator new(unsigned int);
 void operator delete(void*);
 
 extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
-extern "C" i32 g_frameDelta; // 0x645584
 extern "C" i32 g_localVersion; // 0x60fa70
 extern "C" {
     DATA(0x002455b4)

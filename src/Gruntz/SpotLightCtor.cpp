@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>   // g_sndEnabled/g_sndCueTag
@@ -204,7 +205,6 @@ extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
 extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
-extern "C" u32 g_frameDelta;           // frame-time delta
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is

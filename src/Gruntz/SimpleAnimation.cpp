@@ -1,4 +1,5 @@
 #include <Gruntz/SimpleAnimation.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
@@ -20,7 +21,6 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
-extern "C" u32 g_engineFrameDelta;
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible
 // members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown:

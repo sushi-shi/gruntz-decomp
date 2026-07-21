@@ -1,10 +1,10 @@
 #include <Ints.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <rva.h>
 #include <Gruntz/LeafCue.h>         // LeafCue (the sound-cue leaf)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 
-extern "C" u32 g_killCueClock; // 0x2bf3c0
 
 // @early-stop
 // 66% -- split-epilogue wall (twin of RefreshAsset_114120's 100% idiom, but 4-arg):

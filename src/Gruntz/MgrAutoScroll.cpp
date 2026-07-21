@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/ButeMgr.h>                 // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
@@ -17,8 +18,6 @@ extern "C" {
     void RecomputePlaneCoords(void); // 0x161c90
 }
 
-extern "C" u32 g_frameTime;
-extern "C" u32 g_frameDelta;
 DATA(0x0024cfc0)
 u32 g_scrollClock;
 DATA(0x0024cfb0)

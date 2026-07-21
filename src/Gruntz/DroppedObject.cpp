@@ -1,4 +1,5 @@
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
+#include <Rez/FrameClock.h>        // frame-clock band (g_frameDelta/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
@@ -25,10 +26,6 @@
 
 #include <string.h> // inline strcmp for the direction-name match
 
-extern "C" {
-    extern u32 g_frameDelta;       // 0x645584
-    extern u32 g_engineFrameDelta; // 0x6bf3bc
-}
 
 DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
@@ -394,7 +391,7 @@ i32 CObjectDropper::Update() {
 
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
-    double drift = static_cast<double>(g_frameDelta) * m_speed;
+    double drift = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
@@ -620,7 +617,7 @@ void CDroppedObject::RegisterActs() {
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
+    m_fallY = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;

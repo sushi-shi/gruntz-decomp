@@ -1,8 +1,8 @@
 #include <Gruntz/UserLogic.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <rva.h>
 
-extern "C" u32 g_engineFrameDelta;
 
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {

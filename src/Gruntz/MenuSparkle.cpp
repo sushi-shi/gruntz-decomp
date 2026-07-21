@@ -27,14 +27,13 @@
 // inside this run and wants folding once that dual-model is retired.
 // Only offsets / code bytes are load-bearing.
 #include <Gruntz/MenuSparkle.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/AniAdvanceCursor.h> // the +0x1a0 anim sub-object (Advance)
 #include <Bute/ButeTree.h>           // CButeTree (the "A" animset key store)
 #include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
-extern "C" u32 g_frameDelta;       // 0x645584  per-frame time delta
-extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  frame tick
 
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

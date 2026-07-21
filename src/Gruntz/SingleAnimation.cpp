@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
@@ -8,7 +9,6 @@
 DATA(0x00245f70)
 extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
-extern "C" u32 g_engineFrameDelta;
 
 RVA(0x000104a0, 0x47)
 i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {

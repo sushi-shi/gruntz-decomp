@@ -26,6 +26,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
@@ -62,7 +63,6 @@ extern CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
 extern CActReg g_checkpointActReg; // 0x64e7e8 (ex "g_tileSecretTriggerActReg" - the shift)
 
-extern "C" u32 g_engineFrameDelta;
 
 DATA(0x0024e720)
 extern CActReg g_tileActReg;

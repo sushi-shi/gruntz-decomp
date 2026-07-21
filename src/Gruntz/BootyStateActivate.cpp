@@ -1,4 +1,5 @@
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Bute/SymTab.h>
@@ -37,7 +38,6 @@ void ShowHudMessageAlt(
     i32 a9
 );
 
-extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 void operator delete(void*);
 

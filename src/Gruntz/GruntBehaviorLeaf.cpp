@@ -1,11 +1,10 @@
 #include <Gruntz/GruntBehaviorLeaf.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/TriggerMgr.h> // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
 #include <Image/ImageSet.h>    // CImageSet::SetAllTypes (m_drawState->m_194)
 #include <Bute/ButeTree.h>     // CButeTree::Find (the "R" animset key)
 #include <Bute/ButeMgr.h>      // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
 
-extern "C" u32 g_frameTime;        // 0x645588  running game clock (ms)
-extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
 
 // LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
 // anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.

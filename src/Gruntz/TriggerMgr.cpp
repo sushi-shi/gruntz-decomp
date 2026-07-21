@@ -43,6 +43,7 @@
 #include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
 #include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
 #include <Gruntz/GruntPuddle.h>  // CGruntPuddle (the baseList element - ex CTmCandidate)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig (g_gameReg->m_cueSink SpawnVoiceDriver ReportError)
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
@@ -335,44 +336,41 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     }
 }
 
-// 0x78680: ReportRecordsB(a14, a18, a1c, a20, a24, a28) - the four-way variant of
-// ReportRecordsA: same magic-group byte scan, then dispatch by (count==1, a14!=0) to one of
-// four (single/multi x kind 3/9) report calls. (__stdcall: ret 0x10.)
-// @early-stop
-// reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
-// payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
-// 8-arg g_gameReg->m_cmdSubMgr reporter methods with the firstByte dword slot; our self-call shape
-// approximates it. topic:wall.
+// 0x78680: ReportRecordsB(tag, gx, gy, flag) - the four-way variant of ReportRecordsA: same
+// firstByte/magic-group byte scan, then dispatch by (count==1, flag) to one of four
+// EnqueueSingle/EnqueueMulti calls with report kind 3 (flag==0) or 9 (flag!=0). (ret 0x10.)
 RVA(0x00078680, 0x189)
-void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
+void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     if (m_groupFlag == 0) {
         return;
     }
-    u8 bytes[0x88];
     u8 count = 0;
+    u8 firstByte = 0;
+    u8 bytes[0x70];
     CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (n != 0) {
         CTmNode* next = n->m_next;
-        u8* payload = reinterpret_cast<u8*>(n->m_payload);
-        CTmCell* cell = m_grid[*reinterpret_cast<i32*>(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
+        i32* payload = n->m_payload;
+        firstByte = static_cast<u8>(payload[0]);
+        CTmCell* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
-            bytes[count] = payload[4];
+            bytes[count] = static_cast<u8>(payload[1]);
             count++;
         }
         n = next;
     }
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
-        if (a28 != 0) {
-            rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
+        if (flag != 0) {
+            rep->EnqueueSingle(tag, firstByte, bytes[0], 9, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0);
         } else {
-            rep->Report1(3, bytes[0], a14, a18, 0, 0, 0);
+            rep->EnqueueSingle(tag, firstByte, bytes[0], 3, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0);
         }
     } else {
-        if (a28 != 0) {
-            this->ReportN(9, a14, bytes, a18, a1c, a20, a24);
+        if (flag != 0) {
+            rep->EnqueueMulti(tag, firstByte, count, bytes, 9, static_cast<i16>(gx), static_cast<i16>(gy), 0);
         } else {
-            this->ReportN(3, a14, bytes, a18, a1c, a20, a24);
+            rep->EnqueueMulti(tag, firstByte, count, bytes, 3, static_cast<i16>(gx), static_cast<i16>(gy), 0);
         }
     }
 }
@@ -602,75 +600,112 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     static_cast<void>(a1c);
     static_cast<void>(a20);
     static_cast<void>(a24);
-    static_cast<void>(a2c);
     if (m_groupFlag == 0) {
         return 0;
     }
     CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
     CTmCell* cell;
-    if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
         i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
+
+    // Classify into a selector: a28 (when nonzero) IS the selector; else derive from
+    // hit/cell. sel 1/2/3 dispatch to the three report+spawn stanzas; else -> return 1.
     i32 sel;
-    if (cell != 0 && cell->m_tileOwnerHi == g_curPlayer) {
-        if (a28 != 0) {
-            sel = 0;
-        } else if (hit == 0) {
-            sel = 1;
-        } else if (hit == cell) {
-            // toggle off the pending-fx and rewind
-            m_pendingFxKind = 0;
-            (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
-            CGameObject* o = hit->m_10;
-            this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
-            return 1;
-        } else {
-            sel = 2;
-        }
-    } else {
+    if (cell == 0) {
         sel = (hit != 0) ? 2 : 1;
+    } else if (cell->m_tileOwnerHi != g_curPlayer) {
+        return 1;
+    } else if (a28 != 0) {
+        sel = a28;
+    } else if (hit == 0) {
+        sel = 1;
+    } else if (hit == cell) {
+        m_pendingFxKind = 0;
+        (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
+        CGameObject* o = hit->m_10;
+        this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
+        return 1;
+    } else {
+        sel = 2;
     }
 
-    CGameObject* sprite = 0;
-    i32 kindArg = 0;
-    i32 logicArg = 0;
-    if (sel == 0) {
-        // place-on-self path
-        this->PlaceB(a14, a18, 1);
-        return 1;
-    } else if (sel == 1) {
-        // spawn the cursor target sprite
-        CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
-        if (cell != 0) {
-            rep->Report1(1, cell->m_tileOwnerHi, cell->m_tileOwnerLo, a18, a14, 0, 0);
-        } else {
-            rep->Report1(1, a14, a18, 0, 0, 0, 0);
-        }
-        if (m_grid[4] == 0) { // the +0x2c grid-cell gate (see raw)
-            return 0;
-        }
-        CDDrawChildGroup* fac = m_world->m_childGroup;
-        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
-        kindArg = 3;
-        logicArg = 1;
-    } else {
-        // sel==2: place-and-report variant -> WarpStone factory
-        this->PlaceB(a14, a18, 1);
-        CDDrawChildGroup* fac = m_world->m_childGroup;
-        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
-        kindArg = 2;
-        logicArg = 1;
+    CGameObject* sprite;
+    i32 kindArg;
+    switch (sel) {
+        case 1:
+            this->ReportRecordsA(1, a14, a18);
+            if (a2c == 0) {
+                return 1;
+            }
+            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite->m_7c->m_notify(sprite);
+            kindArg = 2;
+            goto arm;
+        case 2:
+            if (hit == 0) {
+                this->ReportRecordsB(1, a14, a18, 0);
+            } else {
+                i32 owner = hit->m_tileOwnerHi;
+                if (owner == g_curPlayer && g_traitorMode == 0) {
+                    if (hit != cell) {
+                        goto reportError;
+                    }
+                    i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                    if (v != 0xf) {
+                        i32 v2 = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                        if (v2 != 0x13) {
+                            goto reportError;
+                        }
+                    }
+                }
+                this->ReportRecordsB(1, owner, hit->m_tileOwnerLo, 1);
+            }
+            if (a2c == 0) {
+                return 1;
+            }
+            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite->m_7c->m_notify(sprite);
+            kindArg = 1;
+            goto arm;
+        case 3:
+            if (hit != 0) {
+                if (hit->m_tileOwnerHi == g_curPlayer && g_traitorMode == 0
+                    && (hit != cell || hit->m_198 != 0x1e)) {
+                    goto reportError;
+                }
+                g_gameReg->m_cmdSubMgr->EnqueueSingle(
+                    1, static_cast<char>(cell->m_tileOwnerHi), static_cast<char>(cell->m_tileOwnerLo),
+                    10, static_cast<i16>(hit->m_tileOwnerHi), static_cast<i16>(hit->m_tileOwnerLo), 0, 0
+                );
+            } else {
+                g_gameReg->m_cmdSubMgr->EnqueueSingle(
+                    1, static_cast<char>(cell->m_tileOwnerHi), static_cast<char>(cell->m_tileOwnerLo),
+                    4, static_cast<i16>(a14), static_cast<i16>(a18), 0, 0
+                );
+            }
+            if (a2c == 0) {
+                return 1;
+            }
+            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite->m_7c->m_notify(sprite);
+            kindArg = 3;
+            goto arm;
+        default:
+            return 1;
     }
-    if (sprite == 0) {
-        return 0;
-    }
-    sprite->m_7c->m_notify(sprite);
-    void* logic = sprite->m_7c->m_logic;
-    (static_cast<CUserLogic*>(logic))->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
+
+arm:
+    (static_cast<CUserLogic*>(sprite->m_7c->m_logic))
+        ->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, 1);
     return 1;
+
+reportError:
+    g_gameReg->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(cell), 0x324, -1, 0, -1, -1);
+    return 0;
 }
 
 // 0x798d0: DestroyGroup(col, row, force) - lazily create the overlay sub-object (+0x25c) via

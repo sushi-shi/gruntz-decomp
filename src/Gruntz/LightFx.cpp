@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -19,7 +20,6 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
 
-extern "C" u32 g_engineFrameDelta;
 
 DATA(0x00245ad0)
 extern CActReg g_lightFxActReg; // 0x645ad0

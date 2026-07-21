@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -10,7 +11,6 @@
 DATA(0x00245f98)
 extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 
-extern "C" u32 g_engineFrameDelta;
 
 RVA(0x00010050, 0x47)
 i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {

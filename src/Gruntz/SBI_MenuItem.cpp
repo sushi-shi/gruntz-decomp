@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h>    // g_sndEnabled/g_sndCueTag
 #include <Gruntz/SerialCounter.h> // g_serialCounter
@@ -18,7 +19,6 @@
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
 
-extern "C" u32 g_killCueClock;
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::InitItem - configure the menu entry from its config record,

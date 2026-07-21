@@ -1,4 +1,5 @@
 #include <string.h>            // memcpy -> the /Oi `rep movsd` in BuildSmall
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Io/FileMem.h>        // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -351,7 +352,6 @@ CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
-extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 
 // @early-stop
 // loop-body regalloc wall (~69%): complete + correct reconstruction - the frame

@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -34,11 +35,9 @@
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
-extern "C" i32 g_frameDelta;
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
-extern "C" u32 g_engineFrameDelta;
 
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;

@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -8,7 +9,6 @@
 
 extern "C" CStatzGameReg* g_gameReg;
 
-extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {

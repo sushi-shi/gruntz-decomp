@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>      // g_sndEnabled/g_sndCueTag
@@ -9,7 +10,6 @@
 #include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_level) -> m_mainPlane tile grid
 #include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 
-extern "C" u32 g_killCueClock; // draw-clock mirror
 
 // ===========================================================================
 // CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)

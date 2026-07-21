@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -8,7 +9,6 @@
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
 
-extern "C" u32 g_engineFrameDelta;
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 

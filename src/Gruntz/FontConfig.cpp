@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <EmptyString.h> // g_emptyString
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
@@ -19,7 +20,6 @@ i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
 DATA(0x0020c7a8)
 i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
-extern "C" i32 g_frameDelta; // 0x00645584 elapsed-time delta (ms)
 
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {

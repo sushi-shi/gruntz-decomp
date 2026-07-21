@@ -1,4 +1,5 @@
 #include <Bute/ButeMgr.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
 
 #include <rva.h>
@@ -18,7 +19,6 @@ char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
 char g_cheatTableEnd[4];  // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
 DATA(0x0022af10)
 i32 g_bootyCheatBuilt = 0; // 0x22af10
-extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // @source: string-xref
 // @early-stop

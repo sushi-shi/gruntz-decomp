@@ -1,4 +1,5 @@
 #include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -134,7 +135,6 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 
 extern "C" i32 g_dirVec[9][4]; // DAT_00644970
 

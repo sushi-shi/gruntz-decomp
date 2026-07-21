@@ -1,4 +1,5 @@
 #include <Gruntz/SpriteRefTable.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -14,7 +15,6 @@ typedef i32 (CUserLogic::*CreationPointHandler)();
 DATA(0x00244700)
 extern CActReg g_creationPointActReg; // 0x644700
 
-extern "C" u32 g_engineFrameDelta;
 
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic

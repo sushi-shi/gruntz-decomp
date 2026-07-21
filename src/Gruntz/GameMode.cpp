@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
@@ -304,7 +305,6 @@ i32 g_levelMsgIconPos[16] = {
     0x1a8
 }; // 0x60b8b8
 extern CString g_levelMsgStrings[8]; // 0x629ef8
-extern "C" u32 g_killCueClock;       // 0x6bf3c0
 
 extern void ShowHudMessage(
     CDDrawSurfaceMgr* sink,

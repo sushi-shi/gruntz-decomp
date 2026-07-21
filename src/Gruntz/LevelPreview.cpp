@@ -20,10 +20,7 @@
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Gruntz/PreviewState.h> // canonical CPreviewState (the level-preview screen state)
 #include <Globals.h>
-
-extern "C" {
-    extern u32 g_killCueClock;
-}
+#include <Rez/FrameClock.h> // frame-clock band (g_killCueClock)
 
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {

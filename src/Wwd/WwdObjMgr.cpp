@@ -13,6 +13,7 @@
 //
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
 
@@ -48,8 +49,6 @@ inline void* operator new(u32, void* p) {
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 
-extern "C" u32 g_killCueClock;     // 0x6bf3c0 kill-cue clock (prev now)
-extern "C" u32 g_engineFrameDelta; // 0x6bf3bc per-frame delta
 
 inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);

@@ -15,9 +15,7 @@
 #include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
-extern "C" u32 g_frameTime; // 0x645588  running game clock (strike/leg deadlines poll it)
 
-extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {

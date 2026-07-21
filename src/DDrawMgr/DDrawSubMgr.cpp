@@ -13,6 +13,7 @@
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
 
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/ParseSource.h>     // canonical CParseSource - MUST precede the Leaf headers
 #include <Dsndmgr/DirectSoundMgr.h> // real DSound types (MatchSub GetFormat/SetPrimaryFormat)
 #include <Dsndmgr/SoundDevice.h>
@@ -67,7 +68,6 @@ float g_sndPanScale = 0.009999999776482582f;
 
 extern char g_emptyString[]; // 0x2293f4
 
-extern "C" u32 g_killCueClock; // 0x2bf3c0
 
 void* operator new(u32 n);
 void operator delete(void* p);

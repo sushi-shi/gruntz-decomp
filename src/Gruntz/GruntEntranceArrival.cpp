@@ -20,6 +20,7 @@
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
@@ -52,7 +53,6 @@
 
 #include <Gruntz/InGameIcon.h>
 
-extern "C" u32 g_frameDelta; // 0x645584
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
 extern const char k_60df94[]; // 0x60df94
@@ -125,7 +125,6 @@ static void GruntScratchTeardown() {
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
-extern "C" i32 g_engineFrameDelta;
 
 #include <Gruntz/GruntBehaviorLeaf.h>
 // ---------------------------------------------------------------------------
@@ -457,7 +456,6 @@ i32 CGrunt::RearmAttackAnim2() {
     return 0;
 }
 
-extern "C" i32 g_engineFrameDelta;
 // The mgr singleton (same 0x64556c datum); the warp-dialog facet casts to CWarpMgr.
 // (The old `WarpPostFn g_pPostMessageA` fn-ptr global @0x2c44c8 is GONE: that
 // address is USER32's PostMessageA IAT slot - retail's `call [0x6c44c8]` is just

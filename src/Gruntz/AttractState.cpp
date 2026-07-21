@@ -1,4 +1,5 @@
 #include <Gruntz/String.h>        // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
+#include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -16,9 +17,6 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
-extern "C" {
-    extern u32 g_frameDelta;
-}
 
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";

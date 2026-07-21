@@ -15,6 +15,7 @@
 // In-interval fold: LoadWingzGruntSprites @0x68880 (ex GruntAssetLoaders.cpp -
 // its 31 private cells sit inside this TU's band).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -66,7 +67,6 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-extern "C" i32 g_engineFrameDelta; // 0x2bf3bc
 
 static void GruntScratchTeardown();
 

@@ -1,9 +1,9 @@
 #include <Ints.h>
+#include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <rva.h>
 #include <Globals.h>
 #include <Gruntz/ScrollState.h> // g_scrollAccum / g_scrollClock (auto-scroll state block)
 
-extern "C" i32 g_frameTime; // per-frame sync salt
 
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
