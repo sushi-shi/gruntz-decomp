@@ -5019,47 +5019,44 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // return 1.
 // ===========================================================================
 // @early-stop
-// regalloc/spill wall (~72%): logic byte-exact - the unsigned m_dwell>m_0c4 gate
-// (jbe), the candidate-list walk, the m_5c-occupied + exact-coord skips, the
-// abs-distance squared min-keep, and the Method_0300c0 (flags 0xd87) re-path are all
-// reproduced in shape + instruction multiset. Retail spills BOTH the list iterator
-// and bestDist to stack locals (frame 0x10, reloading `arg1` from its stack slot each
-// iteration), where MSVC5 here keeps the iterator in ebp and bestDist in ecx (frame
-// 0x8, no reload) - the higher-spill-pressure choice (this-spilled-to-local-for-loop-
-// seed + reread-member-view-pointer family). No source lever forces the spill under
-// /O2; the divergence cascades through every loop register operand. Final sweep.
+// regalloc/spill wall (~78%): logic byte-exact. Inverting the gate to `if (dwell >
+// budget) { body }` + one shared `return 1` put the body inline (retail's jbe layout,
+// 73->78). Residual: retail spills BOTH the list iterator and bestDist to stack locals
+// (frame 0x10, reloading `arg1` from its stack slot each iteration), where MSVC5 here
+// keeps the iterator in ebp and bestDist in ecx (frame 0x8, no reload) - the higher-
+// spill-pressure choice. No source lever forces the spill under /O2; the divergence
+// cascades through every loop register operand. Final sweep.
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
-    if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_repathBudget)) {
-        return 1;
-    }
-    CGruntPuddle* best = 0;
-    i32 bestDist = 0x7fffffff;
-    POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
-    while (pos != 0) {
-        CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
-        if (cand->m_pending == 0) {
-            CGameObject* lvl = unit->m_object;
-            i32 lx = lvl->m_screenX >> 5;
-            i32 ly = lvl->m_screenY >> 5;
-            if (cand->m_tileX != lx || cand->m_tileY != ly) {
-                i32 dx = cand->m_tileX - lx;
-                dx = abs(dx);
-                i32 dy = cand->m_tileY - ly;
-                dy = abs(dy);
-                i32 dist = dx * dx + dy * dy;
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    best = cand;
+    if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
+        CGruntPuddle* best = 0;
+        i32 bestDist = 0x7fffffff;
+        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+        while (pos != 0) {
+            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
+            if (cand->m_pending == 0) {
+                CGameObject* lvl = unit->m_object;
+                i32 lx = lvl->m_screenX >> 5;
+                i32 ly = lvl->m_screenY >> 5;
+                if (cand->m_tileX != lx || cand->m_tileY != ly) {
+                    i32 dx = cand->m_tileX - lx;
+                    dx = abs(dx);
+                    i32 dy = cand->m_tileY - ly;
+                    dy = abs(dy);
+                    i32 dist = dx * dx + dy * dy;
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = cand;
+                    }
                 }
             }
         }
+        if (best != 0) {
+            Method_0300c0(unitArg, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
+        }
+        unit->m_dwell = 0;
     }
-    if (best != 0) {
-        Method_0300c0(unitArg, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
-    }
-    unit->m_dwell = 0;
     return 1;
 }
 
