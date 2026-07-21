@@ -9,7 +9,6 @@
 
 extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
-#include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
@@ -428,7 +427,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        (reinterpret_cast<CSoundResMap*>(entry->m_soundRegistry))->RemoveByValue(static_cast<CSoundRes*>(obj));
+        entry->m_soundRegistry->RemoveByValue(static_cast<LeafCue*>(obj));
     }
     toAdd.RemoveAll();
 

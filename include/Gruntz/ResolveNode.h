@@ -52,18 +52,9 @@ public:
     // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
     i32 m_lastX;              // +0x18
     i32 m_lastY;              // +0x1c
-    // +0x20..+0x2f  the live dirty-rect / blit out-rect. The flats are the node
-    // readers' names; m_dirtyRect is the same 4 dwords as one RECT (the blit path
-    // whole-struct-assigns it).
-    union {
-        struct {
-            i32 m_dirtyLeft;   // +0x20  live dirty-rect left (INT_MIN = disarmed corner)
-            i32 m_dirtyTop;    // +0x24  live dirty-rect top
-            i32 m_dirtyRight;  // +0x28  (blit out-rect right)
-            i32 m_dirtyBottom; // +0x2c  (blit out-rect bottom)
-        };
-        RECT m_dirtyRect;
-    };
+    // +0x20..+0x2f  the live dirty-rect / blit out-rect (.left INT_MIN = disarmed
+    // corner; the blit path whole-struct-assigns it and reads it back per edge).
+    RECT m_dirtyRect;
     // +0x30/+0x34: live dirty-rect size (a RenderDot dot plot sets 1x1; the
     // A/C blit slots read them as the rect extent).
     i32 m_dirtyW;             // +0x30

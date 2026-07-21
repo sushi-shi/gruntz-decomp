@@ -430,16 +430,18 @@ def cmd_build(args) -> None:
     # mis-catalog aliasing one vtable under many names (collapse the fake views). It must never
     # regress, independent of the catalog-completeness backlog below.
     run([sys.executable, "-m", "gruntz.match.class_vtables", "--assert-unique"])
-    # Catalog completeness: VTBL still has a backlog (view-scaffolding + terminal manual
-    # stamps); REPORT until it too reaches 0, then flip to a fatal run(...).
-    r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
-                       cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    out_vt = r.stdout + r.stderr
-    n = sum(1 for ln in out_vt.splitlines()
-            if re.match(r"\s*\S+:\d+:", ln))
-    if n:
-        log(f"VTBL: {n} class(es) missing VTBL() "
-            f"(python -m gruntz.match.class_vtables for the list)")
+    # Catalog completeness: reached 0 (2026-07-21; every vtable-bearing class is
+    # positively bound or VTBL_ABSENT-proven) - FATAL so it can never regress.
+    rvt = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rvt.returncode != 0:
+        for ln in (rvt.stdout + rvt.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
+            "@data-symbol, dissolve the view, or prove VTBL_ABSENT "
+            "(python -m gruntz.match.class_vtables)")
+    else:
+        log((rvt.stdout + rvt.stderr).strip().splitlines()[-1])
     # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
     # function pointers) finds must be bound in source (symbol_names) or catalogued as
     # MFC/CRT in config/library_vtables.csv. FATAL gate - a vtable can never go uncovered.
@@ -500,14 +502,9 @@ def cmd_build(args) -> None:
         out_sb = (rb.stdout + rb.stderr).strip()
         if out_sb:
             log(out_sb.splitlines()[-1])
-    # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
-    # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
-    # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).
-    r = subprocess.run([sys.executable, "-m", "gruntz.match.view_debt"],
-                       cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    out = (r.stdout + r.stderr).strip()
-    if out:
-        log(out.splitlines()[0])
+    # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
+    # phantom view folded onto its real class) - FATAL so it can never regress.
+    run([sys.executable, "-m", "gruntz.match.view_debt", "--fatal"])
 
     _record_build_time("full", time.monotonic() - build_start, ninja_s,
                        time.monotonic() - gates_t0)

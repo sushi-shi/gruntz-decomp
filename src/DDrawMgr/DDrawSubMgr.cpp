@@ -49,7 +49,6 @@
 #include <DDrawMgr/DDrawWorkerHost.h> // CLevelPlane (the m_ctx geometry chain)
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
 #include <DDrawMgr/AniAdvance.h>          // CAniBlitTrigger (the per-frame sound trigger)
-#include <Dsndmgr/SoundResMap.h>          // CSoundResMap (RemoveByValue @0x157b00)
 #include <Wap32/WapObj.h>                 // CWapObj : CObject
 #include <Globals.h>
 
@@ -259,15 +258,15 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 // the CResolveNode truth is worth the drop (factories/Vfuncs all EXACT).
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
-    volatile i32* pHi = &m_dirtyLeft;
+    volatile LONG* pHi = &m_dirtyRect.left;
     volatile i32* pLo = &m_dirtyArmed;
     m_78b = 0;
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_screenX = static_cast<i32>(0x80000000);
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_04 = -1;
     m_flags = 0;
@@ -315,15 +314,15 @@ i32 CDDrawWorkerBase::GetClassId() {
 // `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
-    volatile i32* pHi = &m_dirtyLeft;
+    volatile LONG* pHi = &m_dirtyRect.left;
     volatile i32* pLo = &m_dirtyArmed;
     m_78 = 0;
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_screenX = static_cast<i32>(0x80000000);
-    *pHi = static_cast<i32>(0x80000000);
+    *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_04 = -1;
     m_flags = 0;
@@ -364,7 +363,7 @@ i32 CDDrawWorkerBase::Unload() {
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_screenX = v;
-    m_dirtyLeft = v;
+    m_dirtyRect.left = v;
     m_dirtyArmed = -1;
     return v;
 }
@@ -651,7 +650,9 @@ i32 CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clea
 }
 
 // ===========================================================================
-// CSoundResMap::RemoveByValue (0x157b00): remove one map entry by its value
+// CDDrawSubMgrLeafScan::RemoveByValue (0x157b00): remove one map entry by its value
+// (ex the CSoundResMap/CSoundRes view pair - the "sound registry" IS the leaf-scan
+// class and the values ARE LeafCue elements, same as ClearMap below)
 // pointer and delete the object (position-homed: the leaf/ani catalog IS the
 // sound-res map neighborhood - dossier #15).
 // ===========================================================================
@@ -664,18 +665,18 @@ i32 CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clea
 // slots are assigned differently. The find-one-and-stop break is what flips
 // both. ~74.8%, logic complete; deferred to the final sweep.
 RVA(0x00157b00, 0xb2)
-void CSoundResMap::RemoveByValue(CSoundRes* p) {
+void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == 0) {
         return;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
     void* value = 0;
     if (pos != static_cast<POSITION>(0)) {
         do {
-            m_map.GetNextAssoc(pos, key, value);
+            m_10.GetNextAssoc(pos, key, value);
             if (value == p) {
-                m_map.RemoveKey(key);
+                m_10.RemoveKey(key);
                 delete p;
                 break;
             }

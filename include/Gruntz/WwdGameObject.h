@@ -31,6 +31,11 @@ struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex Le
 
 #include <DDrawMgr/AnimWorkerObj.h>
 
+// VTBL_ABSENT: never-constructed dispatch facet, PROVEN retail-faithful - it spells
+// the bare ??_G call (push 1; call [vt+4], no null guard: MSVC5 `delete` ALWAYS
+// guards, so retail's caller TU itself used a slot-view declaration) and the
+// shipped OOB slot-16 quirk (below).
+VTBL_ABSENT(WwdRetailSlot16Facet);
 struct WwdRetailSlot16Facet {
     virtual void S00();
     virtual void* Delete(i32 flag); // [1] the scalar-deleting dtor slot - ReadPlaneObjects

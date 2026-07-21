@@ -108,6 +108,11 @@ public:
     ApiCallerStubs::CImagePaletteNode* m_paletteNode; // +0x458  the pool's palette list node
 };
 
+// VTBL_ABSENT: never-constructed 1-slot dtor-dispatch facet over the CDDSurface
+// m_elements pool entries (slot-0-dtor family scheme). @identity-TODO: no
+// reconstructed producer adds to m_elements yet - recover the element class from
+// the filler once it lands.
+VTBL_ABSENT(CFileImageElement);
 class CFileImageElement {
 public:
     virtual ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)

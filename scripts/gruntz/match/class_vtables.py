@@ -40,6 +40,7 @@ from gruntz.match.class_meta import (
     iter_class_defs,
     rel,
     source_files,
+    vtbl_absent_names,
     vtbl_annotated_names,
     vtbl_annotations,
 )
@@ -152,6 +153,7 @@ def main() -> int:
     present = present_rvas()
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
+    vtbl_absent = vtbl_absent_names()
     data_sym_vtbl = data_symbol_vtable_classes()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
@@ -165,6 +167,12 @@ def main() -> int:
         if _MANUAL_RE.search(body):
             manual[name] = True
 
+    # A VTBL_ABSENT claim contradicting a positive binding (VTBL/RTTI) is itself a
+    # mis-catalog - surface it, never silently prefer either side.
+    for name in sorted(vtbl_absent & (set(vtbl_ann) | set(rtti))):
+        print(f"vtbl-absent CONTRADICTION: {name} is VTBL_ABSENT but also "
+              f"positively bound (VTBL/RTTI) - remove one", file=sys.stderr)
+
     violators = []
     have_vtable = 0
     for name, (path, lineno) in sorted(where.items()):
@@ -174,6 +182,7 @@ def main() -> int:
         have_vtable += 1
         catalogued = (
             name in vtbl_ann
+            or name in vtbl_absent
             or manual[name]
             or name in data_sym_vtbl
             or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
@@ -195,8 +204,10 @@ def main() -> int:
         print(f"class-vtable completeness: all {have_vtable} names catalogued, but "
               f"{len(collisions)} vtable rva(s) are multiply-bound (see above)")
         return 1
+    absent_n = len(vtbl_absent)
     print(f"class-vtable completeness: all {have_vtable} vtable-bearing class "
-          f"names are catalogued")
+          f"names are catalogued"
+          + (f" ({absent_n} via VTBL_ABSENT - proven-absent ??_7)" if absent_n else ""))
     return 0
 
 

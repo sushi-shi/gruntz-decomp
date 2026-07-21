@@ -155,6 +155,16 @@ def vtbl_annotated_names() -> set:
     return _annotated(_VTBL_RE)
 
 
+_VTBL_ABSENT_RE = re.compile(r"\bVTBL_ABSENT\s*\(\s*([A-Za-z_]\w*)")
+
+
+def vtbl_absent_names() -> set:
+    """Class names carrying a VTBL_ABSENT(...) catalog entry - vtable-bearing
+    classes whose ??_7 datum is PROVEN absent from the retail image (never-emitted
+    bases / never-constructed dispatch facets). Catalogued, not gaps."""
+    return _annotated(_VTBL_ABSENT_RE)
+
+
 # VTBL(name, 0xrva) with BOTH arguments captured, for rva-uniqueness auditing.
 _VTBL_FULL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)")
 

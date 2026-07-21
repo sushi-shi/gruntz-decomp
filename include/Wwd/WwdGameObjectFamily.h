@@ -46,7 +46,7 @@ public:
         m_c0 = static_cast<i32>(0x80000000);
         m_d8 = -1;
         m_screenX = static_cast<i32>(0x80000000);
-        m_dirtyLeft = static_cast<i32>(0x80000000);
+        m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;
         // retail leaves eax = the INT_MIN it just materialized for the stores
         return static_cast<i32>(0x80000000);

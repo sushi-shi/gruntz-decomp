@@ -61,6 +61,10 @@ SIZE_UNKNOWN(CSbiRect);
 // its Toggle notifier (FUN_004ea170, unreconstructed) is that same class's method. Both
 // call sites now agree on CStatusBarMgr; Toggle is declared on it below.)
 
+// VTBL_ABSENT: never-constructed 1-slot notify facet over the tab-list entries.
+// @identity-TODO: the entries are CStatusBarItem-family items - fold onto the real
+// base once slot 0's signature is byte-proven against ??_7CStatusBarItem's slot 0.
+VTBL_ABSENT(CSbiNotifyTarget);
 class CSbiNotifyTarget {
 public:
     virtual void Notify(i32 on); // slot 0 (__thiscall void(int))
@@ -73,6 +77,11 @@ struct CSbiNotifyNode {
 };
 SIZE_UNKNOWN(CSbiNotifyNode);
 
+// VTBL_ABSENT: never-constructed dispatch view (the CStatusBarItem-family slot
+// scheme - Destroy/Serialize/Setup/... - with RECOVERED role names). @identity-TODO:
+// fold onto CStatusBarItem after per-slot signature reconciliation (its Serialize
+// is the PROVEN 4-arg SerializeFields; this view still spells 0-arg shapes).
+VTBL_ABSENT(CSbiNotifyPayload);
 class CSbiNotifyPayload {
 public:
     virtual void Destroy();     // slot 0  scalar-deleting dtor
@@ -95,6 +104,9 @@ SIZE_UNKNOWN(CSbiNotifyPayload);
 
 SIZE(CWarpStoneFly, 0x40);
 
+// VTBL_ABSENT: never-constructed dispatch view (same CStatusBarItem-family scheme
+// + @identity-TODO as CSbiNotifyPayload above).
+VTBL_ABSENT(CSbiGaugeNotify);
 class CSbiGaugeNotify {
 public:
     virtual void Destroy();     // slot 0  scalar-deleting dtor
@@ -480,6 +492,10 @@ SIZE(CStatusBarMgr, 0x630);
 struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 SIZE_UNKNOWN(CSbiSeqMap);
 
+// VTBL_ABSENT: never-constructed dispatch view of the seq-map values.
+// @identity-TODO: slot-8 TypeTag()==5 gates a CWwdGameObjectA cast - the values
+// may be GAME OBJECTS, not status-bar items; prove before folding.
+VTBL_ABSENT(CSbiSeqObj);
 class CSbiSeqObj {
 public:
     virtual void Destroy();     // slot 0  scalar-deleting dtor
@@ -540,6 +556,9 @@ SIZE_UNKNOWN(CSbiMainBarCfg);
 class CDDrawSurfacePair; // the real main-bar draw receiver (ex the CSbiMainL2 facet)
 void __stdcall MainBarDrawFrame(CDDrawSurfacePair* obj, i32 x, i32 y, i32 flag); // 0x153790 (NOTE:
 
+// VTBL_ABSENT: never-constructed dispatch view (CStatusBarItem-family scheme;
+// same @identity-TODO fold as CSbiNotifyPayload).
+VTBL_ABSENT(CSbiHiWidget);
 class CSbiHiWidget {
 public:
     virtual void Destroy();                   // slot 0  scalar-deleting dtor

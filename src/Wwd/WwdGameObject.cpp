@@ -150,7 +150,7 @@ RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_lastX, 36);
     if (m_dirtyArmed != -1) {
-        RECT* r = reinterpret_cast<RECT*>(&m_dirtyLeft);
+        RECT* r = reinterpret_cast<RECT*>(&m_dirtyRect.left);
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
         m_dirtyArmed = -1;
     }
@@ -174,8 +174,8 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
     i32 rc[4]; // reused src+dst blit rect buffer
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0));
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
             rc[0] = ir.left;
@@ -227,8 +227,8 @@ RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0));
             i32 pos[2];
             i32 size[2];
             pos[0] = ir.left;

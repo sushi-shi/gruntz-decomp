@@ -88,6 +88,15 @@
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
 
+// VTBL_ABSENT(type) - catalog a vtable-bearing class whose ??_7 datum is PROVEN
+// ABSENT from the retail image: a base whose every ctor/dtor is folded under a
+// derived stamp (no standalone emission), or a never-constructed dispatch facet
+// that models a retail-side view (bare ??_G calls / OOB slot dispatch / a caller
+// TU's own header revision). ALWAYS pair it with a comment stating the proof (and
+// an @identity-TODO when the facet's receiver identity is still open). Cataloged
+// by gruntz.match.class_vtables; no symbol is emitted.
+#define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
+
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
@@ -99,6 +108,7 @@
 #define SIZE(type, bytes)
 #define SIZE_UNKNOWN(type)
 #define VTBL(type, addr)
+#define VTBL_ABSENT(type)
 
 #endif
 

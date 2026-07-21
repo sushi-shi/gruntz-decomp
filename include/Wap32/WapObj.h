@@ -6,6 +6,11 @@
 #include <Wap32/Object.h> // CObject - the 5-slot engine grand-base (vtbl 0x5e8cb4)
 
 SIZE(CWapObj, 0x04);
+// VTBL_ABSENT: the engine grand-base is never standalone-constructed - its default
+// bodies (IsLoaded @0x13b6-thunked, IsReady @0x1c08-thunked) are dispatched only
+// through derived vtables; no ??_7CWapObj exists in the image (every analysed
+// vtable is otherwise covered).
+VTBL_ABSENT(CWapObj);
 class CWapObj : public CObject {
 public:
     // slot 5 (@+0x14) default @0x0013b6: `return m_10 > 0`. Derived classes

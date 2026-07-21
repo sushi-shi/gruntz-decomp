@@ -28,6 +28,11 @@ struct CHashSlot {
 };
 SIZE(CHashSlot, 0x10);
 
+// VTBL_ABSENT: the intrusive-element base - only the concrete elements (CSymRec/
+// CSymTab/...) are constructed, each stamping its own vtable; no standalone base
+// emission. @identity-TODO: if a bucket ever holds a BARE element, recover its
+// vtable and bind it instead.
+VTBL_ABSENT(CHashElement);
 class CHashElement {
 public:
     virtual u32 Hash(); // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)

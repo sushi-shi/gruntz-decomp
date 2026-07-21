@@ -24,6 +24,9 @@ class
 // slots 5-8 (IsReady/IsReadyPredicate/DestroyWorkers/GetStateId, StateId-typed)
 // would have to become overrides of CLoadable's IsLoaded/IsReady/Unload/GetClassId
 // (i32-typed) - the whole-family rebase Loadable.h defers to the (B)-form flip.
+// VTBL_ABSENT: never-emitted base shell. @identity-TODO (above): IS CLoadable -
+// the fold is written but blocked on the family-wide slot-signature (B)-form flip.
+VTBL_ABSENT(WorkerListSibBase);
 class WorkerListSibBase : public CObject {
 public:
     virtual ~WorkerListSibBase() OVERRIDE; // slot 1 (deleting dtor -> cl-emitted ??_G)

@@ -15,6 +15,10 @@
 // way the identity chase resolves. @identity-TODO: the slot-1 signature match
 // makes CGruntzCommand the prime candidate (the m[] arrays would be the per-team
 // queued-command slots); prove via the storing sites' ctor stamps before folding.
+// VTBL_ABSENT: abstract 2-slot base of the sync-slot objects; only the concrete
+// class is constructed. @identity-TODO (above): CGruntzCommand is the prime
+// candidate - prove via the storing sites' ctor stamps, then fold.
+VTBL_ABSENT(SyncSub);
 struct SyncSub {
     virtual ~SyncSub() {} // slot 0
     virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4

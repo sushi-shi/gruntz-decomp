@@ -63,6 +63,10 @@ static const i32 TILE_CLEAR = -1;
         }                                                                                          \
     } while (0)
 
+// VTBL_ABSENT: abstract-in-practice family base - only the concrete CImageSet1/2/3
+// are constructed (each stamps its own vtable); the m_imageSets array dispatches
+// through this base, whose own ??_7 is never emitted.
+VTBL_ABSENT(CTileImageSet);
 class CTileImageSet : public CObject {
 public:
     virtual i32 Parse(void* record); // slot 5 (+0x14)  init from the WWD record

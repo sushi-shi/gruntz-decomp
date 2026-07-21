@@ -11,6 +11,12 @@ class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view)
 
 class CDDrawSurfacePair;
 
+// VTBL_ABSENT: the base vtable is never emitted - every factory builds a derived
+// worker with a SINGLE derived stamp (retail 0x157150; the NO_SEED base ctor is
+// inline-empty so the intermediate stamp dies), and no standalone base ctor/dtor
+// exists. The family-shared slot bodies (0x157200/...) are ITS methods, dispatched
+// only through the A/B vtables.
+VTBL_ABSENT(CDDrawWorkerBase);
 class CDDrawWorkerBase : public CResolveNode {
 public:
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x157200 (family-shared body)
@@ -47,7 +53,7 @@ public:
         m_04 = 0;
         m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
         m_flags = 0;
-        m_dirtyLeft = static_cast<i32>(0x80000000);
+        m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_clip.left = static_cast<i32>(0x80000000);
