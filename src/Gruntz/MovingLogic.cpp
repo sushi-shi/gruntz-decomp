@@ -1,7 +1,8 @@
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicSerial.h> // CButeText accumulators + the serialize helpers
+#include <strstrea.h> // REAL CRT ostrstream/istrstream (the serialize accumulator temps)
+#include <Gruntz/MovingLogicSerial.h> // the serialize helpers (WriteName/ReadName/ReadCurve)
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_level hop)
 #include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
@@ -120,14 +121,14 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
 // read (RezAlloc + read the text, parse the name back, read the four ints, then
 // seed the back-pointers/m_14 from the context arg and stamp m_28=0x3e9).
 // @early-stop
-// Same virtual-base accumulator-temp wall as the derived Serialize 0x16f4a0
-// (sibling, 66.6%): CButeWriteTemp/CButeReadTemp construct at the full object but
-// the destruct helpers + the inlined text-length probe act on the vbase subobject
-// (the `mov ecx,[esp+ecx+0x14]` vbase-offset lookup), which is not reproducible
-// from a source-level temp. The read/write dispatch, the archive Read/Write
-// virtual calls, RezAlloc/RezFree, WriteName/ReadName, the three trailing-int +
-// g_logicTypesRegistered transfers and the read-mode back-pointer seeding are all
-// byte-faithful. Logic complete; deferred to the final sweep with its sibling.
+// TU-partition /GX wall (sibling 0x16f4a0 same): the accumulators are REAL CRT
+// ostrstream/istrstream stack temps now (<strstrea.h>; the ctor+vbase-flag, the
+// inlined pcount() vbdisp probe, str()->?str@strstreambuf and the scope-end
+// ~ostrstream+~ios pair all byte-match retail under /GX-). The ONLY residue: this
+// unit is compiled /GX (its claimed 0x139xx ctor/dtor band needs EH frames) while
+// retail's 0x16cxxx-0x16fxxx band has NO EH frames - two retail TUs conflated in
+// one unit, so cl wraps the temps in an EH frame retail lacks. Fix = split the
+// movinglogic TU at the band boundary (docs/exe-map partition work), not source.
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
@@ -136,26 +137,23 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (mode == 4) {
         // WRITE: render the name to bute text, length-prefix it, append ints.
         char buf[0x100];
-        CButeWriteTemp accum;
-        accum.Ctor(buf, 0x100, 2, 1);
+        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
         WriteName(&accum, &m_link);
-        i32 len = accum.Length();
+        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
         arc->Write(&len, 4);
-        arc->Write(accum.GetBuffer(), len);
+        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
         arc->Write(&m_28, 4);
         arc->Write(&m_2c, 4);
         arc->Write(&g_logicTypesRegistered, 4);
         arc->Write(&m_prevAnimSetNode, 4);
-        accum.m_vbase.DtorWriteB();
-        accum.m_vbase.FuncB();
+        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
     } else if (mode == 7) {
         // READ: pull the length-prefixed text, parse the name back, read the ints.
         i32 len;
         arc->Read(&len, 4);
         void* buf = RezAlloc(len);
         arc->Read(buf, len);
-        CButeReadTemp accum;
-        accum.Ctor(buf, len, 1);
+        istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
         ReadName(&accum, &m_link);
         RezFree(buf);
         arc->Read(&m_28, 4);
@@ -168,8 +166,7 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         m_deferredCallback = 0;
         m_gatedCallback = 0;
         m_28 = 0x3e9;
-        accum.m_vbase.DtorReadA();
-        accum.m_vbase.FuncB();
+        // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
     }
     return 1;
 }
@@ -266,20 +263,13 @@ void CMovingLogic::MovingSlot16() {
 // 0x16f4a0 - CMovingLogic::Serialize(arc, mode, a3, a4): bute-text round-trip of
 // the curve block, then chain to the base. mode 4 = write (build text via
 // WriteCurve, length-prefix it, write the four trailing ints), mode 7 = read
-// (RezAlloc + read the text, ReadCurve it back, read the four ints). The CButeText
-// accumulator is a virtual-base CButeMgr temp: the ctor takes the full object but
-// the teardown helpers run on the vbase subobject (+0xc).
+// (RezAlloc + read the text, ReadCurve it back, read the four ints). The
+// accumulators are CRT ostrstream/istrstream stack temps (<strstrea.h>).
 //
 // @early-stop
-// Virtual-base temp wall (docs/patterns family eh-dtor-inline-member-vtable-stamp-
-// thisadjust): the accumulator's most-derived ctor (0x169700 read / 0x1698c0 write)
-// constructs at the full object while the destruct helpers (0x1697c0/0x1699c0 then
-// the shared 0x169d70) act on the vbase subobject at +0xc, and the write-path text
-// length is computed by an inlined CString probe. These vbase this-adjusts + the
-// inlined probe are not reproducible from a source-level temp; the read/write
-// dispatch, the archive Read/Write virtual calls, RezAlloc/RezFree, WriteCurve
-// (paired 100%) / ReadCurve, the four trailing-int transfers and the base chain
-// are all byte-faithful. Logic complete; deferred to the final sweep.
+// TU-partition /GX wall (see 0x16e7f0 above): real ostrstream/istrstream temps
+// byte-match retail under /GX-; this unit builds /GX for its 0x139xx ctor/dtor
+// band, so cl adds an EH frame retail lacks here. Split the TU to fix.
 RVA(0x0016f4a0, 0x1da)
 i32 CMovingLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
@@ -288,39 +278,31 @@ i32 CMovingLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (mode == 4) {
         // WRITE: render the curve to bute text, length-prefix it, append ints.
         char buf[0x100];
-        CButeWriteTemp accum;
-        accum.Ctor(buf, 0x100, 2, 1);
-        WriteCurve(*reinterpret_cast<ostream*>(&accum), *Motion());
-        i32 len = accum.Length();
+        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+        WriteCurve(accum, *Motion());
+        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
         arc->Write(&len, 4);
-        arc->Write(accum.GetBuffer(), len);
+        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
         arc->Write(&m_140, 4);
         arc->Write(&m_144, 4);
         arc->Write(&m_148, 4);
         arc->Write(&m_14c, 4);
-        accum.m_vbase.DtorWriteB();
-        accum.m_vbase.FuncB();
+        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
     } else if (mode == 7) {
         // READ: pull the length-prefixed text, parse it back, read the ints.
         i32 len;
         arc->Read(&len, 4);
         void* buf = RezAlloc(len);
         arc->Read(buf, len);
-        CButeReadTemp accum;
-        accum.Ctor(buf, len, 1);
-        ReadCurve(*reinterpret_cast<istream*>(&accum), *Motion());
+        istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
+        ReadCurve(accum, *Motion());
         RezFree(buf);
         arc->Read(&m_140, 4);
         arc->Read(&m_144, 4);
         arc->Read(&m_148, 4);
         arc->Read(&m_14c, 4);
-        accum.m_vbase.DtorReadA();
-        accum.m_vbase.FuncB();
+        // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
     }
     return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
 }
 
-SIZE_UNKNOWN(CButeReadTemp);
-SIZE_UNKNOWN(CButeVbaseTeardown);
-SIZE_UNKNOWN(CButeWriteTemp);
-SIZE_UNKNOWN(ostream); // CRT ostream (declared-only; library operator<< appends)
