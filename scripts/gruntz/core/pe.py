@@ -38,16 +38,36 @@ class PE:
         self.path = Path(path) if path else EXE
         self.data = self.path.read_bytes()
         d = self.data
+        if len(d) < 0x40 or d[:2] != b"MZ":
+            raise ValueError(f"not a PE file: {self.path}")
         e = struct.unpack_from("<I", d, 0x3c)[0]
+        if d[e:e + 4] != b"PE\0\0":
+            raise ValueError(f"missing PE signature: {self.path}")
         nsec = struct.unpack_from("<H", d, e + 6)[0]
         self._optsz = struct.unpack_from("<H", d, e + 20)[0]
         self._opt = e + 24
-        self.secs = []                     # (name, va, vsz, rp, rsz)
+        if struct.unpack_from("<H", d, self._opt)[0] != 0x10B:
+            raise ValueError(f"expected PE32 optional header: {self.path}")
+        self.image_base = struct.unpack_from("<I", d, self._opt + 28)[0]
+        # SizeOfRawData is rounded UP to FileAlignment - a section's last
+        # <FileAlignment bytes may be padding, not emitted content (data_audit).
+        self.file_alignment = struct.unpack_from("<I", d, self._opt + 36)[0]
+        self.sections = []                 # [{name, rva, virtual_size, raw_size,
+        #                                     raw_offset, characteristics}]
         for i in range(nsec):
             o = self._opt + self._optsz + i * 40
             name = d[o:o + 8].rstrip(b"\0").decode("latin1")
             vsz, va, rsz, rp = struct.unpack_from("<IIII", d, o + 8)
-            self.secs.append((name, va, vsz, rp, rsz))
+            self.sections.append({
+                "name": name, "rva": va, "virtual_size": vsz,
+                "raw_size": rsz, "raw_offset": rp,
+                "characteristics": struct.unpack_from("<I", d, o + 36)[0],
+            })
+        # legacy 5-tuple shape (name, va, vsz, rp, rsz) - most scan code uses this
+        self.secs = [(s["name"], s["rva"], s["virtual_size"],
+                      s["raw_offset"], s["raw_size"]) for s in self.sections]
+        self.exec_ranges = [(s["rva"], s["rva"] + max(s["virtual_size"], s["raw_size"]))
+                            for s in self.sections if s["characteristics"] & 0x20000000]
         self._reloc_sites = None
         self._call_index = None
         self._strings_at = None
@@ -59,10 +79,13 @@ class PE:
         return next(s for s in self.secs if s[0] == ".text")
 
     def off(self, rva):
-        """File offset of `rva`, or None if unmapped."""
+        """File offset of `rva`, or None if unmapped OR past the section's raw
+        data (a virtual-only tail has no file bytes - reading through would
+        return the NEXT section's content)."""
         for name, va, vsz, rp, rsz in self.secs:
             if va <= rva < va + max(vsz, rsz):
-                return rva - va + rp
+                o = rva - va + rp
+                return o if o < rp + rsz else None
         return None
 
     def sec_of(self, rva):
@@ -70,6 +93,25 @@ class PE:
             if s[1] <= rva < s[1] + max(s[2], s[4]):
                 return s
         return None
+
+    def sec_name(self, rva):
+        s = self.sec_of(rva)
+        return s[0] if s else None
+
+    def is_exec(self, rva):
+        return any(lo <= rva < hi for lo, hi in self.exec_ranges)
+
+    def u32(self, rva):
+        o = self.off(rva)
+        return struct.unpack_from("<I", self.data, o)[0] if o is not None else None
+
+    def cstr(self, rva, n=512):
+        """NUL-terminated latin1 string at `rva` (bounded), or None."""
+        o = self.off(rva)
+        if o is None:
+            return None
+        end = self.data.find(b"\0", o, o + n)
+        return self.data[o:end].decode("latin1") if end != -1 else None
 
     # --- base relocations (the real DIR32 address-operand sites) -----------
     @property

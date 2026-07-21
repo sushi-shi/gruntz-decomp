@@ -43,45 +43,25 @@ SYMBOLS = REPO / "build/gen/symbol_names.csv"
 GLOBALS = REPO / "build/gen/globals.json"
 OUTPUT = REPO / "build/gen/data_attribution.tsv"
 
-COFF_SECTION_HEADER_SIZE = 40
 IMAGE_DIRECTORY_ENTRY_BASERELOC = 5
 IMAGE_REL_BASED_HIGHLOW = 3
-PE32_MAGIC = 0x10B
 
 
 # --- PE reader (ported verbatim in spirit from homm2 link_exe.read_pe) ---------
 def read_pe(path: Path) -> dict:
-    data = Path(path).read_bytes()
-    if len(data) < 0x40 or data[:2] != b"MZ":
-        raise ValueError(f"not a PE file: {path}")
-    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
-    if data[pe_offset:pe_offset + 4] != b"PE\0\0":
-        raise ValueError(f"missing PE signature: {path}")
-    coff = pe_offset + 4
-    section_count = struct.unpack_from("<H", data, coff + 2)[0]
-    optional_size = struct.unpack_from("<H", data, coff + 16)[0]
-    optional = coff + 20
-    if struct.unpack_from("<H", data, optional)[0] != PE32_MAGIC:
-        raise ValueError(f"expected PE32 optional header: {path}")
-    section_offset = optional + optional_size
-    sections = {}
-    for index in range(section_count):
-        offset = section_offset + index * COFF_SECTION_HEADER_SIZE
-        name = data[offset:offset + 8].split(b"\0", 1)[0].decode("ascii", "replace")
-        virtual_size, rva, raw_size, raw_offset = struct.unpack_from("<IIII", data, offset + 8)
-        sections[name] = {
-            "rva": rva, "virtual_size": virtual_size,
-            "raw_size": raw_size, "raw_offset": raw_offset,
-            "characteristics": struct.unpack_from("<I", data, offset + 36)[0],
-        }
+    """The dict shape classify_pe_storage/data_manifest consume. Parsing lives in
+    gruntz.core.pe.PE (which raises the same ValueErrors on a non-PE32 file);
+    FileAlignment bounds the raw-tail padding ambiguity - see classify_pe_storage()."""
+    from gruntz.core.pe import PE
+    pe = PE(path)
     return {
-        "data": data,
-        "image_base": struct.unpack_from("<I", data, optional + 28)[0],
-        # SizeOfRawData is rounded UP to FileAlignment, so a section's last
-        # <FileAlignment bytes may be padding rather than emitted content. Needed to
-        # bound that ambiguity - see classify_pe_storage().
-        "file_alignment": struct.unpack_from("<I", data, optional + 36)[0],
-        "sections": sections,
+        "data": pe.data,
+        "image_base": pe.image_base,
+        "file_alignment": pe.file_alignment,
+        "sections": {s["name"]: {k: s[k] for k in
+                                 ("rva", "virtual_size", "raw_size",
+                                  "raw_offset", "characteristics")}
+                     for s in pe.sections},
     }
 
 

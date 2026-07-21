@@ -47,33 +47,14 @@ SYMS = _require(REPO / "build/ghidra-enrich/exports/symbols.csv", "run `gruntz i
 SRC = _require(REPO / "src", "not a gruntz checkout?")
 IMAGEBASE = 0x400000
 
-d = EXE.read_bytes()
-e = struct.unpack_from('<I', d, 0x3c)[0]
-nsec = struct.unpack_from('<H', d, e+6)[0]; optsz = struct.unpack_from('<H', d, e+20)[0]; opt = e+24
-SECS = []
-for i in range(nsec):
-    b = opt+optsz+i*40
-    nm = d[b:b+8].rstrip(b'\0').decode('latin1')
-    vsz, va, rsz, rp = struct.unpack_from('<IIII', d, b+8); ch = struct.unpack_from('<I', d, b+36)[0]
-    SECS.append((nm, va, vsz, rsz, rp, ch))
-EXEC = [(va, va+max(vsz, rsz)) for (nm, va, vsz, rsz, rp, ch) in SECS if ch & 0x20000000]
-
-def off(rva):
-    for (nm, va, vsz, rsz, rp, ch) in SECS:
-        if va <= rva < va+max(vsz, rsz):
-            o = rva-va+rp; return o if o < rp+rsz else None
-    return None
-def u32(rva):
-    o = off(rva); return struct.unpack_from('<I', d, o)[0] if o is not None else None
-def sec(rva):
-    for (nm, va, vsz, rsz, rp, ch) in SECS:
-        if va <= rva < va+max(vsz, rsz): return nm
-    return None
-def is_exec(rva): return any(lo <= rva < hi for lo, hi in EXEC)
-def cstr(rva, n=512):
-    o = off(rva)
-    if o is None: return None
-    end = d.find(b'\0', o, o+n); return d[o:end].decode('latin1') if end != -1 else None
+# the ONE shared EXE load: gruntz.core.pe (no second parse in this process)
+from gruntz.core import get_context as _get_context
+_pe = _get_context().pe
+d = _pe.data
+SECS = [(s["name"], s["rva"], s["virtual_size"], s["raw_size"], s["raw_offset"],
+         s["characteristics"]) for s in _pe.sections]
+EXEC = _pe.exec_ranges
+off, u32, sec, is_exec, cstr = _pe.off, _pe.u32, _pe.sec_name, _pe.is_exec, _pe.cstr
 def chase_thunk(rva):
     """Follow an ILT jmp-thunk (`E9 rel32`) to the body it jumps to; None if `rva`
     is not such a thunk. C++ vtable slots point at these one-instruction thunks in
@@ -89,19 +70,8 @@ def chase_thunk(rva):
         rel -= 0x100000000
     return (rva + 5 + rel) & 0xFFFFFFFF
 
-# --- base relocations ---
-rr = struct.unpack_from('<I', d, opt+96+5*8)[0]; rs = struct.unpack_from('<I', d, opt+96+5*8+4)[0]
-REL = []
-if rr:
-    base = off(rr); end = base+rs; p = base
-    while p < end:
-        pg, blk = struct.unpack_from('<II', d, p)
-        if blk == 0: break
-        for i in range((blk-8)//2):
-            ent = struct.unpack_from('<H', d, p+8+i*2)[0]
-            if ent >> 12 == 3: REL.append(pg + (ent & 0xfff))
-        p += blk
-REL.sort(); RELSET = set(REL)
+# --- base relocations (core.pe walks them once, cached) ---
+REL = list(_pe.reloc_sites); RELSET = set(REL)
 
 # --- functions for labeling ---
 FN = {}
