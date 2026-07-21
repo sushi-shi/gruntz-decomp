@@ -34,6 +34,8 @@
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
+RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
+
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("MENU_SPARKLE");
@@ -50,7 +52,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // a user-declared `~CMenuSparkle() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CMenuSparkle@@UAE@XZ 0x000101b0 0x44
+#include <rva.h>
 
 DATA(0x00246010)
 extern CLogicActTable g_logicActReg_646010; // 0x646010

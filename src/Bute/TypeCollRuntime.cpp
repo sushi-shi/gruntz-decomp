@@ -30,4 +30,4 @@ CTypeCollRuntime::~CTypeCollRuntime() {
 // constructed there); our reconstruction has only the isolated ??_G COMDAT, so cl emits
 // it CALLING the out-of-line ??1 instead of inlining. Recovers to ~87.5% once the real
 // construction TU (which makes the dtor inline-visible) is reconstructed.
-// @rva-symbol: ??_GCTypeCollRuntime@@UAEPAXI@Z 0x0016ea20 0x51
+RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)

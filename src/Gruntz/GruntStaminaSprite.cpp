@@ -2,6 +2,8 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
 
+RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
+
 // CGruntStaminaSprite::CGruntStaminaSprite @0x0007fae0 - the /GX HUD sprite ctor.
 // Chains the CGruntHealthSprite base ctor (0x7eb00, via thunk 0x3224; declared-only
 // here so the base `call` reloc-masks). cl stamps the leaf vftable then the body
@@ -44,7 +46,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 // a user-declared `~CGruntStaminaSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntStaminaSprite@@UAE@XZ 0x00012070 0x44
+#include <rva.h>
 
 RVA(0x0007fbb0, 0xd)
 i32 CGruntStaminaSprite::Vslot16(CGrunt* grunt) {

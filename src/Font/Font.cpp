@@ -8,7 +8,6 @@
 #include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
 #include <rva.h>
 
-// @rva-symbol: ?GetAt@CString@@QBEDH@Z 0x0017b4f0 0xc
 
 RVA(0x00179700, 0x10)
 Font::Font() {
@@ -761,6 +760,8 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
     ext.height = m_font->GetMaxHeight() + y + 1;
     return ext;
 }
+
+RVA_COMPGEN(0x0017b4f0, 0xc, ?GetAt@CString@@QBEDH@Z)
 
 RVA(0x0017b500, 0x8)
 i32 CRect::Width() {

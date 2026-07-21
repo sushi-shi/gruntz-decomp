@@ -19,7 +19,8 @@ i32 CGuardPoint::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CGuardPoint() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGuardPoint@@UAE@XZ 0x00010410 0x44
+#include <rva.h>
+RVA_COMPGEN(0x00010410, 0x44, ??1CGuardPoint@@UAE@XZ)
 
 // CGuardPoint::CGuardPoint (0xae5f0) - fold the shared CUserLogic(obj) init (with
 // the built-in logic types inlined-registered), then flag the sub-object.

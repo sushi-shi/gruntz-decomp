@@ -32,7 +32,8 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CSimpleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CSimpleAnimation@@UAE@XZ 0x0000f9d0 0x44
+#include <rva.h>
+RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 DATA(0x00246038)
 extern LogicFnTable g_simpleAnimDispatch;

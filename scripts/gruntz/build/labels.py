@@ -101,6 +101,11 @@ VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)
 # verbatim, so there is no join and no IR - it is read in every TU.
 RVA_SYMBOL_RE = re.compile(
     r"@rva-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
+# `RVA_COMPGEN(<rva>, <size>, <mangled>)` - the macro form of @rva-symbol (rva.h;
+# expands to nothing under both compilers, read here from source text). size 0 =
+# unknown. Keep invocations in RVA order among the TU's RVA() functions.
+RVA_COMPGEN_RE = re.compile(
+    r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
 # `// @data-symbol: <mangled> <rva> [<size>]` - the DATA analog of @rva-symbol: a
 # compiler-emitted DATUM with no source VarDecl to hang DATA() on (a `??_7`
 # vftable or `??_R*` RTTI record). The EXE carries no debug symbols, so the
@@ -137,7 +142,7 @@ ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>) has no macro to invoke,
 # and without this alternation it silently fell through to the vendored-C path
 # and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(|@(?:rva|data)-symbol:")
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN)\s*\(|@(?:rva|data)-symbol:")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -1151,6 +1156,19 @@ def main():
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "@rva-symbol not in base obj"))
+
+        # --- RVA_COMPGEN(<rva>, <size>, <mangled>): the macro form (rva.h) ---
+        for m in RVA_COMPGEN_RE.finditer(text):
+            rva_s, size_s, sym = m.group(1), m.group(2), m.group(3)
+            rva = int(rva_s, 16)
+            size = (int(size_s, 16) if size_s.lower().startswith("0x")
+                    else int(size_s)) or None  # 0 = size unknown
+            addr_sites.setdefault(rva, []).append((tu, sym))
+            func_meta[rva] = {"ir_sym": sym, "names": None}
+            if obj_syms is None or sym in obj_syms:
+                rows.append((rva, sym, unit, size, "func"))
+            else:
+                misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
 
         # --- standalone `// @data-symbol:` data (a `??_7` vtable / `??_R*` RTTI
         # datum cl emits for a real polymorphic class; name is deterministic from

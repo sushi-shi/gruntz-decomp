@@ -24,6 +24,8 @@ struct CHaznEntry; // an entry: first dword is the registered handler
 DATA(0x0024e3d0)
 extern CCoordColl g_haznColl;
 
+RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
+
 RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
     g_haznColl.Construct(0x7d0, 0x7da);
@@ -67,7 +69,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
 // a user-declared `~CStaticHazard() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CStaticHazard@@UAE@XZ 0x00012b30 0x44
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CStaticHazard::CStaticHazard @0x0fb7a0 - the 1-arg ctor. Chains the standard

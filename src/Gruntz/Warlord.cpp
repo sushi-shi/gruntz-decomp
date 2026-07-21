@@ -143,7 +143,7 @@ extern "C" void Act_F(); // 0x402725
 // too, so this is a ~50-leaf tile-logic-wide structural item, not a CWarlord one.
 // Also entangled: unwind action(0) calls ??1L_8860@@UAE@XZ - still an L_<rva>
 // placeholder shell (src/Gruntz/WorldSoundSet.cpp).
-// @rva-symbol: ??1CWarlord@@UAE@XZ 0x000107f0 0x55
+RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
 
 typedef enum WarlordOwner {
     WARLORDZ_KING = 0,

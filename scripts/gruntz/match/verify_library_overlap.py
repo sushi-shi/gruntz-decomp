@@ -79,6 +79,8 @@ RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(?:0x[0-9a-fA-F]+|\d+)
 RVAU_RE = re.compile(r"\bRVAU\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # rva-symbol: `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained fn label.
 RSYM_RE = re.compile(r"@rva-symbol:\s*\S+\s+(0x[0-9a-fA-F]+)")
+# RVA_COMPGEN(<rva>, <size>, <mangled>) - the macro form (rva.h).
+RCG_RE = re.compile(r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)")
 # data: DATA(0x..) and `// @data-symbol: <mangled> <rva> [<size>]` - a named global.
 DATA_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 DSYM_RE = re.compile(r"@data-symbol:\s*\S+\s+(0x[0-9a-fA-F]+)")
@@ -124,6 +126,8 @@ def src_claims() -> dict:
             for m in RVAU_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-macro", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in RSYM_RE.finditer(line):
+                claims.setdefault(norm_addr(m.group(1)), ("rva-symbol", f"{path.relative_to(REPO)}:{i + 1}"))
+            for m in RCG_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-symbol", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in DATA_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("data", f"{path.relative_to(REPO)}:{i + 1}"))

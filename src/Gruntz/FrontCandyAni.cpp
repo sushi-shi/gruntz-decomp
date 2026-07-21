@@ -26,7 +26,8 @@ i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CFrontCandy() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CFrontCandy@@UAE@XZ 0x0000fb00 0x44
+#include <rva.h>
+RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
 RVA(0x0000fdf0, 0x47)
 i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
@@ -42,7 +43,7 @@ i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CFrontCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CFrontCandyAni@@UAE@XZ 0x0000fe90 0x44
+RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
 RVA(0x0000ff20, 0x47)
 i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
@@ -58,7 +59,7 @@ i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CEyeCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CEyeCandyAni@@UAE@XZ 0x0000ffc0 0x44
+RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

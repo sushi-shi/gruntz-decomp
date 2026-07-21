@@ -22,7 +22,8 @@ i32 CSingleFrameMessage::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // a user-declared `~CSingleFrameMessage() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CSingleFrameMessage@@UAE@XZ 0x0000f640 0x44
+#include <rva.h>
+RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

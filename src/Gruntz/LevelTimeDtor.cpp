@@ -11,7 +11,7 @@
 // a user-declared `~CLevelTime() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CLevelTime@@UAE@XZ 0x00011a50 0x44
+#include <rva.h>
 
 RVA(0x000119b0, 0x47)
 i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
@@ -20,6 +20,8 @@ i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     }
     return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
+
+RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
 // CLevelTime::CLevelTime @0x9b8b0 - fold the shared CUserLogic(obj) init (with the
 // built-in logic types inlined-registered), then flag the sub-object (+0x08 bit 1).

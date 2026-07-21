@@ -387,7 +387,7 @@ i32 CGruntzCommand::Vslot05() {
 }
 
 // 0x24330 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
-// @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x00024330 0x20
+RVA_COMPGEN(0x00024330, 0x20, ??_GCGruntzCommand@@UAEPAXI@Z)
 
 RVA(0x00024360, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {

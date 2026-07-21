@@ -245,7 +245,7 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > parsed. A src claim is ANY of:
 >
 > - **rva-macro** — `RVA(0x.., 0x..)` / `RVAU(0x..)` (a reconstructed body);
-> - **rva-symbol** — `// @rva-symbol: <mangled> <rva>` (a self-contained fn label,
+> - **rva-symbol** — `RVA_COMPGEN(<rva>, <size>, <mangled>)` (a self-contained fn label,
 >   e.g. a `??_G` scalar-deleting-dtor thunk the compiler synthesizes for a
 >   polymorphic game class);
 > - **data** — `DATA(0x..)` / `// @data-symbol:` (a named game global or `??_7` vtable).

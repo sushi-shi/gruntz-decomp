@@ -28,16 +28,6 @@ CAreaMgr::CAreaMgr() {
 }
 
 // ---------------------------------------------------------------------------
-// CSpawnList::~CSpawnList  (0x099ca0)
-// DeleteAllEntries, then the embedded CPtrList member dtor frees its blocks (the
-// trailing ~CPtrList under the /GX frame). Defined INLINE in this TU (its retail
-// home) so it folds into ~CAreaMgr's member-teardown below exactly as retail
-// (call DeleteAllEntries + call ~CPtrList, EH states 1 -> -1); other TUs see only
-// the SpawnList.h declaration and emit the retail extern call (e.g.
-// CGruntSpawnConfig::Clear's explicit dtor + RezFree). The standalone COMDAT
-// copy is forced by the depth-0 forcer and pinned by mangled name:
-// @rva-symbol: ??1CSpawnList@@QAE@XZ 0x00099ca0 0x49
-// ---------------------------------------------------------------------------
 inline CSpawnList::~CSpawnList() {
     DeleteAllEntries();
 }
@@ -54,6 +44,17 @@ CAreaMgr::~CAreaMgr() {
     // m_spawnEntryList (the CSpawnList) is torn down here by the compiler-emitted
     // /GX member teardown: the inline ~CSpawnList above folds in.
 }
+
+// ---------------------------------------------------------------------------
+// CSpawnList::~CSpawnList  (0x099ca0)
+// DeleteAllEntries, then the embedded CPtrList member dtor frees its blocks (the
+// trailing ~CPtrList under the /GX frame). Defined INLINE in this TU (its retail
+// home) so it folds into ~CAreaMgr's member-teardown below exactly as retail
+// (call DeleteAllEntries + call ~CPtrList, EH states 1 -> -1); other TUs see only
+// the SpawnList.h declaration and emit the retail extern call (e.g.
+// CGruntSpawnConfig::Clear's explicit dtor + RezFree). The standalone COMDAT
+// copy is forced by the depth-0 forcer and pinned by mangled name:
+RVA_COMPGEN(0x00099ca0, 0x49, ??1CSpawnList@@QAE@XZ)
 
 RVA(0x00099d10, 0x20)
 i32 QueryToken(i32 arg) {

@@ -29,7 +29,7 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc0, pParent)
 // every user-written dtor body. Declaring the dtor cost exactly those 6 bytes (the old
 // "vptr-restamp-presence wall", ~94.4%) and forced GruntzMgr.cpp to carry a second
 // definition of the class under the same name. Both are gone.
-// @rva-symbol: ??1CBattlezDlg@@UAE@XZ 0x00014c90 0x47
+RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
 // @confidence: low
 // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
@@ -65,20 +65,17 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 // CBrush reproduces every body below exactly (mod relocs). The former fake
 // CImgHolderBase/CImgHolder2/CImgHolder hierarchy (+ the "CImageList holder"
 // story) is RTTI-refuted (see the header note above).
-// @rva-symbol: ??_GCObject@@UAEPAXI@Z 0x000163e0 0x1e
-// @rva-symbol: ??1CObject@@UAE@XZ 0x00016410 0x7
-// @rva-symbol: ??_GCGdiObject@@UAEPAXI@Z 0x00016430 0x1e
-// @rva-symbol: ??1CGdiObject@@UAE@XZ 0x00016460 0x46
-// @rva-symbol: ??1CBrush@@UAE@XZ 0x00016500 0x46
+RVA_COMPGEN(0x000163e0, 0x1e, ??_GCObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016410, 0x7, ??1CObject@@UAE@XZ)
+RVA_COMPGEN(0x00016430, 0x1e, ??_GCGdiObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016460, 0x46, ??1CGdiObject@@UAE@XZ)
 // ??_GCBrush @0x164d0 + ??_7CBrush @0x1e8cf4 are forced by the INLINE CBrush
 // default ctor in FlashCtrlD's scratch brush (0x160f0, below) - which is part of
 // THIS retail .obj. (It used to be split out into a FlashRect.cpp; that split was
 // artificial - 0x160f0 sits inside this TU's own 0x14b30..0x18086 block - and has
 // been reunited here, so this obj emits the ??_G/??_7 pair as retail's did.)
-// @rva-symbol: ??_GCBrush@@UAEPAXI@Z 0x000164d0 0x1e
-
-RVA(0x00018030, 0x56)
-CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
+RVA_COMPGEN(0x000164d0, 0x1e, ??_GCBrush@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016500, 0x46, ??1CBrush@@UAE@XZ)
 
 // ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
 // NAFXCW ~CDialog base dtor, under a /GX EH frame for the member unwind. COMPILER-GENERATED
@@ -87,7 +84,11 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // user-written dtor body. Declaring it (even `inline ... {}`) added exactly that stamp -
 // a "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
 // ShowCustomDlg inlines (~92.9%).
-// @rva-symbol: ??1CBattlezDlgCustom@@UAE@XZ 0x00017140 0x47
+RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
+
+RVA(0x00018030, 0x56)
+CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
+
 
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)

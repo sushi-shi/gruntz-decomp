@@ -95,7 +95,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i3
 // 0xb790 - ??1CAmbientSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CAmbientSound (<Gruntz/AmbientSound.h>). Clears m_voice/m_listNode, folds the
 // inline ~CUserBase (stamp ??_7CUserBase). @rva-symbol NAMES the retail copy.
-// @rva-symbol: ??1CAmbientSound@@UAE@XZ 0x0000b790 0xf
+RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbient5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
@@ -128,7 +128,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6(i32 a0, i32 a1, i32 a2, i32 a3, i32
 // 0xb940 - ??1CAmbientPosSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CAmbientPosSound (<Gruntz/AmbientSound.h>). Inlines the base ~CAmbientSound so it
 // collapses to the same bytes as 0xb790 (stamp ??_7CUserBase, clear m_voice/m_listNode).
-// @rva-symbol: ??1CAmbientPosSound@@UAE@XZ 0x0000b940 0xf
+RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePos5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
@@ -176,7 +176,7 @@ CRandomAmbientSound* CWorldSoundSet::
 // Ghidra mislabeled it ??0 (ctor) from the byte-shape overlap, but its `xor eax,eax` (no
 // this-return) + its sole caller being the scalar-deleting-dtor 0xbb10 (vtable slot 0)
 // prove it is the dtor.
-// @rva-symbol: ??1CRandomAmbientSound@@UAE@XZ 0x0000bb40 0xf
+RVA_COMPGEN(0x0000bb40, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
 
 RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::

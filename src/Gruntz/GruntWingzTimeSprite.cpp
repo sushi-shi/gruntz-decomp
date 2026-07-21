@@ -2,6 +2,8 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
 
+RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
+
 // CGruntWingzTimeSprite::CGruntWingzTimeSprite @0x0007fcc0 - the /GX HUD sprite ctor.
 // Chains the CGruntHealthSprite base ctor (0x7eb00, via thunk 0x3224; declared-only
 // here so the base `call` reloc-masks). Same shape as CGruntStaminaSprite's ctor
@@ -39,7 +41,7 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 // a user-declared `~CGruntWingzTimeSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntWingzTimeSprite@@UAE@XZ 0x000121f0 0x44
+#include <rva.h>
 
 RVA(0x0007fd90, 0xd)
 i32 CGruntWingzTimeSprite::Vslot16(CGrunt* grunt) {

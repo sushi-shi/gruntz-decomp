@@ -3,6 +3,20 @@
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
 
+// ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
+// destructible members of its own, so it folds the bare CUserLogic teardown (store
+// the CUserLogic vptr, inline-destruct the +0x18 link's ~EngStr, store the CUserBase
+// vptr; the throwing link forces the /GX EH frame). IDENTITY (vtable-owner probe):
+// ??_7CRainCloud @0x1e7324 (RTTI-named, <Gruntz/RainCloud.h>) slot 0 -> ILT thunk ->
+// the sdd 0x13310 -> THIS body (it was once misbound as ~CPathHazard).
+//
+// IMPLICIT (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B): a
+// user-declared `~CRainCloud() {}` emits the leaf-vptr restamp, and the CWapX base
+// EH state blocks the dead-store elision that used to hide it. THIS obj emits
+// ??_7CRainCloud -> ??_G -> the implicit ??1 COMDAT (the ctor above is what needs
+// the vtable), so the pin resolves here - PathHazard.cpp never emits it.
+RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
+
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
@@ -18,16 +32,3 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     m_object->m_area.bottom = 1;
 }
 
-// ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
-// destructible members of its own, so it folds the bare CUserLogic teardown (store
-// the CUserLogic vptr, inline-destruct the +0x18 link's ~EngStr, store the CUserBase
-// vptr; the throwing link forces the /GX EH frame). IDENTITY (vtable-owner probe):
-// ??_7CRainCloud @0x1e7324 (RTTI-named, <Gruntz/RainCloud.h>) slot 0 -> ILT thunk ->
-// the sdd 0x13310 -> THIS body (it was once misbound as ~CPathHazard).
-//
-// IMPLICIT (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B): a
-// user-declared `~CRainCloud() {}` emits the leaf-vptr restamp, and the CWapX base
-// EH state blocks the dead-store elision that used to hide it. THIS obj emits
-// ??_7CRainCloud -> ??_G -> the implicit ??1 COMDAT (the ctor above is what needs
-// the vtable), so the pin resolves here - PathHazard.cpp never emits it.
-// @rva-symbol: ??1CRainCloud@@UAE@XZ 0x00013340 0x44

@@ -157,7 +157,7 @@ i32 CDDrawWorkerRegistry::GetClassId() {
 // inline ~CLoadable resets m_04/-1 m_08/0 m_0c/0 and the real CObject grand-base
 // sinks the 0x5e8cb4 re-stamp after them (the ~CDDrawWorker-proven model). /GX.
 // The cl-auto scalar-deleting destructor (vtable slot 1):
-// @rva-symbol: ??_GCDDrawWorkerRegistry@@UAEPAXI@Z 0x00156df0 0x1e
+RVA_COMPGEN(0x00156df0, 0x1e, ??_GCDDrawWorkerRegistry@@UAEPAXI@Z)
 RVA(0x00156e10, 0x68)
 CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
     Unload();
@@ -418,7 +418,7 @@ fail:
 }
 
 // 0x1574b0 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
-// @rva-symbol: ??_GCDDrawSubMgrPages@@UAEPAXI@Z 0x001574b0 0x1e
+RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
 
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
@@ -430,7 +430,7 @@ CDDrawSubMgrPages::~CDDrawSubMgrPages() {
 }
 
 // 0x157550 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
-// @rva-symbol: ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z 0x00157550 0x1e
+RVA_COMPGEN(0x00157550, 0x1e, ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
 // 0x157570: the (non-deleting) destructor. Now a real virtual dtor: cl stamps
@@ -481,7 +481,7 @@ StateId CDDrawChildGroup::GetStateId() {
 // WwdObjMgr/Play) into )m_ casts - the typed truth wins, resets stay in the body
 // (emitted before the member dtors). All instructions present, block order differs.
 // The cl-auto scalar-deleting destructor (vtable slot 1):
-// @rva-symbol: ??_GCDDrawChildGroup@@UAEPAXI@Z 0x00157610 0x1e
+RVA_COMPGEN(0x00157610, 0x1e, ??_GCDDrawChildGroup@@UAEPAXI@Z)
 RVA(0x00157630, 0x82)
 CDDrawChildGroup::~CDDrawChildGroup() {
     ForwardTo3C();
@@ -500,7 +500,7 @@ i32 CDDrawChildGroup::IsReady() {
 // CDDrawWorkerCache dtor (0x157720; ??_G pin 0x157700).
 // Scalar-deleting destructor: run the real member-teardown ~, then operator
 // delete this if the low flag bit is set. SYMBOL() pins the ??_G mangling.
-// @rva-symbol: ??_GCDDrawWorkerCache@@UAEPAXI@Z 0x00157700 0x1e
+RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 
 // The real member-teardown destructor (0x157720, /GX): cl stamps
 // ??_7CDDrawWorkerCache (masks 0x5efd00) at entry, runs the map teardown (the
@@ -531,7 +531,7 @@ fail:
 }
 
 // Scalar-deleting destructor: COMPILER-GENERATED from the class's virtual ~.
-// @rva-symbol: ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z 0x001577c0 0x1e
+RVA_COMPGEN(0x001577c0, 0x1e, ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
 // 0x1577e0 - ~CDDrawSubMgrLeaf (real ??1 body; the ??_G at 0x1577c0 calls it):
@@ -1020,7 +1020,7 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
 // Unload runs while the base subobject is still live, so its teardown is unwind-
 // protected (the half-destructed-element cleanup edge).
 // The cl-auto scalar-deleting destructor (vtable slot 1):
-// @rva-symbol: ??_GLeafCue@@UAEPAXI@Z 0x00158660 0x1e
+RVA_COMPGEN(0x00158660, 0x1e, ??_GLeafCue@@UAEPAXI@Z)
 RVA(0x00158680, 0x5b)
 LeafCue::~LeafCue() {
     Unload();
@@ -1479,10 +1479,10 @@ CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_0c = a1;
     m_width = 0;
 }
+RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
 // The inline ~CDrawSubWorker's linker-kept out-of-line COMDAT copy + its
 // cl-generated scalar-deleting dtor (vtable slot 1):
-// @rva-symbol: ??1CDrawSubWorker@@UAE@XZ 0x00158fb0 0x19
-// @rva-symbol: ??_GCDrawSubWorker@@UAEPAXI@Z 0x00158f90 0x1e
+RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 
 // 0x158fd0 (slot 9): SetGeometry - cache the {w,h,bpp} pixel geometry and a
 // {0,0,w,h} src rect. Shared body (ICF) with CDrawSubWorker slot 9.
@@ -1559,7 +1559,7 @@ i32 CDDrawSurfaceChildA::IsLoaded() {
 // resets (+0x04/-1, +0x10/0, +0x08/0, +0x0c/0) are the inlined ~CDrawSubWorker
 // (m_width = 0) + ~CLoadable (header resets), and the entry own-vptr stamp is
 // dead-stored into the final CObject grand-base re-stamp.
-// @rva-symbol: ??_GCDDrawSurfaceChildA@@UAEPAXI@Z 0x00159190 0x1e
+RVA_COMPGEN(0x00159190, 0x1e, ??_GCDDrawSurfaceChildA@@UAEPAXI@Z)
 RVA(0x001591b0, 0x19)
 CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {
     // empty: ~CDrawSubWorker + ~CLoadable fold the resets + the grand-base stamp.

@@ -18,7 +18,8 @@ extern CIndicatorActReg g_powerupActReg; // 0x644d30
 // a user-declared `~CGruntPowerupSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntPowerupSprite@@UAE@XZ 0x00012370 0x44
+#include <rva.h>
+RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

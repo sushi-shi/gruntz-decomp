@@ -75,7 +75,8 @@ static inline i32 RegisterActionName() {
 // a user-declared `~CFortressFlag() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CFortressFlag@@UAE@XZ 0x00010e90 0x44
+#include <rva.h>
+RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
 RVA(0x00012cf0, 0x47)
 i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
@@ -93,7 +94,7 @@ i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CParticlez() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CParticlez@@UAE@XZ 0x00012d90 0x44
+RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
 RVA(0x00012e20, 0x47)
 i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
@@ -111,7 +112,7 @@ i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CExplosion() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CExplosion@@UAE@XZ 0x00012ec0 0x44
+RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 
 // CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
 // run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the

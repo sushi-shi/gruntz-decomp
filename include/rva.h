@@ -16,6 +16,16 @@
 //                         clang MS-mangling differs from the retail symbol.
 //   DATA(addr)          - on an `extern` declaration of a matched GLOBAL (the
 //                         DATA symbol it is referenced through).
+//   RVA_COMPGEN(addr, size, symbol)
+//                       - a COMPILER-GENERATED function (a `??_G` scalar-deleting
+//                         destructor, a `??_D` vbase destructor, an `_$E` EH
+//                         funclet, an out-of-line MFC-inline COMDAT, ...): there
+//                         is NO source definition to hang an RVA() on - cl emits
+//                         the body itself; this binds the retail address to the
+//                         verbatim mangled `symbol`. Expands to NOTHING under
+//                         both compilers; the label pass reads the invocation
+//                         from source text. Keep invocations in RVA order among
+//                         the TU's other RVA() functions.
 //   SIZE(type, bytes)   - at file scope, preferably ATOP a class, record the
 //                         class's retail byte size. A clang-only `annotate`
 //                         carrier (see the class-metadata note below); MSVC sees
@@ -97,6 +107,13 @@
 // by gruntz.match.class_vtables; no symbol is emitted.
 #define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
 
+// RVA_COMPGEN(addr, size, symbol) - bind a COMPILER-GENERATED function (no source
+// definition exists; cl emits the body) to its retail address under the verbatim
+// mangled symbol. Text-scanned by labels.py; expands to nothing for BOTH compilers
+// (mangled names pass through a discarded macro argument unharmed - probe-verified
+// on cl 5.0 and clang). Keep invocations in RVA order among the TU's RVA() fns.
+#define RVA_COMPGEN(addr, size, symbol)
+
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
@@ -109,6 +126,7 @@
 #define SIZE_UNKNOWN(type)
 #define VTBL(type, addr)
 #define VTBL_ABSENT(type)
+#define RVA_COMPGEN(addr, size, symbol)
 
 #endif
 

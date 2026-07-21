@@ -151,7 +151,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
 // the 1-slot ??_7DirectSoundMgr @0x5ef6b8). Was a FID ??_G__non_rtti_object false
 // positive in config/library_labels.csv (its inner call targets ~DirectSoundMgr
 // @0x135300, not the CRT).
-// @rva-symbol: ??_GDirectSoundMgr@@UAEPAXI@Z 0x001352e0 0x1e
+RVA_COMPGEN(0x001352e0, 0x1e, ??_GDirectSoundMgr@@UAEPAXI@Z)
 
 RVA(0x00135300, 0x7)
 DirectSoundMgr::~DirectSoundMgr() {}
@@ -483,10 +483,6 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     return 1;
 }
 
-// 0x135b80 - ??_GDSoundCloneInst: the auto-emitted scalar-deleting dtor (slot 0
-// of ??_7DSoundCloneInst @0x5ef6bc; inner call -> ~DSoundCloneInst @0x135bb0).
-// Was a FID ??_G__non_rtti_object false positive.
-// @rva-symbol: ??_GDSoundCloneInst@@UAEPAXI@Z 0x00135b80 0x1e
 
 // ---------------------------------------------------------------------------
 // DSoundCloneInst ctor 0x135b10: chain DSoundBaseSub base ctor, init empty clone list,
@@ -503,6 +499,11 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     ((&m_cloneList))->InsertHead(&m_cloneNode);
     m_playKey = 1;
 }
+
+// 0x135b80 - ??_GDSoundCloneInst: the auto-emitted scalar-deleting dtor (slot 0
+// of ??_7DSoundCloneInst @0x5ef6bc; inner call -> ~DSoundCloneInst @0x135bb0).
+// Was a FID ??_G__non_rtti_object false positive.
+RVA_COMPGEN(0x00135b80, 0x1e, ??_GDSoundCloneInst@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
 // ~DSoundCloneInst: drain the clone list via RemoveClone (re-reads head each pass);
@@ -758,7 +759,7 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, Direct
 // 0x136210 - ??_GDSoundBaseSub: the auto-emitted scalar-deleting dtor (slot 0 of
 // ??_7DSoundBaseSub @0x5ef6c0; inner call -> ~DSoundBaseSub @0x136260). Was a FID
 // ??_G__non_rtti_object false positive.
-// @rva-symbol: ??_GDSoundBaseSub@@UAEPAXI@Z 0x00136210 0x1e
+RVA_COMPGEN(0x00136210, 0x1e, ??_GDSoundBaseSub@@UAEPAXI@Z)
 
 RVA(0x00136230, 0x2d)
 DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
@@ -873,7 +874,7 @@ SoundDevice::SoundDevice() {
 
 // Slot-0 scalar-deleting dtor (??_G) MSVC synthesizes from the virtual dtor; no source
 // body -> pin by mangled name.
-// @rva-symbol: ??_GSoundDevice@@UAEPAXI@Z 0x001364c0 0x1e
+RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
 // ~SoundDevice (/GX EH frame): cl resets vptr, then if init runs the teardown.

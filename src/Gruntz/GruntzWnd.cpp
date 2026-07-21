@@ -6,6 +6,13 @@
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
+// -------------------------------------------------------------------------
+// CGruntzWnd::`scalar deleting destructor' (0x094670) - the compiler-generated
+// ??_G thunk (call ~CGruntzWnd; if (flags & 1) operator delete(this); return this).
+// It has no source body (cl synthesizes it into the emitted vftable), so pin it by
+// mangled name; the dtor + delete rel32 calls reloc-mask.
+RVA_COMPGEN(0x00094670, 0x1e, ??_GCGruntzWnd@@UAEPAXI@Z)
+
 RVA(0x000946a0, 0x5f)
 CGruntzWnd::~CGruntzWnd() {
     Destroy();
@@ -205,11 +212,5 @@ i32 CGruntzWnd::Wap32GameWndVfunc0() {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzWnd::`scalar deleting destructor' (0x094670) - the compiler-generated
-// ??_G thunk (call ~CGruntzWnd; if (flags & 1) operator delete(this); return this).
-// It has no source body (cl synthesizes it into the emitted vftable), so pin it by
-// mangled name; the dtor + delete rel32 calls reloc-mask.
-// @rva-symbol: ??_GCGruntzWnd@@UAEPAXI@Z 0x00094670 0x1e
 
 VTBL(CGruntzWnd, 0x001ea2d4); // vtable_names -> code (RTTI game class)

@@ -3,6 +3,11 @@
 
 void operator delete(void*);
 
+// CState::~CState() - the slot-0 scalar-deleting dtor `??_G` (0x8c710). Its body is
+// defined INLINE in <Gruntz/State.h> so MSVC folds it into the synth `??_G` thunk; the
+// thunk has no source body, so pin its symbol by mangled name here.
+RVA_COMPGEN(0x0008c710, 0x24, ??_GCState@@UAEPAXI@Z)
+
 RVA(0x0008c750, 0xa9)
 CState::CState() {
     m_mgr = 0;
@@ -38,7 +43,3 @@ CState::CState() {
     m_cursorY = 0;
 }
 
-// CState::~CState() - the slot-0 scalar-deleting dtor `??_G` (0x8c710). Its body is
-// defined INLINE in <Gruntz/State.h> so MSVC folds it into the synth `??_G` thunk; the
-// thunk has no source body, so pin its symbol by mangled name here.
-// @rva-symbol: ??_GCState@@UAEPAXI@Z 0x0008c710 0x24

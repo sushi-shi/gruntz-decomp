@@ -527,7 +527,7 @@ CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
 }
 
 // 0x142340 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
-// @rva-symbol: ??_GCFileImageSurface@@UAEPAXI@Z 0x00142340 0x1e
+RVA_COMPGEN(0x00142340, 0x1e, ??_GCFileImageSurface@@UAEPAXI@Z)
 
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {}

@@ -520,7 +520,7 @@ i32 CCreditsState::FlashColor() {
 // gruntzmgr obj, whose TransitionState calls ??0CRgn out-of-line - our TransitionState
 // still reaches it through the declared-only CTsSub45 ctor, reloc-masked to the same
 // rva, and no TU of ours emits those two COMDATs yet.)
-// @rva-symbol: ??1CRgn@@UAE@XZ 0x0008c400 0x46
+RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)
 RVA(0x0008d5e0, 0x8b)
 CCreditsState::~CCreditsState() {
     ReleaseResources();

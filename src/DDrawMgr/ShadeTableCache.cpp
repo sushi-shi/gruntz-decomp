@@ -862,6 +862,16 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
     return best;
 }
 
+// 0x14fe30 - the standalone OUT-OF-LINE ~CShadeTableArray. cl already AUTO-EMITS this
+// body as the COMDAT ??1CShadeTableArray@@UAE@XZ (from the inline virtual dtor above,
+// which is required out-of-line for the vtable slot) - it stamps ??_7CShadeTableArray
+// (0x5efb28), frees the +0x4 element buffer, then folds the CObject grand-base
+// (0x5e8cb4). The inline copy still folds into ~CShadeTableCache @0x14de50 (RVA is
+// clang-only, MSVC-neutral, so 0x14de50's inlining is unchanged). Binding the
+// auto-emitted dtor directly makes its vptr stamp reloc-faithful and dissolves the old
+// C14fe30 placeholder view (whose ??_7C14fe30 stamp was UNBOUND).
+RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
+
 // ===========================================================================
 // 0x14fe90 - CShadeTableArray::Serialize (CObject vtable slot 2): the MFC
 // CArray<CShadeTable*>::Serialize shape with SetSize inlined, but the element
@@ -929,15 +939,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
     }
 }
 
-// 0x14fe30 - the standalone OUT-OF-LINE ~CShadeTableArray. cl already AUTO-EMITS this
-// body as the COMDAT ??1CShadeTableArray@@UAE@XZ (from the inline virtual dtor above,
-// which is required out-of-line for the vtable slot) - it stamps ??_7CShadeTableArray
-// (0x5efb28), frees the +0x4 element buffer, then folds the CObject grand-base
-// (0x5e8cb4). The inline copy still folds into ~CShadeTableCache @0x14de50 (RVA is
-// clang-only, MSVC-neutral, so 0x14de50's inlining is unchanged). Binding the
-// auto-emitted dtor directly makes its vptr stamp reloc-faithful and dissolves the old
-// C14fe30 placeholder view (whose ??_7C14fe30 stamp was UNBOUND).
-// @rva-symbol: ??1CShadeTableArray@@UAE@XZ 0x0014fe30 0x51
 
 // CShadeTableArray::SetSizeGrow (0x150040) - the out-of-line MFC CArray::SetSize over
 // the 4-byte CShadeTable* element (its 6 callers are all CShadeTableCache table

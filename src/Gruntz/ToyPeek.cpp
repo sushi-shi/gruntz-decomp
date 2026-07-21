@@ -11,7 +11,8 @@
 // a user-declared `~CToyPeek() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CToyPeek@@UAE@XZ 0x00011c40 0x44
+#include <rva.h>
+RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 
 // CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge
 // the owner up 0x18 px, lock its draw order to 0xdbba0, apply the small-icon

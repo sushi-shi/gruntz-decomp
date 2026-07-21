@@ -467,7 +467,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
      clang's MS mangling differs from VC5's;
    - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it
      is referenced through);
-   - `// @rva-symbol: <mangled> <rva> [<size>]` — a comment for a thunk with no
+   - `RVA_COMPGEN(<rva>, <size>, <mangled>)` — the macro (rva.h) for a compiler-generated fn with no
      source body (a `??_G` deleting dtor) that can't hold an attribute.
 
    `labels.py` reads `RVA`/`SYMBOL` from **LLVM IR** (`@llvm.global.annotations`

@@ -297,6 +297,12 @@ void CFaderMgr::DeleteAll() {
     m_arr.m_nSize = 0;
 }
 
+
+RVA(0x0017e230, 0xc)
+void __stdcall Fader_TraceStr(CString s) {
+    static_cast<void>(s);
+}
+
 // 0x17e240 - ~CFaderArray, out-of-line. This is NOT a distinct class: it is the COMDAT
 // copy cl emits of CFaderArray's INLINE destructor (<Gruntz/FaderMgr.h>), which the
 // vtable slot's function pointer forces out of line. The former `C17e240 : Sev17e240`
@@ -312,12 +318,7 @@ void CFaderMgr::DeleteAll() {
 // just has to NAME it, which is exactly what @rva-symbol is for. Naming it binds the
 // two vptr stores to the real ??_7CFaderArray / ??_7CObject rvas (zero UNBOUND relocs)
 // with no source-level duplicate and no change to the inline teardown.
-// @rva-symbol: ??1CFaderArray@@UAE@XZ 0x0017e240 0x51
-
-RVA(0x0017e230, 0xc)
-void __stdcall Fader_TraceStr(CString s) {
-    static_cast<void>(s);
-}
+RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
 
 // ===========================================================================
 // 0x17e2a0 - CFaderArray::Serialize (slot 2): the MFC CObArray<CFader*>::Serialize

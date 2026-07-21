@@ -914,7 +914,7 @@ CSymParser::CSymParser() {
 // 0x1e0b90 - xref-verified, its ONLY referents) take the member dtor's address.
 // Sibling of ??1CRezList @0x13ca30 (RezFile.cpp). An inline dtor can't hang an RVA(), so
 // it is pinned by mangled name.
-// @rva-symbol: ??1CParserObjList@@QAE@XZ 0x0013aaf0 0x7
+RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,

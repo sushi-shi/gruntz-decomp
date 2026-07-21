@@ -24,6 +24,18 @@
 DATA(0x00245ad0)
 extern CActReg g_lightFxActReg; // 0x645ad0
 
+// CLightFx::~CLightFx (0x12430) - the /GX leaf dtor. CLightFx adds no destructible
+// members beyond CUserLogic and shares its vtable, so the most-derived vptr store
+// is dead-eliminated and the dtor folds the bare CUserLogic teardown: store the
+// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr
+// call 0x16d2a0), store the CUserBase vptr (0x5e70b4). Byte-identical in shape to
+// the established leaf-dtor archetype.
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CLightFx() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
+
 RVA(0x0009d140, 0x15)
 void CLightFx::InitActReg() {
     g_lightFxActReg.Construct(2000, 2010);
@@ -168,17 +180,6 @@ i32 CLightFx::AdvanceAnim() {
     return 0;
 }
 
-// CLightFx::~CLightFx (0x12430) - the /GX leaf dtor. CLightFx adds no destructible
-// members beyond CUserLogic and shares its vtable, so the most-derived vptr store
-// is dead-eliminated and the dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr
-// call 0x16d2a0), store the CUserBase vptr (0x5e70b4). Byte-identical in shape to
-// the established leaf-dtor archetype.
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CLightFx() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CLightFx@@UAE@XZ 0x00012430 0x44
 
 RVA(0x0009cdc0, 0xf1)
 i32 LightFxLogicDispatch(CGameObject* obj) {

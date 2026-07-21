@@ -29,7 +29,7 @@ CWwdGrid::~CWwdGrid() {
 // in the ctor above (the array-cookie alloc + ehvec ctor/dtor pair). Not a hand-written
 // method: cl auto-emits ??_EBucketHead@@QAEPAXI@Z; @rva-symbol names it at this RVA so the
 // delinker pairs the retail orphan (a zero-ref COMDAT; FreeBuckets inlines its own ehvec).
-// @rva-symbol: ??_EBucketHead@@QAEPAXI@Z 0x00191720 0x50
+RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
 // @early-stop
 // 0x191770 = a __thiscall(this; x0,y0,x1,y1) helper that derives the cell sizes

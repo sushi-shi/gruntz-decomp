@@ -46,8 +46,7 @@ void operator delete(void*);
 // <Gruntz/Loadable.h>; one-definition rule). Was the CDDrawSubMgrFar scaffold
 // class (hand-written ScalarDtor + a second fabricated view in CImage.cpp) -
 // dissolved onto the real ??1CLoadable/??_GCLoadable identities.
-// @rva-symbol: ??1CLoadable@@UAE@XZ 0x000d5d70 0x16
-// @rva-symbol: ??_GCLoadable@@UAEPAXI@Z 0x00155720 0x1e
+RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
 
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
     return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
@@ -375,6 +374,8 @@ i32 CLoadable::IsLoaded() {
 //  empty-body non-void fn (C2561) and the slot can't be void (derived overrides
 //  return their eax residue), so this base default stays declared-only.)
 
+RVA_COMPGEN(0x00155720, 0x1e, ??_GCLoadable@@UAEPAXI@Z)
+
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {
     if (m_0c != 0 && m_04 != -1) {
@@ -399,7 +400,7 @@ i32 CDDrawWorker::GetClassId() {
 // 0x5e8cb4 re-stamp after the m_04/m_08/m_0c resets exactly as retail.
 // The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
 // virtual dtor below - @rva-symbol pairs the retail copy with the base COMDAT).
-// @rva-symbol: ??_GCDDrawWorker@@UAEPAXI@Z 0x00155780 0x1e
+RVA_COMPGEN(0x00155780, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
     DeleteAll(); // retail's devirtualized slot-7 call == CDDrawWorker::DeleteAll (0x151eb0)

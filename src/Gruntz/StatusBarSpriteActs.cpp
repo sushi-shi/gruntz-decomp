@@ -13,6 +13,14 @@
 DATA(0x0024e670)
 extern CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 
+// CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the
+// CUserLogic teardown (the /GX leaf-dtor archetype). Adjacent to SerializeMove (0x11ae0).
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CStatusBarSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
+
 RVA(0x0010c0f0, 0xf1)
 i32 StatusBarSpriteStep(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
@@ -127,10 +135,3 @@ i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
     return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
-// CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the
-// CUserLogic teardown (the /GX leaf-dtor archetype). Adjacent to SerializeMove (0x11ae0).
-// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
-// a user-declared `~CStatusBarSprite() {}` emits the leaf-vptr restamp, and the CWapX
-// base EH state blocks the dead-store elision that used to hide it. The ??_G
-// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CStatusBarSprite@@UAE@XZ 0x00011b80 0x44

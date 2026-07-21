@@ -88,7 +88,7 @@ static inline char* ResolveSlot(_zvec* v, i32 idx) {
 // a user-declared `~CInGameIcon() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CInGameIcon@@UAE@XZ 0x00011d00 0x44
+RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 
 // ===========================================================================
 // CInGameText::~CInGameText  (0x011dc0)
@@ -101,7 +101,7 @@ static inline char* ResolveSlot(_zvec* v, i32 idx) {
 // a user-declared `~CInGameText() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CInGameText@@UAE@XZ 0x00011dc0 0x44
+RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
 // ===========================================================================
 // CInGameIcon::CInGameIcon(CGameObject*)  (0x095b10)  -- the HUD-icon builder

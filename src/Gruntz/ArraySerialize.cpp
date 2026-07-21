@@ -17,10 +17,11 @@
 // ??_7 COMDAT lands. delete[] lowers to ??3@YAXPAX@Z @0x1b9b82 (== _RezFree; FID
 // carries both names - the game's Rez free IS operator delete).
 //
-// @rva-symbol: ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ 0x00039f20 0x51
-// @rva-symbol: ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z 0x0003a1a0 0x1e
-// @rva-symbol: ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z 0x00039fa0 0x188
-// @rva-symbol: ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ 0x00094340
+#include <rva.h>
+RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
+RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
+RVA_COMPGEN(0x00094340, 0, ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ)
 #include <Ints.h>
 #include <rva.h>
 

@@ -5,6 +5,14 @@
 #include <stdio.h>
 #include <Globals.h>
 
+// CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
+// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
+// cleanup when a CGameApp-derived ctor's member throws). ??_GCGameApp above and
+// CGruntzApp's cross-TU dtor keep folding their own inline copies; this forcer (the
+// UserLogicCtorEmit #pragma inline_depth(0) pattern) emits the out-of-line COMDAT in
+// this unit so the unwind reference resolves and the RVA is matched.
+RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
+
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
     return Init(hInstance, szName, szName, g_emptyString, 0, static_cast<i32>(0x80000000), static_cast<i32>(0x80000000));
@@ -19,6 +27,14 @@ RVA(0x00080d90, 0x5)
 i32 CGameApp::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
+
+// CGameApp::scalar-dtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
+// ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
+// qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
+// auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs
+// CloseResources() + the instance-counter decrement - so the manual vtable stamp
+// (and the retail-vtable / instance-counter aliases) are gone.
+RVA_COMPGEN(0x00080dd0, 0x32, ??_GCGameApp@@UAEPAXI@Z) // (cl-auto-gen scalar-deleting dtor)
 
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
@@ -512,21 +528,7 @@ void WaitKeyEdge(int vk, int timeoutMs) {
     }
 }
 
-// CGameApp::scalar-dtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
-// ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
-// qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
-// auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs
-// CloseResources() + the instance-counter decrement - so the manual vtable stamp
-// (and the retail-vtable / instance-counter aliases) are gone.
-// @rva-symbol: ??_GCGameApp@@UAEPAXI@Z 0x00080dd0 0x32  (cl-auto-gen scalar-deleting dtor)
 
-// CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
-// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
-// cleanup when a CGameApp-derived ctor's member throws). ??_GCGameApp above and
-// CGruntzApp's cross-TU dtor keep folding their own inline copies; this forcer (the
-// UserLogicCtorEmit #pragma inline_depth(0) pattern) emits the out-of-line COMDAT in
-// this unit so the unwind reference resolves and the RVA is matched.
-// @rva-symbol: ??1CGameApp@@UAE@XZ 0x00080cf0 0x12
 static CGameApp* volatile g_forceEmitCGameApp;
 #pragma inline_depth(0)
 void ForceEmitCGameAppDtor() {

@@ -319,7 +319,7 @@ i32 CGameLevel::LoadFromSource(CParseSource* arg) {
 // object when bit0 of the flag is set; returns `this`. The compiler-standard thunk.
 // The scalar-deleting dtor is the compiler-generated ??_G (folded from ~CGameLevel);
 // pin it by mangled name since it has no source body.
-// @rva-symbol: ??_GCGameLevel@@UAEPAXI@Z 0x001611c0 0x1e
+RVA_COMPGEN(0x001611c0, 0x1e, ??_GCGameLevel@@UAEPAXI@Z)
 
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {

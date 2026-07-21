@@ -277,7 +277,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
 // (eh-dtor-implicit-vptr-stamp-first.md.)
 // The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
 // virtual dtor below - @rva-symbol pairs the retail copy with the base COMDAT).
-// @rva-symbol: ??_GCAniElement@@UAEPAXI@Z 0x00152e10 0x1e
+RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
 RVA(0x00152e30, 0x53)
 CAniElement::~CAniElement() {
     DeleteAll();

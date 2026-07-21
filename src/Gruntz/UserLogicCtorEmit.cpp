@@ -23,7 +23,7 @@
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
-// @rva-symbol: ??0CUserLogic@@QAE@XZ 0x000138d0 0x4b  (100% - byte-exact)
+RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ) // (100% - byte-exact)
 //
 // @early-stop
 // 1-arg ctor 0x58cd0: 0.89% stub -> 89.0%, byte-shaped (prologue + throwing-link
@@ -41,7 +41,7 @@
 //      schedules the `found = 0` store + the `obj->m_c` reload AFTER the Lookup
 //      arg-pushes; MSVC5 here emits them before (x3 blocks). Not source-steerable
 //      (a scalar store vs call-arg ordering the scheduler owns).
-// @rva-symbol: ??0CUserLogic@@QAE@PAUCGameObject@@@Z 0x00058cd0 0x195
+RVA_COMPGEN(0x00058cd0, 0x195, ??0CUserLogic@@QAE@PAUCGameObject@@@Z)
 
 extern "C" {
     i32 LogicHitFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0

@@ -22,7 +22,8 @@ extern CIndicatorActReg g_selectedActReg; // 0x644da8
 // a user-declared `~CGruntSelectedSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntSelectedSprite@@UAE@XZ 0x00011e80 0x44
+#include <rva.h>
+RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

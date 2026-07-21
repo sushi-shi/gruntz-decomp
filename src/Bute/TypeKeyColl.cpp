@@ -1153,7 +1153,7 @@ i32 Gap_16e7a0(void) {
 // dropping that binding; (3) @rva-symbols for the cl-mangled init/atexit thunks. Gate on
 // ClearRecursive/~CButeMgr staying byte-exact (the +0x10 store-flag is a BYTE read;
 // zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
-// @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45
+RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}

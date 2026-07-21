@@ -28,4 +28,4 @@ CSBI_RectOnly::~CSBI_RectOnly() {
 // CStatusBaseSub100780 placeholder view (whose ??_7/Base1d6b reloc-masked the real
 // ??_7CStatusBarItem/DtorStatus by shape) and binds BOTH the funclet reloc @0x100700
 // and this body's DtorStatus @0x10bfa0.
-// @rva-symbol: ??1CStatusBarItem@@UAE@XZ 0x00100780 0xb
+RVA_COMPGEN(0x00100780, 0xb, ??1CStatusBarItem@@UAE@XZ)

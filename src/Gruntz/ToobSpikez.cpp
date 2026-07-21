@@ -7,6 +7,8 @@
 #include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 #include <Globals.h>
 
+RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
+
 RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
@@ -90,7 +92,7 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CToobSpikez() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CToobSpikez@@UAE@XZ 0x00012c60 0x44
+#include <rva.h>
 
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {

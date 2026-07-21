@@ -188,6 +188,17 @@ i32 g_warpX = -1;
 DATA(0x00212614)
 i32 g_warpY = -1;
 
+
+// 0x83330 is the compiler-generated scalar-deleting destructor - cl auto-emits the
+// COMDAT with the vtable; the ex hand-written ScalarDeletingDtor stand-in is GONE.
+RVA_COMPGEN(0x00083330, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
+
+RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
+// The CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
+// cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
+// at this RVA (homed by matcher-5, unmatched sweep).
+RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
+
 // -------------------------------------------------------------------------
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
 // set, clear it and, if the game manager + its world/lookup + live state are all up,
@@ -230,26 +241,11 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-// 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run the slot-2 ReleaseResources
-// at the top trylevel, fold the five members (reverse decl order, descending /GX
-// states), then fold the CState base subobject (restamp 0x5ea21c, call CState body).
-// INLINE so it folds into CDemo's dtor (0x8d0d0) exactly as retail inlines the base
-// dtor; cl still emits one out-of-line COMDAT copy (driven by ??_GCPlay), which lands
-// at 0x8c830. An inline dtor can't hang an RVA() (it would also tag the synthesized
-// ??_G -> duplicate-RVA), so it is pinned by mangled name:
-// @rva-symbol: ??1CPlay@@UAE@XZ 0x0008c830 0xaf
 inline CPlay::~CPlay() {
     CPlay::ReleaseResources(); // 0xc8700 (own slot-2 override, ex "CPlayDtorBody";
                                // in-dtor static bind -> direct rel32)
 }
 
-// 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
-// defined) base-state dtor, referenced only by /GX EH-unwind funclets (13+ sites: the
-// base-subobject cleanup when a CState-derived ctor throws). ??_GCState @0x8c710 and
-// every derived dtor keep folding their own inline copies; this #pragma inline_depth(0)
-// forcer (UserLogicCtorEmit pattern) emits the out-of-line COMDAT so the unwind refs
-// resolve and the RVA matches (stamp ??_7CState + tail-jmp to the 0xfa150 base body).
-// @rva-symbol: ??1CState@@UAE@XZ 0x0008c470 0xb
 static CState* volatile g_forceEmitCState;
 #pragma inline_depth(0)
 void ForceEmitCStateDtor() {
@@ -436,6 +432,23 @@ SIZE_UNKNOWN(CState);
 SIZE_UNKNOWN(CPlay);
 
 VTBL(CPlay, 0x001ea0bc);
+
+
+// 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
+// defined) base-state dtor, referenced only by /GX EH-unwind funclets (13+ sites: the
+// base-subobject cleanup when a CState-derived ctor throws). ??_GCState @0x8c710 and
+// every derived dtor keep folding their own inline copies; this #pragma inline_depth(0)
+// forcer (UserLogicCtorEmit pattern) emits the out-of-line COMDAT so the unwind refs
+// resolve and the RVA matches (stamp ??_7CState + tail-jmp to the 0xfa150 base body).
+RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
+// 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run the slot-2 ReleaseResources
+// at the top trylevel, fold the five members (reverse decl order, descending /GX
+// states), then fold the CState base subobject (restamp 0x5ea21c, call CState body).
+// INLINE so it folds into CDemo's dtor (0x8d0d0) exactly as retail inlines the base
+// dtor; cl still emits one out-of-line COMDAT copy (driven by ??_GCPlay), which lands
+// at 0x8c830. An inline dtor can't hang an RVA() (it would also tag the synthesized
+// ??_G -> duplicate-RVA), so it is pinned by mangled name:
+RVA_COMPGEN(0x0008c830, 0xaf, ??1CPlay@@UAE@XZ)
 
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
@@ -2301,11 +2314,6 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-// The CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
-// cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
-// at this RVA (homed by matcher-5, unmatched sweep).
-// @rva-symbol: ??_GCGameMgr@@UAEPAXI@Z 0x000855a0 0x24
-// @rva-symbol: ??1CGameMgr@@UAE@XZ 0x00085540 0xb
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's
@@ -3432,9 +3440,6 @@ CGruntzMgr::CGruntzMgr() {
     m_optionsCount = 3;
 }
 
-// 0x83330 is the compiler-generated scalar-deleting destructor - cl auto-emits the
-// COMDAT with the vtable; the ex hand-written ScalarDeletingDtor stand-in is GONE.
-// @rva-symbol: ??_GCGruntzMgr@@UAEPAXI@Z 0x00083330 0x1e
 
 // @early-stop
 // reloc-masked plateau (~97%): code bytes exact; the only residual is the

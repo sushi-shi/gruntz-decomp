@@ -2,6 +2,21 @@
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
+
+// CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
+// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
+// cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this
+// #pragma inline_depth(0) forcer (the UserLogicCtorEmit pattern) emits the out-of-line
+// COMDAT here so the unwind reference resolves and the RVA matches.
+RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
+// Out-of-line stubs so the vftable is emitted in this TU.
+// Not matched / not in symbol_names.csv; present only to anchor the vftable
+// relocation that the ctor stores (the full 22-slot CGameWnd vtable). ~CGameWnd
+// is inline in Wap32.h (Destroy + clear singleton); QuitMessageLoop is above.
+// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the
+// inline ~CGameWnd (call Destroy; clear g_activeGameWnd; conditional RezFree).
+RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
+
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = 0;
@@ -246,23 +261,10 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
     return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
-// Out-of-line stubs so the vftable is emitted in this TU.
-// Not matched / not in symbol_names.csv; present only to anchor the vftable
-// relocation that the ctor stores (the full 22-slot CGameWnd vtable). ~CGameWnd
-// is inline in Wap32.h (Destroy + clear singleton); QuitMessageLoop is above.
-// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the
-// inline ~CGameWnd (call Destroy; clear g_activeGameWnd; conditional RezFree).
-// @rva-symbol: ??_GCGameWnd@@UAEPAXI@Z 0x00094d80 0x2f
 i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }
 
-// CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
-// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
-// cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this
-// #pragma inline_depth(0) forcer (the UserLogicCtorEmit pattern) emits the out-of-line
-// COMDAT here so the unwind reference resolves and the RVA matches.
-// @rva-symbol: ??1CGameWnd@@UAE@XZ 0x00094c10 0x16
 static CGameWnd* volatile g_forceEmitCGameWnd;
 #pragma inline_depth(0)
 void ForceEmitCGameWndDtor() {

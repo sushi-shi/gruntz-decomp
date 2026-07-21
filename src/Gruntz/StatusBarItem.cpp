@@ -27,7 +27,7 @@ CStatusBarItem::CStatusBarItem() {
 // 0x10bfc0 in SBI_MenuItem.cpp. No anchor is needed - MSVC has no key-function rule, and
 // the out-of-line ctor at 0x1005d0 below stamps the vptr, which is what references ??_7
 // and forces the COMDAT out in this TU.)
-// @rva-symbol: ??_GCStatusBarItem@@UAEPAXI@Z 0x00100620 0x24
+RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
 VTBL(CStatusBarItem, 0x001eabcc);
 

@@ -65,20 +65,20 @@ void CUserLogic::UserLogicVfuncD() {} // retail 0x89f0: bare ret
 // addresses below are the thunks' destinations - the contiguous 0x87d0..0x89f0 cluster
 // of tiny CUserLogic virtuals (sizes 1-8B) that the slots actually reach.
 // See docs/patterns/ilt-thunk-indirection.md.
-// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000087d0
-// @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x000087f0
-// @rva-symbol: ?XferName@CUserLogic@@UAEXPAD@Z 0x00008b50
-// @rva-symbol: ?FireActivation@CUserLogic@@UAEXH@Z 0x00008b70
-// @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000088d0
-// @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x000088f0
-// @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x00008910
-// @rva-symbol: ?StepAttackFire@CUserLogic@@UAEHXZ 0x00008930
-// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEXXZ 0x00008950
-// @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x00008970
-// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEXXZ 0x00008990
-// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEXXZ 0x000089b0
-// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEXXZ 0x000089d0
-// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEXXZ 0x000089f0
+RVA_COMPGEN(0x000087d0, 0, ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z)
+RVA_COMPGEN(0x000087f0, 0, ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x000088d0, 0, ?Activate@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x000088f0, 0, ?UserLogicVfunc5@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008910, 0, ?UserLogicVfunc6@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008930, 0, ?StepAttackFire@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008950, 0, ?UserLogicVfunc8@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x00008970, 0, ?UserLogicVfunc9@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008990, 0, ?UserLogicVfuncA@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089b0, 0, ?UserLogicVfuncB@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089d0, 0, ?UserLogicVfuncC@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089f0, 0, ?UserLogicVfuncD@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x00008b50, 0, ?XferName@CUserLogic@@UAEXPAD@Z)
+RVA_COMPGEN(0x00008b70, 0, ?FireActivation@CUserLogic@@UAEXH@Z)
 
 // @confidence: low
 // @source: winapi:CopyRect

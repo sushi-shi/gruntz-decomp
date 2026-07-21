@@ -580,32 +580,6 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirtyRect.bottom = dbottom;
 }
 
-// The shared clip/resolve singleton is the canonical CResolveNode (class in
-// <Gruntz/ResolveNode.h>). Its default ctor (0x1549d0) + Init (0x1647e0) are external
-// engine __thiscall callees; the magic-static init + the Init call reloc-mask, and the
-// node's virtual ~CResolveNode drives the compiler-emitted atexit thunk.
-//
-// The +0x38 render virtual (slot 14, RenderImage @0x153470, reconstructed above) is
-// dispatched on `this` as an ordinary virtual call (`this->RenderImage(...)` ->
-// `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the blit request
-// request the RESOLVE method fills in (same physical layout); the cast is transitional
-// (the ex-CBlitInfo view - unified onto CResolveNode).
-//
-// The magic-static trio cl5 emits for `static CResolveNode clip;` has NO source VarDecl
-// to hang DATA() on, so the three compiler-minted symbols are pinned to their retail
-// addresses verbatim (the @data/@rva-symbol carriers). Per local static:
-//   the object   .bss  0x2bf2a0 / 0x2bf228
-//   the once-guard .bss  0x2bf314 / 0x2bf29c   (`$S<n>` byte)
-//   the atexit dtor thunk .text 0x153800 / 0x1538b0 (`$E<n>`, pushed to atexit)
-// The `$S<5-digit>` tail on the .bss names is cl5's per-TU COMDAT sequence number: it
-// SHIFTS if CImage.cpp's earlier statics change, so re-read it from the base obj
-// (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
-// @data-symbol: _?clip@?1??RenderFrame@CImage@@QAEXPAX000@Z@4VCResolveNode@@A$S26840 0x002bf2a0
-// @data-symbol: _?$S28@?1??RenderFrame@CImage@@QAEXPAX000@Z@4EA$S26842 0x002bf314
-// @rva-symbol: _$E29 0x00153800 0x10
-// @data-symbol: _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863 0x002bf228
-// @data-symbol: _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865 0x002bf29c
-// @rva-symbol: _$E31 0x001538b0 0x10
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
@@ -631,6 +605,30 @@ i32 g_resourceInstallActive = 0; // 0x2bf37c
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0; // 0x2bf380
 
+// The shared clip/resolve singleton is the canonical CResolveNode (class in
+// <Gruntz/ResolveNode.h>). Its default ctor (0x1549d0) + Init (0x1647e0) are external
+// engine __thiscall callees; the magic-static init + the Init call reloc-mask, and the
+// node's virtual ~CResolveNode drives the compiler-emitted atexit thunk.
+//
+// The +0x38 render virtual (slot 14, RenderImage @0x153470, reconstructed above) is
+// dispatched on `this` as an ordinary virtual call (`this->RenderImage(...)` ->
+// `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the blit request
+// request the RESOLVE method fills in (same physical layout); the cast is transitional
+// (the ex-CBlitInfo view - unified onto CResolveNode).
+//
+// The magic-static trio cl5 emits for `static CResolveNode clip;` has NO source VarDecl
+// to hang DATA() on, so the three compiler-minted symbols are pinned to their retail
+// addresses verbatim (the @data/@rva-symbol carriers). Per local static:
+//   the object   .bss  0x2bf2a0 / 0x2bf228
+//   the once-guard .bss  0x2bf314 / 0x2bf29c   (`$S<n>` byte)
+//   the atexit dtor thunk .text 0x153800 / 0x1538b0 (`$E<n>`, pushed to atexit)
+// The `$S<5-digit>` tail on the .bss names is cl5's per-TU COMDAT sequence number: it
+// SHIFTS if CImage.cpp's earlier statics change, so re-read it from the base obj
+// (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
+// @data-symbol: _?clip@?1??RenderFrame@CImage@@QAEXPAX000@Z@4VCResolveNode@@A$S26840 0x002bf2a0
+// @data-symbol: _?$S28@?1??RenderFrame@CImage@@QAEXPAX000@Z@4EA$S26842 0x002bf314
+RVA_COMPGEN(0x00153800, 0x10, _$E29)
+
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
@@ -653,6 +651,10 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 }
 
 #include <Globals.h> // g_bltFx (the shared BltEx DDBLTFX)
+
+// @data-symbol: _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863 0x002bf228
+// @data-symbol: _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865 0x002bf29c
+RVA_COMPGEN(0x001538b0, 0x10, _$E31)
 
 // ---------------------------------------------------------------------------
 // No flip, surface blit (BltEx, blend mode 6).

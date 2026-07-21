@@ -30,7 +30,7 @@ i32 CGruntStartingPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // a user-declared `~CGruntStartingPoint() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntStartingPoint@@UAE@XZ 0x00010670 0x44
+RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 
 // CGruntStartingPoint::CGruntStartingPoint (0x3df30) - name the bound object
 // "GAME_EXIT", bind its "A" bute node, then flag the sub-object (+0x08 bits 1,2

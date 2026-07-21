@@ -21,7 +21,8 @@ i32 CEyeCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CEyeCandy() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CEyeCandy@@UAE@XZ 0x0000fd60 0x44
+#include <rva.h>
+RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
 
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

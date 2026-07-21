@@ -151,7 +151,7 @@ i32 CAniRecordView::GetSize() {
 // 0x168e70 IS the real ?GetAt@CStringArray COMDAT, emitted by THIS TU's direct
 // tokens.GetAt(i) call (MSVC5 declines to inline the by-value-CString accessor).
 // The ex-CAniStrArray shim + its hand copy are GONE; the COMDAT is name-pinned.
-// @rva-symbol: ?GetAt@CStringArray@@QBE?AVCString@@H@Z 0x00168e70 0x27
+RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
 void* CAniRecordBase2::AllocBufMakeB2(i32 size, i32 flag) {

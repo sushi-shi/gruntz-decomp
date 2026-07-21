@@ -32,7 +32,7 @@ extern "C" {
 // the dtor's address (an EH shape this TU does not yet reproduce, so the retail fn
 // is target-side-named only). First fn of the DSndMgSR.cpp obj (the 0x137330 file
 // boundary; see interval-dossiers.md).
-// @rva-symbol: ??1PureSoundElem@@QAE@XZ 0x00137330 0x7
+RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)
 
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
@@ -154,23 +154,24 @@ StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32
     m_active = 0;
 }
 
+// 0x137630 - ??_GStreamVoice: the auto-emitted scalar-deleting dtor (slot 0 of the
+// 1-slot ??_7StreamVoice @0x5ef6d8; `push esi; call ~StreamVoice; test [esp+8],1;
+// conditional operator delete; ret 4`). Was a FID ??_G__non_rtti_object false
+// positive in config/library_labels.csv.
+RVA_COMPGEN(0x00137630, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
+
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
     m_feeder.FeederReset(0);
 }
 
-// 0x137630 - ??_GStreamVoice: the auto-emitted scalar-deleting dtor (slot 0 of the
-// 1-slot ??_7StreamVoice @0x5ef6d8; `push esi; call ~StreamVoice; test [esp+8],1;
-// conditional operator delete; ret 4`). Was a FID ??_G__non_rtti_object false
-// positive in config/library_labels.csv.
-// @rva-symbol: ??_GStreamVoice@@UAEPAXI@Z 0x00137630 0x1e
 
 // 0x1376c0 - ??1StreamVoiceFeeder: cl's auto-generated IMPLICIT dtor for the
 // derived feeder (no members to destroy -> a bare 5-byte tail-jmp to ~StreamFeeder
 // @0x137cf0, no vptr re-stamp). ~StreamVoice's EH unwind funclet (state 1: destroy
 // m_feeder) takes its address, which is why the copy is emitted + kept. Was a FID
 // __inc false positive.
-// @rva-symbol: ??1StreamVoiceFeeder@@QAE@XZ 0x001376c0 0x5
+RVA_COMPGEN(0x001376c0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
 
 // ---------------------------------------------------------------------------
 // SoundStream::SoundStream (__thiscall). Run the base ctor, then zero the
@@ -189,7 +190,7 @@ SoundStream::SoundStream() {
 
 // 0x1376f0 - ??_GSoundStream: the auto-emitted scalar-deleting dtor (slot 0 of
 // ??_7SoundStream @0x5ef6ec). Was a FID ??_G__non_rtti_object false positive.
-// @rva-symbol: ??_GSoundStream@@UAEPAXI@Z 0x001376f0 0x1e
+RVA_COMPGEN(0x001376f0, 0x1e, ??_GSoundStream@@UAEPAXI@Z)
 
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}

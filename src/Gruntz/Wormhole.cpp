@@ -151,7 +151,7 @@ typedef i32 (CUserLogic::*LogicFn)();
 // a user-declared `~CWormhole() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CWormhole@@UAE@XZ 0x00010980 0x44
+RVA_COMPGEN(0x00010980, 0x44, ??1CWormhole@@UAE@XZ)
 
 // ===========================================================================
 // CGruntPuddle::~CGruntPuddle  (0x010d10)
@@ -160,7 +160,7 @@ typedef i32 (CUserLogic::*LogicFn)();
 // a user-declared `~CGruntPuddle() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntPuddle@@UAE@XZ 0x00010d10 0x44
+RVA_COMPGEN(0x00010d10, 0x44, ??1CGruntPuddle@@UAE@XZ)
 
 // ===========================================================================
 // CTeleporter::~CTeleporter  (0x010dd0)
@@ -170,7 +170,7 @@ typedef i32 (CUserLogic::*LogicFn)();
 // a user-declared `~CTeleporter() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CTeleporter@@UAE@XZ 0x00010dd0 0x44
+RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 
 // ---------------------------------------------------------------------------
 // CWormhole::CWormhole(CGameObject*) @0x03fc70 - the 1-arg leaf ctor: the shared

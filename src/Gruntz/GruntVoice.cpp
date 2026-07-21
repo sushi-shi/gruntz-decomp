@@ -60,7 +60,7 @@ extern i32 VTrigLogic_11a700();
 // precedent). Nothing else constructs a CUFO in reconstructed code, so this
 // unpaired Realize emitter forces the ??_G/??1 COMDATs (the RealizeCDoNothingNormal
 // pattern); the ??1 is pinned by name below.
-// @rva-symbol: ??1CUFO@@UAE@XZ 0x00013400 0x44
+RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 void RealizeUfoDtor(CUFO* p);
 void RealizeUfoDtor(CUFO* p) {
     p->CUFO::~CUFO(); // qualified direct call - odr-uses the implicit ??1CUFO COMDAT
@@ -89,7 +89,7 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CVoiceTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CVoiceTrigger@@UAE@XZ 0x000135a0 0x44
+RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 
 RVA(0x00119620, 0xf1)
 i32 GruntVoiceStep(CGameObject* obj) {
@@ -221,7 +221,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // a user-declared `~CGruntVoice() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGruntVoice@@UAE@XZ 0x00119ae0 0x44
+RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 
 // CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail - cl

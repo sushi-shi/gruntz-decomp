@@ -317,8 +317,8 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
 // unwind funclets make cl emit (COMDATs; bound below by @rva-symbol). The old
 // hand-written COwnerWithSubs::DtorSubC/DtorSub8 bodies - and their banned
 // this+0xc/+0x8 vbase-offset casts - are GONE: no dev ever wrote that code.
-// @rva-symbol: ??_Difstream@@QAEXXZ 0x0003cbc0 0x14
-// @rva-symbol: ??_Dofstream@@QAEXXZ 0x0003cbf0 0x14
+RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)
+RVA_COMPGEN(0x0003cbf0, 0x14, ??_Dofstream@@QAEXXZ)
 
 // @early-stop
 // 98.84% - logic + instruction-selection byte-exact (verified base-vs-target

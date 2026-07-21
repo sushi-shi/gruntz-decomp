@@ -117,7 +117,7 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // a user-declared `~CWarpStonePad() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CWarpStonePad@@UAE@XZ 0x00010fc0 0x44
+RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
@@ -132,7 +132,7 @@ i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
 // a user-declared `~CTileTriggerSwitch() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CTileTriggerSwitch@@UAE@XZ 0x000110f0 0x44
+RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 
 RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
@@ -149,14 +149,8 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // being called; MSVC still emits one out-of-line COMDAT copy (called by its scalar-
 // deleting dtor) at 0x011290, pinned by mangled name (an inline-defined dtor can't
 // hang an RVA()):
-// @rva-symbol: ??1CTileTrigger@@UAE@XZ 0x00011290 0x44
+RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
 
-// --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is
-// IMPLICIT (retail 0x113c0 is COMPILER-GENERATED). Identity proven by the vtable-owner
-// probe (see <Gruntz/MapLogic.h>: ??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0;
-// the ex-CMapLogic view binding). This TU emits CBrickz vtable/??_G -> the ??1 COMDAT.
-// CBrickz::GetTypeTag @0x011300 is header-inline (in <Gruntz/CBrickz.h>).
-// @rva-symbol: ??1CBrickz@@UAE@XZ 0x000113c0 0x44
 
 RVA(0x00011320, 0x47)
 i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
@@ -166,6 +160,13 @@ i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
+// --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is
+// IMPLICIT (retail 0x113c0 is COMPILER-GENERATED). Identity proven by the vtable-owner
+// probe (see <Gruntz/MapLogic.h>: ??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0;
+// the ex-CMapLogic view binding). This TU emits CBrickz vtable/??_G -> the ??1 COMDAT.
+// CBrickz::GetTypeTag @0x011300 is header-inline (in <Gruntz/CBrickz.h>).
+RVA_COMPGEN(0x000113c0, 0x44, ??1CBrickz@@UAE@XZ)
+
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
 // CUserLogic vptr, inline-destruct the +0x18 link via ~EngStr, store CUserBase vptr;
 // the destructible link forces the /GX EH frame).
@@ -173,7 +174,7 @@ i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CCheckpointTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CCheckpointTrigger@@UAE@XZ 0x00011480 0x44
+RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 
 // --- CTileTrigger leaf destructors (0x011540 / 0x011600 / 0x0116c0) --- the SAME
 // folded CUserLogic teardown (leaf vptr store dead-eliminated).
@@ -181,17 +182,18 @@ i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CTileSecretTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CTileSecretTrigger@@UAE@XZ 0x00011540 0x44
+RVA_COMPGEN(0x00011540, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
+
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
 // a user-declared `~CGiantRock() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CGiantRock@@UAE@XZ 0x00011600 0x44
+RVA_COMPGEN(0x00011600, 0x44, ??1CGiantRock@@UAE@XZ)
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
 // a user-declared `~CCoveredPowerup() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CCoveredPowerup@@UAE@XZ 0x000116c0 0x44
+RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 
 // --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
 // --- ~CTileTriggerTransition is IMPLICIT (retail is COMPILER-GENERATED - a user `{}`
@@ -222,7 +224,7 @@ i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i
 // empty leaf dtors CANNOT be copies of one ~CUserLogic: each is its own class's dtor.)
 // An inline-defined dtor can't hang an RVA() (it would also tag the synthesized ??_G ->
 // duplicate-RVA), so it is pinned by mangled name:
-// @rva-symbol: ??1CTileTriggerTransition@@UAE@XZ 0x000117f0 0x44
+RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
 RVA(0x0010cb10, 0xf1)
 i32 TileTriggerStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTrigger)}

@@ -825,9 +825,8 @@ static const char s_strRBrack[] = "]";
 // 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
 // second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
 // ===========================================================================
-// @rva-symbol: ??_GzPTree@@UAEPAXI@Z 0x000212e0
-// @rva-symbol: ??1zPTree@@UAE@XZ 0x00021310 0x70
-// @rva-symbol: ??_EzPTree@@W7AEPAXI@Z 0x00021600
+RVA_COMPGEN(0x000212e0, 0, ??_GzPTree@@UAEPAXI@Z)
+RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
 
 // ---------------------------------------------------------------------------
 // 0x0213a0 - IDENTITY RECOVERED (was the CVBaseFieldHost @identity-TODO view):
@@ -862,7 +861,9 @@ CButeMgr::~CButeMgr() {}
 // linker-kept COMDAT copy of it in THIS obj on its own (MSVC5 no-/Gy inline-member
 // emission); the @rva-symbol pin below only NAMES that compiler-emitted copy for
 // the delink carve - no source body exists for it, and none must.
-// @rva-symbol: ??1CBSecStream@@UAE@XZ 0x00021570 0x70
+RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
+
+RVA_COMPGEN(0x00021600, 0, ??_EzPTree@@W7AEPAXI@Z)
 
 RVA(0x001706c0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {
@@ -891,6 +892,18 @@ bool CButeMgr::ScanToken(i32 expectType) {
     }
     return true;
 }
+
+// ===========================================================================
+// 0x171a40 - ??_Diostream@@QAEXXZ (the compiler-generated iostream vbase destructor)
+// ===========================================================================
+// Byte-identical to a cl 5.0 probe of the auto-emitted COMDAT (push esi; lea
+// esi,[ecx+0x14]; call ??1iostream; call ??1ios; pop esi; ret). Retail keeps it
+// UNREFERENCED (no call/DIR32 ref anywhere - no /OPT:REF): the emitting construct
+// did not survive into shipped code. The ex "CButeMgr::ClearHelper" hand-written
+// body (with its banned this+0x14 vbase-offset cast) is GONE - no dev wrote it.
+// The scoped stream below is the minimal cl-5.0 emission carrier (a throwing call
+// while the complete iostream is live -> the /GX funclet references ??_D).
+RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
@@ -1192,6 +1205,36 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
     return def;
 }
 
+// ---------------------------------------------------------------------------
+// CButeMgr::GetRef5 / GetRef6 / GetRef7 / GetRef8
+// The typed-reference getter family (value type-tags 5..8). Each mirrors
+// GetString: a function-local `static T s_default;` (MFC magic-static: a guard
+// byte + inline zero-init + an atexit-registered dtor thunk) is returned by
+// address on every error path, and `(T*)rec->pValue` on the matching type hit.
+// The type check is the cmp-mem `if (rec->type == N)` form (success inline, the
+// three failure blocks float to the tail as the nested-else cascade). The
+// default struct's only role is its SIZE + non-trivial dtor (-> the magic-static
+// atexit shape); its fields are zero on every miss.
+//
+// MATCH STATUS: GetRef5/GetRef6 are byte-exact (100% fuzzy). GetRef7/GetRef8 sit
+// at the INVERSE zero-register-pinning wall (84-85%): retail uses immediate zero
+// stores (`mov [field],0`) + `test eax,eax` null tests, while MSVC here pins ebp=0
+// (`xor ebp,ebp` + `mov [field],ebp` + `cmp ebp,eax`) for the >=4-field zero-init.
+// GetRef5 (also 4 fields) DOES pin ebp in retail, so this is an isolated allocator
+// coin-flip - logic/CFG/offsets are byte-exact, only the zero-materialization +
+// null-test register differ. Init-list / assignment-body / reversed-order ctor
+// forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
+// (see docs/patterns/zero-register-pinning.md - the regalloc wall).
+//
+// Bind the two magic-static cells + the atexit dtor thunk cl emits for each
+// `static CButeRefN s_default;` to their retail RVAs. The guard ($S) + object
+// (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
+// pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
+// set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
+// @data-symbol: _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S* 0x002bf688
+// @data-symbol: _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S* 0x002bf6d0
+RVA_COMPGEN(0x00173840, 0, _$E48)
+
 RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     void* grp = Tree()->Find(tag);
@@ -1206,6 +1249,10 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     }
     return def;
 }
+
+// @data-symbol: _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S* 0x002bf67c
+// @data-symbol: _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S* 0x002bf690
+RVA_COMPGEN(0x00173dc0, 0, _$E50)
 
 // CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
 // `this` with `type`, op-new an 8-byte CButeValue, copy `src`'s {type, pValue}
@@ -1686,38 +1733,6 @@ bool ButeMgr::ParseAttributeFile() {
     return true;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::GetRef5 / GetRef6 / GetRef7 / GetRef8
-// The typed-reference getter family (value type-tags 5..8). Each mirrors
-// GetString: a function-local `static T s_default;` (MFC magic-static: a guard
-// byte + inline zero-init + an atexit-registered dtor thunk) is returned by
-// address on every error path, and `(T*)rec->pValue` on the matching type hit.
-// The type check is the cmp-mem `if (rec->type == N)` form (success inline, the
-// three failure blocks float to the tail as the nested-else cascade). The
-// default struct's only role is its SIZE + non-trivial dtor (-> the magic-static
-// atexit shape); its fields are zero on every miss.
-//
-// MATCH STATUS: GetRef5/GetRef6 are byte-exact (100% fuzzy). GetRef7/GetRef8 sit
-// at the INVERSE zero-register-pinning wall (84-85%): retail uses immediate zero
-// stores (`mov [field],0`) + `test eax,eax` null tests, while MSVC here pins ebp=0
-// (`xor ebp,ebp` + `mov [field],ebp` + `cmp ebp,eax`) for the >=4-field zero-init.
-// GetRef5 (also 4 fields) DOES pin ebp in retail, so this is an isolated allocator
-// coin-flip - logic/CFG/offsets are byte-exact, only the zero-materialization +
-// null-test register differ. Init-list / assignment-body / reversed-order ctor
-// forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
-// (see docs/patterns/zero-register-pinning.md - the regalloc wall).
-//
-// Bind the two magic-static cells + the atexit dtor thunk cl emits for each
-// `static CButeRefN s_default;` to their retail RVAs. The guard ($S) + object
-// (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
-// pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
-// set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-// @data-symbol: _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S* 0x002bf688
-// @data-symbol: _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S* 0x002bf6d0
-// @rva-symbol: _$E48 0x00173840
-// @data-symbol: _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S* 0x002bf67c
-// @data-symbol: _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S* 0x002bf690
-// @rva-symbol: _$E50 0x00173dc0
 RVA(0x00173770, 0xc6)
 CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
     static CButeRef5 s_default;
@@ -1817,17 +1832,6 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
-// ===========================================================================
-// 0x171a40 - ??_Diostream@@QAEXXZ (the compiler-generated iostream vbase destructor)
-// ===========================================================================
-// Byte-identical to a cl 5.0 probe of the auto-emitted COMDAT (push esi; lea
-// esi,[ecx+0x14]; call ??1iostream; call ??1ios; pop esi; ret). Retail keeps it
-// UNREFERENCED (no call/DIR32 ref anywhere - no /OPT:REF): the emitting construct
-// did not survive into shipped code. The ex "CButeMgr::ClearHelper" hand-written
-// body (with its banned this+0x14 vbase-offset cast) is GONE - no dev wrote it.
-// The scoped stream below is the minimal cl-5.0 emission carrier (a throwing call
-// while the complete iostream is live -> the /GX funclet references ??_D).
-// @rva-symbol: ??_Diostream@@QAEXXZ 0x00171a40 0x14
 void EmitIostreamVbaseDtor(streambuf* b) { // non-static: cl elides unreferenced statics
     iostream s(b);
     s.flush();

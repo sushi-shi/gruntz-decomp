@@ -68,13 +68,6 @@ VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 VTBL(CInputDevRoot, 0x001ef670);  // grand-base subobject vtable (4 slots)
 VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
 
-// 0x133380 - CInputDevRoot's SCALAR-DELETING DESTRUCTOR. cl auto-emits this ??_G COMDAT
-// into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
-// same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
-// after). It has no source definition to hang RVA() on, so it is named verbatim - which
-// is what @rva-symbol is for. The `deviceConfigRootTable` global is really
-// ??_7CInputDevRoot@@6B@ @0x1ef670 (bound just above).
-// @rva-symbol: ??_GCInputDevRoot@@UAEPAXI@Z 0x00133380 0x24
 
 inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
@@ -380,6 +373,15 @@ i32 CInputDevBase::ResetState() {
 // addresses - and retail keeps those copies at 0x133370 / 0x1333b0; they are bound
 // below by @rva-symbol, exactly like the auto-emitted ??_G scalar-deleting dtors.)
 
+// The four leaf/middle ??_G scalar-deleting destructors cl auto-emits for the
+// vtable slot-0s (each `push esi; call ~T; test [esp+8],1; conditional operator
+// delete; ret 4`, 0x1e B). Retail keeps them interleaved with the dtor bodies;
+// slot-0 of each retail vtable is the identity proof (0x5ef628->0x1332e0,
+// 0x5ef680->0x133420, 0x5ef658->0x133440, 0x5ef640->0x1334d0; each inner call
+// targets the matching ~dtor). They were FID false-positives
+// (??_G__non_rtti_object, AMBIG) in config/library_labels.csv - reclassed here.
+RVA_COMPGEN(0x001332e0, 0x1e, ??_GCInputDevice@@UAEPAXI@Z)
+
 RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
     Teardown();
@@ -391,7 +393,15 @@ CInputDevice::~CInputDevice() {
 // alongside the inlined-in-leaves unwind. Was the DICfgC placeholder view (a
 // `(CInputDevRoot*)this` cast host stuck at ~50% because a plain method cannot
 // emit the vptr stamp) - dissolved: the compiler's own emission IS the function.
-// @rva-symbol: ??1CInputDevRoot@@UAE@XZ 0x00133370 0xb
+RVA_COMPGEN(0x00133370, 0xb, ??1CInputDevRoot@@UAE@XZ)
+
+// 0x133380 - CInputDevRoot's SCALAR-DELETING DESTRUCTOR. cl auto-emits this ??_G COMDAT
+// into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
+// same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
+// after). It has no source definition to hang RVA() on, so it is named verbatim - which
+// is what @rva-symbol is for. The `deviceConfigRootTable` global is really
+// ??_7CInputDevRoot@@6B@ @0x1ef670 (bound just above).
+RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 
 // 0x1333b0 - ??1CInputDevBase@@UAE@XZ: cl's auto-emitted out-of-line copy of the
 // middle-base inline dtor, WITH the /GX frame ([esp+0x10] try-levels 0 / -1):
@@ -400,19 +410,10 @@ CInputDevice::~CInputDevice() {
 // 0x134d50) - byte-identical to the base-obj COMDAT. Was the DICfgD placeholder
 // view (@early-stop eh-dtor-needs-base-subobject, ~34%): the real base-subobject
 // chain emits the frame + both stamps that the manual-vptr shape could not reach.
-// @rva-symbol: ??1CInputDevBase@@UAE@XZ 0x001333b0 0x55
+RVA_COMPGEN(0x001333b0, 0x55, ??1CInputDevBase@@UAE@XZ)
 
-// The four leaf/middle ??_G scalar-deleting destructors cl auto-emits for the
-// vtable slot-0s (each `push esi; call ~T; test [esp+8],1; conditional operator
-// delete; ret 4`, 0x1e B). Retail keeps them interleaved with the dtor bodies;
-// slot-0 of each retail vtable is the identity proof (0x5ef628->0x1332e0,
-// 0x5ef680->0x133420, 0x5ef658->0x133440, 0x5ef640->0x1334d0; each inner call
-// targets the matching ~dtor). They were FID false-positives
-// (??_G__non_rtti_object, AMBIG) in config/library_labels.csv - reclassed here.
-// @rva-symbol: ??_GCInputDevice@@UAEPAXI@Z 0x001332e0 0x1e
-// @rva-symbol: ??_GCInputDevBase@@UAEPAXI@Z 0x00133420 0x1e
-// @rva-symbol: ??_GCDeviceConfigC@@UAEPAXI@Z 0x00133440 0x1e
-// @rva-symbol: ??_GCDeviceConfigB@@UAEPAXI@Z 0x001334d0 0x1e
+RVA_COMPGEN(0x00133420, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x00133440, 0x1e, ??_GCDeviceConfigC@@UAEPAXI@Z)
 
 // CDeviceConfigC::~CDeviceConfigC (joystick, 0x133460) and CDeviceConfigB::~CDeviceConfigB
 // (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
@@ -425,6 +426,8 @@ RVA(0x00133460, 0x6a)
 CDeviceConfigC::~CDeviceConfigC() {
     Free6d0();
 }
+RVA_COMPGEN(0x001334d0, 0x1e, ??_GCDeviceConfigB@@UAEPAXI@Z)
+
 RVA(0x001334f0, 0x6a)
 CDeviceConfigB::~CDeviceConfigB() {
     Free360();

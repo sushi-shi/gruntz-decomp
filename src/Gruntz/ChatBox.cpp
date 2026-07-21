@@ -50,15 +50,6 @@ void CChatBox::Reset() {
     m_row1Key.Empty();
 }
 
-// free every node's owned payload, empty the list, clear the queue slot.
-// `delete payload` calls the header-inline ~CMenuPage OUT-OF-LINE: under /GX
-// (this TU's flags) MSVC5 declines to fold the EH-stateful teardown into a
-// frameless fn (verified: under base flags it folds and Clear craters 100->69),
-// so this obj emits + calls the standalone COMDAT copy retail keeps at
-// 0x183250 (link position = this obj's COMDAT tail, right after HitTest2
-// 0x183230) - pinned here (an inline dtor cannot carry RVA(); MenuPage.cpp no
-// longer defines it).
-// @rva-symbol: ??1CMenuPage@@QAE@XZ 0x00183250 0x71
 RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
     POSITION pos = m_nodeList.GetHeadPosition();
@@ -458,3 +449,12 @@ i32 CChatBox::HitTest4() {
     }
     return n->SelectBack2() != 0;
 }
+// free every node's owned payload, empty the list, clear the queue slot.
+// `delete payload` calls the header-inline ~CMenuPage OUT-OF-LINE: under /GX
+// (this TU's flags) MSVC5 declines to fold the EH-stateful teardown into a
+// frameless fn (verified: under base flags it folds and Clear craters 100->69),
+// so this obj emits + calls the standalone COMDAT copy retail keeps at
+// 0x183250 (link position = this obj's COMDAT tail, right after HitTest2
+// 0x183230) - pinned here (an inline dtor cannot carry RVA(); MenuPage.cpp no
+// longer defines it).
+RVA_COMPGEN(0x00183250, 0x71, ??1CMenuPage@@QAE@XZ)

@@ -62,23 +62,9 @@ i32 Gap_007c60(void) {
 // partial-unwind funclets - retail shows ~150 unwind funclets calling it via
 // thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
 // `mov [ecx],offset ??_7CUserBase; ret`. @rva-symbol NAMES the retail copy.
-// @rva-symbol: ??1CUserBase@@UAE@XZ 0x000087b0 0x7
+#include <rva.h>
 
-// 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
-// ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
-// /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's
-// unwind action(0) reaches it via the 0x3cfb-band thunk); the body stamps
-// ??_7CUserLogic, inline-destructs the +0x18 link's ~EngStr, stamps ??_7CUserBase.
-// Was the L_8860 placeholder shell (BoundaryLeafLogicViews.h), dissolved 2026-07-17.
-// @rva-symbol: ??1CUserLogic@@UAE@XZ 0x00008860 0x44
 
-// 0x8be0 - ??1CWapX@@QAE@XZ: the out-of-line COMDAT copy of the EMPTY inline
-// ~CWapX (<Gruntz/UserLogic.h> - the tile-logic second base), a 1-byte `ret`.
-// cl auto-emits it here (the /GX leaf ctor/dtor funclets reference it for the
-// +0x34 base subobject unwind - e.g. ~CWarlord FuncInfo state 1's funclet
-// @0x1d8578 null-check-adjusts this+0x34 and calls it). FID's `__fpclear` row
-// for 0x8be0 was a LOW-confidence false positive (pruned from library_labels.csv).
-// @rva-symbol: ??1CWapX@@QAE@XZ 0x00008be0 0x1
 
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
@@ -117,7 +103,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // a user-declared `~CActionArea() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CActionArea@@UAE@XZ 0x00007fd0 0x44
+RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
 RVA(0x00008060, 0x15)
 void ProjActRegisterDefaults() {
@@ -243,3 +229,18 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
+RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
+// 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
+// /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's
+// unwind action(0) reaches it via the 0x3cfb-band thunk); the body stamps
+// ??_7CUserLogic, inline-destructs the +0x18 link's ~EngStr, stamps ??_7CUserBase.
+// Was the L_8860 placeholder shell (BoundaryLeafLogicViews.h), dissolved 2026-07-17.
+RVA_COMPGEN(0x00008860, 0x44, ??1CUserLogic@@UAE@XZ)
+// 0x8be0 - ??1CWapX@@QAE@XZ: the out-of-line COMDAT copy of the EMPTY inline
+// ~CWapX (<Gruntz/UserLogic.h> - the tile-logic second base), a 1-byte `ret`.
+// cl auto-emits it here (the /GX leaf ctor/dtor funclets reference it for the
+// +0x34 base subobject unwind - e.g. ~CWarlord FuncInfo state 1's funclet
+// @0x1d8578 null-check-adjusts this+0x34 and calls it). FID's `__fpclear` row
+// for 0x8be0 was a LOW-confidence false positive (pruned from library_labels.csv).
+RVA_COMPGEN(0x00008be0, 0x1, ??1CWapX@@QAE@XZ)

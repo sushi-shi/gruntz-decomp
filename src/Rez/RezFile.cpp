@@ -15,13 +15,6 @@
 DATA(0x0021a0a0)
 const char g_wildcard[] = "*.*"; // decl in RezFile.h
 
-// The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
-// compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
-// so @rva-symbol pairs the retail copies with the auto-emitted base COMDATs).
-// @rva-symbol: ??_GCRezItmBase@@UAEPAXI@Z 0x0013c500 0x1e
-// @rva-symbol: ??_GCRezItm@@UAEPAXI@Z 0x0013c570 0x1e
-// @rva-symbol: ??_GCRezDir@@UAEPAXI@Z 0x0013c990 0x1e
-// @rva-symbol: ??_GCRezFile@@UAEPAXI@Z 0x0013cb60 0x1e
 
 RVA(0x0013c4d0, 0x1)
 void CRezList::V0() {}
@@ -34,6 +27,11 @@ CRezItmBase::CRezItmBase(void* parent) {
     // member requires the reinterpret.
     m_parent = static_cast<CSymParser*>(parent);
 }
+
+// The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
+// compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
+// so @rva-symbol pairs the retail copies with the auto-emitted base COMDATs).
+RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
 
 RVA(0x0013c520, 0xe)
 CRezItmBase::~CRezItmBase() {
@@ -49,6 +47,8 @@ CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
     m_readBuf = 0;
     m_pos = -1;
 }
+
+RVA_COMPGEN(0x0013c570, 0x1e, ??_GCRezItm@@UAEPAXI@Z)
 
 RVA(0x0013c590, 0x66)
 CRezItm::~CRezItm() {
@@ -257,6 +257,8 @@ CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_readonly = 1;
 }
 
+RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
+
 RVA(0x0013c9b0, 0x7f)
 CRezDir::~CRezDir() {
     // Typed intrusive-list access: the children are CRezItmBase-derived nodes
@@ -274,7 +276,7 @@ CRezDir::~CRezDir() {
 // (0x1e0cb8/0x1e0cc3, the two member states) take the dtor's address. 7 bytes:
 // the own-vtable stamp is dead-store-eliminated into the inlined ~CObjListBase
 // base stamp (`mov [ecx],??_7CObjListBase; ret`).
-// @rva-symbol: ??1CRezList@@QAE@XZ 0x0013ca30 0x7
+RVA_COMPGEN(0x0013ca30, 0x7, ??1CRezList@@QAE@XZ)
 
 RVA(0x0013ca40, 0x5)
 i32 CRezDir::Read(i32 off, i32 base, u32 count, void* buf) {
@@ -325,6 +327,8 @@ CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(pare
     // words, which CRezItmBase carries at the same offsets).
     m_dir->m_closedList.AddHead(reinterpret_cast<CRezListNode*>(this));
 }
+
+RVA_COMPGEN(0x0013cb60, 0x1e, ??_GCRezFile@@UAEPAXI@Z)
 
 RVA(0x0013cb80, 0x72)
 CRezFile::~CRezFile() {

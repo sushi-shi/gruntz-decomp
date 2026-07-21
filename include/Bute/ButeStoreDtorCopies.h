@@ -6,7 +6,7 @@
 // the function), so retail carries extra copies at their own RVAs.
 //
 // THE ANCHOR PATTERN IS RETIRED for copies our own cl also emits: when the base obj already
-// carries the compiler-emitted symbol (??1zPTree in butemgr), a `// @rva-symbol:` pin in the
+// carries the compiler-emitted symbol (??1zPTree in butemgr), an RVA_COMPGEN pin in the
 // owning .cpp names the retail copy directly and NO anchor class is needed - see
 // ButeMgr.cpp 0x212e0/0x21310/0x21600 (the ~zPTree sdd/dtor/adjustor trio)
 // and 0x21570 (~CBSecStream). The two ex "dtor copy" siblings were real subclasses' dtors
@@ -21,7 +21,7 @@
 // measured on the fader/SBI ctors), and the 1-fn "butestoreclear" unit is a partition
 // artifact of this anchor. DISSOLUTION PATH: when ProcessCheatInput (0.2%, final-sweep
 // redo) is reconstructed, its non-inlined Reset() call makes our chatboxowner.obj emit
-// the ?Reset@zPTree@@ COMDAT; then pin `@rva-symbol: ?Reset@zPTree@@QAEXXZ 0x000212a0`
+// the ?Reset@zPTree@@ COMDAT; then pin `RVA_COMPGEN(0x000212a0, 0, ?Reset@zPTree@@QAEXXZ)`
 // there, delete this anchor + ButeStoreClear.cpp + the butestoreclear unit. Until that
 // emitter exists, the anchor method below reproduces the expansion verbatim
 // (ClearRecursive(0), then zero the root / the +0x28 field / node count) and owns the

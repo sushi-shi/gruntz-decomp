@@ -49,7 +49,7 @@ i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 
 // a user-declared `~CSecretTeleporterTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CSecretTeleporterTrigger@@UAE@XZ 0x00010ab0 0x44
+RVA_COMPGEN(0x00010ab0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
 
 RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
@@ -72,7 +72,7 @@ i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // a user-declared `~CSecretLevelTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-// @rva-symbol: ??1CSecretLevelTrigger@@UAE@XZ 0x00010c50 0x44
+RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
