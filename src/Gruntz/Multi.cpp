@@ -303,7 +303,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if ((CState::LoadGameAssetNamespaces(a1, a2, a3), 0)) {
+    if (CState::LoadGameAssetNamespaces(a1, a2, a3) == 0) {
         return 0;
     }
     g_connectRptMgr = this;
