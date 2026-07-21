@@ -70,9 +70,9 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
   `docs/patterns/win32-import-decl-stdcall.md`.
 - **Label macros have ONE canonical spelling** (gated FATAL, `gruntz.audit.label_style`):
-  addresses zero-padded to 8 hex digits (`0x00xxxxxx`, also in `config/match-queue.md`),
-  size args unpadded lowercase hex (`0x0` = unknown), one line per invocation. No label
-  ever lives in a comment (`RVA_COMPGEN`/`DATA_SYMBOL` are the compiler-generated pins).
+  addresses zero-padded to 8 hex digits (`0x00xxxxxx`), size args unpadded lowercase hex
+  (`0x0` = unknown), one line per invocation. No label ever lives in a comment
+  (`RVA_COMPGEN`/`DATA_SYMBOL` are the compiler-generated pins).
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.

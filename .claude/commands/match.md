@@ -35,7 +35,7 @@ In short (full rules in the two agent docs):
    before dispatching; add/remove slots to match N.
 2. **Queue:** regenerate the worklist in a build shell —
    `nix develop .#build --command python3 -m gruntz.match.residual_queue` — then read
-   `config/match-queue.md`. **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
+   `build/gen/residual_function_queue.tsv` (via `python -m gruntz.match.residual_queue`). **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
    and skip anything already `@early-stop`. **Target priority — drain these BEFORE any
    %-recovery of already-matched functions:** (1) the `@stub` backlog (`src/Stub/` —
    biggest files first: ApiCallers, Backlog, Discovered, then the per-class tail), and

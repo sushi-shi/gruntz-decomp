@@ -474,7 +474,7 @@ translation unit / function cluster and its retail RVAs. Your job: write C++ tha
 the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)` above each, and
 **leave the working tree** for the orchestrator to build / measure / commit. **Write every address
 zero-padded to 8 hex digits** (`RVA(0x000090e0, 0x100)`, `DATA(0x005f03bc)`) — the enforced
-convention across `src/` + `config/match-queue.md`; leave the size arg unpadded. You do NOT
+convention across `src/`; leave the size arg unpadded. You do NOT
 `git add`/commit, bless the baseline, or edit other TUs.
 
 ## The loop
