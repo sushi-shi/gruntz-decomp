@@ -180,7 +180,12 @@ def _pct(n: int, d: int) -> float:
     return 100.0 * n / d if d else 0.0
 
 
-def summarize(report: dict, full: bool = True, table: bool = False) -> None:
+def summarize(report: dict, full: bool = True, table: bool = False,
+              write: bool = False) -> None:
+    """The report tail. `write=True` (the BUILD only) rolls the high-water +
+    cleanliness baselines and enforces the hard ratchet gate; `gruntz status`/
+    `report` are pure READS - same scoreboard vs the committed baselines,
+    ratchet violations print as warnings, nothing is written."""
     m = report.get("measures", {})
     named = {u["unit"] for u in units() if (TARGET_DIR / f"{u['unit']}.c.obj").exists()}
     print()
@@ -220,10 +225,16 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
     # so a reading is only allowed to raise the peak when it covers a comparable
     # population. See that module's docstring.
     try:
-        from gruntz.match.high_water import update as _hw_update
-        peak, note, _wrote = _hw_update(float(m.get("fuzzy_match_percent", 0.0) or 0.0),
-                                        _i(m.get("total_functions")))
-        print(f"  MAX %: {peak:.2f}% fuzzy (high-water) - {note}")
+        if write:
+            from gruntz.match.high_water import update as _hw_update
+            peak, note, _wrote = _hw_update(float(m.get("fuzzy_match_percent", 0.0) or 0.0),
+                                            _i(m.get("total_functions")))
+            print(f"  MAX %: {peak:.2f}% fuzzy (high-water) - {note}")
+        else:  # read-only: the committed peak, never raised from an unverified state
+            from gruntz.match.high_water import read as _hw_read
+            peak, _scale = _hw_read()
+            print(f"  MAX %: {peak:.2f}% fuzzy (high-water)" if peak is not None
+                  else "  MAX %: (no high-water file yet - run `gruntz build`)")
     except Exception as exc:  # never let the high-water probe break a build report
         print(f"  MAX %: (unavailable: {exc})")
     # Cleanliness scoreboard - part of the report so agents see their cast /
@@ -235,26 +246,26 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
         rows = count()
         for line in report_lines(rows):
             print(f"  {line}")
-        # Roll the baseline forward as part of the build, but DOWN-ONLY for the
-        # ratcheted view/cast metrics: a regression is held at the floor (shown as
-        # persistent debt), never blessed away, so the fake-view ratchet can't creep
-        # up silently across builds; other tracked metrics roll forward. Blessing a
-        # LOWER floor stays a deliberate act (`cleanliness --update`).
-        save_baseline(merge_baseline_downonly(rows))
-        # HARD RATCHET GATE (fails the build). The cast / fake-view / fake-vtable metrics
-        # may only go DOWN. If a ratcheted metric rose above its committed floor, an agent
-        # REINTRODUCED a cast / fake view / fake virtual - fail so it is CAUGHT here, not
-        # silently carried as debt. (Floors are only ever lowered, deliberately, via
-        # `python -m gruntz.cleanliness.board --update`; never raised.)
+        # BUILD ONLY: roll the baseline forward, DOWN-ONLY for the ratcheted
+        # view/cast metrics (a regression is held at the floor, never blessed
+        # away); other tracked metrics roll forward. Blessing a LOWER floor stays
+        # a deliberate act (`cleanliness --update`). `gruntz status` never writes.
+        if write:
+            save_baseline(merge_baseline_downonly(rows))
+        # RATCHET check. The cast / fake-view / fake-vtable metrics may only go
+        # DOWN. A rise above the committed floor means a cast/view/virtual was
+        # REINTRODUCED: the BUILD dies here (the gate); status just warns.
         _floor = load_baseline()
         _viol = [(lbl, _floor[lbl], n) for lbl, n in rows
                  if lbl in _RATCHET and lbl in _floor and n > _floor[lbl]]
         if _viol:
             for lbl, fl, n in _viol:
                 print(f"  RATCHET VIOLATED: {lbl}  {fl} -> {n}  (+{n - fl})", file=sys.stderr)
-            die("cleanliness ratchet violated: a cast/fake-view/fake-vtable metric rose above "
-                "its floor (see above). Fix the reintroduced cast/view at the SOURCE - dissolve "
-                "the view, type the member, make the virtual real. Never bless it up.")
+            if write:
+                die("cleanliness ratchet violated: a cast/fake-view/fake-vtable metric rose "
+                    "above its floor (see above). Fix the reintroduced cast/view at the "
+                    "SOURCE - dissolve the view, type the member, make the virtual real. "
+                    "Never bless it up.")
     except Exception as exc:  # never let the SCOREBOARD break a build report (die() is not caught)
         print(f"  cleanliness: (unavailable: {exc})")
     # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the
@@ -365,7 +376,7 @@ def cmd_build(args) -> None:
     # duplicate across units contradicts the binary). FATAL. See
     # gruntz.match.verify_unique_names.
     run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
-    summarize(json.loads(REPORT.read_text()))
+    summarize(json.loads(REPORT.read_text()), write=True)  # the ONE writer of the baselines
 
     # Non-fatal extras: per-function source fingerprints (so regression checks can
     # tell an edited function from a collateral drop), the README score block, and
