@@ -23,7 +23,7 @@ from pathlib import Path
 
 ROOT = str(next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
                 Path(__file__).resolve().parents[3]))
-BIN  = os.path.join(ROOT, "binaries/retail_en/GRUNTZ.EXE")
+BIN  = os.environ.get("GRUNTZ_EXE") or os.path.join(ROOT, "binaries/retail_en/GRUNTZ.EXE")
 FUNCS= os.path.join(ROOT, "build/ghidra-enrich/exports/functions.csv")
 IMAGE_BASE = 0x400000
 

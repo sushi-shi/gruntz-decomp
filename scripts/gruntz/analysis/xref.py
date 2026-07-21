@@ -118,6 +118,31 @@ def _names():
                 byname.setdefault(r["name"], rva)
     for rva, (nm, _u) in names.items():
         byname.setdefault(nm, rva)
+    # demangled aliases: `CClass::Member` and bare `Member` resolve too. An alias
+    # shared by several fns maps to the SET of rvas; _resolve prints the candidates.
+    from gruntz.analysis.caller_callee import parse_mangled
+    for rva, (nm, _u) in names.items():
+        if not nm.startswith("?"):
+            continue
+        pm = parse_mangled(nm)
+        if not pm:
+            continue
+        cls, member, _access = pm
+        if member == "ctor":
+            member = cls
+        elif member == "dtor":
+            member = "~" + cls
+        elif member in ("vec-dtor", "scalar-dtor", "op"):
+            continue                       # no stable spelled name to alias
+        for alias in ({f"{cls}::{member}", member} if cls else {member}):
+            cur = byname.get(alias)
+            if cur is None:
+                byname[alias] = {rva}
+            elif isinstance(cur, set):
+                cur.add(rva)
+            elif not alias.startswith("?"):
+                byname[alias] = {cur, rva}  # ghidra flat name (often the ILT thunk)
+                                            # + the body: surface both as candidates
     return names, byname, sorted(starts), fsize
 
 
@@ -151,13 +176,24 @@ def _owner(rva, fstarts, fsize):
     return start
 
 
-def _resolve(arg, byname):
+def _resolve(arg, byname, names=None):
     try:
         return int(arg, 16)
     except ValueError:
-        if arg in byname:
-            return byname[arg]
-        sys.exit(f"[xref] '{arg}' not an RVA and not found in symbol_names/functions.csv")
+        pass
+    hit = byname.get(arg)
+    if hit is None:
+        sys.exit(f"[xref] '{arg}' not an RVA and not found in symbol_names/functions.csv "
+                 f"(exact mangled, ghidra, `CClass::Member` and bare `Member` names resolve)")
+    if isinstance(hit, int):
+        return hit
+    if len(hit) == 1:
+        return next(iter(hit))
+    lines = [f"[xref] '{arg}' is ambiguous ({len(hit)} functions) - pick one:"]
+    for rva in sorted(hit):
+        nm, unit = (names or {}).get(rva, ("?", "?"))
+        lines.append(f"  0x{rva:08x}  [{unit}]  {nm}")
+    sys.exit("\n".join(lines))
 
 
 def _thunks_to(target, d, secs):
@@ -422,7 +458,7 @@ def main():
         sys.exit(__doc__)
     d, secs = _load()
     names, byname, fstarts, fsize = _names()
-    targets = [_resolve(a, byname) for a in rest]
+    targets = [_resolve(a, byname, names) for a in rest]
     if mode == "callees":
         callees_of(targets, d, secs, names, fstarts, fsize)
     elif mode == "tree":
