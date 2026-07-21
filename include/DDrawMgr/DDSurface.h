@@ -261,11 +261,12 @@ public:
     POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
     IDirectDrawSurface* m_ddSurface; // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_ddSurfaceBack; // +0x0c  held back/secondary surface (also released)
-    // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c bytes). The pool
-    // slot-9 setup (CPoolItem*::Setup/Blit7/Blit47) builds it in bulk via the m_ddsd word view; Refresh
-    // and the geometry accessors read it through the named DDSURFACEDESC fields below.
-    // The outer union is matching-neutral (identical offsets) - it only adds the
-    // whole-descriptor word view.
+    // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c). AUDITED
+    // 2026-07-21 - the i32-typed arms are LOAD-BEARING and must NOT become a real
+    // DDSURFACEDESC member: the game does SIGNED math on dwWidth/dwHeight/lPitch
+    // everywhere (jge/idiv codegen), and typing them DWORD flipped ~15 fns unsigned
+    // (Tile 100->93.8 etc. - reverted). The union IS the signed reading of the real
+    // DDSURFACEDESC layout, like the MapMgr row-table arms.
     union {
         u32 m_ddsd[(0x7c - 0x10) / 4]; // +0x10  full DDSURFACEDESC word view (dwSize @[0])
         struct {
