@@ -14,7 +14,7 @@
 #include <rva.h>
 #include <Gruntz/ParseSource.h> // CParseSource (GetEntryTag) - keep BEFORE any
 #include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (the ANI catalog host)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner (m_soundRegistry = the ANI Configure ctx)
 #include <Gruntz/AniElement.h>        // canonical CAniElement (the 0x28 'ANI' element)
@@ -61,7 +61,7 @@ i32 CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override)
 // pos=[esp+0x8], ours the reverse) - the stack-slot-coalesce coin-flip, only the
 // [esp+N] displacement bytes differ. docs/patterns/stack-slot-coalesce-frame-4b.md.
 RVA(0x00152660, 0xb2)
-void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
+void CDDrawSubMgrLeaf::RemoveValue_152660(CAniElement* target) {
     if (target == 0) {
         return;
     }
@@ -97,7 +97,7 @@ i32 CDDrawSubMgrLeaf::FreeAll_152720() {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete (static_cast<CCatalogNode*>(val));
+                delete (static_cast<CAniElement*>(val));
             }
         } while (pos != 0);
     }
@@ -131,7 +131,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
         if (strncmp(key, match, len) == 0) {
             m_10.RemoveKey(key);
             if (val != 0) {
-                delete (static_cast<CCatalogNode*>(val));
+                delete (static_cast<CAniElement*>(val));
             }
             ++n;
         }

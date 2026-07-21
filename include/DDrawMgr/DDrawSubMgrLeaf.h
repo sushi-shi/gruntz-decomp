@@ -6,12 +6,10 @@
 #include <rva.h>
 #include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject - the real leaf grand-base
 
-class CCatalogNode {
-public:
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CCatalogNode();        // slot 1 (deleting dtor -> cl-emitted ??_G)
-};
-SIZE_UNKNOWN(CCatalogNode);
+// (CCatalogNode DISSOLVED: the +0x10 catalog's values ARE CAniElement entries -
+// the ANI factories CreateAniEntry_1528d0/2_1529b0 populate it; the fake 2-slot
+// view aliased CAniElement's CObject slots.)
+class CAniElement; // <Gruntz/AniElement.h>
 
 // CDDrawSubMgrGrandBase DISSOLVED: it was a duplicate view of CLoadable (identical
 // m_04/-1 m_flags/0 m_0c/0 header + field-reset dtor + CDDrawSurfaceMgr owner @+0x0c);
@@ -32,7 +30,7 @@ public:
     // (ClearContext @0x157ae0 belongs to the sibling CDDrawSubMgrLeafScan - it is that
     // class's slot-7 virtual; it operated on a LeafScan `this`, so it was re-homed there.)
     CObject* LookupValue_06b2a0(const char* key);
-    void RemoveValue_152660(CCatalogNode* target);
+    void RemoveValue_152660(CAniElement* target);
     i32 FreeAll_152720(); // i32 residue feeds the slot-7 Unload override
     i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
     i32 HasKeyPrefix_152c50(const char* str);

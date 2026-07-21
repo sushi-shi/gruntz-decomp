@@ -10,7 +10,7 @@
 extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CCatalogNode
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (the per-spawn registry holder)
@@ -499,7 +499,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        entry->m_animRegistry->RemoveValue_152660(static_cast<CCatalogNode*>(obj)); // m_animRegistry is CDDrawSubMgrLeaf*
+        entry->m_animRegistry->RemoveValue_152660(static_cast<CAniElement*>(obj)); // m_animRegistry is CDDrawSubMgrLeaf*
     }
     toAdd.RemoveAll();
 

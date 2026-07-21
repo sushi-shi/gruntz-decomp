@@ -219,20 +219,8 @@ struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     }
 };
 
-SIZE_UNKNOWN(CVtSlot9);
-class CVtSlot9 {
-public:
-    virtual void s0();
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-    virtual void s6();
-    virtual void s7();
-    virtual void s8();
-    virtual void Dispatch24(); // slot 9 (+0x24)
-};
+// (CVtSlot9 DISSOLVED: DispatchVtbl24's +0x24 self-dispatch is the real slot-9
+// virtual, CUserLogic::StepAttackFire.)
 
 void GruntNode_Delete(void* p);
 

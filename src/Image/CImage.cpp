@@ -7,11 +7,12 @@
 
 #include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
 #include <Image/CImage.h>
-#include <Image/CBlitInfo.h> // canonical CBlitInfo/CBlitXform (RenderImage selector arg)
-#include <Wwd/WwdFile.h>     // CPlaneRender::WrapCoord (the m_xform origin remap)
+#include <Gruntz/GameLevel.h> // CGameLevel (the node m_level hop) + CTileImageSet
+#include <Wwd/WwdFile.h>     // CDDrawWorkerHost::WrapCoord (m_level->m_mainPlane origin remap)
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+#include <DDrawMgr/DDrawSurfacePair.h> // the blit destination (dst->m_surface/m_width/m_height)
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
@@ -434,23 +435,23 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 // / CopyRect IAT-import reloc-name operand artifacts). Logic verified against retail;
 // the residual is codegen-only.
 RVA(0x00153470, 0x31a)
-void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
-    i32 mode = info->m_mode;
+void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 mode = info->m_stateFlags;
     if (mode & 1) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     if (mode & 8) {
         if (g_engineFrameDelta >= info->m_44) {
             info->m_44 = info->m_48;
             mode ^= 0x10000000;
-            info->m_mode = mode;
+            info->m_stateFlags = mode;
         } else {
             info->m_44 -= g_engineFrameDelta;
         }
-        mode = info->m_mode;
+        mode = info->m_stateFlags;
         if (!(mode & 0x10000000)) {
-            info->m_result = -1;
+            info->m_dirtyArmed = -1;
             return;
         }
     }
@@ -486,10 +487,10 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     }
 
     // The plain-surface path (no flip, no owned sprite): compute + clip the rect, BltFast.
-    i32 x = m_originX - m_anchorX + info->m_adjustX + info->m_drawX;
-    i32 y = m_originY - m_anchorY + info->m_adjustY + info->m_drawY;
+    i32 x = m_originX - m_anchorX + info->m_10 + info->m_screenX;
+    i32 y = m_originY - m_anchorY + info->m_14 + info->m_screenY;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -513,7 +514,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
         if (bottom > destClip.bottom) {
             dbottom = destClip.bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             dleft = 0;
         }
@@ -527,23 +528,23 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
             dbottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            dleft = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            dleft = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            dright = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            dright = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            dtop = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            dtop = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            dbottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            dbottom = info->m_clip.bottom;
         }
     }
     i32 w = dright - dleft + 1;
     i32 h = dbottom - dtop + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     RECT s;
@@ -552,15 +553,15 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w;
     s.bottom = s.top + h;
     dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_loadResult);
-    info->m_outLeft = dleft;
-    info->m_outRect.left = dleft;
-    info->m_outTop = dtop;
-    info->m_outWidth = w;
-    info->m_outRect.top = dtop;
-    info->m_outHeight = h;
-    info->m_result = 0;
-    info->m_outRect.right = dright;
-    info->m_outRect.bottom = dbottom;
+    info->m_lastX = dleft;
+    info->m_dirtyRect.left = dleft;
+    info->m_lastY = dtop;
+    info->m_dirtyW = w;
+    info->m_dirtyRect.top = dtop;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
+    info->m_dirtyRect.right = dright;
+    info->m_dirtyRect.bottom = dbottom;
 }
 
 // The shared clip/resolve singleton is the canonical CResolveNode (class in
@@ -570,9 +571,9 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
 //
 // The +0x38 render virtual (slot 14, RenderImage @0x153470, reconstructed above) is
 // dispatched on `this` as an ordinary virtual call (`this->RenderImage(...)` ->
-// `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the CBlitInfo blit
+// `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the blit request
 // request the RESOLVE method fills in (same physical layout); the cast is transitional
-// pending a CResolveNode<->CBlitInfo unification.
+// (the ex-CBlitInfo view - unified onto CResolveNode).
 //
 // The magic-static trio cl5 emits for `static CResolveNode clip;` has NO source VarDecl
 // to hang DATA() on, so the three compiler-minted symbols are pinned to their retail
@@ -594,7 +595,7 @@ RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
     if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
-        this->RenderImage(reinterpret_cast<CBlitInfo*>(&clip), static_cast<CImage*>(a));
+        this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
     }
 }
 
@@ -617,7 +618,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
             g_imageClipRect[2] = (static_cast<i32*>(rect))[2];
             g_imageClipRect[3] = (static_cast<i32*>(rect))[3];
         }
-        this->RenderImage(reinterpret_cast<CBlitInfo*>(&clip), static_cast<CImage*>(a));
+        this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
     }
 }
 
@@ -633,11 +634,11 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // retail) + the WrapCoord (0x295a ILT thunk) / CopyRect (IAT import) reloc-name
 // operand artifacts. Code bytes otherwise byte-exact (clip + struct-copy end).
 RVA(0x001538c0, 0x257)
-void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_drawX - m_originX - info->m_adjustX - m_anchorX;
-    i32 y = info->m_drawY - m_originY - info->m_adjustY - m_anchorY;
+void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_screenX - m_originX - info->m_10 - m_anchorX;
+    i32 y = info->m_screenY - m_originY - info->m_14 - m_anchorY;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -662,7 +663,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -676,23 +677,23 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     RECT s;
@@ -706,12 +707,12 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -727,11 +728,11 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
 // reassociation - compound-assign / anchor-temp / x<->y reorder all tried). Plus
 // the WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153b20, 0x270)
-void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_drawX - info->m_adjustX - m_anchorX - m_originX;
-    i32 y = m_originY - m_anchorY + info->m_adjustY + info->m_drawY;
+void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_screenX - info->m_10 - m_anchorX - m_originX;
+    i32 y = m_originY - m_anchorY + info->m_14 + info->m_screenY;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -756,7 +757,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -770,23 +771,23 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     RECT s;
@@ -800,12 +801,12 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -817,11 +818,11 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
 // vs retail, cascading the co-scheduled X/Y register assignment. Plus the
 // WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153d90, 0x259)
-void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_adjustX - m_anchorX + m_originX + info->m_drawX;
-    i32 y = info->m_drawY - m_originY - m_anchorY - info->m_adjustY;
+void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_10 - m_anchorX + m_originX + info->m_screenX;
+    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_14;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -846,7 +847,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -860,23 +861,23 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     RECT s;
@@ -890,12 +891,12 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -911,11 +912,11 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
 // WrapCoord (0x295a ILT thunk) / CopyRect (IAT import) / 0x14dd90 pre-notify
 // reloc-name operand artifacts. Clip + inclusive-rect struct-copy end match.
 RVA(0x00153ff0, 0x280)
-void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_drawX - m_anchorX + m_originX + info->m_adjustX;
-    i32 y = info->m_drawY - m_anchorY + m_originY + info->m_adjustY;
+void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_screenX - m_anchorX + m_originX + info->m_10;
+    i32 y = info->m_screenY - m_anchorY + m_originY + info->m_14;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -940,7 +941,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -954,23 +955,23 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     ShadeRect s;
@@ -978,16 +979,16 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
+    if (info->m_drawActive) {
+        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1003,11 +1004,11 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
 // tiebreak insns + the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts;
 // all other code bytes byte-exact. %-hit accepted per structure-recovery doctrine.
 RVA(0x00154270, 0x257)
-void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_drawX - m_originX - m_anchorX - info->m_adjustX;
-    i32 y = info->m_drawY - m_originY - m_anchorY - info->m_adjustY;
+void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_screenX - m_originX - m_anchorX - info->m_10;
+    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_14;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -1032,7 +1033,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1046,23 +1047,23 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     ShadeRect s;
@@ -1070,16 +1071,16 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
+    if (info->m_drawActive) {
+        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1093,11 +1094,11 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
 // downstream register. Plus the WrapCoord/CopyRect/0x14dd90 reloc-name artifacts.
 // End-store struct-copy matches retail.
 RVA(0x001544d0, 0x275)
-void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_drawX - m_anchorX - info->m_adjustX - m_originX;
-    i32 y = m_originY + info->m_adjustY + info->m_drawY - m_anchorY;
+void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_screenX - m_anchorX - info->m_10 - m_originX;
+    i32 y = m_originY + info->m_14 + info->m_screenY - m_anchorY;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -1122,7 +1123,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1136,23 +1137,23 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     ShadeRect s;
@@ -1160,16 +1161,16 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
+    if (info->m_drawActive) {
+        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,11 +1183,11 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
 // wall as the surface BlitFlipH). Plus the WrapCoord/CopyRect/0x14dd90 reloc-name
 // operand artifacts. Clip + inclusive-rect struct-copy end match retail.
 RVA(0x00154750, 0x275)
-void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
-    i32 x = info->m_adjustX + m_originX + info->m_drawX - m_anchorX;
-    i32 y = info->m_drawY - m_originY - info->m_adjustY - m_anchorY;
+void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
+    i32 x = info->m_10 + m_originX + info->m_screenX - m_anchorX;
+    i32 y = info->m_screenY - m_originY - info->m_14 - m_anchorY;
     if (info->m_flags & 0x40000) {
-        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -1211,7 +1212,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
+    } else if (info->m_clip.left == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1225,23 +1226,23 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
             d.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clipLeft) {
-            d.left = info->m_clipLeft;
+        if (x < info->m_clip.left) {
+            d.left = info->m_clip.left;
         }
-        if (right > info->m_clipRight) {
-            d.right = info->m_clipRight;
+        if (right > info->m_clip.right) {
+            d.right = info->m_clip.right;
         }
-        if (y < info->m_clipTop) {
-            d.top = info->m_clipTop;
+        if (y < info->m_clip.top) {
+            d.top = info->m_clip.top;
         }
-        if (bottom > info->m_clipBottom) {
-            d.bottom = info->m_clipBottom;
+        if (bottom > info->m_clip.bottom) {
+            d.bottom = info->m_clip.bottom;
         }
     }
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_result = -1;
+        info->m_dirtyArmed = -1;
         return;
     }
     ShadeRect s;
@@ -1249,19 +1250,18 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_notify) {
-        m_owned->Select(info->m_notifyArg0, reinterpret_cast<ShadeDescr*>(info->m_notifyArg1));
+    if (info->m_drawActive) {
+        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    info->m_outLeft = d.left;
-    info->m_outTop = d.top;
-    info->m_outRect = *(&d);
-    info->m_outWidth = w;
-    info->m_outHeight = h;
-    info->m_result = 0;
+    info->m_lastX = d.left;
+    info->m_lastY = d.top;
+    info->m_dirtyRect = *(&d);
+    info->m_dirtyW = w;
+    info->m_dirtyH = h;
+    info->m_dirtyArmed = 0;
 }
 SIZE_UNKNOWN(CBlitXform);
-SIZE_UNKNOWN(CBlitInfo);
 
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
 SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT

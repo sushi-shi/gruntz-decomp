@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawFrameNode.h> // the CDDrawWorkerObj element-array + CDDrawFrameNode dispatch views
+#include <DDrawMgr/DDrawFrameNode.h> // the CDDrawWorkerObj element-array view
 #include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
 #include <Gruntz/ParseSource.h> // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
 #include <Win32.h>              // windows.h base types (ddraw.h needs them first)
@@ -701,7 +701,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenY = y;
     m_48 = 0x32;
     m_drawFillCmd = 1;
-    m_3c = reinterpret_cast<i32>(OwnerMgr()->m_level); // the mgr's +0x24 CGameLevel, held as the int handle
+    m_level = OwnerMgr()->m_level; // the mgr's +0x24 CGameLevel
     return 1;
 }
 
@@ -1111,16 +1111,19 @@ i32 CFileMem::Open() {
         return 0;
     }
 
+    // Through a CFile* so MSVC5 keeps the retail virtual dispatch (an object
+    // receiver would devirtualize; the ex-CFileIODispatch view faked these slots).
+    CFile* io = &m_file;
     if (WantRead()) {
-        if (!(reinterpret_cast<CFileIODispatch*>(&m_file))->Open(m_name, 0, 0)) {
+        if (!io->Open(m_name, 0, 0)) {
             return 0;
         }
-        m_length = (reinterpret_cast<CFileIODispatch*>(&m_file))->GetLength();
+        m_length = io->GetLength();
         m_offset = 0;
         return 1;
     }
 
-    if (!(reinterpret_cast<CFileIODispatch*>(&m_file))->Open(m_name, 0x1001, 0)) {
+    if (!io->Open(m_name, 0x1001, 0)) {
         return 0;
     }
     m_length = 0;
@@ -1130,7 +1133,8 @@ i32 CFileMem::Open() {
 
 RVA(0x00165ef0, 0xf)
 i32 CFileMem::Ready() {
-    (reinterpret_cast<CFileIODispatch*>(&m_file))->Close();
+    CFile* io = &m_file;
+    io->Close();
     return 1;
 }
 
@@ -1142,7 +1146,8 @@ i32 CFileMem::Read(void* buf, i32 n) {
     if (n == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CFileIODispatch*>(&m_file))->Read(buf, n) != n) {
+    CFile* io = &m_file;
+    if (io->Read(buf, n) != static_cast<u32>(n)) {
         return 0;
     }
     m_offset += n;
@@ -1157,7 +1162,8 @@ i32 CFileMem::Write(const void* buf, i32 n) {
     if (n == 0) {
         return 0;
     }
-    (reinterpret_cast<CFileIODispatch*>(&m_file))->Write(buf, n);
+    CFile* io = &m_file;
+    io->Write(buf, n);
     m_length += n;
     m_offset += n;
     return 1;
@@ -1221,25 +1227,15 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
 // elements are CImages, vftable 0x5eaa2c - see CDDrawWorker::InsertFrame): its
 // slot 14 (+0x38) is CImage::RenderImage @0x153470, the blit-mode/clip selector.
 // Kept as this TU's dispatch view pending the fold (@identity-TODO): CImage.h
-// types slot 14's args (CBlitInfo* info, CImage* dst) while this dispatch passes
-// (worker, surface-pair). RECONCILIATION (proven, but a whole-subsystem change):
-//   arg1 `info` is really a CResolveNode* - CBlitInfo is a SECOND field-view of the
-//   same layout (CResolveNode m_38/m_40/m_44/m_48/m_5c/m_60 == CBlitInfo
-//   m_result/m_mode/m_44/m_48/m_drawX/m_drawY). CDDrawWorkerBase : CResolveNode, so
-//   `this` (the worker) IS-A CResolveNode; CImage::0x153790 passes a CResolveNode too.
-//   arg2 `dst` is really a CDDrawSurfacePair* (RenderImage reads dst->m_surface/
-//   m_width/m_height - a surface holder, not a CImage). Folding CDDrawFrameNode onto
-//   CImage cast-free therefore requires retyping RenderImage to
-//   (CResolveNode*, CDDrawSurfacePair*) AND every Blit* helper it forwards to
-//   (BlitNorm/BlitFlip*/BlitShade*) off CBlitInfo -> CResolveNode across the blit
-//   subsystem. Deferred as one coordinated change, not a per-TU cast.
-// The dispatch view CDDrawFrameNode (slot names are CImage's own, vtable 0x1eaa2c ground
-// truth) lives in <DDrawMgr/DDrawFrameNode.h> (included at the top of this TU).
+// (The ex-CDDrawFrameNode dispatch view is DISSOLVED: m_frame IS a CImage - its
+// vtable 0x1eaa2c is the ground truth - and slot 14 is the real
+// CImage::RenderImage(CResolveNode*, CDDrawSurfacePair*); the worker IS-A
+// CResolveNode, so the dispatch is now spelled through the real class.)
 
 RVA(0x001660b0, 0x33)
 void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    (reinterpret_cast<CDDrawFrameNode*>(m_78))->RenderImage(this, a);
+    m_frame->RenderImage(this, a);
     if (b->m_surface != 0 && (b->m_flags & 0x20000) == 0) {
-        (reinterpret_cast<CDDrawFrameNode*>(m_78))->RenderImage(this, b);
+        m_frame->RenderImage(this, b);
     }
 }

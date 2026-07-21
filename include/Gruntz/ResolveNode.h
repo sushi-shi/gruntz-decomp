@@ -52,15 +52,28 @@ public:
     // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
     i32 m_lastX;              // +0x18
     i32 m_lastY;              // +0x1c
-    i32 m_dirtyLeft;                 // +0x20  live dirty-rect left (INT_MIN = disarmed corner)
-    i32 m_dirtyTop;                 // +0x24  live dirty-rect top
-    char _pad28[0x30 - 0x28]; // +0x28..+0x2f
+    // +0x20..+0x2f  the live dirty-rect / blit out-rect. The flats are the node
+    // readers' names; m_dirtyRect is the same 4 dwords as one RECT (the blit path
+    // whole-struct-assigns it).
+    union {
+        struct {
+            i32 m_dirtyLeft;   // +0x20  live dirty-rect left (INT_MIN = disarmed corner)
+            i32 m_dirtyTop;    // +0x24  live dirty-rect top
+            i32 m_dirtyRight;  // +0x28  (blit out-rect right)
+            i32 m_dirtyBottom; // +0x2c  (blit out-rect bottom)
+        };
+        RECT m_dirtyRect;
+    };
     // +0x30/+0x34: live dirty-rect size (a RenderDot dot plot sets 1x1; the
     // A/C blit slots read them as the rect extent).
     i32 m_dirtyW;             // +0x30
     i32 m_dirtyH;             // +0x34
-    i32 m_dirtyArmed;                 // +0x38  live dirty-rect armed flag (-1 == disarmed)
-    i32 m_3c;                 // +0x3c  = 0
+    i32 m_dirtyArmed; // +0x38  live dirty-rect armed flag (-1 == disarmed; the blit
+                      //        path's result out: 0 ok / -1 culled - same latch)
+    // +0x3c  the owning level (SetPosition seeds OwnerMgr()->m_level; the blit path
+    // hops m_level->m_mainPlane->WrapCoord). Was the i32 "m_3c" + the ex-CBlitXform
+    // view's +0x5c plane hop - CBlitXform WAS CGameLevel.
+    class CGameLevel* m_level;
     i32 m_stateFlags;                 // +0x40  (SetPosition zeroes)
     i32 m_44;                 // +0x44  (SetPosition zeroes)
     i32 m_48;                 // +0x48  (SetPosition reseeds 0x32)

@@ -11,7 +11,8 @@ class CDDrawPtrCollections; // folded CImageSurfacePool
 #include <Wap32/WapObj.h> // CWapObj : CObject - the abstract intermediate (slots 5/6)
 
 class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
-class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
+class CResolveNode;      // the blit/draw request IS the resolve node (ex-CBlitInfo view)
+class CDDrawSurfacePair; // the blit destination (ex the "CImage* dst" mistype)
 
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
@@ -109,7 +110,7 @@ public:
     virtual i32 Resolve(CParseSource* src, i32 arg);                           // slot 11 0x152f20
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
-    virtual void RenderImage(CBlitInfo* info, CImage* dst);                    // slot 14 0x153470
+    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);                    // slot 14 0x153470
     virtual void FlipVertical(void* a);                                       // slot 15 (external)
     virtual void FlipHorizontal(void* a); // slot 16 (ILT 0x002d6a; no-op sink)
     virtual void FlipBoth(void* a); // slot 17: forward arg to slots 15 then 16
@@ -128,13 +129,13 @@ public:
     // coordinate transform), clip it against either the parent clip RECT or the
     // worker clip box, then blit via CDDSurface::BltEx (surface variants) or
     // CDDrawShadeBlit::Blit (shaded variants). See src/Image/ImageSpriteBlit.cpp.
-    void BlitNorm(CBlitInfo* info, CImage* dst);        // 0x1538c0  no flip, surface
-    void BlitFlipV(CBlitInfo* info, CImage* dst);       // 0x153b20  Y flip, surface
-    void BlitFlipH(CBlitInfo* info, CImage* dst);       // 0x153d90  X flip, surface
-    void BlitShadeFlipHV(CBlitInfo* info, CImage* dst); // 0x153ff0  X+Y flip, shaded
-    void BlitShadeNorm(CBlitInfo* info, CImage* dst);   // 0x154270  no flip, shaded
-    void BlitShadeFlipV(CBlitInfo* info, CImage* dst);  // 0x1544d0  Y flip, shaded
-    void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
+    void BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst);        // 0x1538c0  no flip, surface
+    void BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst);       // 0x153b20  Y flip, surface
+    void BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst);       // 0x153d90  X flip, surface
+    void BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst); // 0x153ff0  X+Y flip, shaded
+    void BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst);   // 0x154270  no flip, shaded
+    void BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst);  // 0x1544d0  Y flip, shaded
+    void BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst);  // 0x154750  X flip, shaded
 
     // --- layout (continues from m_parent at +0x0c) ----------------------------
     // (m_width..m_originY also serve the game-object frame-cache consumers - the ex

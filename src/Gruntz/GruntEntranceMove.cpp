@@ -1484,5 +1484,5 @@ kArm:
 
 RVA(0x0006b260, 0x5)
 void CGrunt::DispatchVtbl24() {
-    (reinterpret_cast<CVtSlot9*>(this))->Dispatch24();
+    StepAttackFire(); // the slot-9 (+0x24) virtual self-dispatch (tail jmp [vt+0x24])
 }

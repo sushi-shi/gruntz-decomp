@@ -31,8 +31,9 @@ public:
     // overlaid per-kind: A stores its BYTE frame (factory seed `mov byte [eax+0x78],bl`
     // @0x157012), B its int frame/node pointer (dword seed @0x157192).
     union {
-        i32 m_78;   // the dword reading (B's frame node; the base predicates)
-        char m_78b; // A's byte frame
+        i32 m_78;          // the dword reading (the base predicates test/clear it)
+        class CImage* m_frame; // B's frame image (RenderFrame dispatches its slot 14)
+        char m_78b;        // A's byte frame
     };
 
     CDDrawWorkerBase() {}
@@ -50,7 +51,7 @@ public:
         m_dirtyArmed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_clip.left = static_cast<i32>(0x80000000);
-        m_3c = 0;
+        m_level = 0;
         m_stateFlags = 0;
     }
 };

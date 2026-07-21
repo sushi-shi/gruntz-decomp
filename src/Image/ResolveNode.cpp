@@ -8,7 +8,7 @@ CResolveNode::CResolveNode() {
     m_dirtyArmed = -1;
     m_screenX = static_cast<i32>(0x80000000);
     m_clip.left = static_cast<i32>(0x80000000);
-    m_3c = 0;
+    m_level = 0;
     m_stateFlags = 0;
 }
 
