@@ -210,7 +210,7 @@ RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
     m_4->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
-    if (m_40) {
+    if (m_notifyLatch) {
         QuitToMenu();
     }
     if (arg == 9) {
@@ -2302,11 +2302,11 @@ i32 CPlay::StepInputA() {
     Edge* edge;
     void* halfPtr;
     if (m_inputHalfSel == 0) {
-        half = m_160;
+        half = m_scratchSurface0;
         edge = reinterpret_cast<Edge*>(&m_188);
         halfPtr = &m_168;
     } else {
-        half = m_164;
+        half = m_scratchSurface1;
         edge = reinterpret_cast<Edge*>(&m_198);
         halfPtr = &m_178;
     }
@@ -4534,7 +4534,7 @@ RVA(0x000cfbd0, 0x8f)
 i32 CPlay::Vslot15() {
     if (m_levelIndex == 0x20) {
         m_1c0 = 1;
-        m_40 = 1;
+        m_notifyLatch = 1;
         SoundStream* stream = m_c->m_soundRegistry->m_2c;
         if (stream) {
             stream->Stop();

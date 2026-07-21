@@ -211,9 +211,9 @@ public:
     CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
                            //         loader caches mgr->m_40 here - the +0x40 slot's
                            //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
-    CDDSurface* m_14;      // +0x14  owned blit surface (ReleaseResources returns it
+    CDDSurface* m_blitSurface0;      // +0x14  owned blit surface (ReleaseResources returns it
                            //         to the m_c->m_ptrColl pool; ex-CGameModeBase typing)
-    CDDSurface* m_18;      // +0x18  owned blit surface (same pool)
+    CDDSurface* m_blitSurface1;      // +0x18  owned blit surface (same pool)
     i32 m_levelIndex;      // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
     i32 m_levelType;       // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
                            //         switches on it (4/5/8 land-death, 6 no-death) to pick the
@@ -237,7 +237,7 @@ public:
     CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)
     i32 m_38;              // +0x38
     i32 m_ready;           // +0x3c  active/ready gate (IsActive returns it)
-    i32 m_40;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
+    i32 m_notifyLatch;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
                            //         menu transition)
     i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)
     i32 m_48;              // +0x48  (LoadGameAssetNamespaces seeds -1; role unrecovered)
@@ -256,8 +256,8 @@ public:
     // The old "axis value" reading was wrong. +0x168..+0x1a4 is the per-half
     // src-RECT/edge block StepInputA feeds (four extents seeded 0x40 by the ctor
     // - the 64x64 rect dims).
-    CDDSurface* m_160; // +0x160 first-half scratch surface
-    CDDSurface* m_164; // +0x164 second-half scratch surface
+    CDDSurface* m_scratchSurface0; // +0x160 first-half scratch surface
+    CDDSurface* m_scratchSurface1; // +0x164 second-half scratch surface
     i32 m_168;         // +0x168 first-half block (addr taken)
     i32 m_16c;
     i32 m_170; // +0x170 (= 0x40)

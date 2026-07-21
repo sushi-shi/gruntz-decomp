@@ -194,7 +194,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             }
         }
         m_1c4 = 1;
-        m_40 = 0; // the retail DWORD store
+        m_notifyLatch = 0; // the retail DWORD store
         m_1c0 = 0;
         memset(&m_1d0, 0, 0x40 * 4); // clears +0x1d0..+0x2d0
         a1->ResetClockGlobals();     // retail ecx = the A1 arg slot (a1 IS the mgr)

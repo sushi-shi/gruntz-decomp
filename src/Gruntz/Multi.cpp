@@ -327,7 +327,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_568 = 0;
     m_56c = 0;
     m_574 = 0;
-    m_40 = 0;
+    m_notifyLatch = 0;
     m_1c0 = 0;
     m_syncGate = 0;
     m_connected = 0;
@@ -603,7 +603,7 @@ RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
     m_4->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
-    if (m_40) {
+    if (m_notifyLatch) {
         QuitToMenu();
     }
     if (arg == 9) {

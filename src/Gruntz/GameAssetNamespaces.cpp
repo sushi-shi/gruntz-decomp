@@ -79,17 +79,17 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (m_4->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_4->m_symParser)) == 0) {
         return 0;
     }
-    if (m_160 == 0 && m_164 == 0) {
+    if (m_scratchSurface0 == 0 && m_scratchSurface1 == 0) {
         CDDrawPtrCollections* coll = m_c->m_ptrColl;
         if (coll == 0) {
             return 0;
         }
-        m_160 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_160 == 0) {
+        m_scratchSurface0 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        if (m_scratchSurface0 == 0) {
             return 0;
         }
-        m_164 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_164 == 0) {
+        m_scratchSurface1 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        if (m_scratchSurface1 == 0) {
             return 0;
         }
     }

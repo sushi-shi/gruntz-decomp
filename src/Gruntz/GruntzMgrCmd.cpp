@@ -1007,7 +1007,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             // fall through
         case kCmdReturnToMenu: // 0x89d62
-            m_curState->m_40 = 1;
+            m_curState->m_notifyLatch = 1;
             if (TransitionState(5, 1, 0, 0)) {
                 return 1;
             }
