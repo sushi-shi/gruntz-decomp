@@ -494,40 +494,32 @@ void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
 // ---------------------------------------------------------------------------
 // Create7f0_1 (0x1421a0).  new 0xc0 item; ctor (CByteArray @+0x94, vtbl 0x5ef7f0
 // stamped FIRST, then zero fields); dispatch vtbl[0x08] with 1 arg; on success
-// AddItemA, else virtual-delete. /GX. ret 0x4.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall: real-polymorphic `new CDDSurface` now emits the /GX ctor-in-flight
-// frame (the throwing CByteArray member ctor), but the global __ehfuncinfo state-index
-// push differs from retail (not reproducible from one TU); body byte-exact. Deferred.
+// AddItemA, else virtual-delete. /GX. ret 0x4. The failure (delete) path is the
+// fall-through (`if (!InitX)`), matching retail's `jne success` branch polarity.
 RVA(0x001421a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
     CDDSurface* item = new CDDSurface;
-    if (item->Init1(this, a)) {
-        AddItemA(item);
-        return item;
+    if (!item->Init1(this, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // CreateA (0x142260).  new 0xc0 item, ctor (CFileImageSurface @+0x94 / vtbl 0x5efa58),
 // dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall: real-polymorphic `new CFileImageSurface` emits the /GX frame; residue is the
-// global __ehfuncinfo state-index push (per-TU) + the redundant base-then-derived vptr
-// stamp order. Body byte-faithful. Deferred to the final sweep.
+// Failure path is the fall-through (retail's `jne success` polarity).
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->ResolveEx(this, reinterpret_cast<void*>(a), b, c, d, e)) {
-        AddItemA(item);
-        return item;
+    if (!item->ResolveEx(this, reinterpret_cast<void*>(a), b, c, d, e)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 RVA(0x00142340, 0x1e)
@@ -546,53 +538,43 @@ CFileImageSurface::~CFileImageSurface() {}
 
 // ---------------------------------------------------------------------------
 // CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (same as CreateA, init slot 11). Body byte-faithful, /GX state-index
-// residue. Deferred to the final sweep.
 RVA(0x001423c0, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->LoadKeyed(this, a, b, c, d, e)) {
-        AddItemA(item);
-        return item;
+    if (!item->LoadKeyed(this, a, b, c, d, e)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // Createa58_1 (0x1424a0).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x001424a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->Init1(this, a)) {
-        AddItemA(item);
-        return item;
+    if (!item->Init1(this, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // Createa58_3 (0x142560).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x28]
 // with 3 args; AddItemA on success. /GX. ret 0xc.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->LoadByExt(this, reinterpret_cast<char*>(a), b, c)) {
-        AddItemA(item);
-        return item;
+    if (!item->LoadByExt(this, reinterpret_cast<char*>(a), b, c)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
@@ -646,18 +628,15 @@ i32 CDDrawPtrCollections::CreateRange(
 // ---------------------------------------------------------------------------
 // Createa88_3 (0x142730).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x24]
 // with 3 args; AddItemA on success. /GX. ret 0xc.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142730, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
-    if (item->Blit7(this, a, b, c)) {
-        AddItemA(item);
-        return item;
+    if (!item->Blit7(this, a, b, c)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 RVA(0x00142820, 0x53)
@@ -666,37 +645,31 @@ CPoolItemA88::~CPoolItemA88() {}
 // ---------------------------------------------------------------------------
 // Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142880, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createa88_1(i32 a) {
     CPoolItemA88* item = new CPoolItemA88;
-    if (item->Init1(this, a)) {
-        AddItemA(item);
-        return item;
+    if (!item->Init1(this, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // Createab8_3 (0x142940).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x24]
 // with 3 args; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
 // /GX. ret 0xc.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142940, 0xd4)
 CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->Setup(this, a, b, c)) {
-        AddItemA(item);
-        m_palBpp = item->m_bitDepth;
-        return item;
+    if (!item->Setup(this, a, b, c)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    m_palBpp = item->m_bitDepth;
+    return item;
 }
 
 RVA(0x00142a40, 0x53)
@@ -712,52 +685,45 @@ CPoolItemAB8::~CPoolItemAB8() {}
 RVA(0x00142aa0, 0xca)
 CDDSurface* CDDrawPtrCollections::Createab8_1(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->Init1(this, a)) {
-        AddItemA(item);
-        m_palBpp = item->m_bitDepth;
-        return item;
+    if (!item->Init1(this, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    m_palBpp = item->m_bitDepth;
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // Createab8_24_3 (0x142b70).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch
 // vtbl[0x24] as a 3-arg init with the two literal tags (0x18, 0x21) + the incoming
 // arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success. /GX. ret 0x4.
-// ---------------------------------------------------------------------------
-// @early-stop
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue). Slot 9
-// (0x148af0 == CPoolItemAB8::Setup) takes exactly 4 args (info + 3 ints); this
+// Slot 9 (0x148af0 == CPoolItemAB8::Setup) takes exactly 4 args (info + 3 ints); this
 // site passes {0x18, 0x21, a}, Createab8_3 passes {a, b, c} - one consistent signature.
 RVA(0x00142b70, 0xce)
 CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->Setup(this, 0x18, 0x21, a)) {
-        AddItemA(item);
-        m_palBpp = item->m_bitDepth;
-        return item;
+    if (!item->Setup(this, 0x18, 0x21, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    m_palBpp = item->m_bitDepth;
+    return item;
 }
 
 // ---------------------------------------------------------------------------
 // Createae8_6 (0x142c40).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x24]
 // as a 6-arg init with all six incoming args; AddItemA on success. /GX. ret 0x18.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142c40, 0xd7)
 CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CPoolItemAE8* item = new CPoolItemAE8;
-    if (item->Blit47(this, a, b, c, d, e, f)) {
-        AddItemA(item);
-        return item;
+    if (!item->Blit47(this, a, b, c, d, e, f)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 RVA(0x00142d40, 0x53)
@@ -766,18 +732,15 @@ CPoolItemAE8::~CPoolItemAE8() {}
 // ---------------------------------------------------------------------------
 // Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
-// ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142da0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createae8_1(i32 a) {
     CPoolItemAE8* item = new CPoolItemAE8;
-    if (item->Init1(this, a)) {
-        AddItemA(item);
-        return item;
+    if (!item->Init1(this, a)) {
+        delete item;
+        return 0;
     }
-    delete item;
-    return 0;
+    AddItemA(item);
+    return item;
 }
 
 RVA(0x00142e60, 0x27)
