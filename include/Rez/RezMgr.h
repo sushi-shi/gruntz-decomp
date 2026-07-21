@@ -91,7 +91,7 @@ public:
     // and FILE* are both 4 bytes and m_fp is only touched in RezFile.cpp):
     FILE* m_fp;      // +0x10  CRT FILE* (= 0); passed to fseek/fread/... by value
     char* m_readBuf; // +0x14  owned filename copy (= 0); operator new(strlen+1)'d, strcpy'd, re-Open'd
-    i32 m_18;        // +0x18  readonly flag (Open stores its readonly arg here)
+    i32 m_readonly;        // +0x18  readonly flag (Open stores its readonly arg here)
     i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)
 };
