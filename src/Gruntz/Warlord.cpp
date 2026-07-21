@@ -79,13 +79,11 @@ extern "C" void Act_F(); // 0x402725
 
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
-        i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                                       \
+        i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                     \
         if (id_ == 0) {                                                                            \
             g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
             id_ = g_typeCounter;                                                                   \
-            CString* slot_ =                                                                       \
-                reinterpret_cast<CString*>(                                                         \
-                    g_typeColl.IndexToPtr(id_));                     \
+            CString* slot_ = reinterpret_cast<CString*>(g_typeColl.IndexToPtr(id_));               \
             CString* p_ = reinterpret_cast<CString*>(g_typeColl.m_alloc);                          \
             for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                        \
                 ::new (static_cast<void*>(p_)) CString;                                            \
@@ -162,8 +160,8 @@ typedef enum WarlordBattleTag {
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                   \
-        dst = reinterpret_cast<CAniElement*>(h);                                                                     \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);             \
+        dst = reinterpret_cast<CAniElement*>(h);                                                   \
     }
 
 // @early-stop  (~79%; complete correct body, up from a 3.7% stub)
@@ -184,7 +182,8 @@ typedef enum WarlordBattleTag {
 //     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
 //     inheritance change owned by the Fable lane; left as a hand-off (see report).
 RVA(0x00042d40, 0x73e)
-CWarlord::CWarlord(i32 arg) : CUserLogic(reinterpret_cast<CGameObject*>(arg)), CWapX(reinterpret_cast<CGameObject*>(arg)) {
+CWarlord::CWarlord(i32 arg)
+    : CUserLogic(reinterpret_cast<CGameObject*>(arg)), CWapX(reinterpret_cast<CGameObject*>(arg)) {
     CGameObject* obj = reinterpret_cast<CGameObject*>(arg);
 
     // Two 64-bit stamp/window cooldown timers, cleared.
@@ -374,15 +373,16 @@ i32 CWarlord::LoadAttributes() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist =
-            (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = (static_cast<CTriggerMgr*>(reg->m_cmdGrid))
+                       ->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_cooldownStampLo)
+    if (static_cast<i64>(static_cast<u32>(g_frameTime))
+            - *reinterpret_cast<i64*>(&m_cooldownStampLo)
         >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
         if (rand() % 10 < 5) {
             (reinterpret_cast<CGrunt*>(this))->ResolveIdleAnimation();
@@ -418,8 +418,8 @@ i32 CWarlord::LoadAttributes2() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist =
-            (static_cast<CTriggerMgr*>(reg->m_cmdGrid))->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = (static_cast<CTriggerMgr*>(reg->m_cmdGrid))
+                       ->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
@@ -429,7 +429,8 @@ i32 CWarlord::LoadAttributes2() {
             (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_cooldownStampLo)
+        if (static_cast<i64>(static_cast<u32>(g_frameTime))
+                - *reinterpret_cast<i64*>(&m_cooldownStampLo)
             >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
             reg->m_cueSink->Cue(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
@@ -505,14 +506,52 @@ i32 CWarlord::RearmMoving2() {
 //   }
 //   ... panic sub reg->m_68 (m_288/m_2a0/m_290 timer arm to 0x3e8/g_frameTime) ...
 //   ... reg->m_150[o->m_124 * 0x48].m_0c = 0 (owner-array slot) ...
+// Reconstructed from the decode + the CProjectile water/death-splash template
+// (CreateSprite(0,x,y,0xcf84f,"Particlez",0x40003) -> ApplyName/ApplyLookupGeometry)
+// and the CWarlord::AdvanceMovingAnim panic-timer block (g_gameReg->m_cmdGrid viewed
+// as CRegThreatHelper). The spawn is offset (screenX-30, screenY+10); the fort-splash
+// template is "LEVEL_FORTSPLASH"; the owner slot is g_gameReg->m_options[m_124] (the
+// 0x238-stride per-player record @+0x150).  1.2% (empty stub) -> 96.7%.
 // @early-stop
-// DEFERRED to the final sweep WITH the sprite models: the effect spawn is
-// CDDrawChildGroup::CreateSprite (0x1597b0) + CGruntSprite::CacheFirstFrame (0x150540)
-// + CGruntAnimPlayer::ApplyLookupGeometry (0x1505b0) - all in the sprite-worker-owned
-// spriteresource domain (excluded from this brief). Best reconstructed alongside
-// those class models; homed so the RVA is labeled.
+// Residual is the same disp8/disp32 panic-stamp addressing coin-flip documented on
+// the sibling AdvanceMovingAnim (retail rebases `add eax,0x290` then disp8 to the
+// 0x290/0x294/0x29c stamp words, cl keeps disp32) + a y-load schedule slot. Not
+// source-steerable.
 RVA(0x00044f80, 0x127)
-void CWarlord::BuildFortSplashParticles() {}
+void CWarlord::BuildFortSplashParticles() {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_38->m_1a0;
+    if (sub->m_28 == 0 || sub->m_20 != 0) {
+        return;
+    }
+
+    CWwdGameObjectA* o = m_object;
+    i32 x = o->m_screenX;
+    i32 y = o->m_screenY;
+    if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
+        && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
+        CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup
+                                  ->CreateSprite(0, x - 30, y + 10, 0xcf84f, "Particlez", 0x40003);
+        if (fx != 0) {
+            fx->ApplyName("LEVEL_FORTSPLASH");
+            fx->ApplyLookupGeometry("LEVEL_FORTSPLASH", 0);
+        }
+    }
+
+    CRegThreatHelper* h = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
+    if (h->m_288 != 0 && m_object->m_124 == g_curPlayer) {
+        h->m_2a0 = 0;
+        CRegThreatHelper* h2 = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
+        h2->m_window = 0x3e8;
+        h2->m_stamp = static_cast<u32>(g_frameTime);
+    }
+
+    GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
+    if (slot != 0) {
+        slot->m_00c = 0;
+    }
+    m_38->m_flags |= 0x10000;
+}
 
 RVA(0x00045100, 0x112)
 i32 CGrunt::ResolveMovingAnimation() {
@@ -622,7 +661,8 @@ i32 CGrunt::ResolveIdleAnimation() {
     m_animPlayer->m_1a0.Setup_15c2d0(m_idleGeoSrc[idx]);
 
     CAniElement* desc = m_animPlayer->m_1a0.m_14;
-    CAniDesc* elem = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniDesc* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
     m_animPlayer->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
