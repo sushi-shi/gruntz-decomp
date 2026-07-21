@@ -2,17 +2,17 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/Explosion.h>
-#include <Gruntz/AnimWorker.h>     // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/UserLogic.h>      // CUserLogic leaves the worker handlers build
+#include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
+#include <Gruntz/UserLogic.h>     // CUserLogic leaves the worker handlers build
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_spriteFactory->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
@@ -29,7 +29,6 @@
 
 DATA(0x00244638)
 extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
-
 
 DATA(0x00244870)
 extern CActReg g_partColl;
@@ -158,7 +157,8 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
-    i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[m_object->m_124 * 71].m_idx;
+    i32 idx = g_gameReg->m_options[m_object->m_124]
+                  .m_008; // the per-player sprite descriptor (GetSel arg)
     i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
@@ -173,7 +173,8 @@ void CFortressFlag::InitActReg() {
 
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
-    CFortressFlagActEntry* e = reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
+    CFortressFlagActEntry* e =
+        reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CFortressFlagActEntry* e2 =
             reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
@@ -229,7 +230,8 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     }
     if (tag == 8) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx = (reinterpret_cast<WwdRefSlot*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[spr->m_124 * 71].m_idx;
+        i32 idx =
+            g_gameReg->m_options[spr->m_124].m_008; // the per-player sprite descriptor (GetSel arg)
         i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -399,7 +401,8 @@ void CParticlez::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
+    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
 RVA(0x00047090, 0x4c)
@@ -442,9 +445,11 @@ void InitLogicDispatch_6447f8() {
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
-    CExplosionActEntry* e = reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
+    CExplosionActEntry* e =
+        reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CExplosionActEntry* e2 = reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
+        CExplosionActEntry* e2 =
+            reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }
@@ -459,12 +464,12 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_6447f8.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_0466b0);
+    *reinterpret_cast<void**>(g_logicActReg_6447f8.ResolveEntry(id)) =
+        static_cast<void*>(&LogicHandler_0466b0);
 }
 
 #include <rva.h>
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
-//  CActReg.) WwdRefSlot stays a flagged .cpp view - it is a genuine element of the
-//  unmodeled CGameRegistry m_focusSlots ref-index sub-array (@identity-TODO).
-SIZE_UNKNOWN(WwdRefSlot);
+//  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
+//  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).
 SIZE_UNKNOWN(CParticlez);

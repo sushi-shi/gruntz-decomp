@@ -1,4 +1,4 @@
-#include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
+#include <Mfc.h>              // MFC superset (afx-first); also pulled by WorldSoundSet.h
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BoundaryLeafLogicViews.h> // the boundary leaf-dtor views (L_8860 dissolved)
@@ -7,8 +7,8 @@
 #include <Gruntz/PosSound.h> // PosSoundObj / PosSoundAux / PosSoundPlaced spawn-path types
 #include <Rez/RezMgr.h>      // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
-#include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
-#include <Globals.h>                  // g_posSoundReq
+#include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
+#include <Globals.h>          // g_posSoundReq
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
@@ -795,7 +795,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                 PosSoundPlaced* placed;
                 if (obj->m_extent.top > 0) {
                     placed = WorldSoundCreateFull(
-                        *reinterpret_cast<void**>((reinterpret_cast<char*>(layer) + 0x10)),
+                        layer->m_10,
                         0x64,
                         &rc,
                         obj->m_120,
@@ -806,13 +806,7 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                         0
                     );
                 } else {
-                    placed = WorldSoundCreateSimple(
-                        *reinterpret_cast<void**>((reinterpret_cast<char*>(layer) + 0x10)),
-                        0x64,
-                        &rc,
-                        obj->m_120,
-                        0
-                    );
+                    placed = WorldSoundCreateSimple(layer->m_10, 0x64, &rc, obj->m_120, 0);
                 }
                 if (placed && obj->m_placed.top > 0) {
                     placed->m_28 = obj->m_placed;
@@ -855,7 +849,8 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        CPtrList* arr = reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(g_gameReg->m_inputState) + 8));
+        CPtrList* arr =
+            reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(g_gameReg->m_inputState) + 8));
         if (sound->m_voice != 0) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;

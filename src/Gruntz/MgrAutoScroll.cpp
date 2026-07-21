@@ -1,4 +1,4 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
@@ -41,6 +41,12 @@ DATA(0x0024cfb8)
 i64 g_scrollLimit;
 DATA(0x0024cfc4)
 u32 g_scrollTimer;
+// Serializer-only dwords (MapSerializeCurve is their ONLY reader/writer - the xref
+// chase in ScrollState.h dead-ends); the names are POSITIONAL, asserting no meaning.
+DATA(0x0024cfc8)
+i32 g_scrollSave18;
+DATA(0x0024cfcc)
+i32 g_scrollSave1c;
 
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;

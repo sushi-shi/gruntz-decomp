@@ -1,6 +1,6 @@
-#include <Mfc.h>           // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Mfc.h>              // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
+#include <Wap32/zBitVec.h>    // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Io/FileMem.h>       // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
@@ -24,7 +24,8 @@ extern "C" {}
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Globals.h>
 
-#include <Gruntz/Grunt.h> // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
+#include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
 
 DATA(0x002458b0)
 extern LogicFnTable g_iconActionTable;
@@ -627,7 +628,8 @@ i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
+    i64 delta =
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
     if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
@@ -697,7 +699,8 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_68) >= *reinterpret_cast<i64*>(&m_70)) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_68)
+        >= *reinterpret_cast<i64*>(&m_70)) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -730,9 +733,13 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte)));
+        char* cell0 = reinterpret_cast<char*>(
+            *reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte))
+        );
         *reinterpret_cast<i32*>((cell0 + cellOff + 8)) = 0;
-        char* cell1 = reinterpret_cast<char*>(*reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte)));
+        char* cell1 = reinterpret_cast<char*>(
+            *reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte))
+        );
         *reinterpret_cast<i32*>((cell1 + cellOff)) &= ~0x40000;
     }
 }
@@ -771,12 +778,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
-        CIconRecord* cell = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
+        CTmCell* cell = reg->m_cmdGrid->m_grid[idx];
         i32 ok;
-        if (cell == 0 || cell->m_1fc == 0) {
+        if (cell == 0 || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
-            ok = (reinterpret_cast<CGrunt*>(cell))->LoadPickupSprites(param, flag, 0, sub, 0);
+            ok = cell->LoadPickupSprites(param, flag, 0, sub, 0);
         } else {
             ok = (reinterpret_cast<CGrunt*>(cell))->LoadGruntTypeTable(param, flag, sub, 0);
         }
@@ -802,19 +809,19 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
-    CIconRecord* cell = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
+    CTmCell* cell = reg->m_cmdGrid->m_grid[idx];
     i32 ok;
-    if (cell == 0 || cell->m_1fc == 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0) {
         ok = 0;
     } else {
-        ok = (reinterpret_cast<CGrunt*>(cell))->LoadPickupSprites(cmd, 0, 0, sub, 1);
+        ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
     if (ok == 0) {
         return 0;
     }
     if (cmd == 0x14) {
-        CIconRecord* placed = (reinterpret_cast<CIconRecord**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[idx];
+        CTmCell* placed = reg->m_cmdGrid->m_grid[idx];
         if (placed != 0) {
             placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;
@@ -874,7 +881,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
+    i64 delta =
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
     if (delta >= *reinterpret_cast<i64*>(&m_driftThresh)) {
         CWwdGameObjectA* r = m_38;
         r->m_stateFlags &= ~1;
@@ -895,8 +903,7 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if ((reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(reg->m_world->m_childGroup) + 0x48)))
-                    ->Lookup(reinterpret_cast<void*>(cellVal), found)
+            if (reg->m_world->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(cellVal), found)
                 && found != 0) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
             }
@@ -1078,14 +1085,14 @@ void CInGameIcon::SetField54(i32 v) {
     void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
     if (v != 0) {
         found = 0;
-        (reinterpret_cast<CGameRegMapHolder*>(g_gameReg->m_world))->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
+        (reinterpret_cast<CGameRegMapHolder*>(g_gameReg->m_world))
+            ->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
     }
     m_cmapId = reinterpret_cast<i32>(found);
 }
 
 SIZE_UNKNOWN(CGameRegMapHolder);
 SIZE_UNKNOWN(CIconMapHolder);
-SIZE_UNKNOWN(CIconRecord);
 SIZE_UNKNOWN(CInGameIcon);
 SIZE_UNKNOWN(IconSpriteFactory);
 SIZE_UNKNOWN(LogicFnTable);

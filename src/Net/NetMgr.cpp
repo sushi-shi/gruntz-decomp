@@ -56,7 +56,8 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     m_playerSelId = 0;
     m_sessionSelId = 0;
     i32* base = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
-    const i32* g = reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
+    const i32* g =
+        reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
     m_groupSel = a;
     m_playerSel = 0;
@@ -103,7 +104,8 @@ i32 CNetMgr::Init(void* a, GUID appGuid) {
     m_playerSelId = 0;
     m_sessionSelId = 0;
     i32* base = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
-    const i32* g = reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
+    const i32* g =
+        reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
     m_groupSel = 0;
     m_playerSel = 0;
@@ -188,7 +190,7 @@ InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {
 
     node->m_guid = static_cast<GUID*>(guid);
     node->m_name = static_cast<const char*>(name);
-    node->m_listPosition = m_groups.AddTail(static_cast<::CObject*>(node));
+    node->m_listPosition = m_groups.AddTail(static_cast< ::CObject*>(node));
     return node;
 }
 
@@ -252,7 +254,12 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             i32 idx;
             {
                 CString name = obj->GetName();
-                idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name))));
+                idx = static_cast<i32>(SendMessageA(
+                    hList,
+                    LB_ADDSTRING,
+                    0,
+                    reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name))
+                ));
             }
             if (idx != -1) {
                 SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
@@ -369,7 +376,7 @@ CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = static_cast<__POSITION*>(m_players.AddTail(static_cast<::CObject*>(node)));
+    node->m_54 = static_cast<__POSITION*>(m_players.AddTail(static_cast< ::CObject*>(node)));
     return node;
 }
 
@@ -417,9 +424,19 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     }
 
     while (payload != 0) {
-        i32 r = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(payload->m_desc.m_lpszName)));
+        i32 r = static_cast<i32>(SendMessageA(
+            static_cast<HWND>(hList),
+            LB_ADDSTRING,
+            0,
+            reinterpret_cast<LPARAM>(payload->m_desc.m_lpszName)
+        ));
         if (r != -1) {
-            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, reinterpret_cast<LPARAM>(payload));
+            SendMessageA(
+                static_cast<HWND>(hList),
+                LB_SETITEMDATA,
+                r,
+                reinterpret_cast<LPARAM>(payload)
+            );
         }
         CNetListNode* cur = m_playerSelId;
         if (cur != 0) {
@@ -453,7 +470,8 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    m_playerSel = reinterpret_cast<CNetPlayerListNode*>(data); // the LB item data IS the player node
+    m_playerSel =
+        reinterpret_cast<CNetPlayerListNode*>(data); // the LB item data IS the player node
     return data;
 }
 
@@ -566,7 +584,10 @@ RVA(0x00178a80, 0x73)
 i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     ClearSessionList();
 
-    i32* r = reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0xc));
+    // rec is the player-list node (roster m_playerSel / the create-ctx record) -
+    // the 4 dwords are its descriptor GUID
+    i32* r =
+        reinterpret_cast<i32*>(&(static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance);
     i32 desc[4];
     desc[0] = r[0];
     desc[1] = r[1];
@@ -624,7 +645,8 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
     }
 
     if (node != 0) {
-        __POSITION* pos = static_cast<__POSITION*>(m_sessions.AddTail(static_cast<::CObject*>(node)));
+        __POSITION* pos =
+            static_cast<__POSITION*>(m_sessions.AddTail(static_cast< ::CObject*>(node)));
         if (pos == 0) {
             delete node;
         } else {
@@ -677,7 +699,12 @@ i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(out, reinterpret_cast<const char*>(a), reinterpret_cast<const char*>(b), 0);
+    return AddSessionNode(
+        out,
+        reinterpret_cast<const char*>(a),
+        reinterpret_cast<const char*>(b),
+        0
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -714,9 +741,19 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     while (payload != 0) {
         CString name = payload->GetName();
-        i32 r = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(name))));
+        i32 r = static_cast<i32>(SendMessageA(
+            static_cast<HWND>(hList),
+            LB_ADDSTRING,
+            0,
+            reinterpret_cast<LPARAM>(static_cast<const char*>(name))
+        ));
         if (r != -1) {
-            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, reinterpret_cast<LPARAM>(payload));
+            SendMessageA(
+                static_cast<HWND>(hList),
+                LB_SETITEMDATA,
+                r,
+                reinterpret_cast<LPARAM>(payload)
+            );
         }
         CNetPlayerNode* cur = m_sessionSelId;
         if (cur != 0) {
@@ -788,7 +825,17 @@ i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, i32 d,
 
 RVA(0x00178f50, 0x61)
 i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i) {
-    i32 hr = m_directPlay->SendEx(a, b, c, reinterpret_cast<void*>(d), e, f, g, reinterpret_cast<void*>(h), reinterpret_cast<i32*>(i));
+    i32 hr = m_directPlay->SendEx(
+        a,
+        b,
+        c,
+        reinterpret_cast<void*>(d),
+        e,
+        f,
+        g,
+        reinterpret_cast<void*>(h),
+        reinterpret_cast<i32*>(i)
+    );
     if (hr && hr != static_cast<i32>(0x8000000a)) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
     }

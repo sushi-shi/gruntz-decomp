@@ -34,7 +34,6 @@
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
-
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("MENU_SPARKLE");
@@ -106,7 +105,8 @@ void CMenuSparkle::FireActivation(i32 coord) {
 RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_646010.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_0ad2a0);
+    *reinterpret_cast<void**>(g_logicActReg_646010.ResolveEntry(id)) =
+        static_cast<void*>(&LogicHandler_0ad2a0);
 }
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
@@ -138,7 +138,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         if (anim != 0) {
             anim->Recompute_15c320(1);
         }
-        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_3c) + 0x20)) = rand() % 0xfa1 + 0x3e8;
+        m_3c->m_20 = rand() % 0xfa1 + 0x3e8;
     }
     return 0;
 }

@@ -6,6 +6,10 @@
 #include <rva.h>
 #include <string.h>
 
+enum {
+    RID_HEADER_SIZE = 0x20
+}; // the .RID resource header (pixels follow)
+
 DATA(0x002bf6e0)
 extern "C" {
     HINSTANCE g_hResModule = 0; // 0x6bf6e0
@@ -138,7 +142,14 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
     } else {
         node = 0;
     }
-    if (node->DecodeBmpHeader(static_cast<void*>(hdc), width, height, bitCount, reinterpret_cast<void*>(flag)) == 0) {
+    if (node->DecodeBmpHeader(
+            static_cast<void*>(hdc),
+            width,
+            height,
+            bitCount,
+            reinterpret_cast<void*>(flag)
+        )
+        == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -182,7 +193,15 @@ CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCou
     } else {
         node = 0;
     }
-    if (node->DecodeBlit(reinterpret_cast<void*>(src), static_cast<void*>(hdc), width, height, bitCount, reinterpret_cast<void*>(flag)) == 0) {
+    if (node->DecodeBlit(
+            reinterpret_cast<void*>(src),
+            static_cast<void*>(hdc),
+            width,
+            height,
+            bitCount,
+            reinterpret_cast<void*>(flag)
+        )
+        == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -226,7 +245,8 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), reinterpret_cast<void*>(ctrl)) == 0) {
+    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), reinterpret_cast<void*>(ctrl))
+        == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -271,7 +291,12 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->LoadFromRez(reinterpret_cast<char*>(name), static_cast<void*>(hdc), reinterpret_cast<void*>(ctrl)) == 0) {
+    if (node->LoadFromRez(
+            reinterpret_cast<char*>(name),
+            static_cast<void*>(hdc),
+            reinterpret_cast<void*>(ctrl)
+        )
+        == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -315,7 +340,12 @@ CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
     } else {
         node = 0;
     }
-    if (node->Convert8To16(static_cast<void*>(hdc), reinterpret_cast<CRezImage*>(src), reinterpret_cast<void*>(pal)) == 0) {
+    if (node->Convert8To16(
+            static_cast<void*>(hdc),
+            reinterpret_cast<CRezImage*>(src),
+            reinterpret_cast<void*>(pal)
+        )
+        == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -501,11 +531,23 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
         for (i32 i = 0; i < 256; i++) {
             m_pal[i] = static_cast<u16>(i);
         }
-        m_dibSection =
-            CreateDIBSection(static_cast<HDC>(a2), reinterpret_cast<BITMAPINFO*>(&m_bih), DIB_PAL_COLORS, reinterpret_cast<void**>(&m_pixels), 0, 0);
+        m_dibSection = CreateDIBSection(
+            static_cast<HDC>(a2),
+            reinterpret_cast<BITMAPINFO*>(&m_bih),
+            DIB_PAL_COLORS,
+            reinterpret_cast<void**>(&m_pixels),
+            0,
+            0
+        );
     } else {
-        m_dibSection =
-            CreateDIBSection(static_cast<HDC>(a2), reinterpret_cast<BITMAPINFO*>(&m_bih), DIB_RGB_COLORS, reinterpret_cast<void**>(&m_pixels), 0, 0);
+        m_dibSection = CreateDIBSection(
+            static_cast<HDC>(a2),
+            reinterpret_cast<BITMAPINFO*>(&m_bih),
+            DIB_RGB_COLORS,
+            reinterpret_cast<void**>(&m_pixels),
+            0,
+            0
+        );
     }
     if (!m_dibSection) {
         return 0;
@@ -671,7 +713,7 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
     i32 width = ih->biWidth;
-    void* src = reinterpret_cast<u8*>(buf) + 0x2c;
+    void* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4; // header + 1 quad
     if (bitcount == 8) {
         src = reinterpret_cast<u8*>(buf) + ih->biSize + 0x400;
     }
@@ -806,7 +848,7 @@ i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
     i32* hdr = reinterpret_cast<i32*>((reinterpret_cast<char*>(buf) + 8));
     i32 width = hdr[0];
     i32 height = hdr[1];
-    i32 ok = DecodeBlit(reinterpret_cast<char*>(buf) + 0x20, a2, width, height, 8, a3);
+    i32 ok = DecodeBlit(reinterpret_cast<char*>(buf) + RID_HEADER_SIZE, a2, width, height, 8, a3);
     if (!(reinterpret_cast<i32>(a3) & 1)) {
         m_transparent = 0;
     }
@@ -1071,7 +1113,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         return 0;
     }
     // De-interleave the source RGBQUADs into the colour table (BMP BGR order).
-    u8* ct = reinterpret_cast<u8*>(info) + 0x28;
+    u8* ct = reinterpret_cast<u8*>(info) + sizeof(BITMAPINFOHEADER); // the colour table
     for (i32 i = 0x100; i != 0; i--) {
         ct[0] = pal[0];
         *(ct - 1) = pal[1];

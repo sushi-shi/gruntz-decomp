@@ -3,11 +3,12 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
 DATA(0x00244d58)
 extern CIndicatorActReg g_toyActReg; // 0x644d58
@@ -72,7 +73,8 @@ void CGruntToySprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
+    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
 RVA(0x0007f920, 0x21)
@@ -85,7 +87,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
+    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }

@@ -1,6 +1,7 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
-#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
+#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
+#include <Gruntz/Brickz.h>        // BrickzCell - the 0x1c-stride tile record (neighbor walks)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
@@ -102,7 +103,10 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), reinterpret_cast<void*&>(_out)); \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(                                             \
+            "GRUNTZ_" + m_animSetName + (sfx),                                                     \
+            reinterpret_cast<void*&>(_out)                                                         \
+        );                                                                                         \
         (dst) = _out;                                                                              \
     } while (0)
 
@@ -177,7 +181,7 @@ CGrunt::~CGrunt() {
     UserLogicVfunc9();
 }
 
-extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
+extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop
@@ -193,7 +197,6 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering class; the
 // vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
 // Deferred to the final sweep.
-
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
@@ -247,11 +250,13 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     // The base moving-object per-frame update fired once at spawn - the qualified
     // call is direct, binding the slot-16 body @0x16ea90 (MovingLogic.cpp) for real.
     CMovingLogic::MovingSlot16();
-    CGameObject* obj = static_cast<CGameObject*>(owner); // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
+    CGameObject* obj =
+        static_cast<CGameObject*>(owner); // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_34 = obj;
-    m_38 = static_cast<CWwdGameObjectA*>(obj); // the owner object doubles as the entrance player (A-kind)
-    m_3c =
-        obj->m_7c; // the bound object's AnimWorkerObj (typed)
+    m_38 = static_cast<CWwdGameObjectA*>(
+        obj
+    );                // the owner object doubles as the entrance player (A-kind)
+    m_3c = obj->m_7c; // the bound object's AnimWorkerObj (typed)
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
@@ -516,7 +521,11 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_18c = 0;
     m_418 = 0;
 
-    m_timePerTile = g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<const char*>(m_animSetName)), s_TimePerTile, 1000);
+    m_timePerTile = g_buteMgr.GetDwordDef(
+        const_cast<char*>(static_cast<const char*>(m_animSetName)),
+        s_TimePerTile,
+        1000
+    );
 
     if (m_gruntKind == 0x37) {
         m_timePerTile >>= 1;
@@ -683,7 +692,8 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         if (x >= y) {
             m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         } else {
-            m_toyBlendPct = 100 - static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            m_toyBlendPct =
+                100 - static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
         }
     }
 
@@ -699,7 +709,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
     RECT r;
-    CopyRect(&r, reinterpret_cast<LPRECT>((reinterpret_cast<char*>(tgt->m_38) + 0x144)));
+    CopyRect(&r, &tgt->m_38->m_area);
     CGameObject* th = tgt->m_object;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
@@ -756,7 +766,10 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     static_cast<void>(range);
-    if (CGrunt_IsSameType(reinterpret_cast<CGrunt*>(&m_entranceCell), reinterpret_cast<CGrunt*>(&rec))) {
+    if (CGrunt_IsSameType(
+            reinterpret_cast<CGrunt*>(&m_entranceCell),
+            reinterpret_cast<CGrunt*>(&rec)
+        )) {
         return;
     }
 
@@ -785,12 +798,16 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
         {
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
+            i32* elem = desc->m_records.GetSize() > 0
+                            ? reinterpret_cast<i32*>(desc->m_records.GetAt(0))
+                            : 0;
             i32 frame = elem[0x14 / 4];
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
-            const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0));
+            const char* nm = reinterpret_cast<const char*>(
+                (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0)
+            );
             m_38->ApplyLookupSprite(nm, frame);
         }
         goto store;
@@ -822,12 +839,15 @@ idle:
     m_38->ApplyGeometryDirect(m_poseIdle[0], 0);
     {
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
+        i32* elem =
+            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index].m_idle))->IndexToPtr(0));
+        const char* nm = reinterpret_cast<const char*>(
+            (reinterpret_cast<_zdvec*>(&m_cells[index].m_idle))->IndexToPtr(0)
+        );
         m_38->ApplyLookupSprite(nm, frame);
     }
     goto store;
@@ -841,7 +861,9 @@ walk:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index].m_walk))->IndexToPtr(0));
+        const char* nm = reinterpret_cast<const char*>(
+            (reinterpret_cast<_zdvec*>(&m_cells[index].m_walk))->IndexToPtr(0)
+        );
         m_38->ApplyName(nm);
     }
 
@@ -1092,8 +1114,9 @@ i32 CGrunt::StepGruntMovement() {
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> 5;
     tgtTileY = tgtPxY >> 5;
-    if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
-        flagHead = (reinterpret_cast<i32*>(bd->m_rowBytes[tgtTileY]))[tgtTileX * 7];
+    if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
+        && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
+        flagHead = bd->m_rowInts[tgtTileY][tgtTileX * 7];
     } else {
         flagHead = 1;
     }
@@ -1125,8 +1148,9 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastFlag;
         i32 ltx = m_lastTilePxX >> 5;
         i32 lty = m_lastTilePxY >> 5;
-        if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_width) && static_cast<u32>(lty) < static_cast<u32>(bd->m_height)) {
-            lastFlag = (reinterpret_cast<i32*>(bd->m_rowBytes[lty]))[ltx * 7];
+        if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_width)
+            && static_cast<u32>(lty) < static_cast<u32>(bd->m_height)) {
+            lastFlag = bd->m_rowInts[lty][ltx * 7];
         } else {
             lastFlag = 1;
         }
@@ -1220,7 +1244,7 @@ i32 CGrunt::StepGruntMovement() {
             }
         }
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-        if ((reinterpret_cast<i32*>(bd->m_rowBytes[cy]))[cx * 7] & 0x20000000) {
+        if (bd->m_rowInts[cy][cx * 7] & 0x20000000) {
             PlaySound(0x3e8, rec);
             SetEntrancePos(1, 0);
             return 0;
@@ -1235,8 +1259,9 @@ i32 CGrunt::StepGruntMovement() {
 label_4c68b:
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
-        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
-            owner = (reinterpret_cast<i32*>(bd->m_rowBytes[tgtTileY]))[tgtTileX * 7 + 1];
+        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
+            && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
+            owner = bd->m_rowInts[tgtTileY][tgtTileX * 7 + 1];
         } else {
             owner = -1;
         }
@@ -1295,8 +1320,9 @@ label_4c6e4:
         i32 bty = beyondPxY >> 5;
         i32 beyondFlag;
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(btx) < static_cast<u32>(bd->m_width) && static_cast<u32>(bty) < static_cast<u32>(bd->m_height)) {
-            beyondFlag = (reinterpret_cast<i32*>(bd->m_rowBytes[bty]))[btx * 7];
+        if (static_cast<u32>(btx) < static_cast<u32>(bd->m_width)
+            && static_cast<u32>(bty) < static_cast<u32>(bd->m_height)) {
+            beyondFlag = bd->m_rowInts[bty][btx * 7];
         } else {
             beyondFlag = 1;
         }
@@ -1315,7 +1341,8 @@ label_4c6e4:
         }
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
-        CCueRect* rr = reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
+        CCueRect* rr =
+            reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
@@ -1339,9 +1366,9 @@ label_4c92b: {
     if (static_cast<u32>(tgtTileY) >= static_cast<u32>(bd->m_height)) {
         goto label_4cb2a;
     }
-    char** rowtable = bd->m_rowBytes;
-    i32* tgtT = &(reinterpret_cast<i32*>(rowtable[tgtTileY]))[tgtTileX * 7];
-    i32 tgtFlag = *tgtT;
+    BrickzCell** rowtable = bd->m_rows;
+    BrickzCell* tgtT = &rowtable[tgtTileY][tgtTileX];
+    i32 tgtFlag = tgtT->m_0;
     i32 mask = m_arrivalFlags & tgtFlag;
     if (mask & 0x20000000) {
         goto label_4cb2a;
@@ -1349,7 +1376,7 @@ label_4c92b: {
     if (mask != 0 && !(tgtFlag & m_24c)) {
         goto label_4cb2a;
     }
-    i32* lastT = &(reinterpret_cast<i32*>(rowtable[lastTileY]))[lastTileX * 7];
+    BrickzCell* lastT = &rowtable[lastTileY][lastTileX];
     i32 dx = tgtTileX - lastTileX;
     i32 dy = tgtTileY - lastTileY;
     if (dx == 0) {
@@ -1358,60 +1385,61 @@ label_4c92b: {
     if (dy == 0) {
         goto label_4cb4b;
     }
-    i32 rowB = xbound * 28;
+    // neighbor steps: +-1 cell horizontally, +-xbound cells vertically (rows are
+    // one contiguous block; retail precomputes xbound*sizeof(BrickzCell))
     if (dx > 0 && dy > 0) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) + 0x1c)) & 0x2000) {
+        if ((lastT + 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) + rowB)) & 0x2000) {
+        if ((lastT + xbound)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) - 0x1c)) & 0x2000) {
+        if ((tgtT - 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) - rowB)) & 0x2000)) {
+        if (!((tgtT - xbound)->m_0 & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy > 0) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) - 0x1c)) & 0x2000) {
+        if ((lastT - 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) + rowB)) & 0x2000) {
+        if ((lastT + xbound)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) + 0x1c)) & 0x2000) {
+        if ((tgtT + 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) - rowB)) & 0x2000)) {
+        if (!((tgtT - xbound)->m_0 & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx > 0 && dy < 0) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) + 0x1c)) & 0x2000) {
+        if ((lastT + 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) - rowB)) & 0x2000) {
+        if ((lastT - xbound)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) - 0x1c)) & 0x2000) {
+        if ((tgtT - 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) + rowB)) & 0x2000)) {
+        if (!((tgtT + xbound)->m_0 & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
     } else if (dx < 0 && dy < 0) {
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) - 0x1c)) & 0x2000) {
+        if ((lastT - 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(lastT) - rowB)) & 0x2000) {
+        if ((lastT - xbound)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) + 0x1c)) & 0x2000) {
+        if ((tgtT + 1)->m_0 & 0x2000) {
             goto label_4cb2a;
         }
-        if (!(*reinterpret_cast<i32*>((reinterpret_cast<char*>(tgtT) + rowB)) & 0x2000)) {
+        if (!((tgtT + xbound)->m_0 & 0x2000)) {
             goto label_4cb4b;
         }
         goto label_4cb2a;
@@ -1426,12 +1454,8 @@ label_4cb2a:
 
 label_4cb4b:
     m_210 = 0;
-    m_tileMgr
-        ->ApplySwitch(
-            this,
-            m_lastTilePxX,
-            m_lastTilePxY
-        ); // real 0x6d300
+    m_tileMgr->ApplySwitch(this, m_lastTilePxX,
+                           m_lastTilePxY); // real 0x6d300
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
     {
@@ -1442,14 +1466,14 @@ label_4cb4b:
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
         // Two separate row-table walks: the byte-store may alias m_8, so retail
         // reloads the row table between them.
-        *(reinterpret_cast<u8*>(&(reinterpret_cast<i32*>(bdl->m_rows[lastTileY]))[lastTileX * 7]) + 3) &= 0xdf;
-        (reinterpret_cast<i32*>(bdl->m_rows[lastTileY]))[lastTileX * 7 + 1] = -1;
+        bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
+        bdl->m_rows[lastTileY][lastTileX].m_4 = -1;
 
         tgtTileX = tgtPxX >> 5;
         tgtTileY = tgtPxY >> 5;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
-        (reinterpret_cast<i32*>(bd2->m_rows[tgtTileY]))[tgtTileX * 7] |= 0x20000000;
-        (reinterpret_cast<i32*>(bd2->m_rows[tgtTileY]))[tgtTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+        bd2->m_rows[tgtTileY][tgtTileX].m_0 |= 0x20000000;
+        bd2->m_rows[tgtTileY][tgtTileX].m_4 = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
         m_lastTilePxX = rec.m_0;
         m_lastTilePxY = rec.m_4;
@@ -1759,7 +1783,8 @@ void CGrunt::MovingSlot16() {
         if (eq && CoordCount() != 0) {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
-            i32 fl = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[co->m_y]))[co->m_x * 7];
+            i32 fl =
+                (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[co->m_y]))[co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
@@ -1774,7 +1799,9 @@ void CGrunt::MovingSlot16() {
                     m_entrancePxY = (h2->m_y << 5) + 0x10;
                     if (CoordCount() != 0) {
                         GruntCoord* h3 = (CoordHead())->m_coord;
-                        i32 fl2 = (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[h3->m_y]))[h3->m_x * 7];
+                        i32 fl2 = (reinterpret_cast<i32*>(
+                            g_gameReg->m_tileGrid->m_rowBytes[h3->m_y]
+                        ))[h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;
                             NotifyDrop();

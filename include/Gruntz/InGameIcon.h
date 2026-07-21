@@ -6,7 +6,7 @@
 
 #include <Mfc.h> // CObject/CArchive base + <windows.h>
 
-#include <Gruntz/UserLogic.h>        // CUserLogic : CUserBase, EngStr, CGameObject
+#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr) // *0x24556c canonical singleton
 
 struct CIconMapHolder {
@@ -28,13 +28,6 @@ extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped int
 
 void __stdcall Eng_PostCmd(i32 ctx, i32 a, i32 b, i32 c); // 0x41f940
 
-struct CIconRecord {
-    char m_pad00[0x1fc];
-    i32 m_1fc; // +0x1fc  configured flag
-    char m_pad200[0x38c - 0x200];
-    i32 m_38c; // +0x38c  posted command id
-};
-
 class CInGameIcon : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -43,7 +36,7 @@ public:
         return LOGIC_INGAMEICON;
     } // slot 2
 public:
-    CInGameIcon(CGameObject* obj);   // 0x095b10  (the HUD-icon builder ctor)
+    CInGameIcon(CGameObject* obj); // 0x095b10  (the HUD-icon builder ctor)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
@@ -66,15 +59,15 @@ public:
     void SetField54(i32 v);             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
-    i32 m_cmapId;              // +0x54  registry-CMap lookup result (SetField54; place gate)
-    i32 m_driftPos;            // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
-    i32 m_driftPosHi;          // +0x5c  drift-tracked position hi
-    i32 m_driftThresh;         // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
-    i32 m_driftThreshHi;       // +0x64  drift threshold hi
-    i32 m_68;                  // +0x68  icon idle-timer LO (i64 pair w/ m_6c; interleaved keep)
-    i32 m_6c;                  // +0x6c  icon idle-timer HI
-    i32 m_70;                  // +0x70  icon idle-window LO (i64 pair w/ m_74)
-    i32 m_74;                  // +0x74  icon idle-window HI
+    i32 m_cmapId;        // +0x54  registry-CMap lookup result (SetField54; place gate)
+    i32 m_driftPos;      // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
+    i32 m_driftPosHi;    // +0x5c  drift-tracked position hi
+    i32 m_driftThresh;   // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
+    i32 m_driftThreshHi; // +0x64  drift threshold hi
+    i32 m_68;            // +0x68  icon idle-timer LO (i64 pair w/ m_6c; interleaved keep)
+    i32 m_6c;            // +0x6c  icon idle-timer HI
+    i32 m_70;            // +0x70  icon idle-window LO (i64 pair w/ m_74)
+    i32 m_74;            // +0x74  icon idle-window HI
     CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
 };
 VTBL(CInGameIcon, 0x1e7d04);

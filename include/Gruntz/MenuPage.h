@@ -10,7 +10,8 @@
 #include <Gruntz/MenuItem2.h>
 
 class CDDrawSurfaceMgr;
-class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
+class CDDrawWorker; // <DDrawMgr/DDrawWorker.h> - the m_subPage sprite strip
+class CChatBox;     // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
 struct CMenuListNode {
     CMenuListNode* pNext;
@@ -76,8 +77,8 @@ public:
         i32 tag,
         const char* key,
         i32 flags
-    ); // 0x1835a0
-    i32 ReleaseAll();                                         // 0x183990  release focus + items
+    );                                         // 0x1835a0
+    i32 ReleaseAll();                          // 0x183990  release focus + items
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
     i32 NotifyAll(void* arg);                  // 0x183b30
@@ -120,7 +121,8 @@ public:
     i32 m_colOffset;           // +0x54  column x-offset
     i32 m_offsetX;             // +0x58  layout x-offset (added to centered column x)
     i32 m_offsetY;             // +0x5c  layout y-offset (added to initial row y)
-    CMenuPage* m_subPage;      // +0x60 sub-page/name-cache (catalog Lookup result)
+    CDDrawWorker* m_subPage;   // +0x60 resolved image-registry sprite strip (catalog Lookup
+                               //        result; its CImage rows head the layout passes)
     CMenuItem* m_focus;        // +0x64 current focused child item
 };
 SIZE(CMenuPage, 0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites

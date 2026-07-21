@@ -60,9 +60,9 @@
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
-#include <DinMgr2/DirectInputMgr2.h> // the REAL g_inputMgr input singleton
-#include <Bute/SymParser.h>          // CSymParser - the REAL m_symParser (+0x34)
-#include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
+#include <DinMgr2/DirectInputMgr2.h>      // the REAL g_inputMgr input singleton
+#include <Bute/SymParser.h>               // CSymParser - the REAL m_symParser (+0x34)
+#include <Image/ImageSet.h>               // the REAL CImageSet (config/color rows: m_frames/+0x14,
 #include <Net/NetMgr.h>                   // the ONE CNetMgr (ReportError is its static member)
 #include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // CImageRegistry - the REAL m_world->m_imageRegistry
@@ -97,10 +97,10 @@ void ChannelSlots_InitAll(); // 0xdb1d0
 // @data-symbol: _GruntzSaveGameDlgProc 0x00001041
 // @data-symbol: _GruntzSaveMsgDlgProc 0x000011d1
 // @data-symbol: _LevelNumberDialogProcThunk 0x00002ab8
-extern "C" void GruntzLoadGameDlgProc();    // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
-extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
-extern "C" void GruntzSaveGameDlgProc();    // thunk 0x1041 (GAME_SAVE)
-extern "C" void GruntzSaveMsgDlgProc();     // thunk 0x11d1 (GAME_SAVEMSG)
+extern "C" void GruntzLoadGameDlgProc();      // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
+extern "C" void GruntzDebugGruntTypeProc();   // thunk 0x21e9
+extern "C" void GruntzSaveGameDlgProc();      // thunk 0x1041 (GAME_SAVE)
+extern "C" void GruntzSaveMsgDlgProc();       // thunk 0x11d1 (GAME_SAVEMSG)
 extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
@@ -116,7 +116,7 @@ extern "C" {}
 DATA(0x0021ab20)
 i32 g_sndEnabled = 1; // 0x61ab20  sound-on gate (retail .data init = 1)
 DATA(0x0021ab24)
-i32 g_sndCueTag = 100;         // 0x61ab24  the cue-item id (retail .data init = 100)
+i32 g_sndCueTag = 100; // 0x61ab24  the cue-item id (retail .data init = 100)
 
 DATA(0x0024556c)
 extern "C" {
@@ -260,49 +260,49 @@ void ForceEmitCStateDtor() {
 CPlay::CPlay() {
     // cl runs the CState base ctor + the five member ctors, then auto-stamps
     // ??_7CPlay, then this field-init body (matching the retail inlined construction).
-    m_bootyTimerLo = 0;     // +0x328
-    m_bootyInterval = 0;    // +0x330
-    m_bootyTimerHi = 0;     // +0x32c
-    m_bootyIntervalHi = 0;  // +0x334
-    m_ambientTimerLo = 0;   // +0x338
-    m_ambientInterval = 0;  // +0x340
-    m_ambientTimerHi = 0;   // +0x33c
+    m_bootyTimerLo = 0;      // +0x328
+    m_bootyInterval = 0;     // +0x330
+    m_bootyTimerHi = 0;      // +0x32c
+    m_bootyIntervalHi = 0;   // +0x334
+    m_ambientTimerLo = 0;    // +0x338
+    m_ambientInterval = 0;   // +0x340
+    m_ambientTimerHi = 0;    // +0x33c
     m_ambientIntervalHi = 0; // +0x344
-    m_syncTimerLo = 0;      // +0x350
-    m_syncInterval = 0;     // +0x358
-    m_syncTimerHi = 0;      // +0x354
-    m_syncIntervalHi = 0;   // +0x35c
-    m_cueTimerLo = 0;       // +0x3f8
-    m_cueInterval = 0;      // +0x400
-    m_cueTimerHi = 0;       // +0x3fc
-    m_cueIntervalHi = 0;    // +0x404
+    m_syncTimerLo = 0;       // +0x350
+    m_syncInterval = 0;      // +0x358
+    m_syncTimerHi = 0;       // +0x354
+    m_syncIntervalHi = 0;    // +0x35c
+    m_cueTimerLo = 0;        // +0x3f8
+    m_cueInterval = 0;       // +0x400
+    m_cueTimerHi = 0;        // +0x3fc
+    m_cueIntervalHi = 0;     // +0x404
     m_1bc = 0;
     m_1c0 = 0;
     m_1c8 = 0;
-    m_hitTest = 0;          // +0x2e0
-    m_frameMarker = 0;      // +0x3f4
-    m_guts = 0;             // +0x2dc
-    m_beginMarker = 0;      // +0x2e4
-    m_grid = 0;             // +0x4cc
-    m_scrollSink = 0;       // +0x4e4
+    m_hitTest = 0;     // +0x2e0
+    m_frameMarker = 0; // +0x3f4
+    m_guts = 0;        // +0x2dc
+    m_beginMarker = 0; // +0x2e4
+    m_grid = 0;        // +0x4cc
+    m_scrollSink = 0;  // +0x4e4
     m_2f0 = 0;
-    m_packetsRcvd = 0;      // +0x2d0
-    m_packetsSent = 0;      // +0x2d4
-    m_cursorFrame = 0;      // +0x2f4
-    m_levelId = -1;         // +0x2f8
-    m_lightFx = 0;          // +0x320
-    m_gridHasSprite = 0;    // +0x4d4
-    m_snapshotActive = 0;   // +0x4b0
-    m_ambientInitDone = 1;  // +0x348
-    m_stepCountdown = 0;    // +0x510
-    m_savedZonedSound = 0;  // +0x518
-    m_worldReady = 0;       // +0x30c
-    m_dragSnapActive = 0;   // +0x2e8
+    m_packetsRcvd = 0;     // +0x2d0
+    m_packetsSent = 0;     // +0x2d4
+    m_cursorFrame = 0;     // +0x2f4
+    m_levelId = -1;        // +0x2f8
+    m_lightFx = 0;         // +0x320
+    m_gridHasSprite = 0;   // +0x4d4
+    m_snapshotActive = 0;  // +0x4b0
+    m_ambientInitDone = 1; // +0x348
+    m_stepCountdown = 0;   // +0x510
+    m_savedZonedSound = 0; // +0x518
+    m_worldReady = 0;      // +0x30c
+    m_dragSnapActive = 0;  // +0x2e8
     m_4f0 = 0;
-    m_dragInhibit1 = 0;     // +0x368
-    m_dragInhibit2 = 0;     // +0x36c
-    m_dragInProgress = 0;   // +0x2ec
-    m_dragEndNotify = 0;    // +0x504
+    m_dragInhibit1 = 0;   // +0x368
+    m_dragInhibit2 = 0;   // +0x36c
+    m_dragInProgress = 0; // +0x2ec
+    m_dragEndNotify = 0;  // +0x504
 }
 CMulti::CMulti() {
     m_session = 0;
@@ -716,7 +716,7 @@ RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         CDDrawSubMgrPages* pages = m_world->m_drawTarget;
-        pages->BlitPage(pages->m_backPair);         // pause the back pair
+        pages->BlitPage(pages->m_backPair);               // pause the back pair
         m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);
@@ -806,7 +806,12 @@ RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];
-    if (RegQueryValueA(reinterpret_cast<HKEY>(0x80000000), "http\\shell\\open\\command", cmd, &len)) {
+    if (RegQueryValueA(
+            reinterpret_cast<HKEY>(0x80000000),
+            "http\\shell\\open\\command",
+            cmd,
+            &len
+        )) {
         return 0;
     }
     if (strlen(cmd) < 3) {
@@ -1264,8 +1269,15 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     i32 geoB = e->m_height;
     CPlaneRender* found = static_cast<CPlaneRender*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == 0) {
-        CPlaneRender* spr =
-            m_world->m_level->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, reinterpret_cast<i32>("MONOLITH"));
+        CPlaneRender* spr = m_world->m_level->ReadObjectPlane(
+            0x20,
+            0x20,
+            geoA,
+            geoB,
+            -0x19,
+            -0x19,
+            reinterpret_cast<i32>("MONOLITH")
+        );
         if (spr == 0) {
             return 0;
         }
@@ -1420,7 +1432,8 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
+                                if (static_cast<u32>((g_killCueClock - cue->m_14))
+                                    >= static_cast<u32>(cue->m_18)) {
                                     cue->m_14 = g_killCueClock;
                                     cue->m_10->ConfigureItem(tag, 0, 0, 0);
                                 }
@@ -1480,7 +1493,8 @@ void CGruntzMgr::CheatEclipseToggle() {
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
+                                if (static_cast<u32>((g_killCueClock - cue->m_14))
+                                    >= static_cast<u32>(cue->m_18)) {
                                     cue->m_14 = g_killCueClock;
                                     cue->m_10->ConfigureItem(tag, 0, 0, 0);
                                 }
@@ -1504,7 +1518,8 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     }
     i32 r2 = radius * radius;
     i32 count = 0;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+    CDDrawGroupNode* node =
+        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1550,7 +1565,8 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb
     i32 loY = r->top + offY;
     i32 hiY = r->bottom + offY;
     i32 count = 0;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+    CDDrawGroupNode* node =
+        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1951,7 +1967,7 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
     CGruntSpawnConfig* timer = m_cueSink;
     if (timer) {
-        timer->m_gruntPercent = v;
+        timer->m_voiceVolume = v;
     }
     return v;
 }
@@ -2153,7 +2169,8 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
 
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
-    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", static_cast<void*>(LevelNumberDialogProcThunk), 1);
+    i32 level =
+        RunModalDialog("DEBUG_JUMPLEVEL", static_cast<void*>(LevelNumberDialogProcThunk), 1);
     if (level > 0) {
         return PassClickToPlayState(level, 0, 1);
     }
@@ -2176,8 +2193,9 @@ i32 CGruntzMgr::LoadOptionsSlotName(
         // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
         // and drops the match (verified -3%). Kept raw.
         char* s = reinterpret_cast<char*>(this) + slot * 0x238;
-        if (*reinterpret_cast<i32*>((s + 0x170)) == 0) {    // slot.m_020  (options base +0x150 +0x20)
-            *reinterpret_cast<CString*>((s + 0x154)) = val; // slot.m_name (options base +0x150 +0x04)
+        if (*reinterpret_cast<i32*>((s + 0x170)) == 0) { // slot.m_020  (options base +0x150 +0x20)
+            *reinterpret_cast<CString*>((s + 0x154)) =
+                val; // slot.m_name (options base +0x150 +0x04)
         }
     }
     return 0;
@@ -2376,7 +2394,10 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 
     GruntzPlayer* slot = m_options;
     for (i32 i = 0; i < 4; i++) {
-        if (slot == 0 || (reinterpret_cast<CTriggerMgr*>(slot))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
+        if (slot == 0
+            || (reinterpret_cast<CTriggerMgr*>(slot))
+                       ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
+                   == 0) {
             return 0;
         }
         slot++;
@@ -2385,10 +2406,14 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (m_cmdGrid->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CTriggerMgr*>(PickPlayOrPausedState()))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
+    if ((reinterpret_cast<CTriggerMgr*>(PickPlayOrPausedState()))
+            ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
+        == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
+    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))
+            ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
+        == 0) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
@@ -2575,7 +2600,10 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
     // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
-    m_saveSink->CopySlot(reinterpret_cast<SaveSlot*>(dst), reinterpret_cast<const SaveSlot*>((src + 0x1d0)));
+    m_saveSink->CopySlot(
+        reinterpret_cast<SaveSlot*>(dst),
+        reinterpret_cast<const SaveSlot*>((src + 0x1d0))
+    );
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
@@ -2842,14 +2870,13 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
 
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x24; // &m_options[0].m_clearedRound
+    GruntzPlayer* p = m_options;
     for (i32 i = 4; i != 0; i--) {
-        char* elem = p - 0x24;
-        if (elem) {
-            *reinterpret_cast<i32*>((p - 4)) = 0; // elem.m_20
-            *reinterpret_cast<i32*>(p) = 0;       // elem.m_24
+        if (p) {
+            p->m_liveGate = 0;
+            p->m_clearedRound = 0;
         }
-        p += 0x238;
+        p++;
     }
 }
 
@@ -2973,7 +3000,7 @@ void CGruntzMgr::Close() {
             cfg->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_cueSink) {
-            cfg->SetValueDword("Voice_Volume", m_cueSink->m_gruntPercent);
+            cfg->SetValueDword("Voice_Volume", m_cueSink->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
             cfg->SetValueDword("Sound_Volume", g_sndCueTag);
@@ -3140,7 +3167,8 @@ void CGruntzMgr::AccrueScoreTime() {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
-        i64 d = static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&clk->m_38); // the +0x38:+0x3c start stamp
+        i64 d = static_cast<i64>(g_frameTime)
+                - *reinterpret_cast<i64*>(&clk->m_38); // the +0x38:+0x3c start stamp
         g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;
@@ -3182,10 +3210,12 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+    (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
+        ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
     i32 base;
     if (out != 0) {
-        (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+        (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
+            ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
@@ -3281,8 +3311,13 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     }
 
     m_modalBusy = 1;
-    i32 result =
-        ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, static_cast<DLGPROC>(dlgProc), 0);
+    i32 result = ::DialogBoxParamA(
+        m_owner->m_hInstance,
+        tmpl,
+        m_gameWnd->m_hwnd,
+        static_cast<DLGPROC>(dlgProc),
+        0
+    );
     NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {

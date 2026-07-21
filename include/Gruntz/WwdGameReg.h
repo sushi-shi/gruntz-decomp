@@ -7,17 +7,12 @@
 class CState;           // +0x2c  current game state (== GameRegistry m_curState; State.h)
 class CDDrawSurfaceMgr; // +0x30  the ONE world/resource holder (<DDrawMgr/DDrawSurfaceMgr.h>)
 class CGruntSpawnConfig;
-typedef CGruntSpawnConfig CGruntCueSink;    // +0x60  on-screen cue receiver
-class CGruntzMapMgr;    // +0x70  level tile board (the RTTI-real CMapMgr-derived map mgr)
-class CSpriteRefTable;  // +0x74  sprite/animation ref table (GetSel)
-class CBattlezData;     // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
-struct tagRECT;         // GetMessageBounds in/out (== Win32 RECT)
+typedef CGruntSpawnConfig CGruntCueSink; // +0x60  on-screen cue receiver
+class CGruntzMapMgr;   // +0x70  level tile board (the RTTI-real CMapMgr-derived map mgr)
+class CSpriteRefTable; // +0x74  sprite/animation ref table (GetSel)
+class CBattlezData;    // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
+struct tagRECT;        // GetMessageBounds in/out (== Win32 RECT)
 
 struct WwdGameReg; // retail's opaque decl tag; no layout
-
-struct WwdRefSlot {
-    i32 m_idx; // +0x00  ref-row index (passed to GetSel)
-    i32 m_04;  // +0x04
-};
 
 #endif // GRUNTZ_GRUNTZ_WWDGAMEREG_H

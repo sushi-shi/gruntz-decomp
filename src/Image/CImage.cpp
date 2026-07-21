@@ -8,14 +8,13 @@
 #include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
 #include <Image/CImage.h>
 #include <Gruntz/GameLevel.h> // CGameLevel (the node m_level hop) + CTileImageSet
-#include <Wwd/WwdFile.h>     // CDDrawWorkerHost::WrapCoord (m_level->m_mainPlane origin remap)
+#include <Wwd/WwdFile.h>      // CDDrawWorkerHost::WrapCoord (m_level->m_mainPlane origin remap)
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
-#include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+#include <DDrawMgr/DDrawShadeBlit.h>   // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
 #include <DDrawMgr/DDrawSurfacePair.h> // the blit destination (dst->m_surface/m_width/m_height)
-#include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
-
+#include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>                     // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
 enum ImageFormatTag {
     IMGTAG_PMB = 0x424d50, // "PMB" -> BMP loader (index 1)
@@ -82,7 +81,9 @@ i32 CWapObj::IsReady() {
 
 RVA(0x000d5dc0, 0xb)
 i32 CWapObj::IsLoaded() {
-    return *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x10)) > 0;
+    // the base default peeks the derived +0x10 slot - for the image family (whose
+    // TU this body lives in) that is CImage::m_width: loaded == has a width
+    return (static_cast<CImage*>(this))->m_width > 0;
 }
 
 RVA(0x000d5de0, 0x6)
@@ -172,8 +173,12 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
     if (resolved == 0) {
         return 0;
     }
-    i32 result =
-        this->LoadDispatch(reinterpret_cast<CImageFrameDesc*>(resolved), static_cast<u32>(index), reinterpret_cast<void*>(src->m_length), arg);
+    i32 result = this->LoadDispatch(
+        reinterpret_cast<CImageFrameDesc*>(resolved),
+        static_cast<u32>(index),
+        reinterpret_cast<void*>(src->m_length),
+        arg
+    );
     src->EndParse();
     return result;
 }
@@ -221,7 +226,13 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateA(reinterpret_cast<i32>(desc), static_cast<i32>(mode), reinterpret_cast<i32>(a), capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateA(
+        reinterpret_cast<i32>(desc),
+        static_cast<i32>(mode),
+        reinterpret_cast<i32>(a),
+        capArg,
+        flagsArg
+    );
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -247,7 +258,8 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateB(reinterpret_cast<i32>(desc), mode, 0, capArg, flagsArg);
+    CDDSurface* item =
+        m_parent->m_1c->CreateB(reinterpret_cast<i32>(desc), mode, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -295,7 +307,11 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     if (owned == 0) {
         return 0;
     }
-    if (!owned->Build(reinterpret_cast<CImageBuildDesc*>(desc), reinterpret_cast<i32>(a), m_parent->m_04->m_10[0x18 / 4])) {
+    if (!owned->Build(
+            reinterpret_cast<CImageBuildDesc*>(desc),
+            reinterpret_cast<i32>(a),
+            m_parent->m_04->m_10[0x18 / 4]
+        )) {
         return 0;
     }
     i32 w = m_owned->m_width;
@@ -594,7 +610,14 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
+    if (clip.Init(
+            reinterpret_cast<i32>(m_parent),
+            0,
+            reinterpret_cast<i32>(b),
+            reinterpret_cast<i32>(c),
+            reinterpret_cast<i32>(d),
+            0
+        )) {
         this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
     }
 }
@@ -611,7 +634,14 @@ i32 g_surfaceColorKey = 0; // 0x2bf380
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, reinterpret_cast<i32>(b), reinterpret_cast<i32>(c), reinterpret_cast<i32>(d), 0)) {
+    if (clip.Init(
+            reinterpret_cast<i32>(m_parent),
+            0,
+            reinterpret_cast<i32>(b),
+            reinterpret_cast<i32>(c),
+            reinterpret_cast<i32>(d),
+            0
+        )) {
         if (rect != 0) {
             g_imageClipRect[0] = (static_cast<i32*>(rect))[0];
             g_imageClipRect[1] = (static_cast<i32*>(rect))[1];

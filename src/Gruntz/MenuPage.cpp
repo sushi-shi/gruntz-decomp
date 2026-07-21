@@ -2,6 +2,7 @@
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Gruntz/ChatBox.h>
 #include <Image/CImage.h>
+#include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the image-registry strip m_subPage caches
 
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_owner) - its m_10 CImageRegistry
@@ -45,7 +46,7 @@ i32 CMenuPage::Configure(
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     void* slot = static_cast<void*>(slot_ob);
-    m_subPage = static_cast<CMenuPage*>(slot);
+    m_subPage = static_cast<CDDrawWorker*>(slot_ob);
     return slot != 0;
 }
 
@@ -85,7 +86,7 @@ i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     void* slot = static_cast<void*>(slot_ob);
-    m_subPage = static_cast<CMenuPage*>(slot);
+    m_subPage = static_cast<CDDrawWorker*>(slot_ob);
     return slot != 0;
 }
 
@@ -338,15 +339,18 @@ i32 CMenuPage::Layout(i32 ctx) {
     i32 x1 = m_rect.right;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
     i32 y = m_offsetY + m_rect.top;
-    CMenuPage* sub = m_subPage;
+    CDDrawWorker* sub = m_subPage;
     if (sub) {
-        i32 idx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(sub) + 0x64));
-        CMenuItem** tab = *reinterpret_cast<CMenuItem***>((reinterpret_cast<char*>(sub) + 0x14));
-        CMenuItem* head = tab[idx];
+        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
         if (head) {
-            y += head->m_1c;
-            (reinterpret_cast<CImage*>(head))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(x), reinterpret_cast<void*>(y), static_cast<void*>(0));
-            y += m_headGap + head->m_1c;
+            y += head->m_anchorY;
+            head->RenderFrame(
+                reinterpret_cast<void*>(ctx),
+                reinterpret_cast<void*>(x),
+                reinterpret_cast<void*>(y),
+                static_cast<void*>(0)
+            );
+            y += m_headGap + head->m_anchorY;
         }
     }
     CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
@@ -424,15 +428,18 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     i32 x1 = m_rect.right;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
     i32 y = m_offsetY + m_rect.top;
-    CMenuPage* sub = m_subPage;
+    CDDrawWorker* sub = m_subPage;
     if (sub) {
-        i32 idx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(sub) + 0x64));
-        CMenuItem** tab = *reinterpret_cast<CMenuItem***>((reinterpret_cast<char*>(sub) + 0x14));
-        CMenuItem* head = tab[idx];
+        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
         if (head) {
-            y += head->m_1c;
-            (reinterpret_cast<CImage*>(head))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(x), reinterpret_cast<void*>(y), static_cast<void*>(0));
-            y += m_headGap + head->m_1c;
+            y += head->m_anchorY;
+            head->RenderFrame(
+                reinterpret_cast<void*>(ctx),
+                reinterpret_cast<void*>(x),
+                reinterpret_cast<void*>(y),
+                static_cast<void*>(0)
+            );
+            y += m_headGap + head->m_anchorY;
         }
     }
     i32 col = ((m_colWidth / 2)) + m_rect.left + m_colOffset;
@@ -716,12 +723,25 @@ i32 CMenuPage::SelectBackward() {
 }
 
 RVA(0x00183460, 0x13d)
-CMenuItem*
-CMenuPage::AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags) {
+CMenuItem* CMenuPage::AddItem(
+    const char* label,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags
+) {
     CMenuItem* item = new CMenuItem();
     // Init keeps its mangling-pinned i32 slots (virtual); the string args cast at
     // the forward (same 4-byte pushes).
-    if (item->Init(reinterpret_cast<i32>(this), reinterpret_cast<i32>(label), reinterpret_cast<i32>(spriteKey), cmdId, reinterpret_cast<i32>(key), flags) == 0) {
+    if (item->Init(
+            reinterpret_cast<i32>(this),
+            reinterpret_cast<i32>(label),
+            reinterpret_cast<i32>(spriteKey),
+            cmdId,
+            reinterpret_cast<i32>(key),
+            flags
+        )
+        == 0) {
         if (item) {
             delete item;
         }
@@ -741,7 +761,15 @@ CMenuItem* CMenuPage::AddSubItem(
     i32 flags
 ) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init(reinterpret_cast<i32>(this), reinterpret_cast<i32>(label), reinterpret_cast<i32>(spriteKey), cmdId, reinterpret_cast<i32>(key), flags) == 0) {
+    if (item->Init(
+            reinterpret_cast<i32>(this),
+            reinterpret_cast<i32>(label),
+            reinterpret_cast<i32>(spriteKey),
+            cmdId,
+            reinterpret_cast<i32>(key),
+            flags
+        )
+        == 0) {
         if (item) {
             delete item;
         }

@@ -3108,87 +3108,24 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 && cand->m_entranceCommitted != 0 && cand->m_deathAnimStarted == 0
                 && cand->m_entranceActive == 0 && cand->m_poweredUp == 0) {
                 bool eq;
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(
-                             reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                 (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                             )))
-                         )),
-                         "I"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "I") == 0);
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "G"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "G") == 0);
                 }
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "L"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "L") == 0);
                 }
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "P"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "P") == 0);
                 }
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "J"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "J") == 0);
                 }
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "C"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "C") == 0);
                 }
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(
-                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
-                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
-                                 )))
-                             )),
-                             "R"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_1c)), "R") == 0);
                 }
                 if (!eq && cand != unit && cand->m_defenderState != 3
                     && cand->m_defenderState != 5) {

@@ -126,7 +126,13 @@ void CSpotLight::FireActivation(i32 id) {
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
-    if (CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, c, d) == 0) {
+    if (CUserLogic::SerializeMove(
+            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))),
+            mode,
+            c,
+            d
+        )
+        == 0) {
         return 0;
     }
     if (Chain(static_cast<CSerialArchive*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
@@ -170,12 +176,17 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup(
+                    reinterpret_cast<void*>(id),
+                    reinterpret_cast<void*&>(out)
+                );
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
                     } else {
-                        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
+                        resolved = (out->GetClassId() == CLASSID_SERIALREF)
+                                       ? reinterpret_cast<i32>(out)
+                                       : 0;
                     }
                 }
                 m_focus = reinterpret_cast<CWwdGameObjectA*>(resolved);
@@ -205,7 +216,7 @@ extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
 extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
-extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
+extern char s_LEVEL_UFOHAZARDLASER[];  // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
@@ -228,18 +239,18 @@ extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick_0b1af0() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || *reinterpret_cast<i32*>((reinterpret_cast<char*>(reg) + 0x134)) != 1) {
-        char* o = reinterpret_cast<char*>(m_object);
-        CGrunt* tgt =
-            static_cast<CGrunt*>(Probe_32ce(*reinterpret_cast<i32*>((o + 0x5c)), *reinterpret_cast<i32*>((o + 0x60)), o + 0x144, &m_9c, &m_a0, 0));
+    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
+        CWwdGameObjectA* o = m_object;
+        CGrunt* tgt = static_cast<CGrunt*>(
+            Probe_32ce(o->m_screenX, o->m_screenY, &o->m_area, &m_9c, &m_a0, 0)
+        );
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("B");
-            // CGrunt's +0x10 bound geometry source (undeclared base padding; by offset).
-            char* t = *reinterpret_cast<char**>((reinterpret_cast<char*>(tgt) + 0x10));
-            *reinterpret_cast<i32*>((o + 0x5c)) = *reinterpret_cast<i32*>((t + 0x5c));
-            *reinterpret_cast<i32*>((o + 0x60)) = *reinterpret_cast<i32*>((t + 0x60));
-            if (*reinterpret_cast<i32*>((o + 0x114)) == 1) {
+            CWwdGameObjectA* t = tgt->m_object;
+            o->m_screenX = t->m_screenX;
+            o->m_screenY = t->m_screenY;
+            if (o->m_114 == 1) {
                 reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 5, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {

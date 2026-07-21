@@ -38,7 +38,7 @@ BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
     m_stream0 = 0;
     m_stream1 = 0;
     m_owner = owner;
-    m_gruntPercent = 0x64;
+    m_voiceVolume = 0x64;
     m_configTree = owner->m_30;
     return BuildVoiceList() != 0;
 }
@@ -224,7 +224,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     StreamVoice* stream = streams[chosen];
-    i32 vol = m_gruntPercent;
+    i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
     if (stream->SetSource(reinterpret_cast<CParseSource*>(src)) != 0) {
         stream->Configure(vol, 0, 0, 0);

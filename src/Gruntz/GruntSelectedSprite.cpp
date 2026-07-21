@@ -8,6 +8,7 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
 DATA(0x00244da8)
 extern CIndicatorActReg g_selectedActReg; // 0x644da8
@@ -76,7 +77,8 @@ void CGruntSelectedSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
+    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
 RVA(0x0007e9c0, 0x16)
@@ -104,7 +106,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
-    CGrunt* e = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(reg->m_cmdGrid) + 0x1c)))[m_cellX * 15 + m_cellY];
+    CGrunt* e = reg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_arrived != 0) {
         m_38->m_1a0.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
@@ -125,7 +127,12 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
     } else {
         sa->Write(&m_cellX, 8);
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;

@@ -106,7 +106,7 @@ public:
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
     // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).
     CPtrArray m_voiceLists; // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
-    i32 m_gruntPercent;     // +0x2c  = 0x64
+    i32 m_voiceVolume;      // +0x2c  = 0x64
 };
 
 struct CSpawnRemoveColl {

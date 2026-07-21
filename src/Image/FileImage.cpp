@@ -10,6 +10,10 @@
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Globals.h>
 
+enum {
+    PCX_HEADER_SIZE = 0x80
+}; // the fixed PCX file header (pixel runs follow)
+
 DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
@@ -56,7 +60,8 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     if (convert) {
         if (srcFmt == 8) {
             u8* w = g_paletteRampBuf;
-            u8* p = reinterpret_cast<u8*>(src) + 0x36;
+            u8* p = reinterpret_cast<u8*>(src) + sizeof(BITMAPFILEHEADER)
+                    + sizeof(BITMAPINFOHEADER); // the BMP palette
             do {
                 w[0] = p[2];
                 w[1] = p[1];
@@ -130,7 +135,9 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 RVA(0x00143fc0, 0x142)
 void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
-    BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>((reinterpret_cast<char*>(buf) + 0xe));
+    BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>(
+        reinterpret_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
+    );
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
@@ -156,7 +163,8 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     void* palette = 0;
     if (remap) {
         if (bitcount == 8) {
-            u8* src = reinterpret_cast<u8*>(buf) + 0x36;
+            u8* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
+                      + sizeof(BITMAPINFOHEADER); // the BMP palette
             u8* d = s_palBmp;
             do {
                 d[0] = src[2];
@@ -174,7 +182,8 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
 
     void* pixels = reinterpret_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
     if (remap) {
-        return Blit(pixels, bitcount, palette, 2) ? reinterpret_cast<void*>(1) : static_cast<void*>(0);
+        return Blit(pixels, bitcount, palette, 2) ? reinterpret_cast<void*>(1)
+                                                  : static_cast<void*>(0);
     }
     return BlitDirect(pixels, 2) ? reinterpret_cast<void*>(1) : static_cast<void*>(0);
 }
@@ -227,8 +236,9 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     }
     memset(m_desc, 0, 0x6c);
     m_descSize = 0x6c;
-    *reinterpret_cast<i32*>((m_desc + 0x68)) = c | 0x40; // +0x78 control word (the BlitSurf a5 slot)
-    *reinterpret_cast<i32*>((m_desc + 4)) = 7;           // dwFlags
+    *reinterpret_cast<i32*>((m_desc + 0x68)) =
+        c | 0x40;                              // +0x78 control word (the BlitSurf a5 slot)
+    *reinterpret_cast<i32*>((m_desc + 4)) = 7; // dwFlags
     m_width = p->m_4;
     m_height = c;
     if (!Init1(reinterpret_cast<CDDrawPtrCollections*>(saved), 0)) {
@@ -609,7 +619,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
         return 0;
     }
 
-    void* run = reinterpret_cast<u8*>(src) + 0x80;
+    void* run = reinterpret_cast<u8*>(src) + PCX_HEADER_SIZE;
     void* buf = 0;
     i32 result;
     if (convert == 0) {
@@ -733,7 +743,7 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
         }
     }
 
-    u8* pixels = reinterpret_cast<u8*>(buf) + 0x80;
+    u8* pixels = reinterpret_cast<u8*>(buf) + PCX_HEADER_SIZE;
     i32 ok;
     void* decoded = 0;
     if (!remap) {
@@ -1108,7 +1118,8 @@ i32 CDDSurface::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    i32 result = DecodePcxData(surf, buf, len, reinterpret_cast<i32>(a3), reinterpret_cast<i32>(a4));
+    i32 result =
+        DecodePcxData(surf, buf, len, reinterpret_cast<i32>(a3), reinterpret_cast<i32>(a4));
     operator delete(buf);
     return result;
 }

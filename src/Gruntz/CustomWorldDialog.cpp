@@ -1,6 +1,6 @@
 #include <Mfc.h>
 #undef _AFX_ENABLE_INLINES // skip afxwin1.inl (MFC4.2 implicit-int inlines clang rejects)
-#include <afxwin.h> // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
+#include <afxwin.h>        // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
 #include <Gruntz/GameRegMfcPtr.h>
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
@@ -91,7 +91,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_customWorldParent = reinterpret_cast<HWND>(v);
     g_dat62c268 = reinterpret_cast<i32>(g_gameReg->m_world);
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
-    g_customWorldInst = reinterpret_cast<HINSTANCE>(* reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc)));
+    g_customWorldInst = g_gameReg->m_owner->m_hInstance;
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", static_cast<void*>(CustomWorldDlgProc), 0) == 0) {
         g_pathStr.Empty();
     }
@@ -244,7 +244,8 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
-    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if ((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))
+            ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -307,7 +308,12 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(reinterpret_cast<const char*>((reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24), header)
+    if (WwdFile_CheckHeader(
+            reinterpret_cast<const char*>(
+                (reinterpret_cast<WwdWorldHolder*>(g_gameReg->m_world))->m_24
+            ),
+            header
+        )
         == 0) {
         return -1;
     }
@@ -327,7 +333,8 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0 && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
+            if (g_dat62c268 != 0
+                && FileExists(const_cast<char*>(static_cast<const char*>(g_pathStr)))
                 && (reinterpret_cast<WwdWorldHolder*>(g_dat62c268))
                        ->m_24->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
@@ -372,7 +379,10 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (sel == -1) {
         return 0;
     }
-    if (static_cast<i32>(SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, reinterpret_cast<LPARAM>(szLevel))) == -1) {
+    if (static_cast<i32>(
+            SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, reinterpret_cast<LPARAM>(szLevel))
+        )
+        == -1) {
         return 0;
     }
     g_levelStr = szLevel;

@@ -67,7 +67,7 @@ public:
     // The +0x38 kinematic band as a CMotionState (the real dev subobject), reached
     // via a cast so the flat-int ctor zero-init layout below overlays the same bytes.
     CMotionState* Motion() {
-        return reinterpret_cast<CMotionState*>((reinterpret_cast<char*>(this) + 0x38));
+        return reinterpret_cast<CMotionState*>(&m_band38);
     }
 
     // +0x38..+0x14f: the kinematic band, overlaid per LOGIC KIND (the same retail
@@ -76,7 +76,7 @@ public:
     // the grunt logic's reuse of the band (CGrunt parks its resolved anim/type
     // state in bytes its kinematics never touch after spawn).
     union {
-        struct { // motion layout (ctor zero-run order; overlays Motion())
+        struct {                    // motion layout (ctor zero-run order; overlays Motion())
             i32 m_band38, m_band3c; // +0x38/+0x3c  band dwords 0/1 (NOT m_38/m_3c -
                                     //   those names are the CWapX flats @+0x150)
             i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;

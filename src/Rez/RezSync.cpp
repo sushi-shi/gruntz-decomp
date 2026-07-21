@@ -44,7 +44,7 @@
 void* operator new(unsigned int);
 void operator delete(void*);
 
-extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
+extern "C" void* g_gameReg;    // 0x64556c (typed CGruntzMgr* in its owner TU)
 extern "C" i32 g_localVersion; // 0x60fa70
 extern "C" {
     DATA(0x002455b4)
@@ -168,7 +168,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         reg->m_open = 0;
     }
     m_settings = reg;
-    if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, reinterpret_cast<HKEY>(0x80000002), 0)) {
+    if (!m_settings->Open(
+            "Monolith Productions",
+            "Gruntz",
+            "1.0",
+            0,
+            reinterpret_cast<HKEY>(0x80000002),
+            0
+        )) {
         ReportError(0x800a, 0x406);
         return 0;
     }
@@ -356,7 +363,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             return 0;
         }
     }
-    if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) { // 0x13b0c0 (canonical arg order)
+    if (!m_symParser
+             ->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) { // 0x13b0c0 (canonical arg order)
         ReportError(0x8149, 0x460);
         return 0;
     }
@@ -386,7 +394,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 9: audio host (m_sound) ---------------------------------
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
-    if (!m_sound->Init(reinterpret_cast<i32>(m_owner->m_hInstance), reinterpret_cast<i32>(m_gameWnd->m_hwnd), 0)) {
+    if (!m_sound->Init(
+            reinterpret_cast<i32>(m_owner->m_hInstance),
+            reinterpret_cast<i32>(m_gameWnd->m_hwnd),
+            0
+        )) {
         ReportError(0x800a, 0x40c);
         return 0;
     }
@@ -433,10 +445,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 11: settings host (m_logicPump, m_saveSink) -----------------------
     m_logicPump = static_cast<CLightFxMgr*>(RezAlloc(0x3c));
     if (m_logicPump) {
-        i32* z = reinterpret_cast<i32*>(m_logicPump);
-        z[1] = z[2] = z[3] = z[4] = 0;
+        m_logicPump->m_reg = 0;
+        m_logicPump->m_world = 0;
+        m_logicPump->m_cache = 0;
+        m_logicPump->m_greyTable = 0;
         for (i32 k = 0; k < 10; ++k) {
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_logicPump) + 0x14 + k * 4)) = 0;
+            m_logicPump->m_tables[k] = 0;
         }
     }
     if (!m_logicPump->Init(0, this)) {
@@ -455,7 +469,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_scoreHud = new CBattlezData;
-    m_scoreHud->InitWithRecords(reinterpret_cast<char*>(m_saveSink) + 0x24);
+    m_scoreHud->InitWithRecords(m_saveSink->m_pad24); // the opaque header tail = the records blob
 
     // --- Phase 12: the grunt spawn-config singleton (g_spawnConfig) -------
     g_spawnConfig = static_cast<CGruntSpawnConfig*>(RezAlloc(0x28));
@@ -497,7 +511,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_spriteFactory->m_refB[k] = 0;
         }
     }
-    if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
+    if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))
+             ->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
         ReportError(0x800a, 0x416);
         return 0;
     }
@@ -523,10 +538,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (stream) {
             g_buteMgr.m_10e = 1;
             i32 esz = stream->BeginParse();
-            void* src = reinterpret_cast<void*>(stream->m_length); // +0x0c doubles as the data ptr for this entry kind
-            istrstream* rdr = new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
+            void* src = reinterpret_cast<void*>(
+                stream->m_length
+            ); // +0x0c doubles as the data ptr for this entry kind
+            istrstream* rdr =
+                new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
             Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
-            ostrstream* snk = new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
+            ostrstream* snk =
+                new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
             BitStreamBlowfishDecode(snk, rdr);
             // carcass gap: retail allocs a third 0x60 stream object here with no
             // visible ctor call in the recovered bytes; kept as the bare allocation.
@@ -566,13 +585,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x41b);
         return 0;
     }
-    g_localVersion = static_cast<i32>(g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion)));
+    g_localVersion = static_cast<i32>(
+        g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion))
+    );
     m_cueSink = new CGruntSpawnConfig;
     if (!m_cueSink->Init(reinterpret_cast<CSpawnOwner*>(this))) {
         ReportError(0x800a, 0x45f);
         return 0;
     }
-    *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_cueSink) + 0x2c)) = vScroll;
+    m_cueSink->m_voiceVolume = vScroll; // retail seeds the voice-volume slot from this local
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;
@@ -614,7 +635,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified(static_cast<const char*>(*reinterpret_cast<void**>(&title)), &g_lab504358)) {
+        while (attract->ResolveQualified(
+            static_cast<const char*>(*reinterpret_cast<void**>(&title)),
+            &g_lab504358
+        )) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

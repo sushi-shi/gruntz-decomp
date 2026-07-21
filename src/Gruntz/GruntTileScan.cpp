@@ -5,7 +5,7 @@
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
 #include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
-#include <new>   // placement CRect ctor
+#include <new> // placement CRect ctor
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/FreeNodePool.h>
 #include <stdlib.h> // engine rand (0x11fee0)
@@ -14,8 +14,8 @@
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -54,7 +54,8 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
             i32 flags;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width) && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
                 flags = grid->m_8[row][col].m_flags;
             } else {
                 flags = 1;
@@ -113,7 +114,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                                 hits++;
                             }
                         }
-                        cell = reinterpret_cast<CScanCell*>((reinterpret_cast<char*>(cell) + 0x1c));
+                        cell++;
                     }
                 }
             }

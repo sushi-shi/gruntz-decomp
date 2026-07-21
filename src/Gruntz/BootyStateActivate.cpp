@@ -38,7 +38,6 @@ void ShowHudMessageAlt(
     i32 a9
 );
 
-
 void operator delete(void*);
 
 DATA(0x001e8fe8)
@@ -51,7 +50,8 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r =
+        m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -149,8 +149,9 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_scratchX = 0;
     m_scratchY = 0;
     for (i32 i = 0; i < 4; i++) {
-        CWwdGameObjectA* a = g_gameReg->m_world->m_childGroup
-                             ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
+        CWwdGameObjectA* a =
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -185,7 +186,7 @@ RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
-            i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            i32* tbl = g_bootyLetterCoords + 1;    // walks: tbl[-1]=x, tbl[0]=y; advances by 2
             CWwdGameObjectA** ap = m_trailSprites; // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CWwdGameObjectA* e = *ap;
@@ -208,20 +209,25 @@ void CMultiBootyState::StepGlitterAnim() {
 
     i32 step = m_angleStep;
     i32 idx = m_letterIdx;
-    double r = static_cast<float>(m_radius); // load (float)m_radius first; shared across sin/cos terms
+    double r =
+        static_cast<float>(m_radius); // load (float)m_radius first; shared across sin/cos terms
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
-    m_scratchX = static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
-    m_scratchY = static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
+    m_scratchX =
+        static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
+    m_scratchY =
+        static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
     m_angleStep = step + 5;
-    m_radius =
-        static_cast<i32>((kGlitterStartRadius - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius));
+    m_radius = static_cast<i32>(
+        (kGlitterStartRadius
+         - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius)
+    );
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
     CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
         i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        CWwdGameObjectA** ap = arr1ec;          // eax
+        CWwdGameObjectA** ap = arr1ec;      // eax
         do {
             CWwdGameObjectA* e = *ap;
             i++;
@@ -491,7 +497,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    SoundStream* r = m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r =
+        m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -657,7 +664,7 @@ void CMultiBootyState::DrawBattleStats() {
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_scoreHud) + 0x48 + i * 4)));
+            s.Format("%d", g_gameReg->m_scoreHud->m_counts[i]);
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
@@ -807,7 +814,17 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt(reinterpret_cast<HudMsgSink*>(m_world), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessageAlt(
+        reinterpret_cast<HudMsgSink*>(m_world),
+        reinterpret_cast<i32>(&s),
+        reinterpret_cast<i32>(&rc),
+        0x6e,
+        1,
+        0xff,
+        0xff,
+        0,
+        1
+    );
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);

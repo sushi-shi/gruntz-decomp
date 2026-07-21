@@ -37,7 +37,7 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>   // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
@@ -47,10 +47,11 @@
 
 #include <rva.h>
 #include <Gruntz/GameLevel.h> // CTileImageSet (the tile-descriptor the resolver dispatches on)
-#include <string.h> // inline strcmp for the ctor's direction-name match
+#include <string.h>           // inline strcmp for the ctor's direction-name match
 #include <Globals.h>
 #include <Wap32/ZVec.h>
-#include <Rez/FrameClock.h> // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
+#include <Rez/FrameClock.h>    // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
 
 DATA(0x002461b0)
 extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
@@ -72,9 +73,17 @@ double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
 extern "C" i32 __ftol(double x);                              // 0x11f570
 
-i32 RbProbeRect(void* obj, i32 cx, i32 cy, RECT* rect, i32* outA, i32* outB, i32 z); // 0x32ce (the object's m_area box)
-void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
-void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
+i32 RbProbeRect(
+    void* obj,
+    i32 cx,
+    i32 cy,
+    RECT* rect,
+    i32* outA,
+    i32* outB,
+    i32 z
+);                                                           // 0x32ce (the object's m_area box)
+void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg); // 0x2e96
+void RbClearCell(void* obj, i32 a, i32 b, i32 z);            // 0x26df
 
 static i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
@@ -188,9 +197,12 @@ void CRollingBall::InitActReg() {
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CRollingBallActEntry* e = reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id));
+    CRollingBallActEntry* e =
+        reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 
@@ -222,7 +234,8 @@ void CRollingBall::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
+    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
@@ -276,7 +289,7 @@ i32 CRollingBall::Update() {
         i32 cy = logic->m_screenY;
         if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
             && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + 0x3f8)) = 1;
+            g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
         }
         CWwdGameObjectA* logic2 = m_object;
         i32 outA, outB;

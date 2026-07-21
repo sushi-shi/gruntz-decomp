@@ -7,9 +7,11 @@
 #include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_childGroup
+#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - m_map48 (the id->object map)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CTmCell
+#include <Gruntz/Grunt.h>            // complete CGrunt - FindGruntAt result (m_object reads)
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
-#include <Gruntz/Ufo.h> // the REAL CUFO (the ex-L_13400 shell is dissolved)
+#include <Gruntz/Ufo.h>              // the REAL CUFO (the ex-L_13400 shell is dissolved)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h> // CActName (shared)
@@ -19,7 +21,7 @@
 #include <Wap32/ZVec.h>
 #include <Globals.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
@@ -31,10 +33,14 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -302,7 +308,8 @@ void CVoiceTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_vtrigActReg.ResolveEntry(id)) = static_cast<void*>(&VTrigLogic_11a700);
+    *reinterpret_cast<void**>(g_vtrigActReg.ResolveEntry(id)) =
+        static_cast<void*>(&VTrigLogic_11a700);
 }
 
 RVA(0x0011a700, 0xae)
@@ -317,22 +324,19 @@ i32 CVoiceTrigger::Tick() {
         &m_object->m_area
     );
     if (hit && outA == g_curPlayer) {
-        // hit is a CGrunt; its bound object sits at +0x10 (CUserLogic::m_object),
-        // reached by offset since CGrunt is only forward-declared in this TU.
-        CGameObject* hs = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(hit) + 0x10));
+        CGameObject* hs = hit->m_object;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
-            if (g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(
-                        reinterpret_cast<i32>(hit),
-                        m_object->m_124,
-                        m_object->m_placeMode,
-                        0,
-                        -1,
-                        -1
-                    )) {
+            if (g_gameReg->m_cueSink->SpawnVoiceDriver(
+                    reinterpret_cast<i32>(hit),
+                    m_object->m_124,
+                    m_object->m_placeMode,
+                    0,
+                    -1,
+                    -1
+                )) {
                 m_38->m_flags |= 0x10000;
             }
         }
@@ -389,7 +393,9 @@ void CGruntVoice::Reset() {
 
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0 || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon) >= *reinterpret_cast<i64*>(&m_durationMs)) {
+    if (m_sample == 0
+        || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon)
+               >= *reinterpret_cast<i64*>(&m_durationMs)) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;
@@ -401,13 +407,16 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = (reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48)))
-                           ->Lookup(reinterpret_cast<void*>(src), reinterpret_cast<void*&>(out));
+        i32 resolved = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+            reinterpret_cast<void*>(src),
+            reinterpret_cast<void*&>(out)
+        );
         if (resolved != 0) {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
+                resolved =
+                    (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {
@@ -425,13 +434,16 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = (reinterpret_cast<CMapPtrToPtr*>((reinterpret_cast<char*>(g_gameReg->m_world->m_childGroup) + 0x48)))
-                           ->Lookup(reinterpret_cast<void*>(src), reinterpret_cast<void*&>(out));
+        i32 resolved = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+            reinterpret_cast<void*>(src),
+            reinterpret_cast<void*&>(out)
+        );
         if (resolved != 0) {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
+                resolved =
+                    (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {

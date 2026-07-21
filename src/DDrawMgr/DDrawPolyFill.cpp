@@ -32,7 +32,7 @@ extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
 // differently. Not source-steerable; deferred to the final sweep. topic:wall.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
-    ClipVtx* prev = reinterpret_cast<ClipVtx*>((reinterpret_cast<char*>(verts) + count * 0x1c - 0x1c));
+    ClipVtx* prev = &verts[count - 1];
     ClipVtx* cur = verts;
     i32 minYi = 0x1001;
     i32 maxYi = -1;
@@ -80,18 +80,17 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             cur++;
         } while (--n != 0);
     }
-    i32 rowOff = minYi * 0x1c;
-    i32 stride = *reinterpret_cast<i32*>((reinterpret_cast<char*>(surf) + 0x20));
+    i32 stride = surf->m_pitch;
     i32 bits = surf->Lock(0);
     i32 rowPtr = bits + stride * minYi;
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
-        i32* pDesc = reinterpret_cast<i32*>((reinterpret_cast<char*>(g_rasterEdgeL) + rowOff + 0x10));
-        i32* pAsc = reinterpret_cast<i32*>((reinterpret_cast<char*>(g_rasterEdgeR) + rowOff + 0x10));
+        FillEdgeRow* pDesc = &g_rasterEdgeL[minYi];
+        FillEdgeRow* pAsc = &g_rasterEdgeR[minYi];
         do {
-            i32 xB = *pAsc >> 0xe;
-            i32 xA = *pDesc >> 0xe;
+            i32 xB = pAsc->fx >> 0xe;
+            i32 xA = pDesc->fx >> 0xe;
             i32 lo = xB;
             i32 hi = xA;
             if (xB > xA) {
@@ -108,10 +107,10 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                 } while (--w != 0);
                 rowPtr = g_rasterDestRow;
             }
-            rowPtr += *reinterpret_cast<i32*>((reinterpret_cast<char*>(surf) + 0x20));
+            rowPtr += surf->m_pitch;
             g_rasterDestRow = rowPtr;
-            pAsc = reinterpret_cast<i32*>((reinterpret_cast<char*>(pAsc) + 0x1c));
-            pDesc = reinterpret_cast<i32*>((reinterpret_cast<char*>(pDesc) + 0x1c));
+            pAsc++;
+            pDesc++;
         } while (--rowCount != 0);
     }
     surf->m_ddSurface->Unlock(0);

@@ -26,16 +26,16 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode, i32, i32) {
         case 4:
             ar->Write(&g_scrollClock, 4);
             ar->Write(&g_scrollTimer, 4);
-            ar->Write(reinterpret_cast<char*>(&g_scrollAccum) + 0x18, 4); // @identity-TODO (see ScrollState.h)
-            ar->Write(reinterpret_cast<char*>(&g_scrollAccum) + 0x1c, 4); // @identity-TODO
+            ar->Write(&g_scrollSave18, 4); // serializer-only (see ScrollState.h)
+            ar->Write(&g_scrollSave1c, 4);
             ar->Write(&g_lastScrollX, 4);
             ar->Write(&g_lastScrollY, 4);
             break;
         case 7:
             ar->Read(&g_scrollClock, 4);
             ar->Read(&g_scrollTimer, 4);
-            ar->Read(reinterpret_cast<char*>(&g_scrollAccum) + 0x18, 4); // @identity-TODO (see ScrollState.h)
-            ar->Read(reinterpret_cast<char*>(&g_scrollAccum) + 0x1c, 4); // @identity-TODO
+            ar->Read(&g_scrollSave18, 4); // serializer-only (see ScrollState.h)
+            ar->Read(&g_scrollSave1c, 4);
             ar->Read(&g_lastScrollX, 4);
             ar->Read(&g_lastScrollY, 4);
             break;

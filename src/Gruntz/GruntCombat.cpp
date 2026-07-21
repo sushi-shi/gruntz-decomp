@@ -1,7 +1,7 @@
-#include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Mfc.h>            // the REAL MFC CPtrList - CScanList was a fake view of it
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
-#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
+#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TraitorMode.h> // g_traitorMode
@@ -51,8 +51,8 @@
 #include <Globals.h>
 #include <Gruntz/WorkerHandler.h> // Owner/Worker + Worker_DefaultPump (GruntSpawnPump)
 #include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
-#include <new>   // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
-#include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
+#include <new>             // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
+#include <Gruntz/Brickz.h> // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
@@ -135,7 +135,6 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-
 extern "C" i32 g_dirVec[9][4]; // DAT_00644970
 
 extern "C" unsigned char g_hitTable[]; // DAT_005e9788
@@ -167,7 +166,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(out));                      \
+        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(out));    \
         cue = out;                                                                                 \
     } while (0)
 
@@ -244,17 +243,17 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                   \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));        \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                 \
-            (grid)->m_bounds = ra;                                                       \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                                \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                               \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 #define FREELIST_PUSH(elem)                                                                        \
@@ -288,24 +287,24 @@ SIZE_UNKNOWN(CombatTypeNode);
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
-        i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                                        \
+        i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                      \
         if (id == 0) {                                                                             \
-            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                                          \
+            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
             id = g_typeCounter;                                                                    \
-            char* slot = g_typeColl._zvec::IndexToPtr(id);                             \
+            char* slot = g_typeColl._zvec::IndexToPtr(id);                                         \
             i32 n = g_typeColl.m_grown;                                                            \
-            void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                                              \
+            void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                            \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    (reinterpret_cast<CString*>(list))->CString::~CString();                                         \
+                    (reinterpret_cast<CString*>(list))->CString::~CString();                       \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \
-            (reinterpret_cast<CString*>(slot))->operator=(key);                                                      \
+            (reinterpret_cast<CString*>(slot))->operator=(key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        (reinterpret_cast<CGruntActEntry*>(g_reg_644af0.Resolve(id)))->m_fn\
-            = reinterpret_cast<GruntActHandler>(handler);            \
+        (reinterpret_cast<CGruntActEntry*>(g_reg_644af0.Resolve(id)))->m_fn =                      \
+            reinterpret_cast<GruntActHandler>(handler);                                            \
     }
 
 // @early-stop
@@ -337,7 +336,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CSndHost* slot = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
-        slot->m_10.Lookup(s_GAME_ATTACK, reinterpret_cast<void*&>(sout)); // CMapStringToPtr @0x1b8438
+        slot->m_10.Lookup(
+            s_GAME_ATTACK,
+            reinterpret_cast<void*&>(sout)
+        ); // CMapStringToPtr @0x1b8438
         if (sout != 0) {
             // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940
             sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -351,7 +353,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 9, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    9,
+                    1
+                );
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -366,7 +373,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 2, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    2,
+                    1
+                );
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -381,7 +393,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 8, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    8,
+                    1
+                );
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -394,7 +411,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 7, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    7,
+                    1
+                );
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -409,7 +431,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 3, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    3,
+                    1
+                );
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -718,7 +745,8 @@ extern CLookupColl g_reg_644af0;
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
-    CBrickzGrid* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CBrickzGrid)
+    CBrickzGrid* grid =
+        g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CBrickzGrid)
     if (CoordCount() == 0) {
         return 1;
     }
@@ -1356,7 +1384,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>((this->m_objAux->m_1c))));
+    char** typeRec =
+        reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))
+                                     ->IndexToPtr(reinterpret_cast<i32>((this->m_objAux->m_1c))));
     if (g_typeColl.m_grown != 0) {
         char* p = reinterpret_cast<char*>(g_typeColl.m_alloc);
         i32 n = g_typeColl.m_grown;
@@ -1448,7 +1478,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
-        CBrickzGrid* grid = static_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // GruntBoard==CBrickzGrid facet
+        CBrickzGrid* grid =
+            static_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // GruntBoard==CBrickzGrid facet
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = this->m_lastTilePxX >> 5;
@@ -1460,48 +1491,40 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (static_cast<u32>(nyt) >= static_cast<u32>(grid->m_height)) {
                 return 1;
             }
-            i32* cell = grid->m_rowInts[nyt] + nxt * 7;
-            i32 t = flags & cell[0];
+            BrickzCell* cell = &grid->m_rows[nyt][nxt];
+            i32 t = flags & cell->m_0;
             if (t & 0x20000000) {
                 return 1;
             }
-            if (t != 0 && (cell[0] & (this->m_24c | 0x18000482)) == 0) {
+            if (t != 0 && (cell->m_0 & (this->m_24c | 0x18000482)) == 0) {
                 return 1;
             }
-            i32* ocell = grid->m_rowInts[oyt] + oxt * 7;
+            BrickzCell* ocell = &grid->m_rows[oyt][oxt];
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
-                i32 rb = grid->m_width * 7 * 4;
+                i32 w = grid->m_width; // vertical neighbor = +-w cells (contiguous rows)
                 if (dxt > 0) {
                     if (dyt > 0) {
-                        if ((*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) + 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) + rb)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) - 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) - rb)) & 0x2000)) {
+                        if (((ocell + 1)->m_0 & 0x2000) || ((ocell + w)->m_0 & 0x2000)
+                            || ((cell - 1)->m_0 & 0x2000) || ((cell - w)->m_0 & 0x2000)) {
                             return 1;
                         }
                     } else {
-                        if ((*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) + 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) - rb)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) - 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + rb)) & 0x2000)) {
+                        if (((ocell + 1)->m_0 & 0x2000) || ((ocell - w)->m_0 & 0x2000)
+                            || ((cell - 1)->m_0 & 0x2000) || ((cell + w)->m_0 & 0x2000)) {
                             return 1;
                         }
                     }
                 } else {
                     if (dyt > 0) {
-                        if ((*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) - 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) + rb)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) - rb)) & 0x2000)) {
+                        if (((ocell - 1)->m_0 & 0x2000) || ((ocell + w)->m_0 & 0x2000)
+                            || ((cell + 1)->m_0 & 0x2000) || ((cell - w)->m_0 & 0x2000)) {
                             return 1;
                         }
                     } else {
-                        if ((*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) - 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(ocell) - rb)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + 0x1c)) & 0x2000)
-                            || (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + rb)) & 0x2000)) {
+                        if (((ocell - 1)->m_0 & 0x2000) || ((ocell - w)->m_0 & 0x2000)
+                            || ((cell + 1)->m_0 & 0x2000) || ((cell + w)->m_0 & 0x2000)) {
                             return 1;
                         }
                     }
@@ -1513,7 +1536,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_arrivalPending == 0) {
             m_tileMgr->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
-        CBrickzGrid* g2 = static_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // GruntBoard==CBrickzGrid facet
+        CBrickzGrid* g2 =
+            static_cast<CBrickzGrid*>(g_gameReg->m_tileGrid); // GruntBoard==CBrickzGrid facet
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
         i32* oc = g2->m_rowInts[oy] + ox * 7;
@@ -1776,7 +1800,12 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
             }
         }
         if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
-            CommitNeighbor(m_neighborCol, m_neighborRow, n->m_object->m_screenX, n->m_object->m_screenY);
+            CommitNeighbor(
+                m_neighborCol,
+                m_neighborRow,
+                n->m_object->m_screenX,
+                n->m_object->m_screenY
+            );
             return n;
         }
     }
@@ -1888,9 +1917,10 @@ void RegisterActs_644af0() {
 // matches from C source. Deferred to the final sweep.
 RVA(0x0005caa0, 0x5e4)
 i32 CGrunt::Activate() {
-    double diag = sqrt(g_dirConst2);              // sqrt(2.0)
-    double* tbl = reinterpret_cast<double*>((reinterpret_cast<char*>(this) + 0x4b0)); // 0x78-stride records (15 doubles each)
-    const i32 W = 0x78 / 8;                       // 15 doubles per record
+    double diag = sqrt(g_dirConst2); // sqrt(2.0)
+    // the per-direction m_cells records (stride 0x68; retail index math is 13*(3*lo+hi)
+    // doubles == exactly &m_cells[3*lo+hi].m_dirX - the old "15-double stride" tbl was
+    // a mis-decode writing past the record for every index > 0)
 
     double s = g_dirConst1 / diag; // 1 / sqrt2
     double n = g_dirConstN1 / s;   // -1 / (1/sqrt2)
@@ -1898,67 +1928,67 @@ i32 CGrunt::Activate() {
     // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
     // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38).
     {
-        i32 i = W * (3 * g_dirAb0[0] + g_dirAb0[1]);
-        tbl[i + 0] = 0.0;
-        tbl[i + 1] = -1.0;
-        tbl[i + 2] = 0.0;
-        tbl[i + 3] = -0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirAb0[0] + g_dirAb0[1]];
+        c->m_dirX = 0.0;
+        c->m_dirY = -1.0;
+        c->m_stepX = 0.0;
+        c->m_stepY = -0.5;
     }
     {
-        i32 i = W * (3 * g_dirAe0[0] + g_dirAe0[1]);
-        tbl[i + 0] = s;
-        tbl[i + 1] = s;
-        tbl[i + 2] = 0.5;
-        tbl[i + 3] = -0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirAe0[0] + g_dirAe0[1]];
+        c->m_dirX = s;
+        c->m_dirY = s;
+        c->m_stepX = 0.5;
+        c->m_stepY = -0.5;
     }
     {
-        i32 i = W * (3 * g_dirAa0[0] + g_dirAa0[1]);
-        tbl[i + 0] = 1.0;
-        tbl[i + 1] = 0.0;
-        tbl[i + 2] = 0.5;
-        tbl[i + 3] = 0.0;
+        CGruntCellRec* c = &m_cells[3 * g_dirAa0[0] + g_dirAa0[1]];
+        c->m_dirX = 1.0;
+        c->m_dirY = 0.0;
+        c->m_stepX = 0.5;
+        c->m_stepY = 0.0;
     }
     {
-        i32 i = W * (3 * g_dirB28[0] + g_dirB28[1]);
-        tbl[i + 0] = s;
-        tbl[i + 1] = s;
-        tbl[i + 2] = 0.5;
-        tbl[i + 3] = 0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirB28[0] + g_dirB28[1]];
+        c->m_dirX = s;
+        c->m_dirY = s;
+        c->m_stepX = 0.5;
+        c->m_stepY = 0.5;
     }
     {
-        i32 i = W * (3 * g_dirAc0[0] + g_dirAc0[1]);
-        tbl[i + 0] = 0.0;
-        tbl[i + 1] = 1.0;
-        tbl[i + 2] = 0.0;
-        tbl[i + 3] = 0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirAc0[0] + g_dirAc0[1]];
+        c->m_dirX = 0.0;
+        c->m_dirY = 1.0;
+        c->m_stepX = 0.0;
+        c->m_stepY = 0.5;
     }
     {
-        i32 i = W * (3 * g_dirB48[0] + g_dirB48[1]);
-        tbl[i + 0] = n;
-        tbl[i + 1] = s;
-        tbl[i + 2] = -0.5;
-        tbl[i + 3] = 0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirB48[0] + g_dirB48[1]];
+        c->m_dirX = n;
+        c->m_dirY = s;
+        c->m_stepX = -0.5;
+        c->m_stepY = 0.5;
     }
     {
-        i32 i = W * (3 * g_dirAd0[0] + g_dirAd0[1]);
-        tbl[i + 0] = -1.0;
-        tbl[i + 1] = 0.0;
-        tbl[i + 2] = -0.5;
-        tbl[i + 3] = 0.0;
+        CGruntCellRec* c = &m_cells[3 * g_dirAd0[0] + g_dirAd0[1]];
+        c->m_dirX = -1.0;
+        c->m_dirY = 0.0;
+        c->m_stepX = -0.5;
+        c->m_stepY = 0.0;
     }
     {
-        i32 i = W * (3 * g_dirB18[0] + g_dirB18[1]);
-        tbl[i + 0] = n;
-        tbl[i + 1] = n;
-        tbl[i + 2] = -0.5;
-        tbl[i + 3] = -0.5;
+        CGruntCellRec* c = &m_cells[3 * g_dirB18[0] + g_dirB18[1]];
+        c->m_dirX = n;
+        c->m_dirY = n;
+        c->m_stepX = -0.5;
+        c->m_stepY = -0.5;
     }
     {
-        i32 i = W * (3 * g_dirB38[0] + g_dirB38[1]);
-        tbl[i + 0] = 0.0;
-        tbl[i + 1] = 0.0;
-        tbl[i + 2] = 0.0;
-        tbl[i + 3] = 0.0;
+        CGruntCellRec* c = &m_cells[3 * g_dirB38[0] + g_dirB38[1]];
+        c->m_dirX = 0.0;
+        c->m_dirY = 0.0;
+        c->m_stepX = 0.0;
+        c->m_stepY = 0.0;
     }
 
     // --- spawn-state reset tail (integer field stores) ---

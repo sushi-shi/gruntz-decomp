@@ -11,11 +11,11 @@ struct CScanCell {
     i32 m_type; // +0x10  tile type/code
     char _14[0x1c - 0x14];
 };
-SIZE_UNKNOWN(CScanCell);
+SIZE(CScanCell, 0x1c); // stride proven by every scan walk (cell++ steps 0x1c)
 
 struct CScanGrid {
     char _00[8];
-    CScanCell** m_8; // +0x08 row table
+    CScanCell** m_8;       // +0x08 row table
     i32 m_width, m_height; // +0x0c width, +0x10 height (names shared with CMapMgr
                            // so the grid macros work on both)
     char _14[0x60 - 0x14];
@@ -62,8 +62,8 @@ struct CScanMgr {
     char _10[0xcc - 0x10];
     u32 m_cc; // +0xcc  idle threshold
     char _d0[0xf4 - 0xd0];
-    CScanGoal** m_f4; // +0xf4  goal table
-    i32 m_f8;         // +0xf8  goal count
+    CScanGoal** m_f4;               // +0xf4  goal table
+    i32 m_f8;                       // +0xf8  goal count
     i32 ScanRegion32ce0(CGrunt* g); // 0x32ce0
 };
 SIZE_UNKNOWN(CScanGoal);

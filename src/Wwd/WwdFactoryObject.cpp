@@ -167,17 +167,16 @@ CGameObject::~CGameObject() {
 // Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify_15b650(void* p) {
-    char* o = reinterpret_cast<char*>(this);
-    if (*reinterpret_cast<unsigned char*>((o + 0x8)) & 0x8) {
-        i32 d = *reinterpret_cast<i32*>(o + 0x128) - *reinterpret_cast<i32*>((reinterpret_cast<char*>(p) + 0x120));
-        *reinterpret_cast<i32*>((o + 0x128)) = d;
+    if (m_flags & 0x8) {
+        i32 d = m_placeMode - (static_cast<CGameObject*>(p))->m_120;
+        m_placeMode = d;
         if (d <= 0) {
-            *reinterpret_cast<i32*>((*reinterpret_cast<char**>(o + 0x7c) + 0x1c)) = 0x1c;
+            m_7c->m_1c = reinterpret_cast<void*>(0x1c); // the m_1c int-role arm
         }
     } else {
-        AnimWorkerObj* h = *reinterpret_cast<AnimWorkerObj**>((o + 0x80));
+        AnimWorkerObj* h = m_80;
         if (h != 0) {
-            *reinterpret_cast<void**>((o + 0x84)) = p;
+            m_84 = static_cast<CGameObject*>(p);
             h->m_notify(this);
         }
     }
@@ -313,7 +312,8 @@ void CAniAdvanceCursor::Construct(void* srcv) {
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34)) & 0x40;
+    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34))
+           & 0x40;
 }
 
 RVA(0x0015c2c0, 0xc)
@@ -596,7 +596,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         i32 reload = rd->m_frameTime;
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
-        if (*reinterpret_cast<i32*>(&m_scale) != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
+        if (*reinterpret_cast<i32*>(&m_scale)
+            != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
             m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 

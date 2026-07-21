@@ -5,6 +5,8 @@
 #include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr)
 #include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
+#include <Gruntz/Play.h>      // CPlay - m_curState real class (m_levelIndex)
+#include <Gruntz/CheatMgr.h>  // CCheatMgr - m_124 "a cheat was used" latch
 #include <Globals.h>          // g_previewMgr / g_previewImage
 #include <stdio.h>            // sprintf (reloc-masked)
 #include <rva.h>
@@ -125,14 +127,18 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             // hDlg (stack arg), and the gate is g_gameReg->m_saveSink pushed raw -
             // the old spelling passed g_previewMgr through two nonsense casts.
             if (g_previewMgr->SetHandles(
-                    reinterpret_cast<i32>(* reinterpret_cast<HINSTANCE*>((reinterpret_cast<char*>(g_gameReg->m_owner) + 0xc))),
+                    reinterpret_cast<i32>(g_gameReg->m_owner->m_hInstance),
                     reinterpret_cast<i32>(hDlg),
                     0
                 )
                 == 0) {
                 return 0;
             }
-            BuildLevelTitleString(hDlg, g_gameReg->m_saveSink, reinterpret_cast<CLevelInfo*>(g_slotState));
+            BuildLevelTitleString(
+                hDlg,
+                g_gameReg->m_saveSink,
+                reinterpret_cast<CLevelInfo*>(g_slotState)
+            );
             return 1;
         }
         case WM_COMMAND: {
@@ -161,7 +167,11 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, static_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, reinterpret_cast<char*>(g_slotState));
+            winapi_0e4850_SetDlgItemTextA(
+                hDlg,
+                g_gameReg->m_saveSink,
+                reinterpret_cast<char*>(g_slotState)
+            );
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -187,7 +197,11 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 EndDialog(hDlg, static_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, reinterpret_cast<char*>(g_slotState));
+            winapi_0e4850_SetDlgItemTextA(
+                hDlg,
+                g_gameReg->m_saveSink,
+                reinterpret_cast<char*>(g_slotState)
+            );
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -442,7 +456,11 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         g_slotState = reinterpret_cast<i32>(obj->GetSlot(slot));
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
-            i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", static_cast<void*>(SaveOverwriteProc), 0);
+            i32 ok = g_gameReg->RunModalDialog(
+                "GAME_OVERWRITE",
+                static_cast<void*>(SaveOverwriteProc),
+                0
+            );
             EnableWindow(hDlg, TRUE);
             if (ok == 0) {
                 return 1;
@@ -450,7 +468,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         }
     }
     obj->FillSlotByIndex(slot, reinterpret_cast<i32>(name), g_gameReg);
-    g_gameReg->FillSaveInfo(reinterpret_cast<SaveInfo*>(reinterpret_cast<i32>(obj->GetSlot(slot))), static_cast<void*>(name));
+    g_gameReg->FillSaveInfo(
+        reinterpret_cast<SaveInfo*>(reinterpret_cast<i32>(obj->GetSlot(slot))),
+        static_cast<void*>(name)
+    );
     EndDialog(hDlg, 1);
     if (!obj->Save(reinterpret_cast<i32>(obj->GetSlot(slot)) + 0x35, 0x81a6)) {
         g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
@@ -494,7 +515,8 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
             title,
             "Questz: Stage %d of %s",
             (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
-            (n > 0x24 && n < 0x29) ? static_cast<const char*>(CString("Training")) : g_areaNames[(n - 1) / 4]
+            (n > 0x24 && n < 0x29) ? static_cast<const char*>(CString("Training"))
+                                   : g_areaNames[(n - 1) / 4]
         );
     } else if (lev->m_isCustom == 0) {
         // Battlez level (named).
@@ -673,10 +695,11 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_levelId = *reinterpret_cast<i32*>((reinterpret_cast<char*>(*reinterpret_cast<void**>((reinterpret_cast<char*>(src) + 0x2c))) + 0x1c));
+    CGruntzMgr* reg = static_cast<CGruntzMgr*>(src);
+    dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
     dst->m_count = 0;
     dst->m_active = 1;
-    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(*reinterpret_cast<void**>((reinterpret_cast<char*>(src) + 0x44))) + 0x124)) != 0) {
+    if (reg->m_cheatMgr->m_124 != 0) {
         dst->m_type = 3;
     }
     strncpy(dst->m_name, name, 0x20);
@@ -712,7 +735,7 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
     dst->m_type = 1;
     dst->m_levelId = name;
     dst->m_count = 0;
-    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(*reinterpret_cast<void**>((reinterpret_cast<char*>(src) + 0x44))) + 0x124)) != 0) {
+    if ((static_cast<CGruntzMgr*>(src))->m_cheatMgr->m_124 != 0) {
         dst->m_type = 3;
     }
     dst->m_checksum = Register(dst);

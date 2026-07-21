@@ -24,12 +24,12 @@
 #include <Globals.h>
 #include <Gruntz/Sprite.h> // CSprite (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
-#include <Gruntz/ResolveNode.h>        // canonical CResolveNode (the factory base sub-object)
-#include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
-#include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
-#include <Wwd/WwdGameObjCtor.h>        // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker (ctor cluster)
-#include <Gruntz/WwdGameObject.h>      // canonical flat CWwdGameObject (the managed objects)
-#include <Wwd/WwdGameObjectFamily.h>   // the concrete kinds A/B/C/F + the embedded records
+#include <Gruntz/ResolveNode.h>      // canonical CResolveNode (the factory base sub-object)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
+#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
+#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker (ctor cluster)
+#include <Gruntz/WwdGameObject.h>    // canonical flat CWwdGameObject (the managed objects)
+#include <Wwd/WwdGameObjectFamily.h> // the concrete kinds A/B/C/F + the embedded records
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
@@ -48,7 +48,6 @@ inline void* operator new(u32, void* p) {
 }
 
 #include <DDrawMgr/DDrawWorkerHost.h>
-
 
 inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);
@@ -298,7 +297,14 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     }
     // 0x159600 is CDDrawChildGroup::CreateObject_159600 (the factory IS the manager); the
     // old ?CreateSpriteImpl@CDDrawChildGroup@ decl was a PHANTOM second name for it.
-    return CreateObject_159600(kind, geoB, geoA, hint, reinterpret_cast<i32>(tmpl), flags); // the launder dies - one type now
+    return CreateObject_159600(
+        kind,
+        geoB,
+        geoA,
+        hint,
+        reinterpret_cast<i32>(tmpl),
+        flags
+    ); // the launder dies - one type now
 }
 
 // ===========================================================================
@@ -501,7 +507,10 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->BltDirty(reinterpret_cast<CDDrawSurfacePair*>(a1), reinterpret_cast<CDDrawSurfacePair*>(a2));
+            cur->m_obj->BltDirty(
+                reinterpret_cast<CDDrawSurfacePair*>(a1),
+                reinterpret_cast<CDDrawSurfacePair*>(a2)
+            );
         } while (n != 0);
     }
 }
@@ -511,7 +520,11 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyEx(reinterpret_cast<CDDrawSurfacePair*>(a1), reinterpret_cast<CDDrawSurfacePair*>(a2), a3);
+            n->m_obj->BltDirtyEx(
+                reinterpret_cast<CDDrawSurfacePair*>(a1),
+                reinterpret_cast<CDDrawSurfacePair*>(a2),
+                a3
+            );
             n = n->m_next;
         } while (n != 0);
     }
@@ -523,7 +536,11 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyRegions(reinterpret_cast<CDDrawSurfacePair*>(a1), reinterpret_cast<CDDrawSurfacePair*>(a2), a3);
+            n->m_obj->BltDirtyRegions(
+                reinterpret_cast<CDDrawSurfacePair*>(a1),
+                reinterpret_cast<CDDrawSurfacePair*>(a2),
+                a3
+            );
             n = n->m_next;
         } while (n != 0);
     }
@@ -587,7 +604,9 @@ void CDDrawChildGroup::InsertSorted_159e40(CGameObject* obj, i32 addToMaps) {
         CWwdGameObject* data = static_cast<CWwdGameObject*>(cur->m_obj);
         node = node->m_next;
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
-            obj->m_posCache = reinterpret_cast<i32>(m_list.InsertBefore(reinterpret_cast<POSITION>(cur), static_cast<CObject*>(obj)));
+            obj->m_posCache = reinterpret_cast<i32>(
+                m_list.InsertBefore(reinterpret_cast<POSITION>(cur), static_cast<CObject*>(obj))
+            );
             return;
         }
     }
@@ -849,7 +868,10 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
         }
         rc.left = wl - view->m_originX + view->m_bounds50.left;
         rc.top = wt - view->m_originY + view->m_bounds50.top;
-        view->WrapCoord(reinterpret_cast<i32*>(&rc.right), reinterpret_cast<i32*>(&rc.bottom)); // LONG*->i32* (same width; PAH sig)
+        view->WrapCoord(
+            reinterpret_cast<i32*>(&rc.right),
+            reinterpret_cast<i32*>(&rc.bottom)
+        ); // LONG*->i32* (same width; PAH sig)
         drawHost->DrawCount(&rc, *reinterpret_cast<i32*>((obj + 0x74)));
     } while (node != 0);
 }
@@ -957,9 +979,11 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
-            void* worker = *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0x7c));
-            if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(worker) + 0x10)) == *reinterpret_cast<i32*>((reinterpret_cast<char*>(key) + 0x10))) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type) {
+            // the worker notify fn doubles as the kind marker - match it against the
+            // key worker (same idiom as the TriggerMgr grunt-notify compare)
+            AnimWorkerObj* worker = obj->m_7c;
+            if (worker->m_notify == (static_cast<AnimWorkerObj*>(key))->m_notify) {
                 return obj;
             }
         }
@@ -989,17 +1013,17 @@ RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
     CObject* found = 0;
     m_parent->m_workerCache->m_10.Lookup(key, found);
-    char* node = reinterpret_cast<char*>(m_list.GetHeadPosition());
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
     }
-    char* fp = reinterpret_cast<char*>(found);
+    AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
     do {
-        char* obj = *reinterpret_cast<char**>((node + 8));
-        node = *reinterpret_cast<char**>(node);
-        i32 tag = (reinterpret_cast<CGameObject*>(obj))->GetClassId(); // vtable slot 8 (the type tag)
-        if (tag == 5 && *reinterpret_cast<i32*>((obj + 4)) == id
-            && *reinterpret_cast<i32*>((*reinterpret_cast<char**>(obj + 0x7c) + 0x10)) == *reinterpret_cast<i32*>((fp + 0x10))) {
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* obj = cur->m_obj;
+        i32 tag = obj->GetClassId(); // vtable slot 8 (the type tag)
+        if (tag == 5 && obj->m_04 == id && obj->m_7c->m_notify == fp->m_notify) {
             return obj;
         }
     } while (node != 0);
@@ -1020,8 +1044,8 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
-            && *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0xe8)) == key) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type
+            && reinterpret_cast<void*>(obj->m_collCategory) == key) {
             return obj;
         }
     } while (node != 0);
@@ -1258,7 +1282,8 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
             case 0x16: {
                 CObject* val;
                 m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
-                createdObj = CreateObject_159440(desc.m_00, desc.m_9c, reinterpret_cast<i32>(val), 0);
+                createdObj =
+                    CreateObject_159440(desc.m_00, desc.m_9c, reinterpret_cast<i32>(val), 0);
                 break;
             }
             case 0x1b: {
@@ -1278,7 +1303,8 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
             }
             case 0x1c: {
                 void* rec = 0;
-                if (m_parent->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec)) == 0) {
+                if (m_parent->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec))
+                    == 0) {
                     return 0;
                 }
                 if (rec == 0) {
@@ -1313,7 +1339,8 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
         }
         if (desc.m_10 != 0) {
             void* child = 0;
-            if (m_parent->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child)) == 0) {
+            if (m_parent->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
+                == 0) {
                 return 0;
             }
             if (child == 0) {
@@ -1385,7 +1412,7 @@ i32 CDDrawChildGroup::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag
         if (obj == 0) {
             return 0;
         }
-        if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x7c)) == 0) {
+        if (obj->m_7c == 0) {
             return 0;
         }
         if (obj->Play(reinterpret_cast<i32>(ar), 7, flag, obj) == 0) {
