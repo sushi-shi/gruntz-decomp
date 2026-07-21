@@ -103,7 +103,11 @@ def run(args):
         sys.exit(print_find(ctx, args.find))
     if not args.rva:
         die("sema strings: give an <rva> or --find <text>")
-    sys.exit(print_rvas(ctx, [int(args.rva, 16)]))
+    try:
+        rva = int(args.rva, 16)
+    except ValueError:
+        die(f"'{args.rva}' is not a hex RVA (e.g. 0x00141400)")
+    sys.exit(print_rvas(ctx, [rva]))
 
 
 def main():

@@ -271,7 +271,7 @@ def main():
         print(f"# vtable slots holding 0x{fn:06x} {fn_label(fn)}")
         if not hits:
             print("  (none - not a virtual, or its slot points elsewhere / indirect)")
-            return
+            return 1   # answered-NO (rc convention: valid query, no hit)
         for v, k2, via in hits:
             cls = v['rtti'] or f"non-rtti {fn_label(v['first'])}"
             print(f"  vtable 0x{v['start']:06x} ({v['start']+IMAGEBASE:#010x})  {v['conf']:<9} "
@@ -283,7 +283,7 @@ def main():
         k = a.index("--dump"); vt = vtable_at(int(a[k+1], 16)); del a[k:k+2]
         if vt is None:
             print("# no discovered vtable starts there (run `vtable_scan` for the list)")
-            return
+            return 1   # answered-NO (rc convention: valid query, no hit)
         vt['conf'] = confidence(vt)
         cls = vt['rtti'] or f"non-rtti (first: {fn_label(vt['first'])})"
         print(f"# vtable 0x{vt['start']:06x} ({vt['start']+IMAGEBASE:#010x})  {vt['conf']}  "

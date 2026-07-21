@@ -42,10 +42,14 @@ Subcommands
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
                 for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
   sema <cmd>    Semantic navigation (one entrypoint; `gruntz sema -h` lists all):
-                xref/symbol/def/refs/hover/rename (clangd LSP), rva/class/match
-                dossiers, disasm, strings, map (.text layout). Thin wrappers over
-                gruntz/sema (in-process over gruntz/core) - SEMANTIC questions go here, grep
-                is lexical-only.
+                xref, refs/hover/rename (clangd LSP), rva/class/match dossiers,
+                disasm, strings, vtable, map (.text layout), `-` (batch). Thin
+                wrappers over gruntz/sema (in-process over gruntz/core) -
+                SEMANTIC questions go here, grep is lexical-only.
+  audit <tool>  One-shot campaign audits - dispatches to gruntz/audit/<tool>.py
+                (no arg lists the tools).
+  permute fn|sweep|variants
+                The source-permutation climbers (gruntz/permute/).
 """
 
 import argparse
@@ -265,7 +269,8 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
         import re as _re
         def _vh(mode: str) -> str:
             return subprocess.run([sys.executable, "-m", "gruntz.core.vtable_hierarchy", mode],
-                                  capture_output=True, text=True, cwd=str(REPO)).stdout
+                                  capture_output=True, text=True, cwd=str(REPO),
+                                  env=_pkg_env()).stdout
         aud, cov = _vh("--audit"), _vh("--coverage")
         def _n(txt: str, pat: str) -> str:
             m = _re.search(pat, txt)
@@ -994,13 +999,25 @@ def cmd_sema_batch(args) -> None:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        toks = shlex.split(line)
+        try:
+            toks = shlex.split(line)
+        except ValueError as e:              # unbalanced quote: report, keep batching
+            print(f"== gruntz sema {line}", flush=True)
+            print(f"[gruntz] ERROR: unparseable line ({e})", file=sys.stderr)
+            log_invocation(2, cmd=f"gruntz sema {line}")
+            print("== rc=2", flush=True)
+            continue
         if toks[:2] == ["gruntz", "sema"]:
             toks = toks[2:]
         elif toks[:1] == ["sema"]:
             toks = toks[1:]
         pretty = "gruntz sema " + " ".join(toks)
         print(f"== {pretty}", flush=True)
+        if toks[:1] == ["-"]:                # no batch-in-batch (stdin is spoken for)
+            print("[gruntz] ERROR: nested batch ('-') inside batch mode", file=sys.stderr)
+            log_invocation(2, cmd=pretty)
+            print("== rc=2", flush=True)
+            continue
         rc = 0
         try:
             sub = ap.parse_args(["sema"] + toks)
@@ -1080,6 +1097,7 @@ def _add_sema(sub) -> None:
         "  gruntz sema map range 0x80000 0x81000  functions + gaps in an RVA window (owner: TU/MFC/CRT/...)\n"
         "  gruntz sema map file GruntzMgr.cpp     a file's functions + how many foreign fns interleave them\n"
         "  gruntz sema class CImage               vtable slots + hierarchy tags\n"
+        "  gruntz sema vtable 0x001b8008          dump a binary vtable / find a fn's holding slot\n"
         "  gruntz sema match cplay                per-fn % of a unit (or an RVA)\n"
         "  gruntz sema disasm 0x00080850          retail disasm + relocs\n"
         "  gruntz sema strings 0x00080850         the string set of a fn\n"

@@ -8,21 +8,20 @@ directly as `python -m gruntz.core.vtable_scan`).
 """
 import sys
 
-from gruntz.sema._common import call_main
+from gruntz.sema._common import call_main, die
 
 
 def run(args) -> None:
     tgt = args.target
+    try:
+        rva = int(tgt, 16)
+    except ValueError:
+        die(f"'{tgt}' is not a hex RVA (vtable takes a vtable start or a fn RVA)")
     if args.dump:
         mode = "--dump"
     elif args.holds:
         mode = "--holds"
     else:  # auto: a discovered vtable start -> dump; otherwise treat as a fn -> holds
-        mode = "--holds"
-        try:
-            from gruntz.core import vtable_scan as vs
-            if vs.vtable_at(int(tgt, 16)) is not None:
-                mode = "--dump"
-        except Exception:
-            pass
+        from gruntz.core import vtable_scan as vs
+        mode = "--dump" if vs.vtable_at(rva) is not None else "--holds"
     sys.exit(call_main("gruntz.core.vtable_scan", [mode, tgt]))

@@ -6,7 +6,7 @@ Engine: gruntz.match.status (also runnable as `python -m gruntz.match.status`).
 """
 import sys
 
-from gruntz.sema._common import GEN_NAMES, call_main, die, units
+from gruntz.sema._common import GEN_NAMES, call_main, units
 
 
 def run(args) -> None:
@@ -27,5 +27,8 @@ def run(args) -> None:
                 except ValueError:
                     pass
         if grep is None:
-            die(f"no src function claims RVA {t} (nothing to score) - try a unit name")
+            # answered-NO, not an error (rc convention: 1 = valid query, no hit)
+            print(f"no src function claims RVA {t} (nothing to score) - try a unit name",
+                  file=sys.stderr)
+            sys.exit(1)
     sys.exit(call_main("gruntz.match.status", ["status", "--grep", grep]))

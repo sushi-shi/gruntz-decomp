@@ -4,7 +4,6 @@ Paths, the in-process call helper (re-exported from core), the CSV lookups and t
 usage log. Sema modules import from here only; nothing here imports cli.py
 (dependency direction: cli -> sema -> core).
 """
-import os
 import sys
 import tomllib
 from pathlib import Path
@@ -13,8 +12,6 @@ from gruntz.core import call_main  # noqa: F401  (re-export for the sema modules
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
-SCRIPTS = REPO / "scripts"
-BUILD_PKG = Path(__file__).resolve().parents[1] / "build"  # cc_wrap.py, codeview.py
 MANIFEST = REPO / "config" / "units.toml"
 GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 REPORT = REPO / "build" / "objdiff" / "report.json"
@@ -26,17 +23,6 @@ def die(msg: str) -> None:
     (diff differs, not a virtual, no hit) exit 1; answered exits 0."""
     print(f"[gruntz] ERROR: {msg}", file=sys.stderr)
     sys.exit(2)
-
-
-def pkg_env() -> dict:
-    """os.environ with scripts/ guaranteed on PYTHONPATH (external children only:
-    llvm-objdump/clangd/wine; sema never spawns python)."""
-    env = dict(os.environ)
-    existing = env.get("PYTHONPATH", "")
-    if str(SCRIPTS) not in existing.split(os.pathsep):
-        env["PYTHONPATH"] = os.pathsep.join(p for p in (str(SCRIPTS), existing) if p)
-    return env
-
 
 
 def units() -> list[dict]:

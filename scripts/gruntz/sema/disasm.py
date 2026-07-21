@@ -9,14 +9,14 @@ llvm-objdump over the unit's base obj; --rich recompiles the unit `/Z7`
 import subprocess
 import sys
 
-from gruntz.sema._common import (BUILD_PKG, GEN_NAMES, REPO, csv_find, die,
-                                 flags_for, pkg_env, units)
+from gruntz.sema._common import (GEN_NAMES, REPO, call_main, csv_find, die,
+                                 flags_for, units)
 
 
 def _capture(cmd: list) -> str:
-    """Run a disasm producer, return stdout (stderr passes through)."""
-    res = subprocess.run(cmd, cwd=str(REPO), env=pkg_env(),
-                         capture_output=True, text=True)
+    """Run an external disasm producer (llvm-objdump), return stdout (stderr
+    passes through)."""
+    res = subprocess.run(cmd, cwd=str(REPO), capture_output=True, text=True)
     sys.stderr.write(res.stderr)
     return res.stdout
 
@@ -125,13 +125,12 @@ def _debug_obj_for(unit: str, source: str, flags: list):
     if obj.is_file() and obj.stat().st_mtime >= src.stat().st_mtime:
         return obj  # fresh
     obj.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [sys.executable, str(BUILD_PKG / "cc_wrap.py"), "--out", str(obj),
-           "--src", str(src), "--", *flags, "/Z7"]
-    res = subprocess.run(cmd, cwd=str(REPO), env=pkg_env(),
-                         capture_output=True, text=True)
-    if res.returncode != 0 or not obj.is_file():
+    # in-process (sema spawns no python child); cc_wrap itself runs `wine cl`.
+    rc = call_main("gruntz.build.cc_wrap",
+                   ["--out", str(obj), "--src", str(src), "--", *flags, "/Z7"])
+    if rc != 0 or not obj.is_file():
         sys.stderr.write(f"[--rich] /Z7 compile of {unit} failed (wine/cl missing?); "
-                         f"showing bare asm.\n  {res.stderr.strip()[-200:]}\n")
+                         f"showing bare asm.\n")
         return None
     return obj
 
@@ -158,8 +157,7 @@ def rich(rva: str, want_lite: bool) -> str:
     if udef and source.startswith("src/"):
         dbg = _debug_obj_for(unit, source, flags_for(udef))
         if dbg is not None:
-            sys.path.insert(0, str(BUILD_PKG))
-            import codeview  # noqa: E402  (build helper, package-local)
+            from gruntz.build import codeview
             info = codeview.parse_lines(str(dbg)).get(name)
             if info:
                 linemap, bf = info["lines"], info["bf"]

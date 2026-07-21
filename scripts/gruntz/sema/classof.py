@@ -16,6 +16,7 @@ def _class_of_fn(query: str) -> int:
     """FUNCTION -> vtable topology: which class(es) hold this fn in which slot,
     tagged new/override/inherited with the origin class; then the owner's table."""
     import csv as _csv
+    import os
     import tempfile
     rva = None
     try:
@@ -24,18 +25,22 @@ def _class_of_fn(query: str) -> int:
         pass
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         tmp = tf.name
-    rc = call_main("gruntz.core.vtable_hierarchy", ["--csv", tmp])
-    if rc:
-        die("vtable_hierarchy --csv failed (run `gruntz init` first?)")
-    hits = []
-    for r in _csv.DictReader(open(tmp)):
-        try:
-            row_rva = int(r["fn_rva"], 16)
-        except ValueError:
-            continue
-        if (rva is not None and row_rva == rva) or \
-           (rva is None and query in (r.get("fn_name") or "")):
-            hits.append(r)
+    try:
+        rc = call_main("gruntz.core.vtable_hierarchy", ["--csv", tmp])
+        if rc:
+            die("vtable_hierarchy --csv failed (run `gruntz init` first?)")
+        hits = []
+        with open(tmp) as f:
+            for r in _csv.DictReader(f):
+                try:
+                    row_rva = int(r["fn_rva"], 16)
+                except ValueError:
+                    continue
+                if (rva is not None and row_rva == rva) or \
+                   (rva is None and query in (r.get("fn_name") or "")):
+                    hits.append(r)
+    finally:
+        os.unlink(tmp)
     if not hits:
         # Fall back to the BINARY scan: covers non-RTTI vtables and thunk-indirect
         # slots the reconstructed VTBL/hierarchy graph can't see (`sema vtable --holds`).
