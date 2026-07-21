@@ -963,7 +963,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     }
 
     i32 ebx = 0;
-    if (this->GetClassId() == 0x1c) {
+    if (this->GetClassId() == CLASSID_WWDOBJ_A) {
         // the OOB slot-16 quirk - retail's shipped bug (see WwdGameObject.h)
         ebx = reinterpret_cast<WwdRetailSlot16Facet*>(this)->GetSnapshotSubId();
     }

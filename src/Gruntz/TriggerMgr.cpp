@@ -1351,7 +1351,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
-            void* obj = (looked != 0 && (static_cast<CGameObject*>(looked))->GetClassId() == 5) ? looked : 0;
+            void* obj = (looked != 0 && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF) ? looked : 0;
             m_goal = static_cast<CTmGoal*>(obj); // Eh's serialize-view reinterpret of the goal slot
             if (obj == 0) {
                 return 0;

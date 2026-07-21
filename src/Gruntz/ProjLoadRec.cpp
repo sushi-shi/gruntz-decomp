@@ -96,7 +96,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (found->GetClassId() == 5) ? reinterpret_cast<i32>(found) : 0;
+                r = (found->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(found) : 0;
             }
             m_1fc = reinterpret_cast<CGameObject*>(r);
             if (m_1fc == 0 && key != 0) {

@@ -1942,7 +1942,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             CQueueProbeNode* nd = c->m_scan;
             c->m_scan = nd->m_next;
             CGameObject* pp = nd->m_data;
-            if (pp->GetClassId() == 5) {
+            if (pp->GetClassId() == CLASSID_SERIALREF) {
                 g = pp;
             } else {
                 g = static_cast<CGameObject*>(c->Drain_031250());

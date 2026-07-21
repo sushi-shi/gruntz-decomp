@@ -14,7 +14,7 @@ CGameObject* CQueueDrainHost::Drain_031250() {
         CQueueProbeNode* head = m_scan;
         m_scan = head->m_next;
         CGameObject* data = head->m_data;
-        if (data->GetClassId() == 5) {
+        if (data->GetClassId() == CLASSID_SERIALREF) {
             return data;
         }
     }

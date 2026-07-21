@@ -407,7 +407,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetClassId() == 5) ? reinterpret_cast<i32>(out) : 0;
+                resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {
@@ -431,7 +431,7 @@ i32 CGruntVoice::Update() {
             if (out == 0) {
                 resolved = 0;
             } else {
-                resolved = (out->GetClassId() == 5) ? reinterpret_cast<i32>(out) : 0;
+                resolved = (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
             }
         }
         if (resolved == 0) {

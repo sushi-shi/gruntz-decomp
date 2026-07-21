@@ -921,7 +921,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetClassId() == 5 && obj->m_04 == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type) {
             return obj;
         }
     }
@@ -946,7 +946,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetClassId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
             void* worker = *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0x7c));
             if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(worker) + 0x10)) == *reinterpret_cast<i32*>((reinterpret_cast<char*>(key) + 0x10))) {
                 return obj;
@@ -1009,7 +1009,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetClassId() == 5 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
+        if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
             && *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0xe8)) == key) {
             return obj;
         }
@@ -1038,7 +1038,7 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
-        if (obj->GetClassId() == 5 && WwdKey(obj) == key) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && WwdKey(obj) == key) {
             return obj;
         }
     }
