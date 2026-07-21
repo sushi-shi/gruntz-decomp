@@ -7,9 +7,9 @@
 #include <rva.h>
 
 struct InterfaceObject : public CObject {
-    i32 m_guid;        // +0x04  the service-provider GUID (stored raw)
+    GUID* m_guid;      // +0x04  the service-provider GUID (LPGUID, stored raw)
     CString m_name; // +0x08  the provider name
-    i32 m_listPosition;        // +0x0c  cached AddTail position
+    __POSITION* m_listPosition; // +0x0c  cached AddTail position
 
     // Inline ctor: base CObject vptr stamp + m_name CString ctor + own vptr stamp,
     // then zero the GUID / cached position. Inlined into CNetMgr::AddGroupNode's

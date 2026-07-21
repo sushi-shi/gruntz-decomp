@@ -14,7 +14,7 @@ class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
 class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 class CNetMgr;          // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
 struct CNetGameMgr;     // the network facet of CState::m_4 (m_wnd/m_6c/m_channels/m_38)
-struct CNetPlayerEntry; // the local-player descriptor stored at +0x5bc
+class CNetSessionNode; // the local-player descriptor stored at +0x5bc (<Net/NetMgr.h>)
 struct CNetStatPacket; // the 0x10-byte stat packet the Send* family ships
 struct CNetCtrlMsg;    // control-message arg (HandleControlMsg)
 struct CNetVersionMsg; // version-check message arg (HandleVersionCheck)
@@ -37,26 +37,12 @@ void SetActiveAndFocus(void* hwnd); // 0x00518930
 // CNetPlayerListNode), and GroupName @0xb76a0 just reads m_desc.m_lpszName @+0x34.
 class CNetPlayerListNode; // <Net/NetMgr.h>  OpenPlayer result
 
-class InterfaceObject; // <Net/InterfaceObject.h>
+struct InterfaceObject; // <Net/InterfaceObject.h>
 
-class CMultiReportGate {
-public:
-    // Slot identities from the real ??_7CNetMgr @0x1ea42c (5 slots, the MFC CObject
-    // scheme): [0] GetRuntimeClass (0x1bef01), [1] the scalar-deleting dtor.
-    virtual void GetRuntimeClass();       // [0] CObject slot (0x1bef01)
-    virtual ~CMultiReportGate();          // slot 1 (deleting dtor -> cl-emitted ??_G)
-    i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
-    void Activate();                      // 0x578750
-    CNetPlayerListNode* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
-    void M178a80(void* h, i32 a);         // 0x578a80  watchdog re-probe (EnumGroupsRange)
-    // Create a session player from `name` (the CNetMgr wrapper method, RVA 0x178cb0);
-    // returns the player record pointer (0 = fail). Reloc-masked.
-    i32 CreatePlayer(void* name, i32 b, i32 c); // 0x178cb0
-    char m_pad04[0x70 - 0x4];
-    InterfaceObject* m_playerInfo; // +0x70  the DirectPlay service-provider node (IsInterface1-5 probes)
-    CNetPlayerListNode* m_player;   // +0x74  the player StartTitle opened (OpenPlayer result)
-    i32 m_78; // +0x78  reset to 0 by CMultiStartDlg::DoDataExchange (load pass)
-};
+// (CMultiReportGate DISSOLVED: it was a fake view of the real CNetMgr @+0x524 -
+// Bind/Activate/OpenPlayer/M178a80 were Init/ClearPlayerList/AddPlayerNode/
+// EnumGroupsRange @0x178xxx, and +0x70/+0x74/+0x78 are the three CNetMgr
+// selection latches. m_netGate is typed CNetMgr* now.)
 
 class CMulti;
 
@@ -114,12 +100,12 @@ public:
     // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as
     // such.
     CNetMgr* Peer() {
-        return reinterpret_cast<CNetMgr*>(m_netGate);
+        return m_netGate;
     }
     // The local player descriptor at +0x5bc (the roster/dialog TUs view the slot as an
     // i32 token, so the canonical member stays i32; this accessor is the typed view).
-    CNetPlayerEntry* LocalPlayer() {
-        return reinterpret_cast<CNetPlayerEntry*>(m_5bc);
+    CNetSessionNode* LocalPlayer() {
+        return reinterpret_cast<CNetSessionNode*>(m_5bc);
     }
     // The game-manager (CState::m_4) as its network facet (m_wnd/m_6c/m_channels/m_38);
     // the net methods reach it as CNetGameMgr.
@@ -202,7 +188,7 @@ public:
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
     // off the g_multiState singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
-    i32 BroadcastChannelTable(CNetPlayerEntry* recipient); // 0x0ba810
+    i32 BroadcastChannelTable(CNetSessionNode* recipient); // 0x0ba810
     i32 BroadcastOneChannel(i32 chan);                     // 0x0baf00
     // Register a channel from a host template (CNetMgr-shared, RVA 0x0baa90); the
     // host-open path calls it on `this`. Reloc-masked.
@@ -234,7 +220,7 @@ public:
     // (SetupMultiplayerSession @0xb5460 is the slot-1 LoadGameAssetNamespaces
     // override declared with the vtable slots above.)
     i32 Open(); // 0x0b77a0
-    i32 SetupServices();                                 // 0x0b78b0
+    InterfaceObject* SetupServices();                    // 0x0b78b0 (returns the selected provider)
     i32 DetectConnectionConfig();                        // 0x0b82e0
     void ApplyCmdDelayDefaults();                        // 0x0b85a0
     // 0x0b86c0 (/GX): pop the multiplayer-start dialog over the suspended game. On a
@@ -243,16 +229,16 @@ public:
     // (host) or fires the GAME_KEY cue + a 250-tick active wait (guest). Was the fake
     // CNetMgrLite view's method.
     i32 ShowMultiStartDlg();
-    i32 JoinAndRegisterChannel();                                                // 0x0b8b10
+    CNetPlayerListNode* JoinAndRegisterChannel();                                // 0x0b8b10 (returns the joined player node)
     i32 OnJoinConfirm(void* hDlg);                                               // 0x0b8cf0
     i32 PollSessionGated(i32 a1, i32 a2);                                        // 0x0b9180
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                              // 0x0b91f0
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                         // 0x0b92e0
-    i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c);    // 0x0b9330
-    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c);                   // 0x0b93a0
+    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);    // 0x0b9330
+    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c);                   // 0x0b93a0
     i32 SendStat3(i32 id, u32 value, i32 flag);                                  // 0x0b9410
-    i32 SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c);     // 0x0b9490
-    i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0x0b9500
+    i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);     // 0x0b9490
+    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c); // 0x0b9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0x0b9570
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);                        // 0x0b9750
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
@@ -280,7 +266,7 @@ public:
     i32 SetupTcpIpConfig();                                                      // 0x0bc460
     i32 CreateLocalPlayer();                                                     // 0x0bc750
     i32 WaitForConnect();                                                        // 0x0bca50
-    i32 SaveConfig(CNetPlayerEntry* recipient);                                  // 0x0bccd0
+    i32 SaveConfig(CNetSessionNode* recipient);                                  // 0x0bccd0
     i32 LoadConfig(void* cfg);                                                   // 0x0bce80
     i32 ResetPlayerCommands(i32 id);                                             // 0x0bcf20
     u32 GetMaxAckLatency();                                                      // 0x0bd030
@@ -307,7 +293,7 @@ public:
     // --- CMulti-own multiplayer block (after CPlay base @0x518) ---
     char _padMp[0x520 - 0x51c];
     CNetSession* m_session;      // +0x520  the DirectPlay command/lobby-sync session
-    CMultiReportGate* m_netGate; // +0x524
+    CNetMgr* m_netGate;         // +0x524  the real DirectPlay session wrapper (Peer())
     i32 m_isHost;                // +0x528  (== Frankenstein m_useChannelLatency)
     i32 m_sessionTerminated;     // +0x52c
     i32 m_530;                   // +0x530

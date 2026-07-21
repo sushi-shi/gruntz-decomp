@@ -13,7 +13,8 @@
 #include <Globals.h>
 
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/GruntPickupStats.h> // MegaHolder / MegaCounter (the MEGAPHONE count path)
+#include <Gruntz/Play.h>         // CPlay (m_curState downcast; m_guts @+0x2dc)
+#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::GetActiveValue (the MEGAPHONE count path)
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
@@ -216,11 +217,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
             break;
         case PICKUP_MEGAPHONE: {
-            MegaHolder* mh = reinterpret_cast<MegaHolder*>(g_gameReg->m_curState);
+            CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             a4 = 0;
             m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", reinterpret_cast<void*&>(a4));
             m_pickupGeoSrc = a4;
-            i32 n = mh->m_2dc->M();
+            i32 n = play->m_guts->GetActiveValue();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
                     g_gameReg->m_scoreHud->m_weaponCount++;

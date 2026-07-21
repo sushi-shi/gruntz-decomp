@@ -1,6 +1,7 @@
 #include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Net/NetMgr.h>          // the real CNetMgr (m_netGate selection latches)
 #include <Gruntz/GruntzMgr.h>
 #include <Net/InterfaceObject.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
@@ -176,7 +177,7 @@ i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_multiState;
     i32 count = 5;
-    InterfaceObject* pi = reg->m_netGate->m_playerInfo;
+    InterfaceObject* pi = reg->m_netGate->m_groupSel;
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
@@ -330,7 +331,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             CWnd* w = GetDlgItem(0x511);
             g_sharedFlag = (w == 0) ? 0 : reinterpret_cast<i32>(w->m_hWnd);
         }
-        g_multiState->m_netGate->m_78 = 0;
+        g_multiState->m_netGate->m_sessionSel = 0;
         g_multiState->PollSession();
         if (!UpdateColorItems()) {
             return;

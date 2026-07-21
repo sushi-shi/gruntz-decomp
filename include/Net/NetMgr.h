@@ -68,16 +68,10 @@ SIZE_UNKNOWN(CNetPlayerSlot); // m_4-relative slot view (3 gate/latency dwords p
 
 #include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
 
-struct CNetPlayerEntry {
-    char m_pad0[4];
-    i32 m_id;     // +0x4  the entry's id (the lookup key)
-    CString m_name; // +0x8  display name (returned by GetName; COMDAT-shares CNetMgr::GetName's code)
-
-    // The entry's display name (a CString at +0x8, returned by value / NRV). In the
-    // retail this fetch shares CNetMgr::GetName's routine (0xba170) - same +0x8 read.
-    CString GetName();
-};
-SIZE_UNKNOWN(CNetPlayerEntry); // payload-entry view (only +0x4 id pinned); size TBD
+// (CNetSessionNode DISSOLVED: it was a second view of CNetSessionNode - same
+// m_sessions payload, id @+0x4, name CString @+0x8,
+// GetName the same +0x8 fetch. All entry-typed methods take CNetSessionNode* now.)
+class CNetSessionNode; // defined below (the m_sessions per-player record)
 
 struct CNetStatPacket {
     u8 m_0; // +0x0  flag byte (bit7 set)
@@ -91,7 +85,7 @@ SIZE_UNKNOWN(CNetStatPacket); // 0x10-byte stat-packet header view; full record 
 struct CNetPlayerNode {
     CNetPlayerNode* m_next; // +0x0
     char m_pad4[4];
-    CNetPlayerEntry* m_8; // +0x8  the payload entry
+    CNetSessionNode* m_8; // +0x8  the payload per-player record
 };
 SIZE_UNKNOWN(CNetPlayerNode); // player-list node walk-view; retail size TBD
 
@@ -429,26 +423,19 @@ struct IDirectPlay4Z {
 };
 SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
 
-class CNetPlayerObj {
-public:
-    virtual void GetRuntimeClass();      // +0x00  slot 0 (CObject GetRuntimeClass, 0x1bef01)
-    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (scalar-deleting dtor, flag arg)
-
-    char m_pad4[0x20 - 0x4]; // +0x04
-    __POSITION* m_20;        // +0x20  cached list position
-    char m_pad24[0x34 - 0x24];
-    char* m_profile; // +0x34  keyed player-name/profile text (LB_ADDSTRING source;
-                     //        NetFormatKeyed reads the NAME key out of it - the ex
-                     //        CNetPlayerDesc facet, merged)
-};
-SIZE_UNKNOWN(CNetPlayerObj); // the payload node (+0x20 position + +0x34 profile pinned)
+// (CNetPlayerObj DISSOLVED: it was a chimera view over two real classes - the
+// m_players walks (+0x34 "profile" = CNetPlayerListNode::m_desc.m_lpszName) and
+// the m_sessions player records (+0x20 position = CNetSessionNode::m_listPosition).
+// Each ex-use is typed to its real class; `SelfDestruct(1)` was `delete` through
+// the real virtual dtor.)
+class CNetPlayerListNode; // defined below (the m_players 0x58 node, vptr 0x5f0760)
 
 struct CNetListNode {
-    CNetListNode* m_next;  // +0x00  next node
-    char m_pad4[4];        // +0x04  prev node (unused)
-    CNetPlayerObj* m_data; // +0x08  payload sub-object (polymorphic; slot1 self-destruct)
+    CNetListNode* m_next; // +0x00  next node
+    char m_pad4[4];       // +0x04  prev node (unused)
+    CNetPlayerListNode* m_data; // +0x08  payload player node (polymorphic; virtual dtor)
 };
-SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
+SIZE_UNKNOWN(CNetListNode); // CObList node walk-view (m_players); retail size TBD
 
 struct CNetSessionDesc {
     i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
@@ -492,19 +479,19 @@ VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot COb
 
 class CNetSessionNode : public CObject {
 public:
-    i32 m_sessionId;      // +0x04
-    CString m_shortName;          // +0x08  name CString
-    CString m_longName;          // +0x0c  second CString
+    i32 m_id;             // +0x04  the player/session id (FindPlayerById key)
+    CString m_name;       // +0x08  display name (GetName)
+    CString m_longName;   // +0x0c  second CString
     i32 m_10;             // +0x10
     char* m_ownedBufferB; // +0x14  owned buffer (freed second)
     char* m_ownedBufferA; // +0x18  owned buffer (freed first)
     i32 m_1c;             // +0x1c
-    i32 m_listPosition;   // +0x20  cached AddTail position
+    __POSITION* m_listPosition; // +0x20  cached AddTail position
 
     // The retail ctor AddSessionNode inlines: base stamp 0x5e8cb4, the two CString
     // members' default ctors, final stamp 0x5f0778, then zero the 4 scalar fields.
     CNetSessionNode() {
-        m_sessionId = 0;
+        m_id = 0;
         m_listPosition = 0;
         m_ownedBufferA = 0;
         m_ownedBufferB = 0;
@@ -653,7 +640,7 @@ public:
     void ApplyCmdDelayDefaults();
     u32 GetMaxAckLatency();
     void ReportAckLatency();
-    CNetPlayerEntry* FindPlayerById(i32 id);
+    CNetSessionNode* FindPlayerById(i32 id);
 
     // The menu-select event handler (0xba620, defined in NetMgrMenuSelect.cpp). Its
     // event arg is that TU's local MenuSelectEvent view -> typed void* here so the
@@ -671,23 +658,23 @@ public:
     // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
     // m_18 interface and, on a nonzero HRESULT, routes it through the static
     // ReportError diagnostic with this TU's __FILE__/__LINE__.
-    i32 RemovePlayerObj(CNetPlayerObj* obj); // 0x178e20
+    i32 RemovePlayerObj(CNetSessionNode* obj); // 0x178e20
     i32 RemovePlayerById(i32 id);            // 0x178e60  GetPlayerData(id) -> RemovePlayerObj
     i32 RemovePlayerNode(CNetPlayerListNode* node); // 0x1790e0  drop one +0x38 player node
     i32 EnumSessions2(void* ctx); // 0x179240  enum into a 0x28 desc, return desc+0x18
     void* GetPlayerData(i32 id);  // 0x178eb0
-    i32 SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e); // 0x178ef0
+    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, i32 d, i32 e); // 0x178ef0
     i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);      // 0x178f50
     i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);                                 // 0x178fc0
     i32 Receive(
-        CNetPlayerEntry* from,
-        CNetPlayerEntry* to,
+        CNetSessionNode* from,
+        CNetSessionNode* to,
         i32 flags,
         void* lpData,
         i32* lpSize
     );                                                             // 0x179010
-    i32 SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e); // 0x179090
-    i32 GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags);   // 0x179190
+    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, i32 d, i32 e); // 0x179090
+    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);   // 0x179190
     i32 EnumSessions(void* desc, void* ctx);                       // 0x179130
 
     // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
@@ -710,8 +697,9 @@ public:
     // HRESULT, routes it through ReportError; the node factories operator-new a
     // list node and AddTail it onto one of the managed CObLists.
     i32
-    Init(void* a, i32 c, i32 d, i32 e, i32 f); // 0x178170  Open + QueryInterface + reset selections
-    i32 AddPlayerNode(void* playerDesc);       // 0x1786d0  new player node -> +0x38 list
+    Init(void* a, GUID appGuid); // 0x178170  Open + QueryInterface + reset selections
+                                 //          (the app GUID by value - 4 dwords, like InitFromProvider)
+    CNetPlayerListNode* AddPlayerNode(void* playerDesc); // 0x1786d0  new player node -> +0x38 list
     void PopulatePlayerList(void* hList);      // 0x178790  fill a Win32 player list box
     i32 EnumPlayersCb(
         void* a,
@@ -750,10 +738,10 @@ public:
     // appGuid = the application GUID passed BY VALUE (its 4 dwords are recorded into the
     // m_4 setup block). Proven by the NetSessionOpen.cpp caller (0xb77dd: sub esp,0x10 +
     // 4 GUID stores + push descriptor) - the by-value struct IS the 4 trailing dwords.
-    i32 InitFromProvider(void* a, GUID appGuid);        // 0x1780b0
+    i32 InitFromProvider(InterfaceObject* a, GUID appGuid); // 0x1780b0
     i32 EnumServiceProviders(i32 validated);            // 0x178280
-    i32 AddGroupNode(void* guid, void* name);           // 0x178360
-    i32 EnumGroupsInto(void* a, void* b, i32 c, i32 d); // 0x1788a0
+    InterfaceObject* AddGroupNode(void* guid, void* name); // 0x178360
+    CNetPlayerListNode* EnumGroupsInto(void* a, void* b, i32 c, i32 d); // 0x1788a0 (returns the added player node)
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
@@ -802,7 +790,7 @@ public:
     // SaveConfig (0xbccd0, /GX EH): pack the command-timing config (m_5b0, the two
     // config-name strings, m_cmdDelay/m_resend/m_600/m_2d8) into a 0x11c-byte stat
     // 0x416 blob and ship it - to one recipient when given, else broadcast.
-    i32 SaveConfig(CNetPlayerEntry* recipient); // 0xbccd0
+    i32 SaveConfig(CNetSessionNode* recipient); // 0xbccd0
 
     // The stat-send family (matched in NetMgr.cpp). All ship a 0x10-byte
     // CNetStatPacket (or a caller packet) to the local player's peer group
@@ -817,26 +805,24 @@ public:
     void SendStatFlag(i32 id, i32 flag);                                      // 0xb9240
     void SendNetStat(i32 id, u32 value, i32 flag);                            // 0xb9290
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                      // 0xb92e0
-    i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c); // 0xb9330
+    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c); // 0xb9330
     // Three more stat-send variants in this cluster: each builds a 0x10-byte stat
     // header on the stack (or forwards a caller packet) and ships it through one
     // of the DirectPlay set-data wrappers.
-    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c); // 0xb93a0
+    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c); // 0xb93a0
     // SendStatPair sibling: builds {m_4=id, m_8=value} to a specific recipient (the
     // explicit-value form of SendStatTo, which uses localPlayer.id for m_8). // 0xb9490
-    i32 SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c);
-    i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0xb9500
+    i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
+    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c); // 0xb9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
     // Session-ready gate (0xb9180): with both args set, polls the session once if the
     // done-latch (m_534) is clear, then reports whether it is now set.
     i32 PollSessionGated(i32 a1, i32 a2); // 0xb9180
     // (GetConfigNameA @0xb6090 / GetConfigNameB @0xb60d0 moved to CMulti in the
-    // netmgr-vs-cmulti split - they return CMulti's m_5b4/m_5b8 config-name CStrings.)
+    // netmgr-vs-cmulti split - they return CMulti's m_5b4/m_5b8 config-name CStrings.
+    // GetName @0xba170 moved to CNetSessionNode - every retail receiver is the
+    // m_sessions per-player record, and the body reads its +0x8 m_name.)
     // The control-message dispatch + the player-left handler.
-    RVA(0x000ba170, 0x20)
-    CString GetName() {
-        return reinterpret_cast<CString&>(m_8); // +0x8 raw payload viewed as a CString
-    }
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)
     i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
     // The sprite/menu-message handler (case 3 of HandleControlMsg); its body lives
@@ -859,7 +845,7 @@ public:
     // AckDropPlayer (0xba590) is declared with the bc0xx helper run below.
     i32 ResolveLocalPlayer(); // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_localPlayerId)
     i32 BroadcastChannelTable(
-        CNetPlayerEntry* recipient
+        CNetSessionNode* recipient
     );                                   // 0xba810  serialize all channels -> 0x88 packet
     i32 ParseChannelTable(void* packet); // 0xba980  parse a 0x88 packet -> channels
     i32 RegisterChannelFrom(
@@ -924,7 +910,7 @@ public:
     CNetGameMgr* m_4;      // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
     // +0x008  a name CString's raw payload. Retail's ~CNetMgr (0xb6000) destroys ONLY
     // the 3 CObLists (+0x1c/+0x38/+0x54) and leaks this - so it is NOT a destructible
-    // CString member here; GetName reads it via a CString& view (copy-ctor at 0xba170).
+    // CString member here.
     char* m_8;
     CDDrawSurfaceMgr* m_c; // +0x00c  the world holder (CState::m_c mirror)
     char m_pad10[0x14 - 0x10];
@@ -941,12 +927,12 @@ public:
     CObList m_sessions; // +0x054  session / player-object list  (head +0x58, count +0x60)
     // The three list-box selection latches + their walk-cursor ids. Each ReadXxxSel
     // reader writes the selected item's data here in range; the clear-loops zero them.
-    i32 m_groupSel;              // +0x070  group-list selected item data (ReadGroupSel)
-    i32 m_playerSel;             // +0x074  player-list selected item data (ReadPlayerSel)
-    i32 m_sessionSel;            // +0x078  session-list selected item data
+    InterfaceObject* m_groupSel;      // +0x070  group-list selected item data (ReadGroupSel / InitFromProvider)
+    CNetPlayerListNode* m_playerSel;  // +0x074  player-list selected item data (ReadPlayerSel / StartTitle)
+    CNetSessionNode* m_sessionSel;    // +0x078  session-list selected item data
     CGroupNode* m_groupSelId;    // +0x07c  group-list walk cursor (Find/PopulateGroupList)
     CNetListNode* m_playerSelId; // +0x080  player-list walk cursor / selection id
-    CNetListNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
+    CNetPlayerNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
 
     // Inline ctor: the CObject base + three CObList members are auto-constructed by
@@ -960,18 +946,16 @@ public:
     // The managed-list teardown run of the destructor (~CNetMgr, 0x0b6000) is
     // declared as `virtual ~CNetMgr()` in the vtable block above.
 
+    // (SetupServices/DispatchServices/GetGameName moved to CMulti in the
+    // netmgr-vs-cmulti split - the stale CNetMgr duplicates are gone.)
     // SetupServices (0xb78b0, /GX): enumerate the peer's service providers and, on
     // success, dispatch MULTI_HOST/JOINSERVICES and write the selected service /
     // player-name / game-name into the engine config store; returns the selected
     // provider. DispatchServices/GetGameName are its external helpers.
-    i32 SetupServices();                                       // 0xb78b0
-    i32 DispatchServices(const char* cmd, i32 flag, void* cb); // 0xbc250
-    CString GetGameName();                                     // 0xb7a90
 
     // JoinAndRegisterChannel (0xb8b10, /GX): build the command-timing config string,
     // enumerate the host group into it, create the local player, and register the
     // local channel; returns the enum result iff the channel registered.
-    i32 JoinAndRegisterChannel(); // 0xb8b10
 
     // The connection-config family (all /GX). DetectConnectionConfig resolves the
     // connection class from the selected provider + loads its "<section>_CmdDelay/

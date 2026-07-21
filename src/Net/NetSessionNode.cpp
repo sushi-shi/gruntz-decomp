@@ -27,7 +27,7 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // teardown logic is byte-faithful. Final-sweep candidate.
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
-    m_sessionId = 0;
+    m_id = 0;
     m_listPosition = 0;
     if (m_ownedBufferA) {
         RezFree(m_ownedBufferA);

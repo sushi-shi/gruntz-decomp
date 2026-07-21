@@ -367,7 +367,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     ChannelSlots_InitAll();
 
     CNetMgr* peer = new CNetMgr();
-    m_netGate = reinterpret_cast<CMultiReportGate*>(peer);
+    m_netGate = peer;
     g_groupEnumMgr = peer;
 
     NetGameMgr()->m_connectGuard = 1;
@@ -1070,20 +1070,17 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     m_isHost = (desc->m_flags & 2) ? 1 : 0;
-    i32 tmpl[4];
-    tmpl[0] = g_dplayAppGuid[0];
-    tmpl[1] = g_dplayAppGuid[1];
-    tmpl[2] = g_dplayAppGuid[2];
-    tmpl[3] = g_dplayAppGuid[3];
-    if (m_netGate->Bind(tmpl) == 0) {
+    // 0x178170 Init(lobby, appGuid-by-value): retail pushes m_lobby (the ecx live
+    // from the b73ec load) + the 4 GUID dwords stored into the sub-esp,0x10 slot.
+    if (m_netGate->Init(Mgr()->m_lobby, *reinterpret_cast<const GUID*>(g_dplayAppGuid)) == 0) {
         return 0;
     }
-    m_netGate->Activate();
-    CNetPlayerListNode* player = m_netGate->OpenPlayer(desc->m_8);
+    m_netGate->ClearPlayerList(); // 0x178750
+    CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_8); // 0x1786d0
     if (player == 0) {
         return 0;
     }
-    m_netGate->m_player = player;
+    m_netGate->m_playerSel = player; // +0x74 latch
     CString hostName(desc->m_c->m_8);
     ClearString5a0(hostName); // clear m_hostName, return the temp
     char* grp = player->GroupName();
@@ -1139,11 +1136,11 @@ i32 CMulti::Open() {
     }
     RunTitleSeq("BACKGND", 0, 0, 1, 0); // 0xfa350 (CState base)
     m_world->m_drawTarget->Method_158dc0(); // m_c->m_4
-    i32 descriptor = SetupServices();   // 0xb78b0
+    InterfaceObject* descriptor = SetupServices(); // 0xb78b0 (the selected provider node)
     if (!descriptor) {
         return 0;
     }
-    if (!Peer()->InitFromProvider(reinterpret_cast<void*>(descriptor), *reinterpret_cast<const GUID*>(g_dplayAppGuid))) {
+    if (!Peer()->InitFromProvider(descriptor, *reinterpret_cast<const GUID*>(g_dplayAppGuid))) {
         return 0;
     }
     if (g_isHost_648cf0) {
@@ -1173,7 +1170,7 @@ i32 CMulti::Open() {
 // temps under the /GX frame are byte-faithful; the ~2% residual is a scheduling
 // nuance in the config-store write block. §2a scoring-tail. Final sweep.
 RVA(0x000b78b0, 0x17f)
-i32 CMulti::SetupServices() {
+InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {
         ReportConnectFailed(0);
         return 0;
@@ -1363,7 +1360,6 @@ SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLogicDesc);
 SIZE_UNKNOWN(CMultiMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
-SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(PBListSink);
 
@@ -1545,7 +1541,7 @@ i32 CMulti::DetectConnectionConfig() {
     }
     ch0->m_008 = 0;
 
-    i32 r = JoinAndRegisterChannel();
+    CNetPlayerListNode* r = JoinAndRegisterChannel();
     if (r != 0) {
         Peer()->m_playerSel = r;
         return 1;
@@ -1653,7 +1649,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     CNetListNode* node = reinterpret_cast<CNetListNode*>(sess->m_players.GetHeadPosition());
     sess->m_playerSelId = node;
-    CNetPlayerObj* player;
+    CNetPlayerListNode* player;
     if (node) {
         sess->m_playerSelId = node->m_next;
         player = node->m_data;
@@ -1662,10 +1658,10 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     }
     while (player) {
         const char* str;
-        if (NetFormatKeyed(buf + 4, player->m_profile, "NAME")) {
+        if (NetFormatKeyed(buf + 4, player->m_desc.m_lpszName, "NAME")) {
             str = buf;
         } else {
-            str = player->m_profile;
+            str = player->m_desc.m_lpszName;
         }
         i32 idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(str)));
         if (idx != -1) {
@@ -1696,7 +1692,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
 // : 0" into a split neg/sbb/and mask carried across the name CString's /GX dtor,
 // which a clean ternary won't reproduce exactly. Final sweep.
 RVA(0x000b8b10, 0x175)
-i32 CMulti::JoinAndRegisterChannel() {
+CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
@@ -1705,14 +1701,15 @@ i32 CMulti::JoinAndRegisterChannel() {
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
-    i32 enumResult = g_groupEnumMgr->EnumGroupsInto(reinterpret_cast<void*>(4), buf, 0, reinterpret_cast<i32>(g_emptyString));
+    CNetPlayerListNode* enumResult =
+        g_groupEnumMgr->EnumGroupsInto(reinterpret_cast<void*>(4), buf, 0, reinterpret_cast<i32>(g_emptyString));
     if (enumResult == 0) {
         g_connectRptMgr->ReportConnectFailed(0);
         return 0;
     }
 
     void* lp = reinterpret_cast<void*>(Peer()->CreatePlayer(const_cast<char*>("Player"), reinterpret_cast<i32>(g_emptyString), 0));
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetPlayerEntry*>(lp));
+    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -1756,7 +1753,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         CString name = GetString5a0();
         lp = reinterpret_cast<void*>(Peer()->EnumPlayersCb(sel, reinterpret_cast<i32>(static_cast<const char*>(name)), reinterpret_cast<i32>(g_emptyString), 0));
     }
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetPlayerEntry*>(lp));
+    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -1907,7 +1904,7 @@ i32 CMulti::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
 }
 
 RVA(0x000b9330, 0x41)
-i32 CMulti::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c) {
+i32 CMulti::SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c) {
     if (recipient == 0) {
         return 0;
     }
@@ -1917,7 +1914,7 @@ i32 CMulti::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c)
 }
 
 RVA(0x000b93a0, 0x47)
-i32 CMulti::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
+i32 CMulti::SendStatTo(CNetSessionNode* recipient, i32 id, i32 c) {
     if (recipient == 0) {
         return 0;
     }
@@ -1939,7 +1936,7 @@ i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
 }
 
 RVA(0x000b9490, 0x42)
-i32 CMulti::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) {
+i32 CMulti::SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c) {
     if (recipient == 0) {
         return 0;
     }
@@ -1951,7 +1948,7 @@ i32 CMulti::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) 
 }
 
 RVA(0x000b9500, 0x46)
-i32 CMulti::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c) {
+i32 CMulti::SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c) {
     if (recipient == 0) {
         return 0;
     }
@@ -2066,7 +2063,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         return HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(msg), size);
     }
 
-    CNetPlayerEntry* pd = static_cast<CNetPlayerEntry*>(Peer()->GetPlayerData(sender));
+    CNetSessionNode* pd = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(sender));
     if (m_connected != 0 || m_pumpGuard != 0) {
         if (pd != 0) {
             CNetCmdSlot* slot = Session()->FindCmdSlot(pd->m_id);
@@ -2363,7 +2360,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case 0x418: {
             CString result;
             if (pd != 0) {
-                CString name = (reinterpret_cast<CNetMgr*>(pd))->GetName();
+                CString name = pd->GetName();
                 result.Format("*** %s has a different version of the game.", static_cast<const char*>(name));
             } else {
                 result.Format("*** A player had a different version of the game.");
@@ -2385,7 +2382,10 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     return 1;
 }
 
-CString CNetPlayerEntry::GetName() {
+// The per-player record's display name (+0x8 CString by value). Ex the CNetMgr
+// "GetName" inline - every retail receiver is a CNetSessionNode.
+RVA(0x000ba170, 0x20)
+CString CNetSessionNode::GetName() {
     return m_name;
 }
 
@@ -2432,8 +2432,8 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
 
 RVA(0x000ba3b0, 0x17f)
 i32 CMulti::OnPlayerLeft(i32 playerId) {
-    CNetPlayerObj* blob = static_cast<CNetPlayerObj*>(Peer()->GetPlayerData(playerId));
-    if (blob == reinterpret_cast<CNetPlayerObj*>(LocalPlayer())) {
+    CNetSessionNode* blob = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(playerId));
+    if (blob == LocalPlayer()) {
         return 0;
     }
 
@@ -2455,7 +2455,9 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     slot->m_liveGate = 0;
     ChannelSlots_Set(slot->m_008, 1);
 
-    CString line = (reinterpret_cast<CNetMgr*>(slot))->GetName() + " has left the game.";
+    // 0x1f450 GruntzPlayer::GetName (ILT 0x3e54) - the +0x4 m_name, NOT the
+    // session-node +0x8 read the old CNetMgr cross-cast forced.
+    CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
 
     if (blob != 0) {
@@ -2560,7 +2562,7 @@ i32 CMulti::ResolveLocalPlayer() {
 // (eax,ebp vs ebp,eax) differently; none move under source restructuring (the
 // inverse parse ParseChannelTable is 99.9%). Deferred to the final sweep.
 RVA(0x000ba810, 0x11c)
-i32 CMulti::BroadcastChannelTable(CNetPlayerEntry* recipient) {
+i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     char packet[0x88];
     memset(packet, 0, 0x88);
     packet[0] |= 0x80;
@@ -3006,7 +3008,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
             return 0;
         }
     } else if (active != 0) {
-        SendStatTo(static_cast<CNetPlayerEntry*>(data), STAT_CHANNEL_LEFT, 1);
+        SendStatTo(static_cast<CNetSessionNode*>(data), STAT_CHANNEL_LEFT, 1);
     }
 
     if (RemoveChannel(idx) == 0) {
@@ -3632,7 +3634,7 @@ i32 CMulti::SetupTcpIpConfig() {
         CString cn = ch0->GetName();
         lp = reinterpret_cast<void*>(Peer()->CreatePlayer(const_cast<char*>(static_cast<const char*>(cn)), reinterpret_cast<i32>(g_emptyString), 0));
     }
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetPlayerEntry*>(lp));
+    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -3663,7 +3665,7 @@ RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
         CString name = GetString5a0();
-        m_5bc = reinterpret_cast<i32>(reinterpret_cast<CNetPlayerEntry*>(Peer()
+        m_5bc = reinterpret_cast<i32>(reinterpret_cast<CNetSessionNode*>(Peer()
                     ->CreatePlayer(const_cast<char*>(static_cast<const char*>(name)), reinterpret_cast<i32>(g_emptyString), 0)));
     }
     if (LocalPlayer() == 0) {
@@ -3836,7 +3838,7 @@ extern "C" CMulti* g_connectRptMgr; // 0x648cf8
 // the CString-buffer read kept in the return reg vs re-read from the temp slot, and
 // a tail `mov eax,1` materialization. Final sweep.
 RVA(0x000bccd0, 0x141)
-i32 CMulti::SaveConfig(CNetPlayerEntry* recipient) {
+i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
     blob.m_0 |= 0x80;

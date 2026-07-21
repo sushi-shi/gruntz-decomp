@@ -807,11 +807,11 @@ void CMultiStartDlg::Watchdog() {
         return;
     }
     g_watchBusy = 1;
-    void* h = g_multiState->m_netGate->m_player;
+    void* h = g_multiState->m_netGate->m_playerSel;
     if (h == 0) {
         return;
     }
-    g_multiState->m_netGate->M178a80(h, 0);
+    g_multiState->m_netGate->EnumGroupsRange(h, 0);
     g_multiState->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = ::timeGetTime();
