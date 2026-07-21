@@ -46,10 +46,10 @@ public:
 class CImageFrameDesc {
 public:
     char _00[0x04];
-    i32 m_04; // +0x04  flag word (0x20 / 0x40)
+    i32 m_flags; // +0x04  flag word (0x20 / 0x40)
     char _08[0x10 - 0x08];
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
+    i32 m_originX; // +0x10
+    i32 m_originY; // +0x14
 };
 
 extern i32 g_resourceInstallActive;

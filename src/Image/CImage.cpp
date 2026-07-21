@@ -196,11 +196,11 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (mode != 1 && mode != 2 && mode != 3 && mode != 4) {
         return 0;
     }
-    if (mode == 4 && (desc->m_04 & 0x20)) {
+    if (mode == 4 && (desc->m_flags & 0x20)) {
         if (!BuildSlot13(desc, a)) {
             return 0;
         }
-        if (m_owned != 0 && (desc->m_04 & 0x40)) {
+        if (m_owned != 0 && (desc->m_flags & 0x40)) {
             m_owned->Select(2, 0);
             return 1;
         }
@@ -208,8 +208,8 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     }
     i32 flagsArg = (b != 0) ? g_surfaceColorKey : -1;
     if (mode == 4 || mode == 3) {
-        i32 g10 = desc->m_10;
-        i32 g14 = desc->m_14;
+        i32 g10 = desc->m_originX;
+        i32 g14 = desc->m_originY;
         m_originX = g10;
         m_originY = g14;
     } else {
@@ -304,8 +304,8 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     m_loadResult = 0x11;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    m_originX = desc->m_10;
-    m_originY = desc->m_14;
+    m_originX = desc->m_originX;
+    m_originY = desc->m_originY;
     return 1;
 }
 
@@ -353,8 +353,8 @@ i32 CImage::CopyFrom(CImage* other) {
 RVA(0x00153330, 0x36)
 i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
     if (mode == 4 || mode == 3) {
-        i32 oy = desc->m_14;
-        i32 ox = desc->m_10;
+        i32 oy = desc->m_originY;
+        i32 ox = desc->m_originX;
         m_originX = ox;
         m_originY = oy;
     } else {
