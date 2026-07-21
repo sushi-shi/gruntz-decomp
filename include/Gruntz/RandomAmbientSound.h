@@ -32,7 +32,9 @@ struct AmbSoundRecord {
 VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
 public:
-    CRandomAmbientSound(); // 0x00bb40  base init (cl auto-stamps the vptr)
+    // Inline: the Create* factories inline the vptr stamp (??_7CRandomAmbientSound)
+    // directly (no OOL ctor call), so this must be inline to collapse into them.
+    CRandomAmbientSound() {}
     // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
     // the primary box, clear the secondary box. Returns 1 (0 on a null world).
     i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
@@ -61,8 +63,13 @@ public:
     i32 TickObj(i32 obj);                   // 0x00ca00  per-object placement tick
 
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
-    void Step(i32 x, i32 y, i32 force);      // 0x00cb30
-    virtual ~CRandomAmbientSound() OVERRIDE; // slot 0  0x00bb60
+    void Step(i32 x, i32 y, i32 force); // 0x00cb30
+    // Inline leaf dtor: inlines the (inline) base ~CAmbientSound, collapsing to the
+    // same bytes as ~CAmbientSound/~CAmbientPosSound (stamp ??_7CUserBase, clear
+    // m_voice/m_listNode). The OOL COMDAT is at 0xbb40 (Ghidra-mislabeled as the ??0
+    // ctor; it is really ??1, called by the scalar-deleting-dtor 0xbb10 = vtable slot
+    // 0) and is pinned by @rva-symbol in WorldSoundSet.cpp.
+    virtual ~CRandomAmbientSound() OVERRIDE {}
     // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the box factory
     // (CWorldSoundSet::CreateRandomBox_ba00; unreconstructed, reloc-masked).
     void Init2(i32 a0, i32 a1, i32 a2, i32 a3);

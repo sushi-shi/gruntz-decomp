@@ -224,11 +224,13 @@ CRandomAmbientSound* CWorldSoundSet::
     return obj;
 }
 
-RVA(0x0000bb40, 0xf)
-CRandomAmbientSound::CRandomAmbientSound() {
-    m_voice = 0;
-    m_listNode = 0;
-}
+// 0xbb40 - ??1CRandomAmbientSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CRandomAmbientSound (<Gruntz/RandomAmbientSound.h>). Inlines the base ~CAmbientSound so
+// it collapses to the same bytes as 0xb790 (stamp ??_7CUserBase, clear m_voice/m_listNode).
+// Ghidra mislabeled it ??0 (ctor) from the byte-shape overlap, but its `xor eax,eax` (no
+// this-return) + its sole caller being the scalar-deleting-dtor 0xbb10 (vtable slot 0)
+// prove it is the dtor.
+// @rva-symbol: ??1CRandomAmbientSound@@UAE@XZ 0x0000bb40 0xf
 
 RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::
