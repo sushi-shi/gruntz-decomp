@@ -1595,9 +1595,10 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != 0) {
         ApplyCmdDelayDefaults(); // 0xb85a0 (ILT 0x386e)
     } else {
-        if (m_world->m_soundRegistry->m_emitGate == 0) {
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_emitGate == 0) {
             void* rec_ob = 0; // CMapStringToPtr::Lookup takes a void*& out-param
-            m_world->m_soundRegistry->m_10.Lookup(s_GameKey, rec_ob);
+            reg->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = static_cast<LeafCue*>(rec_ob);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
