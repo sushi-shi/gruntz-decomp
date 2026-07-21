@@ -82,8 +82,8 @@ SIZE_UNKNOWN(CNetPlayerEntry); // payload-entry view (only +0x4 id pinned); size
 struct CNetStatPacket {
     u8 m_0; // +0x0  flag byte (bit7 set)
     char m_pad1[3];
-    i32 m_4;        // +0x4  stat id
-    i32 m_8;        // +0x8  value / player id
+    i32 m_statId;        // +0x4  stat id
+    i32 m_value;        // +0x8  value / player id
     char m_padc[4]; // +0xc  (0x10 total)
 };
 SIZE_UNKNOWN(CNetStatPacket); // 0x10-byte stat-packet header view; full record size TBD

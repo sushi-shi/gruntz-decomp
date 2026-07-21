@@ -1876,8 +1876,8 @@ RVA(0x000b9240, 0x38)
 void CMulti::SendStatFlag(i32 id, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = id;
-    pkt.m_8 = LocalPlayer()->m_4;
+    pkt.m_statId = id;
+    pkt.m_value = LocalPlayer()->m_4;
     SendStatBuf(&pkt, flag);
 }
 
@@ -1885,8 +1885,8 @@ RVA(0x000b9290, 0x32)
 void CMulti::SendNetStat(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = id;
-    pkt.m_8 = value;
+    pkt.m_statId = id;
+    pkt.m_value = value;
     SendStatBuf(&pkt, flag);
 }
 
@@ -1916,8 +1916,8 @@ i32 CMulti::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
     }
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = id;
-    pkt.m_8 = LocalPlayer()->m_4;
+    pkt.m_statId = id;
+    pkt.m_value = LocalPlayer()->m_4;
     return SendStatPair(recipient, &pkt, c);
 }
 
@@ -1925,8 +1925,8 @@ RVA(0x000b9410, 0x51)
 i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = value;
-    pkt.m_8 = LocalPlayer()->m_4;
+    pkt.m_statId = value;
+    pkt.m_value = LocalPlayer()->m_4;
     i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
@@ -1938,8 +1938,8 @@ i32 CMulti::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) 
     }
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = id;
-    pkt.m_8 = value;
+    pkt.m_statId = id;
+    pkt.m_value = value;
     return SendStatPair(recipient, &pkt, c);
 }
 
@@ -1959,8 +1959,8 @@ RVA(0x000b9570, 0x53)
 i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
-    pkt.m_4 = statId;
-    pkt.m_8 = value;
+    pkt.m_statId = statId;
+    pkt.m_value = value;
     i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
