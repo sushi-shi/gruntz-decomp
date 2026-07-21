@@ -1415,29 +1415,36 @@ i32 CDDrawSubMgrPages::Method_158dc0() {
 // 0x158e40: if m_overlayPair->IsLoaded(): blt m_overlayPair's surface <-
 // m_frontPair's surface, return (==0).
 // @early-stop
-// 50% - structure/offsets byte-exact; the only residual is the `pop esi`
-// scheduling (retail interleaves it before the test/sete; our cl emits it in
-// the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
+// ~88% - flattened the nested `if(overlay && IsLoaded){...} return 0` into a flat
+// guard chain (each `if(!x) return 0`), matching retail's per-guard inline return-0
+// (was 50%: the nesting made cl share ONE return-0 via `je`). Residual is a single
+// tail-merge coin-flip: retail shares the FIRST guard's return-0 (m_overlayPair,
+// `je shared`) while inlining the rest; cl inlines the first + shares the second.
+// Hoisting `a=m_overlayPair` before the guards regressed to 57% (regalloc). Not
+// steerable further. docs/patterns/zero-register-pinning.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
-    if (m_overlayPair && m_overlayPair->IsLoaded()) {
-        CDDrawSurfacePair* a = m_overlayPair;
-        CDDrawSurfacePair* b = m_frontPair;
-        if (!b) {
-            return 0;
-        }
-        CDDSurface* bs = b->m_surface;
-        if (!bs) {
-            return 0;
-        }
-        CDDSurface* as = a->m_surface;
-        if (!as) {
-            return 0;
-        }
-        i32 hr = as->Blt(bs);
-        return hr == 0;
+    if (!m_overlayPair) {
+        return 0;
     }
-    return 0;
+    if (!m_overlayPair->IsLoaded()) {
+        return 0;
+    }
+    CDDrawSurfacePair* a = m_overlayPair;
+    CDDrawSurfacePair* b = m_frontPair;
+    if (!b) {
+        return 0;
+    }
+    CDDSurface* bs = b->m_surface;
+    if (!bs) {
+        return 0;
+    }
+    CDDSurface* as = a->m_surface;
+    if (!as) {
+        return 0;
+    }
+    i32 hr = as->Blt(bs);
+    return hr == 0;
 }
 
 RVA(0x00158e90, 0x47)
