@@ -214,18 +214,10 @@ correct change that costs % stays.
 ## Reconstruction mandate (non-negotiable)
 
 A prior analysis confirmed **every** worklist entry is structurally reconstructable.
+(Library/CRT is already FID-carved out of the queue by a dedicated pass — everything you
+are assigned is game/engine code, so you never identify or handle library yourself.)
 
-0. **CRT/MFC library code is IDENTIFIED, not matched, not skipped (user mandate 2026-07-21).**
-   The game/engine is ours to reconstruct; MSVC CRT, MFC, and other static-library bodies are
-   NOT. When a function is library, you do not reconstruct it AND you do not silently "skip"
-   it (leaving it counted as pending work) — you IDENTIFY it via **FID matching** (the masked
-   COFF-signature matcher, `gruntz.analysis.fid`; verify against the static-lib source, and
-   distrust an AMBIG label — FID false-positives exist) and record its RVA in
-   `config/library_labels.csv`, which carves it out of the % denominator and the residual
-   queue. Only a function you have PROVEN is game/engine code is a reconstruction target.
-   (Beware `__stdcall` `_`-decoration and `std::istream`/`ostream` params — those are GAME
-   functions that merely look library; do not carve them.)
-1. **Do NOT defer, skip, or leave a game function as a bare stub.** Reconstruct it.
+1. **Do NOT defer, skip, or leave a function as a bare stub.** Reconstruct it.
 2. **Push every function to 100%.** A plateau is almost always fixable. FIRST fix any
    codegen-SHAPE bug in your source by hand — wrong control-flow, wrong types, a cast
    standing in for a real class, wrong calling convention (the permuter CANNOT fix these;
