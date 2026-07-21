@@ -1033,8 +1033,8 @@ void CNetPlayerListNode::FreeStrings() {
 RVA(0x001796c0, 0x3f)
 i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i32 d) {
     m_sessionId = id;
-    m_8 = nameA;
-    m_c = nameB;
+    m_shortName = nameA;
+    m_longName = nameB;
     m_10 = d;
     m_ownedBufferA = 0;
     m_1c = 0;

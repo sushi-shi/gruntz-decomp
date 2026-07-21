@@ -493,8 +493,8 @@ VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot COb
 class CNetSessionNode : public CObject {
 public:
     i32 m_sessionId;      // +0x04
-    CString m_8;          // +0x08  name CString
-    CString m_c;          // +0x0c  second CString
+    CString m_shortName;          // +0x08  name CString
+    CString m_longName;          // +0x0c  second CString
     i32 m_10;             // +0x10
     char* m_ownedBufferB; // +0x14  owned buffer (freed second)
     char* m_ownedBufferA; // +0x18  owned buffer (freed first)
