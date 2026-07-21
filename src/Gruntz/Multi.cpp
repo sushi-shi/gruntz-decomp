@@ -298,6 +298,12 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // facet (CNetGameMgr, the 0xac/0x110/0x114/0x12c guards). Both were the TF()/MF()
     // offset-access macros; the offsets are now named members (see Multi.h/Play.h/State.h,
     // NetMgr.h).
+    // @early-stop
+    // Structurally complete + correct (base-call return guard, strided-index options
+    // loop, and the StartTitle/Open == 0 teardown polarity all match retail). Residual
+    // is a this/zero callee-saved register-coloring swap: retail pins this=ebx / 0=ebp,
+    // our MSVC5 /O2 pins this=ebp / 0=ebx, which flips the base+value regs on the ~40
+    // member-init stores. Not source-steerable; ~81%. Final sweep / permuter.
     g_gameReg->m_134 = 2;
     if (a1 == 0) {
         return 0;
@@ -349,10 +355,10 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     // m_channelLatency[0..3] + the four g_gameReg slots (+0x37c / +0x380)
     i32* clat = m_channelLatency;
-    for (GruntzPlayer* p = g_gameReg->m_options; p < g_gameReg->m_options + 4; p++) {
+    for (i32 i = 0; i < 4; i++) {
         *clat++ = 0;
-        p->m_latency = 0;
-        p->m_230 = 0;
+        g_gameReg->m_options[i].m_latency = 0;
+        g_gameReg->m_options[i].m_230 = 0;
     }
 
     NetGameMgr()->m_114 = 0;
@@ -366,13 +372,13 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     NetGameMgr()->m_connectGuard = 1;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
-        if (StartTitle() != 0) {
+        if (StartTitle() == 0) {
             NetGameMgr()->m_connectGuard = 0;
             ReleaseResources(); // slot 2 (+0x08) virtual dispatch, ex "Abort"
             return 0;
         }
     } else {
-        if (Open() != 0) {
+        if (Open() == 0) {
             NetGameMgr()->m_connectGuard = 0;
             while (::ShowCursor(0) >= 0) {
             }
