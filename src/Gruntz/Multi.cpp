@@ -2076,7 +2076,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         return 0;
     }
 
-    switch (msg->m_4) {
+    switch (msg->m_msgId) {
         case 0x3e8:
             m_534 = 1;
             return 1;
@@ -3682,7 +3682,7 @@ i32 CMulti::CreateLocalPlayer() {
     CNetJoinPacket pkt;
     memset(&pkt, 0, 0x28);
     pkt.m_0 = 0x80;
-    pkt.m_4 = STAT_PLAYER_JOINED;
+    pkt.m_statId = STAT_PLAYER_JOINED;
     pkt.m_8 = 1;
     pkt.m_9 = 0;
     pkt.m_a = 1;
@@ -3690,10 +3690,10 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_c = 0x63;
     pkt.m_d = 0xf;
     pkt.m_e = 0;
-    pkt.m_10 = m_hostIndex;
+    pkt.m_playerId = m_hostIndex;
     {
         CString name = GetString5a0();
-        strcpy(pkt.m_14, static_cast<const char*>(name));
+        strcpy(pkt.m_playerName, static_cast<const char*>(name));
     }
     SendStatFrom(reinterpret_cast<CNetStatPacket*>(&pkt), 0x28, 1);
     return 1;
@@ -3843,7 +3843,7 @@ i32 CMulti::SaveConfig(CNetPlayerEntry* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
     blob.m_0 |= 0x80;
-    blob.m_4 = STAT_CONFIG;
+    blob.m_statId = STAT_CONFIG;
     blob.m_8 = m_5b0;
     {
         CString a = GetConfigNameA();
