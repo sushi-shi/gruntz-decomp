@@ -736,6 +736,12 @@ void CDDrawChildGroup::CollideBroadcast() {
 // (m_screenX @+0x5c / m_screenY @+0x60, CResolveNode) and the two 4-dword boxes
 // m_area (+0x144) / m_switchRect (+0x154) on E. The 0x80000000 "invalid" sentinel is
 // the family's documented unset marker.
+// @early-stop
+// ~85% (was 75.9%: materializing the two screen-space AABBs as CDDrawRect stack rects
+// forces retail's 0x20 frame instead of cl keeping the 8 coords in registers). Residual
+// is the rect-field store scheduling + stack-slot assignment (retail interleaves the
+// coord adds/stores differently and colours the a2.switchRect.left probe into ebp);
+// pure /O2 scheduling/regalloc, not source-steerable (caching the .left probes regressed).
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
     if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
@@ -744,24 +750,30 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
     if (a1->m_area.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
-    i32 a1L = a1->m_area.left + a1->m_screenX;
-    i32 a1R = a1->m_area.right + a1->m_screenX;
-    i32 a1T = a1->m_area.top + a1->m_screenY;
-    i32 a1B = a1->m_area.bottom + a1->m_screenY;
-    i32 a2L = a2->m_switchRect.left + a2->m_screenX;
-    i32 a2T = a2->m_switchRect.top + a2->m_screenY;
-    i32 a2B = a2->m_switchRect.bottom + a2->m_screenY;
-    i32 a2R = a2->m_switchRect.right + a2->m_screenX;
-    if (a1L > a2R) {
+    // retail materializes the two screen-space AABBs as 0x10-byte stack rects (0x20 frame)
+    CDDrawRect ra, rb;
+    i32 xi = a1->m_screenX;
+    i32 yi = a1->m_screenY;
+    ra.left = a1->m_area.left + xi;
+    ra.top = a1->m_area.top + yi;
+    ra.right = a1->m_area.right + xi;
+    ra.bottom = a1->m_area.bottom + yi;
+    i32 xj = a2->m_screenX;
+    i32 yj = a2->m_screenY;
+    rb.left = a2->m_switchRect.left + xj;
+    rb.top = a2->m_switchRect.top + yj;
+    rb.right = a2->m_switchRect.right + xj;
+    rb.bottom = a2->m_switchRect.bottom + yj;
+    if (ra.left > rb.right) {
         return 0;
     }
-    if (a1R < a2L) {
+    if (ra.right < rb.left) {
         return 0;
     }
-    if (a1T > a2B) {
+    if (ra.top > rb.bottom) {
         return 0;
     }
-    return a1B >= a2T;
+    return ra.bottom >= rb.top;
 }
 
 // @early-stop
