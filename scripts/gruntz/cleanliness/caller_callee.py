@@ -82,12 +82,12 @@ def _tu_edges(args):
     A function body spans `define ... {` .. the closing `}` at column 0; basic-block
     labels also sit at column 0, so scope is tracked by define/`}` only."""
     clang, tu, cl_flags = args
-    ir = ir.emit_ir(clang, tu, [], cl_flags)
-    if not ir:
+    text = ir.emit_ir(clang, tu, [], cl_flags)  # `ir` is the module - keep it free
+    if not text:
         return tu, None
     out = {}
     cur = None
-    for line in ir.splitlines():
+    for line in text.splitlines():
         dm = _DEF_RE.match(line)
         if dm:
             cur = _ir_name(dm.group(1))
