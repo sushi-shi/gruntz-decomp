@@ -150,12 +150,12 @@ public:
 class CFileImageSrc {
 public:
     char _00[0x04];
-    i16 m_04; // +0x04  box top
-    i16 m_06; // +0x06  box left
-    i16 m_08; // +0x08  box bottom
-    i16 m_0a; // +0x0a  box right
+    i16 m_boxTop; // +0x04  box top
+    i16 m_boxLeft; // +0x06  box left
+    i16 m_boxBottom; // +0x08  box bottom
+    i16 m_boxRight; // +0x0a  box right
     char _0c[0x41 - 0x0c];
-    u8 m_41; // +0x41  format (1 = 8-bit, 3 = 24-bit)
+    u8 m_format; // +0x41  format (1 = 8-bit, 3 = 24-bit)
 };
 
 class CFileImagePal {

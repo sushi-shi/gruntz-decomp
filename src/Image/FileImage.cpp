@@ -556,13 +556,13 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
     if (src == 0) {
         return 0;
     }
-    i32 height = src->m_08 - src->m_04 + 1;
-    i32 width = src->m_0a - src->m_06 + 1;
+    i32 height = src->m_boxBottom - src->m_boxTop + 1;
+    i32 width = src->m_boxRight - src->m_boxLeft + 1;
 
     i32 srcFmt;
-    if (src->m_41 == 1) {
+    if (src->m_format == 1) {
         srcFmt = 8;
-    } else if (src->m_41 == 3) {
+    } else if (src->m_format == 3) {
         srcFmt = 0x18;
     } else {
         return 0;
