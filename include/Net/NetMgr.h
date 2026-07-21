@@ -836,7 +836,7 @@ public:
     // The control-message dispatch + the player-left handler.
     RVA(0x000ba170, 0x20)
     CString GetName() {
-        return m_8;
+        return reinterpret_cast<CString&>(m_8); // +0x8 raw payload viewed as a CString
     }
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)
     i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
@@ -923,7 +923,10 @@ public:
     // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
     // (vptr implicit at +0x000)
     CNetGameMgr* m_4;      // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
-    CString m_8;           // +0x008  a name CString (GetName returns a copy by value)
+    // +0x008  a name CString's raw payload. Retail's ~CNetMgr (0xb6000) destroys ONLY
+    // the 3 CObLists (+0x1c/+0x38/+0x54) and leaks this - so it is NOT a destructible
+    // CString member here; GetName reads it via a CString& view (copy-ctor at 0xba170).
+    char* m_8;
     CDDrawSurfaceMgr* m_c; // +0x00c  the world holder (CState::m_c mirror)
     char m_pad10[0x14 - 0x10];
     INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
