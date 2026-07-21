@@ -421,7 +421,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(g_containerName) {
 // global index table (when enabled) and, by tag 2/1, either dispatch through the
 // resolved table entry's fn / word slot, or (unresolved) format the slot's label
 // + invoke the slot's own +0x00 callback / store the word.  The index probe is
-// CKeyFinder::Find (0x16e1d0, defined below); the table + gate are globals.
+// CVariantSlot::Find (0x16e1d0, defined below); the table + gate are globals.
 // @early-stop
 // 99.85% - reloc-typing / entropy-tail artifact only: the full switch dispatch,
 // indexed-table paths, inline strcpy + Format_18d0f0 and the +0x00 callback are
@@ -439,7 +439,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        idx = (reinterpret_cast<CKeyFinder*>(this))->Find(reinterpret_cast<i32>(key));
+        idx = this->Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
     }
@@ -463,9 +463,10 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
-    // 0x16e360 is CKeyFinder::Add (the cursor's insert/update/remove facet), reached on
-    // the error sink; cast at the call (the sink is a CKeyFinder cursor over the key table).
-    (reinterpret_cast<CKeyFinder*>(m_errSink))->Add(this, 0);
+    // 0x16e360 is CVariantSlot::Add (the cursor's insert/update/remove op; val==0 removes),
+    // called on the error sink to unregister this handler. m_errSink is a CVariantSlot* -
+    // no cast (the ex CKeyFinder view of it is dissolved).
+    m_errSink->Add(this, 0);
 }
 
 // ===========================================================================
@@ -799,22 +800,22 @@ i32 zBitVec::SetSize(i32 nbits) {
 }
 
 RVA(0x0016e1a0, 0x23)
-CKeyFinder::CKeyFinder(void* owner) {
-    m_0c = 2;
+CVariantSlot::CVariantSlot(void* owner) {
+    m_typeTag = 2;
     m_10 = 2;
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    m_08 = 0;
-    m_owner = owner;
+    // +0x00 (m_callback) is intentionally left unset here (the register path seeds it).
+    m_valueWord = 0;
+    m_label = static_cast<char*>(owner);
 }
 
 RVA(0x0016e1d0, 0x4b)
-i32 CKeyFinder::Find(i32 key) {
+i32 CVariantSlot::Find(i32 key) {
     i32 hi = g_recCount23 - 1;
     i32 lo = 0;
     if (hi >= 0) {
         do {
             i32 mid = (lo + hi) / 2;
-            m_index = mid;
+            m_04 = mid;
             i32 d = g_recs23[mid].m_key - key;
             if (d < 0) {
                 lo = mid + 1;
@@ -825,13 +826,13 @@ i32 CKeyFinder::Find(i32 key) {
             }
         } while (lo <= hi);
     }
-    m_index = hi + 1;
+    m_04 = hi + 1;
     return -1;
 }
 
 // ===========================================================================
 // TmErrorHandler (0x16e220) - the "C++ Tools error handler": the default callback
-// seeded into the CKeyFinder/CVariantSlot +0x00 slot (the g_keyFinderVtbl fn-ptr;
+// seeded into the CVariantSlot +0x00 slot (the g_keyFinderVtbl fn-ptr;
 // invoked by CVariantSlot::Set as m_callback(label, value) when a slot is unresolved).
 // Builds "<prefix> - error #<errNum> Caller IP = <hhhh>\n" into a bounded stack buffer
 // (the low 16 bits of the g_retAddrBreadcrumb caller-IP breadcrumb, 4 hex digits, and
@@ -909,8 +910,8 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 }
 
 // ===========================================================================
-// CKeyFinder::Add (0x16e360, the ex-Reg23 facet) - fixed-capacity (32) keyed
-// record insert/update/remove over the global table at the cursor's m_index.
+// CVariantSlot::Add (0x16e360, the ex-Reg23 facet) - fixed-capacity (32) keyed
+// record insert/update/remove over the global table at the cursor's m_04.
 // ===========================================================================
 // @early-stop
 // Control flow + 12-byte-stride index arithmetic + memmove shifts + global stores are
@@ -918,7 +919,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 // (callee-saved register-preference wall, docs/patterns/pin-local-for-callee-saved-reg.md);
 // the ebx<->edi swap is not source-steerable and cascades through every store. Deferred.
 RVA(0x0016e360, 0x11a)
-void* CKeyFinder::Add(void* key, void* val) {
+void* CVariantSlot::Add(void* key, void* val) {
     int count = g_recCount23;
     if (val != 0 && count >= 0x20) {
         return 0;
@@ -936,9 +937,9 @@ void* CKeyFinder::Add(void* key, void* val) {
             return old;
         }
         memmove(
-            &g_recs23[m_index],
-            &g_recs23[m_index + 1],
-            (g_recCount23 - m_index - 1) * sizeof(TypeKeyRec)
+            &g_recs23[m_04],
+            &g_recs23[m_04 + 1],
+            (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec)
         );
         g_recCount23 = g_recCount23 - 1;
         return old;
@@ -948,15 +949,15 @@ void* CKeyFinder::Add(void* key, void* val) {
     }
     if (g_recCount23 != 0) {
         memmove(
-            &g_recs23[m_index + 1],
-            &g_recs23[m_index],
-            (g_recCount23 - m_index) * sizeof(TypeKeyRec)
+            &g_recs23[m_04 + 1],
+            &g_recs23[m_04],
+            (g_recCount23 - m_04) * sizeof(TypeKeyRec)
         );
     }
-    g_recs23[m_index].m_4 = val;
-    g_recs23[m_index].m_key = reinterpret_cast<i32>(key);
+    g_recs23[m_04].m_4 = val;
+    g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
     g_recCount23 = g_recCount23 + 1;
-    g_recs23[m_index].m_8 = 0;
+    g_recs23[m_04].m_8 = 0;
     return 0;
 }
 

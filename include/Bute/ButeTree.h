@@ -5,39 +5,33 @@
 #include <Bute/PTreeNode.h> // the RTTI-real zErrHandling/CButeNodeEntry/zPTree base hierarchy
 
 SIZE_UNKNOWN(CVariantSlot);
+// The keyed error-handling slot: it is BOTH the variant slot (m_callback/word/tag/label,
+// via Set) and the key-table cursor (Find/Add over the global g_recs23 table). The ex
+// CKeyFinder "reduced view" was this same 0x18-byte object (byte-identical layout, and its
+// Add IS this Add @0x16e360), reached by reinterpret_cast<CKeyFinder*>(a CVariantSlot*) -
+// dissolved here (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
+    CVariantSlot(void* owner);                   // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
     void Set(void* obj, i32 a, i32 b);           // 0x16d850
-    i32 Remove(void* obj, i32 flag);             // 0x16e360 (~zErrHandling unregister)
-    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
-    i32 m_04;                                    // +0x04 probe index slot
-    u16 m_valueWord;                                    // +0x08 word storage
+    i32 Find(i32 key);                           // 0x16e1d0 (binary-search the g_recs23 key table)
+    void* Add(void* key, void* val);             // 0x16e360 (keyed insert/update/remove; val==0 removes)
+    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this]; the error callback)
+    i32 m_04;                                    // +0x04 probe/found index (Find writes it; ex m_index)
+    u16 m_valueWord;                             // +0x08 word storage
     u16 m_0a;                                    // +0x0a
-    i32 m_typeTag;                                    // +0x0c type tag (1/2/4)
-    i32 m_10;                                    // +0x10
-    char* m_label;                                  // +0x14 label / format text
+    i32 m_typeTag;                               // +0x0c type tag (1/2/4; the cursor ctor sets 2)
+    i32 m_10;                                    // +0x10 (the cursor ctor sets 2)
+    char* m_label;                               // +0x14 label / format text / cursor owner (ex m_owner)
 };
 
 SIZE_UNKNOWN(TypeKeyRec);
 struct TypeKeyRec {
-    i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
+    i32 m_key; // +0x00  the key (CVariantSlot::Find subtracts the probe key from it)
     void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
     short m_8; // flag / word slot
     short m_a;
 };
 
-SIZE_UNKNOWN(CKeyFinder);
-struct CKeyFinder {
-    char _vft0[4];                   // +0x00 base object vptr (reduced view; not owned/dispatched)
-    i32 m_index;                     // +0x04  found index / insertion point (the ex-Reg23 m_4)
-    u16 m_08;                        // +0x08
-    u16 m_0a;                        // +0x0a  (padding)
-    i32 m_0c;                        // +0x0c  = 2
-    i32 m_10;                        // +0x10  = 2
-    void* m_owner;                   // +0x14
-    CKeyFinder(void* owner);         // 0x16e1a0
-    i32 Find(i32 key);               // 0x16e1d0
-    void* Add(void* key, void* val); // 0x16e360
-};
 
 SIZE(CButeTreeNode, 0x14);
 struct CButeTreeNode {
