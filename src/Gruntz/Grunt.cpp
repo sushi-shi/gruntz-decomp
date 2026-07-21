@@ -181,17 +181,12 @@ extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop
-// lean-base vptr-stamp residue + member-init/body-split wall (~67%): logic/CFG/field
-// offsets/moving-init all byte-faithful. CGrunt now rides the LEAN CGruntMovingBase
-// (0x30) - the +0x120 header-layout fix, so every field-init hits its true retail
-// offset (m_400 @+0x400 etc.) and the whole CGrunt high-member family lifted. Residue
-// the source cannot steer: (a) the INTERMEDIATE CMovingLogic vptr stamp (0x5e87ac):
-// retail's CMovingLogic subobject ctor stamps ??_7CMovingLogic before CGrunt's own
-// 0x5e8754 stamp, but the lean CGruntMovingBase has no CMovingLogic vtable to emit
-// (its one slot-16 virtual is declared-only), so cl stamps an unbound
-// ??_7CGruntMovingBase there instead - the stamp reloc cannot map to 0x5e87ac. A real
-// CMovingLogic base would re-introduce the fat 0x150 layout (the bug), so this is an
-// inherent dual-world cost. (b) MSVC runs the six owned value-member ctors
+// member-init/body-split wall (~67%): logic/CFG/field offsets/moving-init all
+// byte-faithful. CGrunt rides the Gruntz-module SNAPSHOT of CMovingLogic (lean 0x30;
+// Grunt.h) - the +0x120 header-layout fix, so every field-init hits its true retail
+// offset (m_400 @+0x400 etc.). The base ctor's intermediate vptr stamp now emits the
+// REAL ??_7CMovingLogic (0x5e87ac binds; the ex-CGruntMovingBase rename made it an
+// unbindable reloc). Remaining residue: (b) MSVC runs the six owned value-member ctors
 // (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init PHASE while retail
 // interleaves them among the scalar inits - but they must stay value-typed for ~CGrunt's
 // auto __ehvec_dtor/~CString/~CPtrList teardown (94.9%). (c) the +0x810 timer band's
@@ -223,18 +218,57 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
     } while (0)
 
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(void* owner) : CGruntMovingBase(static_cast<CGameObject*>(owner)) {
-    // --- CGrunt field-init block (retail offset order; the inlined CMovingLogic
-    // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
+CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
+    // The band init - THIS ctor's own copy (its projectile sibling @0xdec60 carries
+    // a drifted copy: g_motionZScale for the step + the inline Z triple). Bounds
+    // via the Motion() view: 0 => MIN/MAX dword copy, else fild-widened int.
+    CMotionState* m = Motion();
+    m->Init();
+    i32 lo0 = m_objAux->m_2c;
+    if (lo0 == 0) {
+        m->m_70 = g_movingLogicMin;
+    } else {
+        m->m_70 = static_cast<double>(lo0);
+    }
+    i32 lo1 = m_objAux->m_34;
+    if (lo1 == 0) {
+        m->m_78 = g_movingLogicMin;
+    } else {
+        m->m_78 = static_cast<double>(lo1);
+    }
+    i32 hi0 = m_objAux->m_30;
+    if (hi0 == 0) {
+        m->m_88 = g_movingLogicMax;
+    } else {
+        m->m_88 = static_cast<double>(hi0);
+    }
+    i32 hi1 = m_objAux->m_38;
+    if (hi1 == 0) {
+        m->m_90 = g_movingLogicMax;
+    } else {
+        m->m_90 = static_cast<double>(hi1);
+    }
+    m->SetParams(
+        static_cast<double>(m_object->m_screenX),
+        static_cast<double>(m_object->m_screenY),
+        0.0,
+        static_cast<double>(m_object->m_164),
+        static_cast<double>(m_object->m_168),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * g_gruntSpawnScale,
+        0.0
+    );
+    m->SetZ(static_cast<double>(g_defaultZ));
+    // --- CGrunt field-init block (retail offset order) ---
     m_148 = 0;
     m_14c = 0;
     m_10->m_moveMode = 7;
-    // The base moving-object per-frame update (CMovingLogic::MovingSlot16 / Update
-    // @0x16ea90) fired once at spawn. It is the CANONICAL CMovingLogic slot-16 body
-    // (bound in MovingLogic.cpp); CGrunt rides the lean CGruntMovingBase, so the base
-    // slot is reached through the shared canonical CMovingLogic view (same object at
-    // offset 0) to reloc-mask against 0x16ea90.
-    (reinterpret_cast<CMovingLogic*>(this))->MovingSlot16();
+    // The base moving-object per-frame update fired once at spawn - the qualified
+    // call is direct, binding the slot-16 body @0x16ea90 (MovingLogic.cpp) for real.
+    CMovingLogic::MovingSlot16();
     CGameObject* obj = static_cast<CGameObject*>(owner); // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_34 = obj;
     m_38 = static_cast<CWwdGameObjectA*>(obj); // the owner object doubles as the entrance player (A-kind)

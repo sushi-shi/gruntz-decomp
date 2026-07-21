@@ -24,6 +24,7 @@
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Gruntz/Projectile.h> // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record)
 #include <Bute/SymTab.h>              // CSymTab (ResolveQualified)
@@ -122,7 +123,6 @@ static void GruntScratchTeardown() {
 
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
-#include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 

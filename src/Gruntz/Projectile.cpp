@@ -4,8 +4,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/Grunt.h>
 #include <Gruntz/Projectile.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
 #include <Gruntz/LightFx.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -102,8 +102,6 @@ const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g
 DATA(0x001f04e8)
 u32 g_defaultZ = 0;
 
-extern void Fn16ea90();
-
 // @confidence: med
 // @source: rtti-vptr / disasm
 // @early-stop
@@ -127,10 +125,55 @@ extern void Fn16ea90();
 // (retail 0/1/2/3 over +0x38 + CPtrList) and the m_hitList-vs-body order differ.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
+    // The band init - THIS ctor's own copy (its grunt sibling @0x47a10 carries a
+    // drifted copy: g_gruntSpawnScale for the step + a SetZ call for the Z seed).
+    Motion()->Init();
+    // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
+    // widened via fild (if/else, not ?:, so the constant branch stays a mov/mov copy).
+    i32 lo0 = m_objAux->m_2c;
+    if (lo0 == 0) {
+        m_a8 = g_movingLogicMin;
+    } else {
+        m_a8 = static_cast<double>(lo0);
+    }
+    i32 lo1 = m_objAux->m_34;
+    if (lo1 == 0) {
+        m_b0 = g_movingLogicMin;
+    } else {
+        m_b0 = static_cast<double>(lo1);
+    }
+    i32 hi0 = m_objAux->m_30;
+    if (hi0 == 0) {
+        m_c0 = g_movingLogicMax;
+    } else {
+        m_c0 = static_cast<double>(hi0);
+    }
+    i32 hi1 = m_objAux->m_38;
+    if (hi1 == 0) {
+        m_c8 = g_movingLogicMax;
+    } else {
+        m_c8 = static_cast<double>(hi1);
+    }
+    Motion()->SetParams(
+        static_cast<double>(m_object->m_screenX),
+        static_cast<double>(m_object->m_screenY),
+        0.0,
+        static_cast<double>(m_object->m_164),
+        static_cast<double>(m_object->m_168),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * g_motionZScale,
+        0.0
+    );
+    m_110 = m_118 = m_120 = static_cast<double>(g_defaultZ);
     m_148 = 0;
     m_14c = 0;
     m_object->m_moveMode = 7;
-    Fn16ea90();
+    // The base per-frame update fired once at spawn - qualified = direct @0x16ea90
+    // (was the fake free-fn alias "Fn16ea90").
+    CMovingLogic::MovingSlot16();
     // Seed the CWapX base's back-pointers (the +0x150 second base; <Gruntz/UserLogic.h>).
     // ASSIGNED IN THE BODY, not via a `CWapX(owner)` init-list base ctor: retail puts
     // these three stores AFTER m_148/m_14c/m_moveMode/Fn16ea90, which a base ctor could

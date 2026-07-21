@@ -14,6 +14,9 @@ extern "C" u32 g_frameTime;         // 0x645588
 extern const double g_motionZScale; // 0x5eaa88
 extern u32 g_defaultZ;              // 0x5f04e8
 
+class CWwdGameObjectA; // the A-kind sprite (the grunt arm's m_animPlayer)
+class CAniElement;     // resolved anim-geometry handle (the grunt arm's *GeoSrc)
+
 SIZE_UNKNOWN(CMovingLogic);
 class CMovingLogic : public CUserLogic {
 public:
@@ -41,11 +44,15 @@ public:
     // m_38/m_3c: those names now belong to the CWapX base at +0x150 on the derived
     // classes, and a same-name/different-offset pair is exactly the silent-rebind trap.
     char m_pad34[0x38 - 0x34]; // +0x34  own; no ctor writes it (role unrecovered)
-    i32 m_band38;              // +0x38  CMotionState band dword 0 (overlays Motion())
-    i32 m_band3c;              // +0x3c  CMotionState band dword 1
 public:
-    CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
-    CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
+    CMovingLogic(); // 0x13940 (standalone) / inlined into leaves
+    // The THIN seeded ctor (inline below): CUserLogic(owner) + this vptr stamp,
+    // nothing else. The band init (Motion()->Init() / bounds / SetParams / Z seed)
+    // is each derived ctor's OWN copy-pasted body code - the two retail folds
+    // (??0CProjectile @0xdec60, ??0CGrunt @0x47a10) drift on the step global
+    // (g_motionZScale vs g_gruntSpawnScale) and the Z spelling (inline triple vs
+    // SetZ call), which body-level copies explain and one shared ctor cannot.
+    CMovingLogic(CGameObject* owner);
     virtual ~CMovingLogic() OVERRIDE; // slot 0 (leaf dtor 0x13bd0)
     // Update lands at its true slot 16 (offset 0x40) directly: CUserLogic now models
     // all 16 of its real slots (0..15), so Update is CMovingLogic's first added
@@ -63,24 +70,57 @@ public:
         return reinterpret_cast<CMotionState*>((reinterpret_cast<char*>(this) + 0x38));
     }
 
-    // CMovingLogic's own data begins at +0x40 (CTileLogic base ends at +0x40). The
-    // ctor also re-zeroes the inherited CTileLogic m_38/m_3c (the band's first double).
-    // +0x40..+0x8f: twenty motion ints (zeroed dword-wise; overlay Motion()).
-    i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
-    i32 m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84, m_88, m_8c;
-    char m_pad90[0xa8 - 0x90];
-    // +0xa8..+0xd7: three "ranges", each {double lo, double hi}.
-    double m_a8, m_b0, m_b8; // the three lo bounds (default MIN)
-    double m_c0, m_c8, m_d0; // the three hi bounds (default MAX)
-    char m_padd8[0xf0 - 0xd8];
-    i32 m_f0;                     // +0xf0
-    char m_padf4[0xf8 - 0xf4];    // gap
-    i32 m_f8, m_fc, m_100, m_104; // +0xf8..+0x107
-    i32 m_108, m_10c;             // +0x108..+0x10f
-    // +0x110..+0x13f: six doubles, all seeded to MAX.
-    double m_110, m_118, m_120, m_128, m_130, m_138;
-    // +0x140..+0x14c: four trailing ints (Update / Serialize round-trip).
-    i32 m_140, m_144, m_148, m_14c;
+    // +0x38..+0x14f: the kinematic band, overlaid per LOGIC KIND (the same retail
+    // union idiom as the CWwdGameObject +0x114 slot). Arm 1 is the flat motion
+    // layout the ctors zero/seed (and Motion() views as a CMotionState); arm 2 is
+    // the grunt logic's reuse of the band (CGrunt parks its resolved anim/type
+    // state in bytes its kinematics never touch after spawn).
+    union {
+        struct { // motion layout (ctor zero-run order; overlays Motion())
+            i32 m_band38, m_band3c; // +0x38/+0x3c  band dwords 0/1 (NOT m_38/m_3c -
+                                    //   those names are the CWapX flats @+0x150)
+            i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
+            i32 m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84, m_88, m_8c;
+            char m_pad90[0xa8 - 0x90];
+            // +0xa8..+0xd7: three "ranges", each {double lo, double hi}.
+            double m_a8, m_b0, m_b8; // the three lo bounds (default MIN)
+            double m_c0, m_c8, m_d0; // the three hi bounds (default MAX)
+            char m_padd8[0xf0 - 0xd8];
+            i32 m_f0;                     // +0xf0
+            char m_padf4[0xf8 - 0xf4];    // gap
+            i32 m_f8, m_fc, m_100, m_104; // +0xf8..+0x107
+            i32 m_108, m_10c;             // +0x108..+0x10f
+            // +0x110..+0x13f: six doubles, all seeded to MAX.
+            double m_110, m_118, m_120, m_128, m_130, m_138;
+            // +0x140..+0x14c: four trailing ints (Update / Serialize round-trip).
+            i32 m_140, m_144, m_148, m_14c;
+        };
+        struct { // grunt-logic reuse (CGrunt's recovered identities for the band)
+            CWwdGameObjectA* m_animPlayer; // +0x38  the bound A-kind sprite driven as
+                                           //   the animation player (tile-leaf m_38==obj)
+            char m_gpad3c[0x40 - 0x3c];
+            CAniElement* m_activeAnimDesc; // +0x40  cached m_animPlayer->m_1a0.m_14
+            char m_gpad44[0x54 - 0x44];
+            // +0x54 grunt-type name: a raw CString body ptr (a single char*) so
+            // ~CGrunt does NOT auto-destruct it; viewed via CGrunt::TypeName().
+            char* m_typeName;
+            // +0x58..+0x7c: the resolved per-anim geometry sources (CAniElement*
+            // handles from the anim-key catalog).
+            CAniElement* m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58
+            CAniElement* m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68
+            CAniElement* m_joyGeoSrc;                          // +0x74
+            CAniElement* m_deathGeoSrc;                        // +0x78
+            CAniElement* m_movingGeoSrc;                       // +0x7c
+            char m_gpad80[0x88 - 0x80];
+            i32 m_moveSeed;      // +0x88  (moving: = g_movingSeed)
+            i32 m_moveTimeHi;    // +0x8c  (moving: = 0)
+            i32 m_moveStartTime; // +0x90  (moving: randomized time)
+            i32 m_moveSeedHi;    // +0x94  (moving: = 0)
+            char m_gpad98[0xa8 - 0x98];
+            i32 m_animResolved; // +0xa8  resolve gate / dirty flag (== moveMinX lo)
+            i32 m_deathCueArg;  // +0xac  cue arg (== moveMinX hi)
+        };
+    };
 };
 VTBL(CMovingLogic, 0x1e87ac);
 
@@ -131,51 +171,9 @@ inline CMovingLogic::CMovingLogic() {
 #endif // CMOVINGLOGIC_STANDALONE_CTOR
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    // (No +0x34..0x3c back-pointer stores: retail 0xdec60 does not emit them - they
-    // were the fabricated ex-TILE_LOGIC_SEED. The real ones are the CWapX base's at
-    // +0x150, assigned by each derived ctor's body. See the class note above.)
-    Motion()->Init();
-    // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
-    // widened via fild. Written as if/else (not ?:) so the constant branch stays a
-    // mov/mov dword copy instead of being unified into an x87 fld/fstp.
-    i32 lo0 = m_objAux->m_2c;
-    if (lo0 == 0) {
-        m_a8 = g_movingLogicMin;
-    } else {
-        m_a8 = static_cast<double>(lo0);
-    }
-    i32 lo1 = m_objAux->m_34;
-    if (lo1 == 0) {
-        m_b0 = g_movingLogicMin;
-    } else {
-        m_b0 = static_cast<double>(lo1);
-    }
-    i32 hi0 = m_objAux->m_30;
-    if (hi0 == 0) {
-        m_c0 = g_movingLogicMax;
-    } else {
-        m_c0 = static_cast<double>(hi0);
-    }
-    i32 hi1 = m_objAux->m_38;
-    if (hi1 == 0) {
-        m_c8 = g_movingLogicMax;
-    } else {
-        m_c8 = static_cast<double>(hi1);
-    }
-    Motion()->SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
-        0.0,
-        static_cast<double>(m_object->m_164),
-        static_cast<double>(m_object->m_168),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        static_cast<double>(g_frameTime) * g_motionZScale,
-        0.0
-    );
-    m_110 = m_118 = m_120 = static_cast<double>(g_defaultZ);
+    // Thin: the CUserLogic seed + this vptr stamp only. (No +0x34..0x3c back-pointer
+    // stores - the ex-TILE_LOGIC_SEED fabrication; the real ones are the CWapX flats
+    // @+0x150, assigned by each derived ctor's body.)
 }
 
 #endif // GRUNTZ_CMOVINGLOGIC_H

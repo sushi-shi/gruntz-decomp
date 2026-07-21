@@ -20,7 +20,7 @@ class DirectSoundMgr;
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 #include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/MovingLogic.h>
+#include <Gruntz/MovingLogic.h> // the ONE CMovingLogic (fat spine + the band union; CGrunt derives it)
 
 SIZE_UNKNOWN(CCueRect);
 typedef struct tagRECT CCueRect;
@@ -276,86 +276,12 @@ extern const double g_movingLogicMax;  // 0x5f04b8 (2147483646.0)
 extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
 extern u32 g_defaultZ;                 // 0x5f04e8 (default-Z int)
 extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-masked)
+extern "C" u32 g_frameTime;            // 0x645588 (the running game clock; FrameClock.h)
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
-// IDENTITY PROVEN (2026-07-21): CGruntMovingBase IS the Gruntz-module REVISION of
-// CMovingLogic. The 0x5e87ac "??_7CMovingLogic" vtable is stamped by FIVE ctors
-// (??0CMovingLogic 0x13940, both ??0CProjectile, SerialObjectFactory - the FAT
-// 0x150-spine revision - AND ??0CGrunt @0x47a4e over THIS lean 0x30 base): retail
-// had two same-named class revisions across module boundaries whose selectany
-// ??_7CMovingLogic COMDATs the linker folded to one datum. The 1-arg ctors differ
-// too (this one: SetZ + g_gruntSpawnScale; the fat one: inline Z stores +
-// g_motionZScale) - two header snapshots, not one class. Dissolution path: split
-// the include graph so the Grunt family sees ONLY this lean revision under the
-// real name CMovingLogic (per-TU definitions, COMDAT-folding exactly like retail);
-// blocked today because Grunt.h itself pulls <Gruntz/MovingLogic.h> and
-// Projectile.cpp needs Grunt.h + the fat def in one TU. Until that split, the
-// ctor's intermediate vptr stamp emits the unbindable ??_7CGruntMovingBase
-// (0x1e87ac is VTBL-bound to CMovingLogic) and MovingSlot16 stays declared-only -
-// the LAST view-debt/VTBL-catalog entries, both encoding this one retail truth.
-SIZE_UNKNOWN(CGruntMovingBase);
-class CGruntMovingBase : public CUserLogic {
-public:
-    CGruntMovingBase(CGameObject* owner);
-    virtual void MovingSlot16(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
-    CMotionState* Motion() {
-        return reinterpret_cast<CMotionState*>((reinterpret_cast<char*>(this) + 0x38));
-    }
-};
-
-inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner) {
-    // Build the +0x38 CMotionState band, then seed its per-axis bounds. The band +
-    // the bounds physically OVERLAY CGrunt's own members (m_animResolved etc.); they
-    // are the real CMotionState fields, reached through the Motion() sub-object
-    // accessor (the same blessed +0x38 cast the canonical CMovingLogic uses), so no
-    // raw-offset store is needed. Each bound: 0 => the shared MIN/MAX double copied
-    // dword-wise; else the per-type-config int widened via fild (if/else, not ?:, so
-    // the constant branch stays a mov/mov copy instead of a folded fld/fstp).
-    CMotionState* m = Motion();
-    m->Init();
-    i32 lo0 = m_objAux->m_2c;
-    if (lo0 == 0) {
-        m->m_70 = g_movingLogicMin;
-    } else {
-        m->m_70 = static_cast<double>(lo0);
-    }
-    i32 lo1 = m_objAux->m_34;
-    if (lo1 == 0) {
-        m->m_78 = g_movingLogicMin;
-    } else {
-        m->m_78 = static_cast<double>(lo1);
-    }
-    i32 hi0 = m_objAux->m_30;
-    if (hi0 == 0) {
-        m->m_88 = g_movingLogicMax;
-    } else {
-        m->m_88 = static_cast<double>(hi0);
-    }
-    i32 hi1 = m_objAux->m_38;
-    if (hi1 == 0) {
-        m->m_90 = g_movingLogicMax;
-    } else {
-        m->m_90 = static_cast<double>(hi1);
-    }
-    m->SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
-        0.0,
-        static_cast<double>(m_object->m_164),
-        static_cast<double>(m_object->m_168),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        static_cast<double>(g_frameTime) * g_gruntSpawnScale,
-        0.0
-    );
-    m->SetZ(static_cast<double>(g_defaultZ));
-}
-
 SIZE(CGrunt, 0x8d8);
-class CGrunt : public CGruntMovingBase {
+class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
@@ -545,51 +471,20 @@ public:
     // 0x16e7f0, and that body read/writes this+0x30 - so +0x30 cannot be CGrunt's
     // own field. The local re-declaration was dropped 2026-07-17 (SM1); the name,
     // type (void*) and offset are unchanged, so every use site is untouched.
-    char m_pad34[0x38 - 0x34];
-    CWwdGameObjectA* m_animPlayer; // +0x38  the bound A-kind sprite, driven as the animation
-                       //        player (tile-leaf convention m_38 == obj; the ex
-                       //        CGruntAnimState view)
-    char m_pad3c[0x40 - 0x3c];
-    CAniElement* m_activeAnimDesc; // +0x40  (cached m_38->m_1a0.m_14)
-    char m_pad44[0x54 - 0x44];
-    // +0x54 grunt-type name. Stored as a raw CString body (a single char* -
-    // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
-    // down only the six members below, NOT +0x54); viewed as a CString via
-    // TypeName() at its five concat sites (codegen-neutral: same CString lvalue).
-    char* m_typeName; // +0x54  grunt-type CString body ptr (not owned by ~CGrunt)
+    // (+0x34..+0x14f is the CMovingLogic base's - incl. the grunt arm of its band
+    // union: m_animPlayer/m_activeAnimDesc/m_typeName/the *GeoSrc handles/the move
+    // seeds/m_animResolved/m_deathCueArg all live there now. <Gruntz/MovingLogic.h>.)
+    // The +0x54 type name viewed as a CString at its five concat sites
+    // (codegen-neutral: same CString lvalue; the raw char* member keeps ~CGrunt
+    // from auto-destructing it).
     CString& TypeName() {
         return *reinterpret_cast<CString*>(&m_typeName);
     }
-    // +0x58..+0x7c: the resolved per-anim geometry sources - CAniElement* handles
-    // looked up from m_0c->m_animRegistry->m_10 (the Ptr-band catalog); fed to the cursor's
-    // Setup_15c2d0. (Were i32; the map is void*-valued so the fill sites cast at
-    // the container edge.)
-    CAniElement* m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
-    CAniElement* m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
-    CAniElement* m_joyGeoSrc;                          // +0x74  (generic/_JOY geometry source)
-    CAniElement* m_deathGeoSrc;                        // +0x78  (death geometry source)
-    CAniElement* m_movingGeoSrc;                       // +0x7c  (moving geometry source)
-    char m_pad80[0x88 - 0x80];
-    i32 m_moveSeed;      // +0x88  (moving: = g_movingSeed)
-    i32 m_moveTimeHi;    // +0x8c  (moving: = 0)
-    i32 m_moveStartTime; // +0x90  (moving: randomized time)
-    i32 m_moveSeedHi;    // +0x94  (moving: = 0)
-    char m_pad98[0xa8 - 0x98];
-    // +0xa8..+0xd0: the CMovingLogic base ctor overlays a movement-bound box here
-    // (minX@0xa8, minY@0xb0, maxX@0xc0, maxY@0xc8, doubles); CGrunt reuses the
-    // +0xa8 dword pair as the resolve gate + cue arg. The base ctor writes these via
-    // raw offsets by necessity (a CUserLogic-derived base cannot name CGrunt members
-    // without shifting CGrunt's layout), so they stay raw - authentic, not a hack.
-    i32 m_animResolved; // +0xa8  (resolve gate / dirty flag; == moveMinX double lo)
-    i32 m_deathCueArg;  // +0xac  (cue arg; == moveMinX double hi)
     // (+0x114/+0x118/+0x124 were migrated here last batch as "placement params". That was
     //  WRONG and is reverted: those writes happen on the CreateSprite RESULT - a CGameObject,
     //  not a grunt - and <Gruntz/UserLogic.h>'s CGameObject already models them (m_114 /
     //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
     //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
-    char m_padb0[0x148 - 0xb0];
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
     // ---------------------------------------------------------------------
     // +0x150..+0x16f IS THE CWapX SECOND BASE, spelled flat (MI1, 2026-07-17).
     // PROVEN, not suspected - three independent lines agree:
@@ -617,10 +512,10 @@ public:
     //       m_154 and only the build caught them. Rename FIRST, then delete: with the
     //       decls still present a missed site is a compile error, not a silent rebind.
     //
-    //   (2) BLOCKED - `: public CGruntMovingBase, public CWapX` needs the PRIMARY base
+    //   (2) BLOCKED - `: public the lean CMovingLogic, public CWapX` needs the PRIMARY base
     //       to be the 0x150 spine (a second base lands right after the primary's size,
     //       so with today's LEAN base CWapX would sit at +0x34, not +0x150). Moving
-    //       +0x34..+0x14f into CGruntMovingBase is mechanical and byte-neutral (base
+    //       +0x34..+0x14f into the lean CMovingLogic is mechanical and byte-neutral (base
     //       data precedes own data -> offsets unchanged). ATTEMPTED 2026-07-17: it
     //       compiles down to exactly ONE class of error, and it is the OLD, KNOWN
     //       CGrunt-ODR blocker #4 (the i32/void slot-signature split; see the NOTE in

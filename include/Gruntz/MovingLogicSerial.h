@@ -2,8 +2,10 @@
 #define GRUNTZ_CMOVINGLOGICSERIAL_H
 
 #include <Ints.h>
-#include <Gruntz/MovingLogic.h> // the canonical CMovingLogic + CMotionState (+0x38 curve)
+#include <Gruntz/MotionState.h> // CMotionState (the +0x38 curve ReadCurve fills)
 #include <rva.h>
+// (deliberately NOT <Gruntz/MovingLogic.h>: this header is shared with the Grunt
+// family, which carries its own lean CMovingLogic snapshot in <Gruntz/Grunt.h>.)
 
 // The serialize accumulators are REAL CRT strstream temps (<strstrea.h>, statically
 // linked): the ex-CButeWriteTemp/CButeReadTemp "Ctor(buf,len,..,1)" calls were
