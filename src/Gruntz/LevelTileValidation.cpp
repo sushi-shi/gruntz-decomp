@@ -275,7 +275,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 4: // 0x37
                 case 5: // 0x38
                     if (!m_beginMarker->AddSwitchLogic(
-                            3,
+                            TRIGID_MULTI_SWITCH_3,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -300,7 +300,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 8: // 0x3b
                 case 9: // 0x3c
                     if (!m_beginMarker->AddSwitchLogic(
-                            4,
+                            TRIGID_EXCLUSIVE_SWITCH_4,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -325,7 +325,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xa: // 0x3d (retail also increments (*0x64556c)->m_7c->+0x3c here)
                 case 0xb: // 0x3e
                     if (!m_beginMarker->AddSwitchLogic(
-                            6,
+                            TRIGID_SECRET_SWITCH_6,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -350,7 +350,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xc: // 0x3f
                 case 0xd: // 0x40
                     if (!m_beginMarker->AddSwitchLogic(
-                            7,
+                            TRIGID_TIME_SWITCH_7,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -375,7 +375,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xe: // 0x41
                 case 0xf: // 0x42
                     if (!m_beginMarker->AddSwitchLogic(
-                            8,
+                            TRIGID_CHECKPOINT_SWITCH_8,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -400,7 +400,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0: // 0x33
                 case 1: // 0x34
                     if (!m_beginMarker->AddSwitchLogic(
-                            1,
+                            TRIGID_SWITCH_1,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -425,7 +425,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 2: // 0x35
                 case 3: // 0x36
                     if (!m_beginMarker->AddSwitchLogic(
-                            2,
+                            TRIGID_SWITCH_2,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
@@ -450,7 +450,7 @@ i32 CPlay::ValidateLevelTiles() {
                 case 6: // 0x39
                 case 7: // 0x3a
                     if (!m_beginMarker->AddSwitchLogic(
-                            5,
+                            TRIGID_SWITCH_5,
                             obj->m_164,
                             obj->m_168,
                             obj->m_04,
