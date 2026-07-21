@@ -343,7 +343,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         firstCol = 0;
     }
 
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
 }
 
 // =========================================================================

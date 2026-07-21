@@ -85,9 +85,9 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
         i32 base = surf->Lock(static_cast<void*>(0));
         if (base != 0) {
             i32 row = surf->m_pitch * y;
-            i32 col = surf->m_b0 * x;
+            i32 col = surf->m_bytesPerPixel * x;
             *reinterpret_cast<char*>((base + row + col)) = m_dotColor;
-            surf->m_8->Unlock(0);
+            surf->m_ddSurface->Unlock(0);
         }
     }
     m_lastX = m_screenX;
@@ -125,16 +125,16 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         CDDSurface* sb = b->m_surface;
         char* base = reinterpret_cast<char*>(sb->Lock(0));
         if (base != 0) {
-            pixel = base[sb->m_b0 * x + sb->m_pitch * y];
-            sb->m_8->Unlock(0);
+            pixel = base[sb->m_bytesPerPixel * x + sb->m_pitch * y];
+            sb->m_ddSurface->Unlock(0);
         } else {
             pixel = 0;
         }
         CDDSurface* sa = a->m_surface;
         char* base2 = reinterpret_cast<char*>(sa->Lock(0));
         if (base2 != 0) {
-            base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
-            sa->m_8->Unlock(0);
+            base2[sa->m_bytesPerPixel * x + sa->m_pitch * y] = pixel;
+            sa->m_ddSurface->Unlock(0);
         }
         m_dirtyArmed = -1; // m_38
     }

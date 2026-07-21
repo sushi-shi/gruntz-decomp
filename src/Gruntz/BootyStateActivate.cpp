@@ -781,7 +781,7 @@ void CMultiBootyState::DrawBattleStats() {
 
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(0x8006, 0x459);

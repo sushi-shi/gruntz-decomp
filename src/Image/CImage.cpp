@@ -138,7 +138,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_bc != 0) {
+    if (item->m_hasColorKey != 0) {
         m_loadResult = 0x11;
     } else {
         m_loadResult = 0x10;
@@ -231,7 +231,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_bc != 0) {
+    if (item->m_hasColorKey != 0) {
         m_loadResult = 0x11;
         return 1;
     }
@@ -257,7 +257,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_bc != 0) {
+    if (item->m_hasColorKey != 0) {
         m_loadResult = 0x11;
     } else {
         m_loadResult = 0x10;
@@ -369,13 +369,13 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     if (m_surface == 0) {
         return 1;
     }
-    IDirectDrawSurface* s = m_surface->m_8;
+    IDirectDrawSurface* s = m_surface->m_ddSurface;
     if (s != 0) {
         if (s->IsLost() == 0) {
             return 1;
         }
     }
-    s = m_surface->m_8;
+    s = m_surface->m_ddSurface;
     if (s->Restore() != 0) {
         this->FreeAll();
         return this->Resolve(src, arg);

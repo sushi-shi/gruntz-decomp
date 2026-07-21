@@ -946,7 +946,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             u8 pix;
             i32 base = m_srcSurface->Lock(0);
             if (base != 0) {
-                pix = *reinterpret_cast<u8*>((base + m_srcSurface->m_b0 * x + m_srcSurface->m_pitch * y));
+                pix = *reinterpret_cast<u8*>((base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y));
                 m_srcSurface->UnlockThunk();
             } else {
                 pix = 0;
@@ -1005,8 +1005,8 @@ void CFaderRadial::RenderFrame(i32 frame) {
 
     // Inlined UnlockThunk: IDirectDrawSurface::Unlock(NULL) on both surfaces (COM slot
     // 32, byte +0x80 - the ex void**-element "+0x20" spelling of the same slot).
-    m_srcSurface->m_8->Unlock(0);
-    dst->m_8->Unlock(0);
+    m_srcSurface->m_ddSurface->Unlock(0);
+    dst->m_ddSurface->Unlock(0);
     RezFree(scratch);
 }
 
@@ -1151,7 +1151,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     i32 mx = (m_rowCount > m_span) ? m_rowCount : m_span;
-    m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_b0 * mx));
+    m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_bytesPerPixel * mx));
     return 1;
 }
 
@@ -1174,7 +1174,7 @@ void CFaderShape::RenderTile(i32 arg0, i32 arg1) {
     }
     i32 stride = m_halfWidth * 2; // inner pixel count
     i32 rowBytes = stride + arg1;
-    i32 bpp = m_surfA->m_b0;
+    i32 bpp = m_surfA->m_bytesPerPixel;
 
     i32 x0;
     u8* src2base;
@@ -1267,7 +1267,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
         return;
     }
     i32 arc = static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159));
-    i32 bpp = m_surfA->m_b0;
+    i32 bpp = m_surfA->m_bytesPerPixel;
 
     i32 colBase;
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {

@@ -139,7 +139,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
         return 0;
     }
     i32 r = BuildRle(reinterpret_cast<void*>(bits), surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
     return r;
 }
 

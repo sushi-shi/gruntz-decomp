@@ -252,11 +252,11 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
     if (m_surface == 0) {
         return 1;
     }
-    IDirectDrawSurface* s = m_surface->m_8;
+    IDirectDrawSurface* s = m_surface->m_ddSurface;
     if (s != 0 && s->IsLost() == 0) {
         return 1;
     }
-    IDirectDrawSurface* r = m_surface->m_8;
+    IDirectDrawSurface* r = m_surface->m_ddSurface;
     // Named local before `== 0` so MSVC emits the setcc form (xor/test/sete/mov),
     // not the neg/sbb/inc normalize. docs/patterns/return-bool-via-local-setcc.md.
     i32 hr = r->Restore();
@@ -305,17 +305,17 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (m_bpp == 0x10) {
         i32 n = 2 * w;
         if (n > 0) {
-            memset(base + sv->m_b0 * left + sv->m_pitch * top, c, n);
+            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * top, c, n);
         }
         if (n > 0) {
-            memset(base + sv->m_b0 * left + sv->m_pitch * bottom, c, n);
+            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * bottom, c, n);
         }
     } else {
         if (w > 0) {
-            memset(base + sv->m_b0 * left + sv->m_pitch * top, c, w);
+            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * top, c, w);
         }
         if (w > 0) {
-            memset(base + sv->m_b0 * left + sv->m_pitch * bottom, c, w);
+            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * bottom, c, w);
         }
     }
 
@@ -324,23 +324,23 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (h > 0) {
         for (i32 y = 0; y < h; ++y) {
             if (m_bpp == 0x10) {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_b0 * left;
+                i32 lo = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * left;
                 base[lo] = c;
                 base[lo + 1] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_b0 * right;
+                i32 ro = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * right;
                 base[ro] = c;
                 base[ro + 1] = c;
             } else {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_b0 * left;
+                i32 lo = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * left;
                 base[lo] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_b0 * right;
+                i32 ro = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * right;
                 base[ro] = c;
             }
         }
     }
 
     // Unlock the held surface.
-    sv->m_8->Unlock(0);
+    sv->m_ddSurface->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -376,7 +376,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (base == 0) {
         return;
     }
-    i32 off = m_surface->m_b0 * x + m_surface->m_pitch * y;
+    i32 off = m_surface->m_bytesPerPixel * x + m_surface->m_pitch * y;
 
     // horizontal arm (0), centre pixel skipped
     i32 i;
@@ -403,7 +403,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     }
 
     CDDSurface* sv = m_surface;
-    sv->m_8->Unlock(0);
+    sv->m_ddSurface->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -429,7 +429,7 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
         i32 sysmem;
         if (m_status == 2) {
             DDSCAPS caps;
-            if (0 == m_surface->m_8->GetCaps(&caps)) {
+            if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
                 sysmem = 0x800 & caps.dwCaps;
             } else {
                 sysmem = 0;
@@ -489,14 +489,14 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
         return;
     }
     HDC hdc = 0;
-    w->m_8->GetDC(&hdc);
+    w->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0xffffff);
     DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
-    w->m_8->ReleaseDC(hdc);
+    w->m_ddSurface->ReleaseDC(hdc);
 }
 
 RVA(0x00164420, 0x79)
@@ -506,14 +506,14 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
         return;
     }
     HDC hdc = 0;
-    w->m_8->GetDC(&hdc);
+    w->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0xffffff);
     DrawTextA(hdc, text, strlen(text), rc, 0x25);
-    w->m_8->ReleaseDC(hdc);
+    w->m_ddSurface->ReleaseDC(hdc);
 }
 
 // ---------------------------------------------------------------------------
@@ -636,8 +636,8 @@ void CDDrawSurfacePair::BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos,
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
 i32 CDDrawSurfacePair::Probe_164660() {
-    return m_surface == 0 || (m_surface->m_8 != 0 && m_surface->m_8->IsLost() == 0)
-           || m_surface->m_8->Restore() == 0 || m_surface->m_8->Restore() == 0;
+    return m_surface == 0 || (m_surface->m_ddSurface != 0 && m_surface->m_ddSurface->IsLost() == 0)
+           || m_surface->m_ddSurface->Restore() == 0 || m_surface->m_ddSurface->Restore() == 0;
 }
 
 void operator delete(void*);
@@ -1180,8 +1180,8 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         i32 y = m_screenY;
         char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
-            base[s->m_b0 * x + s->m_pitch * y] = c;
-            s->m_8->Unlock(0);
+            base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
+            s->m_ddSurface->Unlock(0);
         }
     }
     {
@@ -1191,8 +1191,8 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         CDDSurface* s = a->m_surface;
         char* base = reinterpret_cast<char*>(s->Lock(0));
         if (base != 0) {
-            base[s->m_b0 * x + y * s->m_pitch] = c;
-            s->m_8->Unlock(0);
+            base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
+            s->m_ddSurface->Unlock(0);
         }
     }
 }

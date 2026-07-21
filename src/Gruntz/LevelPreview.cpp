@@ -95,7 +95,7 @@ i32 CPreviewState::NextScreenCmd_0de190(i32 param) {
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (surf == 0 || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(0x8006, 0xfa0);

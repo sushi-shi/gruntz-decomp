@@ -114,7 +114,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             pDesc = reinterpret_cast<i32*>((reinterpret_cast<char*>(pDesc) + 0x1c));
         } while (--rowCount != 0);
     }
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
     return 1;
 }
 

@@ -266,7 +266,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    src->m_8->Unlock(0);
-    dst->m_8->Unlock(0);
+    src->m_ddSurface->Unlock(0);
+    dst->m_ddSurface->Unlock(0);
     return 1;
 }

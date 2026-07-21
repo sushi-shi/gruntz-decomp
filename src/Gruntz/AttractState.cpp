@@ -191,7 +191,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(0x8006, 0x3e8);

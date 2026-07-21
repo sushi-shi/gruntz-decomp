@@ -324,14 +324,14 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
         return 0;
     }
     HDC hdc = 0;
-    s->m_8->GetDC(&hdc);
+    s->m_ddSurface->GetDC(&hdc);
     if (hdc == 0) {
         return 0;
     }
     SetBkMode(hdc, bkMode);
     SetTextColor(hdc, color);
     TextOutA(hdc, x, y, str, strlen(str));
-    s->m_8->ReleaseDC(hdc);
+    s->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }
 

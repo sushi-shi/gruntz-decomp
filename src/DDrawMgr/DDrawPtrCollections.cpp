@@ -132,8 +132,8 @@ i32 CPoolItemA88::UpdateOverlay(
     u32 flags,
     void* fx
 ) {
-    return m_8
-        ->UpdateOverlay(static_cast<LPRECT>(srcRect), dest->m_8, static_cast<LPRECT>(destRect), flags, static_cast<LPDDOVERLAYFX>(fx));
+    return m_ddSurface
+        ->UpdateOverlay(static_cast<LPRECT>(srcRect), dest->m_ddSurface, static_cast<LPRECT>(destRect), flags, static_cast<LPDDOVERLAYFX>(fx));
 }
 
 RVA(0x00148af0, 0x58)

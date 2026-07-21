@@ -36,7 +36,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
         return 0;
     }
 
-    i32 mode = src->m_b0;
+    i32 mode = src->m_bytesPerPixel;
     m_dstBpp = static_cast<u8>(mode);
     if (static_cast<u8>(mode) == 2) {
         if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
@@ -235,7 +235,7 @@ void CDDrawShadeBlit::BlitMode_149950(
         }
     }
 
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
 }
 
 // ===========================================================================
@@ -431,7 +431,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
         }
     }
 
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
 }
 
 // ===========================================================================
@@ -829,7 +829,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
         }
     }
 
-    src->m_8->Unlock(0);
+    src->m_ddSurface->Unlock(0);
 }
 
 // ===========================================================================
@@ -1211,7 +1211,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
         }
     }
 
-    surf->m_8->Unlock(0);
+    surf->m_ddSurface->Unlock(0);
 }
 
 // @early-stop

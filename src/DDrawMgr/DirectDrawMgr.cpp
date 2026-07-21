@@ -50,8 +50,8 @@ void BuildColorChannelTables();
 void operator delete(void*);
 
 inline CDDSurface::CDDSurface() {
-    m_8 = 0;
-    m_c = 0;
+    m_ddSurface = 0;
+    m_ddSurfaceBack = 0;
     m_pos = 0;
     m_dontOwn = 0;
     m_bitDepth = 0;

@@ -259,8 +259,8 @@ public:
     // --- layout (0xc0 bytes; the OFFSETS are load-bearing) ---------------------
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the ctor/dtor vptr stamp).
     POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
-    IDirectDrawSurface* m_8; // +0x08  held DirectDraw surface (released via Release)
-    IDirectDrawSurface* m_c; // +0x0c  held back/secondary surface (also released)
+    IDirectDrawSurface* m_ddSurface; // +0x08  held DirectDraw surface (released via Release)
+    IDirectDrawSurface* m_ddSurfaceBack; // +0x0c  held back/secondary surface (also released)
     // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c bytes). The pool
     // slot-9 setup (CPoolItem*::Setup/Blit7/Blit47) builds it in bulk via the m_ddsd word view; Refresh
     // and the geometry accessors read it through the named DDSURFACEDESC fields below.
@@ -290,21 +290,22 @@ public:
         };
     };
     i32 m_dontOwn;        // +0x7c  don't-own flag (bit0 => surfaces not released)
-    i32 m_80[2];          // +0x80  RECT left/top (cleared)
-    i32 m_88;             // +0x88  width
-    i32 m_8c;             // +0x8c  height (cached)
-    i32 m_90;             // +0x90  bytes-per-row * height
+    // +0x80  the full-surface blit RECT {left=0, top=0, right=width, bottom=height};
+    // Refresh caches it, Blt hands &m_fullRect to IDirectDrawSurface::Blt, IsValid
+    // reads right/bottom as the width/height.
+    RECT m_fullRect;      // +0x80..+0x8f
+    i32 m_imageBytes;             // +0x90  bytes-per-row * height
     CPtrArray m_elements; // +0x94  owned element array (m_pData@+0x98 / m_nSize@+0x9c);
                           //         FreeSurfaces scalar-dtor-deletes each then RemoveAll
     i32 m_bitDepth;       // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
-    i32 m_ac;             // +0xac  bytes-per-row factor
-    i32 m_b0;             // +0xb0  pixels-per-unit divisor
-    i32 m_b4;             // +0xb4  lPitch/divisor
+    i32 m_bytesPerRow;             // +0xac  bytes-per-row factor
+    i32 m_bytesPerPixel;             // +0xb0  pixels-per-unit divisor
+    i32 m_pixelsPerRow;             // +0xb4  lPitch/divisor
     // +0xb8  per-surface restore callback (__cdecl fn-ptr taking `this`); RestoreLost
     // (slot 7) tail-dispatches through it. A fn-ptr is 4 bytes = layout-identical to the
     // former i32 slot; cleared by the surface teardown.
     i32(__cdecl* m_b8)(CDDSurface*);
-    i32 m_bc; // +0xbc  cleared
+    i32 m_hasColorKey; // +0xbc  cleared
 };
 SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
 

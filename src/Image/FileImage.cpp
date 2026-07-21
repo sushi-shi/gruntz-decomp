@@ -331,12 +331,12 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            m_8->Unlock(0);
+            m_ddSurface->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            m_8->Unlock(0);
+            m_ddSurface->Unlock(0);
             return 0;
         }
     }
@@ -351,7 +351,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    m_8->Unlock(0);
+    m_ddSurface->Unlock(0);
     return 1;
 }
 
@@ -432,7 +432,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
         ok = file.Open(static_cast<char*>(a2), 0x1001, 0);
     }
     if (ok == 0) {
-        this->m_8->Unlock(0);
+        this->m_ddSurface->Unlock(0);
         operator delete(line);
         return 0;
     }
@@ -455,7 +455,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
         file.Write(line, 3 * width);
     }
 
-    this->m_8->Unlock(0);
+    this->m_ddSurface->Unlock(0);
     operator delete(line);
     return 1;
 }
@@ -505,12 +505,12 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            m_8->Unlock(0);
+            m_ddSurface->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            m_8->Unlock(0);
+            m_ddSurface->Unlock(0);
             return 0;
         }
     }
@@ -531,7 +531,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    m_8->Unlock(0);
+    m_ddSurface->Unlock(0);
     return 1;
 }
 

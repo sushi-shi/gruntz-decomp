@@ -64,7 +64,7 @@ void CPlay::DrawDebugStats() {
 
     CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
-    host->m_8->GetDC(&hdc);
+    host->m_ddSurface->GetDC(&hdc);
     if (hdc == 0) {
         return;
     }
@@ -88,5 +88,5 @@ void CPlay::DrawDebugStats() {
             TextOutA(hdc, 0, dr.top, buf, strlen(buf));
         }
     }
-    host->m_8->ReleaseDC(hdc);
+    host->m_ddSurface->ReleaseDC(hdc);
 }

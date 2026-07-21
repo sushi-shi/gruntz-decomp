@@ -233,7 +233,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     HDC hdc = 0;
-    host->m_8->GetDC(&hdc);
+    host->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return 1;
     }
@@ -255,6 +255,6 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[3] = reinterpret_cast<void*>((self->m_4 + 0x37));
         self->m_14->RenderInputText(hdc, 0x17b, reinterpret_cast<RECT*>(rect));
     }
-    host->m_8->ReleaseDC(hdc);
+    host->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }

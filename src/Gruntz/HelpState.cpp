@@ -74,7 +74,7 @@ i32 CHelpState::Vslot09(i32 arg) {
 // CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
-    IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(0x8006, 0x445);

@@ -136,7 +136,7 @@ i32 CCreditsState::Vslot09(i32 /*unused*/) {
 
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             Owner(this)->ReportError(0x8006, 0xfa0);
@@ -370,7 +370,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     }
 
     HDC hdc = 0;
-    prov->m_8->GetDC(&hdc);
+    prov->m_ddSurface->GetDC(&hdc);
     if (hdc != 0) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_clipRegionEnabled != 0) {
@@ -390,7 +390,7 @@ i32 CCreditsState::DrawScrollingCredits() {
             SelectClipRgn(hdc, 0);
         }
         SetBkMode(hdc, oldBk);
-        prov->m_8->ReleaseDC(hdc);
+        prov->m_ddSurface->ReleaseDC(hdc);
     }
     return 1;
 }
@@ -429,11 +429,11 @@ i32 CCreditsState::SetupTitle() {
     m_1e8.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
-    prov->m_8->GetDC(&hdc);
+    prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
         i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);
         SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
-        prov->m_8->ReleaseDC(hdc);
+        prov->m_ddSurface->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
     m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
@@ -468,7 +468,7 @@ i32 CCreditsState::StepVideo() {
         CDDrawSubMgrPages* v = m_world->m_drawTarget;
         CDDrawSurfacePair* dst = v->m_overlayPair;
         CDDrawSurfacePair* src = v->m_backPair;
-        if (!Eng_SmackStep(dst->m_surface->m_8, -1)) {
+        if (!Eng_SmackStep(dst->m_surface->m_ddSurface, -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
         }

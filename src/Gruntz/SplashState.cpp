@@ -94,7 +94,7 @@ void CSplashState::ReleaseResources() {
 // byte-exact; final sweep.
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(0x8006, 0x447);
