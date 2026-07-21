@@ -1247,6 +1247,7 @@ rva,name,lib,confidence,source
 0x11d0ac,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x11d0c8,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x11d0e4,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
+0x11d100,??1CNoTrackObject@@UAE@XZ,NAFXCW,HIGH,anchored
 0x11d107,??_GCNoTrackObject@@UAEPAXI@Z,NAFXCW,HIGH,anchored
 0x11d123,??1CHandleMap@@QAE@XZ,NAFXCW,HIGH,anchored
 0x11d164,??1CDialogBar@@UAE@XZ,NAFXCW,AMBIG,anchored
