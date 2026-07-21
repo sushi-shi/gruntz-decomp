@@ -549,69 +549,66 @@ i32 CGruntzMultiCommand::Load(CSerialArchive* s) {
 //       (tag 1) / Multi (tag 2) command, deserializing it, and AddTail'ing it onto
 //       the base queue. Returns 1 (0 on a bad tag / failed element / inactive).
 // @early-stop
-// this-register-spill regalloc wall (see docs/patterns/reread-member-view-pointer.md
-// + loop-preheader-vs-exit-block-order.md "this-register spill"): retail keeps the
-// heavily-used `stream` arg in esi and SPILLS `this` to a stack local ([esp+0x10],
-// the leading `push ecx`), reloading it for the read-path AddTail; the recompile
-// keeps both `stream` and `this` in callee-saved regs (no spill), so esi/edi/ebx
-// are swapped pervasively (~8% fuzzy, but logic byte-for-byte: the mode 4/7 + tag
-// 1/2 branch tree and every call match). Not source-steerable; final sweep.
+// Structure fixed 2026-07-21 (8.8% -> 79%): the mode-4 WRITE block is out-of-line
+// (retail `cmp mode,4; je <write-far>`, READ inline) and the read loop is a
+// `while(idx<count)` (stack idx, `jbe` guard) - both are now source-steerable-matched.
+// Residual (~21%) is the genuine this-register spill: retail keeps `stream` in esi and
+// SPILLS `this` to [esp+0x10] (the leading `push ecx`), reloading it for the read-path
+// AddTail; the recompile keeps both in callee-saved regs (no spill), swapping esi/edi/ebx.
+// Not source-steerable; final sweep.
 RVA(0x00024890, 0x18d)
 i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     if (!stream) {
         return 0;
     }
-    if (mode == 4) {
-        // write
-        if (!IsActive(reinterpret_cast<i32>(stream))) {
+    if (mode != 4) {
+        if (mode != 7) {
+            return 1;
+        }
+        // read
+        if (!IsActive2(stream)) {
             return 0;
         }
-        i32 count = m_base.GetCount();
-        stream->Write(&count, 4);
-        GzCmdNode* node =
-            reinterpret_cast<GzCmdNode*>(m_base.GetHeadPosition()); // MFC-protected m_pNodeHead via the inline accessor
-        while (node) {
-            CGruntzCommand* cmd = node->m_8;
-            node = node->m_0;
-            i32 tag = cmd->GetTag() & 0xff;
-            stream->Write(&tag, 4);
-            if (!cmd->Serialize(stream, 4, a3, a4)) {
+        Clear();
+        i32 count;
+        stream->Read(&count, 4);
+        u32 idx = 0;
+        while (idx < static_cast<u32>(count)) {
+            i32 tag;
+            stream->Read(&tag, 4);
+            CGruntzCommand* cmd;
+            if (tag == 1) {
+                cmd = CGruntzSingleCommand::Allocate();
+            } else if (tag == 2) {
+                cmd = CGruntzMultiCommand::Allocate();
+            } else {
                 return 0;
             }
+            if (!cmd->Serialize(stream, 7, a3, a4)) {
+                return 0;
+            }
+            m_base.AddTail(cmd);
+            idx++;
         }
         return 1;
     }
-    if (mode != 7) {
-        return 1;
-    }
-    // read
-    if (!IsActive2(stream)) {
+    // write
+    if (!IsActive(reinterpret_cast<i32>(stream))) {
         return 0;
     }
-    Clear();
-    i32 count;
-    stream->Read(&count, 4);
-    u32 idx = 0;
-    if (static_cast<u32>(count) == 0) {
-        return 1;
+    i32 count = m_base.GetCount();
+    stream->Write(&count, 4);
+    GzCmdNode* node =
+        reinterpret_cast<GzCmdNode*>(m_base.GetHeadPosition()); // MFC-protected m_pNodeHead via the inline accessor
+    while (node) {
+        CGruntzCommand* cmd = node->m_8;
+        node = node->m_0;
+        i32 tag = cmd->GetTag() & 0xff;
+        stream->Write(&tag, 4);
+        if (!cmd->Serialize(stream, 4, a3, a4)) {
+            return 0;
+        }
     }
-    do {
-        i32 tag;
-        stream->Read(&tag, 4);
-        CGruntzCommand* cmd;
-        if (tag == 1) {
-            cmd = CGruntzSingleCommand::Allocate();
-        } else if (tag == 2) {
-            cmd = CGruntzMultiCommand::Allocate();
-        } else {
-            return 0;
-        }
-        if (!cmd->Serialize(stream, 7, a3, a4)) {
-            return 0;
-        }
-        m_base.AddTail(cmd);
-        idx++;
-    } while (idx < static_cast<u32>(count));
     return 1;
 }
 
