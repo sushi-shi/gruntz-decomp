@@ -12,36 +12,36 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
 
 RVA(0x0017b510, 0x55)
 i32 CFecFile::Init() {
-    if (m_00) {
+    if (m_openGate) {
         return 0;
     }
-    m_04 = 0;
-    m_08 = 0;
+    m_readOpen = 0;
+    m_writeOpen = 0;
     m_index.SetSize(0, -1);
-    memset(&m_0c, 0, 12); // m_0c, m_10, m_14
+    memset(&m_versionMajor, 0, 12); // m_versionMajor, m_versionMinor, m_fileCount
     memset(&m_entry, 0, sizeof(m_entry));
-    m_134 = 0;
-    m_00 = 1;
+    m_nextIndex = 0;
+    m_openGate = 1;
     return 1;
 }
 
 RVA(0x0017b570, 0x24)
 void CFecFile::Close() {
-    if (!m_00) {
+    if (!m_openGate) {
         return;
     }
     OnFail();
     m_index.SetSize(0, -1);
-    m_00 = 0;
+    m_openGate = 0;
 }
 
 RVA(0x0017b5a0, 0x48)
 i32 CFecFile::OnFail() {
-    if (m_00 && (m_04 || m_08)) {
+    if (m_openGate && (m_readOpen || m_writeOpen)) {
         m_stream.Close();
-        m_04 = 0;
-        m_08 = 0;
-        m_134 = 0;
+        m_readOpen = 0;
+        m_writeOpen = 0;
+        m_nextIndex = 0;
         return 1;
     }
     return 0;
@@ -49,7 +49,7 @@ i32 CFecFile::OnFail() {
 
 // @early-stop
 // ~82.8% regalloc wall: layout/logic byte-correct (CDWordArray index, single sprintf
-// buffer, the two m_11e re-reads, (u32)m_14 loop bound), but retail colours `name`->ebp
+// buffer, the two m_11e re-reads, (u32)m_fileCount loop bound), but retail colours `name`->ebp
 // and `&m_stream`->ebx while cl swaps them, so every m_stream vtable dispatch differs by
 // the base register (mov ecx,ebx vs ebp). A pure register-coloring tie-break; not
 // source-steerable.
@@ -58,16 +58,16 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (name == 0) {
         return 0;
     }
-    if (m_04 != 0) {
+    if (m_readOpen != 0) {
         return 0;
     }
-    if (m_00 == 0) {
+    if (m_openGate == 0) {
         return 0;
     }
     if (m_stream.Open(name, 0, 0) == 0) {
         return 0;
     }
-    m_04 = 1;
+    m_readOpen = 1;
 
     char magic[3];
     if (m_stream.Read(magic, 3) != 3) {
@@ -76,13 +76,13 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C') {
         goto fail;
     }
-    if (m_stream.Read(&m_0c, 0xc) != 0xc) {
+    if (m_stream.Read(&m_versionMajor, 0xc) != 0xc) {
         goto fail;
     }
 
     char buf[0x100];
     sprintf(buf, "Opened FEC File %s\n", name);
-    sprintf(buf, "FEC File Version: %d.%d\nNumber of Files: %d\n", m_0c, m_10, m_14);
+    sprintf(buf, "FEC File Version: %d.%d\nNumber of Files: %d\n", m_versionMajor, m_versionMinor, m_fileCount);
 
     if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
         goto fail;
@@ -94,7 +94,7 @@ i32 CFecFile::ReadArchive(const char* name) {
         }
         m_index.Add(tail);
 
-        for (u16 i = 1; i < static_cast<u32>(m_14); i++) {
+        for (u16 i = 1; i < static_cast<u32>(m_fileCount); i++) {
             i32 stride = m_entry.m_payloadLen;
             if (m_stream.Seek(stride, 1) != static_cast<i32>(m_index.GetData()[i - 1]) + stride) {
                 goto fail;
@@ -120,7 +120,7 @@ fail:
 
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
-    if (m_04 && m_00 && idx <= static_cast<u32>(m_14) && idx != 0) {
+    if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_fileCount) && idx != 0) {
         i32* slot = reinterpret_cast<i32*>(&m_index.GetData()[idx - 1]);
         if (m_stream.Seek(*slot, 0) == *slot) {
             return m_stream.m_hFile; // +0x128 - the Win32 file HANDLE
@@ -131,8 +131,8 @@ i32 CFecFile::Lookup(u32 idx) {
 
 RVA(0x0017b8a0, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
-    if (name != 0 && m_08 == 0 && m_00 != 0 && m_stream.Open(name, 0x1002, 0) != 0) {
-        m_08 = 1;
+    if (name != 0 && m_writeOpen == 0 && m_openGate != 0 && m_stream.Open(name, 0x1002, 0) != 0) {
+        m_writeOpen = 1;
 
         char magic[3];
         magic[0] = 'F';
@@ -140,11 +140,11 @@ i32 CFecFile::CreateArchive(const char* name) {
         magic[2] = 'C';
         m_stream.Write(magic, 3);
 
-        memset(&m_0c, 0, 0xc);
-        m_14 = 0;
-        m_0c = 1;
-        m_10 = 1;
-        m_stream.Write(&m_0c, 0xc);
+        memset(&m_versionMajor, 0, 0xc);
+        m_fileCount = 0;
+        m_versionMajor = 1;
+        m_versionMinor = 1;
+        m_stream.Write(&m_versionMajor, 0xc);
         m_stream.Flush(); // +0x50 CFile::Flush (flush the header write)
         return 1;
     }
@@ -166,7 +166,7 @@ i32 CFecFile::CreateArchive(const char* name) {
 // name-padding `mov dh,dl` byte-extract scheduling residue. Not source-steerable.
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
-    if (m_08 == 0 || m_00 == 0) {
+    if (m_writeOpen == 0 || m_openGate == 0) {
         return 0;
     }
 
@@ -175,7 +175,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         return 0;
     }
 
-    m_134++;
+    m_nextIndex++;
 
     CString base = name;
     i32 slash = base.Find('\\');
@@ -184,7 +184,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     memset(&m_entry, 0, 0x10c);
-    m_entry.m_index = m_134;
+    m_entry.m_index = m_nextIndex;
     m_entry.m_nameLen = static_cast<u16>(base.GetLength());
 
     char* enc = static_cast<char*>(operator new(base.GetLength() + 1));
@@ -202,7 +202,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_entry.m_scramble = static_cast<u16>((rand() % 0x400 + 0x2b8));
     m_entry.m_payloadLen = file.Seek(0, 2);
     if (file.Seek(0, 0) != 0) {
-        m_134--;
+        m_nextIndex--;
         return 0;
     }
 
@@ -216,7 +216,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_stream.Write(pad, m_entry.m_scramble - 0x2b8);
     operator delete(pad);
 
-    memset(m_14c, 0, 0x8000);
+    memset(m_copyBuf, 0, 0x8000);
     u32 copied = 0;
     i32 done = 0;
     while (done == 0) {
@@ -228,15 +228,15 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
             }
         }
         if (*pCancel != 0) {
-            m_134--;
+            m_nextIndex--;
             return 0;
         }
         u32 chunk = 0x8000;
         if (copied + 0x8000 > static_cast<u32>(m_entry.m_payloadLen)) {
             chunk = m_entry.m_payloadLen - copied;
         }
-        file.Read(m_14c, chunk);
-        m_stream.Write(m_14c, chunk);
+        file.Read(m_copyBuf, chunk);
+        m_stream.Write(m_copyBuf, chunk);
         copied += chunk;
         if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
             done = 1;
@@ -244,7 +244,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     m_stream.Seek(0xb, 0);
-    m_stream.Write(&m_134, 4);
+    m_stream.Write(&m_nextIndex, 4);
     m_stream.Flush(); // +0x50 CFile::Flush (flush the appended entry)
     return 1;
 }
@@ -265,10 +265,10 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 // source-steerable.
 RVA(0x0017bcd0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
-    if (m_04 == 0 || m_00 == 0) {
+    if (m_readOpen == 0 || m_openGate == 0) {
         return 0;
     }
-    if (m_0c == 1 && m_10 == 0) {
+    if (m_versionMajor == 1 && m_versionMinor == 0) {
         return 0;
     }
 
@@ -283,7 +283,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     CFile file;
     m_stream.Seek(0xf, 0);
 
-    for (u16 i = 0; i < static_cast<u32>(m_14); i++) {
+    for (u16 i = 0; i < static_cast<u32>(m_fileCount); i++) {
         if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
             goto fail;
         }
@@ -314,8 +314,8 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             } else {
                 chunk -= copied;
             }
-            m_stream.Read(m_14c, chunk);
-            file.Write(m_14c, chunk);
+            m_stream.Read(m_copyBuf, chunk);
+            file.Write(m_copyBuf, chunk);
             copied += chunk;
             if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
                 done = 1;
