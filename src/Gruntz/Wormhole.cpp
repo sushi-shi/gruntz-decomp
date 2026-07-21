@@ -38,7 +38,7 @@
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h>  // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Gruntz/GruntzMgr.h>   // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
@@ -47,7 +47,7 @@
 #include <Gruntz/LogicFnTable.h>   // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/Grunt.h>          // CGrunt (Teleporter::Update's hit-test target)
+#include <Gruntz/Grunt.h>         // CGrunt (Teleporter::Update's hit-test target)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/ActReg.h>       // shared activation-registrar archetype
@@ -89,8 +89,9 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
-        i32 sentinel =
-            reinterpret_cast<i32>(g_projActCache); // scratch cell @0x2bf464 reused as the zvec err sentinel
+        i32 sentinel = reinterpret_cast<i32>(
+            g_projActCache
+        ); // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
         r = v->m_spare;
@@ -115,7 +116,9 @@ static inline char* ResolveSlot(_zvec* v, i32 idx) {
     if (v->GrowTo(idx, 0)) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
-    i32 sentinel = reinterpret_cast<i32>(g_projActCache); // scratch cell @0x2bf464 reused as the zvec err sentinel
+    i32 sentinel = reinterpret_cast<i32>(
+        g_projActCache
+    ); // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
     return v->m_spare;
@@ -226,8 +229,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
         i32 color;
         if (kind == -1) {
             i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-            color =
-                colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
+            color = colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
         } else {
             i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
             color = colorTable[kind + 0x14 / 4];
@@ -331,8 +333,8 @@ void CWormhole::SpawnPartners() {
         node = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            if (static_cast<void*>(aux->m_notify) == static_cast<void*>(&WormholeTypeMarker) && obj->m_screenX == tx
-                && obj->m_screenY == ty && aux->m_logic != 0) {
+            if (static_cast<void*>(aux->m_notify) == static_cast<void*>(&WormholeTypeMarker)
+                && obj->m_screenX == tx && obj->m_screenY == ty && aux->m_logic != 0) {
                 (static_cast<CWormhole*>(aux->m_logic))->ReapplyConfig();
             }
         }
@@ -374,9 +376,11 @@ void InitLogicDispatch_6445e8() {
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CPuddleActEntry* e = reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
+    CPuddleActEntry* e =
+        reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CPuddleActEntry* e2 = reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
+        CPuddleActEntry* e2 =
+            reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }
@@ -399,7 +403,8 @@ void RegisterLogic_6445e8() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id)) = static_cast<void*>(&Handler_4021f8);
+    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id)) =
+        static_cast<void*>(&Handler_4021f8);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -410,7 +415,8 @@ void RegisterLogic_6445e8() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id2)) = static_cast<void*>(&Handler_403418);
+    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id2)) =
+        static_cast<void*>(&Handler_403418);
 }
 
 // ===========================================================================
@@ -527,11 +533,10 @@ i32 CGruntPuddle::Remove() {
 // archive vtable; tag 8 (post-load) re-resolves the placed sprite from g_gameReg's
 // ref table (GetSel on m_placeIndex, fallback GetSel(1,0)) into the draw trio. Same
 // archetype as CGruntHealthSprite::Serialize.
-// @early-stop
-// GetSel inline-vs-call wall (same as the ctor/CGruntCreationPoint::Serialize): the
-// body is byte-faithful (two-chain + the tag 4/7/8 switch + the 7-field round-trip +
-// the GetSel fallback + the draw-trio store); residual is retail calling the out-of-
-// line CSpriteRefTable::GetSel (0xe23c0) where MSVC inlines the header copy here.
+// The prior residual was a real missed-CSE bug, not a GetSel inline-vs-call wall:
+// the case-8 draw-trio wrote through m_object three times, and cl reloaded
+// this->m_10 before each store (aliasing-conservative) where retail caches m_object
+// once in edi. Hoisting m_object into a local made the asm byte-identical (160 insns).
 RVA(0x00040e50, 0x170)
 i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -564,9 +569,10 @@ i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
             if (sel == 0) {
                 sel = g_gameReg->m_spriteFactory->GetSel(1, sel);
             }
-            m_object->m_drawFillArg = sel;
-            m_object->m_drawActive = 1;
-            m_object->m_drawFillCmd = 0xa;
+            CGameObject* obj = m_object; // retail caches m_object once (mov edi,[edi+0x10])
+            obj->m_drawFillArg = sel;
+            obj->m_drawActive = 1;
+            obj->m_drawFillCmd = 0xa;
             break;
         }
     }
@@ -681,9 +687,11 @@ void CTeleporter::InitActReg() {
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CTeleporterActEntry* e = reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
+    CTeleporterActEntry* e =
+        reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CTeleporterActEntry* e2 = reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
+        CTeleporterActEntry* e2 =
+            reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -707,7 +715,8 @@ void CTeleporter_RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id)) = static_cast<void*>(&Handler_40187a);
+    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id)) =
+        static_cast<void*>(&Handler_40187a);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -718,7 +727,8 @@ void CTeleporter_RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id2)) = static_cast<void*>(&Handler_403846);
+    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id2)) =
+        static_cast<void*>(&Handler_403846);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
@@ -808,7 +818,8 @@ i32 CTeleporter::Update() {
 
     CWwdGameObjectA* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_armClockLo);
+        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime))
+                    - *reinterpret_cast<i64*>(&m_armClockLo);
         if (delta >= *reinterpret_cast<i64*>(&m_intervalLo)) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
@@ -820,8 +831,9 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CGrunt* found = reinterpret_cast<CGrunt*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
-                        ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1));
+    CGrunt* found =
+        reinterpret_cast<CGrunt*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
+                                      ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1));
     if (found == 0) {
         return 0;
     }
@@ -832,14 +844,9 @@ i32 CTeleporter::Update() {
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
-            0,
-            s->m_11c * 32 + 16,
-            s->m_120 * 32 + 16,
-            0,
-            "Teleporter",
-            0x40003
-        );
+        CWwdGameObjectA* spawned =
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, s->m_11c * 32 + 16, s->m_120 * 32 + 16, 0, "Teleporter", 0x40003);
         if (spawned != 0) {
             spawned->m_124 = 1;
             spawned->m_placeMode = m_object->m_placeMode;
@@ -849,14 +856,9 @@ i32 CTeleporter::Update() {
         }
     } else {
         CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
-            0,
-            s->m_164 * 32 + 16,
-            s->m_168 * 32 + 16,
-            0,
-            "Wormhole",
-            0x40003
-        );
+        CWwdGameObjectA* spawned =
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, s->m_164 * 32 + 16, s->m_168 * 32 + 16, 0, "Wormhole", 0x40003);
         spawned->m_164 = m_object->m_screenX;
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
@@ -872,10 +874,13 @@ i32 CTeleporter::Update() {
     if ((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetCount() != 1) {
         current = 0;
     } else {
-        i32* pair = static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());
+        i32* pair =
+            static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());
         i32 row = pair[0];
         i32 col = pair[1];
-        current = (reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(static_cast<CTriggerMgr*>(mgr->m_cmdGrid)) + 0x1c)))[row * 15 + col];
+        current = (reinterpret_cast<CGrunt**>(
+            (reinterpret_cast<char*>(static_cast<CTriggerMgr*>(mgr->m_cmdGrid)) + 0x1c)
+        ))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_object;
