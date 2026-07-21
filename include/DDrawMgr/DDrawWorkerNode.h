@@ -46,8 +46,8 @@ public:
         m_04 = 0;
         m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
         m_flags = 0;
-        m_20 = static_cast<i32>(0x80000000);
-        m_38 = -1;
+        m_dirtyLeft = static_cast<i32>(0x80000000);
+        m_dirtyArmed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_clip.left = static_cast<i32>(0x80000000);
         m_3c = 0;

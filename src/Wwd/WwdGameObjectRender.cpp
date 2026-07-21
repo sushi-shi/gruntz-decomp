@@ -94,10 +94,10 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     m_lastY = m_screenY;
     m_dirtyW = 1;
     m_dirtyH = 1;
-    m_38 = 0;
+    m_dirtyArmed = 0;
     return;
 reject:
-    m_38 = -1;
+    m_dirtyArmed = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
             sa->m_8->Unlock(0);
         }
-        m_38 = -1; // m_38
+        m_dirtyArmed = -1; // m_38
     }
 }
 
@@ -161,7 +161,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4];                      // one reused src+dst rect buffer
-    if (m_38 != -1 && m_d8 != -1) { // both armed
+    if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
@@ -184,7 +184,7 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
             rc[3] = top + dy;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
-    } else if (m_38 != -1) {
+    } else if (m_dirtyArmed != -1) {
         rc[0] = m_lastX;
         rc[1] = m_lastY;
         rc[2] = m_lastX + m_dirtyW;
@@ -214,7 +214,7 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
 void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_38 != -1 && m_d8 != -1) { // both armed -> combined region
+    if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed -> combined region
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
@@ -231,7 +231,7 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             pos[0] = left;
             a->BlitDirtyRect_164650(b, pos, size);
         }
-    } else if (m_38 != -1) {
+    } else if (m_dirtyArmed != -1) {
         a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
         a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only

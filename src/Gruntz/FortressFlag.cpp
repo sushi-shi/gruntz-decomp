@@ -353,7 +353,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
     }
-    m_object->m_38 = 0;
+    m_object->m_dirtyArmed = 0;
 }
 
 RVA(0x00046cb0, 0x15)
@@ -432,7 +432,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_sortKey = 0xf4240;
         o->m_flags |= 0x20000;
     }
-    m_object->m_38 = 0;
+    m_object->m_dirtyArmed = 0;
 }
 
 RVA(0x000472d0, 0x15)

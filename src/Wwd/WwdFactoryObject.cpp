@@ -53,8 +53,8 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
     m_flags = field08;
     m_0c = owner;
-    m_20 = static_cast<i32>(0x80000000);
-    m_38 = -1;
+    m_dirtyLeft = static_cast<i32>(0x80000000);
+    m_dirtyArmed = -1;
     m_screenX = static_cast<i32>(0x80000000);
     m_clip.left = static_cast<i32>(0x80000000);
     m_3c = 0;
@@ -138,8 +138,8 @@ CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b
 RVA(0x00154a50, 0x23)
 CResolveNode::~CResolveNode() {
     m_screenX = static_cast<i32>(0x80000000);
-    m_20 = static_cast<i32>(0x80000000);
-    m_38 = -1;
+    m_dirtyLeft = static_cast<i32>(0x80000000);
+    m_dirtyArmed = -1;
 }
 
 // ---------------------------------------------------------------------------

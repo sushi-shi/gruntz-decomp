@@ -151,10 +151,10 @@ i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
 RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_lastX, 36);
-    if (m_38 != -1) {
-        RECT* r = reinterpret_cast<RECT*>(&m_20);
+    if (m_dirtyArmed != -1) {
+        RECT* r = reinterpret_cast<RECT*>(&m_dirtyLeft);
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
-        m_38 = -1;
+        m_dirtyArmed = -1;
     }
 }
 
@@ -174,10 +174,10 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4]; // reused src+dst blit rect buffer
-    if (m_38 != -1 && m_d8 != -1) {
+    if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0));
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
             rc[0] = ir.left;
@@ -197,7 +197,7 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
             rc[3] = m_bc + m_d4;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
-    } else if (m_38 != -1) {
+    } else if (m_dirtyArmed != -1) {
         rc[0] = m_lastX;
         rc[1] = m_lastY;
         rc[2] = m_lastX + m_dirtyW;
@@ -227,10 +227,10 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
 RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_38 != -1 && m_d8 != -1) {
+    if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_20), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0))) {
+            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyLeft), reinterpret_cast<RECT*>(&m_c0));
             i32 pos[2];
             i32 size[2];
             pos[0] = ir.left;
@@ -242,7 +242,7 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
             a->BlitDirtyRect_164650(b, &m_b8, &m_d0);        // shadow record
         }
-    } else if (m_38 != -1) {
+    } else if (m_dirtyArmed != -1) {
         a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
         a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only

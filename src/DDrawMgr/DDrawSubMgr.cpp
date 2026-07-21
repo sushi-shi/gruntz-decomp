@@ -259,8 +259,8 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 // the CResolveNode truth is worth the drop (factories/Vfuncs all EXACT).
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
-    volatile i32* pHi = &m_20;
-    volatile i32* pLo = &m_38;
+    volatile i32* pHi = &m_dirtyLeft;
+    volatile i32* pLo = &m_dirtyArmed;
     m_78b = 0;
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
@@ -315,8 +315,8 @@ i32 CDDrawWorkerBase::GetClassId() {
 // `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
-    volatile i32* pHi = &m_20;
-    volatile i32* pLo = &m_38;
+    volatile i32* pHi = &m_dirtyLeft;
+    volatile i32* pLo = &m_dirtyArmed;
     m_78 = 0;
     *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
@@ -364,8 +364,8 @@ i32 CDDrawWorkerBase::Unload() {
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_screenX = v;
-    m_20 = v;
-    m_38 = -1;
+    m_dirtyLeft = v;
+    m_dirtyArmed = -1;
     return v;
 }
 
