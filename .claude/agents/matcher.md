@@ -80,8 +80,8 @@ so; do not fabricate an identity.
 When a fold needs vtables/virtuals/inheritance, **READ THE SLOT MAP. NEVER HAND-DERIVE IT.
 NEVER PAD.**
 
-    python -m gruntz.analysis.vtable_hierarchy --class <C>   # the slot map
-    python -m gruntz.analysis.vtable_hierarchy --csv
+    python -m gruntz.core.vtable_hierarchy --class <C>   # the slot map
+    python -m gruntz.core.vtable_hierarchy --csv
 
 It reads retail RTTI (COL at `vtable-4` → base-class array → the exact class graph), aligns each
 class against its primary base, and tags **every slot** `inherited` / `override` / `new` with
@@ -200,7 +200,7 @@ from correcting a binding, is EXPECTED and RECOVERS as more structure lands.
 Gate on
 BUILD INTEGRITY only; NEVER revert a structurally-correct move/fold/binding for a
 %-drop (mark `@early-stop` + note the mechanism, keep it). **reloc-fidelity**
-(`python -m gruntz.analysis.reloc_fidelity` — every reference bound to the rva retail
+(`python -m gruntz.audit.assert_relocs` — every reference bound to the rva retail
 actually uses) and **view debt** now outrank match %. The push-to-100 mandate below
 still governs an ordinary from-scratch reconstruction; it does NOT license reverting
 a correct structural change to protect a number. Retargeting a call/global to the RIGHT
@@ -234,7 +234,7 @@ are assigned is game/engine code, so you never identify or handle library yourse
      AutoTuneCmdDelay's "wall" was a `/9`-vs-`/30` divisor). Re-audit the disasm before
      believing "regalloc wall".
    - **Fast permuter pass** (operand-order / reassoc / decl-split residue on a genuinely
-     correct body): `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>` /
+     correct body): `python3 -m gruntz.permute.permute <src> <unit> <mangled-sym>` /
      `permute_sweep <unit>`.
    - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
      exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
@@ -246,7 +246,7 @@ are assigned is game/engine code, so you never identify or handle library yourse
      not change (empirically 0/4 wall families moved, even at 1024 variants). So DON'T spend
      `--state-trials` on a documented intra-function regalloc/SIB/spill/width wall; only
      reach for it when the residue plausibly depends on TU-cumulative state.
-     `python3 -m gruntz.match.match_variants <src.cpp> <rva> --state-trials 64 --max-depth 3
+     `python3 -m gruntz.permute.match_variants <src.cpp> <rva> --state-trials 64 --max-depth 3
      --limit 512 -o /tmp/m.json --run --top 12`. See the **`permute` skill**.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
    reconstruction (full body, all logic) where EITHER (a) you have PROVEN with
@@ -498,7 +498,7 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
    Read the per-function objdiff after each `--fast` build. It is the proper inner-loop tool for
    **every** task, including:
      - **reloc-fixing:** `--fast` still regenerates `symbol_names.csv` + re-delinks, so a new
-       `DATA()`/`RVA()`/`SYMBOL()` rebinds — run `python -m gruntz.analysis.reloc_fidelity` right
+       `DATA()`/`RVA()`/`SYMBOL()` rebinds — run `python -m gruntz.audit.assert_relocs` right
        after it (that tool was never part of the gate tail; it reads the fresh `report.json`).
      - **view-axing / folds:** a fold's correctness is *compiles + objdiff %*, both in `--fast`;
        run the view-debt tool manually if you need the count.
@@ -594,8 +594,8 @@ The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`c
 - **VTABLES: READ THE SLOT MAP. NEVER PAD WITH PLACEHOLDER VIRTUALS.**
   **The per-slot ground truth already exists — you do not derive it.** Run:
 
-      python -m gruntz.analysis.vtable_hierarchy --class <Class>     # one class
-      python -m gruntz.analysis.vtable_hierarchy --csv slots.csv     # every class
+      python -m gruntz.core.vtable_hierarchy --class <Class>     # one class
+      python -m gruntz.core.vtable_hierarchy --csv slots.csv     # every class
 
   It reads **RTTI** (each vtable's Complete Object Locator at `vtable-4` → base-class array →
   the exact class graph), aligns the class's vtable slot-by-slot against its primary base, and

@@ -147,7 +147,7 @@ def main():
         home_cache[unit] = (min(hits), max(hits)) if len(hits) >= 2 else None
         return home_cache[unit]
 
-    import gruntz.analysis.exe_map as em
+    import gruntz.core.exe_map as em
     src2unit = {v: k for k, v in em._load_units().items() if v}
     flags = json.load(open(os.path.join(DIR, "flags.json")))
     results, stats = [], Counter()

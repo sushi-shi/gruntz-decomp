@@ -78,7 +78,7 @@ import csv
 import sys
 from pathlib import Path
 
-from gruntz.analysis import vtable_scan as vs
+from gruntz.core import vtable_scan as vs
 from gruntz.cleanliness.class_meta import rel, vtbl_annotations
 from gruntz.cleanliness.vtable_virtuality import _index_classes
 
@@ -364,7 +364,7 @@ def main() -> int:
               "  so the vtable's reloc dangles onto a symbol that is not the override. Make the\n"
               "  body the class's declared virtual at that slot (byte-neutral when the body is\n"
               "  unchanged). NEVER fabricate a virtual for a slot you have not proven - read the\n"
-              "  slot map (gruntz.analysis.vtable_scan --dump / --holds) instead.\n"
+              "  slot map (gruntz.core.vtable_scan --dump / --holds) instead.\n"
               f"  If a row here is a deliberate, proven exception, bless it into {rel(BASELINE)}\n"
               "  with --update (and say why in the commit).", file=sys.stderr)
         return 1

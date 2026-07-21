@@ -23,7 +23,7 @@ IMAGE_BASE = 0x400000
 
 # Anchor on the CWD's repo root (flake.nix), NOT the package location: run from a
 # worktree, we must read THAT tree's build/ artifacts, never main (PYTHONPATH can
-# point at main). Mirrors gruntz.match.permute.
+# point at main). Mirrors gruntz.permute.permute.
 _CWD = pathlib.Path.cwd()
 REPO = pathlib.Path(
     next((str(p) for p in [_CWD, *_CWD.parents] if (p / "flake.nix").exists()),

@@ -50,7 +50,7 @@ def _slot_counts_from_scan():
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         out = tf.name
     try:
-        subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_scan", "--csv", out],
+        subprocess.run([sys.executable, "-m", "gruntz.core.vtable_scan", "--csv", out],
                        cwd=str(REPO), capture_output=True, text=True, check=True)
         sizes = {}
         for r in csv.DictReader(open(out)):

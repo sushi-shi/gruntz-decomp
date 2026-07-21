@@ -27,7 +27,7 @@ def run(args) -> None:
 
     claim, def_rva, via = src_claim(rva), rva, None
     if not claim:
-        from gruntz.analysis import vtable_scan as vs
+        from gruntz.core import vtable_scan as vs
         body = vs.chase_thunk(rva)
         if body is not None and src_claim(body):
             claim, def_rva, via = src_claim(body), body, body

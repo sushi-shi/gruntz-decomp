@@ -1,6 +1,6 @@
 # Vtable map — full inventory + exact sizes
 
-`python3 -m gruntz.analysis.vtable_scan` recovers **every vtable** in
+`python3 -m gruntz.core.vtable_scan` recovers **every vtable** in
 `GRUNTZ.EXE` and its **exact entry count**, from three binary signals:
 
 1. **reloc runs** — every vtable slot is an absolute DIR32 fn address ⇒ a PE
@@ -58,7 +58,7 @@ rest), with **every slot a named member** carrying its target RVA + function nam
 (scalar/vector-deleting dtor, `__purecall`, matched fn, or `sub_<rva>` for the 419
 still-un-reconstructed engine virtuals). Slots are `UnkVfn` (`void(void)`) — tracking
 only; the header emits no code, is not `#include`d, and is matching-neutral.
-Regenerate with `gruntz.analysis.vtable_scan`. "Unknown" = no recoverable *class*
+Regenerate with `gruntz.core.vtable_scan`. "Unknown" = no recoverable *class*
 name (no COL/symbol); the address is always known, so families are visible (e.g.
 `DeviceConfigVtblA` and its two unnamed RVA-named siblings share inherited slots).
 

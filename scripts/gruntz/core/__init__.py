@@ -1,10 +1,16 @@
-"""gruntz.core - the shared binary-side library (the "lib crate").
+"""gruntz.core - the shared engine library (the "lib crate"): everything
+imported by more than one package lives here.
 
-    pe.py       the retail EXE parsed once: sections, relocs, ILT band, the
-                whole-.text call index, the string table
-    symbols.py  the rva<->name db: symbol_names + ghidra + demangled aliases,
-                size-bounded owner attribution, name resolution
-    report.py   the objdiff report.json accessor
+    pe.py            the retail EXE parsed once: sections, relocs, ILT band,
+                     the whole-.text call index, the string table
+    symbols.py       the rva<->name db: symbol_names + ghidra + demangled
+                     aliases, size-bounded owner attribution, name resolution
+    report.py        the objdiff report.json accessor
+    vtable_scan.py   recover every vtable in the EXE (gates/sema/build import it)
+    vtable_hierarchy.py  per-class vtable topology (sema class + build gate)
+    exe_map.py       queryable .text space map (sema map + the docs/exe-map suite)
+    clangd_query.py  the clangd LSP client (sema refs/hover/rename, fingerprints)
+    data_audit.py    data-section attribution engine (`gruntz data-audit` + build)
 
 One lazily-populated Context per process; every query tool takes it as its
 first argument. No on-disk cache - staleness traps (docs/gotchas.md); batch
@@ -51,3 +57,21 @@ def get_context() -> Context:
     if _CTX is None:
         _CTX = Context()
     return _CTX
+
+
+def call_main(module: str, argv: list) -> int:
+    """Run a gruntz module's main() IN-PROCESS with a patched sys.argv; returns
+    its rc. The single-process replacement for python-subprocess delegation -
+    module state (loaded EXE, symbol dbs) caches in sys.modules."""
+    import importlib
+    import sys
+    mod = importlib.import_module(module)
+    old = sys.argv
+    sys.argv = [module.rsplit(".", 1)[-1], *map(str, argv)]
+    try:
+        rc = mod.main()
+        return rc if isinstance(rc, int) else 0
+    except SystemExit as e:
+        return e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+    finally:
+        sys.argv = old

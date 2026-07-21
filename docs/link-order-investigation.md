@@ -12,7 +12,7 @@ consequences for matching.
 > **See also** [tu-spatial-structure.md](tu-spatial-structure.md) — what sits
 > *inside* one TU's block (tight method runs vs. the exiled-destructor COMDAT
 > pools) and how to attribute *unnamed* functions to a class by RVA proximity
-> (`gruntz.analysis.tu_layout` / `gen_attributed_stubs`).
+> (`gruntz.audit.tu_layout` / `gen_attributed_stubs`).
 
 ## The missing tool: we can now link
 
@@ -40,7 +40,7 @@ function's link-assigned RVA and *source object*. Layout study uses
 
 ## The three-level layout model (verified)
 
-`scripts/gruntz/analysis/link_order.py` cross-references the candidate `.map` (our link's
+`scripts/gruntz/audit/link_order.py` cross-references the candidate `.map` (our link's
 RVA + object per function) with `build/gen/symbol_names.csv` (retail RVA → unit).
 
 ### 1. Intra-TU order = source-definition order
@@ -118,10 +118,10 @@ the objects in retail-block order (fixes cross-TU layout); **(c)** split the
 flagged conflated units. `gruntz link` + `link_order.py` make each step verifiable
 against the real linker before committing to source.
 
-## Whole-EXE metric: `gruntz exe-diff`
+## Whole-EXE metric: `gruntz audit exe-diff`
 
-`gruntz link` gives the candidate; **`gruntz exe-diff`**
-(`gruntz.analysis.exe_diff`) diffs that whole image against retail — one level up
+`gruntz link` gives the candidate; **`gruntz audit exe-diff`**
+(`gruntz.audit.exe_diff`) diffs that whole image against retail — one level up
 from per-object objdiff. It parses both PEs (headers / section table), name-aligns
 every reconstructed function (candidate `.map` RVA ⇄ retail `symbol_names.csv` RVA),
 and reports layout + linked-byte fidelity. The tracked numbers, measured at

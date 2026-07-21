@@ -2,7 +2,7 @@
 
 Goal (user, 2026-07-19): cross-class / char-arith / fn-ptr / hier-related / other /
 `*Views.h` classes → 0. Allowed keeps: generic collections + raw data, each with a
-recorded proof. Measurement: `python -m gruntz.analysis.reinterpret_census` (re-run
+recorded proof. Measurement: `python -m gruntz.audit.reinterpret_census` (re-run
 before every offset batch; TSV worklist in build/gen/). Every family lands byte-gated
 (`gruntz build --fast`, Overall must hold) and is committed separately.
 

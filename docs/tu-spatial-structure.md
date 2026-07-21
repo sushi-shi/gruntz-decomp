@@ -7,7 +7,7 @@ functions) joined with the Ghidra boundary export. Companion to
 `docs/link-order-investigation.md` (intra-TU source order + cross-TU link order);
 this doc covers what sits *inside* one TU's block and how to exploit it.
 
-Tooling: `python -m gruntz.analysis.tu_layout` (the analysis) and
+Tooling: `python -m gruntz.audit.tu_layout` (the analysis) and
 `python -m gruntz.analysis.gen_attributed_stubs` (turns attributions into stubs).
 
 ## The core finding

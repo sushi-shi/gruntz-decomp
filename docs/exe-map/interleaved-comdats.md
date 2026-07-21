@@ -18,7 +18,7 @@ Scan `.text` for the call site (direct `E8`, or via the `/INCREMENTAL` ILT `E9`
 jmp-thunk): SetCellHeight's SOLE caller is `CPlayLevelLoad::LoadPyramidBridge`
 (0x110c10, **tileswitchlogic**) — the function immediately before it. The linker put
 the COMDAT right behind its user because the user's TU is where it was compiled.
-Tool: `python -m gruntz.analysis.interleavers` (97 such methods, each with its caller;
+Tool: `python -m gruntz.audit.interleavers` (97 such methods, each with its caller;
 `caller == host unit` is the high-confidence signal).
 
 **Reproduction (real MSVC 5.0, `/O2 /Gy`).** Two models produce that placement; a

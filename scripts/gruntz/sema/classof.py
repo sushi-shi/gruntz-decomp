@@ -3,8 +3,8 @@ a class; give a fn RVA/mangled name instead to find its owning slot(s)
 (new/override/inherited + origin class), falling back to the raw binary scan
 for non-RTTI vtables and thunk-indirect slots.
 
-Engine: gruntz.analysis.vtable_hierarchy (+ vtable_scan for the binary
-fallback); also runnable as `python -m gruntz.analysis.vtable_hierarchy`.
+Engine: gruntz.core.vtable_hierarchy (+ vtable_scan for the binary
+fallback); also runnable as `python -m gruntz.core.vtable_hierarchy`.
 """
 
 import sys
@@ -24,7 +24,7 @@ def _class_of_fn(query: str) -> int:
         pass
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         tmp = tf.name
-    rc = call_main("gruntz.analysis.vtable_hierarchy", ["--csv", tmp])
+    rc = call_main("gruntz.core.vtable_hierarchy", ["--csv", tmp])
     if rc:
         die("vtable_hierarchy --csv failed (run `gruntz init` first?)")
     hits = []
@@ -41,7 +41,7 @@ def _class_of_fn(query: str) -> int:
         # slots the reconstructed VTBL/hierarchy graph can't see (`sema vtable --holds`).
         if rva is not None:
             try:
-                from gruntz.analysis import vtable_scan as vs
+                from gruntz.core import vtable_scan as vs
                 bhits = vs.find_holding(rva)
             except Exception:
                 bhits = []
@@ -65,7 +65,7 @@ def _class_of_fn(query: str) -> int:
             owners.append(r["class"])
     for owner in owners[:2]:  # the defining class(es), not every inheritor
         print()
-        call_main("gruntz.analysis.vtable_hierarchy", ["--class", owner])
+        call_main("gruntz.core.vtable_hierarchy", ["--class", owner])
     return 0
 
 
@@ -77,4 +77,4 @@ def run(args) -> None:
     looks_fn = args.name.lower().startswith("0x") or "@" in args.name
     if looks_fn:
         sys.exit(_class_of_fn(args.name))
-    sys.exit(call_main("gruntz.analysis.vtable_hierarchy", argv))
+    sys.exit(call_main("gruntz.core.vtable_hierarchy", argv))

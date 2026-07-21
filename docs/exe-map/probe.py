@@ -2,7 +2,7 @@
 """Ground-truth the 'scatter': is it real linker interleaving, or outliers + COMDAT
 exile + our file grouping? Characterize GruntzMgr.cpp + the general outlier effect."""
 import re
-import gruntz.analysis.exe_map as em
+import gruntz.core.exe_map as em
 
 funcs, meta = em.load()
 funcs = [r for r in funcs if not r["source"].startswith("src/Stub/")]

@@ -7,7 +7,7 @@ each*, *why did FID miss it*, *is it truly library*.
 
 ## How "FID" works here (and how it misses)
 `config/library_labels.csv` is produced by the custom masked-byte COFF matcher
-(`gruntz.analysis.fid`), **not** Ghidra FID. It signs every *external* function
+(`gruntz.audit.fid`), **not** Ghidra FID. It signs every *external* function
 symbol in the VC5 `LIBCMT.LIB` / `NAFXCW.LIB` `.obj` members (reloc-masking
 DIR32/REL32 fields) and matches them **only at Ghidra-carved function starts**,
 needing ≥8 bytes / ≥6 fixed bytes. zlib is covered by a *separate* anchored pass

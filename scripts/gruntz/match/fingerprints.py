@@ -242,7 +242,7 @@ def regenerate(force_all: bool = False, verbose: bool = False) -> int:
 
         if allm:  # nothing to map (no build/gen/symbol_names.csv yet) -> skip clangd
             m2q = demangle_map(allm)
-            from gruntz.analysis.clangd_query import Clangd  # heavy; only when there are names to map
+            from gruntz.core.clangd_query import Clangd  # heavy; only when there are names to map
             lsp = Clangd()
             try:
                 for unit in todo:

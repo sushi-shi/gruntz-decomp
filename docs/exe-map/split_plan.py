@@ -15,7 +15,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import flag_outliers as fo   # named_regions, is_dtor, clusters, GAP, WIN
-import gruntz.analysis.exe_map as em
+import gruntz.core.exe_map as em
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIG = 4          # a "substantial" block (real TU chunk, not stray)

@@ -3,8 +3,8 @@ RTTI or not; ILT thunks chased): dump a vtable's slots, or find which
 vtable/slot holds a fn - the coverage the src-side VTBL/hierarchy graph lacks
 (non-RTTI tables, thunk-indirect slots).
 
-Engine: gruntz.analysis.vtable_scan (shared with the build/gates; also runnable
-directly as `python -m gruntz.analysis.vtable_scan`).
+Engine: gruntz.core.vtable_scan (shared with the build/gates; also runnable
+directly as `python -m gruntz.core.vtable_scan`).
 """
 import sys
 
@@ -20,9 +20,9 @@ def run(args) -> None:
     else:  # auto: a discovered vtable start -> dump; otherwise treat as a fn -> holds
         mode = "--holds"
         try:
-            from gruntz.analysis import vtable_scan as vs
+            from gruntz.core import vtable_scan as vs
             if vs.vtable_at(int(tgt, 16)) is not None:
                 mode = "--dump"
         except Exception:
             pass
-    sys.exit(call_main("gruntz.analysis.vtable_scan", [mode, tgt]))
+    sys.exit(call_main("gruntz.core.vtable_scan", [mode, tgt]))

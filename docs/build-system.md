@@ -262,7 +262,7 @@ unaffected.
 This is the tool behind **`docs/link-order-investigation.md`**: the candidate map
 cross-referenced with retail RVAs recovers the build order (intra-TU order =
 source-definition order; cross-TU order = object link order). `gruntz link
---analyze` runs `scripts/gruntz/analysis/link_order.py` to print that report.
+--analyze` runs `scripts/gruntz/audit/link_order.py` to print that report.
 Whole-binary byte-verification against retail is a later step (needs fuller
 reconstruction + the matched link order).
 
@@ -284,7 +284,7 @@ the heavy Ghidra DB build + `functions.csv`/`symbols.csv` export (import +
 auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`). The FID library labels are
 tracked
 (`config/library_labels.csv`, so they survive `git clean`); regenerate them with
-`python -m gruntz.analysis.fid_generate`.
+`python -m gruntz.audit.fid_generate`.
 
 The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
@@ -483,9 +483,11 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 
 Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
 annotation macros and `src/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
-package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, the
-cleanliness board + quality gates `cleanliness/`, the
-sema navigation surface `sema/`, and the analysis tools `analysis/`).
+package, one sub-package per role: the pipeline `{build,ghidra,init}/`, the
+shared engine library `core/`, match scoring + integrity gates `match/`, the
+cleanliness board + quality gates `cleanliness/`, the permuter climbers
+`permute/`, the sema navigation surface `sema/`, and the one-shot campaign
+audits `audit/`.
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),
 `build/gen/functions.json` + `build/gen/locals.json` (Ghidra enrichment metadata),
@@ -512,7 +514,7 @@ toolchain come from the flake; nothing here is tracked.
 | `ghidra-enrich/` | `exports/functions.csv` + `symbols.csv` re-dumped from the enriched DB | `apply.py`/`export.py` under PyGhidra (`ghidra-refresh`) | the two CSVs the delink consumes (function boundaries + names) | ~2 MB |
 | `wineprefix/` | the Wine prefix with the MSVC 5.0 toolchain registered | `gruntz init` (`init/toolchain.py`); `$WINEPREFIX` | hosts every `wine cl` invocation (the base-obj compiles) | ~561 MB |
 
-(Also transient: `build/fid/` — scratch for `gruntz.analysis.fid_generate`'s
+(Also transient: `build/fid/` — scratch for `gruntz.audit.fid_generate`'s
 library-label regen — and root-level `build.ninja`/`.ninja_*`.)
 
 ## Current status

@@ -11,12 +11,15 @@ scripts/). Grouped by area:
   init/     local-environment setup - toolchain, clangd
   match/    matching-progress tooling - status (the match CLI), fingerprints
             (its helper), verify_stubs (the build gate)
+  core/     the shared engine library - pe, symbols, report, vtable_scan,
+            vtable_hierarchy, exe_map, clangd_query, data_audit
   sema/     the `gruntz sema` navigation surface - one module per subcommand
-  analysis/ one-shot analysis / discovery tools - link_order, xref,
-            clangd_query, fid_generate + fid/ (retired ones: scripts/archive/)
+  cleanliness/ the drive-to-0 board + quality gates
+  permute/  the source-permutation climbers (the permute skill)
+  audit/    one-shot campaign audits (`gruntz audit <tool>`) (retired ones: scripts/archive/)
 
 Runnable entrypoints: the pipeline build steps (build/, init/, ghidra/) are
-path-invoked by ninja/the CLI; the CLI/match/analysis tools run as
+path-invoked by ninja/the CLI; the CLI/match/audit tools run as
 `python -m gruntz[.<module>]`. Either way `scripts/` must be on PYTHONPATH
 (the nix dev shells + the `gruntz` wrapper set it).
 """

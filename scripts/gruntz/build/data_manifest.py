@@ -68,7 +68,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "scripts"))
 
-from gruntz.analysis.data_audit import read_pe, classify_pe_storage  # noqa: E402
+from gruntz.core.data_audit import read_pe, classify_pe_storage  # noqa: E402
 
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
 EXE = REPO / "build/exe/GRUNTZ.EXE"
@@ -218,7 +218,7 @@ def vtable_rows(exe=EXE, base_dir=None):
     from coff_oracle import _Coff  # noqa: E402
 
     try:
-        from gruntz.analysis.vtable_hierarchy import build_registry  # noqa: E402
+        from gruntz.core.vtable_hierarchy import build_registry  # noqa: E402
         reg, _src = build_registry()
     except Exception as exc:                      # no Ghidra exports -> enroll nothing
         return [], [(0, "??_7*", "vtable registry unavailable (%s)" % type(exc).__name__)]

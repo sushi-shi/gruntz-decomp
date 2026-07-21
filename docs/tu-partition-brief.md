@@ -60,7 +60,7 @@ debug stream**, so ours must be derived from our own TU partition. They gate:
 
 ## Measured state: our TU partition != retail's compilands
 
-- `gruntz.analysis.tu_order_check`: **GATE FAIL — 49 TUs with intra-order violations,
+- `gruntz.audit.tu_order_check`: **GATE FAIL — 49 TUs with intra-order violations,
   10832 interleaving TU-pairs** (was 52 / 12134 when this brief was written; matcher-6
   landed the first drain — and see the correction at the top: ~98% of the remainder is
   COMDAT-pool placement, not a partition defect) (e.g. `Fader [0x17e450-0x182935]` interleaves
@@ -100,9 +100,9 @@ point. Excluding it changes nothing: 8/86 clean either way.)
 ## Instruments already in place
 
 - `gruntz link` → candidate EXE + `.map` (392 objs, 4886 unresolved externs under
-  `/FORCE`); `gruntz link --analyze` / `gruntz.analysis.link_order` for build order.
-- `gruntz.analysis.tu_order_check` — the one-contiguous-block invariant gate.
-- `gruntz exe-diff` §B — `.text` intra-TU order / block-exact / abs-RVA + a ranked
+  `/FORCE`); `gruntz link --analyze` / `gruntz.audit.link_order` for build order.
+- `gruntz.audit.tu_order_check` — the one-contiguous-block invariant gate.
+- `gruntz audit exe-diff` §B — `.text` intra-TU order / block-exact / abs-RVA + a ranked
   reorder worklist; §E — data static-storage: 771/925 data symbols defined+placed,
   715/771 in the right storage class, 0/771 at the right section-relative offset, with
   the first section-relative divergence per section.

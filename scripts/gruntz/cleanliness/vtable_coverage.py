@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """gruntz.cleanliness.vtable_coverage - every vtable in GRUNTZ.EXE must be COVERED.
 
-The authoritative vtable set comes from OUR analysis (``gruntz.analysis.vtable_scan``),
+The authoritative vtable set comes from OUR analysis (``gruntz.core.vtable_scan``),
 which finds every vtable by scanning the retail image for maximal stride-4 runs of
 data words that reference into ``.text`` (i.e. runs of function pointers), cut at
 COL / code-referenced starts. RTTI only *names* them; it does not *detect* them - so
@@ -48,7 +48,7 @@ def real_vtables():
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         out = tf.name
     try:
-        subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_scan", "--csv", out],
+        subprocess.run([sys.executable, "-m", "gruntz.core.vtable_scan", "--csv", out],
                        cwd=str(REPO), capture_output=True, text=True, check=True)
         rows = []
         for r in csv.DictReader(open(out)):

@@ -19,7 +19,7 @@ import re
 import statistics as st
 from collections import defaultdict
 
-import gruntz.analysis.exe_map as em
+import gruntz.core.exe_map as em
 
 import os as _os; DIR = _os.path.dirname(_os.path.abspath(__file__))
 

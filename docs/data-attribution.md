@@ -37,7 +37,7 @@ build/objdiff/target`.
 
 ## 2. Retail data attribution + fingerprint — `gruntz data-audit` (wired)
 
-`scripts/gruntz/analysis/data_audit.py` ports homm2's pure-PE evidence core
+`scripts/gruntz/core/data_audit.py` ports homm2's pure-PE evidence core
 (`link_exe.py: read_pe / classify_pe_storage / read_pe_payload_evidence`). Reading ONLY the
 retail `GRUNTZ.EXE` (no delinker/PDB/wine), for every `kind=data` symbol in
 `symbol_names.csv` it:
@@ -84,10 +84,10 @@ This is the retail oracle a real data-byte loop gates against: once source data
 initializers relink (or the delinked target carries typed data), compare candidate bytes
 (relocs normalized) to these digests.
 
-## 2b. Link-side DATA static-storage audit — `gruntz exe-diff` §E (wired)
+## 2b. Link-side DATA static-storage audit — `gruntz audit exe-diff` §E (wired)
 
 `gruntz link` (Phase 2, VC5 link.exe 5.10.7303, `/FORCE`) links the base objs into a
-candidate `GRUNTZ.EXE` + `.map`. `gruntz exe-diff` already audits `.text` layout/bytes; it
+candidate `GRUNTZ.EXE` + `.map`. `gruntz audit exe-diff` already audits `.text` layout/bytes; it
 now also runs a **DATA static-storage** audit (§E), ported from homm2's
 `link_exe.py: static_symbol_diagnostics` + `classify_pe_storage`. It joins each retail data
 symbol to its candidate `.map` entry, classifies `.rdata` / initialized `.data` /

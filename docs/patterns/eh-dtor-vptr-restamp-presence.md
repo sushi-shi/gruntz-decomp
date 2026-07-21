@@ -17,7 +17,7 @@ that retail simply does not have:
 **It is always a MIS-MODEL, never a compiler quirk — and there are TWO of them.** Run the
 vtable scan FIRST; it tells you which cause you have:
 
-| `gruntz.analysis.vtable_scan` says | cause | fix |
+| `gruntz.core.vtable_scan` says | cause | fix |
 |---|---|---|
 | **no vtable / no RTTI** for the class | **CAUSE A** — retail's class isn't polymorphic; you declared it so | de-inherit: the "base" is really a MEMBER at +0x00 |
 | **a real RTTI-backed vtable** exists | **CAUSE B** — the class IS polymorphic, but retail's dtor is **compiler-generated**; yours is user-declared | delete the destructor declaration; pin the body with `@rva-symbol` |
@@ -30,7 +30,7 @@ distinguishes them in one command. **Do not stop at "it has a vtable, so the wal
 ## CAUSE A — the class is not polymorphic
 
 **Diagnose** — check the binary, not the codegen:
-1. Does `Class` have a vtable in the RTTI/vtable scan (`gruntz.analysis.vtable_scan`)? Any RTTI name?
+1. Does `Class` have a vtable in the RTTI/vtable scan (`gruntz.core.vtable_scan`)? Any RTTI name?
 2. Does retail's `~Class` restamp at all? (If it never does, it isn't polymorphic.)
 If both say no: **the "base" is really a MEMBER at +0x00.**
 

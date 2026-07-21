@@ -22,11 +22,11 @@ C-style numeric, and offset-cast-macro counts are all **0** in `config/cleanline
   is gone, so there are no drivers left to rank.
 
 ## Superseded by a better tool
-- `reloc_fidelity.py` → **`gruntz.analysis.assert_relocs`** (order-independent, covers
+- `reloc_fidelity.py` → **`gruntz.audit.assert_relocs`** (order-independent, covers
   NEAR-exact functions, ~13× more defects). `assert_relocs.py`'s docstring explains the delta.
 - `gen_match_queue.py` (built `config/match-queue.md`) → **`gruntz.match.residual_queue`**
   (the live persistent non-exact queue, `build/gen/residual_function_queue.tsv`, best-first).
-- `caller_audit.py` (two-sided "WS5" call-graph audit) → **`gruntz.analysis.caller_callee`**
+- `caller_audit.py` (two-sided "WS5" call-graph audit) → **`gruntz.cleanliness.caller_callee`**
   (the tracked caller-callee reconciliation metric).
 
 ## Completed one-shot sweeps

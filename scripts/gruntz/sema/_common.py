@@ -1,14 +1,15 @@
 """gruntz.sema._common - shared infra for the sema subcommand modules.
 
-Paths, the subprocess delegation helper, the CSV/annotation lookups and the
+Paths, the in-process call helper (re-exported from core), the CSV lookups and the
 usage log. Sema modules import from here only; nothing here imports cli.py
 (dependency direction: cli -> sema -> analysis).
 """
 import os
-
 import sys
 import tomllib
 from pathlib import Path
+
+from gruntz.core import call_main  # noqa: F401  (re-export for the sema modules)
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -36,23 +37,6 @@ def pkg_env() -> dict:
         env["PYTHONPATH"] = os.pathsep.join(p for p in (str(SCRIPTS), existing) if p)
     return env
 
-
-def call_main(module: str, argv: list) -> int:
-    """Run a gruntz module's main() IN-PROCESS with a patched sys.argv; returns
-    its rc. The single-process replacement for the old python-subprocess
-    delegation - module state (loaded EXE, symbol dbs) caches in sys.modules,
-    so batch mode pays one load."""
-    import importlib
-    mod = importlib.import_module(module)
-    old = sys.argv
-    sys.argv = [module.rsplit(".", 1)[-1], *map(str, argv)]
-    try:
-        rc = mod.main()
-        return rc if isinstance(rc, int) else 0
-    except SystemExit as e:
-        return e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
-    finally:
-        sys.argv = old
 
 
 def units() -> list[dict]:

@@ -15,7 +15,7 @@ import bisect
 import json
 from collections import defaultdict
 
-import gruntz.analysis.exe_map as em
+import gruntz.core.exe_map as em
 from scatter import is_pooled, interleaver_rvas  # shared irreducible-scatter predicate
 
 import os as _os; DIR = _os.path.dirname(_os.path.abspath(__file__))

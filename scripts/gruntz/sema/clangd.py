@@ -3,8 +3,8 @@
 9,771 logged calls; the harness LSP covers them) - rename stays because the
 harness LSP has no rename.
 
-Engine: gruntz.analysis.clangd_query (shared with fingerprints/rename_member;
-also runnable directly as `python -m gruntz.analysis.clangd_query`).
+Engine: gruntz.core.clangd_query (shared with fingerprints/rename_member;
+also runnable directly as `python -m gruntz.core.clangd_query`).
 """
 import sys
 
@@ -17,11 +17,11 @@ def _point_argv(args) -> list:
 
 
 def run_point(args) -> None:                      # refs / hover share this
-    sys.exit(call_main("gruntz.analysis.clangd_query", [args.sema, *_point_argv(args)]))
+    sys.exit(call_main("gruntz.core.clangd_query", [args.sema, *_point_argv(args)]))
 
 
 def run_rename(args) -> None:
     argv = ["rename", *_point_argv(args), args.new_name]
     if args.dry_run:
         argv.append("--dry-run")
-    sys.exit(call_main("gruntz.analysis.clangd_query", argv))
+    sys.exit(call_main("gruntz.core.clangd_query", argv))

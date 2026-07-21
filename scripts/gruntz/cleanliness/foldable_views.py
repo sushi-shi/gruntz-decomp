@@ -5,7 +5,7 @@ Groups by source file so a nest folds together. Prints class -> {real class: n}.
 import re, csv
 from pathlib import Path
 from collections import defaultdict
-from gruntz.analysis import vtable_scan as vs
+from gruntz.core import vtable_scan as vs
 from gruntz.cleanliness.view_debt import pure_phantom_classes, LIBRARY_CLASSES
 REPO = next(p for p in Path(__file__).resolve().parents if (p/"flake.nix").exists())
 gen = {}

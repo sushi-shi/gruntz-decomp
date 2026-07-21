@@ -7,11 +7,9 @@
   verify_stubs / verify_unique_names / verify_library_overlap
                  measurement-integrity build gates.
   gate_selftest  negative controls for ALL gates (here + gruntz/cleanliness/).
-  permute / permute_sweep / match_variants (+ its generate_ast_variants,
-  batch_source_variants, tu_state_* engines)
-                 the source-permutation climbers (see the permute skill).
 
-The drive-to-0 quality board + its gates live in gruntz/cleanliness/.
+The drive-to-0 quality board + its gates live in gruntz/cleanliness/; the
+source-permutation climbers live in gruntz/permute/.
 Run the CLI as `python -m gruntz.match.status <cmd>`; import the helpers with
 `from gruntz.match.fingerprints import cpp_hash, load_cache`.
 """

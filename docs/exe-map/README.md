@@ -3,7 +3,7 @@
 A small, self-contained website that answers *what lives where* in the retail
 binary and *what might be in the wrong `src/` file*. It is built from the same data
 the matching pipeline produces (`gruntz build`), read through
-`gruntz.analysis.exe_map`.
+`gruntz.core.exe_map`.
 
 ## The pages
 

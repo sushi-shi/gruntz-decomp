@@ -34,7 +34,7 @@ In short (full rules in the two agent docs):
    So a restart of this command does NOT regenerate the pool. Verify one can `gruntz build`
    before dispatching; add/remove slots to match N.
 2. **Queue:** regenerate the worklist in a build shell —
-   `nix develop .#build --command python3 -m gruntz.analysis.gen_match_queue` — then read
+   `nix develop .#build --command python3 -m gruntz.match.residual_queue` — then read
    `config/match-queue.md`. **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
    and skip anything already `@early-stop`. **Target priority — drain these BEFORE any
    %-recovery of already-matched functions:** (1) the `@stub` backlog (`src/Stub/` —

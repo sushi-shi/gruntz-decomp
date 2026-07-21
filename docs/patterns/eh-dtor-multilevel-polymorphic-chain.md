@@ -11,7 +11,7 @@ a non-trivial **inline virtual** dtor per base level (each calls its reloc-maske
 member-teardown helper) and one out-of-line RVA-keyed dtor for the leaf; MSVC folds
 every base teardown into the leaf and — because each base subobject is now
 non-trivial — emits the full `/GX` frame + the per-level vptr re-stamps. The
-catalog auto-namer (`config/vtable_names.csv`, `gruntz.analysis.vtable_scan`) names
+catalog auto-namer (`config/vtable_names.csv`, `gruntz.core.vtable_scan`) names
 every `??_7CSBI_*@@6B@` on the target, so the stamps reloc-mask with NO manual
 `@rva-symbol` pin and NO `DATA(&g_vtbl_*)` extern.
 

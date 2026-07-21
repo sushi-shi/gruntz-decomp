@@ -9,12 +9,13 @@ objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
 (`python -m gruntz`, `scripts/gruntz/cli.py`) drives everything. For the current score, run
 `gruntz status` — never trust a number written down here.
 
-`scripts/gruntz/` is THE package — ALL importable code: the pipeline
-(`{build,ghidra,init}/`, path-invoked by ninja/the CLI), the match tooling
-(`match/`: `status`, `fingerprints`, `verify_stubs`), the cleanliness board +
-quality gates (`cleanliness/`), the `gruntz sema`
-navigation surface (`sema/`, one module per subcommand), and one-shot analysis
-tools (`analysis/`, incl. the `fid/` matcher). Run the non-pipeline tools as
+`scripts/gruntz/` is THE package — ALL importable code, one package per role:
+the pipeline (`{build,ghidra,init}/`, path-invoked by ninja/the CLI), the
+shared engine library (`core/`: pe/symbols/report/vtables/exe_map/clangd),
+match scoring + integrity gates (`match/`), the cleanliness board + quality
+gates (`cleanliness/`), the permuter climbers (`permute/`), the `gruntz sema`
+navigation surface (`sema/`, one module per subcommand), and one-shot campaign
+audits (`audit/`, incl. the `fid/` matcher). Run the non-pipeline tools as
 `python -m gruntz.<area>.<module>`; `scripts/` is on `PYTHONPATH` (set by the
 nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.
 

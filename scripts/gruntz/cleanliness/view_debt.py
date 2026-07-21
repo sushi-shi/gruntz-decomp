@@ -93,7 +93,7 @@ def _nm_symbols():
 
 
 def _rtti_classes():
-    from gruntz.analysis import vtable_scan as vs
+    from gruntz.core import vtable_scan as vs
     out = set()
     for v in vs.VTABLES:
         m = re.search(r"V([A-Za-z_]\w*)@", v.get("decorated") or "")

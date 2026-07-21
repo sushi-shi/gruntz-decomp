@@ -44,7 +44,7 @@ Subcommands
   sema <cmd>    Semantic navigation (one entrypoint; `gruntz sema -h` lists all):
                 xref/symbol/def/refs/hover/rename (clangd LSP), rva/class/match
                 dossiers, disasm, strings, map (.text layout). Thin wrappers over
-                gruntz.analysis / gruntz.match - SEMANTIC questions go here, grep
+                gruntz/sema (in-process over gruntz/core) - SEMANTIC questions go here, grep
                 is lexical-only.
 """
 
@@ -260,11 +260,11 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
     # decls than slots) - plus the UNANCHORED src vtables not yet in the hierarchy
     # ('the proper ones not in the hierarchy'). Reducing these is what drives the
     # 'placeholder vtable slots' text metric to 0 AND removes placeholder view
-    # classes. See `gruntz.analysis.vtable_hierarchy --audit / --coverage`.
+    # classes. See `gruntz.core.vtable_hierarchy --audit / --coverage`.
     try:
         import re as _re
         def _vh(mode: str) -> str:
-            return subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", mode],
+            return subprocess.run([sys.executable, "-m", "gruntz.core.vtable_hierarchy", mode],
                                   capture_output=True, text=True, cwd=str(REPO)).stdout
         aud, cov = _vh("--audit"), _vh("--coverage")
         def _n(txt: str, pat: str) -> str:
@@ -412,8 +412,8 @@ def cmd_build(args) -> None:
     run([sys.executable, "-m", "gruntz.cleanliness.vtable_bans"])
     # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
     # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
-    # vtable modelling can never drift from the binary. `python -m gruntz.analysis.vtable_hierarchy --audit`.
-    ra = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", "--audit"],
+    # vtable modelling can never drift from the binary. `python -m gruntz.core.vtable_hierarchy --audit`.
+    ra = subprocess.run([sys.executable, "-m", "gruntz.core.vtable_hierarchy", "--audit"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if ra.returncode != 0:
         for ln in (ra.stdout + ra.stderr).splitlines():
@@ -423,7 +423,7 @@ def cmd_build(args) -> None:
                 print(ln, file=sys.stderr)
         die("vtable-audit: source vtable hierarchy does not match the binary - drive "
             "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
-            "(python -m gruntz.analysis.vtable_hierarchy --audit)")
+            "(python -m gruntz.core.vtable_hierarchy --audit)")
     # VTBL(name, rva) UNIQUENESS - a HARD bijection assert (its own gate, run() raises on
     # nonzero): every vtable rva is bound by exactly one VTBL() annotation. A vtable datum has
     # one ??_7 name, so a multiply-bound rva is either a redundant duplicate (delete one) or a
@@ -460,13 +460,13 @@ def cmd_build(args) -> None:
     # src's VTBL() names a different rva, that binding is a wrong-dispatch bug - and neither
     # VTBL-uniqueness nor vtable-coverage can see it, because both are satisfied by any
     # self-consistent lie. This gate re-derives every binding from the image. FATAL.
-    ro = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_owner", "--audit"],
+    ro = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_owner", "--audit"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if ro.returncode != 0:
         for ln in (ro.stdout + ro.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("vtable-owner: a VTBL() binding contradicts the vtable that actually dispatches "
-            "to the class's destructor (python -m gruntz.analysis.vtable_owner --audit)")
+            "to the class's destructor (python -m gruntz.cleanliness.vtable_owner --audit)")
     else:
         log((ro.stdout + ro.stderr).strip().splitlines()[-1])
     # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
@@ -694,7 +694,7 @@ def _build_ghidra_db(reimport: bool = False) -> None:
 
     apply.py CONSUMES the tracked config/{engine,library}_labels.csv - FID labels are
     NOT regenerated here (the committed config/library_labels.csv is canonical;
-    regenerate it explicitly with `python -m gruntz.analysis.fid_generate`).
+    regenerate it explicitly with `python -m gruntz.audit.fid_generate`).
     """
     if GHIDRA_FUNCTIONS.exists() and not reimport:
         log(f"Ghidra exports present ({GHIDRA_FUNCTIONS.relative_to(REPO)}); "
@@ -868,30 +868,38 @@ def cmd_link(args) -> None:
     finally:
         _kill_wine_session()
     if args.analyze:
-        run([sys.executable, "-m", "gruntz.analysis.link_order",
+        run([sys.executable, "-m", "gruntz.audit.link_order",
              "--map", str(REPO / "build" / "exe" / "GRUNTZ.candidate.map"),
              "--names", str(GEN_NAMES)])
 
 
-def cmd_exe_diff(args) -> None:
-    """Whole-EXE comparison: candidate GRUNTZ.EXE vs retail (layout + bytes).
+def cmd_audit(args) -> None:
+    """`gruntz audit <tool> [args...]` - dispatch to gruntz.audit.<tool> IN-PROCESS
+    (folder = command group: one module per audit). Dashes map to underscores;
+    `tidy` -> tidy_audit. No tool / unknown tool lists what is available."""
+    import importlib.util
+    tool = (args.tool or "").replace("-", "_")
+    tool = {"tidy": "tidy_audit"}.get(tool, tool)
+    if not tool or importlib.util.find_spec(f"gruntz.audit.{tool}") is None:
+        avail = sorted(f.stem for f in (PKG / "audit").glob("*.py")
+                       if f.stem != "__init__")
+        msg = f"unknown audit tool '{args.tool}'. " if args.tool else ""
+        die(msg + "available: " + ", ".join(avail))
+    from gruntz.core import call_main
+    sys.exit(call_main(f"gruntz.audit.{tool}", args.rest))
 
-    One level up from per-object objdiff: reads the candidate EXE + .map produced
-    by `gruntz link` and diffs the whole image against retail - PE headers/section
-    table, .text RVA layout fidelity (the RVA-reorder lever), and name-aligned
-    linked-byte identity. Prints the proposed tracked EXE-match numbers. Run
-    `gruntz link` first to (re)generate the candidate. See gruntz.analysis.exe_diff.
-    """
-    cmd = [sys.executable, "-m", "gruntz.analysis.exe_diff"]
-    if args.json:
-        cmd += ["--json"]
-    run(cmd)
+
+def cmd_permute(args) -> None:
+    """`gruntz permute fn|sweep|variants [args...]` - the climbers, in-process."""
+    mod = {"fn": "permute", "sweep": "permute_sweep", "variants": "match_variants"}[args.which]
+    from gruntz.core import call_main
+    sys.exit(call_main(f"gruntz.permute.{mod}", args.rest))
 
 
 def cmd_data_audit(args) -> None:
     """Attribute retail .rdata/.data/.bss bytes to source DATA() symbols + fingerprint.
 
-    Thin alias for `python -m gruntz.analysis.data_audit`: reads ONLY the retail
+    Thin alias for `python -m gruntz.core.data_audit`: reads ONLY the retail
     GRUNTZ.EXE (no delinker/PDB/wine), classifies each named data symbol's PE
     storage, resolves an extent (reviewed size, else next-symbol gap), and records a
     relocation-normalized content digest + HIGHLOW fingerprint into
@@ -899,25 +907,12 @@ def cmd_data_audit(args) -> None:
     and gives the data-match loop a fixed retail oracle. See
     docs/data-attribution.md.
     """
-    cmd = [sys.executable, "-m", "gruntz.analysis.data_audit"]
+    cmd = [sys.executable, "-m", "gruntz.core.data_audit"]
     if args.rva:
         cmd += ["--rva", args.rva]
     if args.json:
         cmd += ["--json", args.json]
     run(cmd)
-
-
-def cmd_lint(args) -> None:
-    """On-demand clang-tidy DE-HACK finder (READ-ONLY worklist; never auto-fix).
-
-    Thin alias for `python -m gruntz.analysis.tidy_audit`: runs the curated
-    finder config (config/tidy-audit.yaml, deliberately OFF the editor's
-    always-on path) over src/ and prints the categorized de-hack backlog -
-    C-style/reinterpret casts, dead/unused decls, bugprone smells - with
-    per-check totals + top files by cast count. Pass paths to scope it, --csv
-    to dump file,line,check,message. Never runs with `-fix`.
-    """
-    run([sys.executable, "-m", "gruntz.analysis.tidy_audit", *args.rest])
 
 
 def cmd_todo(args) -> None:
@@ -1186,7 +1181,7 @@ def _add_sema(sub) -> None:
                               "listing / gaps / per-file breakdown (owner: TU / MFC / "
                               "CRT / EH / thunk / unknown)")
     smap.add_argument("rest", nargs=argparse.REMAINDER,
-                      help="a gruntz.analysis.exe_map command: [overview] | "
+                      help="a gruntz.core.exe_map command: [overview] | "
                            "range <lo> <hi>[-|+len] | file <path> [--gaps] | at <rva> | "
                            "gaps | units | find <regex>   (append --json for machine output)")
     smap.set_defaults(func=cmd_sema_map)
@@ -1252,10 +1247,23 @@ def main() -> None:
     lk.add_argument("--analyze", action="store_true",
                     help="print the layout/link-order report after linking")
     lk.set_defaults(func=cmd_link)
-    xd = sub.add_parser("exe-diff", help="whole-EXE diff: candidate vs retail "
-                        "(layout + linked bytes; needs `gruntz link` first)")
-    xd.add_argument("--json", action="store_true", help="emit the JSON summary only")
-    xd.set_defaults(func=cmd_exe_diff)
+    au = sub.add_parser(
+        "audit", help="one-shot campaign audits - `gruntz audit <tool> [args...]` "
+                      "dispatches to gruntz/audit/<tool>.py (folder = command group)")
+    au.add_argument("tool", nargs="?",
+                    help="audit module, dashes ok: assert-relocs, data-home, "
+                         "stale-walls, reinterpret-census, tu-order-check, "
+                         "interleavers, exe-diff, tidy, ... (no arg lists all)")
+    au.add_argument("rest", nargs=argparse.REMAINDER, help="args passed through")
+    au.set_defaults(func=cmd_audit)
+    pm = sub.add_parser(
+        "permute", help="source-permutation climbers - `gruntz permute "
+                        "fn|sweep|variants [args...]` (gruntz/permute/)")
+    pm.add_argument("which", choices=("fn", "sweep", "variants"),
+                    help="fn = one-function hill-climber, sweep = whole unit, "
+                         "variants = exhaustive AST/TU-state search")
+    pm.add_argument("rest", nargs=argparse.REMAINDER, help="args passed through")
+    pm.set_defaults(func=cmd_permute)
     da = sub.add_parser("data-audit", help="attribute retail .rdata/.data/.bss bytes "
                         "to DATA() symbols + fingerprint (-> build/gen/data_attribution.tsv)")
     da.add_argument("--rva", help="audit + print a single data symbol RVA")
@@ -1263,12 +1271,6 @@ def main() -> None:
     da.set_defaults(func=cmd_data_audit)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
-    ln = sub.add_parser("lint", help="on-demand clang-tidy de-hack finder "
-                        "(read-only worklist; casts/dead/unused; never auto-fix)")
-    ln.add_argument("rest", nargs=argparse.REMAINDER,
-                    help="args passed through to gruntz.analysis.tidy_audit "
-                         "(paths, --csv FILE, --top N, -j N)")
-    ln.set_defaults(func=cmd_lint)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
                    ).set_defaults(func=cmd_clean)
     _add_sema(sub)   # sema: semantic-navigation group (xref/LSP/disasm/dossiers)

@@ -3,7 +3,7 @@
 
     nix develop --command python docs/exe-map/build_site.py
 
-Runs each generator in order (they read the retail data via gruntz.analysis.exe_map,
+Runs each generator in order (they read the retail data via gruntz.core.exe_map,
 so they need scripts/ on PYTHONPATH - the nix dev shell provides it). Every step
 writes its output (JSON + HTML) next to these scripts, i.e. into docs/exe-map/."""
 import os

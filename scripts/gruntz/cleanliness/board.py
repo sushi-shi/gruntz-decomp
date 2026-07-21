@@ -73,7 +73,7 @@ def _count_cpp_local_defs(code: str) -> int:
 # vfunc / SlotN) - a real virtual with an un-recovered identity. Counts the DECL
 # sites (one per slot). Drive to 0 via the vtable_hierarchy TOPOLOGICAL override
 # analysis (inherit the base's slots, name the rest from the slot RVA), NOT by
-# hand-renaming - see `python -m gruntz.analysis.vtable_hierarchy --audit/--coverage`.
+# hand-renaming - see `python -m gruntz.core.vtable_hierarchy --audit/--coverage`.
 _VTSLOT = re.compile(
     r"virtual\b[^;{}\n]*\b(?:dummy[0-9]+|vfunc[0-9]*|[Ss]lot[0-9]+"
     r"|[sv][0-9a-f]{2,3}(?![0-9a-z])"  # v04 / s04 offset-named fake slots (both are placeholders)
@@ -204,7 +204,7 @@ def _caller_callee_counts() -> dict[str, int]:
     import subprocess
     try:
         proc = subprocess.run(
-            [sys.executable, "-m", "gruntz.analysis.caller_callee", "--metric"],
+            [sys.executable, "-m", "gruntz.cleanliness.caller_callee", "--metric"],
             capture_output=True, text=True, timeout=600, cwd=str(REPO),
         )
         if proc.returncode != 0:

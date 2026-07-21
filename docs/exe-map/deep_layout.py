@@ -32,7 +32,7 @@ The four measurements it consolidates (2026-07-10 investigation):
     conflated (SPLIT list); multi-core intervals are MERGE groups.
 
 Inputs: $GRUNTZ_EXE, build/gen/symbol_names.csv, build/ghidra-enrich exports (via
-gruntz.analysis.exe_map), flags.json, and optionally demo_oracle.json (from
+gruntz.core.exe_map), flags.json, and optionally demo_oracle.json (from
 demo_oracle.py; skipped cleanly if absent). Run under `nix develop`."""
 import bisect
 import csv
@@ -41,7 +41,7 @@ import os
 import struct
 from collections import Counter, defaultdict
 
-import gruntz.analysis.exe_map as em
+import gruntz.core.exe_map as em
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 EXE = os.environ.get("GRUNTZ_EXE", "")
@@ -427,7 +427,7 @@ def oracle_analysis(intervals, by_target, fdata):
     link-order witness, and the private-globals oracle (file-scope statics decide
     membership; per-obj data extents; extent OVERLAP between neighbor intervals =
     they are one obj)."""
-    from gruntz.analysis import vtable_scan as vs
+    from gruntz.core import vtable_scan as vs
 
     ivs = sorted((s["lo"], s["hi"], i) for i, s in enumerate(intervals))
     ilo = [x[0] for x in ivs]
