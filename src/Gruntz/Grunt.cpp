@@ -316,7 +316,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase(static_cast<CGameObject*>(owner))
     m_coordToggle = 0;
     m_wingzEnabled = 0;
     m_tileClaimed = 0;
-    m_428 = 0;
+    m_struckVoiceSound = 0;
     m_reachRectTop = -1;
     m_reachRadius = 1;
     m_reachRectBottom = 1;

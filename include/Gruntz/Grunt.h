@@ -843,8 +843,8 @@ public:
     i32 m_418;         // +0x418
     i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
     i32 m_tileClaimed;                // +0x420 (arrival-claimed latch)
-    DirectSoundMgr* m_424;            // +0x424 (struck-slot sound sample; freed via StopAndRewind)
-    DirectSoundMgr* m_428;            // +0x428 (struck-voice sound sample; freed via StopAndRewind)
+    DirectSoundMgr* m_struckSlotSound;            // +0x424 (struck-slot sound sample; freed via StopAndRewind)
+    DirectSoundMgr* m_struckVoiceSound;            // +0x428 (struck-voice sound sample; freed via StopAndRewind)
     i32 m_42c;                        // +0x42c
     i32 m_430;                        // +0x430
     i32 m_434;                        // +0x434

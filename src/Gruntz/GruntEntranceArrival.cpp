@@ -144,13 +144,13 @@ RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(i32 arg) {
     CUserLogic::FinalizeStep(arg); // direct base call (retail `call 0x3913`)
     MovingSlot16();
-    if (m_424 != 0) {
+    if (m_struckSlotSound != 0) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "L") != 0);
         if (neL && strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "G") != 0) {
             ClearSubA();
         }
     }
-    if (m_428 != 0) {
+    if (m_struckVoiceSound != 0) {
         if (m_gruntKind == 0) {
             ClearSubB();
         } else {

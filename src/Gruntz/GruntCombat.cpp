@@ -588,7 +588,7 @@ i32 CGrunt::TryPowerupAtTile() {
 // Logic complete; flips to exact once that shared referent set is named.
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
-    DirectSoundMgr*& sample = m_424;
+    DirectSoundMgr*& sample = m_struckSlotSound;
     if (sample != 0) {
         return;
     }
@@ -613,10 +613,10 @@ void CGrunt::EnsureStruckSlot(const char* key) {
 
 RVA(0x00057c10, 0x1e)
 void CGrunt::ClearSubA() {
-    DirectSoundMgr* p = m_424;
+    DirectSoundMgr* p = m_struckSlotSound;
     if (p) {
         p->StopAndRewind();
-        m_424 = 0;
+        m_struckSlotSound = 0;
     }
 }
 
@@ -637,7 +637,7 @@ void CGrunt::ClearSubA() {
 // functions get stubs (the SAME referent set LaunchSound waits on). Logic complete.
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
-    DirectSoundMgr*& sample = m_428;
+    DirectSoundMgr*& sample = m_struckVoiceSound;
     if (sample != 0) {
         return;
     }
@@ -659,10 +659,10 @@ void CGrunt::EnsureStruckVoice(const char* key) {
 
 RVA(0x00057ce0, 0x1e)
 void CGrunt::ClearSubB() {
-    DirectSoundMgr* p = m_428;
+    DirectSoundMgr* p = m_struckVoiceSound;
     if (p) {
         p->StopAndRewind();
-        m_428 = 0;
+        m_struckVoiceSound = 0;
     }
 }
 
@@ -686,11 +686,11 @@ void CGrunt::ReapplyVoiceParams() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    DirectSoundMgr* a = m_424;
+    DirectSoundMgr* a = m_struckSlotSound;
     if (a != 0) {
         a->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
-    DirectSoundMgr* b = m_428;
+    DirectSoundMgr* b = m_struckVoiceSound;
     if (b != 0) {
         b->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
