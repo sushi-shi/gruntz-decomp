@@ -286,7 +286,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (src == 0) {
         return 0;
     }
-    u8* spal = src->m_0c;
+    u8* spal = src->m_srcPalette;
     if (spal == 0) {
         return 0;
     }

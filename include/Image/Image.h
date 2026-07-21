@@ -161,7 +161,7 @@ public:
 class CFileImagePal {
 public:
     char _00[0x0c];
-    u8* m_0c; // +0x0c  source palette (4 bytes/entry)
+    u8* m_srcPalette; // +0x0c  source palette (4 bytes/entry)
 };
 
 #endif // SRC_IMAGE_IMAGE_H
