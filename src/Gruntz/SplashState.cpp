@@ -44,7 +44,7 @@ i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
     SetCursor(0);
     m_4->RestoreVideoMode(0);
 
-    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_SPLASH"));
+    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
     if (!m_2c) {
         return 0;
     }

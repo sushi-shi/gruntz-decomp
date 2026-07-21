@@ -164,7 +164,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_c) {
         return 0;
     }
-    if (!m_8) {
+    if (!m_symParser) {
         return 0;
     }
     if (!m_2c) {
@@ -203,7 +203,7 @@ i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_c) {
         return 0;
     }
-    if (!m_8) {
+    if (!m_symParser) {
         return 0;
     }
     if (!m_2c) {
@@ -218,7 +218,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_c) {
         return 0;
     }
-    if (!m_8) {
+    if (!m_symParser) {
         return 0;
     }
     if (!m_2c) {

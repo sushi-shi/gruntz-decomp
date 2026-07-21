@@ -30,7 +30,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the manager arrives as the slot-1 virtual's i32 arg; one cast at the seam.
     CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
     m_4 = mgr;
-    m_8 = mgr->m_symParser;
+    m_symParser = mgr->m_symParser;
     m_c = mgr->m_world;
     // +0x40 SETTLED (2026-07-16): the mgr's m_faderMgr is the real CFaderMgr
     // (Run news it + SetConfig @0x17d980, the src/DDrawMgr/FaderMgr.cpp method).
@@ -45,13 +45,13 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", m_levelType);
-    CSymTab* node = static_cast<CSymTab*>(m_8->ResolvePath(area));
+    CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(area));
     m_levelBank = node;
     if (node == 0) {
         return 0;
     }
     if (m_c->m_imageRegistry->HasKeyEqual_155550("GAME") == 0) {
-        void* img = m_8->ResolvePath("GAME_IMAGEZ");
+        void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;
         }
@@ -60,14 +60,14 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         g_resourceInstallActive = 0;
     }
     if (m_c->m_soundRegistry->HasKeyEqual_1583c0("GAME") == 0) {
-        void* snd = m_8->ResolvePath("GAME_SOUNDZ");
+        void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
             return 0;
         }
         m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (m_c->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
-        void* aniz = m_8->ResolvePath("GAME_ANIZ");
+        void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
             return 0;
         }

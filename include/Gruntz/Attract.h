@@ -89,7 +89,7 @@ public:
     // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
     // (menuRoot()/screenObj() moved to CState with the title-roll cluster.)
     CSymParser* stateMgr() {
-        return static_cast<CSymParser*>(m_8);
+        return static_cast<CSymParser*>(m_symParser);
     }
     CAttractVideo* video() {
         return reinterpret_cast<CAttractVideo*>(m_4);

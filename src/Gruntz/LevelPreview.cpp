@@ -35,7 +35,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_PREVIEW"));
+    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
     if (m_2c == 0) {
         return 0;
     }
@@ -207,7 +207,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     if (m_c == 0) {
         return 0;
     }
-    if (m_8 == 0) {
+    if (m_symParser == 0) {
         return 0;
     }
     if (m_2c == 0) {

@@ -199,7 +199,7 @@ public:
     // +0x08  the level/rez symbol parser (ResolvePath @0x13c030; == mgr->m_symParser,
     // cached by LoadGameAssetNamespaces). Ex `CBankMgr*` - a shell type every consumer
     // bridged with a ((CSymParser*)m_8) cast; typed for real, the casts are gone.
-    CSymParser* m_8;
+    CSymParser* m_symParser;
     // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
     // CGameRegistry::m_world (+0x30) == the canonical CDDrawSurfaceMgr - non-polymorphic;
     // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0

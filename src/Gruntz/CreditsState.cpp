@@ -54,7 +54,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_flashTimer = 0;
     m_fadeCountdown = 0;
     m_fxEnabled = 0;
-    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_CREDITZ"));
+    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_CREDITZ"));
     if (!m_2c) {
         return 0;
     }
@@ -299,7 +299,7 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = static_cast<void*>(m_2c);
-    void* state = m_8->ResolvePath(stateName);
+    void* state = m_symParser->ResolvePath(stateName);
     m_2c = static_cast<CResSource*>(state);
     if (state == 0) {
         return 0;

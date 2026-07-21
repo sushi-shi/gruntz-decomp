@@ -397,7 +397,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     Vslot24(); // slot 36 (+0x90) virtual dispatch, ex "OnReady"
-    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_MULTI"));
+    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_MULTI"));
     if (m_2c == 0) {
         return 0;
     }
@@ -1034,7 +1034,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CResSource* saved = m_2c;
-    CResSource* st = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
+    CResSource* st = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
     m_2c = st;
     if (!st) {
         return 0;

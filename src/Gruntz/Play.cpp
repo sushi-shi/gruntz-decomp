@@ -853,7 +853,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- 3) build the level name + look it up ----
     sprintf(nameBuf, "AREA%i", self->m_levelType);
-    set = self->m_8->ResolvePath(nameBuf);
+    set = self->m_symParser->ResolvePath(nameBuf);
     self->m_levelBank = static_cast<CSymTab*>(set);
     if (set == 0) {
         goto fail0;
@@ -5062,14 +5062,14 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 RVA(0x000cffe0, 0x3c)
 i32 CPlay::LoadImageBanks() {
     CPlay* self = this;
-    if (!self->m_8) {
+    if (!self->m_symParser) {
         return 0;
     }
-    self->m_gruntzBank = static_cast<CSymTab*>(self->m_8->ResolvePath("GRUNTZ"));
+    self->m_gruntzBank = static_cast<CSymTab*>(self->m_symParser->ResolvePath("GRUNTZ"));
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = static_cast<CSymTab*>(self->m_8->ResolvePath("GAME"));
+    self->m_gameBank = static_cast<CSymTab*>(self->m_symParser->ResolvePath("GAME"));
     return self->m_gameBank != 0;
 }
 

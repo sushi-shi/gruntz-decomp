@@ -6,7 +6,7 @@ void operator delete(void*);
 RVA(0x0008c750, 0xa9)
 CState::CState() {
     m_4 = 0;
-    m_8 = 0;
+    m_symParser = 0;
     m_c = 0;
     m_levelBank = 0;
     m_2c = 0;
