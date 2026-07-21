@@ -75,26 +75,26 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (!m_c->m_imageRegistry->HasKeyEqual_155550("MENU")) {
+    if (!m_world->m_imageRegistry->HasKeyEqual_155550("MENU")) {
         void* set = SymTab2c()->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_imageRegistry->InstallTree(set, "MENU", "_");
+        m_world->m_imageRegistry->InstallTree(set, "MENU", "_");
         g_resourceInstallActive = 0;
     }
 
-    if (!m_c->m_soundRegistry->HasKeyEqual_1583c0("MENU")) {
+    if (!m_world->m_soundRegistry->HasKeyEqual_1583c0("MENU")) {
         void* set = SymTab2c()->ResolvePath("SOUNDZ");
         if (set == 0) {
             return 0;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(set), "MENU", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(set), "MENU", "_");
     }
 
-    if (!m_c->m_drawTarget->Method_158d20()) {
-        if (!m_c->m_drawTarget->Method_158cb0(0, 0x30000)) {
+    if (!m_world->m_drawTarget->Method_158d20()) {
+        if (!m_world->m_drawTarget->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }
@@ -110,7 +110,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
     // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
     // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
-    if (!m_1b4->InitRegion(m_c, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_1b4->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
@@ -121,9 +121,9 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
-    m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
+    m_world->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
     if (e != 0) {
-        m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
+        m_world->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
         m_1b8 = e->m_10->m_durationMs;
     } else {
         m_1b8 = 0;
@@ -157,16 +157,16 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    m_c->m_imageRegistry->RemoveKeysEqual_155360("MENU", "_");
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70("MENU", "_");
-    if (m_c) {
+    m_world->m_imageRegistry->RemoveKeysEqual_155360("MENU", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual_157c70("MENU", "_");
+    if (m_world) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        SoundStream* r = m_c->m_soundRegistry->m_2c;
+        SoundStream* r = m_world->m_soundRegistry->m_2c;
         if (r) {
             (static_cast<SoundStream*>(r))->Stop();
         }
-        m_c->m_workerList->ClearWorkers();
+        m_world->m_workerList->ClearWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CChatBox* ui = m_1b4;
@@ -219,7 +219,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        SoundStream* r = m_c->m_soundRegistry->m_2c;
+        SoundStream* r = m_world->m_soundRegistry->m_2c;
         if (r) {
             (static_cast<SoundDevice*>(r))->PurgeVoiceList(-1);
         }
@@ -228,8 +228,8 @@ void CMenuState::StopMusicChain() {
 
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    m_c->m_drawTarget->TransExit();
-    m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->TransExit();
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)
@@ -376,5 +376,5 @@ void CMenuState::BuildVersionString(CGMVerRect r) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage(reinterpret_cast<HudMsgSink*>(m_c), reinterpret_cast<i32>(&str), reinterpret_cast<i32>(&r), 0x64, 1, 0xff, 0xff, 0, 0);
+    ShowHudMessage(reinterpret_cast<HudMsgSink*>(m_world), reinterpret_cast<i32>(&str), reinterpret_cast<i32>(&r), 0x64, 1, 0xff, 0xff, 0, 0);
 }

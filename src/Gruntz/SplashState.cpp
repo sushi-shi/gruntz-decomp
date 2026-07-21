@@ -51,7 +51,7 @@ i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
 
     void* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
-        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), g_emptyString, "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), g_emptyString, "_");
     }
     return 1;
 }
@@ -69,10 +69,10 @@ i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
 // fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
-    if (m_c->m_soundRegistry->m_2c != 0) {
-        m_c->m_soundRegistry->m_2c->Stop();
+    if (m_world->m_soundRegistry->m_2c != 0) {
+        m_world->m_soundRegistry->m_2c->Stop();
     }
-    m_c->m_soundRegistry->ClearMap();
+    m_world->m_soundRegistry->ClearMap();
     CState::ReleaseResources();
 }
 
@@ -94,7 +94,7 @@ void CSplashState::ReleaseResources() {
 // byte-exact; final sweep.
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(0x8006, 0x447);
@@ -102,7 +102,7 @@ i32 CSplashState::Render() {
         }
     }
 
-    if (m_c->m_soundRegistry->m_2c) {
+    if (m_world->m_soundRegistry->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -140,7 +140,7 @@ post:
 
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::InputVirtual() {
-    if (m_c->m_drawTarget->PagesReady() == 0) {
+    if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

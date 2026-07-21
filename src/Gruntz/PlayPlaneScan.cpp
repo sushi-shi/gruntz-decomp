@@ -45,7 +45,7 @@ extern "C" {
 // struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CDDrawSurfaceMgr* v = m_c;
+    CDDrawSurfaceMgr* v = m_world;
     // retail null-tests the +0x10 list-facet address then walks its head node
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
@@ -179,7 +179,7 @@ i32 CPlay::ScanBuildTiles() {
 // RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
-    CDDrawSurfaceMgr* v = m_c;
+    CDDrawSurfaceMgr* v = m_world;
     // retail null-tests the +0x10 list-facet address then walks its head node
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {

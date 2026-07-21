@@ -33,11 +33,11 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x1) {
-        sprintf(scratch, " Objs = %i ", m_c->m_childGroup->m_list.GetCount());
+        sprintf(scratch, " Objs = %i ", m_world->m_childGroup->m_list.GetCount());
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x4) {
-        CLevelPlane* p = m_c->m_level->m_mainPlane;
+        CLevelPlane* p = m_world->m_level->m_mainPlane;
         sprintf(scratch, " Pos = %i,%i", p->m_originX, p->m_originY);
         strcat(buf, scratch);
     }
@@ -62,7 +62,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* host = m_c->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
     host->m_8->GetDC(&hdc);
     if (hdc == 0) {

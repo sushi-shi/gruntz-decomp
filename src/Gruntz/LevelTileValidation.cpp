@@ -110,7 +110,7 @@ RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
     // Retail lea's the live-object CObList embedded at manager+0x10 (the real m_list
     // member) and null-tests it (a vacuous guard), then reads its head (+4).
-    CObList* list = &m_c->m_childGroup->m_list;
+    CObList* list = &m_world->m_childGroup->m_list;
     if (list == 0) {
         return 0;
     }
@@ -194,7 +194,7 @@ i32 CPlay::ValidateLevelTiles() {
     counts[3] = 0;
 
     // The live-object list (the CObList embedded at manager+0x10; head node 191880x14).
-    CObList* list = &m_c->m_childGroup->m_list;
+    CObList* list = &m_world->m_childGroup->m_list;
     if (list == 0) {
         return 0;
     }
@@ -216,8 +216,8 @@ i32 CPlay::ValidateLevelTiles() {
         void* who = static_cast<void*>(obj->m_7c->m_notify);
 
         if (who == reinterpret_cast<void*>(0x401799)) {
-            CGameLevel* grid = LevelOf(m_c); // recomputed per-arm (retail spills it)
-            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
+            CGameLevel* grid = LevelOf(m_world); // recomputed per-arm (retail spills it)
+            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == 0x21) {
                 // 3x3 neighbour scan around the tile: find an adjacent registered
                 // switch (LookupKind tag 0x16), then re-resolve the tile-class type
@@ -476,11 +476,11 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
             }
         } else if (who == reinterpret_cast<void*>(0x403bfc)) {
-            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
+            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             static_cast<void>(type);
             obj->m_flags |= 0x10000;
         } else if (who == reinterpret_cast<void*>(0x4037b0)) {
-            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
+            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             static_cast<void>(type);
             obj->m_flags |= 0x10000;
         } else if (who == reinterpret_cast<void*>(0x401b09)) {
@@ -523,7 +523,7 @@ i32 CPlay::ValidateLevelTiles() {
             // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
             // a tile-action event with the extent rect (AddToList3 @0x116a40,
             // thunk 0x3580, on m_beginMarker - the ex-"SpawnPuddle" alias).
-            CPlaneRender* pl = m_c->m_level->m_mainPlane;
+            CPlaneRender* pl = m_world->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_168] + obj->m_164];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_beginMarker->AddToList3(

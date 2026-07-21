@@ -51,14 +51,14 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_c->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r = m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
-    m_c->m_imageRegistry->RemoveKeysEqual_155360("BOOTY", "_");
-    m_c->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
+    m_world->m_imageRegistry->RemoveKeysEqual_155360("BOOTY", "_");
+    m_world->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
@@ -79,7 +79,7 @@ i32 CBootyState::Vslot09(i32) {
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
         return 0;
     }
-    m_c->m_drawTarget->TransExit();
+    m_world->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CGruntzMgr* reg = g_gameReg;
@@ -111,7 +111,7 @@ i32 CBootyState::Vslot09(i32) {
 RVA(0x00018e40, 0x81)
 i32 CBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_c->m_soundRegistry->m_10.Lookup(
+    m_world->m_soundRegistry->m_10.Lookup(
         "BOOTY_LOOP",
         obj
     ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
@@ -119,8 +119,8 @@ i32 CBootyState::FrameSlot28(i32) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-            if (m_c->m_soundRegistry->m_2c != 0) {
-                m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+            if (m_world->m_soundRegistry->m_2c != 0) {
+                m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
         }
     }
@@ -491,11 +491,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    SoundStream* r = m_c->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r = m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
     // m_4 (CState::m_4) IS the CGruntzMgr singleton; the sub-object it tears down here is
     // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
@@ -510,7 +510,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    m_c->m_drawTarget->TransExit();
+    m_world->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
@@ -538,7 +538,7 @@ i32 CMultiBootyState::Vslot09(i32) {
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_c->m_soundRegistry->m_10.Lookup(
+    m_world->m_soundRegistry->m_10.Lookup(
         "BOOTY_LOOP",
         obj
     ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
@@ -546,8 +546,8 @@ i32 CMultiBootyState::FrameSlot28(i32) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-            if (m_c->m_soundRegistry->m_2c != 0) {
-                m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+            if (m_world->m_soundRegistry->m_2c != 0) {
+                m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
         }
     }
@@ -643,27 +643,27 @@ void CMultiBootyState::DrawBattleStats() {
         if (g_gameReg->m_options[i].m_joined != 0) {
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x2d8 + i * 0x1c, 7));
             copyRect(&rc, &g_col2Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0x238 + i * 0x28, 10));
             copyRect(&rc, &g_col3Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->m_scoreHud, 0xd8 + i * 0x58, 22));
             copyRect(&rc, &g_col4Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_scoreHud) + 0x48 + i * 4)));
             copyRect(&rc, &g_col5Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->m_scoreHud)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
-            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -693,7 +693,7 @@ void CMultiBootyState::DrawBattleStats() {
                 break;
         }
         copyRect(&rc, &g_labelRects[c]);
-        DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawStatText(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
     // Colour loop: team-colour name per active player, drawn in that colour.
@@ -757,7 +757,7 @@ void CMultiBootyState::DrawBattleStats() {
             s.Format("%s", static_cast<const char*>(*GetColorName(&cn)));
             copyRect(&rc, &g_colorRects[i]);
             DrawStatText(
-                m_c,
+                m_world,
                 &s,
                 &rc,
                 0x64,
@@ -776,12 +776,12 @@ void CMultiBootyState::DrawBattleStats() {
     rc.top = 0xf;
     rc.right = 0x280;
     rc.bottom = 0x73;
-    DrawStatText(m_c, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    DrawStatText(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(0x8006, 0x459);
@@ -792,8 +792,8 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
         m_1b8 = 0xc7;
     }
-    m_c->m_childGroup->TickKillCues_159a70(1);
-    m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
+    m_world->m_childGroup->TickKillCues_159a70(1);
+    m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
 
     // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the
     // battlez scoreboard reads as its score accumulator (CBattlezData::m_score) - one
@@ -807,14 +807,14 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt(reinterpret_cast<HudMsgSink*>(m_c), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessageAlt(reinterpret_cast<HudMsgSink*>(m_world), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
 
-    CDDrawSubMgrPages* dt = m_c->m_drawTarget;
+    CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_c->m_soundRegistry->m_2c != 0) {
-        m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
+    if (m_world->m_soundRegistry->m_2c != 0) {
+        m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
     }
     return 1;
 }
@@ -832,7 +832,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    CImageRegistry* reg = m_c->m_imageRegistry;
+    CImageRegistry* reg = m_world->m_imageRegistry;
     if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }
@@ -841,7 +841,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_imageRegistry;
+    reg = m_world->m_imageRegistry;
     if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
@@ -850,7 +850,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_imageRegistry;
+    reg = m_world->m_imageRegistry;
     if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
         return 0;
     }
@@ -860,7 +860,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
-    m_c->m_drawTarget->TransExit();
+    m_world->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     return 1;
 }

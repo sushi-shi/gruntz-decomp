@@ -31,7 +31,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
     m_mgr = mgr;
     m_symParser = mgr->m_symParser;
-    m_c = mgr->m_world;
+    m_world = mgr->m_world;
     // +0x40 SETTLED (2026-07-16): the mgr's m_faderMgr is the real CFaderMgr
     // (Run news it + SetConfig @0x17d980, the src/DDrawMgr/FaderMgr.cpp method).
     m_faderMgr = mgr->m_faderMgr;
@@ -50,28 +50,28 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (node == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->HasKeyEqual_155550("GAME") == 0) {
+    if (m_world->m_imageRegistry->HasKeyEqual_155550("GAME") == 0) {
         void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_imageRegistry->InstallTree(img, "GAME", "_");
+        m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_c->m_soundRegistry->HasKeyEqual_1583c0("GAME") == 0) {
+    if (m_world->m_soundRegistry->HasKeyEqual_1583c0("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
             return 0;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(snd), "GAME", "_");
     }
-    if (m_c->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
+    if (m_world->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
         void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
             return 0;
         }
-        m_c->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(aniz), "GAME", "_");
+        m_world->m_animRegistry->ScanTree_152ad0(static_cast<CSymTab*>(aniz), "GAME", "_");
     }
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).
@@ -80,7 +80,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         return 0;
     }
     if (m_scratchSurface0 == 0 && m_scratchSurface1 == 0) {
-        CDDrawPtrCollections* coll = m_c->m_ptrColl;
+        CDDrawPtrCollections* coll = m_world->m_ptrColl;
         if (coll == 0) {
             return 0;
         }

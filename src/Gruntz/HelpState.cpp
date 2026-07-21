@@ -48,8 +48,8 @@ i32 CHelpState::Vslot09(i32 arg) {
     m_mgr->RestoreVideoMode(0);
     // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
     // the Method_158d20 call - a caching local would pin it in edi and mismatch).
-    if (m_c->m_drawTarget->Method_158d20() == 0
-        && m_c->m_drawTarget->Method_158cb0(0, 0x30000) == 0) {
+    if (m_world->m_drawTarget->Method_158d20() == 0
+        && m_world->m_drawTarget->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
     if (FadeInTitle(reinterpret_cast<const char*>(&g_titleBuf), 0, 0, 0, 0, 1) == 0) {
@@ -74,7 +74,7 @@ i32 CHelpState::Vslot09(i32 arg) {
 // CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
-    IDirectDrawSurface* busy = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_8;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(0x8006, 0x445);
@@ -82,7 +82,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    SoundStream* res = m_c->m_soundRegistry->m_2c;
+    SoundStream* res = m_world->m_soundRegistry->m_2c;
     if (res) {
         res->PurgeVoiceList(-1);
     }
@@ -106,7 +106,7 @@ i32 CHelpState::Render() {
 
 RVA(0x00095320, 0x56)
 i32 CHelpState::InputVirtual() {
-    if (m_c->m_drawTarget->PagesReady() == 0) {
+    if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

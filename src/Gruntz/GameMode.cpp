@@ -123,7 +123,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    m_c->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
+    m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
     CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
 
@@ -356,11 +356,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
-            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_1a0.m_14 == 0)) {
                 CWwdGameObjectA* e = m_expl[i];
                 e->m_stateFlags &= ~1;
@@ -404,7 +404,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
-            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
         if (m_readyFlags[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
@@ -429,7 +429,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
             CWwdGameObjectA* e = m_expl[i];
             e->m_stateFlags &= ~1;
             e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);

@@ -26,15 +26,15 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
-    m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
     CImageSet* set = static_cast<CImageSet*>(set_ob);
     if (set != 0) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
-            LevelCoordRect& vp = m_c->m_level->m_planeCtx;
+            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
             i32 cx = vp.left + (vp.right - vp.left) / 2;
             i32 cy = vp.top + (vp.bottom - vp.top) / 2;
-            LayerBlitFrame(m_c, frame, cx, cy, useFront, 1);
+            LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
         }
     }
 }
@@ -55,7 +55,7 @@ i32 CPlay::Vslot23() {
     Present(0x3c);
 
     CObject* lookup_ob = 0;
-    m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
     CImageSet* lookup = static_cast<CImageSet*>(lookup_ob);
     CImageSet* set = lookup;
     if (set == 0) {
@@ -71,11 +71,11 @@ i32 CPlay::Vslot23() {
         return 0;
     }
 
-    CDDrawSurfacePair* surf = m_c->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* surf = m_world->m_drawTarget->m_backPair;
     if (surf == 0) {
         return 0;
     }
     (static_cast<CImage*>(frame))->RenderFrame(surf, reinterpret_cast<void*>((surf->m_width / 2)), reinterpret_cast<void*>((surf->m_height / 2)), 0);
-    m_c->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }

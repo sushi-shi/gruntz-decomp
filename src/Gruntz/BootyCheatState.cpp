@@ -77,26 +77,26 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         goto fail;
     }
 
-    m_c->m_childGroup->DestroyChildren_159ef0();
+    m_world->m_childGroup->DestroyChildren_159ef0();
 
     {
         void* soundz = SymTab2c()->FindSub("SOUNDZ");
         if (!soundz) {
             goto fail;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(soundz), "BOOTY", "_");
 
         void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
-        m_c->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {
             goto fail;
         }
-        m_c->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
+        m_world->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
     }
 
     {

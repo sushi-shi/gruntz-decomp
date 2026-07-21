@@ -168,7 +168,7 @@ public:
     // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
     // `mov reg,[this+0x0c]` as the direct member read (forward-declared facet).
     FxResource* fxRes() {
-        return reinterpret_cast<FxResource*>(m_c);
+        return reinterpret_cast<FxResource*>(m_world);
     }
     // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
     // the default body with the qualified CState:: spelling - direct rel32.)
@@ -176,7 +176,7 @@ public:
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
     CDDrawSurfaceMgr* menuRoot() {
-        return m_c;
+        return m_world;
     }
     CAttractScreenObj* screenObj() {
         return reinterpret_cast<CAttractScreenObj*>(m_2c);
@@ -207,7 +207,7 @@ public:
     // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
     // slot-8 loaders) reach it through this one holder. Its render sub-object facets
     // live in <Gruntz/View.h>.
-    CDDrawSurfaceMgr* m_c; // +0x0c
+    CDDrawSurfaceMgr* m_world; // +0x0c
     CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
                            //         loader caches mgr->m_40 here - the +0x40 slot's
                            //         CFaderMgr-vs-CTriggerMgr identity conflict is open)

@@ -161,7 +161,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     static_cast<void>(b);
     static_cast<void>(c);
     static_cast<void>(d);
-    if (!m_c) {
+    if (!m_world) {
         return 0;
     }
     if (!m_symParser) {
@@ -200,7 +200,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // Vslot07 (different surrounding pressure) - a pure allocator choice, no source lever.
 RVA(0x000fa300, 0x3a)
 i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    if (!m_c) {
+    if (!m_world) {
         return 0;
     }
     if (!m_symParser) {
@@ -215,7 +215,7 @@ i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
 
 RVA(0x000fa350, 0x84)
 i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
-    if (!m_c) {
+    if (!m_world) {
         return 0;
     }
     if (!m_symParser) {
@@ -319,7 +319,7 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
         return 0;
     }
-    CDDSurface* s = m_c->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* s = m_world->m_drawTarget->m_frontPair->m_surface;
     if (s == 0) {
         return 0;
     }
@@ -573,7 +573,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_suppress_64e360 = 0;
         return v;
     }
-    return m_c->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
+    return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
 }
 
 i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)

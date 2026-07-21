@@ -35,7 +35,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(h, g_emptyString, "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(h, g_emptyString, "_") == -1) {
         return 0;
     }
 
@@ -43,7 +43,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -51,7 +51,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -59,23 +59,23 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_c->m_level->VisitVisible(static_cast<void*>(m_c->m_drawTarget->m_backPair), m_c->m_childGroup);
-        m_c->m_workerList->PruneWorkers(
-            m_c->m_drawTarget->m_backPair,
-            m_c->m_drawTarget->m_overlayPair
+        m_world->m_level->VisitVisible(static_cast<void*>(m_world->m_drawTarget->m_backPair), m_world->m_childGroup);
+        m_world->m_workerList->PruneWorkers(
+            m_world->m_drawTarget->m_backPair,
+            m_world->m_drawTarget->m_overlayPair
         );
     }
 
     m_guts->Deactivate();
     m_guts->LoadMainStatusBarSprite();
     m_stepCountdown = 2;
-    m_c->m_drawTarget->TransTitle();
+    m_world->m_drawTarget->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)
     return 1;
 }

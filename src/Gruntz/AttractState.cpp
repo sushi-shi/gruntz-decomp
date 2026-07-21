@@ -281,7 +281,7 @@ i32 CAttract::Vslot07() {
     if (!IsActive()) {
         return 0;
     }
-    if (!m_c) {
+    if (!m_world) {
         return 0;
     }
     if (!CState::Vslot07()) {

@@ -84,14 +84,14 @@ void CBootyState::ShowLevelCompleteMessage() {
             RECT r1;
             CopyRect(&r1, &g_levelMsgRectsA[i]);
             CString t(g_levelMsgStrings[i]);
-            ShowHudMessage(m_c, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
             CString t2;
             FormatHudText(&t2, i);
-            ShowHudMessage(m_c, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -99,11 +99,11 @@ void CBootyState::ShowLevelCompleteMessage() {
         if (g_gameReg->m_scoreHud->m_allDone != 0) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
-            ShowHudMessage(m_c, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         } else {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("Level Completed!");
-            ShowHudMessage(m_c, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -134,7 +134,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             }
             SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
         }
-        ShowHudMessage(m_c, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
 }
 
@@ -169,15 +169,15 @@ i32 CBootyState::ShowSecretBonusMessage() {
         SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
         SetRect(&r3, 0, 0x38, 0x280, 0x78);
         s.Format("The Secret of Secretz:");
-        ShowHudMessage(m_c, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
 
         CString s2(g_secretMsgA);
         CString s3(g_secretMsgB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
-        ShowHudMessage(m_c, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_c, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
         return 1;
     }
 
@@ -192,7 +192,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
     RECT rTitle;
     SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
     title.Format("Secret Bonus Acquired:");
-    ShowHudMessage(m_c, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
     for (i32 j = 0; j < category; j++) {
         RECT rA, rB;
@@ -225,8 +225,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
         for (i32 k = 0; k < s5.GetLength(); k++) {
             s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
         }
-        ShowHudMessage(m_c, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_c, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
     return 1;
 }
@@ -315,9 +315,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            m_c->m_drawTarget->TransExit();
-            m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
-            m_c->m_drawTarget->TransTitle();
+            m_world->m_drawTarget->TransExit();
+            m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
+            m_world->m_drawTarget->TransTitle();
             RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -330,7 +330,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_c->m_drawTarget->TransExit();
+            m_world->m_drawTarget->TransExit();
             RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             m_activation = 0xfffffffe;
             return 1;
@@ -344,14 +344,14 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        m_c->m_drawTarget->TransExit();
+        m_world->m_drawTarget->TransExit();
         RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
         return 1;
     }
 
     CBattlezData* rec2 = g_gameReg->m_scoreHud;
     if (rec2->m_count == 0x20) {
-        SoundStream* sub = m_c->m_soundRegistry->m_2c;
+        SoundStream* sub = m_world->m_soundRegistry->m_2c;
         if (sub != 0) {
             sub->Stop();
         }

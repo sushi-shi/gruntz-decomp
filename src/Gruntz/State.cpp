@@ -7,7 +7,7 @@ RVA(0x0008c750, 0xa9)
 CState::CState() {
     m_mgr = 0;
     m_symParser = 0;
-    m_c = 0;
+    m_world = 0;
     m_levelBank = 0;
     m_2c = 0;
     m_blitSurface0 = 0;

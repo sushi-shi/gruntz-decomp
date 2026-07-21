@@ -429,7 +429,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
     // Deactivate+RezFree+return-0 teardown CPlay::LoadGameAssetNamespaces has. The Attach `== 0` guard
     // is REAL: Attach returns a failure signal (see ChatBoxOwner.cpp).
-    if (iface->Attach(m_c, NetGameMgr()->m_chatDisplay) == 0) {
+    if (iface->Attach(m_world, NetGameMgr()->m_chatDisplay) == 0) {
         CChatBoxOwner* io = m_hitTest;
         if (io == 0) {
             return 0;
@@ -448,7 +448,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // (<Gruntz/StatusBarMgr.h>), which this `new` expands exactly as retail does.
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_guts = sess;
-    if (sess->LoadBattlezItemConfig(m_c) == 0) {
+    if (sess->LoadBattlezItemConfig(m_world) == 0) {
         CStatusBarMgr* so = m_guts;
         if (so == 0) {
             return 0;
@@ -610,14 +610,14 @@ i32 CMulti::FrameSlot28(i32 arg) {
         return 1;
     }
     RECT r;
-    m_c->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
     r.right = m_mgr->m_modeW;
     r.bottom = m_mgr->m_modeH;
     r.left = 0;
     r.top = 0;
-    ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
     if (m_mgr && m_mgr->m_cmdGrid) {
         m_mgr->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
@@ -784,7 +784,7 @@ i32 CMulti::Render() {
         fin = 1;
     }
     TickStateMgrs(); // slot 38 (+0x98) virtual dispatch (ex the view's "PostRedraw")
-    CLevelPlane* mainPlane = m_c->m_level->m_mainPlane; // the level MAIN plane
+    CLevelPlane* mainPlane = m_world->m_level->m_mainPlane; // the level MAIN plane
     if (mainPlane) {
         mainPlane->CenterScrollA(); // 0x163300
     }
@@ -805,7 +805,7 @@ i32 CMulti::Render() {
     }
     PumpB();
     DropTimeout();
-    SoundStream* win = m_c->m_soundStream;
+    SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
         win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
@@ -884,11 +884,11 @@ i32 CMulti::PumpA() {
     } else {
         g_timer500 = 0;
     }
-    m_c->m_childGroup->TickKillCues_159a70(g_frameDelta);
-    m_c->m_childGroup->CollideBroadcast();
+    m_world->m_childGroup->TickKillCues_159a70(g_frameDelta);
+    m_world->m_childGroup->CollideBroadcast();
     Mgr()->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(g_frameDelta);
-    SoundStream* win = m_c->m_soundStream;
+    SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
         win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
@@ -916,7 +916,7 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 // - not steerable from source. Sibling of the PumpA (~88%) wall.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    CDDrawSurfaceMgr* mgr = m_c;
+    CDDrawSurfaceMgr* mgr = m_world;
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
         mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
@@ -1049,10 +1049,10 @@ i32 CMulti::StartTitle() {
     }
     // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
     // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
-    m_c->m_drawTarget->Method_158dc0();
+    m_world->m_drawTarget->Method_158dc0();
     // The +0x1c chain is m_ptrColl->m_device (the held DirectDraw device); slot +0x28
     // with no args is FlipToGDISurface - flip to GDI before the ShowCursor loop below.
-    m_c->m_ptrColl->m_device->FlipToGDISurface();
+    m_world->m_ptrColl->m_device->FlipToGDISurface();
     m_2c = saved;
     while (::ShowCursor(1) < 0) {
     }
@@ -1132,7 +1132,7 @@ i32 CMulti::Open() {
         return 0;
     }
     RunTitleSeq("BACKGND", 0, 0, 1, 0); // 0xfa350 (CState base)
-    m_c->m_drawTarget->Method_158dc0(); // m_c->m_4
+    m_world->m_drawTarget->Method_158dc0(); // m_c->m_4
     i32 descriptor = SetupServices();   // 0xb78b0
     if (!descriptor) {
         return 0;
@@ -1595,9 +1595,9 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != 0) {
         ApplyCmdDelayDefaults(); // 0xb85a0 (ILT 0x386e)
     } else {
-        if (m_c->m_soundRegistry->m_emitGate == 0) {
+        if (m_world->m_soundRegistry->m_emitGate == 0) {
             void* rec_ob = 0; // CMapStringToPtr::Lookup takes a void*& out-param
-            m_c->m_soundRegistry->m_10.Lookup(s_GameKey, rec_ob);
+            m_world->m_soundRegistry->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = static_cast<LeafCue*>(rec_ob);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
@@ -2137,7 +2137,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatDisplay))->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = m_c->m_soundRegistry;
+            CSndHost* host = m_world->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
             }
@@ -2508,7 +2508,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 AnnounceVersion(reinterpret_cast<i32>(node));
             }
         }
-        CSndHost* host = m_c->m_soundRegistry;
+        CSndHost* host = m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", out);

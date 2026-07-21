@@ -128,7 +128,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             ctl = 0;
         }
         m_hitTest = ctl;
-        if (m_hitTest->Attach(m_c, m_mgr->m_chatLog) == 0) {
+        if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
             if (m_hitTest) {
                 m_hitTest->Deactivate();
                 RezFree(m_hitTest);
@@ -145,7 +145,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         // (m_tabLists[8] / m_slots[5] / m_groupSlots[3] / m_hlGrid[12] / m_ptrPool) are
         // constructed by the compiler, in retail's order, with retail's iterators.
         m_guts = new CStatusBarMgr;
-        if (m_guts->LoadBattlezItemConfig(m_c) == 0) {
+        if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
             CStatusBarMgr* w2 = m_guts;
             if (w2 == 0) {
                 return 0;

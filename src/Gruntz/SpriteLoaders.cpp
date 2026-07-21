@@ -21,7 +21,7 @@
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
-    m_c->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
     CSprite* spr = static_cast<CSprite*>(spr_ob);
     if (!spr) {
         return 0;

@@ -291,7 +291,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     // Space (cc46d): recorder step / recycle node churn
     if (key == 0x20) {
         if (dev->m_18 & 0x20) {
-            CPlaneRender* obj = self->m_c->m_level->m_mainPlane;
+            CPlaneRender* obj = self->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
             i32* slot;

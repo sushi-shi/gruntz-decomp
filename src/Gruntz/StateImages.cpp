@@ -18,7 +18,7 @@ i32 CImageState::LoadStateImages() {
     if (tree == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
@@ -46,14 +46,14 @@ i32 CBootyState::InputVirtual() {
     if (booty == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_activation != 200) {
@@ -64,7 +64,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_c->m_drawTarget->TransExit();
+    m_world->m_drawTarget->TransExit();
     RetireScene(
         0x50,
         0x3e8,
