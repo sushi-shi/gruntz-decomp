@@ -137,10 +137,34 @@ def _pkg_env() -> dict:
     return env
 
 
+# Per-gate timing (filled across a full build's gate tail; printed as a breakdown so we
+# can see which metric/gate is slow and workers aren't waiting on a mystery 300s tail).
+_GATE_TIMES: list[tuple[str, float]] = []
+
+
+def _gate_label(cmd: list) -> str:
+    try:
+        return cmd[cmd.index("-m") + 1].rsplit(".", 1)[-1]
+    except (ValueError, IndexError):
+        return str(cmd[-1])
+
+
 def run(cmd: list, **kw) -> subprocess.CompletedProcess:
     log("$ " + " ".join(str(c) for c in cmd))
     kw.setdefault("env", _pkg_env())
-    return subprocess.run(cmd, check=True, cwd=str(REPO), **kw)
+    _t0 = time.perf_counter()
+    r = subprocess.run(cmd, check=True, cwd=str(REPO), **kw)
+    _GATE_TIMES.append((_gate_label(cmd), time.perf_counter() - _t0))
+    return r
+
+
+def _trun(cmd: list, **kw) -> subprocess.CompletedProcess:
+    """subprocess.run + record elapsed for the gate-timing breakdown (no check=True; the
+    caller inspects returncode). Use for the capture_output gate/metric probes."""
+    _t0 = time.perf_counter()
+    r = subprocess.run(cmd, **kw)
+    _GATE_TIMES.append((_gate_label(cmd), time.perf_counter() - _t0))
+    return r
 
 
 def units() -> list[dict]:
@@ -155,6 +179,10 @@ def _record_build_time(mode: str, total_s: float, ninja_s: float, gates_s: float
     distinguishable if pooled. Best-effort: a logging failure never fails the build."""
     parts = [f"ninja {ninja_s:.1f}s"] + ([f"gates {gates_s:.1f}s"] if gates_s else [])
     log(f"build timing: total {total_s:.1f}s ({', '.join(parts)}) [{mode}]")
+    if _GATE_TIMES:  # per-gate breakdown (full build) so a slow metric/gate is visible,
+        slow = sorted(_GATE_TIMES, key=lambda x: -x[1])  # not a mystery ~300s gate tail
+        log("  gate timing (slowest first): "
+            + ", ".join(f"{lbl} {dt:.1f}s" for lbl, dt in slow if dt >= 0.1))
     try:
         BUILD_TIMES.parent.mkdir(parents=True, exist_ok=True)
         header = not BUILD_TIMES.exists()
@@ -227,7 +255,9 @@ def summarize(report: dict, full: bool = True) -> None:
     try:
         from gruntz.match.cleanliness import (count, report_lines, save_baseline,
                                               merge_baseline_downonly, load_baseline, _RATCHET)
-        rows = count()
+        _cl_t0 = time.perf_counter()
+        rows = count()  # includes the caller_callee subprocess (the likely slow probe)
+        _GATE_TIMES.append(("cleanliness+caller_callee", time.perf_counter() - _cl_t0))
         for line in report_lines(rows):
             print(f"  {line}")
         # Roll the baseline forward as part of the build, but DOWN-ONLY for the
@@ -263,7 +293,7 @@ def summarize(report: dict, full: bool = True) -> None:
     try:
         import re as _re
         def _vh(mode: str) -> str:
-            return subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", mode],
+            return _trun([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", mode],
                                   capture_output=True, text=True, cwd=str(REPO)).stdout
         aud, cov = _vh("--audit"), _vh("--coverage")
         def _n(txt: str, pat: str) -> str:
@@ -412,7 +442,7 @@ def cmd_build(args) -> None:
     # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
     # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
     # vtable modelling can never drift from the binary. `python -m gruntz.analysis.vtable_hierarchy --audit`.
-    ra = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", "--audit"],
+    ra = _trun([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", "--audit"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if ra.returncode != 0:
         for ln in (ra.stdout + ra.stderr).splitlines():
@@ -431,7 +461,7 @@ def cmd_build(args) -> None:
     run([sys.executable, "-m", "gruntz.match.class_vtables", "--assert-unique"])
     # Catalog completeness: VTBL still has a backlog (view-scaffolding + terminal manual
     # stamps); REPORT until it too reaches 0, then flip to a fatal run(...).
-    r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
+    r = _trun([sys.executable, "-m", "gruntz.match.class_vtables"],
                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     out_vt = r.stdout + r.stderr
     n = sum(1 for ln in out_vt.splitlines()
@@ -442,7 +472,7 @@ def cmd_build(args) -> None:
     # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
     # function pointers) finds must be bound in source (symbol_names) or catalogued as
     # MFC/CRT in config/library_vtables.csv. FATAL gate - a vtable can never go uncovered.
-    rc = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_coverage"],
+    rc = _trun([sys.executable, "-m", "gruntz.match.vtable_coverage"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rc.returncode != 0:
         for ln in (rc.stdout + rc.stderr).splitlines():
@@ -457,7 +487,7 @@ def cmd_build(args) -> None:
     # src's VTBL() names a different rva, that binding is a wrong-dispatch bug - and neither
     # VTBL-uniqueness nor vtable-coverage can see it, because both are satisfied by any
     # self-consistent lie. This gate re-derives every binding from the image. FATAL.
-    ro = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_owner", "--audit"],
+    ro = _trun([sys.executable, "-m", "gruntz.analysis.vtable_owner", "--audit"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if ro.returncode != 0:
         for ln in (ro.stdout + ro.stderr).splitlines():
@@ -468,7 +498,7 @@ def cmd_build(args) -> None:
         log((ro.stdout + ro.stderr).strip().splitlines()[-1])
     # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
     # the vtable's slots (not a fabricated name, not a de-virtualized shell). FATAL gate.
-    rv = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_virtuality"],
+    rv = _trun([sys.executable, "-m", "gruntz.match.vtable_virtuality"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rv.returncode != 0:
         for ln in (rv.stdout + rv.stderr).splitlines():
@@ -487,7 +517,7 @@ def cmd_build(args) -> None:
     # chase_thunk -> the symbol src emits there -> must be a virtual of the class or a
     # base. FATAL for any violation NOT in config/vtable-slot-binding-baseline.tsv (the
     # frozen backlog), so no NEW wiring defect can land while the known set drains to 0.
-    rb = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_slot_binding"],
+    rb = _trun([sys.executable, "-m", "gruntz.match.vtable_slot_binding"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rb.returncode != 0:
         for ln in (rb.stdout + rb.stderr).splitlines():
@@ -502,7 +532,7 @@ def cmd_build(args) -> None:
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
     # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).
-    r = subprocess.run([sys.executable, "-m", "gruntz.match.view_debt"],
+    r = _trun([sys.executable, "-m", "gruntz.match.view_debt"],
                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     out = (r.stdout + r.stderr).strip()
     if out:
@@ -1313,7 +1343,7 @@ def _sema_class_of_fn(query: str) -> int:
         pass
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         tmp = tf.name
-    rc = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
+    rc = _trun([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
                          "--csv", tmp], cwd=str(REPO), env=_pkg_env(),
                         capture_output=True, text=True).returncode
     if rc:
@@ -1357,7 +1387,7 @@ def _sema_class_of_fn(query: str) -> int:
     for owner in owners[:2]:  # the defining class(es), not every inheritor
         print()
         sys.stdout.flush()  # our lines must precede the subprocess's
-        subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
+        _trun([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
                         "--class", owner], cwd=str(REPO), env=_pkg_env())
     return 0
 
