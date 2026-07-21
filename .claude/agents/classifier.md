@@ -184,7 +184,7 @@ a hack — see the invariant.)
    (`rg '<Class>::'`, `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`). Build the
    field/method-role picture from how the matchers' source reads/writes/calls each member. Only if a
    member's role stays ambiguous after reading every use-site, consult the disasm for that one spot
-   (`python -m gruntz.analysis.dump_target <rva>`) — the exception, not the routine.
+   (`python -m gruntz.sema.dump_target <rva>`) — the exception, not the routine.
 2. Build a field/method → role table from the usage (evidence per entry). Decide names; mark the
    unclear ones "leave placeholder".
 3. Rename in the header + all TUs. **Build. Confirm zero % movement.** Revert any edit that moves it.

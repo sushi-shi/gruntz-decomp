@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # decomp_export.py - decompiler + xref dump for a list of target RVAs.
 #
-# The "decomp-xref" half of the labeling loop (companion to gruntz.analysis.string_xref).
+# The "decomp-xref" half of the labeling loop (companion to gruntz.sema.strings).
 # String refs say WHICH data a function touches; the decompiler says what it DOES:
 # this reads, for each target, the Ghidra decompiler C output plus caller/callee
 # xrefs, exposing calling convention, arg count, virtual-slot identity (vfunc_N

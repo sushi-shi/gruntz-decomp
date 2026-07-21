@@ -45,9 +45,13 @@ objdiff report -> summary). Pass ninja args after `--`, e.g.
 
 Source/target navigation for matchers & classifiers lives under one discoverable
 group (`gruntz sema -h` is self-teaching — one usage example per subcommand).
-Every subcommand is a **thin delegation** to an existing `gruntz.analysis` /
-`gruntz.match` module (each still runnable as `python -m gruntz.<...>`); nothing
-here re-implements analysis. **Semantic questions go here — grep is lexical-only.**
+Each subcommand's implementation is **one module in `scripts/gruntz/sema/`**
+(browse that directory for the full toolset; `sema/__init__.py` holds the
+inventory table). A subcommand either implements its view there (`disasm`,
+`rva`, `classof`) or delegates to a shared engine in `gruntz.analysis` /
+`gruntz.match` (each still runnable as `python -m gruntz.<...>`); the sema-only
+engines (`dump_target`, `strings`) live in `sema/` too. cli.py owns only
+argparse + lazy-import shims. **Semantic questions go here — grep is lexical-only.**
 
 Every `gruntz sema` invocation is appended to **`build/gruntz_sema.log`** (usage
 analysis → tool improvements). Metadata first, the shell-quoted command after the
@@ -474,8 +478,8 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 
 Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
 annotation macros and `src/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
-package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, and the
-analysis tools `analysis/`).
+package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, the
+sema navigation surface `sema/`, and the analysis tools `analysis/`).
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),
 `build/gen/functions.json` + `build/gen/locals.json` (Ghidra enrichment metadata),

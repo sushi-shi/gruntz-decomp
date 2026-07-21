@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# gruntz.analysis.string_xref - string-xref labeling aid for source @stub metadata.
+# gruntz.sema.strings - `gruntz sema strings`: per-fn string set / reverse lookup.
 #
 # Mechanically recovers, for every Ghidra-recognised function, the .rdata/.data
 # string literals it directly references (an immediate 4-byte LE VA equal to a
@@ -13,9 +13,9 @@
 # The name/confidence judgment is human (the script only surfaces
 # ranked candidates).
 #
-# Inputs : binaries/retail_en/GRUNTZ.EXE  (v1.0 EN, md5 81c7f648...)
+# Inputs : $GRUNTZ_EXE (v1.0 EN, md5 81c7f648...)
 #          build/ghidra-enrich/exports/functions.csv  (Ghidra function boundaries)
-# Usage  : nix develop --command python3 -m gruntz.analysis.string_xref [--rva 0x141400 ...]
+# Usage  : nix develop --command python3 -m gruntz.sema.strings [--rva 0x141400 ...]
 #          --find TEXT  -> reverse: every fn referencing a string containing TEXT
 #          (no args -> ranked report of bare FUN_ funcs with distinctive strings)
 import struct, csv, re, bisect, sys, os
@@ -104,6 +104,17 @@ def main():
     for score,rva,sz,good in rows[:80]:
         head=" | ".join(good[:6])+(f" (+{len(good)-6})" if len(good)>6 else "")
         print(f"[{score:4d}] 0x{rva:06x} sz={sz:<5d} {head}")
+
+def run(args):
+    """`gruntz sema strings` entry: <rva> or --find <text>."""
+    from gruntz.sema._common import die, run_tool
+    import sys
+    if args.find:
+        sys.exit(run_tool("gruntz.sema.strings", ["--find", args.find]))
+    if not args.rva:
+        die("sema strings: give an <rva> or --find <text>")
+    sys.exit(run_tool("gruntz.sema.strings", ["--rva", args.rva]))
+
 
 if __name__=="__main__":
     main()

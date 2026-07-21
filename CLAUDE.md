@@ -11,7 +11,8 @@ objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
 
 `scripts/gruntz/` is THE package — ALL importable code: the pipeline
 (`{build,ghidra,init}/`, path-invoked by ninja/the CLI), the match tooling
-(`match/`: `status`, `fingerprints`, `verify_stubs`), and one-shot analysis
+(`match/`: `status`, `fingerprints`, `verify_stubs`), the `gruntz sema`
+navigation surface (`sema/`, one module per subcommand), and one-shot analysis
 tools (`analysis/`, incl. the `fid/` matcher). Run the non-pipeline tools as
 `python -m gruntz.<area>.<module>`; `scripts/` is on `PYTHONPATH` (set by the
 nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.

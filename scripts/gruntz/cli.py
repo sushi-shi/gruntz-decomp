@@ -978,534 +978,62 @@ def cmd_clean(args) -> None:
 
 # --- sema: semantic navigation group ---------------------------------------
 # ONE discoverable entrypoint for the source/target-navigation tools a matcher or
-# classifier reaches for - retail xref graph, clangd LSP (symbol/def/refs/hover/
-# rename), disasm, strings, and the report/label dossiers. Each subcommand is a
-# THIN delegation to an existing gruntz.analysis / gruntz.match module (all still
-# runnable as `python -m gruntz.<...>`); nothing here re-implements analysis.
-def _sema_tool(module: str, argv: list) -> int:
-    """Stream a read-only navigation tool's output (package on PYTHONPATH; no
-    `[gruntz] $` log noise on these interactive queries)."""
-    return subprocess.run([sys.executable, "-m", module, *map(str, argv)],
-                          cwd=str(REPO), env=_pkg_env()).returncode
-
-
-def _sema_log(rc: int, secs: float) -> None:
-    """One line per `gruntz sema` invocation (ALL subcommands, logged from the
-    main dispatch); must NEVER break the tool. Metadata first, command after the
-    `: ` (shell-quoted) so it copies straight out:
-        [2026-07-04][19:55:01][0]: gruntz sema xref 0x00080850 --raw
-    Usage-analysis feed: what agents actually run -> tool improvements."""
-    del secs  # not logged (format: [date][time][rc]: <command>)
-    try:
-        import datetime
-        import shlex
-        now = datetime.datetime.now()
-        cmd = shlex.join(["gruntz", *sys.argv[1:]])  # exactly what was invoked
-        path = REPO / "build" / "gruntz_sema.log"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "a") as f:
-            f.write("[{}][{}][{}]: {}\n".format(
-                now.date(), now.strftime("%H:%M:%S"), rc, cmd))
-    except Exception:
-        pass  # logging is best-effort by design
-
-
-def _run_sema_logged(args) -> None:
-    """Dispatch a sema subcommand with usage logging (rc captured through
-    sys.exit; covers the delegating AND the inline-dossier subcommands)."""
-    import time
-    t0 = time.time()
-    rc = 0
-    try:
-        args.func(args)
-    except SystemExit as e:
-        rc = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
-        _sema_log(rc, time.time() - t0)
-        raise
-    _sema_log(rc, time.time() - t0)
-
-
-def _point_argv(args) -> list:
-    """`<file> <line> [<col>]` -> the clangd_query positional list."""
-    return [args.file, args.line] + ([args.col] if args.col is not None else [])
-
-
+# classifier reaches for. The implementations live in gruntz/sema/ - one module
+# per subcommand (browse scripts/gruntz/sema/); cli.py only owns argparse and
+# these lazy-import shims. Usage logging: gruntz.sema.run_logged (main dispatch).
 def cmd_sema_xref(args) -> None:
-    flags = (["--callees"] if args.callees else []) + (["--raw"] if args.raw else [])
-    if args.tree:
-        flags += ["--tree", "--depth", str(args.depth)]
-    sys.exit(_sema_tool("gruntz.analysis.xref", flags + args.target))
+    from gruntz.sema import xref
+    xref.run(args)
 
 
 def cmd_sema_symbol(args) -> None:
-    sys.exit(_sema_tool("gruntz.analysis.clangd_query", ["symbol", args.query]))
+    from gruntz.sema import clangd
+    clangd.run_symbol(args)
 
 
 def cmd_sema_point(args) -> None:                 # def / refs / hover share this
-    sys.exit(_sema_tool("gruntz.analysis.clangd_query",
-                        [args.sema, *_point_argv(args)]))
+    from gruntz.sema import clangd
+    clangd.run_point(args)
 
 
 def cmd_sema_rename(args) -> None:
-    argv = ["rename", *_point_argv(args), args.new_name]
-    if args.dry_run:
-        argv.append("--dry-run")
-    sys.exit(_sema_tool("gruntz.analysis.clangd_query", argv))
-
-
-def _disasm_capture(cmd: list) -> str:
-    """Run a disasm producer, return stdout (stderr passes through)."""
-    res = subprocess.run(cmd, cwd=str(REPO), env=_pkg_env(),
-                         capture_output=True, text=True)
-    sys.stderr.write(res.stderr)
-    return res.stdout
-
-
-def _disasm_target_text(rva: str) -> str:
-    return _disasm_capture([sys.executable, "-m", "gruntz.analysis.dump_target", rva])
-
-
-def _disasm_base_text(rva: str) -> str:
-    """The CURRENT compiled asm: the fn's symbol disassembled out of its unit's
-    base obj (what objdiff compares against retail)."""
-    import csv as _csv
-    try:
-        n = int(rva, 16)
-    except ValueError:
-        die(f"'{rva}' is not a hex RVA (--base needs an RVA)")
-    claim = _csv_find(GEN_NAMES, n)
-    if not claim:
-        die("no src claim at this RVA - base disasm needs a reconstructed fn "
-            "(check `gruntz sema rva`)")
-    obj = REPO / "build" / "objdiff" / "base" / (claim["unit"] + ".obj")
-    if not obj.is_file():
-        die(f"{obj.relative_to(REPO)} missing - run `gruntz build` first")
-    out = _disasm_capture(["llvm-objdump", "-dr", "--x86-asm-syntax=intel",
-                           f"--disassemble-symbols={claim['name']}", str(obj)])
-    return f"{claim['name']}  [{claim['unit']}]\n" + out
-
-
-_DISASM_ROW = None  # compiled lazily
-
-
-def _disasm_lite(text: str) -> str:
-    """Only the asm: drop addresses, byte columns, reloc blocks; keep title lines."""
-    import re as _re
-    global _DISASM_ROW
-    if _DISASM_ROW is None:
-        _DISASM_ROW = _re.compile(r"^\s*[0-9a-f]+:\s+((?:[0-9a-f]{2}\s)+)\s*(\S.*)$")
-    keep = []
-    for ln in text.splitlines():
-        m = _DISASM_ROW.match(ln)
-        if m:
-            keep.append("    " + m.group(2).strip())
-        elif " @ RVA " in ln or ln.rstrip().endswith(">:") or "  [" in ln[:1]:
-            keep.append(ln)
-        elif ln.startswith(("CState", "?")) and ln.rstrip().endswith("]"):
-            keep.append(ln)
-    return "\n".join(keep) + "\n"
-
-
-def _disasm_norm(text: str) -> list:
-    """Lite + case/whitespace-unify + mask absolute-address immediates for --diff.
-    base (llvm-objdump, 'dword ptr') and target (dump_target, 'DWORD PTR') disagree
-    on case and spacing - lowercase + collapse runs so only real diffs survive."""
-    import re as _re
-    # reloc-aware pre-pass (base side only): llvm-objdump -dr emits IMAGE_REL_ lines
-    # after the owning insn - mask that insn's placeholder imm (often 0x0) as <addr>
-    raw = text.splitlines()
-    for i, ln in enumerate(raw):
-        if "IMAGE_REL_I386_" not in ln:
-            continue
-        for j in range(i - 1, -1, -1):
-            if "IMAGE_REL_I386_" in raw[j] or not _re.search(r"0x[0-9a-f]+", raw[j]):
-                continue
-            m = _re.search(r":\s+(?:[0-9a-f]{2} )+\s*([a-z]\w*)", raw[j])
-            if m and _re.fullmatch(r"call|jmp|j[a-z]{1,2}|loop\w*", m.group(1)):
-                break  # rel32 target - the <tgt> rule owns these
-            # DIR32 on a memory disp32 (pure-absolute bracket) beats an imm32 guess
-            raw[j], n = _re.subn(r"\[0x[0-9a-f]+\]", "[<addr>]", raw[j], count=1)
-            if not n:
-                raw[j] = _re.sub(r"0x[0-9a-f]+(?=[^x]*$)", "<addr>", raw[j], count=1)
-            break
-    text = "\n".join(raw)
-    lines = []
-    for ln in _disasm_lite(text).splitlines():
-        if not ln.startswith("    "):
-            continue  # instructions only in the diff body
-        ln = _re.sub(r"[ \t]+", " ", ln.strip().lower())
-        if _re.fullmatch(r"(?:[0-9a-f]{2} )*[0-9a-f]{2}", ln):
-            continue  # byte-dump continuation of a long insn (dump_target wrap)
-        ln = _re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln)
-        ln = _re.sub(r" ?([,+*]) ?", r"\1", ln)   # 'ebp, ecx'/'esp + 0xc' -> tight
-        ln = ln.replace("ds:", "")                 # default-segment prefix (dump_target)
-        ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)  # bare -> bracketed
-        ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)  # absolute mem ref
-        # bare <addr> as a mov-class operand is a memory ref (dump_target drops brackets)
-        ln = _re.sub(r"(?<=[ ,])<addr>(?=,|$)", "[<addr>]",
-                     ln) if not ln.startswith(("push", "j", "call", "loop")) else ln
-        ln = _re.sub(r"(dword|word|byte) ptr \[<addr>\]", "[<addr>]", ln)
-        # direct jump/call targets: base prints rel+symbol, target prints absolute
-        ln = _re.sub(r"^((?:j[a-z]{1,3}|call|loop\w*) )(0x[0-9a-f]+|<addr>)( <[^>]*>)?$",
-                     r"\1<tgt>", ln)
-        lines.append(ln)
-    while lines and lines[-1] == "nop":
-        lines.pop()  # COMDAT alignment padding (base only; absent in delinked target)
-    return lines
-
-
-def _flags_for(udef: dict) -> list:
-    """Resolve a unit's flags-profile name to its cl flag list (units.toml [flags])."""
-    with MANIFEST.open("rb") as f:
-        profiles = tomllib.load(f).get("flags", {})
-    return list(profiles.get(udef.get("flags", ""), []))
-
-
-def _debug_obj_for(unit: str, source: str, flags: list):
-    """build/debug/<unit>.obj compiled `<flags> /Z7` (codegen-neutral CodeView),
-    cached on source mtime - same artifact harvest_locals.py builds. Path or None."""
-    obj = REPO / "build" / "debug" / f"{unit}.obj"
-    src = REPO / source
-    if not src.is_file():
-        return None
-    if obj.is_file() and obj.stat().st_mtime >= src.stat().st_mtime:
-        return obj  # fresh
-    obj.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [sys.executable, str(BUILD / "cc_wrap.py"), "--out", str(obj),
-           "--src", str(src), "--", *flags, "/Z7"]
-    res = subprocess.run(cmd, cwd=str(REPO), env=_pkg_env(),
-                         capture_output=True, text=True)
-    if res.returncode != 0 or not obj.is_file():
-        sys.stderr.write(f"[--rich] /Z7 compile of {unit} failed (wine/cl missing?); "
-                         f"showing bare asm.\n  {res.stderr.strip()[-200:]}\n")
-        return None
-    return obj
-
-
-def _disasm_rich(rva: str, lite: bool) -> str:
-    """BASE disasm interleaved with the /Z7 CodeView source lines it came from:
-    each mapped code offset prints its source statement (flush-left) above the
-    instruction(s) it lowered to. Shows which statements survive /O2 and which
-    got folded (a run of instructions under one line = merged; a source line
-    that never appears = optimized away)."""
-    try:
-        n = int(rva, 16)
-    except ValueError:
-        die(f"'{rva}' is not a hex RVA (--rich needs an RVA)")
-    claim = _csv_find(GEN_NAMES, n)
-    if not claim:
-        die("no src claim at this RVA - --rich needs a reconstructed fn "
-            "(check `gruntz sema rva`)")
-    unit, name = claim["unit"], claim["name"]
-    udef = next((u for u in units() if u.get("unit") == unit), None)
-    source = (udef or {}).get("source", "")
-    # line map from the (fresh) /Z7 debug obj; degrade to bare disasm if absent.
-    linemap, bf = {}, None
-    if udef and source.startswith("src/"):
-        dbg = _debug_obj_for(unit, source, _flags_for(udef))
-        if dbg is not None:
-            sys.path.insert(0, str(BUILD))
-            import codeview  # noqa: E402  (build helper, package-local)
-            info = codeview.parse_lines(str(dbg)).get(name)
-            if info:
-                linemap, bf = info["lines"], info["bf"]
-    src_path = REPO / source
-    src_lines = (src_path.read_text(errors="replace").splitlines()
-                 if src_path.is_file() else None)
-
-    def src_text(lineno: int) -> str:
-        if src_lines and 1 <= lineno <= len(src_lines):
-            return src_lines[lineno - 1].rstrip() or f"{source}:{lineno}"
-        return f"{source}:{lineno}"
-
-    try:
-        size = int(claim.get("size", "0") or "0", 16)
-    except ValueError:
-        size = 0
-    import re as _re
-    row = _re.compile(r"^(\s*)([0-9a-f]+):\s+((?:[0-9a-f]{2}\s)+)\s*(\S.*)$")
-    out = [f"{name}  [{unit}]",
-           f"('NNNNN| code' = {source} source line; indented = asm)"]
-    if bf is None:
-        out[-1] = "(no /Z7 line info for this fn - bare asm)"
-    current = None
-    for ln in _disasm_base_text(rva).splitlines():
-        m = row.match(ln)
-        if not m:
-            if "IMAGE_REL" in ln and not lite:
-                out.append(ln)  # reloc annotation - attaches to the instr above
-            continue  # else drop llvm-objdump boilerplate; keep the rich view clean
-        off = int(m.group(2), 16)
-        if size and off >= size:
-            break  # trailing COMDAT padding (nops) past the function
-        want = linemap.get(off, bf if current is None else current)
-        if want is not None and want != current:
-            # 'NNN|' gutter keeps source unmistakable from asm - indented C++
-            # and --lite's bare asm are otherwise visually identical
-            out.append(f"{want:5d}| {src_text(want)}")
-            current = want
-        out.append("      " + m.group(4).strip() if lite else ln)
-    return "\n".join(out) + "\n"
+    from gruntz.sema import clangd
+    clangd.run_rename(args)
 
 
 def cmd_sema_disasm(args) -> None:
-    if getattr(args, "rich", False):
-        if args.target:
-            die("--rich is BASE-only (retail GRUNTZ.EXE carries no line info); "
-                "drop --target")
-        if args.diff:
-            die("--rich does not combine with --diff (rich is a single-side view)")
-        if not args.base:
-            print("[--rich implies --base: source lines come from the /Z7 debug "
-                  "build of your compiled obj]")
-        print(_disasm_rich(args.rva, args.lite), end="")
-        sys.exit(0)
-    if args.diff:
-        import difflib
-        base = _disasm_norm(_disasm_base_text(args.rva))
-        tgt = _disasm_norm(_disasm_target_text(args.rva))
-        if base == tgt:
-            print(f"identical asm ({len(tgt)} instruction(s); addresses/relocs masked)")
-            sys.exit(0)
-        print(f"[diff: BASE (compiled) vs TARGET (retail) @ {args.rva}; "
-              "addresses masked as <addr>]")
-        print("[caveat: base prints reloc-site immediates as their placeholder "
-              "(e.g. 'push 0x0') where target shows the resolved '<addr>' - such "
-              "lone pairs are usually NOT real diffs; objdiff is reloc-aware truth]")
-        for ln in difflib.unified_diff(base, tgt, "base", "target", lineterm=""):
-            print(ln)
-        sys.exit(1)
-    if args.base:
-        print("[disasm source: BASE - your compiled obj (build/objdiff/base)]")
-        text = _disasm_base_text(args.rva)
-    else:
-        print("[disasm source: TARGET - retail GRUNTZ.EXE (delinked bytes + relocs)]")
-        text = _disasm_target_text(args.rva)
-    print(_disasm_lite(text) if args.lite else text, end="")
-    sys.exit(0)
+    from gruntz.sema import disasm
+    disasm.run(args)
 
 
 def cmd_sema_strings(args) -> None:
-    if args.find:
-        sys.exit(_sema_tool("gruntz.analysis.string_xref", ["--find", args.find]))
-    if not args.rva:
-        die("sema strings: give an <rva> or --find <text>")
-    sys.exit(_sema_tool("gruntz.analysis.string_xref", ["--rva", args.rva]))
+    from gruntz.sema import strings
+    strings.run(args)
 
 
 def cmd_sema_map(args) -> None:
-    """Retail .text space map: forward straight to gruntz.analysis.exe_map (which owns
-    the overview / range / at / gaps / units / find subcommands + --json)."""
-    sys.exit(_sema_tool("gruntz.analysis.exe_map", args.rest))
-
-
-def _sema_class_of_fn(query: str) -> int:
-    """FUNCTION -> vtable topology: which class(es) hold this fn in which slot,
-    tagged new/override/inherited with the origin class; then the owner's table."""
-    import csv as _csv
-    import tempfile
-    rva = None
-    try:
-        rva = int(query, 16)
-    except ValueError:
-        pass
-    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
-        tmp = tf.name
-    rc = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
-                         "--csv", tmp], cwd=str(REPO), env=_pkg_env(),
-                        capture_output=True, text=True).returncode
-    if rc:
-        die("vtable_hierarchy --csv failed (run `gruntz init` first?)")
-    hits = []
-    for r in _csv.DictReader(open(tmp)):
-        try:
-            row_rva = int(r["fn_rva"], 16)
-        except ValueError:
-            continue
-        if (rva is not None and row_rva == rva) or \
-           (rva is None and query in (r.get("fn_name") or "")):
-            hits.append(r)
-    if not hits:
-        # Fall back to the BINARY scan: covers non-RTTI vtables and thunk-indirect
-        # slots the reconstructed VTBL/hierarchy graph can't see (`sema vtable --holds`).
-        if rva is not None:
-            try:
-                from gruntz.analysis import vtable_scan as vs
-                bhits = vs.find_holding(rva)
-            except Exception:
-                bhits = []
-            if bhits:
-                print(f"vtable slots holding {query} (binary scan):")
-                for v, k, via in bhits:
-                    cls = v["rtti"] or f"non-rtti {vs.fn_label(v['first'])}"
-                    print(f"  vtable 0x{v['start']:06x} ({v['start']+vs.IMAGEBASE:#010x})  "
-                          f"{vs.confidence(v):<9} slot[{k}] (+0x{k*4:x})"
-                          f"{'  via thunk' if via else ''}   {cls}")
-                return 0
-        print(f"no vtable slot holds '{query}' (not a virtual / command-table dispatched, "
-              f"or its slot points elsewhere)")
-        return 1
-    print(f"vtable slots holding {query}:")
-    owners = []
-    for r in hits:
-        print(f"  {r['class']}  slot[{r['slot_index']}]  {r['disposition']:<9} "
-              f"origin={r['origin_class']}  {r['fn_name']}")
-        if r["disposition"] in ("new", "override") and r["class"] not in owners:
-            owners.append(r["class"])
-    for owner in owners[:2]:  # the defining class(es), not every inheritor
-        print()
-        sys.stdout.flush()  # our lines must precede the subprocess's
-        subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
-                        "--class", owner], cwd=str(REPO), env=_pkg_env())
-    return 0
+    from gruntz.sema import map as sema_map
+    sema_map.run(args)
 
 
 def cmd_sema_vtable(args) -> None:
-    """Binary vtable finder (any vtable, RTTI or not; ILT thunks chased): dump a
-    vtable's slots, or find which vtable/slot holds a fn - the coverage the src-side
-    VTBL/hierarchy graph lacks (non-RTTI tables, thunk-indirect slots)."""
-    tgt = args.target
-    if args.dump:
-        mode = "--dump"
-    elif args.holds:
-        mode = "--holds"
-    else:  # auto: a discovered vtable start -> dump; otherwise treat as a fn -> holds
-        mode = "--holds"
-        try:
-            from gruntz.analysis import vtable_scan as vs
-            if vs.vtable_at(int(tgt, 16)) is not None:
-                mode = "--dump"
-        except Exception:
-            pass
-    sys.exit(_sema_tool("gruntz.analysis.vtable_scan", [mode, tgt]))
+    from gruntz.sema import vtable
+    vtable.run(args)
 
 
 def cmd_sema_class(args) -> None:
-    argv = ["--class", args.name]
-    if args.tree:
-        argv.append("--tree")
-    # hex RVA or mangled/Fn-name -> function->slot topology lookup instead
-    looks_fn = args.name.lower().startswith("0x") or "@" in args.name
-    if looks_fn:
-        sys.exit(_sema_class_of_fn(args.name))
-    sys.exit(_sema_tool("gruntz.analysis.vtable_hierarchy", argv))
+    from gruntz.sema import classof
+    classof.run(args)
 
 
 def cmd_sema_match(args) -> None:
-    t = args.target
-    if t in {u["unit"] for u in units()}:
-        sys.exit(_sema_tool("gruntz.match.status", ["status", "--unit", t]))
-    grep = t
-    if t.lower().startswith("0x") and GEN_NAMES.exists():
-        import csv
-        want = int(t, 16)
-        grep = None
-        for r in csv.reader(GEN_NAMES.open()):
-            if r and r[0].lower().startswith("0x"):
-                try:
-                    if int(r[0], 16) == want:
-                        grep = r[1]
-                        break
-                except ValueError:
-                    pass
-        if grep is None:
-            die(f"no src function claims RVA {t} (nothing to score) - try a unit name")
-    sys.exit(_sema_tool("gruntz.match.status", ["status", "--grep", grep]))
-
-
-def _csv_find(path: Path, rva: int, key: str = "rva"):
-    """First CSV row whose `key` column parses to `rva` (hex), or None."""
-    import csv
-    if not path.is_file():
-        return None
-    for r in csv.DictReader(path.open()):
-        try:
-            if int(r[key], 16) == rva:
-                return r
-        except (ValueError, KeyError):
-            pass
-    return None
-
-
-def _src_loc_of(rva: int):
-    """(relpath, lineno) of the RVA(0x..)/RVAU(0x..) macro that defines the fn at
-    `rva`, scanning src/ + include/. None if the fn is not annotated in source.
-    Padding-agnostic: matches 0x0*<hex> so 0x0017fa40 and 0x17fa40 both hit."""
-    import re
-    pat = re.compile(r"\bRVAU?\s*\(\s*0x0*%x\s*[,)]" % rva, re.IGNORECASE)
-    for sub in ("src", "include"):
-        base = REPO / sub
-        if not base.is_dir():
-            continue
-        for f in sorted(base.rglob("*")):
-            if f.suffix not in (".c", ".cpp", ".cc", ".cxx", ".h", ".hpp"):
-                continue
-            try:
-                for i, line in enumerate(f.read_text(errors="ignore").splitlines(), 1):
-                    if pat.search(line):
-                        return (f.relative_to(REPO).as_posix(), i)
-            except OSError:
-                continue
-    return None
+    from gruntz.sema import match
+    match.run(args)
 
 
 def cmd_sema_rva(args) -> None:
-    """One-shot address dossier: joins symbol_names.csv, library_labels.csv,
-    Ghidra functions.csv and objdiff report.json - pure lookups, no analysis."""
-    try:
-        rva = int(args.addr, 16)
-    except ValueError:
-        die(f"'{args.addr}' is not a hex RVA (e.g. 0x00080850)")
-    print(f"RVA 0x{rva:08x}")
-
-    # A vtable-slot RVA is an ILT jmp-thunk, not a body: on a miss, chase it to the
-    # body and report THAT (so `sema rva <slot>` and nvim's vg resolve the method).
-    claim = _csv_find(GEN_NAMES, rva)
-    def_rva, via = rva, None
-    if not claim:
-        from gruntz.analysis import vtable_scan as vs
-        body = vs.chase_thunk(rva)
-        if body is not None:
-            c2 = _csv_find(GEN_NAMES, body)
-            if c2:
-                claim, def_rva, via = c2, body, body
-    if claim:
-        via_s = f"  (via ILT thunk -> 0x{via:08x})" if via is not None else ""
-        print(f"  src claim : {claim['name']}  [{claim['unit']}] "
-              f"({claim.get('kind', '?')}){via_s}")
-        loc = _src_loc_of(def_rva)
-        if loc:
-            print(f"  src loc   : {loc[0]}:{loc[1]}")
-    else:
-        print("  src claim : (none - not reconstructed under src/)")
-
-    librow = _csv_find(REPO / "config" / "library_labels.csv", def_rva)
-    if librow:
-        print(f"  library   : {librow['name']}  {librow['lib']} / "
-              f"{librow['confidence']} / {librow['source']}  "
-              f"(carve-out: excluded from the match %)")
-
-    grow = _csv_find(GHIDRA_FUNCTIONS, def_rva, key="entry_rva")
-    if grow:
-        print(f"  ghidra    : {grow['name']}  size {grow['byte_size']} B")
-    else:
-        print("  ghidra    : (no function start at this RVA in the export)")
-
-    if claim and REPORT.is_file():
-        rep = json.loads(REPORT.read_text())
-        pct = None
-        for u in rep.get("units", []):
-            if claim.get("unit") and u.get("name") != claim["unit"]:
-                continue
-            for fn in u.get("functions") or []:
-                if fn.get("name") == claim["name"]:
-                    pct = fn.get("fuzzy_match_percent")
-                    break
-            if pct is not None:
-                break
-        if pct is not None:
-            print(f"  match     : {pct:.2f}% fuzzy"
-                  + ("  (EXACT)" if pct >= 100.0 else ""))
+    from gruntz.sema import rva
+    rva.run(args)
 
 
 def _add_sema(sub) -> None:
@@ -1720,7 +1248,8 @@ def main() -> None:
     if getattr(args, "ninja_args", None) and args.ninja_args[:1] == ["--"]:
         args.ninja_args = args.ninja_args[1:]
     if sys.argv[1:2] == ["sema"]:
-        _run_sema_logged(args)  # usage log -> build/gruntz_sema.log
+        from gruntz.sema import run_logged
+        run_logged(args)  # usage log -> build/gruntz_sema.log
     else:
         args.func(args)
 
