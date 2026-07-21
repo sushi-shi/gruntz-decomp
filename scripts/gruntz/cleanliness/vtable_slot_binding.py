@@ -76,7 +76,6 @@ from __future__ import annotations
 
 import csv
 import sys
-from pathlib import Path
 
 from gruntz.core import vtable_scan as vs
 from gruntz.core.class_meta import rel, vtbl_annotations

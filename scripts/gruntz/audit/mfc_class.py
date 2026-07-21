@@ -85,7 +85,6 @@ import re
 import struct
 import sys
 import tomllib
-from collections import defaultdict
 from pathlib import Path
 
 IMAGEBASE = 0x400000

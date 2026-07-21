@@ -28,9 +28,7 @@ Run: python -m gruntz.audit.extern_harvest
 
 import argparse
 import csv
-import os
 import struct
-import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent

@@ -84,7 +84,7 @@ INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 # The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
 # TRUSTED: the base obj is all unused externs (no symbols), so the authority
 # check cannot confirm them - but each name was authority-checked in the matched
-# TU it came from before `gruntz.analysis.consolidate_globals` moved it here.
+# TU it came from before `consolidate_globals` (now scripts/archive/) moved it here.
 GLOBALS_UNIT = "globals"
 
 TARGET = "i686-pc-windows-msvc"
@@ -837,7 +837,7 @@ def write_symbol_names(rows, addr_sites, out, misses=None):
         log(f"{len(dup_addrs)} conflicting RVA label(s); refusing to write {out}")
         return 1
     # RE-PROLIFERATION GUARD (data): a global consolidated into the trusted
-    # `globals` unit (src/Globals.cpp, by gruntz.analysis.consolidate_globals) is
+    # `globals` unit (src/Globals.cpp, by the archived consolidate_globals sweep) is
     # the SINGLE DATA() binding for its address. If the SAME (rva, name) DATA also
     # appears in another unit, a matcher re-declared an already-consolidated
     # global - a hard error (mirrors the function dup-RVA guard). Differently-NAMED

@@ -2,7 +2,7 @@
 
 Paths, the in-process call helper (re-exported from core), the CSV lookups and the
 usage log. Sema modules import from here only; nothing here imports cli.py
-(dependency direction: cli -> sema -> analysis).
+(dependency direction: cli -> sema -> core).
 """
 import os
 import sys

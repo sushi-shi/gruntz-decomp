@@ -15,7 +15,7 @@ Strictness to avoid false positives:
     i.e. a plausible function boundary.
 Report newly-found (rva,name,lib) with the same HIGH/AMBIG logic.
 """
-import os,sys,struct,pickle,csv,json
+import sys,pickle,csv,json
 from collections import defaultdict
 from gruntz.audit.fid.common import pe_text, trim_pad
 

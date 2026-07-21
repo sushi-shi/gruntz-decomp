@@ -9,7 +9,6 @@ resolution. Get one via gruntz.core.get_context().symbols.
 import bisect
 import csv
 import sys
-from pathlib import Path
 
 from gruntz.core.pe import ILT_HI, ILT_LO, REPO
 

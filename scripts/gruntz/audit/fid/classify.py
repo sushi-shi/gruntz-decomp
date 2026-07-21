@@ -22,7 +22,7 @@ Confidence:
 Trailing alignment padding (0x90 NOP / 0xCC INT3) is trimmed from the END of a
 signature for length/overrun accounting (it is not part of the function body).
 """
-import os, sys, struct, pickle, json, csv
+import sys, pickle, json, csv
 from collections import defaultdict
 from gruntz.audit.fid.common import pe_text, trim_pad
 

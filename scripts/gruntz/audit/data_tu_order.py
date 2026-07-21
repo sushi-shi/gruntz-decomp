@@ -32,7 +32,6 @@ import argparse
 import glob
 import os
 import re
-import sys
 
 DATA_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # strip // and /* */ comments crudely for classification (not for line tracking)

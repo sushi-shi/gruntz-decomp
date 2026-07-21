@@ -18,7 +18,7 @@ absolute-address operand in code is a HIGHLOW reloc. So:
   * global referenced from N units           -> SHARED/public: needs a contiguity or
     declaration-site tie-break (reported, not auto-attributed).
 
-Reuses xref.py's EXE/section load + size-bounded function->unit attribution.
+Reuses gruntz.core's EXE/section load + size-bounded function->unit attribution.
 
 Usage:
     python3 -m gruntz.audit.globals_attribute            # summary + private worklist
@@ -37,7 +37,7 @@ from pathlib import Path
 
 import statistics
 
-from gruntz.core.pe import EXE, ILT_HI, ILT_LO, load as _load
+from gruntz.core.pe import ILT_HI, ILT_LO, load as _load
 from gruntz.core.symbols import SYMCSV, load_names as _names, owner as _owner
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),

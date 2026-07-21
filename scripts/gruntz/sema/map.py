@@ -9,8 +9,6 @@ runnable directly as `python -m gruntz.core.exe_map`).
 """
 import sys
 
-from gruntz.sema._common import call_main
-
 
 def run(args) -> None:
     from gruntz.core import exe_map

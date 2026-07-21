@@ -9,7 +9,7 @@ subcommand (browse this directory to see every tool):
     match.py        per-function/unit match summary   (in-process: match/status)
     classof.py      class vtable slots / fn->slot     (in-process: vtable_hierarchy)
     vtable.py       binary vtable dump / holder find  (in-process: vtable_scan)
-    map.py          retail .text space map            (in-process: analysis/exe_map)
+    map.py          retail .text space map            (in-process: core/exe_map)
     clangd.py       refs/hover/rename                 (in-process: clangd_query)
 
 Everything runs IN ONE PROCESS over gruntz/core (Context: EXE + symbol db
@@ -19,7 +19,6 @@ sema commands on stdin answered against one Context. rc convention: 0
 answered, 1 answered-NO, 2 error. cli.py owns argparse and delegates each
 subcommand to <module>.run(args) via run_logged().
 """
-import sys
 
 
 def run_logged(args) -> None:

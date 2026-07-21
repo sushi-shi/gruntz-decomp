@@ -34,7 +34,6 @@ green gate cannot see, because uniqueness and coverage are both satisfied by a l
 """
 import argparse
 import bisect
-import csv
 import re
 import struct
 import sys

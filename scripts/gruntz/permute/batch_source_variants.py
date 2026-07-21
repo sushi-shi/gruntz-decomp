@@ -42,7 +42,6 @@ import csv
 import hashlib
 import itertools
 import json
-import os
 import shutil
 import signal
 import subprocess
