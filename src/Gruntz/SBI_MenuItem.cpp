@@ -66,7 +66,7 @@ i32 CSBI_MenuItem::SetupImage(
 }
 
 RVA(0x000e81a0, 0x8)
-void CSBI_MenuItem::ClearFrame2() {
+void CSBI_MenuItem::Reset() {
     m_frame = 0;
 }
 
@@ -126,7 +126,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // @early-stop: 74% is the butterfly's
 // documented floor - the shape is byte-correct, final-sweep decl-census material.
 RVA(0x000e82a0, 0x45)
-i32 CSBI_MenuItem::DecCounter() {
+i32 CSBI_MenuItem::Render() {
     if (m_28 > 0) {
         m_28--;
         CImage* f = m_frame;
@@ -267,11 +267,11 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
 
 RVA(0x001007d0, 0x7f)
 CSBI_MenuItem::~CSBI_MenuItem() {
-    ClearFrame2();
+    Reset();
 }
 
 RVA(0x0010bfa0, 0x1)
-void CStatusBarItem::DtorStatus() {}
+void CStatusBarItem::Reset() {}
 
 RVA(0x0010bfc0, 0xe8)
 i32 CStatusBarItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {

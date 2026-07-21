@@ -28,10 +28,9 @@ public:
     // defined under this class name belonged to the host's fabricated vtable, not here.)
     // slot 2 (0xe86e0). Args 5..8 are ONE by-value SbRect - see StatusBarItem.h.
     virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) OVERRIDE;
-    virtual void SbiSlot3() OVERRIDE; // slot 3
-    virtual void SbiSlot4() OVERRIDE; // slot 4
+    virtual void Reset() OVERRIDE; // slot 3 - 0xe8760 (ex DtorRect)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
-    void DtorRect(); // 0xe8760
     // (InsertPtr 0x108410 / ClearTabGroup 0x100b00 / Deactivate 0x100cb0 were declared
     // here on the strength of the old CSBI_RectOnly/CStatusBarMgr name conflation. They
     // are methods of the 0x630 status-bar HOST (CStatusBarMgr) and moved there with the
@@ -41,7 +40,7 @@ SIZE_UNKNOWN();
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
 inline CSBI_RectOnly::~CSBI_RectOnly() {
-    DtorRect();
+    Reset();
 }
 #endif
 
@@ -62,9 +61,9 @@ public:
     // be a non-virtual `SerializeChain` sitting beside a fabricated 0-arg `SbiVfunc0`
     // that held the slot instead.
     virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe6e40
-    virtual void SbiSlot3() OVERRIDE;                                                 // slot 3
-    virtual void SbiSlot4() OVERRIDE; // slot 4
-    virtual void SbiSlot5() OVERRIDE; // slot 5
+    virtual void Reset() OVERRIDE; // slot 3 - 0xe6d90 (ex ClearFrame)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xe6dd0 (ex TickRenderCurrent)
     // vtable slot 11 (0xe6c80): the image setup, 11 dwords of args. The RETAIL BODY pins
     // the arg types (disasm 0xe6c80): entry `mov eax,[esp+8]` reads arg2 and later
     // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CDDrawSurfaceMgr*; arg1 is only
@@ -87,10 +86,8 @@ public:
     // slot-3 body AND the dtor's member teardown (ONE retail body, 0xe6d90 - the
     // chain dtors call it; the vtable slot-3 thunk 0x1b59 jmps to it). Re-attributed
     // from CSBI_MenuItem (dossier #16: vtbl 0x1eac0c slot [3]); body in SBI_Image.cpp.
-    void ClearFrame(); // 0xe6d90
     // slot-5 body (vtbl 0x1eac0c slot [5], thunk 0x16e5): one play step rendering the
     // CURRENT resolved frame m_30 (no table re-lookup). Ex CAniPlayer view (dossier #16).
-    i32 TickRenderCurrent(); // 0xe6dd0
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     CImage* m_frame; // +0x30  latched/resolved frame (the config value; ex i32)
@@ -99,7 +96,7 @@ SIZE(0x34);
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
 inline CSBI_Image::~CSBI_Image() {
-    ClearFrame();
+    Reset();
 }
 #endif
 

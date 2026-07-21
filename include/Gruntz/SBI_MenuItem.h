@@ -36,16 +36,16 @@ public:
         m_record = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).
-    // The out-of-line ~ (0x1007d0, calls ClearFrame2) lives in SBI_MenuItem.cpp via
+    // The out-of-line ~ (0x1007d0, calls Reset) lives in SBI_MenuItem.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_MenuItem() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eab4c thunk 0x100a -> 0xe8520): the menu-item serialize leg;
     // tail-chains CSBI_Image::SerializeFields. Was the non-virtual `Serialize` beside a
     // fabricated 0-arg `SbiVfunc0` placeholder that held the slot.
     virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
-    virtual void SbiSlot3() OVERRIDE; // slot 3 (the ClearFrame2 below)
-    virtual void SbiSlot4() OVERRIDE;  // slot 4 (the DecCounter below)
-    virtual void SbiSlot5() OVERRIDE;  // slot 5
+    virtual void Reset() OVERRIDE; // slot 3 - 0xe81a0 (ex ClearFrame2)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xe82a0 (ex DecCounter, decrement-and-blit)
     // slot 11 (0xe80e0), the CSBI_Image::SetupImage override. This USED to be split in two:
     // a body-less `virtual` here to pin the slot, plus the real body as a separate
     // non-virtual `InitItem`. Its arg model looked different (it called arg9 `obj` and
@@ -67,11 +67,9 @@ public:
     // ----- reconstructed methods (RVA-ascending) -----
     // (0xe6d90 ClearFrame + 0xe6e40 SerializeChain are the real CSBI_Image slot-3/
     // slot-1 bodies - re-attributed to SBI_Image.h/.cpp, dossier #16.)
-    void ClearFrame2(); // 0xe81a0 (out-of-line)
     // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
     // SetupImage override declared above.)
     i32 ResolveFrame(i32 key, i32 a); // 0xe81e0
-    i32 DecCounter();                 // 0xe82a0  decrement-and-blit
     i32 SetState(i32 state, i32 a);   // 0xe8310
     i32 ProbeState(i32 state);        // 0xe8480
     i32 Blit();                       // 0xe84f0  conditional blit

@@ -174,5 +174,5 @@ i32 CSBI_WarlordHead::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
 
 RVA(0x00104a00, 0x94)
 CSBI_WarlordHead::~CSBI_WarlordHead() {
-    ResetCounters();
+    Reset();
 }

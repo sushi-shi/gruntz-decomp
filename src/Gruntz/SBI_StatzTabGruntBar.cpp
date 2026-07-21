@@ -27,7 +27,7 @@ void CSBI_StatzTabGruntBar::Reset() {
 }
 
 RVA(0x000ea4b0, 0x1c)
-i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
+i32 CSBI_StatzTabGruntBar::Refresh(i32 arg) {
     if (Update()) {
         SetSubtype(); // slot 10 (+0x28); the CStatzSelf view called it "Refresh"
     }
@@ -58,7 +58,7 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 // background glyphs + select-value are gated by m_28 (a countdown); the timer glyph
 // always draws. Returns 1.
 RVA(0x000ea4e0, 0x172)
-i32 CSBI_StatzTabGruntBar::Blit() {
+i32 CSBI_StatzTabGruntBar::Render() {
     void* ctx = g_gameReg->m_30->m_4->m_14;
     if (m_28 > 0) {
         m_28--;

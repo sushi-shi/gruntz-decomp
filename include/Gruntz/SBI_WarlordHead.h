@@ -32,7 +32,7 @@ public:
     // slot 1 (vtbl 0x1ead24 thunk 0x3cd8 -> 0xeb970): serialize the head's direction
     // (m_direction), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
     virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
-    virtual void SbiSlot5() OVERRIDE; // slot 5 (the Render below)
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xeb?? (the Render below moved up)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
     // separate NON-virtual overload distinguished only by `i32 host` vs `CDDrawSurfaceMgr*`.
@@ -47,7 +47,7 @@ public:
         i32 a10,
         i32 a11
     ) OVERRIDE; // slot 11
-    // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
+    // Member teardown = the INHERITED CSBI_ImageSet::Reset (0xe7400); retail's
     // ~CSBI_WarlordHead calls it at its own level and again at the folded ImageSet level
     // (two `call 0xe7400`). The old declared-only DtorReset alias was a fake view of that
     // same function (unbound - would not link).
@@ -64,7 +64,6 @@ public:
     // 0xeb830: latch the raw direction (m_direction) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.
-    i32 Render(); // 0-arg: body ends `retl` (cleans 0); the ex-`i32 z` was fabricated + unused
 
     // The show/hide notifier for a frame's sprite handle (0x14dd90, __stdcall,
     // ret 8). Modeled as a free function so `push 0; push arg; call` falls out with

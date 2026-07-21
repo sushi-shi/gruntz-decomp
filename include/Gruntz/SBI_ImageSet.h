@@ -23,9 +23,9 @@ public:
     virtual ~CSBI_ImageSet() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eac4c thunk 0x3ca1 -> 0xe74f0): chains CSBI_Image::SerializeFields.
     virtual i32 SerializeFields(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe74f0
-    virtual void SbiSlot3() OVERRIDE;                                                   // slot 3
-    virtual void SbiSlot4() OVERRIDE;  // slot 4
-    virtual void SbiSlot5() OVERRIDE;  // slot 5
+    virtual void Reset() OVERRIDE; // slot 3 - 0xe7400 (ex ResetCounters)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xe7440 (ex TickRenderFrame)
     virtual i32
     SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbRect, const char*, i32, i32)
         OVERRIDE; // slot 11
@@ -44,10 +44,8 @@ public:
     // base level - the ONE inherited non-virtual helper, not a per-class dtor leg. (The
     // four declared-only aliases DtorImageSet/DtorImageSetAni/DtorStatzTabArrow/DtorReset
     // were fake views of this exact function - unbound symbols that would not link.)
-    void ResetCounters(); // 0xe7400
     // slot-5 body (vtbl 0x1eac4c slot [5], thunk 0x2e78): one play step re-resolving the
     // frame from the record table. Ex CAniPlayer view (dossier #16).
-    i32 TickRenderFrame(); // 0xe7440
 
     CImageSet* m_34; // +0x34  resolved config record (the real image-registry CImageSet)
     i32 m_38;      // +0x38  serialized config id (4 bytes)
@@ -57,7 +55,7 @@ SIZE(0x3c);
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESET_DTOR)
 inline CSBI_ImageSet::~CSBI_ImageSet() {
-    ResetCounters();
+    Reset();
 }
 #endif
 

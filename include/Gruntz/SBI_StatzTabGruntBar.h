@@ -94,9 +94,9 @@ public:
     //     subobject) then 19 fields whose ptr/int pattern matches this class's
     //     m_statusGlyph..m_glyphMap at every single offset.
     virtual i32 SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
-    virtual void SbiSlot3() OVERRIDE;          // slot 3
-    virtual void SbiSlot4() OVERRIDE;          // slot 4
-    virtual void SbiSlot5() OVERRIDE;          // slot 5
+    virtual void Reset() OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xea4b0 (ex Poll: update + conditional vfunc-10 redraw)
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xea4e0 (ex Blit: draw the tab background + value glyphs)
 
     // 0xea1f0: the stat bar's own "configure" (it derives straight from CStatusBarItem,
     // so there is no slot-11 SetupImage to override). Same owner/config-host pair as
@@ -115,9 +115,6 @@ public:
         i32 selMode
     ); // 0xea1f0
 
-    void Reset();      // 0xea470  drop the five tracked values (also the dtor teardown)
-    i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
-    i32 Blit();        // 0xea4e0  draw the tab's background + value glyphs (slot +0x14)
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
 
     // ----- layout (offsets are the load-bearing fact) -----

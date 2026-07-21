@@ -25,9 +25,9 @@ public:
     // tail-chaining CStatusBarItem::SerializeFields. 4 args, proven by `ret 0x10` + the
     // body's `mov esi,[esp+0x9c]` archive read / `[esp+0xa4]` kind switch (case 4/7).
     virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe9a30
-    virtual void SbiSlot3() OVERRIDE;                                                 // slot 3
-    virtual void SbiSlot4() OVERRIDE; // slot 4
-    virtual void SbiSlot5() OVERRIDE; // slot 5
+    virtual void Reset() OVERRIDE; // slot 3 - 0xe9800 (out-of-line)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xe9820 (rebuild the +0x58 draw gate)
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xe99c0 (draw the two side frames)
 
     // 0xe9600: the side tab's own configure, run on the freshly-`new`ed child by
     // CStatusBarMgr::BuildSideTabs. `parent` is the mgr - the body reads parent->m_10 /
@@ -52,9 +52,6 @@ public:
         i32 onLeft
     ); // 0xe9600
 
-    void Reset();            // 0xe9800 (out-of-line)
-    i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
-    i32 Render(); // vslot 5 (0xe99c0) draw the two side frames. 0-arg: the body ends `retl` (cleans 0); the ex-`i32 z` param was fabricated and unused.
     i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
 
     // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that

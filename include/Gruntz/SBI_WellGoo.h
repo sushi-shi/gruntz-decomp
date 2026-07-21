@@ -36,13 +36,12 @@ public:
     virtual i32 SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
     virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value SbRect - see StatusBarItem.h)
-    virtual void SbiSlot3() OVERRIDE; // slot 3 (the Free below)
-    virtual void SbiSlot4() OVERRIDE; // slot 4
-    virtual void SbiSlot5() OVERRIDE; // slot 5 (the Tick below)
+    virtual void Reset() OVERRIDE; // slot 3 (ex Free)
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE; // slot 5 - (ex Tick)
 
     // vtable slot 5 (0xe6380): the per-frame goo Tick. Goo state reuses the base
     // region: fillBase=m_rect14.m_4 (@0x18), fillTop=m_rect14.m_c (@0x20), countdown=m_28.
-    i32 Tick();
 
     // (0xe64c0 was declared here as a non-virtual `Serialize` - it IS the slot-1
     //  SerializeFields override declared above. Its base leg 0xe6e40 is CSBI_Image's and
@@ -51,7 +50,6 @@ public:
 
     // vtable slot 3 (0x104c80): release the owned goo source surface through the
     // cached manager's (+0x24) surface pool, then clear it.
-    void Free();
 
     // ----- own fields (after CSBI_Image @0x34) -----
     CDDSurface* m_gooSrc;       // +0x34  goo source surface (Blit + BltEx `src`)

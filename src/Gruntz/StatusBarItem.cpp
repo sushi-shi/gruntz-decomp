@@ -1,7 +1,7 @@
 #include <rva.h>
 
 #define SBI_ITEM_OWN_CTOR
-#define SBI_DTOR_CHAIN // emit the retail inline base-dtor (stamp vptr + DtorStatus), so this
+#define SBI_DTOR_CHAIN // emit the retail inline base-dtor (stamp vptr + Reset), so this
 #include <Gruntz/StatusBarItem.h>
 
 RVA(0x001005b0, 0x8)
@@ -17,9 +17,9 @@ CStatusBarItem::CStatusBarItem() {
     m_28 = 0;
 }
 
-// ~CStatusBarItem is now the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus),
+// ~CStatusBarItem is now the SBI_DTOR_CHAIN inline body (stamp vftable + Reset),
 // so MSVC synthesizes the retail ??1CStatusBarItem (0x100780: mov [ecx],vptr; jmp
-// DtorStatus) and ??_GCStatusBarItem (0x100620: stamp + call DtorStatus + delete),
+// Reset) and ??_GCStatusBarItem (0x100620: stamp + call Reset + delete),
 // byte-matching the SBI leaf TUs - no longer the empty-stub COMDAT that diverged.
 // This TU labels the cl-auto-generated ??_G at its retail RVA (it emits the vftable).
 // (The fabricated `SbiVfunc0 { return 0; }` that used to sit here as a vftable anchor is

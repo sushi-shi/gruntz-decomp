@@ -13,7 +13,7 @@
 #include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (Init's map lookup)
-#include <Image/CImage.h>              // the resolved frame record (Tick's blit)
+#include <Image/CImage.h>              // the resolved frame record (Render's blit)
 
 VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)
 // ===========================================================================
@@ -87,7 +87,7 @@ i32 CSBI_ImageSetAni::Init(
 // recompile tail-merges them). Both are the /O2 allocator/block-merger's choices,
 // not source-steerable.
 RVA(0x000e7b00, 0xe1)
-i32 CSBI_ImageSetAni::Tick() {
+i32 CSBI_ImageSetAni::Render() {
     if (m_28 > 0) {
         CImageSet* tbl = m_34;
         CImage* cel;
@@ -200,5 +200,5 @@ i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 
 
 RVA(0x001047f0, 0x94)
 CSBI_ImageSetAni::~CSBI_ImageSetAni() {
-    ResetCounters();
+    Reset();
 }

@@ -59,7 +59,7 @@ i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbiRect, i3
 // m_28 between the two guards + reusing the ctx pointer for ctx->m_2c (the BltEx
 // receiver), all matching retail's byte stream.
 RVA(0x000e6380, 0xf9)
-i32 CSBI_WellGoo::Tick() {
+i32 CSBI_WellGoo::Render() {
     if (m_28 <= 0) {
         return 1;
     }
@@ -239,7 +239,7 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 }
 
 RVA(0x00104c80, 0x1f)
-void CSBI_WellGoo::Free() {
+void CSBI_WellGoo::Reset() {
     if (m_gooSrc != 0) {
         m_24->m_ptrColl->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;

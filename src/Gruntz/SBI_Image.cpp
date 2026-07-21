@@ -15,7 +15,7 @@
 #include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)        // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CImageRegistry)
 #include <Gruntz/SerialArchive.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Image/CImage.h>              // the resolved frame record (TickRenderCurrent's blit)
+#include <Image/CImage.h>              // the resolved frame record (Render's blit)
 #include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
 
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
@@ -75,7 +75,7 @@ i32 CSBI_Image::SetupImage(
 }
 
 RVA(0x000e6d90, 0x8)
-void CSBI_Image::ClearFrame() {
+void CSBI_Image::Reset() {
     m_frame = 0;
 }
 
@@ -90,7 +90,7 @@ void CSBI_Image::ClearFrame() {
 // global mid-sequence. Neither local nor inlined surfaceCtx flips it (RenderFrame
 // arg-eval-order/regalloc wall shared by the whole slot-5 render family). Final sweep.
 RVA(0x000e6dd0, 0x45)
-i32 CSBI_Image::TickRenderCurrent() {
+i32 CSBI_Image::Render() {
     if (m_28 > 0) {
         m_28--;
         CImage* cel = m_frame;
@@ -170,5 +170,5 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
 
 RVA(0x00100870, 0x6a)
 CSBI_Image::~CSBI_Image() {
-    ClearFrame();
+    Reset();
 }

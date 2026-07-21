@@ -25,8 +25,8 @@ public:
     // CImageSetStream is a typedef of CSerialArchive == the real CFileMemBase, so this is
     // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
     virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
-    virtual void SbiSlot4() OVERRIDE;                                                   // slot 4
-    virtual void SbiSlot5() OVERRIDE;     // slot 5
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE; // slot 5 - 0xe7b00 (ex Tick)
     // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
     // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
     // two body-less placeholder virtuals `AniInit`/`AniSetRange` (invented only to pad the
@@ -49,7 +49,7 @@ public:
     // slot 14 (new) 0xe7c30: re-arm with a new frame window without re-resolving the
     // record. The Statz-arrow direction setters below drive exactly this slot.
     virtual void SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval);
-    // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
+    // Member teardown = the INHERITED CSBI_ImageSet::Reset (0xe7400); retail's
     // ~CSBI_ImageSetAni calls it at its own level and again at the folded ImageSet level
     // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view
     // of that same function (unbound - would not link).
@@ -59,7 +59,6 @@ public:
 
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
     // advance within [m_frameStart, m_frameEnd]. Ex CAniPlayer::Tick (dossier #16 identity fold).
-    i32 Tick(); // 0xe7b00
 
     i32 m_interval; // +0x3c  persistent serialized ints (Serialize save/load block)
     i32 m_lastTime; // +0x40
@@ -72,7 +71,7 @@ SIZE_UNKNOWN();
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
-    ResetCounters();
+    Reset();
 }
 #endif
 
@@ -82,7 +81,7 @@ public:
     CSBI_StatzTabArrow() {
         m_kind = 5;
     }
-    // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::ResetCounters
+    // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::Reset
     // (0xe7400), called three times: own level + the folded ImageSetAni + ImageSet
     // levels. (DtorStatzTabArrow was a declared-only fake view of that function.)
     virtual ~CSBI_StatzTabArrow() OVERRIDE;

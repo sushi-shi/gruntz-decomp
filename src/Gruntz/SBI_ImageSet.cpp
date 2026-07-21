@@ -14,7 +14,7 @@
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CDDrawSurfaceMgr m_world)
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
-#include <Image/CImage.h>        // the resolved frame record (TickRenderFrame's blit)
+#include <Image/CImage.h>        // the resolved frame record (Render's blit)
 
 VTBL(CSBI_ImageSet, 0x001eac4c);
 // ---------------------------------------------------------------------------
@@ -80,22 +80,22 @@ i32 CSBI_ImageSet::SetupImage(
 }
 
 RVA(0x000e7400, 0x9)
-void CSBI_ImageSet::ResetCounters() {
+void CSBI_ImageSet::Reset() {
     m_34 = 0;
     m_frame = 0;
 }
 
 // ---------------------------------------------------------------------------
-// CSBI_ImageSet::TickRenderFrame (0xe7440, vtable slot 5): one play step that
+// CSBI_ImageSet::Render (0xe7440, vtable slot 5): one play step that
 // re-resolves the frame from the record table and renders it: while cycles remain,
 // consume one, look up the frame (0 when out of range), record it, and - when
 // present - blit it. Returns 1. Ex CAniPlayer view (dossier #16).
 // @early-stop
 // 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
-// chain regalloc as TickRenderCurrent plus the record-table range-test register
+// chain regalloc as CSBI_Image::Render plus the record-table range-test register
 // pairing. Final sweep.
 RVA(0x000e7440, 0x5e)
-i32 CSBI_ImageSet::TickRenderFrame() {
+i32 CSBI_ImageSet::Render() {
     if (m_28 > 0) {
         m_28--;
         CImageSet* tbl = m_34;
@@ -171,5 +171,5 @@ i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) 
 
 RVA(0x00102000, 0x7f)
 CSBI_ImageSet::~CSBI_ImageSet() {
-    ResetCounters();
+    Reset();
 }

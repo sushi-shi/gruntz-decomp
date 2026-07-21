@@ -40,4 +40,4 @@ i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i
 }
 
 RVA(0x000e8760, 0x1)
-void CSBI_RectOnly::DtorRect() {}
+void CSBI_RectOnly::Reset() {}

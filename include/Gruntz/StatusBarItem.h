@@ -68,9 +68,9 @@ public:
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
     virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
-    virtual void SbiSlot3();                                                        // slot 3
-    virtual void SbiSlot4();                                                        // slot 4
-    virtual void SbiSlot5();                                                        // slot 5
+    virtual void Reset(); // slot 3 - teardown/reset hook (base body 0x10bfa0, ex DtorStatus)
+    virtual i32 Refresh(i32 a); // slot 4 (base body unreconstructed)
+    virtual i32 Render(); // slot 5 (base body unreconstructed)
     // slots 6..9 (0x100530/0x100550/0x100570/0x100590): base defaults - each is
     // `xor eax,eax; ret 0xc` => i32-return, 3 stack args, `return 0`. No SBI leaf
     // overrides them. Out-of-line default bodies in SBI_RectOnly.cpp.
@@ -95,7 +95,6 @@ public:
 
     // Member teardown run by the inline destructor of the CHAIN-DTOR device below
     // (reloc-masked extern; the retail standalone body is 0x10bfa0).
-    void DtorStatus(); // 0x10bfa0
 };
 SIZE_UNKNOWN();
 
@@ -109,7 +108,7 @@ SIZE_UNKNOWN();
 // COMDATs the chain TUs synthesize - RVA_COMPGEN/RVA()-bound in their owners.)
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_ITEM_OWN_DTOR)
 inline CStatusBarItem::~CStatusBarItem() {
-    DtorStatus();
+    Reset();
 }
 #endif
 
