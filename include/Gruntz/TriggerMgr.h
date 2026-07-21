@@ -24,11 +24,8 @@ class CDDrawSurfaceMgr;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
 struct CTmRecNode;
-struct CTmOverlay; // the allocated overlay sub-object (+0x25c); completed in each TU
-struct CTmGoal {
-    char p0[0x8];
-    i32 m_8; // +0x08  flags (the 0x10000 "released" bit)
-};
+struct CTmOverlay;     // the allocated overlay sub-object (+0x25c); completed in each TU
+class CWwdGameObjectA; // <Wwd/WwdGameObjectFamily.h> - the goal camera sprite's real class
 class CActionOptionsMenuBar;
 
 // The ELEMENT type of the base object list (m_baseList, +0x000): the battlez spawn
@@ -526,7 +523,8 @@ public:
     i32 m_armed;                      // +0x230
     i32 m_recX;                       // +0x234  active-record x
     i32 m_recY;                       // +0x238  active-record y
-    CTmGoal* m_goal;                  // +0x23c  the goal object
+    CWwdGameObjectA* m_goal;          // +0x23c  the "DoNothing" camera-sprite goal object
+                                      //         (LoadCameraSprite; released via m_flags|=0x10000)
     CPtrList m_recList;               // +0x240  record list (per-cell undo/record nodes)
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
     CByteArray m_byteArr;             // +0x260  byte-table array

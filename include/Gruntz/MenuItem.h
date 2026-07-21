@@ -8,9 +8,6 @@
 
 class CMenuItem;
 
-struct CMenuItemPlacer {};
-SIZE_UNKNOWN(CMenuItemPlacer);
-
 struct CMenuItemCatalog {
     char pad0[0x10];
     // ::CMapStringToOb - retail's Lookup here is 0x1b8008, which lies in
@@ -82,8 +79,8 @@ public:
     i32 Hit(i32 x, i32 y); // 0x185700  bounds test
 
     // implicit vptr                  // +0x00
-    CMenuItemHostOwner* m_owner;   // +0x04  owner / catalog host (template->[0])
-    class CChatBox* m_host;        // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
+    CMenuItemHostOwner* m_owner; // +0x04  owner / catalog host (template->[0])
+    class CChatBox* m_host; // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
     CMenuItemTemplate* m_template; // +0x0c  the source template (Init arg a0)
     CString m_name;                // +0x10  item name (GetName)
     CString m_key;                 // +0x14  key string (Trigger ReplaceNode payload)

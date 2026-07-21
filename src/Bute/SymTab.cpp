@@ -185,7 +185,8 @@ i32 CParseSource::BeginParse() {
     if (m_buffer == 0) {
         return 0;
     }
-    if (m_reader->Read(m_base, 0, m_length, reinterpret_cast<void*>(m_buffer)) != static_cast<i32>(m_length)) {
+    if (m_reader->Read(m_base, 0, m_length, reinterpret_cast<void*>(m_buffer))
+        != static_cast<i32>(m_length)) {
         ::operator delete(reinterpret_cast<void*>(m_buffer));
         m_buffer = 0;
     }
@@ -507,7 +508,7 @@ void* CSymTab::FirstSub() {
 
 RVA(0x0013a280, 0x19)
 void* CSymTab::NextSub(void* rec) {
-    CHashElement* n = (reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(rec) + 0x20)))->Next();
+    CHashElement* n = (static_cast<CSymTab*>(rec))->m_node20.Next();
     if (!n) {
         return n;
     }
@@ -525,7 +526,7 @@ void* CSymTab::FirstSym() {
 
 RVA(0x0013a2d0, 0x19)
 void* CSymTab::NextSym(void* rec) {
-    CHashElement* n = (reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(rec) + 0x4)))->Next();
+    CHashElement* n = (static_cast<CSymRec*>(rec))->m_symNode.Next();
     if (!n) {
         return n;
     }
@@ -534,7 +535,7 @@ void* CSymTab::NextSym(void* rec) {
 
 RVA(0x0013a2f0, 0x19)
 void* CSymTab::NextSym2(void* rec) {
-    CHashElement* n = (reinterpret_cast<CHashBase*>((reinterpret_cast<char*>(rec) + 0x24)))->First();
+    CHashElement* n = (static_cast<CSymRec*>(rec))->m_valTable.First();
     if (!n) {
         return n;
     }
@@ -543,7 +544,7 @@ void* CSymTab::NextSym2(void* rec) {
 
 RVA(0x0013a310, 0x19)
 void* CSymTab::NextSym3(void* rec) {
-    CHashElement* n = (reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(rec) + 0x1c)))->Next();
+    CHashElement* n = (static_cast<CParseSource*>(rec))->m_node1c.Next();
     if (!n) {
         return n;
     }
@@ -634,7 +635,19 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     if (slot == 0) {
         return reinterpret_cast<i32>(slot);
     }
-    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, static_cast<CRezItmBase*>(a3));
+    slot->Build(
+        this,
+        static_cast<const char*>(a1),
+        a0,
+        a2,
+        0,
+        0,
+        0,
+        reinterpret_cast<void*>(m_owner->MakeSeed()),
+        0,
+        0,
+        static_cast<CRezItmBase*>(a3)
+    );
     (static_cast<CSymRec*>(a2))->m_valTable.Insert(&slot->m_node1c);
     u32 len = strlen(static_cast<char*>(a1));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
@@ -645,9 +658,10 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
 
 RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
-    m_10 -= *reinterpret_cast<i32*>((reinterpret_cast<char*>(found) + 0xc));
-    (static_cast<CSymRec*>(rec))->m_valTable.Remove(reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(found) + 0x1c)));
-    (static_cast<CParseSource*>(found))->Teardown();
+    CParseSource* src = static_cast<CParseSource*>(found);
+    m_10 -= static_cast<i32>(src->m_length);
+    (static_cast<CSymRec*>(rec))->m_valTable.Remove(&src->m_node1c);
+    src->Teardown();
     m_owner->AddNode(found);
     m_owner->m_08 = 0;
     return 1;
@@ -782,7 +796,19 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             }
             if (!skip) {
                 CParseSource* slot = m_owner->PopParseSlot();
-                slot->Build(this, name1, f4, rec, str2, reinterpret_cast<i32>(f3), reinterpret_cast<i32>(f1), f2, f6, arr, reinterpret_cast<CRezItmBase*>(a0)); // a0 rides as the retail i32 arg
+                slot->Build(
+                    this,
+                    name1,
+                    f4,
+                    rec,
+                    str2,
+                    reinterpret_cast<i32>(f3),
+                    reinterpret_cast<i32>(f1),
+                    f2,
+                    f6,
+                    arr,
+                    reinterpret_cast<CRezItmBase*>(a0)
+                ); // a0 rides as the retail i32 arg
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
@@ -925,7 +951,8 @@ CSymParser::~CSymParser() {
         Clear(0);
     }
     CRezItmBase* p;
-    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0; p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
+    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0;
+         p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;
         delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
@@ -1170,7 +1197,12 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     if (v > static_cast<u32>(m_60)) {
         m_60 = v;
     }
-    m_root->ApplyRecursive(reinterpret_cast<i32>(node), *reinterpret_cast<i32*>((hdr + 0x83)), *reinterpret_cast<i32*>((hdr + 0x87)), flag);
+    m_root->ApplyRecursive(
+        reinterpret_cast<i32>(node),
+        *reinterpret_cast<i32*>((hdr + 0x83)),
+        *reinterpret_cast<i32*>((hdr + 0x87)),
+        flag
+    );
     return 1;
 }
 
@@ -1278,7 +1310,8 @@ i32 CSymParser::Clear(i32 final) {
     delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
     m_activeNode = 0;
     CRezItmBase* p;
-    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0; p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
+    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0;
+         p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
         p->Close();
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;

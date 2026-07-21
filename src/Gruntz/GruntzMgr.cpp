@@ -2103,7 +2103,9 @@ i32 CGruntzMgr::Quicksave() {
     if (m_saveInfoRec == 0 || !(m_saveInfoRec->m_flags & 1)) {
         return LoadSaveMessageSprite();
     }
-    if (reinterpret_cast<char*>(m_curState) + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
+    // inlined GetSaveSource() guard: retail tests the ADDRESS of the play state's
+    // +0x1d0 member (never 0 for a live state - an inlined &play->m_1d0 quirk).
+    if (&(static_cast<CPlay*>(m_curState))->m_1d0 == 0) {
         return 0;
     }
     if (m_cueSink) {
@@ -2211,13 +2213,12 @@ void CGruntzMgr::ResetAllOptionsSlots() {
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
-    char* p = reinterpret_cast<char*>(&m_options[0]) + 0x14; // &m_options[0].m_014
+    GruntzPlayer* slot = &m_options[0];
     for (i32 d = 4; d != 0; d--) {
-        char* slot = p - 0x14; // slot base
-        if (slot && *reinterpret_cast<i32*>((p + 0xc)) != 0 && (anyState != 0 || *reinterpret_cast<i32*>(p) != 0)) {
+        if (slot && slot->m_liveGate != 0 && (anyState != 0 || slot->m_014 != 0)) {
             count++;
         }
-        p += 0x238;
+        slot++;
     }
     return count;
 }
@@ -2602,14 +2603,13 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
-        PlayStatusSlot* base = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
-        char* p = reinterpret_cast<char*>(base) + 0x20;
+        PlayStatusSlot* s = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
-            if (p && *reinterpret_cast<i32*>(p) == 3) {
+            if (s && s->m_status == 3) {
                 done++;
             }
-            p += 0x64;
+            s++;
         }
         if (done > 0) {
             m_frameGate = 1;
@@ -2899,47 +2899,41 @@ i32 CGruntzMgr::SyncOptionsState() {
     g_optionsCursor = 0;
 
     i32 idx = 0;
-    CBattlezMapConfig* tick = &m_options[0].m_038;
-    i32* cfgp = &m_options[0].m_configId;
-    i32* arm = &m_options[0].m_014;
+    GruntzPlayer* opt = &m_options[0]; // one 0x238-stride cursor (ex three raw walks)
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;
         if (idx == g_curPlayer) {
-            *arm = 1;
-            cfg = *cfgp;
+            opt->m_014 = 1;
+            cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
-            tick->Clear_02ade0();
-            arm = reinterpret_cast<i32*>((reinterpret_cast<char*>(arm) + 0x238));
-            cfgp = reinterpret_cast<i32*>((reinterpret_cast<char*>(cfgp) + 0x238));
+            opt->m_038.Clear_02ade0();
+            opt++;
             idx++;
-            tick = reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(tick) + 0x238));
-            *arm = 0;
-            cfg = *cfgp;
+            opt->m_014 = 0;
+            cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
         } else {
-            *arm = 0;
-            cfg = *cfgp;
+            opt->m_014 = 0;
+            cfg = opt->m_configId;
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!opt->m_038.LoadConfig(this, idx, cfg)) {
                 return 0;
             }
         }
         idx++;
-        arm = reinterpret_cast<i32*>((reinterpret_cast<char*>(arm) + 0x238));
-        cfgp = reinterpret_cast<i32*>((reinterpret_cast<char*>(cfgp) + 0x238));
-        tick = reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(tick) + 0x238));
+        opt++;
     }
     return 1;
 }
@@ -3475,7 +3469,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = *reinterpret_cast<RECT*>((reinterpret_cast<char*>(m_world->m_level) + 0x10));
+    local = m_world->m_level->m_planeCtx; // the +0x10 plane-read coord rect
     *out = local;
     return out;
 }

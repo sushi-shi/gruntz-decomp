@@ -634,7 +634,7 @@ i32 CPlay::ValidateLevelTiles() {
 //   this->m_gameReg IS CState::m_4, this->m_2e0 IS CPlay::m_hitTest,
 //   this->m_bridgePoint IS CPlay::m_frameMarker.
 // The goal tail still walks the LvWorld view (LvTimeline IS ::CTriggerMgr, LvGoal IS
-// ::CTmGoal - same +0x23c goal + 0x10000 "released" bit TriggerMgr.cpp:ResetAll sets);
+// the CWwdGameObjectA goal sprite, ex-CTmGoal - same +0x23c goal + 0x10000 "released" bit TriggerMgr.cpp:ResetAll sets);
 // folding it needs GoalTail's real CTriggerMgr name, which this lane did not prove -
 // left as-is so no reference is re-bound on a guess. (@identity-TODO, see report.)
 // ===========================================================================
@@ -686,10 +686,10 @@ done:
     // lazily re-creates the "DoNothing" camera sprite into the m_goal slot this just cleared
     // - the two halves finally read as one operation).
     CTriggerMgr* g = m_mgr->m_cmdGrid;
-    CTmGoal* goal = g->m_goal;
+    CWwdGameObjectA* goal = g->m_goal;
     if (goal != 0) {
         if (goal != 0) {
-            goal->m_8 |= 0x10000;
+            goal->m_flags |= 0x10000;
             g->m_goal = 0;
         }
         m_mgr->m_cmdGrid->LoadCameraSprite();

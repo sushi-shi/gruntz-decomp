@@ -1,8 +1,9 @@
 // TriggerMgrRecords.h - CTriggerMgr's OWN record types + TU externs (relocated from
 // the *Views.h holding pen 2026-07-20: these are not views of unknown classes - the
 // node structs model the real MFC CObList/CPtrList CNode with TYPED payload arms
-// (the "generic collections" keep class), CTmGoal is the @identity-TODO +0x23c goal
-// object, and CGridCell/CGridLookup are the documented keep-until-megafn grid pair).
+// (the "generic collections" keep class), and CGridCell/CGridLookup are the documented
+// keep-until-megafn grid pair. The ex-CTmGoal +0x23c goal view was RESOLVED: it is the
+// CWwdGameObjectA "DoNothing" camera sprite (LoadCameraSprite creates+stores it).
 #ifndef GRUNTZ_TRIGGERMGR_RECORDS_H
 #define GRUNTZ_TRIGGERMGR_RECORDS_H
 
@@ -25,12 +26,10 @@ struct CTmNode {
     i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
 };
 
-struct CTmGoal;
-
 extern CButeMgr g_buteMgr;
 extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
 
-void Str_Free(void* node);   // CString teardown, 0x1b9b93
+void Str_Free(void* node); // CString teardown, 0x1b9b93
 
 struct CTmRecNode {
     CTmRecNode* m_next;  // +0x00
@@ -51,7 +50,6 @@ struct CGridLookup {
 };
 
 SIZE_UNKNOWN(CTmNode);
-SIZE_UNKNOWN(CTmGoal);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CGridCell);
 SIZE_UNKNOWN(CGridLookup);

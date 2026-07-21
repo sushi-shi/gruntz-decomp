@@ -1,4 +1,4 @@
-#include <Wap32/Object.h>      // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/CurPlayer.h>  // g_curPlayer
@@ -18,6 +18,7 @@ extern "C" i32 g_explosionz;
 #include <Gruntz/SoundCue.h>     // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
+#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectA - the TriggerMgr goal camera sprite
 
 void __stdcall FreeHintSprite(i32 tag, i32 a, i32 b, i32 c); // 0x25fe
 void __stdcall Fn213f(i32 a, i32 b);                         // 0x213f
@@ -160,9 +161,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     // Esc (cc109)
     if (key == 0x1b) {
         CTriggerMgr* h68 = host->m_cmdGrid;
-        CTmGoal* n = h68->m_goal;
+        CWwdGameObjectA* n = h68->m_goal;
         if (n != 0) {
-            n->m_8 |= 0x10000; // the "released" bit
+            n->m_flags |= 0x10000; // the "released" bit
             h68->m_goal = 0;
         }
         h68->m_armed = 0;
@@ -321,11 +322,13 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             slot[0] = v0;
             slot[1] = v1;
             if (self->m_49c != self->arr488Count() - 1) {
-                (reinterpret_cast<CDWordArray*>(&self->m_488))->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
+                (reinterpret_cast<CDWordArray*>(&self->m_488))
+                    ->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
                 self->m_49c = self->m_49c + 1;
                 return 1;
             }
-            (reinterpret_cast<CDWordArray*>(&self->m_488))->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
+            (reinterpret_cast<CDWordArray*>(&self->m_488))
+                ->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
             self->m_49c = self->m_49c + 1;
             return 1;
         }
@@ -358,8 +361,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node =
-            reinterpret_cast<CoordPoolNode*>((reinterpret_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset));
+        CoordPoolNode* node = reinterpret_cast<CoordPoolNode*>(
+            (reinterpret_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset)
+        );
         (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
@@ -537,8 +541,13 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        h->m_cmdSubMgr
-            ->BlitTileMarker(1, g_curPlayer, *reinterpret_cast<i16*>(&self->m_cursorX), *reinterpret_cast<i16*>(&self->m_cursorY), 0);
+        h->m_cmdSubMgr->BlitTileMarker(
+            1,
+            g_curPlayer,
+            *reinterpret_cast<i16*>(&self->m_cursorX),
+            *reinterpret_cast<i16*>(&self->m_cursorY),
+            0
+        );
         return 1;
     }
     // P (ccca9): on bounds-fail or after the action, fall through to the x
@@ -587,8 +596,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         i32 outA = 0;
         i32 outB = 0;
-        i32 r =
-            reinterpret_cast<i32>(host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5));
+        i32 r = reinterpret_cast<i32>(
+            host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5)
+        );
         if (r == 0) {
             return 1;
         }

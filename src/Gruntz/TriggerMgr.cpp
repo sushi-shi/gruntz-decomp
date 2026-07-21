@@ -128,8 +128,7 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
         for (i32 j = 0; j < 15; j++) {
             CTmCell* g = m_grid[j];
             if (g) {
-                // the grunt's display object (CUserBase +0x10; member modeling TODO)
-                CGameObject* pos = *reinterpret_cast<CGameObject**>((reinterpret_cast<char*>(g) + 0x10));
+                CGameObject* pos = g->m_object;
                 i32 cx = pos->m_screenX;
                 i32 cy = pos->m_screenY;
                 RECT box;
@@ -208,12 +207,13 @@ found:
     }
     CTmCell* cell = m_grid[y + x * TM_GRID_COLS];
     if (cell != 0) {
-        (static_cast<CGrunt*>(cell))->ClearAllSprites(); // CTmCell IS CGrunt (0x4b240); bridge-cast, see note
+        (static_cast<CGrunt*>(cell))
+            ->ClearAllSprites(); // CTmCell IS CGrunt (0x4b240); bridge-cast, see note
     }
     if (m_recX == p[0] && m_recY == p[1]) {
-        CTmGoal* goal = m_goal;
+        CWwdGameObjectA* goal = m_goal;
         if (goal != 0) {
-            goal->m_8 |= 0x10000;
+            goal->m_flags |= 0x10000;
             m_goal = 0;
         }
         m_armed = 0;
@@ -273,9 +273,9 @@ void CTriggerMgr::ResetAll() {
     }
     m_recList.RemoveAll();
     StopPendingFx();
-    CTmGoal* goal = m_goal;
+    CWwdGameObjectA* goal = m_goal;
     if (goal != 0) {
-        goal->m_8 |= 0x10000;
+        goal->m_flags |= 0x10000;
         m_goal = 0;
     }
 }
@@ -327,11 +327,25 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
         rep->EnqueueSingle(
-            tag, firstByte, bytes[0], 2, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0
+            tag,
+            firstByte,
+            bytes[0],
+            2,
+            static_cast<i16>(gx),
+            static_cast<i16>(gy),
+            0,
+            0
         );
     } else {
         rep->EnqueueMulti(
-            tag, firstByte, count, bytes, 2, static_cast<i16>(gx), static_cast<i16>(gy), 0
+            tag,
+            firstByte,
+            count,
+            bytes,
+            2,
+            static_cast<i16>(gx),
+            static_cast<i16>(gy),
+            0
         );
     }
 }
@@ -362,15 +376,51 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
         if (flag != 0) {
-            rep->EnqueueSingle(tag, firstByte, bytes[0], 9, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0);
+            rep->EnqueueSingle(
+                tag,
+                firstByte,
+                bytes[0],
+                9,
+                static_cast<i16>(gx),
+                static_cast<i16>(gy),
+                0,
+                0
+            );
         } else {
-            rep->EnqueueSingle(tag, firstByte, bytes[0], 3, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0);
+            rep->EnqueueSingle(
+                tag,
+                firstByte,
+                bytes[0],
+                3,
+                static_cast<i16>(gx),
+                static_cast<i16>(gy),
+                0,
+                0
+            );
         }
     } else {
         if (flag != 0) {
-            rep->EnqueueMulti(tag, firstByte, count, bytes, 9, static_cast<i16>(gx), static_cast<i16>(gy), 0);
+            rep->EnqueueMulti(
+                tag,
+                firstByte,
+                count,
+                bytes,
+                9,
+                static_cast<i16>(gx),
+                static_cast<i16>(gy),
+                0
+            );
         } else {
-            rep->EnqueueMulti(tag, firstByte, count, bytes, 3, static_cast<i16>(gx), static_cast<i16>(gy), 0);
+            rep->EnqueueMulti(
+                tag,
+                firstByte,
+                count,
+                bytes,
+                3,
+                static_cast<i16>(gx),
+                static_cast<i16>(gy),
+                0
+            );
         }
     }
 }
@@ -391,8 +441,8 @@ void CTriggerMgr::ClearRecords() {
         do {
             CTmNode* cur = n;
             n = n->m_next;
-            CoordPoolNode* slot
-                = reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(cur->m_payload) - bias);
+            CoordPoolNode* slot =
+                reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(cur->m_payload) - bias);
             slot->m_next = static_cast<CoordPoolNode*>(head);
             head = slot;
             g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
@@ -436,11 +486,11 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
-    i32 count = *(*reinterpret_cast<i32**>((reinterpret_cast<char*>(g_gameReg->m_curState) + 0x2dc)));
+    i32 pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_position;
 
     i32 ax, cx;
-    if (count != 0) {
-        if (count > 0 && count <= 2) {
+    if (pos != 0) {
+        if (pos > 0 && pos <= 2) {
             ax = vx - 0x28;
             cx = vy - 0x28;
         }
@@ -451,9 +501,9 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
-    m_goal = reinterpret_cast<CTmGoal*>(spr);
+    m_goal = spr;
     spr->m_7c->m_notify(spr);
-    (reinterpret_cast<CWwdGameObjectA*>(m_goal))->ApplyName("GAME_CAMERASPRITE");
+    m_goal->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -552,7 +602,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
         i32 attr;
-        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width) || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+            || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
             attr = 1;
         } else {
             attr = plane->m_rowInts[ty][tx * 7];
@@ -650,7 +701,8 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
                     }
                     i32 v = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
                     if (v != 0xf) {
-                        i32 v2 = (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
+                        i32 v2 =
+                            (hit->m_entranceReason <= 0x16) ? hit->m_entranceReason : hit->m_19c;
                         if (v2 != 0x13) {
                             goto reportError;
                         }
@@ -672,13 +724,25 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
                     goto reportError;
                 }
                 g_gameReg->m_cmdSubMgr->EnqueueSingle(
-                    1, static_cast<char>(cell->m_tileOwnerHi), static_cast<char>(cell->m_tileOwnerLo),
-                    10, static_cast<i16>(hit->m_tileOwnerHi), static_cast<i16>(hit->m_tileOwnerLo), 0, 0
+                    1,
+                    static_cast<char>(cell->m_tileOwnerHi),
+                    static_cast<char>(cell->m_tileOwnerLo),
+                    10,
+                    static_cast<i16>(hit->m_tileOwnerHi),
+                    static_cast<i16>(hit->m_tileOwnerLo),
+                    0,
+                    0
                 );
             } else {
                 g_gameReg->m_cmdSubMgr->EnqueueSingle(
-                    1, static_cast<char>(cell->m_tileOwnerHi), static_cast<char>(cell->m_tileOwnerLo),
-                    4, static_cast<i16>(a14), static_cast<i16>(a18), 0, 0
+                    1,
+                    static_cast<char>(cell->m_tileOwnerHi),
+                    static_cast<char>(cell->m_tileOwnerLo),
+                    4,
+                    static_cast<i16>(a14),
+                    static_cast<i16>(a18),
+                    0,
+                    0
                 );
             }
             if (a2c == 0) {
@@ -735,7 +799,12 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (cellp == 0 || *reinterpret_cast<i32*>((cellp + 0x1ec)) != g_curPlayer) {
         return 0;
     }
-    if (this->PlaceCell(*reinterpret_cast<i32*>((cellp + 0x1f0)), *reinterpret_cast<i32*>((cellp + 0x1ec)), 0) == 0) {
+    if (this->PlaceCell(
+            *reinterpret_cast<i32*>((cellp + 0x1f0)),
+            *reinterpret_cast<i32*>((cellp + 0x1ec)),
+            0
+        )
+        == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
@@ -789,15 +858,16 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (g_gameReg->m_134 != 1) {
         return 0;
     }
-    char* lvl = reinterpret_cast<char*>(g_gameReg->m_curState);
+    CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
     CString name;
-    name.Format("Level%i", *reinterpret_cast<i32*>((lvl + 0x1c)), 0);
-    i32 color = g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
+    name.Format("Level%i", lvl->m_levelIndex, 0);
+    i32 color =
+        g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
     if (hy >= g_gameReg->m_viewOriginR || hy < g_gameReg->m_viewOriginL
         || hx >= g_gameReg->m_viewOriginB || hx < g_gameReg->m_viewOriginT) {
-        (reinterpret_cast<CPlay*>(lvl))->ResetGoals(hy, hx);
+        lvl->ResetGoals(hy, hx);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
     // receiver is level->m_mainPlane)
@@ -805,9 +875,9 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 outR = col;
     i32 outC = row;
     plane->m_mainPlane->WrapCoord(&outR, &outC);
-    CStatusBarMgr* sbi = reinterpret_cast<CStatusBarMgr*>(*reinterpret_cast<char**>((reinterpret_cast<char*>(lvl) + 0x2dc)));
+    CStatusBarMgr* sbi = lvl->m_guts;
     if (sbi->m_hlBusy == 0) {
-        if (*reinterpret_cast<i32*>(sbi) == 2) {
+        if (sbi->m_position == 2) {
             sbi->Reset();
         }
         if (sbi->m_activeTab != 5) {
@@ -879,7 +949,8 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         tile = 1;
     } else {
         tile = grid->m_rowInts[ty][tx * 8 - tx];
@@ -1052,7 +1123,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
         node = node->m_next;
         CGameObject* obj = cur->m_obj;
         void* init = static_cast<void*>(obj->m_7c->m_notify);
-        if (init == static_cast<void*>(&IconClassInitA) || init == static_cast<void*>(&IconClassInitB)) {
+        if (init == static_cast<void*>(&IconClassInitA)
+            || init == static_cast<void*>(&IconClassInitB)) {
             i32 ox = obj->m_screenX >> 5;
             i32 oy = obj->m_screenY >> 5;
             if (tx == ox && ty == oy) {
@@ -1092,7 +1164,8 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
             do {
                 CTmCell* c = *cell;
                 if (c != 0 && c->m_deathAnimStarted == 0) {
-                    (static_cast<CGrunt*>(c))->StartBombGruntRun(); // Recall==CGrunt::StartBombGruntRun @0x68520
+                    (static_cast<CGrunt*>(c))
+                        ->StartBombGruntRun(); // Recall==CGrunt::StartBombGruntRun @0x68520
                 }
                 cell++;
                 i--;
@@ -1135,7 +1208,9 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
             return 0;
         }
     }
-    CSerialArchive* src = static_cast<CSerialArchive*>(obj); // slots +0x2c/+0x30 ARE Read/Write (the ex-CTmOverlaySrc 13-slot view was the CSerialArchive scheme)
+    CSerialArchive* src = static_cast<CSerialArchive*>(
+        obj
+    ); // slots +0x2c/+0x30 ARE Read/Write (the ex-CTmOverlaySrc 13-slot view was the CSerialArchive scheme)
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
     // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
     char* blk0 = reinterpret_cast<char*>(&m_timerBase);
@@ -1239,10 +1314,10 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
         list++;
         k--;
     } while (k != 0);
-    void* goal = m_goal;
+    CWwdGameObjectA* goal = m_goal;
     i32 goalId = 0;
     if (goal != 0) {
-        goalId = *reinterpret_cast<i32*>((reinterpret_cast<char*>(goal) + 0x188));
+        goalId = goal->m_188;
     }
     ar->Write(&goalId, 4);
     CTmCell* ov = m_pendingFx; // the pending-fx grunt; its HUD carries the archive id
@@ -1254,15 +1329,15 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(m_274, 0x10);
     i32 cntC = m_baseList.GetCount();
     ar->Write(&cntC, 4);
-    CTmNode* rn = reinterpret_cast<CTmNode*>(m_baseList.GetHeadPosition());
+    CTmRecNode* rn = reinterpret_cast<CTmRecNode*>(m_baseList.GetHeadPosition());
     while (rn != 0) {
-        CTmNode* cur = rn;
+        CTmRecNode* cur = rn;
         rn = rn->m_next;
-        void* obj = cur->m_payload;
+        CGruntPuddle* obj = cur->m_obj;
         if (obj == 0) {
             return 0;
         }
-        i32 oid = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(reinterpret_cast<char*>(obj) + 0x10) + 0x188));
+        i32 oid = obj->m_object->m_188;
         Ar_WriteId(lvl->m_childGroup, oid, ar);
         ar->Write(&oid, 4);
     }
@@ -1396,8 +1471,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
-            void* obj = (looked != 0 && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF) ? looked : 0;
-            m_goal = static_cast<CTmGoal*>(obj); // Eh's serialize-view reinterpret of the goal slot
+            void* obj = (looked != 0
+                         && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF)
+                            ? looked
+                            : 0;
+            m_goal = static_cast<CWwdGameObjectA*>(obj);
             if (obj == 0) {
                 return 0;
             }
@@ -1416,7 +1494,8 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
             }
             // the looked-up sprite's bound logic IS the pending-fx grunt (the creator
             // downcast every m_7c->m_logic consumer does)
-            CTmCell* obj = static_cast<CTmCell*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
+            CTmCell* obj =
+                static_cast<CTmCell*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
             m_pendingFx = obj;
             if (obj == 0) {
                 return 0;
@@ -1602,7 +1681,8 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
                 type = 0;
             } else {
-                CTileImageSet* o = static_cast<CTileImageSet*>(board->m_imageSets.GetAt(cell & 0xffff));
+                CTileImageSet* o =
+                    static_cast<CTileImageSet*>(board->m_imageSets.GetAt(cell & 0xffff));
                 type = o->GetCollisionAt(0, 0);
             }
 
@@ -1631,12 +1711,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             }
 
             // type == 0x1e || type == 0x1f: rock-break marker + particle
-            CTileTriggerSwitchLogic* lo =
-                reinterpret_cast<CTileTriggerSwitchLogic*>((static_cast<CTileTriggerContainer*>(root->m_2e4))
-                    ->FindInLists12(ty + (tx << 8), 0x1a));
+            CTileTriggerSwitchLogic* lo = reinterpret_cast<CTileTriggerSwitchLogic*>(
+                (static_cast<CTileTriggerContainer*>(root->m_2e4))
+                    ->FindInLists12(ty + (tx << 8), 0x1a)
+            );
             if (lo != 0) {
                 (reinterpret_cast<CTileTriggerLogic*>(lo))->ApplyMove(type);
-                (static_cast<CTileTriggerContainer*>(root->m_2e4))->DelFromList1(static_cast<void*>(lo));
+                (static_cast<CTileTriggerContainer*>(root->m_2e4))
+                    ->DelFromList1(static_cast<void*>(lo));
             } else {
                 CLevelPlane* wg = g_gameReg->m_world->m_level->m_mainPlane;
                 i32 off = wg->m_colOffsets[ty];
@@ -1762,7 +1844,12 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 done = 1;
                                 spr->m_7c->m_notify(spr);
                                 (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                                    ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 3, 1);
+                                    ->Activate(
+                                        reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
+                                        reinterpret_cast<i32>(s_GAME_FLASH),
+                                        3,
+                                        1
+                                    );
                             }
                         } while (done == 0);
                         break;
@@ -1783,7 +1870,12 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 2, 1);
+                            ->Activate(
+                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
+                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                2,
+                                1
+                            );
                         break;
                     }
                     case 5: { // toyz
@@ -1800,7 +1892,12 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 7, 1);
+                            ->Activate(
+                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
+                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                7,
+                                1
+                            );
                         break;
                     }
                     case 4: { // freeze
@@ -1819,7 +1916,12 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         );
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH), reinterpret_cast<i32>(s_GAME_FLASH), 9, 1);
+                            ->Activate(
+                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
+                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                9,
+                                1
+                            );
                         break;
                     }
                 }
@@ -1883,7 +1985,21 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
-            if (PlaceObject(type, px, py, 0x186a0, 3, g->m_placeIndex, 0, 0, aiType, radius, 0, 0, 0)
+            if (PlaceObject(
+                    type,
+                    px,
+                    py,
+                    0x186a0,
+                    3,
+                    g->m_placeIndex,
+                    0,
+                    0,
+                    aiType,
+                    radius,
+                    0,
+                    0,
+                    0
+                )
                 != -1) {
                 ok = 1;
             }
@@ -1900,12 +2016,19 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
         if (ok) {
             g->m_38->m_flags |= 0x10000;
-            m_baseList.RemoveAt(reinterpret_cast<POSITION>(node)); // 0x1b4ac7 (retail then reads node->m_next)
+            m_baseList.RemoveAt(
+                reinterpret_cast<POSITION>(node)
+            ); // 0x1b4ac7 (retail then reads node->m_next)
             CGameObject* spr = g_gameReg->m_world->m_childGroup
                                    ->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(reinterpret_cast<i32>("GAME_LIGHTING_FLASH"), reinterpret_cast<i32>("GAME_FLASH"), 8, 1);
+                ->Activate(
+                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
+                    reinterpret_cast<i32>("GAME_FLASH"),
+                    8,
+                    1
+                );
         }
     }
     return 1;
@@ -1993,7 +2116,8 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                         if (g->m_1f8 == -1) {
                             g->m_1f8 = g->m_1f4_moveIcon;
                         }
-                        (static_cast<CGrunt*>(g))->SelectMoveIcon(t); // -> ?SelectMoveIcon@CGrunt@@ (0x57800)
+                        (static_cast<CGrunt*>(g))
+                            ->SelectMoveIcon(t); // -> ?SelectMoveIcon@CGrunt@@ (0x57800)
                         (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion4(1);
                     } else if (g->m_1f8 != -1) {
                         (static_cast<CGrunt*>(g))->SelectMoveIcon(g->m_1f8); // -> CGrunt (0x57800)
@@ -2027,7 +2151,10 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_phase != 2) {
                 LeafCue* p = 0;
-                m_world->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", reinterpret_cast<void*&>(p));
+                m_world->m_soundRegistry->m_10.Lookup(
+                    "GAME\\FINISHLEVEL",
+                    reinterpret_cast<void*&>(p)
+                );
                 m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CSndHost* h28 = m_world->m_soundRegistry;
@@ -2035,7 +2162,8 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                     p = 0;
                     h28->m_10.Lookup("GAME\\FINISHLEVEL", reinterpret_cast<void*&>(p));
                     if (p != 0 && g_sndEnabled != 0
-                        && static_cast<u32>((g_killCueClock - p->m_14)) >= static_cast<u32>(p->m_18)) {
+                        && static_cast<u32>((g_killCueClock - p->m_14))
+                               >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
@@ -2265,7 +2393,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
     }
 
     CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
-                           ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+                               ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }
@@ -2503,7 +2631,8 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     if (row == g_curPlayer) {
         m_groupFlag = 0;
     }
-    (static_cast<CPlay*>(g_gameReg->m_curState))->FlushPendingOps(); // Refresh==CPlay::FlushPendingOps @0xda2d0
+    (static_cast<CPlay*>(g_gameReg->m_curState))
+        ->FlushPendingOps(); // Refresh==CPlay::FlushPendingOps @0xda2d0
     return 1;
 }
 
@@ -2590,7 +2719,8 @@ void CTriggerMgr::DestroyAllAnims() {
         do {
             CTmCell* g = *cell;
             if (g != 0) {
-                (static_cast<CGrunt*>(g))->DestroyAnims(); // -> ?DestroyAnims@CGrunt@@QAEXXZ (0x57d80)
+                (static_cast<CGrunt*>(g))
+                    ->DestroyAnims(); // -> ?DestroyAnims@CGrunt@@QAEXXZ (0x57d80)
             }
             cell++;
             i--;
@@ -2598,16 +2728,18 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+    CDDrawGroupNode* node =
+        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
-        CTmCell* obj = reinterpret_cast<CTmCell*>(node->m_obj);
+        CGameObject* obj = node->m_obj;
         node = node->m_next;
         if (obj != 0) {
-            char* desc = *reinterpret_cast<char**>((reinterpret_cast<char*>(obj) + 0x7c));
+            AnimWorkerObj* desc = obj->m_7c;
+            // the grunt-notify stamp: workers bound to grunt logic carry
+            // CGrunt::ReadConfigFromButeMgr as their raw notify fn (bit-compare)
             void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;
-            if (*reinterpret_cast<void**>((desc + 0x10)) == *reinterpret_cast<void**>(&tag)) {
-                char* tgt = *reinterpret_cast<char**>((desc + 0x18));
-                *reinterpret_cast<i32*>((tgt + 0x200)) = 0;
+            if (*reinterpret_cast<void**>(&desc->m_notify) == *reinterpret_cast<void**>(&tag)) {
+                (static_cast<CGrunt*>(desc->m_logic))->m_neighborCol = 0;
             }
         }
     }
@@ -2622,14 +2754,14 @@ void CTriggerMgr::DestroyAllAnims() {
         ch1->StopAndRewind();
         m_teleportLoop = 0;
     }
-    void* state = g_gameReg->PickPausedThenPlayState();
+    CState* state = g_gameReg->PickPausedThenPlayState();
     if (state != 0) {
-        char* sub = *reinterpret_cast<char**>((reinterpret_cast<char*>(state) + 0x2dc));
+        CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_guts;
         if (sub != 0) {
-            DirectSoundMgr* ch2 = *reinterpret_cast<DirectSoundMgr**>((sub + 0x618));
+            DirectSoundMgr* ch2 = sub->m_destructButton;
             if (ch2 != 0) {
                 ch2->StopAndRewind();
-                *reinterpret_cast<DirectSoundMgr**>((sub + 0x618)) = 0;
+                sub->m_destructButton = 0;
             }
         }
     }
@@ -2668,7 +2800,8 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
-    if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) { // -> ?CanShowStamina@CGrunt@@ (0x514a0)
+    if ((static_cast<CGrunt*>(cell))->CanShowStamina()
+        == 0) { // -> ?CanShowStamina@CGrunt@@ (0x514a0)
         OverlayTick();
         return 1;
     }

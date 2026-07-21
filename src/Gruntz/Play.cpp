@@ -19,6 +19,7 @@
 #include <Image/ImageSet.h> // the REAL CImageSet (m_grid's SetAllTypes/SetAllFormats frame walkers)
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/CheatMgr.h> // CCheatMgr (the m_124 cheat-used latch)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress)
 #include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (HandleMousePress tab cue)
@@ -512,9 +513,8 @@ i32 CPlay::Render() {
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
                 CopyRect(
                     &m_hudRect,
-                    reinterpret_cast<const RECT*>(
-                        (reinterpret_cast<char*>(g_gameReg->m_world) + 0x24)
-                    )
+                    // the WIP path reads the 4 dwords AT &m_level as a rect (retail quirk)
+                    reinterpret_cast<const RECT*>(&g_gameReg->m_world->m_level)
                 );
                 Eng_HudDraw(g_gameReg->m_world, &m_hudRect, 1);
             }
@@ -753,14 +753,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    // clear the 4 score/team slots at +0x384 (-4 .. +28, two dwords each)
+    // reset the 4 fx-spawn anchors (m_x then m_y per slot - retail's p[-1]/p[0] pair)
     {
-        i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(self) + 0x388));
+        CPlay::Anchor* p = self->m_anchors;
         i32 n = 4;
         do {
-            p[-1] = -1;
-            p[0] = -1;
-            p += 2;
+            p->m_x = -1;
+            p->m_y = -1;
+            p++;
         } while (--n);
     }
 
@@ -806,8 +806,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     gameReg->m_scoreHud->Init();
-    (reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(gameReg->m_cmdSubMgr) + 0x1c)))
-        ->RemoveAll();
+    gameReg->m_cmdSubMgr->m_1c.RemoveAll();
     gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
     self->m_1bc = 0;
@@ -834,7 +833,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == 0) {
                 goto fail0;
             }
-            char* p = reinterpret_cast<char*>(desc) + 0x10;
+            char* p = static_cast<char*>(desc) + 0x10; // the record's +0x10 name text
             char c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
@@ -865,7 +864,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == 0) {
                 goto fail0;
             }
-            char* p = reinterpret_cast<char*>(desc) + 0x10;
+            char* p = static_cast<char*>(desc) + 0x10; // the record's +0x10 name text
             char c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
@@ -968,7 +967,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
     self->m_2c = 0;
     {
-        i32* z = reinterpret_cast<i32*>((reinterpret_cast<char*>(nameBuf) + 0x20));
+        i32* z = reinterpret_cast<i32*>(nameBuf + 0x20); // scratch tail of the local buffer
         i32 n = 0x25;
         while (n--) {
             *z++ = 0;
@@ -1224,7 +1223,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             // load the level map + the four map sub-steps
             if (LoadWarlordSprites(
                     reinterpret_cast<i32>(savedThis),
-                    reinterpret_cast<i32*>((reinterpret_cast<char*>(nameBuf) + 0x20))
+                    reinterpret_cast<i32*>(nameBuf + 0x20)
                 )                                                        /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
@@ -1288,7 +1287,7 @@ okContinue:
             EngStr_DrawText(
                 self->m_world,
                 reinterpret_cast<i32>(rect),
-                reinterpret_cast<i32>((reinterpret_cast<char*>(nameBuf) + 0x4)),
+                reinterpret_cast<i32>(nameBuf + 0x4),
                 0x78,
                 1,
                 0xff,
@@ -2722,7 +2721,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->m_cmdGrid;
     if (g->m_goal != 0) {
-        g->m_goal->m_8 |= 0x10000;
+        g->m_goal->m_flags |= 0x10000;
         g->m_goal = 0;
     }
     g->m_armed = 0;
@@ -3103,12 +3102,12 @@ i32 CPlay::ClearPlacedObjects() {
         while (i < rec->GetSize()) {
             CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            i32* cellObj = 0;
+            CGameObject* cellObj = 0;
             if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_height)) {
                 i32 stride = obj->m_0 * 7;
                 i32* row = grid->m_rowInts[obj->m_4];
-                cellObj = reinterpret_cast<i32*>(row[stride + 2]);
+                cellObj = reinterpret_cast<CGameObject*>(row[stride + 2]);
             }
             if (cellObj == 0) {
                 restart = 1;
@@ -3118,9 +3117,9 @@ i32 CPlay::ClearPlacedObjects() {
             // The factory's embedded +0x48 key->object map, reached as the real
             // MFC CMapPtrToPtr (the documented SpriteFactory.h consumer pattern).
             CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
-            i32* result = cellObj;
+            CGameObject* result = cellObj;
             if (map->Lookup(cellObj, out)) {
-                result = static_cast<i32*>(out);
+                result = static_cast<CGameObject*>(out);
             }
             if (result == 0) {
                 // cell vacated: clear the cell's occupant + flag bit and unlink.
@@ -3141,7 +3140,7 @@ i32 CPlay::ClearPlacedObjects() {
                 g_coordPool.m_freeHead = node;
                 return -1;
             }
-            if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(result) + 0x124)) != 0x14) {
+            if (result->m_124 != 0x14) {
                 restart = 1;
             }
             ++i;
@@ -4470,7 +4469,7 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
         m_guts->ClearStat(idx);
         CTriggerMgr* w = m_mgr->m_cmdGrid;
         if (w->m_goal != 0) {
-            w->m_goal->m_8 |= 0x10000;
+            w->m_goal->m_flags |= 0x10000;
             w->m_goal = 0;
         }
         w->m_armed = 0;
@@ -5941,19 +5940,13 @@ i32 CPlay::ResetPlayState() {
     }
     if (m_mgr->m_134 == 1) {
         CGruntzMgr* reg = g_gameReg;
-        // +0xc8 holds a buffer whose [-8] header word gates the single-player save
-        // (same node-header idiom LoadByMode probes; identity unrecovered).
-        if (*reinterpret_cast<i32*>(
-                (*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0xc8) - 8)
-            )
-            == 0) {
+        // the world-file CString's length (retail inlines GetLength = the [-8]
+        // CStringData nDataLength read; +0xc8 IS m_strWorldFile).
+        if (reg->m_strWorldFile.GetLength() == 0) {
             m_mgr->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
-            // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
-            if (*reinterpret_cast<i32*>(
-                    (*reinterpret_cast<char**>(reinterpret_cast<char*>(reg) + 0x44) + 0x124)
-                )
-                == 0) {
+            // the cheat gate: m_cheatMgr's documented m_124 "a cheat was used" latch.
+            if (reg->m_cheatMgr->m_124 == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
                     (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
@@ -5980,9 +5973,8 @@ i32 CPlay::ResetPlayState() {
     if (!PrepareReset()) {
         return 0;
     }
-    for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(g_gameReg) + 0x188 + off)))
-            ->Method_025c20();
+    for (i32 i = 0; i < 4; i++) {
+        g_gameReg->m_options[i].m_038.Method_025c20();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
@@ -6110,11 +6102,9 @@ void CPlay::FreeListTeardown() {
         }
     }
     m_488.SetSize(0, -1); // CPtrArray::SetSize @0x1b52e8
-    for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(m_mgr) + 0x188 + off)))
-            ->FreeArrays();
-        (reinterpret_cast<CBattlezMapConfig*>((reinterpret_cast<char*>(m_mgr) + 0x188 + off)))
-            ->Clear_02ade0();
+    for (i = 0; i < 4; i++) {
+        m_mgr->m_options[i].m_038.FreeArrays();
+        m_mgr->m_options[i].m_038.Clear_02ade0();
     }
     m_49c = -1;
 }

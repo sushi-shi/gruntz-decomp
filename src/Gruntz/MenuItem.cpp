@@ -3,6 +3,7 @@
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Image/CImage.h>
+#include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the resolved m_sprite (frame strip Place indexes)
 
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
@@ -136,7 +137,7 @@ i32 CMenuItem::NotifyCmd() {
 // all canonicalize to the same pick). Logic complete; deferred to the final sweep.
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
-    void* page = m_sprite;
+    CDDrawWorker* page = static_cast<CDDrawWorker*>(m_sprite);
     if (!page) {
         return 0;
     }
@@ -149,20 +150,25 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
         px = y;
     }
     i32 idx = m_state;
-    CMenuItemPlacer* row;
-    if (idx >= *reinterpret_cast<i32*>((reinterpret_cast<char*>(page) + 0x64)) && idx <= *reinterpret_cast<i32*>((reinterpret_cast<char*>(page) + 0x68))) {
-        row = (static_cast<CMenuItemPlacer**>((*reinterpret_cast<void**>((reinterpret_cast<char*>(page) + 0x14)))))[idx];
+    CImage* row;
+    if (idx >= page->m_minIndex && idx <= page->m_maxIndex) {
+        row = static_cast<CImage*>(page->m_items.GetAt(idx));
     } else {
         row = 0;
     }
     if (!row) {
         return 0;
     }
-    (reinterpret_cast<CImage*>(row))->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(py), reinterpret_cast<void*>(px), static_cast<void*>(0));
-    m_hitLeft = py - *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x18));
-    m_hitRight = py + *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x18));
-    m_hitTop = px - *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x1c));
-    m_hitBottom = px + *reinterpret_cast<i32*>((reinterpret_cast<char*>(row) + 0x1c));
+    row->RenderFrame(
+        reinterpret_cast<void*>(ctx),
+        reinterpret_cast<void*>(py),
+        reinterpret_cast<void*>(px),
+        static_cast<void*>(0)
+    );
+    m_hitLeft = py - row->m_anchorX;
+    m_hitRight = py + row->m_anchorX;
+    m_hitTop = px - row->m_anchorY;
+    m_hitBottom = px + row->m_anchorY;
     return 1;
 }
 RVA(0x00185690, 0x25)
@@ -267,7 +273,12 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     if (!f) {
         return 0;
     }
-    f->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(py), reinterpret_cast<void*>(px), 0);
+    f->RenderFrame(
+        reinterpret_cast<void*>(ctx),
+        reinterpret_cast<void*>(py),
+        reinterpret_cast<void*>(px),
+        0
+    );
     m_hitLeft = py - f->m_anchorX;
     m_hitRight = py + f->m_anchorX;
     m_hitTop = px - f->m_anchorY;

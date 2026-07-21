@@ -18,14 +18,14 @@
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
 #include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (the local dup class is gone)
-#include <Gruntz/GruntPuddle.h>    // CGruntPuddle (the m_baseList spawn-candidate element)
-#include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
+#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (the local dup class is gone)
+#include <Gruntz/GruntPuddle.h>       // CGruntPuddle (the m_baseList spawn-candidate element)
+#include <Gruntz/MapMgr.h>            // CBrickzGrid == CMapMgr (the board / tile grid)
 #include <DDrawMgr/DDrawChildGroup.h> // the level's game-object collection (ex CQueueDrainHost view)
-#include <Wap32/zBitVec.h>         // zErrHandling (the zvec error-report target)
+#include <Wap32/zBitVec.h>            // zErrHandling (the zvec error-report target)
 #include <Gruntz/ActReg.h>
-#include <Gruntz/LevelInfo.h>      // the canonical CLevelInfo (LoadConfig arg1)
-#include <Bute/ButeMgr.h>          // CButeMgr (LoadConfig reads the g_buteMgr singleton)
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg1)
+#include <Bute/ButeMgr.h>     // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
@@ -181,7 +181,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != 0;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateGruntCreationPoint) && cur->m_124 == id) {
+        if (cur->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateGruntCreationPoint)
+            && cur->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -198,7 +199,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     and stop (fall straight into loop 3). ---
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != 0;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateExitTrigger) && cur2->m_124 == id) {
+        if (cur2->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateExitTrigger)
+            && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
             break;
@@ -209,7 +211,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != 0;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateWayPoint) && cur3->m_124 == id) {
+        if (cur3->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateWayPoint)
+            && cur3->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -233,19 +236,27 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
         case 1: { // Normal
             i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
-            m_gruntCreationTime =
-                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale)));
-            m_resourceCreationTime =
-                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale)));
+            m_gruntCreationTime = static_cast<i32>(
+                (static_cast<double>(r)
+                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+            );
+            m_resourceCreationTime = static_cast<i32>(
+                (static_cast<double>(r)
+                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+            );
             break;
         }
         case 2: { // Hard
             i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
-            m_gruntCreationTime =
-                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale)));
-            m_resourceCreationTime =
-                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale)));
+            m_gruntCreationTime = static_cast<i32>(
+                (static_cast<double>(r)
+                 * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale))
+            );
+            m_resourceCreationTime = static_cast<i32>(
+                (static_cast<double>(r)
+                 * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale))
+            );
             break;
         }
         default:
@@ -457,31 +468,62 @@ i32 CBattlezMapConfig::Method_025d90() {
                 }
                 i32 idx = reinterpret_cast<i32>(unit->m_objAux->m_1c);
                 i32 eq;
-                eq = (strcmp((*g_typeColl.GetNameRecord(reinterpret_cast<void*>((idx)))), "I") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord(reinterpret_cast<void*>((idx)))), "I") == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "G"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "L"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "P") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "P"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "J") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "J"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "C") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "C"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "R") == 0);
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "R"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
@@ -567,7 +609,9 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         cand = cands[i];
         i32 usable = 1;
         if (cand != 0) {
-            i32* tilePtr = reinterpret_cast<i32*>(&(static_cast<BrickzCell*>((m_board)->m_rows[cand->m_y]))[cand->m_x]);
+            i32* tilePtr = reinterpret_cast<i32*>(
+                &(static_cast<BrickzCell*>((m_board)->m_rows[cand->m_y]))[cand->m_x]
+            );
             for (i32 t = 0; t < 7; t++) {
                 tileRec[t] = tilePtr[t];
             }
@@ -590,7 +634,8 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
     }
     Coord screen;
-    m_ctx->m_world->m_level->m_mainPlane->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
+    m_ctx->m_world->m_level->m_mainPlane
+        ->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
         cell = m_ctx->m_cmdGrid->ProbeCell(
@@ -634,8 +679,10 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         r2++;
     }
-    i32 budget = static_cast<i32>((static_cast<double>(m_ctx->m_options[m_curCell].m_comboSel)
-                       * static_cast<double>(m_budgetMul) * g_diffScale));
+    i32 budget = static_cast<i32>(
+        (static_cast<double>(m_ctx->m_options[m_curCell].m_comboSel)
+         * static_cast<double>(m_budgetMul) * g_diffScale)
+    );
     if (slot38 >= m_spawnPct || freeCount >= budget) {
         unit->m_2d8 = 4;
     } else {
@@ -723,8 +770,10 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
 RVA(0x00029a80, 0x29)
 i32 CUserLogic::IsAtSavedScreenPos() {
     CWwdGameObjectA* o = m_object;
-    i32 sx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x17c));
-    if (o->m_screenX == sx && o->m_screenY == *reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 0x180))) {
+    // every caller is a grunt; the saved pos lives in the CGrunt spine (+0x17c/+0x180)
+    CGrunt* g = static_cast<CGrunt*>(this);
+    i32 sx = g->m_lastTilePxX;
+    if (o->m_screenX == sx && o->m_screenY == g->m_lastTilePxY) {
         return 1;
     }
     return 0;
@@ -768,7 +817,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         CBrickzGrid* board = m_board;
         // tile0: is the unit's own coord cell blocked (low flag byte == 1)?
         i32 tile0;
-        if (static_cast<u32>(ux) < static_cast<u32>(board->m_width) && static_cast<u32>(uy) < static_cast<u32>(board->m_height)) {
+        if (static_cast<u32>(ux) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(uy) < static_cast<u32>(board->m_height)) {
             tile0 = (static_cast<BrickzCell*>(board->m_rows[uy]))[ux].m_0;
         } else {
             tile0 = 1;
@@ -797,7 +847,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         BrickzCell scratchA;
         const BrickzCell* srcA;
-        if (static_cast<u32>(cx) < static_cast<u32>(board->m_width) && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
+        if (static_cast<u32>(cx) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
             srcA = &(static_cast<BrickzCell*>(board->m_rows[cy]))[cx];
         } else {
             memset(&scratchA, 1, sizeof(scratchA));
@@ -820,7 +871,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 sgx = pt.m_x >> 5;
         BrickzCell scratchB;
         const BrickzCell* srcB;
-        if (static_cast<u32>(sgx) < static_cast<u32>(board->m_width) && static_cast<u32>(sgy) < static_cast<u32>(board->m_height)) {
+        if (static_cast<u32>(sgx) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(sgy) < static_cast<u32>(board->m_height)) {
             srcB = &(static_cast<BrickzCell*>(board->m_rows[sgy]))[sgx];
         } else {
             memset(&scratchB, 1, sizeof(scratchB));
@@ -870,14 +922,16 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
             i32 tB;
-            if (static_cast<u32>(bx) < static_cast<u32>(board->m_width) && static_cast<u32>(by) < static_cast<u32>(board->m_height)) {
+            if (static_cast<u32>(bx) < static_cast<u32>(board->m_width)
+                && static_cast<u32>(by) < static_cast<u32>(board->m_height)) {
                 tB = (static_cast<BrickzCell*>(board->m_rows[by]))[bx].m_0;
             } else {
                 tB = 1;
             }
             if (tB & 0x20) {
                 i32 tA2;
-                if (static_cast<u32>(ax) < static_cast<u32>(board->m_width) && static_cast<u32>(ay) < static_cast<u32>(board->m_height)) {
+                if (static_cast<u32>(ax) < static_cast<u32>(board->m_width)
+                    && static_cast<u32>(ay) < static_cast<u32>(board->m_height)) {
                     tA2 = (static_cast<BrickzCell*>(board->m_rows[ay]))[ax].m_0;
                 } else {
                     tA2 = 1;
@@ -1051,7 +1105,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             if (cand->m_pending == 0) {
                 i32 ox = cand->m_tileX;
                 i32 oy = cand->m_tileY;
-                if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10) != 0) {
+                if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
+                    != 0) {
                     m_triggerMgr->ApplyTriggerB(
                         unit->m_tileOwnerHi,
                         unit->m_tileOwnerLo,
@@ -1222,7 +1277,8 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                 RECT b1;
                 static_cast<RECT*>(new (&b1) CRect(0, 0, board->m_width, board->m_height));
                 RECT b2;
-                RECT* p2 = static_cast<RECT*>(new (&b2) CRect(0, 0, board->m_width, board->m_height));
+                RECT* p2 =
+                    static_cast<RECT*>(new (&b2) CRect(0, 0, board->m_width, board->m_height));
                 RECT rc;
                 rc.left = p2->left;
                 rc.top = p2->top;
@@ -1402,23 +1458,28 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
         return 0;
     }
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "J") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "J") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "C") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "C") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "R") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "R") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -1857,7 +1918,8 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     coll->m_scanCursor = reinterpret_cast<CDDrawGroupNode*>(coll->m_list.GetHeadPosition());
     CGameObject* g = static_cast<CGameObject*>(coll->Drain_031250());
     while (g != 0) {
-        if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(Handler_0040288d) && (g->m_stateFlags & 1) == 0) {
+        if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(Handler_0040288d)
+            && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {
                 case 0x33:
@@ -1892,7 +1954,8 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         mb.right = bd->m_width;
                         mb.bottom = bd->m_height;
                         RECT tmp;
-                        RECT* p = static_cast<RECT*>(new (&tmp) CRect(0, 0, bd->m_width, bd->m_height));
+                        RECT* p =
+                            static_cast<RECT*>(new (&tmp) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT bx;
                         bx.left = p->left;
                         bx.top = p->top;
@@ -1916,7 +1979,9 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                             RECT r1;
                             static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
                             RECT r2;
-                            RECT* p2r = static_cast<RECT*>(new (&r2) CRect(0, 0, bd->m_width, bd->m_height));
+                            RECT* p2r =
+                                static_cast<RECT*>(new (&r2)
+                                                       CRect(0, 0, bd->m_width, bd->m_height));
                             RECT rc;
                             rc.left = p2r->left;
                             rc.top = p2r->top;
@@ -1965,7 +2030,8 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     }
 
 static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width) && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
         return grid->m_rows[row][col].m_0;
     }
     return 1;
@@ -2024,7 +2090,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     // destination cell = grid[gy][bx]; OOB fills the dest buffer itself (self-copy).
     BrickzCell dest;
     BrickzCell* dsrc;
-    if (static_cast<u32>(bx) < static_cast<u32>(m_board->m_width) && static_cast<u32>(gy) < static_cast<u32>(m_board->m_height)) {
+    if (static_cast<u32>(bx) < static_cast<u32>(m_board->m_width)
+        && static_cast<u32>(gy) < static_cast<u32>(m_board->m_height)) {
         dsrc = &m_board->m_rows[gy][bx];
     } else {
         memset(&dest, 1, 0x1c);
@@ -2036,7 +2103,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     // own cell = grid[fcy][fcx], the grunt's head pending coordinate.
     BrickzCell own;
     BrickzCell* osrc;
-    if (static_cast<u32>(fcx) < static_cast<u32>(m_board->m_width) && static_cast<u32>(fcy) < static_cast<u32>(m_board->m_height)) {
+    if (static_cast<u32>(fcx) < static_cast<u32>(m_board->m_width)
+        && static_cast<u32>(fcy) < static_cast<u32>(m_board->m_height)) {
         osrc = &m_board->m_rows[fcy][fcx];
     } else {
         memset(&own, 1, 0x1c);
@@ -2077,7 +2145,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         tmp.top = corners.top;
         tmp.right = corners.right;
         tmp.bottom = corners.bottom;
-        if (!IntersectRect(&m_board->m_bounds, static_cast<RECT*>(&tmp), static_cast<RECT*>(&corners))) {
+        if (!IntersectRect(
+                &m_board->m_bounds,
+                static_cast<RECT*>(&tmp),
+                static_cast<RECT*>(&corners)
+            )) {
             m_board->m_bounds = tmp;
         }
         m_board->m_gridW = m_board->m_bounds.right - m_board->m_bounds.left;
@@ -2156,7 +2228,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             // t == 0x11: scan the 3x3 neighbourhood for the first in-bounds cell
             for (i32 row = fcy - 1; row < fcy + 2; row++) {
                 for (i32 col = fcx - 1; col < fcx + 2; col++) {
-                    if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width) && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
+                    if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
+                        && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
                         i32 cf = arrCell(m_board, col, row);
                         if (cf & 0x939) {
                             return 1;
@@ -2222,7 +2295,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            (static_cast<CTileTriggerContainer*>(m_cellQuery))->SetCell(fcx, fcy, m_curCell);
+                            (static_cast<CTileTriggerContainer*>(m_cellQuery))
+                                ->SetCell(fcx, fcy, m_curCell);
                         }
                     }
                 }
@@ -2287,7 +2361,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 ox = g->m_object->m_screenX >> 5;
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
-        if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width) || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
+        if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
+            || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
             return 1;
         }
         i32 c0 = arrCell(m_board, col, row);
@@ -2332,7 +2407,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
     }
     for (;;) {
         i32 tileOff = ((col * 7) << 2);
-        i32 word = *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff));
+        i32 word =
+            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff));
         if (word & 0x8000) {
             CPtrList list(10);
             CGameObject* lvl = (reinterpret_cast<CGrunt*>(a4))->m_object;
@@ -2370,7 +2446,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 if (cell == 0) {
                     break;
                 }
-                if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18)) != 0) {
+                if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18))
+                    != 0) {
                     break;
                 }
                 CPtrList list2(10);
@@ -2408,7 +2485,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
             i32 id = *static_cast<i32*>(cell);
             i32 special = 0;
-            i32 occ = *reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18));
+            i32 occ =
+                *reinterpret_cast<i32*>((reinterpret_cast<char*>(cell) + m_curCell * 4 + 0x18));
             if (occ == 0) {
                 special = 1;
             } else if (id == 0x132 || id == 0x134 || id == 0x137 || id == 0x144 || id == 0x146
@@ -2451,7 +2529,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         // Mark this tile visited, then recurse into the 8 neighbours. Each block:
         // in bounds + not visited (0x20000) + passable (0xc0000 set or anim 0x9a).
-        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff)) |= 0x20000;
+        *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_board->m_rows[row]) + tileOff)) |=
+            0x20000;
         i32 cm = col - 1;
         i32 cp = col + 1;
         i32 rm = row - 1;
@@ -2462,7 +2541,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-            nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cm * 7) << 2)));
+            nt =
+                reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cm, row, a5);
@@ -2470,7 +2550,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-            nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cp * 7) << 2)));
+            nt =
+                reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, cp, row, a5);
@@ -2478,7 +2559,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-            nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((col * 7) << 2)));
+            nt =
+                reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((col * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, col, rm, a5);
@@ -2486,14 +2568,16 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         }
         b = m_board;
         if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-            nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((col * 7) << 2)));
+            nt =
+                reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((col * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
                 Method_02d800(a4, col, rp, a5);
             }
         }
         b = m_board;
-        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
+        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+            && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2501,7 +2585,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+            && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2509,7 +2594,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+            && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2517,7 +2603,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
+        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+            && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2587,7 +2674,8 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         i32 col = unit->m_entrancePxX >> 5;
         i32 row = unit->m_entrancePxY >> 5;
         i32 tile0;
-        if (static_cast<u32>(col) < static_cast<u32>(board->m_width) && static_cast<u32>(row) < static_cast<u32>(board->m_height)) {
+        if (static_cast<u32>(col) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(row) < static_cast<u32>(board->m_height)) {
             tile0 = (reinterpret_cast<i32*>(board->m_rows[row]))[col * 7];
         } else {
             tile0 = 1;
@@ -2598,7 +2686,8 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
-            if (static_cast<u32>(cx) < static_cast<u32>(board->m_width) && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
+            if (static_cast<u32>(cx) < static_cast<u32>(board->m_width)
+                && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
                 tile1 = (reinterpret_cast<i32*>(board->m_rows[cy]))[cx * 7];
             } else {
                 tile1 = 1;
@@ -2720,23 +2809,28 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "C") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "C")
+                 != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "R") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "R")
+                 != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "J") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "J")
+                 != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "G") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "G")
+                 != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "L") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "L")
+                 != 0;
             if (!ne) {
                 continue;
             }
@@ -2824,7 +2918,8 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     Coord bc;
     (static_cast<CUserLogic*>(best))->GetScreenPos((&bc));
-    if (Method_0300c0(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
+    if (Method_0300c0(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1)
+        == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
         fb.left = 0;
@@ -2851,13 +2946,15 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         unit->m_254 = 0;
     }
     if (unit->m_390 != 0) {
-        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<__int64*>(&m_scratch78);
+        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime))
+                          - *reinterpret_cast<__int64*>(&m_scratch78);
         if (elapsed >= *reinterpret_cast<__int64*>(&m_scratch80)) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;
             // On-screen test against the main plane's tile origin/extent quad
             // (+0x40..+0x4c), overlaid as a RECT (the sanctioned int-quad read).
-            RECT* hit = reinterpret_cast<RECT*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
+            RECT* hit =
+                reinterpret_cast<RECT*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 (static_cast<CGruntSpawnConfig*>(static_cast<void*>(g_gameReg->m_cueSink)))
@@ -2983,8 +3080,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
             GruntCoord* c = p->m_coord;
             i32 word;
             CBrickzGrid* b = m_board;
-            if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width) && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
-                word = (reinterpret_cast<i32*>(&(static_cast<BrickzCell*>(b->m_rows[c->m_y]))[c->m_x]))[0];
+            if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
+                && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
+                word = (reinterpret_cast<i32*>(
+                    &(static_cast<BrickzCell*>(b->m_rows[c->m_y]))[c->m_x]
+                ))[0];
             } else {
                 word = 1;
             }
@@ -3010,16 +3110,22 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 bool eq;
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                    + 0x1c)))))),
+                         (*g_typeColl.GetNameRecord(
+                             reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                 (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                             )))
+                         )),
                          "I"
                      )
                      == 0);
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "G"
                          )
                          == 0);
@@ -3027,8 +3133,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "L"
                          )
                          == 0);
@@ -3036,8 +3145,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "P"
                          )
                          == 0);
@@ -3045,8 +3157,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "J"
                          )
                          == 0);
@@ -3054,8 +3169,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "C"
                          )
                          == 0);
@@ -3063,8 +3181,11 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(reinterpret_cast<void*>((*reinterpret_cast<i32*>((reinterpret_cast<char*>(cand->m_objAux)
-                                                                        + 0x1c)))))),
+                             (*g_typeColl.GetNameRecord(
+                                 reinterpret_cast<void*>((*reinterpret_cast<i32*>(
+                                     (reinterpret_cast<char*>(cand->m_objAux) + 0x1c)
+                                 )))
+                             )),
                              "R"
                          )
                          == 0);
@@ -3130,7 +3251,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                     }
                                     unit->m_31c.RemoveAll();
                                 }
-                                GruntCoordNode* p = reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+                                GruntCoordNode* p =
+                                    reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
                                 while (p != 0) {
                                     GruntCoordNode* cur = p;
                                     p = p->m_next;
@@ -3199,7 +3321,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     // setcc'd bool (the `bool eq` local, not the inline neg/sbb form) - see
     // docs/patterns/strcmp-eq-bool-local-setcc.md.
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
     if (eq) {
         return 0;
     }
@@ -3731,7 +3854,8 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
                 i32 x = c->m_x;
                 i32 y = c->m_y;
                 i32 tile;
-                if (static_cast<u32>(x) < static_cast<u32>(board->m_width) && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
+                if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
+                    && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
                     tile = (reinterpret_cast<i32*>(board->m_rows[y]))[x * 7];
                 } else {
                     tile = 1;
@@ -3936,41 +4060,42 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     // The cell record for (col,row): a direct table slot when its tile marker is
     // 0x67, else resolved through QueryA on the packed coordinate.
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
-    char* cell;
-    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(tile) + 0x10)) == 0x67) {
-        cell = reinterpret_cast<char*>(m_ctx->m_tileGrid); // ctx+0x70 IS the board (== this->m_board)
+    CTileTriggerLogic* cell;
+    if (tile->m_10 == 0x67) {
+        // ctx+0x70 IS the board (== this->m_board); walked below as the m_block
+        // slots - an unproven aliasing decode, kept flagged. @identity-TODO
+        cell = reinterpret_cast<CTileTriggerLogic*>(m_ctx->m_tileGrid);
     } else {
-        cell = reinterpret_cast<char*>((reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0));
+        cell =
+            (reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0);
     }
     i32 bestX = col;
     i32 bestY = col;
     i32 bestDist = 0x7fffffff;
     if (cell != 0) {
         // First pass: any sub-cell that already collides with `unit` aborts.
-        char** scan = reinterpret_cast<char**>((cell + 0x3c));
-        while (static_cast<i32>(((reinterpret_cast<char*>(scan) - cell - 0x3c) & ~3)) < 0x60) {
-            void* node = *scan;
+        i32 s;
+        for (s = 0; s < 24; s++) {
+            i32 node = cell->m_block[s];
             if (node != 0) {
-                void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
+                CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, 0);
                 if (rec != 0) {
-                    i32 cx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0x8));
-                    i32 cy = *reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0xc));
+                    i32 cx = rec->m_08;    // the record's tile coords (the m_tileX/m_tileY
+                    i32 cy = rec->m_key0c; // slots of the logic-record family)
                     if (Method_0305b0(unitArg, cx, cy) != 0) {
                         return 1;
                     }
                 }
             }
-            scan++;
         }
         // Second pass: keep the nearest non-colliding sub-cell.
-        char** scan2 = reinterpret_cast<char**>((cell + 0x3c));
-        while (static_cast<i32>(((reinterpret_cast<char*>(scan2) - cell - 0x3c) & ~3)) < 0x60) {
-            void* node = *scan2;
+        for (s = 0; s < 24; s++) {
+            i32 node = cell->m_block[s];
             if (node != 0) {
-                void* rec = m_cellQuery->FindChild(reinterpret_cast<i32>(node), 0);
+                CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, 0);
                 if (rec != 0) {
-                    i32 cx = *reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0x8));
-                    i32 cy = *reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0xc));
+                    i32 cx = rec->m_08;
+                    i32 cy = rec->m_key0c;
                     i32 dx = cx - goalX;
                     i32 dy = cy - goalY;
                     dx = abs(dx);
@@ -3983,7 +4108,6 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
                     }
                 }
             }
-            scan2++;
         }
     }
     if (bestDist == 0x7fffffff) {
@@ -4148,7 +4272,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(static_cast<void*>(cur->m_coord));                                           \
+                g_coordPool.Push(static_cast<void*>(cur->m_coord));                                \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll();                                                                    \
@@ -4186,7 +4310,12 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         g->GetScreenPos((&c0));
         c0.m_x >>= 5;
         c0.m_y >>= 5;
-        CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
+        CGrunt* nb = QueryTile4098(
+            c0.m_x,
+            c0.m_y,
+            static_cast<i32>((static_cast<u32>(W) / 3)),
+            static_cast<i32>((static_cast<u32>(H) / 3))
+        );
         if (nb != 0) {
             Coord c1;
             nb->GetScreenPos((&c1));
@@ -4239,7 +4368,12 @@ inflight: {
     g->GetScreenPos((&c0));
     c0.m_x >>= 5;
     c0.m_y >>= 5;
-    CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
+    CGrunt* nb = QueryTile4098(
+        c0.m_x,
+        c0.m_y,
+        static_cast<i32>((static_cast<u32>(W) / 3)),
+        static_cast<i32>((static_cast<u32>(H) / 3))
+    );
 
     if (cur == 0) {
         goto L_clear;
@@ -4595,7 +4729,8 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             i32 x, y;
             if (*reinterpret_cast<i32*>((edge + 0xf8)) != 0) {
                 Coord out;
-                Coord* r = static_cast<Coord*>(Method_030f20(&out, reinterpret_cast<i32>(unit), band));
+                Coord* r =
+                    static_cast<Coord*>(Method_030f20(&out, reinterpret_cast<i32>(unit), band));
                 x = r->m_x;
                 y = r->m_y;
             } else {
@@ -4840,15 +4975,18 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     // result is materialized as a bool (setcc form) - see
     // docs/patterns/return-bool-via-local-setcc.md.
     i32 eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
+    eq =
+        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
     if (eq) {
         return 0;
     }

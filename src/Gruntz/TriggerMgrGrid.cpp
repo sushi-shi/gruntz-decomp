@@ -469,14 +469,14 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     static_cast<void>(g);
-    char* plane = reinterpret_cast<char*>(g_gameReg->m_curState);
-    char* view = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_world) + 0x24));
+    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+    CGameLevel* view = m_world->m_level;
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(view + 0x5c) + 0x30));
+        i32 w = view->m_mainPlane->m_wrapW;
         if (x >= w) {
             x = w - 1;
         }
@@ -484,22 +484,25 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(view + 0x5c) + 0x34));
+        i32 h = view->m_mainPlane->m_wrapH;
         if (y >= h) {
             y = h - 1;
         }
     }
-    char* scroll = *reinterpret_cast<char**>((view + 0x5c));
-    i32 sh = *reinterpret_cast<i32*>((scroll + 0x8c));
-    i32 sw = *reinterpret_cast<i32*>((scroll + 0x90));
-    i32 cell = *reinterpret_cast<i32*>(*reinterpret_cast<char**>(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
-    i32 attr = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(scroll + 0x20) + cell * 4));
+    CLevelPlane* scroll = view->m_mainPlane;
+    i32 sh = scroll->m_shiftX;
+    i32 sw = scroll->m_shiftY;
+    i32 tx = x >> sh;
+    i32 ty = y >> sw;
+    i32 subX = x - (tx << sh);
+    i32 subY = y - (ty << sw);
+    i32 attr = scroll->m_tileGrid[scroll->m_colOffsets[ty] + tx];
     i32 kind;
     if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
         kind = 0;
     } else {
-        CUserLogic* logic = static_cast<CUserLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(view + 0x4c) + (attr & 0xffff) * 4)));
-        kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
+        CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
+        kind = ts->GetCollisionAt(subX, subY); // slot 8 (+0x20)
     }
     i32 op = kind - 0x34;
     if (static_cast<u32>(op) > 0xe) {
@@ -507,8 +510,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     }
     i32 cx = x;
     i32 cy = y;
-    CTileTriggerSwitchLogic* obj =
-        static_cast<CTileTriggerSwitchLogic*>(*reinterpret_cast<void**>((*reinterpret_cast<char**>(plane + 0x2e4) + 0)));
+    // retail: per-case `m_beginMarker->FindChild(((x>>5)<<8) + (y>>5), K)` - K=7 for
+    // this (the one modeled) case; the other cases of the ladder use their own K.
+    CTileTriggerSwitchLogic* obj = state->m_beginMarker->FindChild(((cx >> 5) << 8) + (cy >> 5), 7);
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
@@ -632,7 +636,10 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_objAux->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
+    char* name = *static_cast<CActReg&>(g_typeColl)
+                      .ResolveSlot_46e0c0(
+                          reinterpret_cast<i32>(cell->m_objAux->m_1c)
+                      ); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTileX;
         i32 py = cell->m_moveTileY;
@@ -663,7 +670,10 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (cell == 0 || outCol != g_curPlayer) {
         return;
     }
-    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_objAux->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
+    char* name = *static_cast<CActReg&>(g_typeColl)
+                      .ResolveSlot_46e0c0(
+                          reinterpret_cast<i32>(cell->m_objAux->m_1c)
+                      ); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;
@@ -680,7 +690,8 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
+    i64 diff =
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
     if (diff < 0) {
         diff = 0;
     }
