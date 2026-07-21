@@ -813,7 +813,14 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
 // 918-byte two-jump-table dispatch wall (outer remap switch on m_actionCode + inner
 // brick-color switch on the derived effect code, four shl-5/add-0x10 coordinate
 // scalings under heavy register pressure ebp=this/ebx=arg/esi=newCode/edi=effect).
-// Logic complete + decoded; byte-match deferred to the final sweep.
+// Logic complete + decoded. objdiff cannot align across the two INLINE .text jump
+// tables, so its fuzzy% is unreliable here (drops on unrelated outer-switch regalloc
+// churn while MAX preserves best-ever); byte-match deferred to the final sweep.
+// NOTE 2026-07-21: the inner color mapping was a proven-WRONG guess and is now fixed
+// against the retail byte map @0x5132f8 / jump table @0x5132e4: effect 0x132->RED,
+// 0x138->BLUE, 0x13e->GOLD, 0x144->BLACK, else->GAME_BRICKBREAK. The recompiled inner
+// dispatch is byte-identical to retail (`lea eax,[edi-0x132]; cmp 0x12; ja; byte-map
+// jump`); the current-% dip vs the old guess is the objdiff inline-jump-table artifact.
 //
 // Outer switch(m_actionCode): derive `effect` (edi, 0=none) and the canonical re-fire code
 // `newCode` (esi). First-half: fire the per-effect game action on the brick arg.
@@ -974,26 +981,27 @@ i32 CTileActionEvent::Process(i32 arg) {
                                ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
-            // Inner dense byte-mapped switch on (effect - 0x132) -> the colored break
-            // animation; effect 0x138->RED, 0x13d->BLUE, 0x142->GOLD, the remaining
-            // mapped slots->BLACK, anything off-table->default GAME_BRICKBREAK (which
-            // also sets the +0x8 uncached flag). The exact slot-0 (effect 0x132) and
-            // 0x144 color assignments are the deferred byte-match residual.
+            // Inner dense byte-mapped switch on (effect - 0x132), span 0x12 (MSVC5
+            // emits `lea eax,[edi-0x132]; cmp eax,0x12; ja default; mov dl,[bytemap];
+            // jmp [jumptable+dl*4]`). effect is one of the four brick "base" codes
+            // {0x132,0x138,0x13e,0x144} (set by the outer switch) -> its color break
+            // sprite; anything else -> default GAME_BRICKBREAK (which sets the +0x8
+            // uncached flag). Mapping verified against retail byte map @0x5132f8 /
+            // jump table @0x5132e4.
             switch (effect) {
-                case 0x138:
+                case 0x132:
                     spr->ApplyName("GAME_REDBRICKBREAK");
                     break;
-                case 0x13d:
+                case 0x138:
                     spr->ApplyName("GAME_BLUEBRICKBREAK");
                     break;
-                case 0x142:
+                case 0x13e:
                     spr->ApplyName("GAME_GOLDBRICKBREAK");
                     break;
+                case 0x144:
+                    spr->ApplyName("GAME_BLACKBRICKBREAK");
+                    break;
                 default:
-                    if (effect >= 0x133 && effect <= 0x144) {
-                        spr->ApplyName("GAME_BLACKBRICKBREAK");
-                        break;
-                    }
                     spr->ApplyName("GAME_BRICKBREAK");
                     if (spr->m_layer == 0) {
                         spr->m_flags |= 0x10000;
