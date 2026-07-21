@@ -92,10 +92,10 @@ public:
         return static_cast<CSymParser*>(m_symParser);
     }
     CAttractVideo* video() {
-        return reinterpret_cast<CAttractVideo*>(m_4);
+        return reinterpret_cast<CAttractVideo*>(m_mgr);
     }
     CGruntzMgr* owner() {
-        return static_cast<CGruntzMgr*>(m_4);
+        return static_cast<CGruntzMgr*>(m_mgr);
     }
     CSymTab* attractState() {
         return (m_2c);

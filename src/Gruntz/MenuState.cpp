@@ -34,7 +34,7 @@ extern "C" {
 }
 
 static inline CGruntzMgr* Owner(CState* s) {
-    return s->m_4;
+    return s->m_mgr;
 }
 
 void operator delete(void*);
@@ -69,7 +69,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (!CState::LoadGameAssetNamespaces(a2, a3, a3)) {
         return 0;
     }
-    m_4->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(0);
     m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_MENU"));
     if (m_2c == 0) {
         return 0;
@@ -110,7 +110,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
     // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
     // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
-    if (!m_1b4->InitRegion(m_c, m_4->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_1b4->InitRegion(m_c, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 

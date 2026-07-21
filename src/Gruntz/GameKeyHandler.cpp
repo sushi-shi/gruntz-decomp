@@ -71,11 +71,11 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     if (self->m_paused != 0) {
         return 1;
     }
-    if (self->m_4->m_frameGate != 0) {
+    if (self->m_mgr->m_frameGate != 0) {
         return 1;
     }
 
-    CGruntzMgr* host = self->m_4;
+    CGruntzMgr* host = self->m_mgr;
     CStatusBarMgr* level = self->m_guts;
     i32 key = vk;
 
@@ -251,12 +251,12 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if ((dev->m_18 & 0x20) == 0) {
             return 1;
         }
-        CGruntzMgr* h = self->m_4;
+        CGruntzMgr* h = self->m_mgr;
         if (h->m_frameGate != 0) {
             h->m_frameGate ^= 1;
-            self->m_4->FinishLevel(h->m_frameGate, 1);
+            self->m_mgr->FinishLevel(h->m_frameGate, 1);
         }
-        CSndHost* s = self->m_4->m_world->m_soundRegistry;
+        CSndHost* s = self->m_mgr->m_world->m_soundRegistry;
         if (s->m_emitGate == 0) {
             void* found = 0;
             s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
@@ -526,7 +526,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (g_gameReg->m_cmdGrid->m_rowCount[g_curPlayer] >= a->m_comboSel) {
             return 1;
         }
-        CGruntzMgr* h = self->m_4;
+        CGruntzMgr* h = self->m_mgr;
         i32 my = self->m_cursorY;
         LevelCoordRect* r = &h->m_world->m_level->m_planeCtx;
         i32 x0 = r->left;
@@ -550,7 +550,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (g_gameReg->m_134 == 2) {
             return 1;
         }
-        CGruntzMgr* h = self->m_4;
+        CGruntzMgr* h = self->m_mgr;
         i32 mx = self->m_cursorX;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_planeCtx;
@@ -571,7 +571,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (g_explosionz == 0) {
             return 1;
         }
-        CGruntzMgr* h = self->m_4;
+        CGruntzMgr* h = self->m_mgr;
         i32 my = self->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CPlaneRender* g = q->m_mainPlane;

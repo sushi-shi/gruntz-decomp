@@ -561,7 +561,7 @@ i32 CMulti::Vslot09(i32 arg) {
     if (CPlay::Vslot09(arg) == 0) { // qualified: the BASE leg, not this override
         return 0;
     }
-    m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
+    m_mgr->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;
@@ -601,7 +601,7 @@ void ShowHudMessage(
 // /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_4->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_mgr->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -613,14 +613,14 @@ i32 CMulti::FrameSlot28(i32 arg) {
     m_c->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
-    r.right = m_4->m_modeW;
-    r.bottom = m_4->m_modeH;
+    r.right = m_mgr->m_modeW;
+    r.bottom = m_mgr->m_modeH;
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
-    if (m_4 && m_4->m_cmdGrid) {
-        m_4->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
+    if (m_mgr && m_mgr->m_cmdGrid) {
+        m_mgr->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
     }
     return 1;
 }
@@ -1573,12 +1573,12 @@ void CMulti::ApplyCmdDelayDefaults() {
 // @rva-symbol: ??1CMultiStartDlg@@UAE@XZ 0x000b8960 0x59
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
-    CMultiStartDlg dlg(m_4, 0);
-    i32 r = m_4->ExitModalUI(&dlg, 0);
+    CMultiStartDlg dlg(m_mgr, 0);
+    i32 r = m_mgr->ExitModalUI(&dlg, 0);
     g_sharedFlag = 0;
     if (r != 1) {
         if (m_isHost != 0) {
-            GruntzPlayer* rec = m_4->FindOptionsSlot(m_hostIndex);
+            GruntzPlayer* rec = m_mgr->FindOptionsSlot(m_hostIndex);
             if (rec == 0) {
                 return 0;
             }

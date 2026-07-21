@@ -868,7 +868,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         obj->m_submitted = 1; // "submitted" latch
         // m_owner->m_4 is the game-mgr (CGruntzMgr); its +0x6c command manager is the
         // real CGruntzCmdMgr member m_cmdSubMgr - no cross-cast to a net-facet view.
-        m_owner->m_4->m_cmdSubMgr->EnqueueCommand(0, obj);
+        m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }

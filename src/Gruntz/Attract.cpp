@@ -476,15 +476,15 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x000fac70, 0x4c)
 i32 CState::Vslot07() {
-    if (!m_4) {
+    if (!m_mgr) {
         return 0;
     }
-    if (!m_4->m_gameWnd) {
+    if (!m_mgr->m_gameWnd) {
         return 0;
     }
     PAINTSTRUCT ps;
-    BeginPaint(m_4->m_gameWnd->m_hwnd, &ps);
-    EndPaint(m_4->m_gameWnd->m_hwnd, &ps);
+    BeginPaint(m_mgr->m_gameWnd->m_hwnd, &ps);
+    EndPaint(m_mgr->m_gameWnd->m_hwnd, &ps);
     return 1;
 }
 

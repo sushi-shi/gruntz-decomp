@@ -114,7 +114,7 @@ i32 CPlay::PlaceStartGruntz() {
     if (list == 0) {
         return 0;
     }
-    CGruntzMgr* reg = m_4;
+    CGruntzMgr* reg = m_mgr;
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
     i32 result = 1;
     i32 counter = 0;
@@ -487,7 +487,7 @@ i32 CPlay::ValidateLevelTiles() {
             // seed the on-screen level timer from the marker's (min,sec) pair; the
             // callee is ?SetTime@CTimer@@ @0x9c090 (thunk 0x2de7) on m_frameMarker,
             // gated on the manager's m_134 mode (retail: cmp [this->m_4+0x134],2).
-            if (m_frameMarker != 0 && m_4->m_134 != 2 && g_gameReg->m_isEasyMode != 0
+            if (m_frameMarker != 0 && m_mgr->m_134 != 2 && g_gameReg->m_isEasyMode != 0
                 && g_gameReg->m_134 == ok) {
                 i32 a = obj->m_118;
                 i32 b = obj->m_114;
@@ -543,7 +543,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == reinterpret_cast<void*>(0x402a68)) {
             // ?PlacePuddle@CTriggerMgr@@ @0x7a240 (thunk 0x35fd) on the command grid
-            m_4->m_cmdGrid->PlacePuddle(obj, 0);
+            m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
         } else if (who == reinterpret_cast<void*>(0x40164f)) {
             // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_tileGrid: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
@@ -648,7 +648,7 @@ i32 CPlay::ValidateLevelTiles() {
 // no intervening call to pin the flag, so de-nesting doesn't apply). Deferred.
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
-    CGruntzMgr* w = m_4;
+    CGruntzMgr* w = m_mgr;
     i32 ex = w->m_modeW;
     i32 ey = w->m_modeH;
     CTimer* pt;
@@ -685,14 +685,14 @@ done:
     // Its real target is thunk 0x3d1e -> 0x78960 == CTriggerMgr::LoadCameraSprite (which
     // lazily re-creates the "DoNothing" camera sprite into the m_goal slot this just cleared
     // - the two halves finally read as one operation).
-    CTriggerMgr* g = m_4->m_cmdGrid;
+    CTriggerMgr* g = m_mgr->m_cmdGrid;
     CTmGoal* goal = g->m_goal;
     if (goal != 0) {
         if (goal != 0) {
             goal->m_8 |= 0x10000;
             g->m_goal = 0;
         }
-        m_4->m_cmdGrid->LoadCameraSprite();
+        m_mgr->m_cmdGrid->LoadCameraSprite();
     }
     return 1;
 }

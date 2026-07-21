@@ -128,7 +128,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             ctl = 0;
         }
         m_hitTest = ctl;
-        if (m_hitTest->Attach(m_c, m_4->m_chatLog) == 0) {
+        if (m_hitTest->Attach(m_c, m_mgr->m_chatLog) == 0) {
             if (m_hitTest) {
                 m_hitTest->Deactivate();
                 RezFree(m_hitTest);
@@ -201,8 +201,8 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;
-        if (m_4->m_114 == 0) {
-            m_4->m_saveInfoRec = 0;
+        if (m_mgr->m_114 == 0) {
+            m_mgr->m_saveInfoRec = 0;
         }
         if (!LoadImageBanks()) { // slot 29 (+0x74) virtual dispatch
             return 0;

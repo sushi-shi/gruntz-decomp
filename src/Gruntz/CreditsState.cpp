@@ -25,7 +25,7 @@
 #include <afxwin.h>
 
 static inline CGruntzMgr* Owner(CState* s) {
-    return s->m_4;
+    return s->m_mgr;
 }
 
 void operator delete(void*);
@@ -71,7 +71,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (e) {
             i32 val = e->BeginParse();
             if (val) {
-                m_4->m_sound->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
+                m_mgr->m_sound->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -83,7 +83,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (e2) {
             i32 val = e2->BeginParse();
             if (val) {
-                m_4->m_sound->CreateBank(reinterpret_cast<void*>(val), e2->m_length, "MONOLITH"); // 0x138670
+                m_mgr->m_sound->CreateBank(reinterpret_cast<void*>(val), e2->m_length, "MONOLITH"); // 0x138670
             }
         }
     }

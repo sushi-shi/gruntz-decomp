@@ -29,7 +29,7 @@ void CPlay::DrawDebugStats() {
     buf[0] = 0;
 
     if (g_debugDisplayFlags & 0x10) {
-        sprintf(scratch, "Fps = %i ", m_4->m_fps);
+        sprintf(scratch, "Fps = %i ", m_mgr->m_fps);
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x1) {

@@ -42,7 +42,7 @@ i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
 
 RVA(0x0003c030, 0x22)
 i32 CDemo::Vslot15() {
-    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     return 1;
 }
 
@@ -95,7 +95,7 @@ i32 CDemo::Render() {
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_data[i]->m_2ac & 0x100) {
-            PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             break;
         }
     }
@@ -105,7 +105,7 @@ i32 CDemo::Render() {
         m_520 -= g_frameDelta;
     }
     if (m_520 == 0) {
-        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     }
     return 1;
 }

@@ -195,7 +195,7 @@ public:
     // object: m_4->m_c is the SAME field as g_gameReg->m_c (the active-selection gate),
     // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
     // (the CGMOwner facet-view of m_4 is DISSOLVED - credits/menu reach the real CGruntzMgr).
-    CGruntzMgr* m_4;
+    CGruntzMgr* m_mgr;
     // +0x08  the level/rez symbol parser (ResolvePath @0x13c030; == mgr->m_symParser,
     // cached by LoadGameAssetNamespaces). Ex `CBankMgr*` - a shell type every consumer
     // bridged with a ((CSymParser*)m_8) cast; typed for real, the casts are gone.

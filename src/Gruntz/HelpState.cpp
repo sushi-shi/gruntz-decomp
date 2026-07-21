@@ -39,13 +39,13 @@ i32 CHelpState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (!m_2c) {
         return 0;
     }
-    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
     return 1;
 }
 
 RVA(0x00095140, 0x6e)
 i32 CHelpState::Vslot09(i32 arg) {
-    m_4->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(0);
     // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
     // the Method_158d20 call - a caching local would pin it in edi and mismatch).
     if (m_c->m_drawTarget->Method_158d20() == 0
@@ -77,7 +77,7 @@ i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_4->ReportError(0x8006, 0x445);
+            m_mgr->ReportError(0x8006, 0x445);
             return 0;
         }
     }
@@ -96,8 +96,8 @@ i32 CHelpState::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_data[i]->m_2ac & 0xffffff) {
-            PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
-            m_4->m_owner->m_running = 0;
+            PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+            m_mgr->m_owner->m_running = 0;
             return 1;
         }
     }
@@ -130,13 +130,13 @@ i32 CHelpState::Vslot06() {
 RVA(0x000953f0, 0x37)
 i32 CHelpState::Vslot0c(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
-        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     }
     return 1;
 }
 
 RVA(0x00095440, 0x24)
 i32 CHelpState::Vslot0e(i32, i32, i32) {
-    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     return 1;
 }

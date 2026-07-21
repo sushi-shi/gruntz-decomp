@@ -62,7 +62,7 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         g_bootyCheatBuilt = 1;
     }
 
-    m_4->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
+    m_mgr->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
 
     m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
     if (!m_2c) {
@@ -114,7 +114,7 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // so the callee is CGameWnd::PumpMessages - the real method of the class that actually
     // sits at that offset, already reconstructed in the `gamewnd` unit. Wrong callee AND a
     // wrong cast; naming the true owner dissolved both.
-    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 
     m_1b8 = 0;
     // The five-stage build chain - all real, rva-bound methods of THIS class now (the

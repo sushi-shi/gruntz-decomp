@@ -42,7 +42,7 @@ i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
         return 0;
     }
     SetCursor(0);
-    m_4->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(0);
 
     m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
     if (!m_2c) {
@@ -97,7 +97,7 @@ i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
-            m_4->ReportError(0x8006, 0x447);
+            m_mgr->ReportError(0x8006, 0x447);
             return 0;
         }
     }
@@ -133,8 +133,8 @@ i32 CSplashState::Render() {
         }
     }
 post:
-    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-    m_4->m_owner->m_running = 0;
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    m_mgr->m_owner->m_running = 0;
     return 1;
 }
 
@@ -161,14 +161,14 @@ i32 CSplashState::Vslot06() {
 RVA(0x000f9b40, 0x37)
 i32 CSplashState::Vslot0c(i32 code, i32) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
-        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
 }
 
 RVA(0x000f9b90, 0x24)
 i32 CSplashState::Vslot0e(i32, i32, i32) {
-    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 

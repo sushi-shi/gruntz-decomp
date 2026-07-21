@@ -48,7 +48,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     }
     m_1bc = "PREVIEW0";
     m_1c0 = 0;
-    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
     return 1;
 }
 
@@ -98,7 +98,7 @@ i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (surf == 0 || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_4->ReportError(0x8006, 0xfa0);
+            m_mgr->ReportError(0x8006, 0xfa0);
             return 0;
         }
     }
@@ -233,8 +233,8 @@ i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
     if (g_flag64c69c) {
-        m_4->DelayedQuit();
+        m_mgr->DelayedQuit();
         return;
     }
-    PostMessageA(static_cast<HWND>((m_4->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
+    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
 }

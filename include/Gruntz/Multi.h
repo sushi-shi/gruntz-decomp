@@ -108,7 +108,7 @@ public:
     // the canonical
     // EnterModalUI/RunModalDialog/... at their real rvas.
     CGruntzMgr* Mgr() {
-        return m_4;
+        return m_mgr;
     }
     // The +0x524 join/report gate IS the real small CNetMgr (the DirectPlay session
     // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as
@@ -124,7 +124,7 @@ public:
     // The game-manager (CState::m_4) as its network facet (m_wnd/m_6c/m_channels/m_38);
     // the net methods reach it as CNetGameMgr.
     CNetGameMgr* NetGameMgr() {
-        return reinterpret_cast<CNetGameMgr*>(m_4);
+        return reinterpret_cast<CNetGameMgr*>(m_mgr);
     }
     // The resync WM_COMMAND lParam latch (the inherited CState::m_levelIndex slot, role-reused).
     i32& ResyncLParam() {

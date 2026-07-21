@@ -29,7 +29,7 @@ RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the manager arrives as the slot-1 virtual's i32 arg; one cast at the seam.
     CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
-    m_4 = mgr;
+    m_mgr = mgr;
     m_symParser = mgr->m_symParser;
     m_c = mgr->m_world;
     // +0x40 SETTLED (2026-07-16): the mgr's m_faderMgr is the real CFaderMgr
@@ -76,7 +76,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).
     // Retail re-reads both through this->m_4 (spilled `this`, not the cached arg).
-    if (m_4->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_4->m_symParser)) == 0) {
+    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_mgr->m_symParser)) == 0) {
         return 0;
     }
     if (m_scratchSurface0 == 0 && m_scratchSurface1 == 0) {

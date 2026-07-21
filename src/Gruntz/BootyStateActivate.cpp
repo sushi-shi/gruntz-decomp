@@ -500,7 +500,7 @@ void CMultiBootyState::ReleaseResources() {
     // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
     // cast marks it) rather than forked into a second per-TU view of the manager.
-    (reinterpret_cast<CMoviePlayer*>(m_4->m_cueSink))->~CMoviePlayer();
+    (reinterpret_cast<CMoviePlayer*>(m_mgr->m_cueSink))->~CMoviePlayer();
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
@@ -784,7 +784,7 @@ i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_4->ReportError(0x8006, 0x459);
+            m_mgr->ReportError(0x8006, 0x459);
             return 0;
         }
     }
