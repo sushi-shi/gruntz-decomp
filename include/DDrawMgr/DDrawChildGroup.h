@@ -132,6 +132,9 @@ public:
     // +0x64  transient list walk cursor (seeded from the list head;
     // CGruntzMapMgr::LoadAttributes footprint pass @0x0810f0).
     CDDrawGroupNode* m_walkCursor;
+    // +0x68  second walk cursor: the battlez spawn-scan pop cursor Drain_031250 drains
+    // (re-seeded from the list head). Ex the CQueueDrainHost::m_scan view field.
+    CDDrawGroupNode* m_scanCursor;
 
     // Engine-label backlog stub.
     void DrawObjectCounts_15a650(); // 0x15a650  per-object debug-count overlay
@@ -142,6 +145,11 @@ public:
     // IN BOUNDS only on this 17-slot vtable (the old CDDrawSubMgrPages attribution read
     // past that class's 10-slot table into ??_7CFileMem - a fabricated slot 15).
     void DestroyChildren_159ef0();
+
+    // 0x31250 (body in QueueDrainHost.cpp): the battlez spawn-scan drain - pop nodes off
+    // m_scanCursor until one whose payload GetClassId() (vtable slot 8) is CLASSID_SERIALREF;
+    // 0 when exhausted. Ex CQueueDrainHost::Drain_031250 (that view IS this class).
+    CGameObject* Drain_031250();
 };
 
 struct WwdObjDesc {

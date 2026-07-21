@@ -21,7 +21,7 @@
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (the local dup class is gone)
 #include <Gruntz/GruntPuddle.h>    // CGruntPuddle (the m_baseList spawn-candidate element)
 #include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
-#include <Gruntz/QueueDrainHost.h> // the level's game-object collection + its cells
+#include <DDrawMgr/DDrawChildGroup.h> // the level's game-object collection (ex CQueueDrainHost view)
 #include <Wap32/zBitVec.h>         // zErrHandling (the zvec error-report target)
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LevelInfo.h>      // the canonical CLevelInfo (LoadConfig arg1)
@@ -68,23 +68,23 @@ extern "C" {
     void* CreateWayPoint();           // ILT thunk 0x1087
 }
 
-static inline CGameObject* ListGetFirst(CQueueDrainHost* list) {
-    CQueueProbeNode* n = list->m_head;
-    list->m_cursor = n;
+static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(list->m_list.GetHeadPosition());
+    list->m_walkCursor = n;
     if (n == 0) {
         return 0;
     }
-    list->m_cursor = n->m_next;
-    return n->m_data;
+    list->m_walkCursor = n->m_next;
+    return n->m_obj;
 }
 
-static inline CGameObject* ListGetNext(CQueueDrainHost* list) {
-    CQueueProbeNode* n = list->m_cursor;
+static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
+    CDDrawGroupNode* n = list->m_walkCursor;
     if (n == 0) {
         return 0;
     }
-    list->m_cursor = n->m_next;
-    return n->m_data;
+    list->m_walkCursor = n->m_next;
+    return n->m_obj;
 }
 
 // ===========================================================================
@@ -181,8 +181,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
     //     The list is re-derived (mgr->m_world->m_childGroup) and advanced via the GetNext
     //     cursor idiom on every step. ---
-    for (CGameObject* cur = ListGetFirst(mgr->m_world->m_walkHost); cur != 0;
-         cur = ListGetNext(mgr->m_world->m_walkHost)) {
+    for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != 0;
+         cur = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateGruntCreationPoint) && cur->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -198,8 +198,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     // --- loop 2: find the FIRST type-2 marker, stamp m_markerX/m_markerY with its /32 coords,
     //     and stop (fall straight into loop 3). ---
-    for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_walkHost); cur2 != 0;
-         cur2 = ListGetNext(mgr->m_world->m_walkHost)) {
+    for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != 0;
+         cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur2->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateExitTrigger) && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
@@ -209,8 +209,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     // --- loop 3: append EVERY type-3 marker to the +0xf0 array, scaled by >>5
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
-    for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_walkHost); cur3 != 0;
-         cur3 = ListGetNext(mgr->m_world->m_walkHost)) {
+    for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != 0;
+         cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur3->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateWayPoint) && cur3->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -1855,8 +1855,8 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // Iterate the scene collection for kind-matching units inside the box.
-    CQueueDrainHost* coll = m_ctx->m_world->m_walkHost;
-    coll->m_scan = coll->m_head;
+    CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
+    coll->m_scanCursor = reinterpret_cast<CDDrawGroupNode*>(coll->m_list.GetHeadPosition());
     CGameObject* g = static_cast<CGameObject*>(coll->Drain_031250());
     while (g != 0) {
         if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(Handler_0040288d) && (g->m_stateFlags & 1) == 0) {
@@ -1936,12 +1936,12 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             }
         }
         // Back-edge: the inlined first GetNext pop, tail-continuing via the helper.
-        CQueueDrainHost* c = m_ctx->m_world->m_walkHost;
+        CDDrawChildGroup* c = m_ctx->m_world->m_childGroup;
         g = 0;
-        if (c->m_scan != 0) {
-            CQueueProbeNode* nd = c->m_scan;
-            c->m_scan = nd->m_next;
-            CGameObject* pp = nd->m_data;
+        if (c->m_scanCursor != 0) {
+            CDDrawGroupNode* nd = c->m_scanCursor;
+            c->m_scanCursor = nd->m_next;
+            CGameObject* pp = nd->m_obj;
             if (pp->GetClassId() == CLASSID_SERIALREF) {
                 g = pp;
             } else {

@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/QueueDrainHost.h> // CQueueDrainHost - the walked object collection
+class CDDrawChildGroup;      // <DDrawMgr/DDrawChildGroup.h> the walked object collection (m_coll)
 
 class CMapMgr;               // <Gruntz/MapMgr.h>   (== CBrickzGrid) the tile/path grid
 class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
@@ -27,7 +27,7 @@ struct CLevelViewHolder {
 SIZE_UNKNOWN(CLevelList);
 struct CLevelList {
     char m_pad00[0x8];
-    CQueueDrainHost* m_coll; // +0x08  the walked game-object collection
+    CDDrawChildGroup* m_coll; // +0x08  the walked game-object collection (ex CQueueDrainHost view)
     char m_pad0c[0x24 - 0xc];
     CLevelViewHolder* m_view; // +0x24  (->m_5c = the world->screen mapper)
 };
