@@ -139,8 +139,8 @@ public:
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
     void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 
-    i32 m_04;          // +0x04
-    i32 m_08;          // +0x08
+    i32 m_deferredCallback;          // +0x04
+    i32 m_gatedCallback;          // +0x08
     CGameObject* m_0c; // +0x0c
     union { // +0x10  bound game object (== m_38; one type, two historical spellings).
             // The bound obj IS the created A-kind sprite (every binding site hands a
@@ -180,8 +180,8 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_object->AddLogicHit("LogicHit");
     m_object->AddLogicAttack("LogicAttack");
     m_object->AddLogicBump("LogicBump");
-    m_04 = 0;
-    m_08 = 0;
+    m_deferredCallback = 0;
+    m_gatedCallback = 0;
     m_28 = 0x3e9;
     m_2c = 2;
 }

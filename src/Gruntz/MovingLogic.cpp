@@ -165,8 +165,8 @@ i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         m_0c = reinterpret_cast<CGameObject*>(a4);
         m_object = reinterpret_cast<CWwdGameObjectA*>(a4);
         m_objAux = (reinterpret_cast<CGameObject*>(a4))->m_7c;
-        m_04 = 0;
-        m_08 = 0;
+        m_deferredCallback = 0;
+        m_gatedCallback = 0;
         m_28 = 0x3e9;
         accum.m_vbase.DtorReadA();
         accum.m_vbase.FuncB();

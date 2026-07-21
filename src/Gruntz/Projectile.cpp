@@ -84,13 +84,13 @@ typedef void (CMovingLogic::*MovingCallback)();
 
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(i32) {
-    if (m_04 != 0) {
-        if (m_08 != 0 && reinterpret_cast<i32>(m_objAux->m_1c) == m_28) {
-            (this->*reinterpret_cast<MovingCallback&>(m_08))();
-            m_08 = 0;
+    if (m_deferredCallback != 0) {
+        if (m_gatedCallback != 0 && reinterpret_cast<i32>(m_objAux->m_1c) == m_28) {
+            (this->*reinterpret_cast<MovingCallback&>(m_gatedCallback))();
+            m_gatedCallback = 0;
         }
-        (this->*reinterpret_cast<MovingCallback&>(m_04))();
-        m_04 = 0;
+        (this->*reinterpret_cast<MovingCallback&>(m_deferredCallback))();
+        m_deferredCallback = 0;
         m_28 = 0x3e9;
     }
     MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual

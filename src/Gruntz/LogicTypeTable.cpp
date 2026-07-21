@@ -41,14 +41,14 @@ typedef void (CUserLogic::*UserLogicCallback)(); // 4 bytes (complete class, sin
 
 RVA(0x00008b90, 0x40)
 void CUserLogic::FinalizeStep(i32 /*unused*/) {
-    if (m_04 == 0) {
+    if (m_deferredCallback == 0) {
         return;
     }
-    if (m_08 != 0 && reinterpret_cast<i32>(m_14->m_1c) == m_28) {
-        (this->*reinterpret_cast<UserLogicCallback&>(m_08))();
-        m_08 = 0;
+    if (m_gatedCallback != 0 && reinterpret_cast<i32>(m_14->m_1c) == m_28) {
+        (this->*reinterpret_cast<UserLogicCallback&>(m_gatedCallback))();
+        m_gatedCallback = 0;
     }
-    (this->*reinterpret_cast<UserLogicCallback&>(m_04))();
-    m_04 = 0;
+    (this->*reinterpret_cast<UserLogicCallback&>(m_deferredCallback))();
+    m_deferredCallback = 0;
     m_28 = 0x3e9;
 }
