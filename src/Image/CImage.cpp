@@ -498,7 +498,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     i32 dright = right;
     i32 dbottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect srcClip = m_parent->m_24->m_10;
+        BlitRect srcClip = m_parent->m_24->m_clipRect;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
@@ -647,7 +647,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -741,7 +741,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -831,7 +831,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -925,7 +925,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1017,7 +1017,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1107,7 +1107,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1196,7 +1196,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_24->m_10;
+        BlitRect clipA = m_parent->m_24->m_clipRect;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {

@@ -30,7 +30,7 @@ typedef struct tagRECT BlitRect;
 class CBlitClipOwner {
 public:
     char _00[0x10];
-    BlitRect m_10; // +0x10  clip RECT {left, top, right, bottom}
+    BlitRect m_clipRect; // +0x10  clip RECT {left, top, right, bottom}
 };
 
 class CImageParent {
