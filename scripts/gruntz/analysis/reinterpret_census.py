@@ -2,7 +2,7 @@
 2026-07-19: every one of the ~4.6k sites gets a bucket verdict; view-vector buckets
 drive to 0, only generic-collection + raw-data keeps stay).
 
-Buckets (definitional, full clang-cl AST like cleanliness_ast):
+Buckets (definitional, full clang-cl AST like the archived cleanliness_ast):
   cross-class    record* -> unrelated record*   (the VIEW VECTOR - drive to 0)
   hier-related   record* -> base/derived         (should be static_cast - convert)
   collection     POSITION / MFC node internals   (allowed keep)

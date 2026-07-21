@@ -11,8 +11,9 @@ scripts/). Grouped by area:
   init/     local-environment setup - toolchain, clangd
   match/    matching-progress tooling - status (the match CLI), fingerprints
             (its helper), verify_stubs (the build gate)
-  analysis/ one-shot analysis / discovery tools - link_order, gen_match_queue,
-            dump_target, clangd_query, string_xref, fid_generate + fid/
+  sema/     the `gruntz sema` navigation surface - one module per subcommand
+  analysis/ one-shot analysis / discovery tools - link_order, xref,
+            clangd_query, fid_generate + fid/ (retired ones: scripts/archive/)
 
 Runnable entrypoints: the pipeline build steps (build/, init/, ghidra/) are
 path-invoked by ninja/the CLI; the CLI/match/analysis tools run as

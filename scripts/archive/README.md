@@ -34,6 +34,21 @@ C-style numeric, and offset-cast-macro counts are all **0** in `config/cleanline
 - `hoist_forward_decls.py` — one-shot "group forward declarations at the top" tidy sweep; done.
 - `thunk_alias_dups.py` — thunk-alias duplicate finder; the defect it hunted is resolved.
 
+## 2026-07-21 audit round — zero-reference one-shots (campaigns done)
+Retired after a tree-wide reference audit (imports, cli.py, build graph, docs, agent
+briefs — all empty for these; audit method in `docs/sema-greenfield.md`'s evidence style):
+- `discover_gaps.py` — found+stubbed functions Ghidra never carved; the match queue is
+  EMPTY (0 candidates), every function is carved and homed. Done.
+- `consolidate_globals.py` — the globals-consolidation campaign concluded in a design
+  decision (a fat force-included Globals.h REGRESSES matched TUs); one-shot spent.
+- `cleanliness_ast.py` — the libclang AST cast metrics; the whole C-style-cast board is
+  **0** and the live regex ratchet in `gruntz.match.cleanliness` guards it.
+- `vtable_audit.py` — per-slot virtuality census; superseded by the LIVE build gates
+  (`match/vtable_virtuality.py`, `vtable_coverage.py`, `vtable_slot_binding.py`).
+- `vtable_slot_identity.py` — placeholder-slot resolver; the `placeholder vtable slots`
+  metric is **0** and every analysed vtable is covered (333/333).
+
 The live tooling that replaces the *purpose* of these lives in `scripts/gruntz/match/`
-(`cleanliness.py`, `residual_queue.py`, the vtable/view gates) and `scripts/gruntz/analysis/`
-(the 41 still-active discovery/rename/xref tools). See `docs/gotchas.md` for what's current.
+(`cleanliness.py`, `residual_queue.py`, the vtable/view gates), `scripts/gruntz/sema/`
+(the navigation surface) and `scripts/gruntz/analysis/` (the still-active campaign
+tools). See `docs/gotchas.md` for what's current.
