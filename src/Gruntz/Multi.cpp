@@ -1983,14 +1983,13 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
 // Stops early if the abort latch (m_pollAbort) is set. Returns the dispatched
 // count.
 // @early-stop
-// frame-size + regalloc + COM-slot-aliasing wall (~60%): logic, the null guard,
-// the inlined GetMessageCount (slot 0x44) probe with the neg/sbb/not/and HRESULT
-// mask, the receive loop (Receive slot 0x64), the ReportError on failure, and the
-// per-message DispatchRecvMsg are all reproduced - but retail's frame is 0x10
-// (mine 0xc), it pins this=esi / 0=edi / count=ebx across the function, and it
-// OVERLAPS the receive {size,idFrom} stack slot (one local serves lpidFrom AND
-// lpdwDataSize) which a clean C++ shape won't express. See
-// docs/patterns/stack-buffer-size-drives-frame.md. Deferred to the final sweep.
+// zero-register coloring wall (~63%): logic, the null guard, the inlined
+// GetMessageCount (slot 0x44) probe with the branchless neg/sbb/not/and HRESULT mask
+// (now matched via `count = hr ? 0 : count`), the receive loop (Receive slot 0x64),
+// the ReportError on failure, and the per-message DispatchRecvMsg are all reproduced.
+// Residual: retail pins 0=edi so ebx is free for count (kept in-register); our MSVC5
+// /O2 pins 0=ebx which spills count to [esp+0x10] and grows the frame 0xc->0x10, a
+// swap that cascades every pointer regname. Not source-steerable. Final sweep.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == 0) {
@@ -2004,9 +2003,7 @@ i32 CMulti::PollSession() {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
         count = 0;
         i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &count);
-        if (hr) {
-            count = 0;
-        }
+        count = hr ? 0 : count; // branchless mask (neg/sbb/not/and)
     }
     if (count <= 0) {
         return 0;
