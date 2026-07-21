@@ -1138,7 +1138,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         hit = t + t % 5;
     }
 
-    // Duration scale (kind 0x3c death-touch): scale by g_dtScale, then damage the enemy.
+    // Reactive-armor kind (0x3c == GRUNT_REACTIVEARMOR): scale the hit by g_dtScale, then damage the enemy.
     if (a7 == 0x3a) {
         hit = 0x64;
     } else if (this->m_gruntKind == 0x3c) {

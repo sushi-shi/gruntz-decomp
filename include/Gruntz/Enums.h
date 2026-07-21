@@ -50,6 +50,9 @@ enum GruntType {
     GRUNT_CONVERSION = 0x39,   // CONVERSION
     GRUNT_DEATHTOUCH = 0x3a,   // DEATHTOUCH
     GRUNT_ROIDZ = 0x3b,        // ROIDZ (no attack downtime)
+    // REACTIVEARMOR (== PickupType 0x3c, powerupz.md id 60): CGrunt::m_gruntKind==0x3c
+    // scales the outgoing hit by g_dtScale in the attack step (CGrunt combat @0x61cb0).
+    GRUNT_REACTIVEARMOR = 0x3c,
     // Grunt-only appearances with NO recovered object-type id (no pickup/vehicle
     // equivalent traced): TOOBWATERGRUNT, REAPERGRUNT, HAREKRISHNAGRUNT. Left
     // unnumbered rather than fabricate an id that would collide with the space above.
