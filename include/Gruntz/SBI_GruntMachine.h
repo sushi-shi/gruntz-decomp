@@ -17,10 +17,10 @@ public:
     // tag 9 (the Resource-tab MACHINE widget). Built through BuildResourceTabStatusBar.
     CSBI_GruntMachine() {
         m_kind = 9;
-        m_34 = 0;
-        m_3c = 0;
-        m_44 = 0;
-        m_30 = 0;
+        m_frameA = 0;
+        m_frameB = 0;
+        m_standaloneFrame = 0;
+        m_config = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eadbc, 11 slots; overrides 0/1/3/4/5).
     // The out-of-line ~ (0x104ce0, calls Reset) lives in SBI_GruntMachine.cpp via the
@@ -64,12 +64,12 @@ public:
 
     // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
     // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.
-    CImageSet* m_30; // +0x30  resolved config record (frame table host; ex CGmConfig view)
-    CImage* m_34;    // +0x34  resolved frame for index m_38
-    i32 m_38;        // +0x38  frame index A (resolved into m_34)
-    CImage* m_3c;    // +0x3c  resolved frame for index m_40
-    i32 m_40;        // +0x40  frame index B (resolved into m_3c)
-    CImage* m_44;    // +0x44  standalone frame handle (blitted directly)
+    CImageSet* m_config; // +0x30  resolved config record (frame table host; ex CGmConfig view)
+    CImage* m_frameA;    // +0x34  resolved frame for index m_frameIdxA
+    i32 m_frameIdxA;        // +0x38  frame index A (resolved into m_frameA)
+    CImage* m_frameB;    // +0x3c  resolved frame for index m_frameIdxB
+    i32 m_frameIdxB;        // +0x40  frame index B (resolved into m_frameB)
+    CImage* m_standaloneFrame;    // +0x44  standalone frame handle (blitted directly)
 };
 SIZE_UNKNOWN(CSBI_GruntMachine);
 VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)

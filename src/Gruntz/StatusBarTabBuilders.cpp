@@ -102,7 +102,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     } else {
         spr = static_cast<CImage*>(rec->m_items.GetAt(1));
     }
-    m_44 = spr;
+    m_standaloneFrame = spr;
     if (spr == 0) {
         return 0;
     }
@@ -110,19 +110,19 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CObject* cfgOb = 0;
     m_24->m_imageRegistry->m_10map.Lookup(key, cfgOb);
     cfg = static_cast<CImageSet*>(cfgOb);
-    m_30 = cfg;
+    m_config = cfg;
     if (cfg == 0) {
         return 0;
     }
-    m_38 = idxA;
-    m_40 = idxB;
+    m_frameIdxA = idxA;
+    m_frameIdxB = idxB;
     CImage* s;
-    if (idxA < m_30->m_minIndex || idxA > m_30->m_maxIndex) {
+    if (idxA < m_config->m_minIndex || idxA > m_config->m_maxIndex) {
         s = 0;
     } else {
-        s = static_cast<CImage*>(m_30->m_items.GetAt(idxA));
+        s = static_cast<CImage*>(m_config->m_items.GetAt(idxA));
     }
-    m_34 = s;
+    m_frameA = s;
     if (s == 0) {
         return 0;
     }
@@ -135,23 +135,23 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    m_30->SetAllTypes(10);
-    m_30->SetAllFormats(sel);
+    m_config->SetAllTypes(10);
+    m_config->SetAllFormats(sel);
     CImage* val;
-    if (m_40 < m_30->m_minIndex || m_40 > m_30->m_maxIndex) {
+    if (m_frameIdxB < m_config->m_minIndex || m_frameIdxB > m_config->m_maxIndex) {
         val = 0;
     } else {
-        val = static_cast<CImage*>(m_30->m_items.GetAt(m_40));
+        val = static_cast<CImage*>(m_config->m_items.GetAt(m_frameIdxB));
     }
-    m_3c = val;
+    m_frameB = val;
     return val != 0;
 }
 
 RVA(0x000e8c70, 0xc)
 void CSBI_GruntMachine::Reset() {
-    m_34 = 0;
-    m_3c = 0;
-    m_30 = 0;
+    m_frameA = 0;
+    m_frameB = 0;
+    m_config = 0;
 }
 
 // vtable slot 5 (0xe8cb0): the per-frame render. Idle (return 1) while the frame
@@ -173,17 +173,17 @@ i32 CSBI_GruntMachine::Render() {
     if (m_28 <= 0) {
         return 1;
     }
-    i32 idx = m_38;
+    i32 idx = m_frameIdxA;
     m_28--;
-    CImageSet* cfg = m_30;
+    CImageSet* cfg = m_config;
 
-    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
-    idx = m_40;
-    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+    m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+    idx = m_frameIdxB;
+    m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
 
     i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
-    CImage* f = m_44;
+    CImage* f = m_standaloneFrame;
     if (f) {
         f->RenderFrame(
             reinterpret_cast<void*>(ctx),
@@ -192,7 +192,7 @@ i32 CSBI_GruntMachine::Render() {
             0
         );
     }
-    f = m_3c;
+    f = m_frameB;
     if (f) {
         f->RenderFrame(
             reinterpret_cast<void*>(ctx),
@@ -201,7 +201,7 @@ i32 CSBI_GruntMachine::Render() {
             0
         );
     }
-    f = m_34;
+    f = m_frameA;
     if (f) {
         f->RenderFrame(
             reinterpret_cast<void*>(ctx),
@@ -216,10 +216,10 @@ i32 CSBI_GruntMachine::Render() {
 RVA(0x000e8dc0, 0x22)
 void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     if (idxA != -1) {
-        m_38 = idxA;
+        m_frameIdxA = idxA;
     }
     if (idxB != -1) {
-        m_40 = idxB;
+        m_frameIdxB = idxB;
     }
     m_28 = 2;
 }
@@ -266,36 +266,36 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             // reverse name+index lookup ---
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
-            if (m_30 != 0) {
-                strcpy(buf, m_30->m_name);
+            if (m_config != 0) {
+                strcpy(buf, m_config->m_name);
             }
             s->Write(buf, 0x80);
-            s->Write(&m_38, 4);
+            s->Write(&m_frameIdxA, 4);
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_34 != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_34, buf, &v);
-            }
-            s->Write(buf, 0x80);
-            s->Write(&v, 4);
-            s->Write(&m_40, 4);
-
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_3c != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_3c, buf, &v);
+            if (m_frameA != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630(m_frameA, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
+            s->Write(&m_frameIdxB, 4);
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_44 != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630(m_44, buf, &v);
+            if (m_frameB != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630(m_frameB, buf, &v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_standaloneFrame != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630(m_standaloneFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -312,11 +312,11 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             if (strlen(buf) != 0) {
                 out = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, out);
-                m_30 = static_cast<CImageSet*>(out);
+                m_config = static_cast<CImageSet*>(out);
             } else {
-                m_30 = 0;
+                m_config = 0;
             }
-            s->Read(&m_38, 4);
+            s->Read(&m_frameIdxA, 4);
 
             g_serialCounter++;
             s->Read(buf, 0x80);
@@ -332,11 +332,11 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 } else {
                     r = 0;
                 }
-                m_34 = r;
+                m_frameA = r;
             } else {
-                m_34 = 0;
+                m_frameA = 0;
             }
-            s->Read(&m_40, 4);
+            s->Read(&m_frameIdxB, 4);
 
             g_serialCounter++;
             s->Read(buf, 0x80);
@@ -352,9 +352,9 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 } else {
                     r = 0;
                 }
-                m_3c = r;
+                m_frameB = r;
             } else {
-                m_3c = 0;
+                m_frameB = 0;
             }
 
             g_serialCounter++;
@@ -371,9 +371,9 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 } else {
                     r = 0;
                 }
-                m_44 = r;
+                m_standaloneFrame = r;
             } else {
-                m_44 = 0;
+                m_standaloneFrame = 0;
             }
             break;
         }
@@ -434,8 +434,8 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_enabled = 1;
     }
     m_rowIndex = p10;
-    m_40 = p11;
-    m_54 = onLeft;
+    m_colIndex = p11;
+    m_onLeft = onLeft;
     if (onLeft == 0) {
         CImageSet* n = 0;
         CObject* nOb = 0;
@@ -451,8 +451,8 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
         m_topFrame = v;
-        m_50 = -1;
-        m_48 = (p7 - p5) / 2 + parent->m_rect14.m_4;
+        m_bottomFrameDy = -1;
+        m_drawX = (p7 - p5) / 2 + parent->m_rect14.m_4;
     } else {
         CImageSet* n = 0;
         CObject* nOb = 0;
@@ -468,16 +468,16 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             v = static_cast<CImage*>(n->m_items.GetAt(1));
         }
         m_topFrame = v;
-        m_50 = 1;
-        m_48 = parent->m_10 - (p7 - p5) / 2;
+        m_bottomFrameDy = 1;
+        m_drawX = parent->m_10 - (p7 - p5) / 2;
     }
-    m_4c = p11 * 0x12 + 0xd1;
+    m_drawY = p11 * 0x12 + 0xd1;
     if (m_topFrame == 0) {
         return 0;
     }
-    m_44 = p12;
+    m_sampleMode = p12;
     m_sampledValue = -1;
-    m_58 = BuildHandle();
+    m_drawGate = BuildHandle();
     return 1;
 }
 
@@ -489,7 +489,7 @@ void CSBI_SideTab::Reset() {
 
 RVA(0x000e9820, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
-    m_58 = BuildHandle();
+    m_drawGate = BuildHandle();
     return 0;
 }
 
@@ -508,13 +508,13 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 // the allocation. Logic complete; deferred to the final sweep (whole-hierarchy model).
 RVA(0x000e9850, 0x111)
 i32 CSBI_SideTab::BuildHandle() {
-    i32 mode = m_44;
+    i32 mode = m_sampleMode;
     if (mode == 0) {
         return 0;
     }
-    CTmCell* unit = g_gameReg->m_cmdGrid->m_grid[m_40 + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
+    CTmCell* unit = g_gameReg->m_cmdGrid->m_grid[m_colIndex + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
     if (unit == 0) {
-        m_2c->ClearStat(m_40);
+        m_2c->ClearStat(m_colIndex);
         return 0;
     }
     i32 val;
@@ -523,21 +523,21 @@ i32 CSBI_SideTab::BuildHandle() {
         if (level > 0x16) {
             val = unit->m_19c;
             if (val == 0) {
-                m_44 = 1;
+                m_sampleMode = 1;
             }
         } else {
             val = level;
             if (val == 0) {
-                m_44 = 1;
+                m_sampleMode = 1;
             }
         }
     } else if (mode == 3) {
         val = unit->m_198;
         if (val == 0) {
-            m_44 = 1;
+            m_sampleMode = 1;
         }
     }
-    if (m_44 == 1) {
+    if (m_sampleMode == 1) {
         i32 hp = unit->m_health;
         if (hp >= 0x50) {
             val = 0x24;
@@ -577,10 +577,10 @@ i32 CSBI_SideTab::BuildHandle() {
 // `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
-    if (m_58) {
+    if (m_drawGate) {
         i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
-        m_topFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(m_48), reinterpret_cast<void*>(m_4c), 0);
-        m_bottomFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((m_48 + m_50)), reinterpret_cast<void*>(m_4c), 0);
+        m_topFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>(m_drawY), 0);
+        m_bottomFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((m_drawX + m_bottomFrameDy)), reinterpret_cast<void*>(m_drawY), 0);
     }
     return 1;
 }
@@ -622,12 +622,12 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
 
             s->Write(&m_sampledValue, 4);
             s->Write(&m_rowIndex, 4);
-            s->Write(&m_40, 4);
-            s->Write(&m_44, 4);
-            s->Write(&m_48, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
-            s->Write(&m_50, 4);
-            s->Write(&m_54, 4);
-            s->Write(&m_58, 4);
+            s->Write(&m_colIndex, 4);
+            s->Write(&m_sampleMode, 4);
+            s->Write(&m_drawX, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
+            s->Write(&m_bottomFrameDy, 4);
+            s->Write(&m_onLeft, 4);
+            s->Write(&m_drawGate, 4);
             break;
         }
 
@@ -676,12 +676,12 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
 
             s->Read(&m_sampledValue, 4);
             s->Read(&m_rowIndex, 4);
-            s->Read(&m_40, 4);
-            s->Read(&m_44, 4);
-            s->Read(&m_48, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
-            s->Read(&m_50, 4);
-            s->Read(&m_54, 4);
-            s->Read(&m_58, 4);
+            s->Read(&m_colIndex, 4);
+            s->Read(&m_sampleMode, 4);
+            s->Read(&m_drawX, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
+            s->Read(&m_bottomFrameDy, 4);
+            s->Read(&m_onLeft, 4);
+            s->Read(&m_drawGate, 4);
             break;
         }
     }

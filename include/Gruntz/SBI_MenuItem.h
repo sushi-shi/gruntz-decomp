@@ -26,19 +26,19 @@ public:
     //
     //   statusbargamemenu.c.obj @0x85 | sbi_tabzdialog_eh.c.obj @0x53a
     //     IMAGE_REL_I386_DIR32 ??_7CSBI_MenuItem@@6B@   <- cl's vptr store
-    //     movl $0x2, 0x8(%eax)                          <- m_8  = 2
-    //     movl %ebp, 0x34(%eax)                         <- m_34 = 0
-    //     movl %ebp, 0x30(%eax)                         <- m_30 = 0
-    //     movl %ebp, 0x38(%eax)                         <- m_38 = 0
+    //     movl $0x2, 0x8(%eax)                          <- m_kind   = 2
+    //     movl %ebp, 0x34(%eax)                         <- m_state  = 0
+    //     movl %ebp, 0x30(%eax)                         <- m_30     = 0
+    //     movl %ebp, 0x38(%eax)                         <- m_record = 0
     //
     // This ctor was missing from the canonical: only the ex-"CSBI_MenuItemDlg" view (in
     // SbiTabzDialogViews.h) carried it, so every canonical `new CSBI_MenuItem` site
     // under-emitted the four stores. Recovered here as part of dissolving that view.
     CSBI_MenuItem() {
         m_kind = 2;
-        m_34 = 0;
+        m_state = 0;
         m_30 = 0;
-        m_38 = 0;
+        m_record = 0;
     }
     // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).
     // The out-of-line ~ (0x1007d0, calls ClearFrame2) lives in SBI_MenuItem.cpp via
@@ -86,7 +86,7 @@ public:
     // decl on the base in StatusBarItem.h; body stays in SBI_MenuItem.cpp.)
 
     // ----- own fields (after CSBI_Image @0x34) -----
-    i32 m_34; // +0x34  menu state tag
+    i32 m_state; // +0x34  menu state tag
     // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores the real CImageSet
     // the image registry yields, Serialize (case 7) stores the CSprite view of that
     // same record. Same physical shape, distinct modeled classes reached on
@@ -94,7 +94,7 @@ public:
     // +0x38  resolved cue/config record. Typed CImageSet*; the serialize leg's
     // Lookup result was spelled CSprite - the SAME +0x14/+0x24/+0x64/+0x68 shape
     // (the CImageSet==CSprite duplicate-class question; see the session report).
-    CImageSet* m_38;
+    CImageSet* m_record;
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)

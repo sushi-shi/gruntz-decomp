@@ -58,7 +58,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_rect14.m_8 = rc.right;
     m_rect14.m_c = rc.bottom;
     m_cmd = cmd;
-    m_34 = 1;
+    m_state = 1;
     m_enabled = 1;
     return ResolveFrame(reinterpret_cast<i32>(key), frame) != 0;
 }
@@ -87,7 +87,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
     CImageSet* rec = static_cast<CImageSet*>(rec_v);
-    m_38 = rec;
+    m_record = rec;
     if (rec == 0) {
         return reinterpret_cast<i32>(rec);
     }
@@ -153,10 +153,10 @@ i32 CSBI_MenuItem::DecCounter() {
 // reloc-symbol-naming tail on the cue string/globals. Not steerable from C.
 RVA(0x000e8310, 0x112)
 i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
-    if (m_34 == state || m_38 == 0) {
+    if (m_state == state || m_record == 0) {
         return 0;
     }
-    if (state == 2 && m_34 == 3) {
+    if (state == 2 && m_state == 3) {
         return 1;
     }
     // m_2c IS the owning CStatusBarMgr (the ex CMiTabHost view is DISSOLVED): the tab
@@ -190,7 +190,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             }
         }
     }
-    CImageSet* r = m_38;
+    CImageSet* r = m_record;
     CImage* frame;
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
         frame = static_cast<CImage*>(r->m_items.GetAt(state));
@@ -198,20 +198,20 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         frame = 0;
     }
     m_30 = frame;
-    m_34 = state;
+    m_state = state;
     SetSubtype(); // slot 10 (+0x28); the CMiSelf view called it "Refresh"
     return 1;
 }
 
 RVA(0x000e8480, 0x4a)
 i32 CSBI_MenuItem::ProbeState(i32 state) {
-    if (state == 1 || m_38 == 0) {
+    if (state == 1 || m_record == 0) {
         return 0;
     }
-    if (state == 2 && m_34 == state) {
+    if (state == 2 && m_state == state) {
         return SetState(1, 1);
     }
-    if (state == 3 && m_34 == 3) {
+    if (state == 3 && m_state == 3) {
         return SetState(1, 1);
     }
     return 1;
@@ -219,7 +219,7 @@ i32 CSBI_MenuItem::ProbeState(i32 state) {
 
 RVA(0x000e84f0, 0x16)
 i32 CSBI_MenuItem::Blit() {
-    if (m_34 != 2) {
+    if (m_state != 2) {
         return 1;
     }
     return SetState(1, 1);
@@ -238,23 +238,23 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     char tmp[0x80];
     switch (kind) {
         case 7:
-            ar->Read(&m_34, 4);
+            ar->Read(&m_state, 4);
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
-                m_38 = static_cast<CImageSet*>(found_ob);
+                m_record = static_cast<CImageSet*>(found_ob);
             } else {
-                m_38 = 0;
+                m_record = 0;
             }
             break;
         case 4:
-            ar->Write(&m_34, 4);
+            ar->Write(&m_state, 4);
             g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
-            if (m_38) {
-                strcpy(tmp, m_38->m_name);
+            if (m_record) {
+                strcpy(tmp, m_record->m_name);
             }
             ar->Write(tmp, 0x80);
             break;

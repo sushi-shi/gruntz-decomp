@@ -1299,7 +1299,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     CSBI_SideTab* item = m_hitRects[idx];
     i32 one = 1;
     if (item) {
-        item->m_44 = value;
+        item->m_sampleMode = value;
         item->m_enabled = one;
         if (m_activeTab == one) {
             m_statObj[idx]->Toggle(m_position, one);
@@ -2191,7 +2191,7 @@ RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSBI_SideTab* r = m_hitRects[idx];
     if (r != 0) {
-        r->m_44 = 0;
+        r->m_sampleMode = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             m_statObj[idx]->ResetGroupA();
@@ -2701,8 +2701,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
-        mp->m_34 = 4;
-        CImageSet* f = mp->m_38;
+        mp->m_state = 4;
+        CImageSet* f = mp->m_record;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
             v = static_cast<CImage*>(f->m_items.GetAt(4)); // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]

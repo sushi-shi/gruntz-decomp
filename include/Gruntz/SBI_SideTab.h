@@ -18,7 +18,7 @@ public:
         m_topFrame = 0;
         m_bottomFrame = 0;
         m_sampledValue = -1;
-        m_44 = -1;
+        m_sampleMode = -1;
     }
     virtual ~CSBI_SideTab() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eae3c thunk 0x1ef1 -> 0xe9a30): the side-tab serialize leg,
@@ -64,13 +64,13 @@ public:
     CImage* m_bottomFrame; // +0x34  bottom frame handle (resolved glyph)
     i32 m_sampledValue;    // +0x38  tracked sampled value
     i32 m_rowIndex;        // +0x3c  unit-table row index (stride 15)
-    i32 m_40;              // +0x40  unit-table column index
-    i32 m_44;              // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
-    i32 m_48;              // +0x48  draw x
-    i32 m_4c;              // +0x4c  draw y
-    i32 m_50;              // +0x50  bottom-frame y delta
-    i32 m_54; // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
-    i32 m_58; // +0x58  draw gate (0 => not built)
+    i32 m_colIndex;              // +0x40  unit-table column index
+    i32 m_sampleMode;              // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
+    i32 m_drawX;              // +0x48  draw x
+    i32 m_drawY;              // +0x4c  draw y
+    i32 m_bottomFrameDy;              // +0x50  bottom-frame y delta
+    i32 m_onLeft; // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
+    i32 m_drawGate; // +0x58  draw gate (0 => not built)
 };
 SIZE_UNKNOWN(CSBI_SideTab);
 VTBL(CSBI_SideTab, 0x001eae3c); // vtable_names -> code (RTTI game class)
