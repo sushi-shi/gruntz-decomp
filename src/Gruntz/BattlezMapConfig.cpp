@@ -42,8 +42,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
-extern "C" i32 g_frameDelta;
-
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f; // 0x5e96ec
 

@@ -127,10 +127,6 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 
 #include <Gruntz/PlayStateView.h>
 
-extern "C" {
-    extern i32 g_optionsCursor; // DAT_006455fc  (round-robin options cursor)
-}
-
 extern "C" void ModeResetCallback(); // LAB_00403193
 void CreateWorldObjects(void* world);
 

@@ -48,7 +48,6 @@ void Register82aa0() {
 // UNBOUND). (The @identity-TODO here is RESOLVED 2026-07-19: CButeMgr and the ex
 // "CButeSection" were the same 280-B config object; the twin class is dissolved and
 // the (CButeSection*) conflation cast fell out with it.)
-extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void InitResButeMgr82b20() {
     (&g_buteMgr)->CButeMgr::CButeMgr();

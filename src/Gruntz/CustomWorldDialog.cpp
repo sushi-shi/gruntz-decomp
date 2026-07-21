@@ -27,7 +27,6 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-extern char g_mapNamePre[]; // 0x62c00c  GetMapBaseName: NUL-at-len-4 via the preceding slot
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
 DATA(0x0022c25c)
