@@ -796,7 +796,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     return 1;
 }
 
-extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
+extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
 extern void __cdecl operator delete(void*);
 
 RVA(0x00079d90, 0xc5)
