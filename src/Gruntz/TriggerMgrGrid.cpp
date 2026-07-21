@@ -288,7 +288,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         for (i32 col = 0; col < 15; col++) {
             CTmCell* g = cell[col];
             if (g != 0 && g->m_entranceCommitted != 0) {
-                CWwdGameObjectA* o = g->m_10;
+                CWwdGameObjectA* o = g->m_object;
                 if (o->m_layer != 0) {
                     i32 x0 = o->m_screenX - 15;
                     i32 y0 = o->m_screenY - 15;
@@ -546,7 +546,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    CGameObject* o = cell->m_10;
+    CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePxX) {
         if (o->m_screenY != cell->m_lastTilePxY) {
             return -1;
@@ -582,7 +582,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
-    CGameObject* o = cell->m_10;
+    CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePxX) {
         if (o->m_screenY != cell->m_lastTilePxY) {
             return -1;

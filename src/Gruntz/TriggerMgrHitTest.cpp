@@ -102,7 +102,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
         return 0;
     }
     if (exact != 0) {
-        CGameObject* o = cell->m_10;
+        CGameObject* o = cell->m_object;
         if (o->m_screenX != x || o->m_screenY != y) {
             return 0;
         }
@@ -114,7 +114,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
         }
         return 1;
     }
-    CGameObject* o = cell->m_10;
+    CGameObject* o = cell->m_object;
     i32 ox = o->m_screenX;
     i32 oy = o->m_screenY;
     if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {
@@ -188,8 +188,8 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             if (!g->m_entranceCommitted) {
                 continue;
             }
-            i32 sx = g->m_10->m_screenX - 7;
-            i32 sy = g->m_10->m_screenY - 7;
+            i32 sx = g->m_object->m_screenX - 7;
+            i32 sy = g->m_object->m_screenY - 7;
             if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe && rc.bottom >= sy) {
                 *outCol = row;
                 *outRow = col;

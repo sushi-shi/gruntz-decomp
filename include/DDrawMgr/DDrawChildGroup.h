@@ -27,11 +27,9 @@ class CWwdGameObject; // <Gruntz/WwdGameObject.h> (WWD collection reading)
 struct CDDrawGroupNode {
     CDDrawGroupNode* m_next; // +0x00
     CDDrawGroupNode* m_prev; // +0x04  (pPrev; rarely walked)
-    union {
-        CGameObject* m_obj; // +0x08  the wide game object (any kind; real family)
-        CWwdGameObject* m_wwd;  // +0x08  WWD collection reading (list/map ops)
-        CGameObject* m_gameObj; // +0x08  game-side reading (UserLogic.h flat view)
-    };
+    // +0x08  the wide game object (any kind - the item base; the ex m_wwd/m_gameObj
+    // arms were per-view spellings; derived readers downcast).
+    CGameObject* m_obj;
 };
 
 class CDDrawChildGroup : public CWapObj {

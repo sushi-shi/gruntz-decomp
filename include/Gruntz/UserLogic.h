@@ -144,12 +144,10 @@ public:
     i32 m_deferredCallback;          // +0x04
     i32 m_gatedCallback;          // +0x08
     CGameObject* m_0c; // +0x0c
-    union { // +0x10  bound game object (== m_38; one type, two historical spellings).
-            // The bound obj IS the created A-kind sprite (every binding site hands a
-            // CreateSprite/ReadPlaneObjects product; leaves read its m_1a0/frame cache).
-        CWwdGameObjectA* m_object;
-        CWwdGameObjectA* m_10;
-    };
+    // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
+    // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0
+    // cache). The ex-"m_10" arm was the same type/role - one name now.
+    CWwdGameObjectA* m_object;
     union { // +0x14  aux sub-object (obj->m_7c); CGrunt views it as CAnimLookupNode*
         AnimWorkerObj* m_objAux;
         CAnimLookupNode* m_14;

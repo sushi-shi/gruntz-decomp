@@ -35,8 +35,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10));                           \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10));                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -67,8 +67,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10));                           \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10));                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -85,13 +85,13 @@ extern "C" {
         RECT ra;                                                                                   \
         ra.left = 0;                                                                               \
         ra.top = 0;                                                                                \
-        ra.right = (grid)->m_c;                                                                    \
-        ra.bottom = (grid)->m_10;                                                                  \
+        ra.right = (grid)->m_width;                                                                    \
+        ra.bottom = (grid)->m_height;                                                                  \
         RECT rb;                                                                                   \
         rb.left = 0;                                                                               \
         rb.top = 0;                                                                                \
-        rb.right = (grid)->m_c;                                                                    \
-        rb.bottom = (grid)->m_10;                                                                  \
+        rb.right = (grid)->m_width;                                                                    \
+        rb.bottom = (grid)->m_height;                                                                  \
         if (!IntersectRect(&(grid)->m_60, &ra, &rb)) {                                             \
             (grid)->m_60 = ra;                                                                     \
         }                                                                                          \
@@ -135,9 +135,9 @@ i32 CGrunt::ResolveArrivalReposition() {
     m_defenderY = m_lastTilePxY;
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
-            CGameObject* oh = occ->m_10;
+            CGameObject* oh = occ->m_object;
             if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
-                CGameObject* oh2 = occ->m_10;
+                CGameObject* oh2 = occ->m_object;
                 if (m_tileMgr->ApplyTriggerA(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
@@ -147,7 +147,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                     == -1) {
                     m_dwell = 0;
                     if (m_390 != 0) {
-                        CWwdGameObjectA* h = m_10;
+                        CWwdGameObjectA* h = m_object;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
                         char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -173,7 +173,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                 >= *reinterpret_cast<i64*>(&m_arrivalRerollWindowLo)) {
                 goto L8b5;
             }
-            CWwdGameObjectA* h = m_10;
+            CWwdGameObjectA* h = m_object;
             i32 baseX = h->m_extent.left;
             i32 spanX = abs(h->m_extent.right - baseX);
             i32 baseY = h->m_extent.top;
@@ -244,9 +244,9 @@ i32 CGrunt::ArrivalScanA() {
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = g->m_10->m_screenX;
-        if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-            && RectContains(x, g->m_10->m_screenY) != 0) {
+        i32 x = g->m_object->m_screenX;
+        if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+            && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -316,9 +316,9 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
-        && g->m_10->m_screenY == g->m_lastTilePxY
-        && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
+    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePxX
+        && g->m_object->m_screenY == g->m_lastTilePxY
+        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
         m_dwell = 0;
         return 1;
@@ -326,14 +326,14 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(g->m_object->m_screenX >> 5, g->m_object->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         == 0) {
         goto L_ed153;
     }
     if (m_390 != 0) {
         CCueRect* board = reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
             g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
         }
@@ -368,8 +368,8 @@ L_ed153:
     RECT gb;
     gb.left = 0;
     gb.top = 0;
-    gb.right = grid->m_c;
-    gb.bottom = grid->m_10;
+    gb.right = grid->m_width;
+    gb.bottom = grid->m_height;
     RECT isect;
     if (!IntersectRect(&isect, &box, &gb)) {
         isect = box;
@@ -387,8 +387,8 @@ L_ed153:
         RECT gb2;
         gb2.left = 0;
         gb2.top = 0;
-        gb2.right = grid->m_c;
-        gb2.bottom = grid->m_10;
+        gb2.right = grid->m_width;
+        gb2.bottom = grid->m_height;
         if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
             grid->m_60 = lb;
         }
@@ -458,9 +458,9 @@ i32 CGrunt::WanderStep() {
     i32 flag = 0;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     if (g != 0) {
-        i32 gx = g->m_10->m_screenX;
-        if (gx == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-            && RectContains(gx, g->m_10->m_screenY) != 0) {
+        i32 gx = g->m_object->m_screenX;
+        if (gx == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+            && RectContains(gx, g->m_object->m_screenY) != 0) {
             flag = 1;
         }
     }
@@ -495,9 +495,9 @@ i32 CGrunt::WanderStep() {
     switch (m_defenderState) {
         case 0:
             if (g != 0) {
-                if (m_poweredUp == 0 && m_stamina >= 0x64 && g->m_10->m_screenX == g->m_lastTilePxX
-                    && g->m_10->m_screenY == g->m_lastTilePxY
-                    && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
+                if (m_poweredUp == 0 && m_stamina >= 0x64 && g->m_object->m_screenX == g->m_lastTilePxX
+                    && g->m_object->m_screenY == g->m_lastTilePxY
+                    && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                     CommitNeighbor(
                         g->m_tileOwnerHi,
                         g->m_tileOwnerLo,
@@ -533,8 +533,8 @@ i32 CGrunt::WanderStep() {
                             m_defenderState = 1;
                             if (GruntPointVisible(
                                     reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
-                                    m_10->m_screenX,
-                                    m_10->m_screenY
+                                    m_object->m_screenX,
+                                    m_object->m_screenY
                                 )
                                 != 0) {
                                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -571,13 +571,13 @@ i32 CGrunt::WanderStep() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(slot->m_10->m_screenX, slot->m_10->m_screenY) == 0) {
+            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (slot->m_10->m_screenX != slot->m_lastTilePxX) {
+            if (slot->m_object->m_screenX != slot->m_lastTilePxX) {
                 return 1;
             }
-            if (slot->m_10->m_screenY != slot->m_lastTilePxY) {
+            if (slot->m_object->m_screenY != slot->m_lastTilePxY) {
                 return 1;
             }
             CommitNeighbor(
@@ -624,13 +624,13 @@ i32 CGrunt::WanderStep() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(slot->m_10->m_screenX, slot->m_10->m_screenY) == 0) {
+            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 goto ph1;
             }
-            if (slot->m_10->m_screenX != slot->m_lastTilePxX) {
+            if (slot->m_object->m_screenX != slot->m_lastTilePxX) {
                 goto ph1;
             }
-            if (slot->m_10->m_screenY != slot->m_lastTilePxY) {
+            if (slot->m_object->m_screenY != slot->m_lastTilePxY) {
                 goto ph1;
             }
             CommitNeighbor(
@@ -678,7 +678,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 return 1;
             }
-            CWwdGameObjectA* base = m_10;
+            CWwdGameObjectA* base = m_object;
             i32 clip = 1;
             i32 py = GameRand() % 4 + (base->m_screenY >> 5) - 2;
             i32 px = GameRand() % 4 + (base->m_screenX >> 5) - 2;
@@ -686,7 +686,7 @@ i32 CGrunt::WanderStep() {
                 CGrunt* entry =
                     g_gameReg->m_cmdGrid->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
                 if (entry != 0) {
-                    CGameObject* e10 = entry->m_10;
+                    CGameObject* e10 = entry->m_object;
                     RECT rc;
                     rc.left = (e10->m_screenX >> 5) - 2;
                     rc.top = (e10->m_screenY >> 5) - 2;
@@ -734,7 +734,7 @@ timeout:
             m_arrivalRerollLo = static_cast<i32>(g_frameTime);
             m_arrivalRerollHi = 0;
         } else {
-            CWwdGameObjectA* base = m_10;
+            CWwdGameObjectA* base = m_object;
             u32 lx = static_cast<u32>(base->m_extent.left);
             i32 dxr = base->m_extent.right - static_cast<i32>(lx);
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
@@ -892,9 +892,9 @@ i32 CGrunt::UpdateArrival() {
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     bool atTarget = false;
     if (g != 0) {
-        i32 x = g->m_10->m_screenX;
-        if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-            && g->RectContains(x, g->m_10->m_screenY) != 0) {
+        i32 x = g->m_object->m_screenX;
+        if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+            && g->RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = true;
         }
     }
@@ -945,9 +945,9 @@ i32 CGrunt::UpdateArrival() {
         case 0:
             if (g != 0) {
                 if (this->m_stamina > 99) {
-                    i32 x = g->m_10->m_screenX;
-                    if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-                        && g->RectContains(x, g->m_10->m_screenY) != 0) {
+                    i32 x = g->m_object->m_screenX;
+                    if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+                        && g->RectContains(x, g->m_object->m_screenY) != 0) {
                         CommitNeighbor(
                             g->m_tileOwnerHi,
                             g->m_tileOwnerLo,
@@ -969,8 +969,8 @@ i32 CGrunt::UpdateArrival() {
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
                                 reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
-                                this->m_10->m_screenX,
-                                this->m_10->m_screenY
+                                this->m_object->m_screenX,
+                                this->m_object->m_screenY
                             );
                             if (r != 0) {
                                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -998,7 +998,7 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                     this->m_arrivalRerollHi = 0;
                 } else {
-                    CGameObject* base = this->m_10;
+                    CGameObject* base = this->m_object;
                     u32 lo = base->m_extent.left;
                     i32 dx = base->m_extent.right - static_cast<i32>(lo);
                     i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
@@ -1047,9 +1047,9 @@ i32 CGrunt::UpdateArrival() {
                         0x20
                     );
                     if (this->m_poweredUp == 0 && this->m_stamina > 99
-                        && slot->RectContains(slot->m_10->m_screenX, slot->m_10->m_screenY) != 0
-                        && slot->m_10->m_screenX == slot->m_lastTilePxX
-                        && slot->m_10->m_screenY == slot->m_lastTilePxY) {
+                        && slot->RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && slot->m_object->m_screenX == slot->m_lastTilePxX
+                        && slot->m_object->m_screenY == slot->m_lastTilePxY) {
                         CommitNeighbor(
                             slot->m_tileOwnerHi,
                             slot->m_tileOwnerLo,
@@ -1126,9 +1126,9 @@ i32 CGrunt::ArrivalScanB() {
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = g->m_10->m_screenX;
-        if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-            && RectContains(x, g->m_10->m_screenY) != 0) {
+        i32 x = g->m_object->m_screenX;
+        if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+            && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -1198,9 +1198,9 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
-        && g->m_10->m_screenY == g->m_lastTilePxY
-        && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
+    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePxX
+        && g->m_object->m_screenY == g->m_lastTilePxY
+        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
     }
     if (m_poweredUp != 0) {
@@ -1214,8 +1214,8 @@ L_ed006b:
         g->GetScreenPos(reinterpret_cast<GruntTilePos*>(cc));
         if (TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
             if (m_390 != 0) {
-                i32 x = m_10->m_screenX;
-                i32 y = m_10->m_screenY;
+                i32 x = m_object->m_screenX;
+                i32 y = m_object->m_screenY;
                 if (GruntPointVisible(
                         reinterpret_cast<i32>((reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX))),
                         x,
@@ -1256,8 +1256,8 @@ L_scanb:
     RECT gb;
     gb.left = 0;
     gb.top = 0;
-    gb.right = grid->m_c;
-    gb.bottom = grid->m_10;
+    gb.right = grid->m_width;
+    gb.bottom = grid->m_height;
     RECT isect;
     if (!IntersectRect(&isect, &box, &gb)) {
         isect = box;
@@ -1271,8 +1271,8 @@ L_scanb:
         RECT gb2;
         gb2.left = 0;
         gb2.top = 0;
-        gb2.right = grid->m_c;
-        gb2.bottom = grid->m_10;
+        gb2.right = grid->m_width;
+        gb2.bottom = grid->m_height;
         if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
             grid->m_60 = lb;
         }
@@ -1300,9 +1300,9 @@ L_scanb:
                 GRID_RECT_BOUNDS(grid);
                 return 1;
             }
-            i32 dx = gx - (m_10->m_screenX >> 5);
+            i32 dx = gx - (m_object->m_screenX >> 5);
             IABS(dx);
-            i32 dy = gy - (m_10->m_screenY >> 5);
+            i32 dy = gy - (m_object->m_screenY >> 5);
             i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
             if (dist < best) {
                 POINT pt;
@@ -1355,9 +1355,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 inRange = 0;
-    if (occ != 0 && occ->m_10->m_screenX == occ->m_lastTilePxX
-        && occ->m_10->m_screenY == occ->m_lastTilePxY
-        && RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) != 0) {
+    if (occ != 0 && occ->m_object->m_screenX == occ->m_lastTilePxX
+        && occ->m_object->m_screenY == occ->m_lastTilePxY
+        && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
         inRange = 1;
     }
 
@@ -1408,9 +1408,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 if (m_poweredUp != 0) {
                     goto tail;
                 }
-                if (m_stamina >= 0x64 && o->m_10->m_screenX == o->m_lastTilePxX
-                    && o->m_10->m_screenY == o->m_lastTilePxY
-                    && RectContains(o->m_10->m_screenX, o->m_10->m_screenY) != 0) {
+                if (m_stamina >= 0x64 && o->m_object->m_screenX == o->m_lastTilePxX
+                    && o->m_object->m_screenY == o->m_lastTilePxY
+                    && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                     CommitNeighbor(
                         o->m_tileOwnerHi,
                         o->m_tileOwnerLo,
@@ -1512,13 +1512,13 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_stamina < 0x64) {
                 goto tail;
             }
-            if (RectContains(o->m_10->m_screenX, o->m_10->m_screenY) == 0) {
+            if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
                 goto tail;
             }
-            if (o->m_10->m_screenX != o->m_lastTilePxX) {
+            if (o->m_object->m_screenX != o->m_lastTilePxX) {
                 goto tail;
             }
-            if (o->m_10->m_screenY != o->m_lastTilePxY) {
+            if (o->m_object->m_screenY != o->m_lastTilePxY) {
                 goto tail;
             }
             CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, o->m_lastTilePxX, o->m_lastTilePxY);
@@ -1532,7 +1532,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
 
         case 3: {
             StepArrivalDrop(m_defenderX - 0x20, m_defenderY - 0x20, 0, m_arrivalFlags, 1, 0);
-            if (m_10->m_screenX == m_defenderX - 0x20 && m_10->m_screenY == m_defenderY - 0x20) {
+            if (m_object->m_screenX == m_defenderX - 0x20 && m_object->m_screenY == m_defenderY - 0x20) {
                 m_defenderState = 0;
                 return 1;
             }
@@ -1540,9 +1540,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o == 0) {
                 goto tail;
             }
-            if (m_poweredUp == 0 && m_stamina >= 0x64 && o->m_10->m_screenX == o->m_lastTilePxX
-                && o->m_10->m_screenY == o->m_lastTilePxY
-                && RectContains(o->m_10->m_screenX, o->m_10->m_screenY) != 0) {
+            if (m_poweredUp == 0 && m_stamina >= 0x64 && o->m_object->m_screenX == o->m_lastTilePxX
+                && o->m_object->m_screenY == o->m_lastTilePxY
+                && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 CommitNeighbor(
                     o->m_tileOwnerHi,
                     o->m_tileOwnerLo,
@@ -1558,7 +1558,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             m_arrivalRow = o->m_tileOwnerLo;
             m_defenderState = 1;
             {
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
                 i32* rect =
@@ -1632,13 +1632,13 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (m_stamina < 0x64) {
         return 1;
     }
-    if (RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) == 0) {
+    if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
         return 1;
     }
-    if (m_10->m_screenX != occ->m_lastTilePxX) {
+    if (m_object->m_screenX != occ->m_lastTilePxX) {
         return 1;
     }
-    if (m_10->m_screenY != occ->m_lastTilePxY) {
+    if (m_object->m_screenY != occ->m_lastTilePxY) {
         return 1;
     }
     CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX, occ->m_lastTilePxY);
@@ -1696,21 +1696,21 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) == 0) {
+            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 goto c2_miss;
             }
-            if (occ->m_10->m_screenX != occ->m_lastTilePxX) {
+            if (occ->m_object->m_screenX != occ->m_lastTilePxX) {
                 goto c2_miss;
             }
-            if (occ->m_10->m_screenY != occ->m_lastTilePxY) {
+            if (occ->m_object->m_screenY != occ->m_lastTilePxY) {
                 goto c2_miss;
             }
             if (m_198 == 0x1e) {
                 g_gameReg->m_cmdGrid->ApplyTriggerB(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
-                    occ->m_10->m_screenX,
-                    occ->m_10->m_screenY
+                    occ->m_object->m_screenX,
+                    occ->m_object->m_screenY
                 );
                 return 1;
             }
@@ -1729,7 +1729,7 @@ i32 CGrunt::StepArrivalDefense() {
         c2_miss:
             m_defenderState = 1;
             {
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -1771,21 +1771,21 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) == 0) {
+            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
             if (m_198 == 0x1e) {
                 g_gameReg->m_cmdGrid->ApplyTriggerB(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
-                    occ->m_10->m_screenX,
-                    occ->m_10->m_screenY
+                    occ->m_object->m_screenX,
+                    occ->m_object->m_screenY
                 );
                 m_defenderState = 2;
                 return 1;
             }
-            if (occ->m_10->m_screenX == occ->m_lastTilePxX
-                && occ->m_10->m_screenY == occ->m_lastTilePxY) {
+            if (occ->m_object->m_screenX == occ->m_lastTilePxX
+                && occ->m_object->m_screenY == occ->m_lastTilePxY) {
                 CommitNeighbor(
                     occ->m_tileOwnerHi,
                     occ->m_tileOwnerLo,
@@ -1802,22 +1802,22 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == 0) {
                 goto L_f308a;
             }
-            if (m_poweredUp == 0 && m_stamina >= 0x64 && occ->m_10->m_screenX == occ->m_lastTilePxX
-                && occ->m_10->m_screenY == occ->m_lastTilePxY
-                && RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) != 0) {
+            if (m_poweredUp == 0 && m_stamina >= 0x64 && occ->m_object->m_screenX == occ->m_lastTilePxX
+                && occ->m_object->m_screenY == occ->m_lastTilePxY
+                && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_198 == 0x1e) {
                     g_gameReg->m_cmdGrid->ApplyTriggerB(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
-                        occ->m_10->m_screenX,
-                        occ->m_10->m_screenY
+                        occ->m_object->m_screenX,
+                        occ->m_object->m_screenY
                     );
                     return 1;
                 }
-                if (occ->m_10->m_screenX != occ->m_lastTilePxX) {
+                if (occ->m_object->m_screenX != occ->m_lastTilePxX) {
                     return 1;
                 }
-                if (occ->m_10->m_screenY != occ->m_lastTilePxY) {
+                if (occ->m_object->m_screenY != occ->m_lastTilePxY) {
                     return 1;
                 }
                 CommitNeighbor(
@@ -1847,7 +1847,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalCol = occ->m_tileOwnerHi;
                 m_arrivalRow = occ->m_tileOwnerLo;
                 m_defenderState = 1;
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
                 i32* rect = reinterpret_cast<i32*>((*reinterpret_cast<char**>(m24 + 0x5c) + 0x40));
                 if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
@@ -1883,7 +1883,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             {
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 i32 baseX = h->m_extent.left;
                 i32 spanX = abs(h->m_extent.right - baseX);
                 i32 baseY = h->m_extent.top;
@@ -1940,9 +1940,9 @@ i32 CGrunt::ArrivalScanC() {
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = g->m_10->m_screenX;
-        if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-            && RectContains(x, g->m_10->m_screenY) != 0) {
+        i32 x = g->m_object->m_screenX;
+        if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+            && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -2002,9 +2002,9 @@ i32 CGrunt::ArrivalScanC() {
     if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
-        && g->m_10->m_screenY == g->m_lastTilePxY
-        && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
+    if (m_stamina >= 100 && g->m_object->m_screenX == g->m_lastTilePxX
+        && g->m_object->m_screenY == g->m_lastTilePxY
+        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
         m_dwell = 0;
         return 1;
@@ -2015,12 +2015,12 @@ i32 CGrunt::ArrivalScanC() {
     if (static_cast<u32>(m_dwell) <= 0x1f4) {
         goto L_tailc;
     }
-    if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(g->m_object->m_screenX >> 5, g->m_object->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         != 0) {
         if (m_390 != 0) {
             CCueRect* board = reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
-            i32 x = m_10->m_screenX;
-            i32 y = m_10->m_screenY;
+            i32 x = m_object->m_screenX;
+            i32 y = m_object->m_screenY;
             if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
@@ -2053,8 +2053,8 @@ L_tailc:
         RECT gb;
         gb.left = 0;
         gb.top = 0;
-        gb.right = grid->m_c;
-        gb.bottom = grid->m_10;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
         RECT isect;
         if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;
@@ -2068,8 +2068,8 @@ L_tailc:
             RECT gb2;
             gb2.left = 0;
             gb2.top = 0;
-            gb2.right = grid->m_c;
-            gb2.bottom = grid->m_10;
+            gb2.right = grid->m_width;
+            gb2.bottom = grid->m_height;
             if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
                 grid->m_60 = lb;
             }
@@ -2202,8 +2202,8 @@ state2: {
         RECT gb;
         gb.left = 0;
         gb.top = 0;
-        gb.right = grid->m_c;
-        gb.bottom = grid->m_10;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
         if (!IntersectRect(&grid->m_60, &box, &gb)) {
             grid->m_60 = box;
         }
@@ -2233,7 +2233,7 @@ state2: {
         i32 py = pt & 0xffff;
         CScanGrid* pl = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
         i32 flag;
-        if (static_cast<u32>(px) < static_cast<u32>(pl->m_c) && static_cast<u32>(py) < static_cast<u32>(pl->m_10) && px < pl->m_c && py < pl->m_10) {
+        if (static_cast<u32>(px) < static_cast<u32>(pl->m_width) && static_cast<u32>(py) < static_cast<u32>(pl->m_height) && px < pl->m_width && py < pl->m_height) {
             flag = (reinterpret_cast<i32*>(pl->m_8[py]))[px * 8 - px];
         } else {
             flag = 1;
@@ -2263,12 +2263,12 @@ state0: {
     if (nb->m_entranceCommitted == 0) {
         goto common;
     }
-    if (m_poweredUp == 0 && m_stamina >= 0x64 && nb->m_10->m_screenX == nb->m_lastTilePxX
-        && nb->m_10->m_screenY == nb->m_lastTilePxY
-        && RectContains(nb->m_10->m_screenX, nb->m_10->m_screenY) != 0) {
+    if (m_poweredUp == 0 && m_stamina >= 0x64 && nb->m_object->m_screenX == nb->m_lastTilePxX
+        && nb->m_object->m_screenY == nb->m_lastTilePxY
+        && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         CommitNeighbor(nb->m_tileOwnerHi, nb->m_tileOwnerLo, nb->m_lastTilePxX, nb->m_lastTilePxY);
-        m_arrivalCol = nb->m_10->m_screenX >> 5;
-        m_arrivalRow = nb->m_10->m_screenY >> 5;
+        m_arrivalCol = nb->m_object->m_screenX >> 5;
+        m_arrivalRow = nb->m_object->m_screenY >> 5;
         m_defenderState = 2;
         goto common;
     }
@@ -2278,10 +2278,10 @@ state0: {
     if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
         goto s0_reset;
     }
-    if (TileSwitch(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(nb->m_object->m_screenX >> 5, nb->m_object->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         == 0) {
         m_24c |= 0x4020;
-        TileSwitch(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(nb->m_object->m_screenX >> 5, nb->m_object->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_24c &= 0xffffbfdf;
     }
     m_dwell = 0;
@@ -2290,8 +2290,8 @@ state0: {
     }
     if (GruntPointVisible(
             reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
-            m_10->m_screenX,
-            m_10->m_screenY
+            m_object->m_screenX,
+            m_object->m_screenY
         )
         == 0) {
         goto s0_reset;
@@ -2313,7 +2313,7 @@ common: {
         i32 fy = nc->m_y;
         CScanGrid* pl = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
         i32 flag;
-        if (static_cast<u32>(fx) < static_cast<u32>(pl->m_c) && static_cast<u32>(fy) < static_cast<u32>(pl->m_10)) {
+        if (static_cast<u32>(fx) < static_cast<u32>(pl->m_width) && static_cast<u32>(fy) < static_cast<u32>(pl->m_height)) {
             flag = (reinterpret_cast<i32*>(pl->m_8[fy]))[fx * 8 - fx];
         } else {
             flag = 1;
@@ -2339,7 +2339,7 @@ common: {
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
     i32 flag2;
-    if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_c) && static_cast<u32>(gy) < static_cast<u32>(pl2->m_10)) {
+    if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_width) && static_cast<u32>(gy) < static_cast<u32>(pl2->m_height)) {
         flag2 = (reinterpret_cast<i32*>(pl2->m_8[gy]))[gx * 8 - gx];
     } else {
         flag2 = 1;
@@ -2468,9 +2468,9 @@ i32 CGrunt::SeekTarget() {
                     }
                     if (kk != 0 && kk != 0x14 && kk != 1
                         && !(k > 0x16 ? (sv->m_19c == 0x14) : false) && sv->m_gruntKind != 0x36) {
-                        i32 ex = sv->m_10->m_screenX >> 5;
-                        i32 ddx = ex - (this->m_10->m_screenX >> 5);
-                        i32 ey = (sv->m_10->m_screenY >> 5) - (this->m_10->m_screenY >> 5);
+                        i32 ex = sv->m_object->m_screenX >> 5;
+                        i32 ddx = ex - (this->m_object->m_screenX >> 5);
+                        i32 ey = (sv->m_object->m_screenY >> 5) - (this->m_object->m_screenY >> 5);
                         i32 dist = ddx * ddx + ey * ey;
                         if (dist < best
                             && dist <= this->m_defenderRadius * this->m_defenderRadius) {
@@ -2483,7 +2483,7 @@ i32 CGrunt::SeekTarget() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCol = bestIdx;
-                CGameObject* base = slots[bestIdx]->m_10;
+                CGameObject* base = slots[bestIdx]->m_object;
                 if (TileSwitch(
                         base->m_screenX >> 5,
                         base->m_screenY >> 5,
@@ -2493,8 +2493,8 @@ i32 CGrunt::SeekTarget() {
                         0
                     )
                     != 0) {
-                    i32 by = this->m_10->m_screenY;
-                    i32 bx = this->m_10->m_screenX;
+                    i32 by = this->m_object->m_screenY;
+                    i32 bx = this->m_object->m_screenX;
                     CCueRect* board =
                         reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
                     if (bx < board->right && board->left <= bx && by < board->bottom
@@ -2513,15 +2513,15 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGameObject* base =
-            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
+            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_object;
         TileSwitch(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
         bool atTarget = false;
         if (g != 0) {
-            i32 x = g->m_10->m_screenX;
-            if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-                && g->RectContains(x, reinterpret_cast<i32>(g->m_10)) != 0) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+                && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
                 atTarget = true;
             }
         }
@@ -2573,9 +2573,9 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         if (this->m_poweredUp == 0 && this->m_stamina > 99) {
-            i32 x = g->m_10->m_screenX;
-            if (x == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
-                && g->RectContains(x, reinterpret_cast<i32>(g->m_10)) != 0) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+                && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
                 CommitNeighbor(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
@@ -2588,8 +2588,8 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         if (TileSwitch(
-                g->m_10->m_screenX >> 5,
-                g->m_10->m_screenY >> 5,
+                g->m_object->m_screenX >> 5,
+                g->m_object->m_screenY >> 5,
                 0,
                 this->m_arrivalFlags,
                 1,
@@ -2601,8 +2601,8 @@ i32 CGrunt::SeekTarget() {
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
                 reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
-                this->m_10->m_screenX,
-                this->m_10->m_screenY
+                this->m_object->m_screenX,
+                this->m_object->m_screenY
             );
             if (r != 0) {
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -2664,13 +2664,13 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) == 0) {
+            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 goto c2_miss;
             }
-            if (occ->m_10->m_screenX != occ->m_lastTilePxX) {
+            if (occ->m_object->m_screenX != occ->m_lastTilePxX) {
                 goto c2_miss;
             }
-            if (occ->m_10->m_screenY != occ->m_lastTilePxY) {
+            if (occ->m_object->m_screenY != occ->m_lastTilePxY) {
                 goto c2_miss;
             }
             CommitNeighbor(
@@ -2681,7 +2681,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             );
             return 1;
         c2_miss: {
-            CWwdGameObjectA* h = m_10;
+            CWwdGameObjectA* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -2701,7 +2701,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             m_defenderState = 1;
             m_dwell = 0x1f4;
             {
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -2743,13 +2743,13 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) == 0) {
+            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (occ->m_10->m_screenX != occ->m_lastTilePxX) {
+            if (occ->m_object->m_screenX != occ->m_lastTilePxX) {
                 return 1;
             }
-            if (occ->m_10->m_screenY != occ->m_lastTilePxY) {
+            if (occ->m_object->m_screenY != occ->m_lastTilePxY) {
                 return 1;
             }
             CommitNeighbor(
@@ -2790,7 +2790,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             {
-                CWwdGameObjectA* h = m_10;
+                CWwdGameObjectA* h = m_object;
                 i32 baseX = h->m_extent.left;
                 i32 spanX = abs(h->m_extent.right - baseX);
                 i32 baseY = h->m_extent.top;

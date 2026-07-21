@@ -268,9 +268,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
     m_entranceActive = 1;
-    if (m_10->m_sortKey != 0xcf850) {
-        m_10->m_sortKey = 0xcf850;
-        m_10->m_flags |= 0x20000;
+    if (m_object->m_sortKey != 0xcf850) {
+        m_object->m_sortKey = 0xcf850;
+        m_object->m_flags |= 0x20000;
     }
 
     EntrancePrepare(); // thunk_FUN_0044b240 (a void this-method)
@@ -283,8 +283,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     i32 onScreen = 0;
     CGruntzMgr* g = g_gameReg;
     {
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             onScreen = 1;
@@ -357,7 +357,7 @@ RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
     if (m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGruntzMgr* g = g_gameReg;
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = h->m_screenX >> 5;
         i32 ty = h->m_screenY >> 5;
@@ -384,7 +384,7 @@ void CGrunt::LoadEntranceConfig() {
         }
 
         // Re-stamp the occupancy grid: clear old tile, set new tile.
-        h = m_10;
+        h = m_object;
         i32 oldX = m_lastTilePxX;
         m_entranceArmed = 0;
         i32 newPxX = h->m_screenX;
@@ -408,7 +408,7 @@ void CGrunt::LoadEntranceConfig() {
         m_lastTilePxY = newPxY;
         m_tileMgr->WireTileSwitchLogic(this, newPxX, newPxY);
 
-        h = m_10;
+        h = m_object;
         m_entranceCommitted = 1;
         if (h->m_sortKey != h->m_screenY + 0x186a0) {
             h->m_sortKey = h->m_screenY + 0x186a0;
@@ -490,7 +490,7 @@ void CGrunt::RearmEntranceDrop() {
         i32 a;
         i32 b;
         m_entranceCommitted = 0;
-        if (m_tileMgr->HitTestCell(m_10->m_screenX, m_10->m_screenY, &a, &b, 0) != 0) {
+        if (m_tileMgr->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0) != 0) {
             m_tileMgr->CellDispatch(a, b, 0xb, -1);
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         } else {
@@ -562,7 +562,7 @@ i32 CGrunt::StartBombGruntRun() {
     ApplySetState1(1);
     SetEntrancePos(1, 1);
     if (SetMoveStateA(1, 1, 0, 1) == 0) {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         m_tileMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
@@ -572,7 +572,7 @@ i32 CGrunt::StartBombGruntRun() {
         dx = 1;
     }
     {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         dy += h->m_screenY >> 5;
         dx += h->m_screenX >> 5;
     }
@@ -584,7 +584,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
     m_22c = 1;
     {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -663,8 +663,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseIdle5 = 0;
 
         CGruntzMgr* g = g_gameReg;
-        i32 y = m_10->m_screenY;
-        i32 x = m_10->m_screenX;
+        i32 y = m_object->m_screenY;
+        i32 x = m_object->m_screenX;
         CCueRect* r = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -758,7 +758,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // (SetMoveStateA(m_19c,1,0,0)), clears m_entranceActive, then either - when the
 // grunt's last tile carries the 0x80 attribute - commits the arrival move
 // (SetEntrancePos(1,1); tileMgr->CommitArrivalMove(this, lastX, lastY)) or else
-// bumps the HUD z-clamp (m_10->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).
+// bumps the HUD z-clamp (m_object->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).
 //
 // @early-stop
 // reloc-masked-extern plateau: CFG, every member offset/gate, the board index math
@@ -825,7 +825,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         return 0;
     }
 
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 z = h->m_screenY + 0x186a0;
     if (h->m_sortKey != z) {
         h->m_sortKey = z;
@@ -875,7 +875,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->Cue1(m_10->m_188);
+            g_gameReg->m_cueSink->Cue1(m_object->m_188);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -942,8 +942,8 @@ i32 CGrunt::StepArrivalCommit() {
     // default: the M / N reject codes.
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0);
     if (eq) {
-        i32 px = (m_10->m_screenX & ~0x1f) + 0x10;
-        i32 py = (m_10->m_screenY & ~0x1f) + 0x10;
+        i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
+        i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
         i32 redo = 1;
         if (px != m_lastTilePxX || py != m_lastTilePxY) {
             if (IsDropReady(1)) {
@@ -972,14 +972,14 @@ i32 CGrunt::StepArrivalCommit() {
 
 idleReseed:
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->Cue1(m_10->m_188);
+        g_gameReg->m_cueSink->Cue1(m_object->m_188);
     }
     SetMoveStateA(m_19c, 1, 0, 0);
     {
-        i32 z = m_10->m_screenY + 0x186a0;
-        if (m_10->m_sortKey != z) {
-            m_10->m_sortKey = z;
-            m_10->m_flags |= 0x20000;
+        i32 z = m_object->m_screenY + 0x186a0;
+        if (m_object->m_sortKey != z) {
+            m_object->m_sortKey = z;
+            m_object->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != 0) {
@@ -1046,10 +1046,10 @@ finalize:
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeQ));
     {
-        i32 z = m_10->m_screenY + 0x186a0;
-        if (m_10->m_sortKey != z) {
-            m_10->m_sortKey = z;
-            m_10->m_flags |= 0x20000;
+        i32 z = m_object->m_screenY + 0x186a0;
+        if (m_object->m_sortKey != z) {
+            m_object->m_sortKey = z;
+            m_object->m_flags |= 0x20000;
         }
     }
     m_value = m_38->m_1a0.m_14;
@@ -1109,7 +1109,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
-            CWwdGameObjectA* h = m_10;
+            CWwdGameObjectA* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* sc = *reinterpret_cast<char**>((reinterpret_cast<char*>(g_gameReg->m_world) + 0x24));
@@ -1172,7 +1172,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     CGruntzMgr* g = g_gameReg;
     void* sub2c = *reinterpret_cast<void**>((reinterpret_cast<char*>(g) + 0x2c));
     CGruntzMapMgr* b = g->m_tileGrid;
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 xbound = b->m_width;
     i32 tileY = h->m_screenY >> 5;
     i32 tileX = h->m_screenX >> 5;
@@ -1391,7 +1391,7 @@ i32 CGrunt::StepAnimDispatchB() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            EmitMoveCueShort(m_10->m_188, 0, 0);
+            EmitMoveCueShort(m_object->m_188, 0, 0);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,

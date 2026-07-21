@@ -416,7 +416,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
             // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
             {
-                i32* cfgp = &m_hlGrid[4].m_handle;  // +0x3dc, stride 0x18
+                i32* cfgp = &m_hlGrid[4].m_value;  // +0x3dc, stride 0x18
                 i32* cachep = reinterpret_cast<i32*>(&m_hlNotify[4]); // +0x4a8, stride 4
                 i32 y = by + 0x155;
                 i32 c = 0xd7;

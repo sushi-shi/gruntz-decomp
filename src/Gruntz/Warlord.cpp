@@ -174,7 +174,7 @@ typedef enum WarlordBattleTag {
 //     base init and holds &m_link in ebx; cl keeps &m_link in edi and reloads arg
 //     from [esp+0x3c] - a register-role coin-flip in the shared inline CUserLogic(obj)
 //     under this leaf's higher pressure, cascading to the grid-snap `and al,0xe0`
-//     (cl: `and ecx,-0x20`), the m_10 reload-vs-cache choices, and the bl EH-const.
+//     (cl: `and ecx,-0x20`), the m_object reload-vs-cache choices, and the bl EH-const.
 //   * emission order: retail seeds the tile-tail (m_34/m_38/m_3c) BEFORE the m_54
 //     CString member ctor; with `: CUserLogic` + a body TILE_LOGIC_SEED the seed
 //     necessarily emits AFTER the member ctor. Deriving CWarlord from the byte-
@@ -300,7 +300,7 @@ CWarlord::CWarlord(i32 arg)
 //        mode 8 POST : re-derive the draw-fill selector (the ctor GetSel path, UNCLAMPED).
 //   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
 //   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
-//   ->m_0c (CDDrawSurfaceMgr) ->m_animRegistry (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
+//   ->m_0c (CDDrawSurfaceMgr) ->m_animRegistry (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_object
 //   forward-Lookups a key (0x1b8438) and KeyOfValue_152d30 (RVO CString) reverses it.
 //   Every callee/field/mode/chain above was verified against the retail disasm.
 //
@@ -498,7 +498,7 @@ i32 CWarlord::RearmMoving2() {
 // DECODED (for the final sweep):
 //   ((CAniAdvanceCursor*)sub)->Advance(g_engineFrameDelta);                      // m_38+0x1a0, 0x15c360
 //   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
-//   CWwdGameObjectA* o = m_10; i32 x=o->m_5c, y=o->m_60;
+//   CWwdGameObjectA* o = m_object; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {
 //     spr = reg->m_30->m_08->CreateSprite(0, x-30, y+10, 0xcf84f, "..."@0x60a96c, 0x40003);
 //     if (spr) { spr->ApplyName("..."@0x60d30c);    // 0x150540
@@ -586,7 +586,7 @@ i32 CGrunt::ResolveDeathAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -594,7 +594,7 @@ i32 CGrunt::ResolveDeathAnimation() {
             g->m_cueSink->Cue(h->m_188, m_deathCueArg, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_10->m_188, m_deathCueArg, -1, -1, -1);
+        g->m_cueSink->Cue(m_object->m_188, m_deathCueArg, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -615,7 +615,7 @@ i32 CGrunt::ResolveAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -623,7 +623,7 @@ i32 CGrunt::ResolveAnimation() {
             g->m_cueSink->Cue(h->m_188, 0x435, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_10->m_188, 0x43f, -1, -1, -1);
+        g->m_cueSink->Cue(m_object->m_188, 0x43f, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -646,7 +646,7 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -654,7 +654,7 @@ i32 CGrunt::ResolveIdleAnimation() {
             g->m_cueSink->Cue(h->m_188, idx + 0x431, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_10->m_188, idx + 0x43b, -1, -1, -1);
+        g->m_cueSink->Cue(m_object->m_188, idx + 0x43b, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -682,7 +682,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -690,7 +690,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
             g->m_cueSink->Cue(h->m_188, idx + 0x42e, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_10->m_188, idx + 0x438, -1, -1, -1);
+        g->m_cueSink->Cue(m_object->m_188, idx + 0x438, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;

@@ -327,7 +327,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     if (mgr->m_walkCursor != 0) {
         CDDrawGroupNode* n = mgr->m_walkCursor;
         mgr->m_walkCursor = n->m_next;
-        obj = n->m_gameObj;
+        obj = n->m_obj;
     } else {
         obj = 0;
     }
@@ -371,7 +371,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         if (mgr->m_walkCursor != 0) {
             CDDrawGroupNode* n = mgr->m_walkCursor;
             mgr->m_walkCursor = n->m_next;
-            obj = n->m_gameObj;
+            obj = n->m_obj;
         } else {
             obj = 0;
         }

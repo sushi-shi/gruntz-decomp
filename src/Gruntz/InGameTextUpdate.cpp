@@ -72,7 +72,7 @@ i32 CInGameText::Update() {
     if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
         && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
         CSndHost* set = g_gameReg->m_world->m_soundRegistry;
-        if (set->m_30 == 0) {
+        if (set->m_emitGate == 0) {
             void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
             set->m_10.Lookup("GAME_HELPBOOK", res_ob);
             LeafCue* res = static_cast<LeafCue*>(res_ob);

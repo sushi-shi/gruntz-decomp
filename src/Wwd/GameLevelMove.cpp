@@ -564,7 +564,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     }
     do {
         CDDrawGroupNode* nx = node->m_next;
-        CGameObject* obj = node->m_gameObj;
+        CGameObject* obj = node->m_obj;
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
             && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
             i32 tLeft = t->m_extent.left + t->m_screenX;

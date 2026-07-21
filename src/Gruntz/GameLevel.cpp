@@ -799,7 +799,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                 while (node != 0 && blocked == 0) {
                     CDDrawGroupNode* cur = node;
                     node = node->m_next;
-                    CGameObject* pl = cur->m_gameObj;
+                    CGameObject* pl = cur->m_obj;
                     if (pl->m_sortKey < zBound) { // z-key vs the plane's z bound
                         pl->Render(static_cast<CDDrawSurfacePair*>(visitor));
                     } else {
@@ -816,7 +816,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
         while (node != 0) {
             CDDrawGroupNode* cur = node;
             node = node->m_next;
-            cur->m_gameObj->Render(static_cast<CDDrawSurfacePair*>(visitor));
+            cur->m_obj->Render(static_cast<CDDrawSurfacePair*>(visitor));
         }
         return;
     }
@@ -1506,7 +1506,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* pl = cur->m_gameObj;
+        CGameObject* pl = cur->m_obj;
         if (pl->m_collCategory == 0x80) {
             if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
                 t->m_moveMode = 1;

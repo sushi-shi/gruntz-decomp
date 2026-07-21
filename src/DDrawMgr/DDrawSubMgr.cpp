@@ -77,7 +77,7 @@ static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
 
 RVA(0x00114120, 0x70)
 i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     void* val = 0;
@@ -747,7 +747,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
 // helper-extracted reads). docs/patterns/zero-register-pinning.md.
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     LeafCue* e = new LeafCue(LeafReadMapCount(this), m_0c);
@@ -776,7 +776,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
 // values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     LeafCue* e = new LeafCue(LeafReadMapCount(this), m_0c);
@@ -794,7 +794,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) 
 
 RVA(0x00157e90, 0x23)
 LeafCue* CDDrawSubMgrLeafScan::AddFromSource_157e90(CParseSource* src) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     if (src == 0) {
@@ -811,7 +811,7 @@ void CDDrawSubMgrLeafScan::AddEntry_157ec0(LeafCue* elem, const char* key) {
 
 RVA(0x00157ee0, 0x1c6)
 i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, const char* suffix) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     i32 count = 0;
@@ -875,7 +875,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, con
 // register-pinning.md. No source lever.
 RVA(0x001580b0, 0xf6)
 i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     CString key;
@@ -897,7 +897,7 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
     char* p24 = reinterpret_cast<char*>(OwnerMgr()->m_level);
-    if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_30 == 0) {
+    if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_emitGate == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
@@ -909,7 +909,7 @@ i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 
 
 RVA(0x00158210, 0xaa)
 LeafCue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
@@ -927,7 +927,7 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafCue* target) {
     if (target == 0) {
         return 0;
     }
-    if (m_30 != 0) {
+    if (m_emitGate != 0) {
         return 0;
     }
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));

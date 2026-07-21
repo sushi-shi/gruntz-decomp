@@ -25,7 +25,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE { // [5] overrides CLoadable::IsLoaded (the worker-gate)
         // retail: both-zero falls through to `return 0`, either gate `jne` to a shared
         // out-of-line `return 1` at the tail (the &&-guard shape, not a setne fold).
-        if (m_2c == 0 && m_30 == 0) {
+        if (m_2c == 0 && m_emitGate == 0) {
             return 0;
         }
         return 1;
@@ -85,10 +85,7 @@ public:
     // not ready): the DDrawSubMgr family's "busy/loading guard" (m_30) and the game
     // TUs' "live-surface/emit gate" (m_emitGate; must be 0 to emit). Anonymous union
     // so both spellings bind the one field.
-    union {
-        i32 m_30;
-        i32 m_emitGate;
-    };
+    i32 m_emitGate; // +0x30  live-surface/emit gate (must be 0 to emit; ex "m_30")
     i32 m_34; // +0x34  redraw arg
 };
 

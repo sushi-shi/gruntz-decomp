@@ -141,8 +141,8 @@ i32 CGrunt::ScanNearestTarget() {
                 i32 pb;
                 PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (cand->m_10->m_screenX >> 5) - cx;
-                    i32 dy = (cand->m_10->m_screenY >> 5) - cy;
+                    i32 dx = (cand->m_object->m_screenX >> 5) - cx;
+                    i32 dy = (cand->m_object->m_screenY >> 5) - cy;
                     i32 d = dx * dx + dy * dy;
                     if (d < bestDist) {
                         best = cand;
@@ -182,9 +182,9 @@ i32 CGrunt::ScanNearestTarget() {
     // atTarget: `best` has reached its own last-tile pixel AND the tile probes free.
     i32 atTarget = 0;
     if (best != 0) {
-        i32 x = best->m_10->m_screenX;
-        if (x == best->m_lastTilePxX && best->m_10->m_screenY == best->m_lastTilePxY
-            && this->RectContains(x, best->m_10->m_screenY) != 0) {
+        i32 x = best->m_object->m_screenX;
+        if (x == best->m_lastTilePxX && best->m_object->m_screenY == best->m_lastTilePxY
+            && this->RectContains(x, best->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -236,14 +236,14 @@ i32 CGrunt::ScanNearestTarget() {
             if (best == 0) {
                 goto L_wander;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_10->m_screenX == best->m_lastTilePxX
-                && best->m_10->m_screenY == best->m_lastTilePxY) {
+            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_object->m_screenX == best->m_lastTilePxX
+                && best->m_object->m_screenY == best->m_lastTilePxY) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, best->m_entranceReason);
                 if (pa <= pb
-                    && this->RectContains(best->m_10->m_screenX, best->m_10->m_screenY) != 0) {
+                    && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY) != 0) {
                     CommitNeighbor(
                         best->m_tileOwnerHi,
                         best->m_tileOwnerLo,
@@ -298,8 +298,8 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 if (BoardTest(
                         reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
-                        m_10->m_screenX,
-                        m_10->m_screenY
+                        m_object->m_screenX,
+                        m_object->m_screenY
                     )
                     != 0) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -332,7 +332,7 @@ i32 CGrunt::ScanNearestTarget() {
                     m_arrivalRerollHi = 0;
                 } else {
                     // not elapsed: jitter to a random nearby board cell.
-                    CWwdGameObjectA* hud = m_10;
+                    CWwdGameObjectA* hud = m_object;
                     i32 baseCol = hud->m_extent.left;
                     i32 spanX = hud->m_extent.right - baseCol;
                     i32 baseRow = hud->m_extent.top;
@@ -346,7 +346,7 @@ i32 CGrunt::ScanNearestTarget() {
                         baseRow += rand() % spanY;
                     }
                     CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
-                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_10)) {
+                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
                     if (CoordCount() != 0) {
@@ -393,11 +393,11 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_poweredUp != 0 || m_stamina < 100) {
                 return 1;
             }
-            if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
+            if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (sg->m_10->m_screenX != sg->m_lastTilePxX
-                || sg->m_10->m_screenY != sg->m_lastTilePxY) {
+            if (sg->m_object->m_screenX != sg->m_lastTilePxX
+                || sg->m_object->m_screenY != sg->m_lastTilePxY) {
                 return 1;
             }
             CommitNeighbor(
@@ -434,11 +434,11 @@ i32 CGrunt::ScanNearestTarget() {
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
+                if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                     goto L_setLock;
                 }
-                if (sg->m_10->m_screenX != sg->m_lastTilePxX
-                    || sg->m_10->m_screenY != sg->m_lastTilePxY) {
+                if (sg->m_object->m_screenX != sg->m_lastTilePxX
+                    || sg->m_object->m_screenY != sg->m_lastTilePxY) {
                     goto L_setLock;
                 }
                 CommitNeighbor(

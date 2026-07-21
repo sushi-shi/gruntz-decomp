@@ -329,7 +329,7 @@ void CWormhole::SpawnPartners() {
         return;
     }
     do {
-        CGameObject* obj = node->m_gameObj;
+        CGameObject* obj = node->m_obj;
         node = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;

@@ -78,7 +78,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 }
                 return 1;
             }
-            if (m_world->m_soundRegistry->m_30 == 0) { // the sound host's busy/emit gate
+            if (m_world->m_soundRegistry->m_emitGate == 0) { // the sound host's busy/emit gate
                 if (BadSelect(s_gameBadSelect) != 0) {
                     (reinterpret_cast<LeafCue*>(&g_sndCueTag))->PlayIfElapsed(0, 0, 0, 0);
                 }
@@ -140,7 +140,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
-                g->SetArrivalTarget(static_cast<i32>(player), px, node->m_10->m_screenX, node->m_10->m_screenY);
+                g->SetArrivalTarget(static_cast<i32>(player), px, node->m_object->m_screenX, node->m_object->m_screenY);
             }
             res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(player, *reinterpret_cast<i32*>(&a4), *reinterpret_cast<i32*>(&a8), 0)
                              : m_mgr->m_cmdGrid->ApplyTriggerB(player, *reinterpret_cast<i32*>(&a4), *reinterpret_cast<i32*>(&a8), 0);
@@ -231,10 +231,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     g->m_defenderState = 0;
                     g->m_arrivalRow = -1;
                     g->m_arrivalActive = 0;
-                    g->m_10->m_extent.left = 0;
-                    g->m_10->m_extent.right = 0;
-                    g->m_10->m_extent.top = 0;
-                    g->m_10->m_extent.bottom = 0;
+                    g->m_object->m_extent.left = 0;
+                    g->m_object->m_extent.right = 0;
+                    g->m_object->m_extent.top = 0;
+                    g->m_object->m_extent.bottom = 0;
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = 0;
@@ -321,7 +321,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 g->m_arrivalActive = 0;
                 return 0;
             }
-            CGameObject* m10 = g2->m_10;
+            CGameObject* m10 = g2->m_object;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
             res = m_mgr->m_cmdGrid->ApplyTriggerA(player, *reinterpret_cast<i32*>(&a7), row, 0);
             if (res != 0) {
@@ -383,7 +383,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 g->m_arrivalActive = 0;
                 return 0;
             }
-            CGameObject* m10 = g2->m_10;
+            CGameObject* m10 = g2->m_object;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
             res = m_mgr->m_cmdGrid->ApplyTriggerB(player, *reinterpret_cast<i32*>(&a7), row, 0);
             if (res != 0) {

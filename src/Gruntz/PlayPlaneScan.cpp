@@ -55,7 +55,7 @@ i32 CPlay::ScanBuildTiles() {
     while (pos != 0) {
         CDDrawGroupNode* node = pos;
         pos = node->m_next;
-        CGameObject* p = node->m_gameObj;
+        CGameObject* p = node->m_obj;
         if (p == 0) {
             continue;
         }
@@ -209,7 +209,7 @@ i32 CPlay::ScanShuffleQuads() {
     while (pos != 0) {
         CDDrawGroupNode* node = pos;
         pos = node->m_next;
-        CGameObject* p = node->m_gameObj;
+        CGameObject* p = node->m_obj;
         if (p == 0) {
             continue;
         }

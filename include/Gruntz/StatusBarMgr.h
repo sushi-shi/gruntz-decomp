@@ -43,10 +43,8 @@ struct CSbiHlRow {
     // the same notify pointer. Same role, same offset. The anonymous union keeps BOTH
     // names live (name-preserving fold; layout unchanged) rather than silently dropping
     // one side's knowledge.
-    union {
-        i32 m_handle;
-        i32 m_value;
-    };
+    i32 m_value; // +0x04  the value handed to the slot's notify sink (the hl-grid
+                 // code's "handle" was the same role - one name now)
     i32 m_8;  // +0x08
     i32 m_c;  // +0x0c
     i32 m_10; // +0x10

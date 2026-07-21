@@ -84,7 +84,7 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
     do {
         CTmCell* c = *cell;
         if (c != 0) {
-            CGameObject* o = c->m_10;
+            CGameObject* o = c->m_object;
             i32 dx = (o->m_screenX >> 5) - tx;
             i32 dy = (o->m_screenY >> 5) - ty;
             i32 d = dx * dx + dy * dy;
@@ -617,7 +617,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             m_pendingFxKind = 0;
             (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
-            CGameObject* o = hit->m_10;
+            CGameObject* o = hit->m_object;
             this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
             return 1;
         } else {
@@ -1050,7 +1050,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* obj = cur->m_gameObj;
+        CGameObject* obj = cur->m_obj;
         void* init = static_cast<void*>(obj->m_7c->m_notify);
         if (init == static_cast<void*>(&IconClassInitA) || init == static_cast<void*>(&IconClassInitB)) {
             i32 ox = obj->m_screenX >> 5;
@@ -1198,7 +1198,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
             CTmCell* g = *cell;
             i32 id = 0;
             if (g != 0) {
-                id = g->m_10->m_188;
+                id = g->m_object->m_188;
                 Ar_WriteId(lvl->m_childGroup, id, ar);
             }
             ar->Write(&id, 4);
@@ -1247,8 +1247,8 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(&goalId, 4);
     CTmCell* ov = m_pendingFx; // the pending-fx grunt; its HUD carries the archive id
     i32 ovId = 0;
-    if (ov != 0 && ov->m_10 != 0) {
-        ovId = ov->m_10->m_188;
+    if (ov != 0 && ov->m_object != 0) {
+        ovId = ov->m_object->m_188;
     }
     ar->Write(&ovId, 4);
     ar->Write(m_274, 0x10);
@@ -1514,7 +1514,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
-            CGameObject* o = cell->m_10;
+            CGameObject* o = cell->m_object;
             g_gameReg->m_cmdGrid->Spawn(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
         }
     } else if (kind != 0) {
@@ -1724,8 +1724,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
             if (g->m_entranceDropActive != 0) {
                 continue;
             }
-            i32 gx = g->m_10->m_screenX;
-            i32 gy = g->m_10->m_screenY;
+            i32 gx = g->m_object->m_screenX;
+            i32 gy = g->m_object->m_screenY;
             i32 lx = gx - 7;
             i32 ly = gy - 7;
             i32 hx = lx + 14;
@@ -1808,7 +1808,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             break;
                         }
                         g->FreezeApply();
-                        CGameObject* h = g->m_10;
+                        CGameObject* h = g->m_object;
                         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,
                             h->m_screenX,
@@ -1934,7 +1934,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     if (free >= 15) {
         return 0;
     }
-    CGameObject* o = src->m_10;
+    CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~0x1f) + 0x10;
     i32 sy = (o->m_screenY & ~0x1f) + 0x10;
     i32 k = src->m_entranceReason;
@@ -2365,7 +2365,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         if (cell != 0) {
             ResetCell(payload[0], payload[1], 1, 0);
             if (m_selSentinel == slot) {
-                CGameObject* disp = cell->m_10;
+                CGameObject* disp = cell->m_object;
                 i32 x = disp->m_screenX;
                 i32 y = disp->m_screenY;
                 if (x < minX) {
@@ -2423,7 +2423,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
         CTmCell* cell = m_grid[k[0] * TM_GRID_COLS + k[1]];
         if (cell != 0) {
             count++;
-            CGameObject* g = cell->m_10;
+            CGameObject* g = cell->m_object;
             i32 gx = g->m_screenX;
             i32 gy = g->m_screenY;
             if (gx < minX) {
@@ -2521,7 +2521,7 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
             do {
                 CTmCell* g = *cell;
                 if (g != 0 && g->m_entranceCommitted != 0) {
-                    CGameObject* o = g->m_10;
+                    CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> 5) - tx;
                     i32 dy = (o->m_screenY >> 5) - ty;
                     i32 d = abs(dx * dx + dy * dy);
@@ -2600,7 +2600,7 @@ void CTriggerMgr::DestroyAllAnims() {
 
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
-        CTmCell* obj = reinterpret_cast<CTmCell*>(node->m_gameObj);
+        CTmCell* obj = reinterpret_cast<CTmCell*>(node->m_obj);
         node = node->m_next;
         if (obj != 0) {
             char* desc = *reinterpret_cast<char**>((reinterpret_cast<char*>(obj) + 0x7c));
@@ -2723,7 +2723,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     }
     i32 kind = cell->m_198;
     if (kind == 0x1e) {
-        CGameObject* o = cell->m_10;
+        CGameObject* o = cell->m_object;
         g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
         OverlayTick();
         return 1;

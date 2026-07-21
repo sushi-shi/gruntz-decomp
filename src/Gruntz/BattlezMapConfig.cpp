@@ -4253,7 +4253,7 @@ inflight: {
         g->m_defenderState = 2;
         g->m_dwell = 0;
         {
-            CGameObject* s = static_cast<CGameObject*>(nb->m_10);
+            CGameObject* s = static_cast<CGameObject*>(nb->m_object);
             if (g->TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) == 0) {
                 return 1;
             }
@@ -4332,7 +4332,7 @@ L_clear:
 // pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
 RVA(0x00031c70, 0x1d)
 GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 x = h->m_screenX >> 5;
     i32 y = h->m_screenY >> 5;
     out->m_x = x;

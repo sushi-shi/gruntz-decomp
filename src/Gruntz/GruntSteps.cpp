@@ -265,7 +265,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     i32 code = (((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
                     ->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
-        if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
+        if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc.
             m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
@@ -296,7 +296,7 @@ CGruntVoiceRec g_voiceSW;
 
 RVA(0x000511b0, 0x246)
 void CGrunt::PlayMoveSound(i32 x, i32 y) {
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 dy = y - h->m_screenY;
     i32 dx = x - h->m_screenX;
     i32 cx = h->m_screenX;
@@ -359,9 +359,9 @@ void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
 
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 a) {
-    m_10->m_screenX = m_lastTilePxX;
-    m_10->m_screenY = m_lastTilePxY;
-    CWwdGameObjectA* h = m_10;
+    m_object->m_screenX = m_lastTilePxX;
+    m_object->m_screenY = m_lastTilePxY;
+    CWwdGameObjectA* h = m_object;
     if (h->m_sortKey != h->m_screenY + 0x186a0) {
         h->m_sortKey = h->m_screenY + 0x186a0;
         h->m_flags |= 0x20000;
@@ -889,7 +889,7 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
 // reverses the eax/ecx axis assignment. Source-invariant on a 75-byte leaf. ~84%.
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 px = (h->m_screenX & ~0x1f) + 0x10;
     i32 py = (h->m_screenY & ~0x1f) + 0x10;
     if (px != m_lastTilePxX || py != m_lastTilePxY) {
@@ -936,7 +936,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (eq) {
         // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
         if (m_entranceReason == 0x13) {
-            EmitMoveCueShort(m_10->m_188, 0, 0);
+            EmitMoveCueShort(m_object->m_188, 0, 0);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1005,14 +1005,14 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
 idleReseed:
     // codes G/L/P: drive the move state by m_19c and (m_170==0x1e) fire the cue.
     if (m_entranceReason == 0x1e) {
-        EmitMoveCueShort(m_10->m_188, 0, 0);
+        EmitMoveCueShort(m_object->m_188, 0, 0);
     }
     SetMoveStateA(m_19c, 1, 0, 1);
     {
-        i32 px = m_10->m_screenY + 0x186a0;
-        if (m_10->m_sortKey != px) {
-            m_10->m_sortKey = px;
-            m_10->m_flags |= 0x20000;
+        i32 px = m_object->m_screenY + 0x186a0;
+        if (m_object->m_sortKey != px) {
+            m_object->m_sortKey = px;
+            m_object->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != 0) {

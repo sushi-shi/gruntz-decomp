@@ -434,7 +434,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         AnimWorkerObj* rec = obj->m_7c;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &rec->m_24;
@@ -584,7 +584,7 @@ void CDDrawChildGroup::InsertSorted_159e40(CGameObject* obj, i32 addToMaps) {
     i32 key = obj->m_sortKey;
     while (node != 0) {
         CDDrawGroupNode* cur = node;
-        CWwdGameObject* data = cur->m_wwd;
+        CWwdGameObject* data = static_cast<CWwdGameObject*>(cur->m_obj);
         node = node->m_next;
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
             obj->m_posCache = reinterpret_cast<i32>(m_list.InsertBefore(reinterpret_cast<POSITION>(cur), static_cast<CObject*>(obj)));
@@ -868,7 +868,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder_15a780() {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    CWwdGameObject* anchor = node->m_wwd;
+    CWwdGameObject* anchor = static_cast<CWwdGameObject*>(node->m_obj);
     node = node->m_next;
     if (anchor == 0) {
         return 1;
@@ -883,7 +883,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
             }
             CDDrawGroupNode* cur = node;
             node = node->m_next;
-            anchor = cur->m_wwd;
+            anchor = static_cast<CWwdGameObject*>(cur->m_obj);
         } while (node != 0);
     }
     if (anchor == 0) {
@@ -896,7 +896,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
     do {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if ((obj->m_flags & 0x20000) == 0) {
             i32 curKey = obj->m_sortKey;
             if (key > curKey) {
@@ -917,7 +917,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->m_04 == type) {
             return obj;
         }
@@ -931,7 +931,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type) {
             return obj;
         }
@@ -956,7 +956,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
     do {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type) {
             void* worker = *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0x7c));
             if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(worker) + 0x10)) == *reinterpret_cast<i32*>((reinterpret_cast<char*>(key) + 0x10))) {
@@ -1019,7 +1019,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
     do {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && *reinterpret_cast<i32*>((reinterpret_cast<char*>(obj) + 0x4)) == type
             && *reinterpret_cast<void**>((reinterpret_cast<char*>(obj) + 0xe8)) == key) {
             return obj;
@@ -1034,7 +1034,7 @@ CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (WwdKey(obj) == key) {
             return obj;
         }
@@ -1048,7 +1048,7 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && WwdKey(obj) == key) {
             return obj;
         }
@@ -1063,7 +1063,7 @@ i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->m_04 == kind) {
             if (found != 0) {
                 return 0;
@@ -1081,7 +1081,7 @@ i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj->m_04 == kind) {
             ++count;
         }
@@ -1102,7 +1102,7 @@ void CDDrawChildGroup::PruneList_15aa90() {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         if (obj != 0 && !(obj->m_flags & 0x200)) {
             m_list.RemoveAt(reinterpret_cast<POSITION>(cur));
             m_map2c.RemoveKey(WwdKey(obj));
@@ -1126,7 +1126,7 @@ i32 CDDrawChildGroup::SumWeighted_15aaf0() {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CWwdGameObject* obj = cur->m_wwd;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_04);
         ++i;
     }

@@ -265,7 +265,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     // --- CGrunt field-init block (retail offset order) ---
     m_148 = 0;
     m_14c = 0;
-    m_10->m_moveMode = 7;
+    m_object->m_moveMode = 7;
     // The base moving-object per-frame update fired once at spawn - the qualified
     // call is direct, binding the slot-16 body @0x16ea90 (MovingLogic.cpp) for real.
     CMovingLogic::MovingSlot16();
@@ -294,9 +294,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_entranceCell.col = g_gruntDefEntranceCell[0];
     m_entranceCell.row = g_gruntDefEntranceCell[1];
     m_entranceCell.reason = g_gruntDefEntranceCell[2];
-    m_434 = m_10->m_11c;
+    m_434 = m_object->m_11c;
     m_438 = g_frameTicks;
-    m_10->m_moveMode = 1;
+    m_object->m_moveMode = 1;
     m_430 = 0;
     m_42c = 0;
     m_poseWalk = 0;
@@ -377,7 +377,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_defenderState = 0;
     m_2d8 = 0;
     {
-        CWwdGameObjectA* h = m_10;
+        CWwdGameObjectA* h = m_object;
         i32 lim = h->m_screenY + 0x186a0;
         if (h->m_sortKey != lim) {
             h->m_sortKey = lim;
@@ -562,7 +562,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_448 = s_GRUNTZ_ + m_animSetName;
     }
     i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 keep50 = h->m_drawFillCmd;
     h->m_drawActive = 1;
     h->m_drawFillCmd = keep50;
@@ -618,45 +618,45 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
-    CGrunt* tgt = m_tileMgr->FindAtPixel(m_10->m_screenX, m_10->m_screenY);
+    CGrunt* tgt = m_tileMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
     if (tgt == 0) {
         return 0;
     }
     RECT r;
     CopyRect(&r, reinterpret_cast<LPRECT>((reinterpret_cast<char*>(tgt->m_38) + 0x144)));
-    CGameObject* th = tgt->m_10;
+    CGameObject* th = tgt->m_object;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
     POINT a, b;
 
-    b.x = m_10->m_screenX;
-    b.y = m_10->m_screenY - 0x3e8;
-    a.x = m_10->m_screenX;
-    a.y = m_10->m_screenY + 0x3e8;
+    b.x = m_object->m_screenX;
+    b.y = m_object->m_screenY - 0x3e8;
+    a.x = m_object->m_screenX;
+    a.y = m_object->m_screenY + 0x3e8;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_screenX - 0x3e8;
-    b.y = m_10->m_screenY;
-    a.x = m_10->m_screenX + 0x3e8;
-    a.y = m_10->m_screenY;
+    b.x = m_object->m_screenX - 0x3e8;
+    b.y = m_object->m_screenY;
+    a.x = m_object->m_screenX + 0x3e8;
+    a.y = m_object->m_screenY;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_screenX - 0x3e8;
-    b.y = m_10->m_screenY - 0x3e8;
-    a.x = m_10->m_screenX + 0x3e8;
-    a.y = m_10->m_screenY + 0x3e8;
+    b.x = m_object->m_screenX - 0x3e8;
+    b.y = m_object->m_screenY - 0x3e8;
+    a.x = m_object->m_screenX + 0x3e8;
+    a.y = m_object->m_screenY + 0x3e8;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_screenX - 0x3e8;
-    b.y = m_10->m_screenY + 0x3e8;
-    a.x = m_10->m_screenX + 0x3e8;
-    a.y = m_10->m_screenY - 0x3e8;
+    b.x = m_object->m_screenX - 0x3e8;
+    b.y = m_object->m_screenY + 0x3e8;
+    a.x = m_object->m_screenX + 0x3e8;
+    a.y = m_object->m_screenY - 0x3e8;
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
@@ -969,8 +969,8 @@ i32 CGrunt::StepGruntMovement() {
         coordY = co->m_y;
     }
 
-    gtX = m_10->m_screenX >> 5;
-    gtY = m_10->m_screenY >> 5;
+    gtX = m_object->m_screenX >> 5;
+    gtY = m_object->m_screenY >> 5;
     if (coordX > gtX) {
         if (coordY > gtY) {
             rec.m_0 = g_voiceSE.m_0;
@@ -1102,8 +1102,8 @@ i32 CGrunt::StepGruntMovement() {
         i32 cy = co->m_y;
         tgtPxX = (cx << 5) + 0x10;
         tgtPxY = (cy << 5) + 0x10;
-        i32 gx = m_10->m_screenX >> 5;
-        i32 gy = m_10->m_screenY >> 5;
+        i32 gx = m_object->m_screenX >> 5;
+        i32 gy = m_object->m_screenY >> 5;
         if (cx > gx) {
             if (cy > gy) {
                 rec.m_0 = g_voiceSE.m_0;
@@ -1237,8 +1237,8 @@ label_4c6e4:
                 m_31c.AddHead(co);
             }
         }
-        i32 hudY = m_10->m_screenY;
-        i32 hudX = m_10->m_screenX;
+        i32 hudY = m_object->m_screenY;
+        i32 hudX = m_object->m_screenX;
         CCueRect* rr = reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -1462,8 +1462,8 @@ i32 CGrunt::CreateHealthSprite() {
 
     m_healthSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY - 0x19,
+        m_object->m_screenX,
+        m_object->m_screenY - 0x19,
         0xdbba0,
         s_GruntHealthSprite,
         0x40003
@@ -1488,8 +1488,8 @@ i32 CGrunt::CreateToySprite() {
 
     m_toySprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY - 0x19,
+        m_object->m_screenX,
+        m_object->m_screenY - 0x19,
         0xdbba0,
         s_GruntToySprite,
         0x40003
@@ -1513,8 +1513,8 @@ i32 CGrunt::CreateStaminaSprite() {
 
     m_staminaSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY - 0x20,
+        m_object->m_screenX,
+        m_object->m_screenY - 0x20,
         0xdbba0,
         s_GruntStaminaSprite,
         0x40003
@@ -1548,8 +1548,8 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     m_toyTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY - 0x20,
+        m_object->m_screenX,
+        m_object->m_screenY - 0x20,
         0xdbba0,
         s_GruntToyTimeSprite,
         0x40003
@@ -1579,8 +1579,8 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     m_wingzTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY - 0x26,
+        m_object->m_screenX,
+        m_object->m_screenY - 0x26,
         0xdbba0,
         s_GruntWingzTimeSprite,
         0x40003
@@ -1605,8 +1605,8 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 
     m_powerupSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY,
+        m_object->m_screenX,
+        m_object->m_screenY,
         0x15,
         s_GruntPowerupSprite,
         0x40003
@@ -1631,8 +1631,8 @@ i32 CGrunt::CreateSelectedSprite() {
 
     m_selectedSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY,
+        m_object->m_screenX,
+        m_object->m_screenY,
         0x14,
         s_GruntSelectedSprite,
         0x40003

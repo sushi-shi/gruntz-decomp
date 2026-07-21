@@ -1486,7 +1486,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     while (node != 0) {
         CDDrawGroupNode* p = node;
         node = node->m_next;
-        CGameObject* sprite = p->m_gameObj;
+        CGameObject* sprite = p->m_obj;
         if (sprite != 0 && sprite->m_collCategory == static_cast<u32>(category)) {
             count++;
         }
@@ -2300,7 +2300,7 @@ i32 CPlay::NotifyVisibleEntities() {
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* o = cur->m_gameObj;
+        CGameObject* o = cur->m_obj;
         void* id = static_cast<void*>(o->m_7c->m_notify);
         if (id == static_cast<void*>(VisFn_40fe90) || id == static_cast<void*>(VisFn_4bf150)
             || id == static_cast<void*>(VisFn_423b40) || id == static_cast<void*>(VisFn_Roll)
@@ -6320,7 +6320,7 @@ i32 CPlay::AddLevelGruntz() {
     CDDrawGroupNode* node =
         reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
-        CGameObject* g = node->m_gameObj;
+        CGameObject* g = node->m_obj;
         node = node->m_next;
         if (g == 0) {
             continue;
@@ -6499,7 +6499,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
     CDDrawGroupNode* node =
         reinterpret_cast<CDDrawGroupNode*>(this->m_world->m_childGroup->m_list.GetHeadPosition());
     while (node) {
-        CGameObject* obj = node->m_gameObj;
+        CGameObject* obj = node->m_obj;
         CDDrawGroupNode* nxt = node->m_next;
         if (obj) {
             void* marker = static_cast<void*>(obj->m_7c->m_notify);

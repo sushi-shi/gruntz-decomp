@@ -126,7 +126,7 @@ i32 CPlay::PlaceStartGruntz() {
         return result;
     }
     do {
-        CGameObject* obj = node->m_gameObj;
+        CGameObject* obj = node->m_obj;
         CDDrawGroupNode* next = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
@@ -205,7 +205,7 @@ i32 CPlay::ValidateLevelTiles() {
 
     i32 ok = 1;
     do {
-        CGameObject* obj = node->m_gameObj; // GetNext: data @+0x08
+        CGameObject* obj = node->m_obj; // GetNext: data @+0x08
         node = node->m_next;                //          pNext @+0x00
         if (obj == 0) {
             continue;

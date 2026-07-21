@@ -510,7 +510,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* obj = cur->m_gameObj;
+        CGameObject* obj = cur->m_obj;
         if (obj) {
             obj->m_stateFlags ^= mask;
         }
@@ -1508,7 +1508,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* obj = cur->m_gameObj;
+        CGameObject* obj = cur->m_obj;
         if (obj->m_collCategory & mask) {
             i32 adx = abs(obj->m_screenX - x);
             i32 ady = abs(obj->m_screenY - y);
@@ -1554,7 +1554,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
-        CGameObject* obj = cur->m_gameObj;
+        CGameObject* obj = cur->m_obj;
         if (obj->m_collCategory & mask) {
             i32 ox = obj->m_screenX;
             if (ox >= loX && ox <= hiX) {

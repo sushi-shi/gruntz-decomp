@@ -270,11 +270,11 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // fxch/fsubp ordering the compiler picks); see docs/patterns (FP scheduling).
 // CGrunt::ComputeFacing(double dt) @0x57060 - sets the grunt's facing/velocity:
 //   m_400 = (sqrt(dx*dx + dy*dy) / m_41c) * dt   (dx=m_lastTilePxX-m_5c, dy=m_lastTilePxY-m_60)
-//   m_408 = (double)m_10->m_5c;  m_410 = (double)m_10->m_60
+//   m_408 = (double)m_object->m_5c;  m_410 = (double)m_object->m_60
 // dt is the per-tile time step; m_41c is the configured TimePerTile.
 RVA(0x00057060, 0x6f)
 void CGrunt::ComputeFacing(double dt) {
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
     // retail zero-extends m_timePerTile to 64-bit before fild (unsigned->double)
@@ -495,7 +495,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
         m_1f4_moveIcon = 0;
     }
     i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     h->m_drawActive = 1;
     h->m_drawFillCmd = 0xa;
     h->m_drawFillArg = sel;
@@ -511,8 +511,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 
     CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_10->m_screenX,
-        m_10->m_screenY,
+        m_object->m_screenX,
+        m_object->m_screenY,
         0xcf850,
         s_SingleAnimation,
         0x40003
@@ -521,8 +521,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
     CGruntzMgr* g = g_gameReg;
-    i32 x = m_10->m_screenX;
-    i32 y = m_10->m_screenY;
+    i32 x = m_object->m_screenX;
+    i32 y = m_object->m_screenY;
     CCueRect* rc = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
         g->m_cueSink->CueSpawn(this, 0xe, -1, -1, -1);
@@ -542,15 +542,15 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 // @early-stop
 // single-instruction scheduling coin-flip: logic/CFG/offsets/board-deref/both returns
 // byte-exact. Residue = cl loads board->m_width (`mov ecx,[ebx+0xc]`) one slot earlier
-// than retail (retail defers it past `add eax,0x10`) and reads g_gameReg before m_10
-// vs retail's m_10-first; the rest is identical. ~93%. Final sweep.
+// than retail (retail defers it past `add eax,0x10`) and reads g_gameReg before m_object
+// vs retail's m_object-first; the rest is identical. ~93%. Final sweep.
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     i32 reason = m_entranceReason;
     if (reason <= 0 || reason >= 0x17) {
         return 0;
     }
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
@@ -574,7 +574,7 @@ i32 CGrunt::TryPowerupAtTile() {
 
 // CGrunt::EnsureStruckSlot(key) @0x57b70 - the +0x424-slot sibling of
 // EnsureStruckVoice (+0x428): lazily build + play a grunt sound sample for `key`.
-// Bails if the +0x424 slot is already filled, or if the registry's m_10 gate is
+// Bails if the +0x424 slot is already filled, or if the registry's m_object gate is
 // unset. Otherwise looks `key` up in the global sound table
 // (g_gameReg->m_world->m_soundRegistry->m_10), clones a sample from the entry's factory (GetItem),
 // stores it into +0x424, and plays it on the registry sound channel (m_11c).
@@ -724,8 +724,8 @@ i32 CGrunt::PathScan57db0() {
     }
     GruntCoordNode* node = CoordHead();
 
-    i32 col5 = m_10->m_screenX >> 5;
-    i32 row5 = m_10->m_screenY >> 5;
+    i32 col5 = m_object->m_screenX >> 5;
+    i32 row5 = m_object->m_screenY >> 5;
     RECT box;
     box.left = col5 - 2;
     box.top = row5 - 2;
@@ -893,8 +893,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         if (m_gruntKind == 0x36) {
             return;
         }
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         if (c < 5) {
             CGruntzMgr* g = g_gameReg;
             i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
@@ -914,8 +914,8 @@ void CGrunt::OnStruck(i32 wasHit) {
     }
 
     if (c < 5) {
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
@@ -924,8 +924,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         return;
     }
     if (c < 0xa) {
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
@@ -934,8 +934,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         return;
     }
     {
-        i32 x = m_10->m_screenX;
-        i32 y = m_10->m_screenY;
+        i32 x = m_object->m_screenX;
+        i32 y = m_object->m_screenY;
         m_struckCount = 0;
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
@@ -999,7 +999,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ != 0) {
-                CGameObject* inner = occ->m_10;
+                CGameObject* inner = occ->m_object;
                 i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
                 i32 hit;
@@ -1660,8 +1660,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     } else {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0);
         if (eq) {
-            i32 px = (m_10->m_screenX & ~0x1f) + 0x10;
-            i32 py = (m_10->m_screenY & ~0x1f) + 0x10;
+            i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
+            i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
             i32 redo = 1;
             if (px != m_lastTilePxX || py != m_lastTilePxY) {
                 if (IsDropReady(1)) {
@@ -1680,7 +1680,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     // The shared combat finalize.
     if (m_arrivalPending != 0) {
-        m_tileMgr->WireTileSwitchLogic(this, m_10->m_screenX, m_10->m_screenY);
+        m_tileMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
         m_arrivalPending = 0;
     }
     m_poweredUp = 1;
@@ -1700,7 +1700,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
     m_neighborValid = 0;
-    nb->ArrivalRecycle(m_10->m_screenX, m_10->m_screenY, 0, m_tileOwnerHi, m_tileOwnerLo);
+    nb->ArrivalRecycle(m_object->m_screenX, m_object->m_screenY, 0, m_tileOwnerHi, m_tileOwnerLo);
     RearmAttackAnim(a, b);
     return 1;
 }
@@ -1768,15 +1768,15 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     CGrunt* n = m_tileMgr->m_grid[m_neighborCol * TM_GRID_COLS + m_neighborRow];
     if (n != 0 && n->m_entranceCommitted != 0) {
         if (validate != 0) {
-            if (n->m_10->m_screenX != n->m_lastTilePxX) {
+            if (n->m_object->m_screenX != n->m_lastTilePxX) {
                 return 0;
             }
-            if (n->m_10->m_screenY != n->m_lastTilePxY) {
+            if (n->m_object->m_screenY != n->m_lastTilePxY) {
                 return 0;
             }
         }
-        if (RectContains(n->m_10->m_screenX, n->m_10->m_screenY)) {
-            CommitNeighbor(m_neighborCol, m_neighborRow, n->m_10->m_screenX, n->m_10->m_screenY);
+        if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+            CommitNeighbor(m_neighborCol, m_neighborRow, n->m_object->m_screenX, n->m_object->m_screenY);
             return n;
         }
     }
@@ -1962,7 +1962,7 @@ i32 CGrunt::Activate() {
     }
 
     // --- spawn-state reset tail (integer field stores) ---
-    CWwdGameObjectA* h = m_10;
+    CWwdGameObjectA* h = m_object;
     i32 px = h->m_screenX;
     m_commitPxX = px;
     m_lastTilePxX = px;

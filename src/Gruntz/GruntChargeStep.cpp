@@ -39,7 +39,7 @@ i32 CGrunt::ChargeStep() {
     CTmCell* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != 0) {
-        CGameObject* gp = g->m_10;
+        CGameObject* gp = g->m_object;
         if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
             && RectContains(gp->m_screenX, gp->m_screenY)) {
             hitGate = 1;
@@ -99,7 +99,7 @@ i32 CGrunt::ChargeStep() {
             // scan for a target on the wander tile
             if (g != 0) {
                 if (hitGate != 0 && m_stamina >= 100) {
-                    CGameObject* gp = g->m_10;
+                    CGameObject* gp = g->m_object;
                     if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
                         CommitNeighbor(
@@ -116,8 +116,8 @@ i32 CGrunt::ChargeStep() {
                         return 1;
                     }
                     if (TileSwitch(
-                            g->m_10->m_screenX >> 5,
-                            g->m_10->m_screenY >> 5,
+                            g->m_object->m_screenX >> 5,
+                            g->m_object->m_screenY >> 5,
                             0,
                             m_arrivalFlags,
                             1,
@@ -128,7 +128,7 @@ i32 CGrunt::ChargeStep() {
                         m_arrivalCol = g->m_tileOwnerHi;
                         m_arrivalRow = g->m_tileOwnerLo;
                         m_defenderState = 1;
-                        CWwdGameObjectA* mp = m_10;
+                        CWwdGameObjectA* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
@@ -147,7 +147,7 @@ i32 CGrunt::ChargeStep() {
                 }
             }
             if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
-                CWwdGameObjectA* mp = m_10;
+                CWwdGameObjectA* mp = m_object;
                 i32 baseX = mp->m_extent.left;
                 i32 spanX = mp->m_extent.right - baseX;
                 spanX = spanX < 0 ? -spanX : spanX;
@@ -197,9 +197,9 @@ i32 CGrunt::ChargeStep() {
                 m_dwell = 0;
             }
             if (m_poweredUp == 0 && m_stamina >= 100
-                && RectContains(t->m_10->m_screenX, t->m_10->m_screenY) != 0
-                && t->m_10->m_screenX == t->m_lastTilePxX
-                && t->m_10->m_screenY == t->m_lastTilePxY) {
+                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && t->m_object->m_screenX == t->m_lastTilePxX
+                && t->m_object->m_screenY == t->m_lastTilePxY) {
                 CommitNeighbor(
                     t->m_tileOwnerHi,
                     t->m_tileOwnerLo,
@@ -224,9 +224,9 @@ i32 CGrunt::ChargeStep() {
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (RectContains(t->m_10->m_screenX, t->m_10->m_screenY) == 0
-                    || t->m_10->m_screenX != t->m_lastTilePxX
-                    || t->m_10->m_screenY != t->m_lastTilePxY) {
+                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                    || t->m_object->m_screenX != t->m_lastTilePxX
+                    || t->m_object->m_screenY != t->m_lastTilePxY) {
                     m_defenderState = 1;
                     m_dwell = 0x1f4;
                     return 1;

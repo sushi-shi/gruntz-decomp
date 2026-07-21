@@ -232,8 +232,8 @@ CTmCell* CTriggerMgr::FindNearestEnemy(CTmCell* w) {
             do {
                 CTmCell* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != 0x36) {
-                    i32 dx = (cell->m_10->m_screenX >> 5) - tileX;
-                    i32 dy = (cell->m_10->m_screenY >> 5) - tileY;
+                    i32 dx = (cell->m_object->m_screenX >> 5) - tileX;
+                    i32 dy = (cell->m_object->m_screenY >> 5) - tileY;
                     i32 dist = dx * dx + dy * dy;
                     if (dist < bestDist) {
                         best = cell;
@@ -246,8 +246,8 @@ CTmCell* CTriggerMgr::FindNearestEnemy(CTmCell* w) {
         rowPtr += 15;
     }
     i32 k = w->m_reachRadius + w->m_defenderRadius + 1;
-    i32 px = w->m_10->m_screenX >> 5;
-    i32 py = w->m_10->m_screenY >> 5;
+    i32 px = w->m_object->m_screenX >> 5;
+    i32 py = w->m_object->m_screenY >> 5;
     RECT rc;
     rc.left = px - k;
     rc.top = py - k;
@@ -255,8 +255,8 @@ CTmCell* CTriggerMgr::FindNearestEnemy(CTmCell* w) {
     rc.bottom = py + k + 1;
     if (best) {
         POINT pt;
-        pt.x = best->m_10->m_screenX >> 5;
-        pt.y = best->m_10->m_screenY >> 5;
+        pt.x = best->m_object->m_screenX >> 5;
+        pt.y = best->m_object->m_screenY >> 5;
         if (!PtInRect(&rc, pt)) {
             best = 0;
         }

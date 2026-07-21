@@ -14,8 +14,8 @@
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10));                           \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10));                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -54,7 +54,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
             i32 flags;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_c) && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width) && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
                 flags = grid->m_8[row][col].m_flags;
             } else {
                 flags = 1;
@@ -86,8 +86,8 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
             RECT gb;
             gb.left = 0;
             gb.top = 0;
-            gb.right = grid->m_c;
-            gb.bottom = grid->m_10;
+            gb.right = grid->m_width;
+            gb.bottom = grid->m_height;
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 i32 hits = 0;

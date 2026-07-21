@@ -138,7 +138,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             GruntRecycleCoords(g);
             goto tail;
         }
-        CGameObject* s = cur->m_10;
+        CGameObject* s = cur->m_object;
         if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
             // arrived on this tile
             if (g->CoordCount() != 0) {

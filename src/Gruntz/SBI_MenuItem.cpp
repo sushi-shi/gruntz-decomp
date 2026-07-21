@@ -171,7 +171,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         // The sound registry IS the cue host - no view: m_10 is its keyed cue map
         // (CMapStringToPtr, Ptr band), m_30 its busy/gate guard.
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
-        if (mh->m_30 == 0) {
+        if (mh->m_emitGate == 0) {
             LeafCue* found = 0;
             void* foundP = 0;
             // the cue map is the Ptr band (void* values), so the element read is a

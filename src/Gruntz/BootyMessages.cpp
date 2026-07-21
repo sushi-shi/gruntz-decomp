@@ -269,7 +269,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (rec->m_allDone != 0) {
             m_initOnce = 1;
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-            if (ss->m_30 == 0) {
+            if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
                 ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", reinterpret_cast<void*&>(res));
                 if (res != 0) {

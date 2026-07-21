@@ -166,7 +166,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     if (entry == 0) {
         return 0;
     }
-    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(entry->m_10->m_screenX, entry->m_10->m_screenY);
+    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
     if (commit != 0) {
         CTriggerMgr* obj = g_gameReg->m_cmdGrid;
         if (obj->RecordListHas(col, row)) {
@@ -290,7 +290,7 @@ RVA(0x001069c0, 0x2e)
 void CStatusBarMgr::ClearHlCell(i32 row, i32 group) {
     i32 idx = group + row * 4;
     m_hlGrid[idx].m_state = 0;
-    m_hlGrid[idx].m_handle = 0;
+    m_hlGrid[idx].m_value = 0;
     NotifyAllSlots();
 }
 
@@ -311,7 +311,7 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     if (m_hlGrid[idx].m_state) {
         return 0;
     }
-    m_hlGrid[idx].m_handle = handle;
+    m_hlGrid[idx].m_value = handle;
     m_hlGrid[idx].m_state = 1;
     NotifyAllSlots();
     return 1;
@@ -333,7 +333,7 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 
     CSBI_ImageSet** p = &m_hlNotify[4]; // group B base; ±4 elements reach groups A / C
-    i32* h = &m_hlGrid[4].m_handle;   // anchor on the handle field (+0x3dc)
+    i32* h = &m_hlGrid[4].m_value;   // anchor on the handle field (+0x3dc)
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
             p[-4]->Notify(h[-24]); // -4 rows = -0x60 bytes = -24 ints
@@ -899,11 +899,11 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
-        i32 handle = m_hlGrid[row].m_handle;
-        i32* slot = &m_hlGrid[row].m_handle;
+        i32 handle = m_hlGrid[row].m_value;
+        i32* slot = &m_hlGrid[row].m_value;
         if (ResolveHandle(handle)) {
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-            if (host->m_30 == 0) {
+            if (host->m_emitGate == 0) {
                 void* found = 0;
                 CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -935,11 +935,11 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup1(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
-        i32 handle = m_hlGrid[row + 4].m_handle;
-        i32* slot = &m_hlGrid[row + 4].m_handle;
+        i32 handle = m_hlGrid[row + 4].m_value;
+        i32* slot = &m_hlGrid[row + 4].m_value;
         if (ResolveHandle(handle)) {
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-            if (host->m_30 == 0) {
+            if (host->m_emitGate == 0) {
                 void* found = 0;
                 CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -970,11 +970,11 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
-        i32 handle = m_hlGrid[row + 8].m_handle;
-        i32* slot = &m_hlGrid[row + 8].m_handle;
+        i32 handle = m_hlGrid[row + 8].m_value;
+        i32* slot = &m_hlGrid[row + 8].m_value;
         if (ResolveHandle(handle)) {
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-            if (host->m_30 == 0) {
+            if (host->m_emitGate == 0) {
                 void* found = 0;
                 CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
                 map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -2129,13 +2129,13 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
             CSbiHlRow* cell = &m_hlGrid[row + group * 4];
             if (cell->m_state == 1) {
                 m_hlGrid[row + group * 4 + 1].m_state = 1;
-                cell[1].m_handle = cell->m_handle;
+                cell[1].m_value = cell->m_value;
                 cell->m_state = 0;
-                cell->m_handle = 0;
+                cell->m_value = 0;
             }
         }
     } else {
-        m_hlGrid[m_pendingHlRow + group * 4].m_handle = key;
+        m_hlGrid[m_pendingHlRow + group * 4].m_value = key;
     }
     NotifyAllSlots();
     m_pendingHlRow = -1;
@@ -2164,7 +2164,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-        if (host->m_30 == 0) {
+        if (host->m_emitGate == 0) {
             void* found = 0;
             CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
             map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -2196,7 +2196,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         if (m_activeTab == 1) {
             m_statObj[idx]->ResetGroupA();
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-            if (host->m_30 == 0) {
+            if (host->m_emitGate == 0) {
                 void* found = 0;
                 CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
                 map->Lookup("GAME_STATZTABTOGGLE", found);
@@ -2284,7 +2284,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             return 0;
         }
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-        if (host->m_30 == 0) {
+        if (host->m_emitGate == 0) {
             void* found = 0;
             CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
             map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -2314,7 +2314,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         return 0;
     }
     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-    if (host->m_30 == 0) {
+    if (host->m_emitGate == 0) {
         void* found = 0;
         CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
         map->Lookup("GAME_TABHIGHLIGHT1", found);
@@ -3084,7 +3084,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
 static __inline void HiCueFind() {
     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-    if (host->m_30 == 0) {
+    if (host->m_emitGate == 0) {
         void* obj = ((host))->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
             (static_cast<LeafCue*>(obj))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -3094,7 +3094,7 @@ static __inline void HiCueFind() {
 
 static __inline void HiCueLookup() {
     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-    if (host->m_30 == 0) {
+    if (host->m_emitGate == 0) {
         void* out = 0;
         host->m_10.Lookup("GAME_TABHIGHLIGHT1", out); // CMapStringToPtr (mfc_class band)
         if (out) {
@@ -3105,7 +3105,7 @@ static __inline void HiCueLookup() {
 
 static __inline void HiCueTimed() {
     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-    if (host->m_30 == 0) {
+    if (host->m_emitGate == 0) {
         void* found = 0;
         host->m_10.Lookup("GAME_TABHIGHLIGHT1", found); // CMapStringToPtr (mfc_class band)
         if (found && g_sndEnabled != 0) {
@@ -3504,7 +3504,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     g->m_value = 0;
     if (m_activeTab == 2 && m_position != 2) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-        if (host->m_30 == 0) {
+        if (host->m_emitGate == 0) {
             void* found = 0;
             CMapStringToPtr* map = &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
             map->Lookup("GAME_GOOCOOKING1", found);
@@ -3597,7 +3597,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                        if (host->m_30 == 0) {
+                        if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_10.Lookup("GAME_REZBELTRETURN", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
@@ -3617,7 +3617,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                        if (host->m_30 == 0) {
+                        if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_10.Lookup("GAME_REZBELTBACKUP", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
@@ -3722,7 +3722,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_beltLast = static_cast<u32>(g_frameTime);
                     if (m_activeTab == 3 && m_position != 2) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                        if (host->m_30 == 0) {
+                        if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_10.Lookup("GAME_REZMACHINE", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
@@ -3779,7 +3779,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_counter = 0x13;
                         if (m_activeTab == 3 && m_position != 2) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                            if (host->m_30 == 0) {
+                            if (host->m_emitGate == 0) {
                                 void* fnd = 0;
                                 host->m_10.Lookup("GAME_REZBELTRETRACT", fnd); // CMapStringToPtr (mfc_class band)
                                 if (fnd && g_sndEnabled != 0) {
@@ -3797,7 +3797,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_counter = 0xa;
                         if (m_activeTab == 3 && m_position != 2) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                            if (host->m_30 == 0) {
+                            if (host->m_emitGate == 0) {
                                 void* fnd = 0;
                                 host->m_10.Lookup("GAME_REZBELTDROP", fnd); // CMapStringToPtr (mfc_class band)
                                 if (fnd && g_sndEnabled != 0) {
@@ -3894,7 +3894,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                    if (host->m_30 == 0) {
+                    if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_10.Lookup("GAME_CHIPFALLOUT", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
@@ -3924,7 +3924,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 rectFlag = 1;
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                    if (host->m_30 == 0) {
+                    if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_10.Lookup("GAME_CHIPLAND", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
@@ -3994,7 +3994,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && m_position != 2) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-                    if (host->m_30 == 0) {
+                    if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_10.Lookup("GAME_CHIPLAND", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
