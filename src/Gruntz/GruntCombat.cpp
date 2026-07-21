@@ -277,7 +277,8 @@ void CGrunt::ComputeFacing(double dt) {
     CWwdGameObjectA* h = m_10;
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
-    m_400 = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
+    // retail zero-extends m_timePerTile to 64-bit before fild (unsigned->double)
+    m_400 = (sqrt(dx * dx + dy * dy) / static_cast<double>(static_cast<u32>(m_timePerTile))) * dt;
     m_408 = static_cast<double>(h->m_screenX);
     m_410 = static_cast<double>(h->m_screenY);
 }
