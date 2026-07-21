@@ -31,9 +31,9 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
     }
     switch (mode) {
         case 3:
-            m_174 = 0;
-            if (m_170) {
-                m_174 = m_170->m_188;
+            m_targetId = 0;
+            if (m_target) {
+                m_targetId = m_target->m_188;
             }
             break;
         case 4:
@@ -49,10 +49,10 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             }
             break;
         case 8:
-            if (m_174) {
+            if (m_targetId) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
-                m_170 = res->Lookup(reinterpret_cast<void*>(m_174), out) ? static_cast<CGameObject*>(out) : static_cast<CGameObject*>(0);
+                m_target = res->Lookup(reinterpret_cast<void*>(m_targetId), out) ? static_cast<CGameObject*>(out) : static_cast<CGameObject*>(0);
             }
             break;
         default: // 5, 6
@@ -71,9 +71,9 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
     if (a == 0) {
         return 0;
     }
-    m_174 = 0;
-    if (m_170) {
-        m_174 = m_170->m_188;
+    m_targetId = 0;
+    if (m_target) {
+        m_targetId = m_target->m_188;
     }
     return 1;
 }
@@ -150,10 +150,10 @@ i32 AnimWorkerObj::Save(CSerialArchive* ar) {
     ar->Write(p + 0x160, 4);
     ar->Write(p + 0x164, 4);
     ar->Write(p + 0x174, 4);
-    ar->Write(&m_178, 4);
-    void* payload = m_14;
-    if (payload && m_178 > 0) {
-        ar->Write(payload, m_178);
+    ar->Write(&m_payloadSize, 4);
+    void* payload = m_payload;
+    if (payload && m_payloadSize > 0) {
+        ar->Write(payload, m_payloadSize);
     }
     return 1;
 }
@@ -230,10 +230,10 @@ i32 AnimWorkerObj::Load(CSerialArchive* ar) {
     ar->Read(p + 0x160, 4);
     ar->Read(p + 0x164, 4);
     ar->Read(p + 0x174, 4);
-    ar->Read(&m_178, 4);
-    if (m_178 > 0) {
-        m_14 = static_cast<u8*>(::operator new(m_178));
-        ar->Read(m_14, m_178);
+    ar->Read(&m_payloadSize, 4);
+    if (m_payloadSize > 0) {
+        m_payload = static_cast<u8*>(::operator new(m_payloadSize));
+        ar->Read(m_payload, m_payloadSize);
     }
     return 1;
 }
@@ -255,13 +255,13 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (a == 0) {
         return 0;
     }
-    if (m_174) {
+    if (m_targetId) {
         CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
         void* out = 0;
-        if (!res->Lookup(reinterpret_cast<void*>(m_174), out)) {
-            m_170 = 0;
+        if (!res->Lookup(reinterpret_cast<void*>(m_targetId), out)) {
+            m_target = 0;
         } else {
-            m_170 = static_cast<CGameObject*>(out);
+            m_target = static_cast<CGameObject*>(out);
         }
     }
     return 1;

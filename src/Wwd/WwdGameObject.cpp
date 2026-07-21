@@ -501,12 +501,12 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
-            w->m_14 = 0;
+            w->m_payload = 0;
             w->m_logic = 0;
-            w->m_170 = 0;
+            w->m_target = 0;
             w->m_1c = 0;
-            w->m_174 = 0;
-            w->m_178 = 0;
+            w->m_targetId = 0;
+            w->m_payloadSize = 0;
         } else {
             w = 0;
         }
@@ -560,12 +560,12 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
-            w->m_14 = 0;
+            w->m_payload = 0;
             w->m_logic = 0;
-            w->m_170 = 0;
+            w->m_target = 0;
             w->m_1c = 0;
-            w->m_174 = 0;
-            w->m_178 = 0;
+            w->m_targetId = 0;
+            w->m_payloadSize = 0;
         } else {
             w = 0;
         }
@@ -607,12 +607,12 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
-            w->m_14 = 0;
+            w->m_payload = 0;
             w->m_logic = 0;
-            w->m_170 = 0;
+            w->m_target = 0;
             w->m_1c = 0;
-            w->m_174 = 0;
-            w->m_178 = 0;
+            w->m_targetId = 0;
+            w->m_payloadSize = 0;
         } else {
             w = 0;
         }
@@ -1021,16 +1021,16 @@ i32 CGameObject::NotifyHooked_151d20(void* arg) {
 RVA(0x00151da0, 0x80)
 AnimWorkerObj::~AnimWorkerObj() {
     m_notify = 0;
-    if (m_14) {
-        ::operator delete(m_14);
-        m_14 = 0;
-        m_178 = 0;
+    if (m_payload) {
+        ::operator delete(m_payload);
+        m_payload = 0;
+        m_payloadSize = 0;
     }
     if (m_logic) {
         delete m_logic; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
         m_logic = 0;
     }
-    m_170 = 0;
+    m_target = 0;
     m_08 = 0;
     m_0c = 0;
     m_04 = -1;
@@ -1044,7 +1044,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
     }
     m_notify = callback;
     m_08 = frame;
-    m_14 = 0;
+    m_payload = 0;
     m_logic = 0;
     m_20 = 0;
     m_24 = 0;
@@ -1061,16 +1061,16 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
 RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Clear() {
     m_notify = 0;
-    if (m_14) {
-        ::operator delete(m_14);
-        m_14 = 0;
-        m_178 = 0;
+    if (m_payload) {
+        ::operator delete(m_payload);
+        m_payload = 0;
+        m_payloadSize = 0;
     }
     if (m_logic) {
         delete m_logic; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
         m_logic = 0;
     }
-    m_170 = 0;
+    m_target = 0;
 }
 
 RVA(0x00151eb0, 0x43)

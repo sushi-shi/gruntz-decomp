@@ -16,7 +16,7 @@ class CDDrawSurfaceMgr;
 
 struct AnimWorkerObj : public CWapObj {
     // slot 1 deleting dtor ??_G @0x151d80; body @0x151da0 (was ~CLogicRecord):
-    // free the m_14 payload, `delete` the bound logic leaf, zero the live fields.
+    // free the m_payload blob, `delete` the bound logic leaf, zero the live fields.
     virtual ~AnimWorkerObj() OVERRIDE; // 0x151da0 (/GX; slots 0/2/3/4 CObject)
     virtual i32 IsLoaded() OVERRIDE;   // slot 5  0x151d60 (overrides CWapObj)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
@@ -39,12 +39,12 @@ struct AnimWorkerObj : public CWapObj {
         m_08 = 0;
         m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
         m_notify = 0;
-        m_14 = 0;
+        m_payload = 0;
         m_logic = 0;
-        m_170 = 0;
+        m_target = 0;
         m_1c = 0;
-        m_174 = 0;
-        m_178 = 0;
+        m_targetId = 0;
+        m_payloadSize = 0;
     }
 
     // --- the record's runtime/IO method set (bodies: WwdGameObject.cpp /
@@ -54,7 +54,7 @@ struct AnimWorkerObj : public CWapObj {
     i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
     i32 Save(CSerialArchive* ar);                    // 0x164960 (writes, slot 12 +0x30)
     i32 Load(CSerialArchive* ar);                    // 0x164d80 (reads, slot 11 +0x2c;
-                                                     //   allocates the m_14 payload)
+                                                     //   allocates the m_payload blob)
     i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
 
     i32 m_04;               // +0x04  = owner->m_04 (object id/kind)
@@ -67,7 +67,7 @@ struct AnimWorkerObj : public CWapObj {
     // `obj->m_collideWorker->m_notify(obj)` - a raw fn-ptr load off the worker,
     // NOT a vtable dispatch; zero-stamped at worker build = "no callback".
     GameObjNotifyFn m_notify;
-    u8* m_14;                  // +0x14  owned serialized payload blob (RezFree'd in Clear/dtor)
+    u8* m_payload;                  // +0x14  owned serialized payload blob (RezFree'd in Clear/dtor)
     CUserLogic* m_logic;       // +0x18  the owned bound-logic leaf (CUserBase slot-0
                                //        scalar dtor via plain `delete`; slot-1
                                //        SerializeMove is the per-frame Step)
@@ -101,9 +101,9 @@ struct AnimWorkerObj : public CWapObj {
     char m_pad134[0x168 - 0x134];
     i32 m_168;          // +0x168 (zeroed by Init)
     i32 m_16c;          // +0x16c (zeroed by Init)
-    CGameObject* m_170; // +0x170  resolved target object (ResolveTarget; id = its m_188)
-    i32 m_174;          // +0x174  cached target id (from m_170->m_188)
-    u32 m_178;          // +0x178  payload byte count for the m_14 block
+    CGameObject* m_target; // +0x170  resolved target object (ResolveTarget; id = its m_188)
+    i32 m_targetId;          // +0x174  cached target id (from m_target->m_188)
+    u32 m_payloadSize;          // +0x178  payload byte count for the m_payload block
 }; // size = 0x17c
 SIZE(AnimWorkerObj, 0x17c);
 VTBL(AnimWorkerObj,

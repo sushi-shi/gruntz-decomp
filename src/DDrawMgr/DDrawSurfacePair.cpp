@@ -753,12 +753,12 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
         w->m_08 = 0;
         w->m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(surfaceMgr);
         w->m_notify = 0;
-        w->m_14 = 0;
+        w->m_payload = 0;
         w->m_logic = 0;
-        w->m_170 = 0;
+        w->m_target = 0;
         w->m_1c = 0;
-        w->m_174 = 0;
-        w->m_178 = 0;
+        w->m_targetId = 0;
+        w->m_payloadSize = 0;
     }
     return w;
 }

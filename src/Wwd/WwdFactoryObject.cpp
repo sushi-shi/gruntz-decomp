@@ -76,12 +76,12 @@ AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_08 = c;
     m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
     m_notify = 0;
-    m_14 = 0;
+    m_payload = 0;
     m_logic = 0;
-    m_170 = 0;
+    m_target = 0;
     m_1c = 0;
-    m_174 = 0;
-    m_178 = 0;
+    m_targetId = 0;
+    m_payloadSize = 0;
 }
 
 RVA(0x0015b340, 0x2b)
