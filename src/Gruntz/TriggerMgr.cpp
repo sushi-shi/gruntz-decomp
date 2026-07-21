@@ -1944,12 +1944,16 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
 // roll a random move-icon onto each live cell (stashing the prior +0x1f8 when -1) and tick
 // the world's region-4, or restore each cell's stashed icon. ret 1.
 // @early-stop
-// scheduling residual (~93%): logic + offsets + externs byte-exact; retail hoists the -1
-// sentinel into ebp and schedules the rand()/idiv differently. topic:wall.
+// scheduling residual (~96%): logic + offsets + externs byte-exact. Declaring `r`
+// before `grid` recovered retail's `xor eax,eax; lea edi` order (93->96). The residual
+// is a spill-slot-OFFSET assignment: retail puts the row counter at [esp+0x10] and the
+// grid ptr at [esp+0x14]; cl assigns them the opposite offsets (register roles r->eax,
+// grid->edi already match). Not source-steerable. topic:wall topic:regalloc.
 RVA(0x0007c2e0, 0xb5)
 i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
+    i32 r = 0;
     CTmCell** grid = m_grid;
-    for (i32 r = 0; r < 4; r++) {
+    for (; r < 4; r++) {
         if (r != skipRow) {
             CTmCell** cell = grid;
             i32 i = 15;
