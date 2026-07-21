@@ -161,10 +161,10 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
                     i32 w, h;
-                    if (g_videoResolutionMode == 3) {
+                    if (g_videoResolutionMode == RES_1024x768) {
                         w = 0x400;
                         h = 0x300;
-                    } else if (g_videoResolutionMode == 2) {
+                    } else if (g_videoResolutionMode == RES_800x600) {
                         w = 0x320;
                         h = 0x258;
                     } else {
