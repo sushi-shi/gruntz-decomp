@@ -205,6 +205,9 @@ def run(args) -> None:
 
 def main():
     args = sys.argv[1:]
+    if not args or "-h" in args or "--help" in args:
+        print(__doc__)
+        return
     mode, raw, depth, rest = "callers", False, 4, []
     it = iter(args)
     for a in it:
@@ -219,7 +222,8 @@ def main():
         else:
             rest.append(a)
     if not rest:
-        sys.exit(__doc__)
+        print(__doc__)
+        return
     query(get_context(), rest, mode=mode, raw=raw, depth=depth)
 
 

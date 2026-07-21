@@ -87,7 +87,7 @@ def main():
     if "--no-disasm" in args:
         no_dis = True
         args.remove("--no-disasm")
-    if not args:
+    if not args or "-h" in args or "--help" in args:
         print(__doc__)
         return
     ctx = get_context()

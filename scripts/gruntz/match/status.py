@@ -1065,16 +1065,16 @@ def main() -> int:
                    help="exit 1 if regressions/lost (opt-in CI gate); default non-fatal")
     c.set_defaults(func=cmd_check)
 
-    s = sub.add_parser("status", help="per-function current %, filterable")
+    s = sub.add_parser("status", help="per-function current %%, filterable")
     s.add_argument("--unit")
     s.add_argument("--grep", help="substring match on (mangled) function name")
-    s.add_argument("--below", type=float, help="only functions under this fuzzy%")
+    s.add_argument("--below", type=float, help="only functions under this fuzzy%%")
     s.add_argument("--by-tries", action="store_true",
                    help="sort by tries desc (most-worked-on first)")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_status)
 
-    d = sub.add_parser("diff", help="compare two commits' baselines (cur% + unit + tries moves)")
+    d = sub.add_parser("diff", help="compare two commits' baselines (cur%% + unit + tries moves)")
     d.add_argument("revA", help="git rev (e.g. HEAD~1, a sha, a tag)")
     d.add_argument("revB", nargs="?", help="git rev (default: the working-tree baseline)")
     d.add_argument("--all", action="store_true", help="also show TOUCHED (source changed)")

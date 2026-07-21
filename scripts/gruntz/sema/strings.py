@@ -111,8 +111,11 @@ def run(args):
 
 
 def main():
-    ctx = get_context()
     args = sys.argv[1:]
+    if "-h" in args or "--help" in args:
+        print(__doc__)
+        return
+    ctx = get_context()
     if "--rva" in args:
         sys.exit(print_rvas(ctx, [int(t, 16) for t in args[args.index("--rva") + 1:]]))
     if "--find" in args:

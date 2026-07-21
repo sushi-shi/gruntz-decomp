@@ -28,9 +28,15 @@ import json
 import os
 import sys
 import collections
+from pathlib import Path
+
 import clang.cindex as cidx
 
-REPO = "/home/sheep/Projects/gruntz"
+# THIS checkout's root (never a hardcoded sibling: a worktree run must read/write
+# its OWN build/, not main's).
+REPO = str(next((p for p in Path(__file__).resolve().parents
+                 if (p / "flake.nix").exists()),
+                Path(__file__).resolve().parents[3]))
 CDB_PATH = REPO + "/build/clangd/compile_commands.json"
 OUT_DEFAULT = REPO + "/build/gen/reinterpret_census.tsv"
 
@@ -192,6 +198,9 @@ def _classify(tgt, opt):
 
 
 def main():
+    if "-h" in sys.argv or "--help" in sys.argv:
+        print(__doc__)
+        return 0
     out_path = OUT_DEFAULT
     if "--out" in sys.argv:
         out_path = sys.argv[sys.argv.index("--out") + 1]

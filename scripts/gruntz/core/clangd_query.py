@@ -93,7 +93,10 @@ class Clangd:
     def _recv(self) -> dict:
         headers = b""
         while not headers.endswith(b"\r\n\r\n"):
-            headers += self.proc.stdout.read(1)
+            b1 = self.proc.stdout.read(1)
+            if not b1:   # EOF: clangd died - without this the loop spins forever
+                sys.exit("clangd: server exited unexpectedly (EOF on its stdout)")
+            headers += b1
         length = int(re.search(rb"Content-Length: (\d+)", headers).group(1))
         return json.loads(self.proc.stdout.read(length))
 
@@ -395,6 +398,7 @@ def main():
         result = at_point(method, path, args.line, args.col, lsp)
         if not result:
             print("(no result)")
+            return 1   # answered-NO (rc convention: valid point, nothing there)
         elif args.cmd == "hover":
             print(result["contents"]["value"])
         else:
