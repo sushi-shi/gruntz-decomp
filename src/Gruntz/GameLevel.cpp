@@ -62,7 +62,8 @@ RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
-    m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a1); // (merged CLoadable ctor; mangling-pinned i32 arg)
+    m_0c =
+        reinterpret_cast<CDDrawSurfaceMgr*>(a1); // (merged CLoadable ctor; mangling-pinned i32 arg)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_pairA[1] = 250;
@@ -467,7 +468,8 @@ RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7)) == 0) {
+    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
+        == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
@@ -640,7 +642,8 @@ void CGameLevel::SyncToMainIndex(void* visitor) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
+            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))
+                ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
             ++i;
         } while (i <= m_mainIndex);
     }
@@ -651,7 +654,8 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
+            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))
+                ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -751,7 +755,8 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[i]) : 0;
+        CLevelPlane* p =
+            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[i]) : 0;
         if (_strcmpi(name, p->m_name) == 0) {
             return static_cast<CPlane*>(p);
         }
@@ -786,8 +791,9 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CLevelPlane* p =
-                    (i >= 0 && i < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes.GetData()[i]) : 0;
+                CLevelPlane* p = (i >= 0 && i < m_planes.GetSize())
+                                     ? static_cast<CLevelPlane*>(m_planes.GetData()[i])
+                                     : 0;
                 i32 zBound = p->m_zBound;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
@@ -801,7 +807,8 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                         blocked = 1;
                     }
                 }
-                (static_cast<CLevelPlane*>(m_planes.GetData()[i]))->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+                (static_cast<CLevelPlane*>(m_planes.GetData()[i]))
+                    ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -818,7 +825,8 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CLevelPlane*>(m_planes.GetData()[idx]))->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+            (static_cast<CLevelPlane*>(m_planes.GetData()[idx]))
+                ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
             ++idx;
         } while (idx <= m_mainIndex);
     }
@@ -826,7 +834,8 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            (static_cast<CLevelPlane*>(m_planes.GetData()[j]))->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+            (static_cast<CLevelPlane*>(m_planes.GetData()[j]))
+                ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -847,9 +856,11 @@ void CGameLevel::NotifyAllPlanes() {
 // @early-stop
 // switch jump-table-density wall (~48%): retail lowers the arg1 switch to a dense
 // .rdata jump table over kinds 3..8 (jmp [eax*4+tbl]); MSVC sees only 2 non-empty
-// cases (4 & 7) and emits a cmp/subtract chain instead. The strcpy/name-copy case
-// bodies are byte-exact. Not steerable from source (case-value density decides the
-// lowering) - see docs/patterns/switch-cmpje-tree-vs-jumptable.md. Deferred.
+// cases (4 & 7) and emits a cmp/subtract chain instead (adding the empty 3/5/6/8
+// cases does NOT force the table - cl collapses same-as-default arms before the
+// jump-table decision). The strcpy/name-copy case bodies are byte-exact. The tail
+// ResolveLevelName arg list was a real bug - it passed arg2 twice, dropping arg1;
+// retail pushes arg1/arg2/arg3 (fixed). switch-cmpje-tree-vs-jumptable.md.
 RVA(0x00160f70, 0xfa)
 i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     EditSink* s = static_cast<EditSink*>(sink);
@@ -873,7 +884,7 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     if (m_mainPlane == 0) {
         return 0;
     }
-    return ResolveLevelName(s, arg2, arg2, arg3) != 0 ? 1 : 0;
+    return ResolveLevelName(s, arg1, arg2, arg3) != 0 ? 1 : 0;
 }
 
 RVA(0x001610a0, 0x70)
@@ -1191,7 +1202,8 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         if (AxisProbe(a2, lo) != kTileHard && AxisProbe(a2, hi) != kTileHard) {
             i32 probe = a2;
             i32 want = (t->m_extent.bottom + cursor + 1) - cursor + t->m_screenY;
-            if (SpanCheck(want, t->m_extent.bottom + cursor + 1, probe, &probe) != 0 && probe > cursor) {
+            if (SpanCheck(want, t->m_extent.bottom + cursor + 1, probe, &probe) != 0
+                && probe > cursor) {
                 t->m_moveMode = 1;
                 cursor = probe - t->m_extent.bottom - 1;
             }
@@ -1489,7 +1501,8 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
+    CDDrawGroupNode* node =
+        reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1912,7 +1925,8 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
-    CLevelPlane* p = (index >= 0 && index < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[index]) : 0;
+    CLevelPlane* p =
+        (index >= 0 && index < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[index]) : 0;
     if (p == 0) {
         return 0;
     }
@@ -1921,8 +1935,9 @@ i32 CGameLevel::RemovePlane(i32 index) {
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
         i32 last = m_planes.GetSize() - 1;
-        CLevelPlane* lp =
-            (last >= 0 && last < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[last]) : 0;
+        CLevelPlane* lp = (last >= 0 && last < m_planes.GetSize())
+                              ? static_cast<CLevelPlane*>(m_planes[last])
+                              : 0;
         if (lp != 0) {
             m_mainIndex = -1;
             m_mainPlane = 0;
@@ -1943,7 +1958,8 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         if (from == to) {
             return 1;
         }
-        CLevelPlane* el = (from < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[from]) : 0;
+        CLevelPlane* el =
+            (from < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[from]) : 0;
         if (el != 0) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
