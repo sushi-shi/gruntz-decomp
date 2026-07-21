@@ -14,9 +14,6 @@ inline void* operator new(size_t, void* p) {
     return p;
 }
 
-extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
-extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
-
 SIZE_UNKNOWN(CMenuPlacer);
 
 RVA(0x001832d0, 0x20)
@@ -666,18 +663,20 @@ i32 CMenuPage::SelectBack2() {
     return FocusForwardN();
 }
 
-// focus the item named by the forward key, else step focus forward.
+// focus the item named by the forward key (m_focus->GetField54), else FocusNext.
 // @early-stop
-// /GX EH-state wall (~61%): KeyFwd -> FindByName -> SetFocus/FocusNext sequence
-// is byte-aligned, residual is the __try state index (push $8 vs $0) + the
-// per-return CString-temp teardown threading. Logic complete; deferred.
+// Shape fixed 2026-07-21 (58->62%): the fwd key is m_focus->GetField54() (NRV thiscall
+// on m_focus, 0x184610) - the ex `MenuPage_KeyFwd(this,&key)` cdecl free-function alias
+// was the wrong call shape. Residual (~38%, same as the SelectFwd2/Back2 siblings) is
+// the genuine /GX EH-state wall: the __try state index (push $8 vs $0) + the per-return
+// CString-temp teardown threading. Deferred.
 RVA(0x001843f0, 0xd2)
 i32 CMenuPage::SelectForward() {
     if (!m_focus) {
         return 0;
     }
-    CString key;
-    CMenuItem* item = FindByName(*MenuPage_KeyFwd(this, &key));
+    CString key = m_focus->GetField54();
+    CMenuItem* item = FindByName(key);
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -691,17 +690,18 @@ i32 CMenuPage::SelectForward() {
     return FocusNext();
 }
 
-// focus the item named by the backward key, else step focus backward.
+// focus the item named by the backward key (m_focus->GetField58), else FocusPrev.
 // @early-stop
-// same /GX EH-state wall as SelectForward (~61%): KeyBack -> FindByName ->
-// SetFocus/FocusPrev. Logic complete; deferred.
+// Shape fixed 2026-07-21 (58->62%): the back key is m_focus->GetField58() (NRV thiscall
+// on m_focus, 0x184630); the ex `MenuPage_KeyBack(this,&key)` cdecl alias was wrong.
+// Residual is the same /GX EH-state wall as SelectForward/the SelectBack2 sibling. Deferred.
 RVA(0x001844d0, 0xd2)
 i32 CMenuPage::SelectBackward() {
     if (!m_focus) {
         return 0;
     }
-    CString key;
-    CMenuItem* item = FindByName(*MenuPage_KeyBack(this, &key));
+    CString key = m_focus->GetField58();
+    CMenuItem* item = FindByName(key);
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
