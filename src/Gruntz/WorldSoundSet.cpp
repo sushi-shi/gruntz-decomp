@@ -654,24 +654,15 @@ i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPo
 // ---------------------------------------------------------------------------
 // UpdateAt (0x00c5b0, __thiscall, 3 args x/y/force): the positional play driver.
 // Compute the listener->anchor distance (|m_40-x|, |m_44-y|); if either axis is
-// past 0x280 stop the voice. Otherwise derive a falloff volume (100 - dist/3,
+// past 0x280 stop the voice. Otherwise derive a falloff volume (100 - dist/12,
 // clamped) and a pan (dx/4, clamped, signed by which side of m_40 the listener
 // is), scale the volume by m_scaleA/100 then m_scaleB/100, set volume + pan; and when not
 // already playing (and the active level is live) reseed and re-set the volume,
 // marking the voice playing.
-// ---------------------------------------------------------------------------
-// @early-stop
-// twin signed-/100 magic-division scheduling wall (logic complete, all relocs
-// paired) - the SAME family as the sibling Update (0x00c2a0): cl duplicates the
-// scale-and-clamp block (as retail does) but permutes eax/ecx/edx across the two
-// 0x51eb851f reductions and the SetVolByIdx/SetPanByIdx tail; no source spelling
-// pins that schedule. See zero-register-pinning.md and the /100 family.
 RVA(0x0000c5b0, 0x1df)
 void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
-    i32 ax = m_40 - x;
-    i32 dx = ax < 0 ? -ax : ax;
-    i32 ay = m_44 - y;
-    i32 dy = ay < 0 ? -ay : ay;
+    i32 dx = abs(m_40 - x); // branchless cdq/xor/sub (MSVC abs intrinsic), not jns/neg
+    i32 dy = abs(m_44 - y);
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
         if (m_voice != 0 && m_isPlaying != 0) {
@@ -681,8 +672,8 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
         return;
     }
 
-    i32 dist = __ftol(sqrt(static_cast<double>(dist2)));
-    i32 vol = 0x64 - dist / 3;
+    i32 dist = static_cast<i32>(sqrt(static_cast<double>(dist2)));
+    i32 vol = 0x64 - dist / 12; // retail magic 0x2aaaaaab + sar edx,1 = signed /12
     if (vol > 0x64) {
         vol = 0x64;
     } else if (vol < 0) {
