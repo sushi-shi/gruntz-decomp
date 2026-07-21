@@ -232,7 +232,7 @@ i32 CPlay::ValidateLevelTiles() {
                         break;
                     }
                     while (row < obj->m_168 + 2) {
-                        void* r = m_beginMarker->FindInLists12(row + colOff, 0x16);
+                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (r != 0) {
                             hit = r;
                         }
@@ -261,7 +261,7 @@ i32 CPlay::ValidateLevelTiles() {
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
                 // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
-                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_04, 0x1a);
+                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_04, TRIGID_COVERED_POWERUP_26);
                 if (r == 0) {
                     return 0;
                 }
