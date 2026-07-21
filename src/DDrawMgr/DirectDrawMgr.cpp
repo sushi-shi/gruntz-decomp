@@ -846,7 +846,6 @@ CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     CFileIO file;
-    z = 0;
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
@@ -855,7 +854,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return MakeB(buf, z);
+    return MakeB(buf, z); // retail passes the original z tag (not const-folded 0)
 }
 
 extern "C" void DdEnumModesCallback(); // 0x143390
@@ -1267,14 +1266,9 @@ CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
 // LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
 // palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
 // ---------------------------------------------------------------------------
-// @early-stop
-// ~98%: same wall as LoadPaletteMakeB (EH funcinfo state index + MakeB-tag const-fold);
-// additionally the Make950 callee (0x143950) is still an unreconstructed engine_boundary
-// stub, so its rel32 reloc pairs by code bytes but not by symbol name. Deferred.
 RVA(0x00143a30, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     CFileIO file;
-    z = 0;
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
@@ -1283,7 +1277,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return Make950(buf, z);
+    return Make950(buf, z); // retail passes the original z tag (not const-folded 0)
 }
 
 RVA(0x00143b20, 0xfc)
