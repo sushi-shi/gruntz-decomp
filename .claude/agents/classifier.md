@@ -62,10 +62,16 @@ This keeps you fast and keeps you honest to what was actually matched.
 **EXCEPTION — naming a whole placeholder/codename class (HP-rename: Severus/Draco/…, RVA-suffixed,
 ClassUnknown_N):** here the source uses the placeholder name everywhere, so the C++ alone can't tell
 you what the class IS. Use GHIDRA XREFS — `python -m gruntz.analysis.xref <rva|name>` (retail
-caller/callee graph) + the Ghidra decomp's xrefs — as a PRIMARY tool: who `new`s the class and stores
-it where, who calls its methods on what `this`, which subsystem owns it, what the sibling
-already-named classes in the same call cluster are. Name the class from that demonstrated role. This
-is standard, not a last resort — it is how a placeholder/codename class is attributed to its owner.
+caller/callee graph) + the Ghidra decomp's xrefs — as a PRIMARY tool, reading BOTH directions:
+- **callers/xrefs** — who `new`s the class and stores it where, who calls its methods on what
+  `this`, which subsystem owns it, what the sibling already-named classes in the same call cluster are.
+- **callees** — what the class CALLS: its vtable-slot dispatches (the `??_7` slot set), the members
+  it invokes on its own `this`, the API calls it makes. The outgoing calls fingerprint the class as
+  precisely as the incoming ones (a struct dispatching a known vtable or calling `CFoo::Bar(this)` IS
+  that class / a subclass).
+Name/model the class from that demonstrated role. This is standard, not a last resort. **A fake view
+is NEVER an acceptable answer (user mandate 2026-07-21):** if the placeholder resists both directions,
+prove the dead-end and say so — do not leave or invent a view to move on.
 
 ## Precondition — only run on a WELL-MATCHED class
 

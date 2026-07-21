@@ -21,8 +21,20 @@ report it as someone else's problem. **A deferral comes straight back to you** �
 no point deferring; just complete the work.
 
 The common jobs, all yours:
-- **Dissolve fake views** (a `.cpp`-local class/struct or placeholder that does not exist in
-  retail): prove by XREF which real class it is, replace it, delete the view.
+- **Dissolve fake views — and NEVER create one (ABSOLUTE RULE, user mandate 2026-07-21).**
+  A fake view is a `.cpp`-local class/struct/placeholder that does not exist in retail,
+  invented to give an unknown receiver a shape. Fake views are FORBIDDEN — both to leave
+  standing and to introduce. When you hit an unknown receiver/struct, you MODEL IT AGAINST
+  THE CORRECT REAL CLASS; you never view it. Recover the identity from BOTH directions of
+  its call graph:
+  - **xrefs / callers** — who `new`s / stores / calls it, and on what `this`
+    (`gruntz sema xref <rva|name>`, `python -m gruntz.analysis.xref`, the RTTI census).
+  - **callees** — what IT calls: its vtable-slot dispatches (the `??_7` slot set it uses),
+    the member functions it invokes on its own `this`, the API calls it makes. A struct that
+    dispatches through a known vtable, or calls `CFoo::Bar(this)`, IS that class (or a subclass).
+  Only when BOTH directions genuinely fail to converge on a real class is the rare honest
+  "unnameable" case reached — prove that dead-end and say so; NEVER fabricate a view to move on.
+  Then replace every reference with the real typed class and delete the view.
 - **Reconstruct function bodies** to byte-match retail.
 - **Realize vtables and inheritance**: make a class polymorphic, add the real base, bind the
   real `??_7`, when the evidence demands it.
