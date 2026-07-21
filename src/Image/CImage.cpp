@@ -86,7 +86,7 @@ i32 CWapObj::IsLoaded() {
 
 RVA(0x000d5de0, 0x6)
 i32 CImage::GetClassId() {
-    return 10;
+    return CLASSID_IMAGE;
 }
 
 RVA(0x000d5e00, 0x3)
