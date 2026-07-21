@@ -176,34 +176,34 @@ def _pct(n: int, d: int) -> float:
     return 100.0 * n / d if d else 0.0
 
 
-def summarize(report: dict, full: bool = True) -> None:
+def summarize(report: dict, full: bool = True, table: bool = False) -> None:
     m = report.get("measures", {})
     named = {u["unit"] for u in units() if (TARGET_DIR / f"{u['unit']}.c.obj").exists()}
     print()
-    print("  Unit              Funcs (exact)   Code matched   Status")
-    print("  " + "-" * 62)
-    for u in sorted(report.get("units", []), key=lambda x: x.get("name", "")):
-        name = u.get("name", "?")
-        um = u.get("measures", {})
-        tf, mf = _i(um.get("total_functions")), _i(um.get("matched_functions"))
-        tc, mc = _i(um.get("total_code")), _i(um.get("matched_code"))
-        status = ("MATCHING" if (name in named and tf and mf == tf)
-                  else "in progress" if name in named else "unnamed")
-        funcs = f"{mf}/{tf}" if tf else "-"
-        code = f"{_pct(mc, tc):.1f}%" if tc else "-"
-        print(f"  {name:<16}  {funcs:>13}   {code:>12}   {status}")
-    print("  " + "-" * 62)
+    # Per-unit rollup (370 rows): ON DEMAND only (`gruntz status`/`report`), NEVER in the
+    # build tail. A matcher works ONE unit and reads its own number; the full table is a
+    # human progress scan, not agent-facing - printing it every build is pure noise.
+    if table:
+        print("  Unit              Funcs (exact)   Code matched   Status")
+        print("  " + "-" * 62)
+        for u in sorted(report.get("units", []), key=lambda x: x.get("name", "")):
+            name = u.get("name", "?")
+            um = u.get("measures", {})
+            tf, mf = _i(um.get("total_functions")), _i(um.get("matched_functions"))
+            tc, mc = _i(um.get("total_code")), _i(um.get("matched_code"))
+            status = ("MATCHING" if (name in named and tf and mf == tf)
+                      else "in progress" if name in named else "unnamed")
+            funcs = f"{mf}/{tf}" if tf else "-"
+            code = f"{_pct(mc, tc):.1f}%" if tc else "-"
+            print(f"  {name:<16}  {funcs:>13}   {code:>12}   {status}")
+        print("  " + "-" * 62)
     tf, mf = _i(m.get("total_functions")), _i(m.get("matched_functions"))
     print(f"  Overall: {mf}/{tf} functions exact ({_pct(mf, tf):.1f}%), "
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
-    print("  DOCTRINE (structure-recovery phase): recover the ORIGINAL structure; "
-          "do NOT fear regalloc ripple or protect match %. A %-drop from moving a "
-          "function/global/view to its true home is EXPECTED and RECOVERS as more "
-          "structure lands - gate on BUILD INTEGRITY, never revert a correct move "
-          "for a %-drop. Reloc-fidelity (functions bound to the RIGHT rva) and view "
-          "debt now outrank match %. See docs/exe-map/reloc.html.")
+    print("  DOCTRINE: recover the original structure; gate on BUILD, not match % "
+          "(reloc-fidelity + view debt outrank %; docs/exe-map/reloc.html).")
     if not full:   # --fast: just the objdiff %, skip the high-water/cleanliness/vtable probes
         return
     # MAX % high-water. The fuzzy % is a RATIO, so it barely moves even when structural
@@ -842,7 +842,7 @@ def cmd_init(args) -> None:
 def cmd_status(args) -> None:
     if not REPORT.exists():
         die(f"no report at {REPORT}; run `gruntz build` first")
-    summarize(json.loads(REPORT.read_text()))
+    summarize(json.loads(REPORT.read_text()), table=True)
 
 
 def cmd_link(args) -> None:
@@ -1685,7 +1685,9 @@ def main() -> None:
     fmt.add_argument("--check", action="store_true",
                      help="CI gate: don't write, exit non-zero if anything is unformatted")
     fmt.set_defaults(func=cmd_format)
-    sub.add_parser("status", help="print the last objdiff summary"
+    sub.add_parser("status", help="objdiff summary + full per-unit table (report.json; no rebuild)"
+                   ).set_defaults(func=cmd_status)
+    sub.add_parser("report", help="alias of status: full per-unit match table (report.json; no rebuild)"
                    ).set_defaults(func=cmd_status)
     lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "
                         "(non-runnable; for layout/link-order study)")

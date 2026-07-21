@@ -332,26 +332,31 @@ def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]
     return out
 
 
-def _cell(label: str, n: int, base: dict[str, int], width: int) -> str:
-    """`label   NNN (+d)` - delta vs baseline (down = good). Blank delta if 0/new."""
-    d = n - base[label] if label in base else 0
-    tag = f" ({d:+d})" if d else ""
-    return f"{label:<{width}}{n:>7}{tag:>7}"
-
-
 def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
-    """Formatted scoreboard lines (two columns) for the build report."""
+    """Scoreboard for the build report: only the NON-ZERO metrics (with delta vs
+    baseline, down = good). A metric already at 0 is clean, so it is omitted - just
+    the count of zeroed metrics is noted - and the report shows what still needs
+    work instead of a wall of zeros. A regression makes a metric non-zero (or raises
+    it), so it reappears here; the hard ratchet gate in cli.py still fires on it."""
     rows = rows if rows is not None else count()
     base = load_baseline()
-    # three groups: naming/views (6) | manual-vtable residue (5) | casts (5)
-    naming, vtable, casts = rows[:6], rows[6:11], rows[11:]
-    width = max(len(lbl) for lbl, _ in rows) + 1
-    lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
-    for i in range(max(len(naming), len(vtable), len(casts))):
-        a = _cell(*naming[i], base, width) if i < len(naming) else ""
-        b = _cell(*vtable[i], base, width) if i < len(vtable) else ""
-        c = _cell(*casts[i], base, width) if i < len(casts) else ""
-        lines.append(f"  {a:<{width + 14}}  {b:<{width + 14}}  {c}")
+    nz = [(lbl, n) for lbl, n in rows if n]
+    zeros = len(rows) - len(nz)
+    if not nz:
+        return [f"cleanliness: all {len(rows)} metrics at 0 (clean)."]
+    cells = []
+    for lbl, n in nz:
+        d = n - base[lbl] if lbl in base else 0
+        cells.append(f"{lbl} {n}" + (f" ({d:+d})" if d else ""))
+    lines = [f"cleanliness (non-zero of {len(rows)}; {zeros} at 0; delta vs baseline, down = good):"]
+    row = ""
+    for c in cells:
+        if row and len(row) + len(c) + 4 > 92:
+            lines.append("    " + row.rstrip())
+            row = ""
+        row += c + "    "
+    if row:
+        lines.append("    " + row.rstrip())
     return lines
 
 
