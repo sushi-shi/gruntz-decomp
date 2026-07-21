@@ -4,13 +4,11 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>         // CWapObj : CObject (pulls <Mfc.h>/windows.h: RECT + ::CObArray)
 #include <DDrawMgr/DDrawWorker.h> // CLoadable (m_frameSets is the real MFC ::CObArray)
+#include <ddraw.h> // DDBLTFX (the +0xf4 blit-fx member; windows.h via <Mfc.h> above)
 #include <rva.h>
 
 SIZE_UNKNOWN(LevelCoordRect);
 typedef struct tagRECT LevelCoordRect;
-
-SIZE_UNKNOWN(PlaneBlitScratch);
-struct PlaneBlitScratch {};
 
 struct CWwdSpatialMgr;
 
@@ -108,35 +106,21 @@ public:
     float m_scaleY;           // +0x1c  Y parallax factor (ctor seeds 1.0f)
     i32* m_tileGrid;          // +0x20  tile-handle grid (row-major; owned, RezFree'd)
     i32* m_colOffsets;        // +0x24  per-column base offsets (owned, RezFree'd)
-    union {
-        i32 m_gridW; // +0x28  tile-grid width (the render facet's spelling)
-        i32 m_width; //        (the level facet's spelling; LookupTile clamp)
-    };
-    union {
-        i32 m_gridH; // +0x2c  tile-grid height
-        i32 m_height;
-    };
+    i32 m_gridW; // +0x28  tile-grid width
+    i32 m_gridH; // +0x2c  tile-grid height
     i32 m_wrapW; // +0x30  tile count across (wrap/clamp modulus)
     i32 m_wrapH; // +0x34  tile count down
-    union {
-        i32 m_tilePxW;  // +0x38  tile pixel width (log2 -> m_shiftX)
-        i32 m_tilePixW; //        (the level facet's spelling)
-    };
-    union {
-        i32 m_tilePxH; // +0x3c  tile pixel height
-        i32 m_tilePixH;
-    };
+    i32 m_tilePxW; // +0x38  tile pixel width (log2 -> m_shiftX)
+    i32 m_tilePxH; // +0x3c  tile pixel height
     i32 m_originX; // +0x40  near tile-origin X (RecomputePlaneCoords out; Draw/wrap base)
     i32 m_originY; // +0x44  near tile-origin Y
     i32 m_extentX; // +0x48  far tile-extent X
     i32 m_extentY; // +0x4c  far tile-extent Y
-    union {        // +0x50  ONE retail field, two recovered readings (reconcile):
-        LevelCoordRect m_bounds50; //  level coord bounds (Build/InitGeometry copy here)
-        struct {
-            i32 m_viewX; //  scroll pixel offset X (Draw/WrapCoord reading; ctor seeds -1)
-            i32 m_viewY; //  scroll pixel offset Y
-        };
-    };
+    // +0x50  the plane's level-coord bounds (Build/InitGeometry copy). RECONCILED:
+    // the ex-m_viewX/m_viewY "scroll pixel offset" reading was .left/.top - WrapCoord
+    // translates world coords by the bounds ORIGIN; the ctor's -1 is the pre-Build
+    // sentinel on .left.
+    LevelCoordRect m_bounds50;
     RECT m_fillRect;          // +0x60  default full-tile src rect {0,0,tilePxW,tilePxH}
                               //        (== the geometry init's zero/tile-dim quad)
     i32 m_viewW;              // +0x70  viewport tiles across (= bounds width)
@@ -155,14 +139,10 @@ public:
                               //        ctor 0x1b55e9 / ~ 0x1b561c; ex "m_obArray")
     CWwdSpatialMgr* m_scroll; // +0xb0  camera/scroll + spatial-grid worker
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
-    union {                   // +0xf4  the 25-dword tail pool (ctor: memset 0, [0]=100)
-        i32 m_pool[0x19];
-        PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (address passed to BltEx)
-        struct {
-            char _padColorKey[0x144 - 0xf4];
-            i32 m_colorKey; // +0x144  color-key palette index, packed in place to RGB565
-        };
-    };
+    // +0xf4  the plane's DDBLTFX (0x64 = 25 dwords; the ctor memsets it and seeds
+    // dwSize=100 - the classic DirectDraw pattern; BltEx takes its address; the
+    // ex-"m_colorKey" @+0x144 is its dwFillColor @+0x50, packed in place to RGB565).
+    DDBLTFX m_bltFx;
     // ENDS AT 0x158 - the ReadPlane allocation size.
 };
 

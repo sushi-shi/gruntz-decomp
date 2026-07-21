@@ -45,8 +45,8 @@ void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
 
     *px = *px - m_originX;
     *py = *py - m_originY;
-    *px = *px + m_viewX;
-    *py = *py + m_viewY;
+    *px = *px + m_bounds50.left;
+    *py = *py + m_bounds50.top;
 }
 
 // ---------------------------------------------------------------------------

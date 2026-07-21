@@ -602,7 +602,7 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
 DATA(0x002bf28c)
 i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
 DATA(0x002bf318)
-i32 g_bltFxScratch[25] = {0}; // 0x2bf318
+DDBLTFX g_bltFx = {0}; // 0x2bf318  (the ex-"g_bltFxScratch" i32[25] - it IS a DDBLTFX)
 DATA(0x002bf37c)
 i32 g_resourceInstallActive = 0; // 0x2bf37c
 DATA(0x002bf380)
@@ -622,7 +622,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
     }
 }
 
-#include <Globals.h> // g_bltFxScratch (the shared BltEx fx block)
+#include <Globals.h> // g_bltFx (the shared BltEx DDBLTFX)
 
 // ---------------------------------------------------------------------------
 // No flip, surface blit (BltEx, blend mode 6).
@@ -703,8 +703,8 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_bltFxScratch[1] = 6;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
+    g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN; // 6
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_lastX = d.left;
@@ -797,8 +797,8 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_bltFxScratch[1] = 2;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
+    g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT; // 2
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_lastX = d.left;
@@ -887,8 +887,8 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_bltFxScratch[1] = 4;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
+    g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN; // 4
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_lastX = d.left;

@@ -199,7 +199,8 @@ extern ShadeDescr* g_shadeDescr210;
 extern ShadeDescr* g_shadeDescr214;
 extern ShadeDescr* g_shadeDescr21c;
 extern ShadeDescr* g_shadeDescr220;
-extern i32 g_bltFxScratch[25];
+struct _DDBLTFX;
+extern _DDBLTFX g_bltFx; // 0x2bf318  the shared BltEx DDBLTFX (dwSize=100; the mirror-flip fx block)
 extern i32 g_surfaceColorKey;
 extern i32 g_aniParsedNameLen;
 extern void* g_projActName;

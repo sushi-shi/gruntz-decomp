@@ -34,14 +34,14 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     i32 cx = x;
     if (x < 0) {
         cx = 0;
-    } else if (x >= level->m_mainPlane->m_width) {
-        cx = level->m_mainPlane->m_width - 1;
+    } else if (x >= level->m_mainPlane->m_gridW) {
+        cx = level->m_mainPlane->m_gridW - 1;
     }
     i32 cy = y;
     if (y < 0) {
         cy = 0;
-    } else if (y >= level->m_mainPlane->m_height) {
-        cy = level->m_mainPlane->m_height - 1;
+    } else if (y >= level->m_mainPlane->m_gridH) {
+        cy = level->m_mainPlane->m_gridH - 1;
     }
     i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
     i32 typeCode;

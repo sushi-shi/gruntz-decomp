@@ -1119,7 +1119,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     {
         CDDrawWorkerHost* g5c = static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
         CGruntzMapMgr* host70 = self->m_mgr->m_tileGrid;
-        if (!host70->LoadAttributes(g5c->m_width, g5c->m_height)) {
+        if (!host70->LoadAttributes(g5c->m_gridW, g5c->m_gridH)) {
             goto fail0;
         }
     }

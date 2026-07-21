@@ -847,8 +847,8 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
                 wt += h;
             }
         }
-        rc.left = wl - view->m_originX + view->m_viewX;
-        rc.top = wt - view->m_originY + view->m_viewY;
+        rc.left = wl - view->m_originX + view->m_bounds50.left;
+        rc.top = wt - view->m_originY + view->m_bounds50.top;
         view->WrapCoord(reinterpret_cast<i32*>(&rc.right), reinterpret_cast<i32*>(&rc.bottom)); // LONG*->i32* (same width; PAH sig)
         drawHost->DrawCount(&rc, *reinterpret_cast<i32*>((obj + 0x74)));
     } while (node != 0);

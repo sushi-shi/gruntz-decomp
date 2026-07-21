@@ -17,6 +17,8 @@
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Mfc.h>
+#include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h> // DDBLTFX (g_bltFx - the shared BltEx fx block)
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in InstallTree / LoadNamespace)
 #include <Globals.h>
@@ -86,10 +88,8 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
 
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
-    for (i32 i = 0; i < 25; ++i) {
-        g_bltFxScratch[i] = 0;
-    }
-    g_bltFxScratch[0] = 100;
+    memset(&g_bltFx, 0, sizeof(g_bltFx));
+    g_bltFx.dwSize = sizeof(DDBLTFX); // 100
     return 1;
 }
 

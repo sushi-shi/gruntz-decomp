@@ -1591,12 +1591,12 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             i32 col;
             if (pxX < 0x10) {
                 col = 0;
-            } else if (tx >= grid->m_width) {
-                col = grid->m_width - 1;
+            } else if (tx >= grid->m_gridW) {
+                col = grid->m_gridW - 1;
             } else {
                 col = tx;
             }
-            i32 row = (ty >= grid->m_height) ? grid->m_height - 1 : ty;
+            i32 row = (ty >= grid->m_gridH) ? grid->m_gridH - 1 : ty;
             i32 cell = grid->m_tileGrid[grid->m_colOffsets[row] + col];
             i32 type;
             if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {

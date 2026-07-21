@@ -543,16 +543,16 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
         x = 0;
     } else {
         mp = m_mainPlane;
-        if (x >= mp->m_width) {
-            x = mp->m_width - 1;
+        if (x >= mp->m_gridW) {
+            x = mp->m_gridW - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
         mp = m_mainPlane;
-        if (y >= mp->m_height) {
-            y = mp->m_height - 1;
+        if (y >= mp->m_gridH) {
+            y = mp->m_gridH - 1;
         }
     }
     mp = m_mainPlane;

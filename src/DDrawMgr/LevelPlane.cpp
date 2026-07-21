@@ -26,7 +26,7 @@
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/GameLevel.h>    // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
 #include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
-#include <Image/CImage.h>        // CImage m_width/m_height (SetTileSizeFromImageSet)
+#include <Image/CImage.h>        // CImage m_gridW/m_gridH (SetTileSizeFromImageSet)
 #include <Image/ImageSet.h> // the REAL CImageSet (0x6c frame collection): SetTileSizeFromImageSet's
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
@@ -73,9 +73,9 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
     m_scroll = 0;
     m_scaleX = 1.0f;
     m_scaleY = 1.0f;
-    m_viewX = -1; // (ex m_50; the two +0x50 readings are unreconciled)
-    memset(m_pool, 0, sizeof(m_pool));
-    m_pool[0] = 100;
+    m_bounds50.left = -1; // pre-Build sentinel (the ex-m_bounds50.left reading, reconciled)
+    memset(&m_bltFx, 0, sizeof(m_bltFx));
+    m_bltFx.dwSize = sizeof(DDBLTFX); // 100
 }
 
 // 0x161640 (930 B) = the plane-block reader, CDDrawWorkerHost vtable slot 10
@@ -139,10 +139,10 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     LevelCoordRect* bounds,
     char* name
 ) {
-    m_width = w;
-    m_height = h;
-    m_tilePixW = tileW;
-    m_tilePixH = tileH;
+    m_gridW = w;
+    m_gridH = h;
+    m_tilePxW = tileW;
+    m_tilePxH = tileH;
     m_bounds50.left = bounds->left;
     m_bounds50.top = bounds->top;
     m_bounds50.right = bounds->right;
@@ -194,10 +194,10 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     }
     m_scaleX = static_cast<float>(m_94) * 0.01f;
     m_scaleY = static_cast<float>(m_98) * 0.01f;
-    m_tileGrid = static_cast<i32*>(operator new(m_width * m_height * 4));
-    m_colOffsets = static_cast<i32*>(operator new(m_height * 4));
-    for (i32 i = 0; i < m_height; i++) {
-        m_colOffsets[i] = i * m_width;
+    m_tileGrid = static_cast<i32*>(operator new(m_gridW * m_gridH * 4));
+    m_colOffsets = static_cast<i32*>(operator new(m_gridH * 4));
+    for (i32 i = 0; i < m_gridH; i++) {
+        m_colOffsets[i] = i * m_gridW;
     }
     m_scaledX = 0;
     m_scaledY = 0;
@@ -417,7 +417,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
             dr.top = (yp);                                                                         \
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
-            surf->BltEx(&dr, 0, 0, 0x1000400, &m_surface);                                         \
+            surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                         \
         } else if (h_ != 0xffffffff) {                                                             \
             CPlaneFrame* fr_ = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[h_ >> 16];                   \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                                         \
@@ -474,8 +474,8 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
     i32 rowBase;
 
     // ---- top row: TL corner, top strip, TR corner ----
-    y = m_viewY;
-    x = m_viewX;
+    y = m_bounds50.top;
+    x = m_bounds50.left;
     rowBase = m_colOffsets[rowT];
     corner.left = m_tilePxW - leftW;
     corner.top = m_tilePxH - topH;
@@ -508,7 +508,7 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
     }
     for (i32 r = nRows; r > 0; r--) {
         rowBase = m_colOffsets[row];
-        x = m_viewX;
+        x = m_bounds50.left;
         DRAW_CELL(m_tileGrid[rowBase + colL], x, y, &leftSrc);
         x += leftW;
         col = colL + 1;
@@ -531,7 +531,7 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 
     // ---- bottom row: BL corner, bottom strip, BR corner ----
     RECT botSrc = {0, 0, m_tilePxW, botH}; // bottom strip: clip bottom
-    x = m_viewX;
+    x = m_bounds50.left;
     rowBase = m_colOffsets[row];
     corner.left = m_tilePxW - leftW;
     corner.top = 0;
@@ -1120,7 +1120,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    i32 idx = m_colorKey;
+    i32 idx = m_bltFx.dwFillColor;
     if (idx < 0) {
         return;
     }
@@ -1141,7 +1141,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    m_colorKey = static_cast<u16>(((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
+    m_bltFx.dwFillColor = static_cast<u16>(((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
                        | (static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 1]) >> static_cast<u8>(g_gDown))) << g_gUp)
                        | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown)))));
 }
