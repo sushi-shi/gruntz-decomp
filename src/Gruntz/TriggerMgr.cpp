@@ -1961,28 +1961,24 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 }
 
 // @early-stop
-// Dense 6-case switch (~61%). Two stacked residuals, both confirmed by llvm-objdump
-// -dr base vs target: (1) the jump-table artifact - MSVC emits the table as a
-// separate $L COMDAT (jmp reloc -> $L19166), the delinker inlines it at fn+0x1b0
-// (jmp reloc -> fn) - documented ~79% ceiling, docs/patterns/
-// switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling below that ceiling:
-// caching CSndHost* h28 = m_level->m_soundRegistry recovered the m_28 share between the
-// m_30 check and the 2nd Lookup (58->61), but MSVC still (a) re-materializes edi=0
-// with a redundant `xor edi,edi` (the header zero doesn't propagate through the
-// indirect switch jmp in this build) and (b) HOISTS the m_level reload for h28 up into
-// the window computation, which reorders the independent +0x298/+0x29c stores. Cases
-// 2-6 are byte-identical to retail; only case-1 instruction scheduling diverges,
-// not source-steerable. (The i64 retype trades retail's shared `mov [+0x294],0` at
-// the Lab_565 merge for a per-path hi-zero store - same multiset, the pair is the
-// proven shape.)
+// Dense 6-case switch (~61%). Collapsing the two separate address-taken locals
+// (void* p_ob + LeafCue* p) into ONE reused LeafCue* p removed a spurious `push ecx`
+// stack-slot alloc (retail colors the single local into the dead `state` arg slot):
+// 55->61. Remaining residuals, all confirmed by llvm-objdump -dr base vs target:
+// (1) the jump-table artifact - MSVC emits the table as a separate $L COMDAT, the
+// delinker inlines it - documented ~79% ceiling, docs/patterns/
+// switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling: MSVC re-materializes
+// edi=0 with a redundant `xor edi,edi` inside case 1 and reorders the p=0 store vs the
+// m_soundRegistry member load; the window check `(clock-m_14) >= m_18` folds the
+// memory operands into sub/cmp in retail but loads them to regs here. (3) case-block
+// physical ordering (case 2/4/6 tails) differs. Not source-steerable.
 RVA(0x0007c3d0, 0x1ae)
 void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
     switch (state) {
         case 1:
             if (m_phase != 2) {
-                void* p_ob = 0;
-                m_world->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
-                LeafCue* p = static_cast<LeafCue*>(p_ob);
+                LeafCue* p = 0;
+                m_world->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", reinterpret_cast<void*&>(p));
                 m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CSndHost* h28 = m_world->m_soundRegistry;
