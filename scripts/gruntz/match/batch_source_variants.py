@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archived source-shape experiment runner.
+"""Source-shape experiment runner - the batch engine behind match_variants (LIVE).
 
 This is not a source permuter.  It performs only byte-exact substitutions declared in
 a JSON manifest, so every option is authored or AST-generated and semantically reviewed

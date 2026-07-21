@@ -53,7 +53,7 @@ import re
 import sys
 
 from gruntz.analysis import vtable_scan as vs
-from gruntz.match import class_meta, class_vtables
+from gruntz.cleanliness import class_meta, class_vtables
 
 IB = vs.IMAGEBASE
 REPO = vs.REPO

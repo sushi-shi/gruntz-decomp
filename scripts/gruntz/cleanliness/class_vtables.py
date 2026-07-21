@@ -22,7 +22,7 @@ It is "catalogued" (NOT a violator) when ANY of:
 
 So the violator worklist is exactly the vtable-bearing classes with NO catalog
 entry of any kind - the ones a ``VTBL(...)`` should be added to. Prints them and
-exits nonzero if any. Runnable as ``python -m gruntz.match.class_vtables``.
+exits nonzero if any. Runnable as ``python -m gruntz.cleanliness.class_vtables``.
 (NB: cross-file manual stamps - a ctor in a .cpp that stamps a vtable declared in
 another TU - are not seen here; this check reads only each class's own body. And
 MFC/CRT library classes may surface; skip those in the sweep per the
@@ -35,7 +35,7 @@ import re
 import sys
 from collections import defaultdict
 
-from gruntz.match.class_meta import (
+from gruntz.cleanliness.class_meta import (
     REPO,
     iter_class_defs,
     rel,

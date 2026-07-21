@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gruntz.match.view_debt - the UNGAMEABLE fake-view metric.
+"""gruntz.cleanliness.view_debt - the UNGAMEABLE fake-view metric.
 
 objdiff's match % is gameable by a fake VIEW: declaring a placeholder class with
 reloc-masked (declared-only) methods makes a call compile, and reloc-masking hides
@@ -18,9 +18,9 @@ Real-but-unreconstructed methods on real classes (CGrunt, CPlay, ...) are NOT co
 those classes have defined bodies and/or RTTI, so only their yet-to-do methods are
 undefined - legitimate reloc-masked callees, not fakes.
 
-    python -m gruntz.match.view_debt            # headline: phantom classes/methods
-    python -m gruntz.match.view_debt --list     # every pure-phantom class + its methods
-    python -m gruntz.match.view_debt --fatal     # exit 1 if any exist (gate)
+    python -m gruntz.cleanliness.view_debt            # headline: phantom classes/methods
+    python -m gruntz.cleanliness.view_debt --list     # every pure-phantom class + its methods
+    python -m gruntz.cleanliness.view_debt --fatal     # exit 1 if any exist (gate)
 """
 import glob
 import re

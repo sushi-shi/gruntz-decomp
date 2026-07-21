@@ -1,7 +1,7 @@
 # Class-metadata sweep log
 
 Per-class `SIZE`/`SIZE_UNKNOWN`/`VTBL` annotation sweep (infra: `include/rva.h`,
-tests `python -m gruntz.match.class_sizes` + `class_vtables`). Goal: every class
+tests `python -m gruntz.cleanliness.class_sizes` + `class_vtables`). Goal: every class
 carries a size annotation and every vtabled class a `VTBL` catalog entry —
 **per-class verified** because annotating a class in a hot header can reschedule
 a neighbour's MSVC5 codegen (measured on the infra proof: `SIZE(CGrunt)` cost
@@ -217,7 +217,7 @@ Estimated fan-out: one worker per module (or per hot header + its `.cpp` set),
 each draining its SIZE + VTBL violators in ~2–3 build groups. Budget per worker
 is dominated by reads/edits, not builds (3 builds sufficed for 63+2 here).
 Per-module log of the SIZE/SIZE_UNKNOWN/VTBL completeness sweep
-(`python -m gruntz.match.class_sizes` / `class_vtables`). Records hot-header
+(`python -m gruntz.cleanliness.class_sizes` / `class_vtables`). Records hot-header
 casualties (an annotation that rescheduled a neighbor and was reverted) and the
 per-module hotness verdict, so the full fan-out can decide where to be careful.
 

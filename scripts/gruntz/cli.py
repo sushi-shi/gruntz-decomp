@@ -226,7 +226,7 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
     # placeholder / view deltas (vs the committed baseline) immediately alongside
     # the match %, and steer on their own change. See docs/cleanliness-metrics.md.
     try:
-        from gruntz.match.cleanliness import (count, report_lines, save_baseline,
+        from gruntz.cleanliness.board import (count, report_lines, save_baseline,
                                               merge_baseline_downonly, load_baseline, _RATCHET)
         rows = count()
         for line in report_lines(rows):
@@ -241,7 +241,7 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
         # may only go DOWN. If a ratcheted metric rose above its committed floor, an agent
         # REINTRODUCED a cast / fake view / fake virtual - fail so it is CAUGHT here, not
         # silently carried as debt. (Floors are only ever lowered, deliberately, via
-        # `python -m gruntz.match.cleanliness --update`; never raised.)
+        # `python -m gruntz.cleanliness.board --update`; never raised.)
         _floor = load_baseline()
         _viol = [(lbl, _floor[lbl], n) for lbl, n in rows
                  if lbl in _RATCHET and lbl in _floor and n > _floor[lbl]]
@@ -392,7 +392,7 @@ def cmd_build(args) -> None:
     # answer at all. This keeps the gates running on every full build (a no-op build must
     # still verify the source invariants) without paying 4.5 min to recompute a file that
     # cannot have changed.
-    from gruntz.match.class_sizes import _stale_sources
+    from gruntz.cleanliness.class_sizes import _stale_sources
     if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
         cmd_structs(argparse.Namespace(tu=[]))
     else:
@@ -406,10 +406,10 @@ def cmd_build(args) -> None:
     # a class that DECLARES SIZE(C,N) but does not COMPUTE N, and is `new`ed, emits the
     # wrong `push <size>` immediate into operator new - a real byte defect that nothing
     # checked before (SIZE() was effectively a comment).
-    run([sys.executable, "-m", "gruntz.match.class_sizes"])
+    run([sys.executable, "-m", "gruntz.cleanliness.class_sizes"])
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
-    run([sys.executable, "-m", "gruntz.match.vtable_bans"])
+    run([sys.executable, "-m", "gruntz.cleanliness.vtable_bans"])
     # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
     # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
     # vtable modelling can never drift from the binary. `python -m gruntz.analysis.vtable_hierarchy --audit`.
@@ -429,30 +429,30 @@ def cmd_build(args) -> None:
     # one ??_7 name, so a multiply-bound rva is either a redundant duplicate (delete one) or a
     # mis-catalog aliasing one vtable under many names (collapse the fake views). It must never
     # regress, independent of the catalog-completeness backlog below.
-    run([sys.executable, "-m", "gruntz.match.class_vtables", "--assert-unique"])
+    run([sys.executable, "-m", "gruntz.cleanliness.class_vtables", "--assert-unique"])
     # Catalog completeness: reached 0 (2026-07-21; every vtable-bearing class is
     # positively bound or VTBL_ABSENT-proven) - FATAL so it can never regress.
-    rvt = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
+    rvt = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.class_vtables"],
                          cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rvt.returncode != 0:
         for ln in (rvt.stdout + rvt.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
             "@data-symbol, dissolve the view, or prove VTBL_ABSENT "
-            "(python -m gruntz.match.class_vtables)")
+            "(python -m gruntz.cleanliness.class_vtables)")
     else:
         log((rvt.stdout + rvt.stderr).strip().splitlines()[-1])
     # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
     # function pointers) finds must be bound in source (symbol_names) or catalogued as
     # MFC/CRT in config/library_vtables.csv. FATAL gate - a vtable can never go uncovered.
-    rc = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_coverage"],
+    rc = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_coverage"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rc.returncode != 0:
         for ln in (rc.stdout + rc.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
             "or add MFC/CRT to config/library_vtables.csv "
-            "(python -m gruntz.match.vtable_coverage --list)")
+            "(python -m gruntz.cleanliness.vtable_coverage --list)")
     else:
         log((rc.stdout + rc.stderr).strip().splitlines()[-1])
     # Vtable OWNERSHIP: for every class with an RVA()-bound destructor, the BINARY says which
@@ -471,14 +471,14 @@ def cmd_build(args) -> None:
         log((ro.stdout + ro.stderr).strip().splitlines()[-1])
     # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
     # the vtable's slots (not a fabricated name, not a de-virtualized shell). FATAL gate.
-    rv = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_virtuality"],
+    rv = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_virtuality"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rv.returncode != 0:
         for ln in (rv.stdout + rv.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
             "must be defined and declare a virtual for each slot "
-            "(python -m gruntz.match.vtable_virtuality --list)")
+            "(python -m gruntz.cleanliness.vtable_virtuality --list)")
     else:
         log((rv.stdout + rv.stderr).strip().splitlines()[-1])
     # Vtable SLOT BINDING: coverage says the vtable is bound; virtuality says the class
@@ -490,21 +490,21 @@ def cmd_build(args) -> None:
     # chase_thunk -> the symbol src emits there -> must be a virtual of the class or a
     # base. FATAL for any violation NOT in config/vtable-slot-binding-baseline.tsv (the
     # frozen backlog), so no NEW wiring defect can land while the known set drains to 0.
-    rb = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_slot_binding"],
+    rb = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_slot_binding"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rb.returncode != 0:
         for ln in (rb.stdout + rb.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
             "wrong-class name - wire it to the class's declared virtual "
-            "(python -m gruntz.match.vtable_slot_binding)")
+            "(python -m gruntz.cleanliness.vtable_slot_binding)")
     else:
         out_sb = (rb.stdout + rb.stderr).strip()
         if out_sb:
             log(out_sb.splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
     # phantom view folded onto its real class) - FATAL so it can never regress.
-    run([sys.executable, "-m", "gruntz.match.view_debt", "--fatal"])
+    run([sys.executable, "-m", "gruntz.cleanliness.view_debt", "--fatal"])
 
     _record_build_time("full", time.monotonic() - build_start, ninja_s,
                        time.monotonic() - gates_t0)

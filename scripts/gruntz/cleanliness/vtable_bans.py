@@ -12,14 +12,14 @@ Every explicit vtable must be a real C++ ``virtual`` (catalogued via ``VTBL(...)
 so NONE of these idioms may reappear. This guard scans ``src/`` + ``include/`` (comments
 and string/char literals blanked, so annotations/data do not false-positive), prints
 every offending ``file:line: token``, and exits nonzero if any are present. Wired into
-``gruntz build`` as a FATAL gate. Runnable as ``python -m gruntz.match.vtable_bans``.
+``gruntz build`` as a FATAL gate. Runnable as ``python -m gruntz.cleanliness.vtable_bans``.
 """
 from __future__ import annotations
 
 import sys
 
-from gruntz.match.class_meta import _blank_comments, rel, source_files
-from gruntz.match.cleanliness import METRICS
+from gruntz.cleanliness.class_meta import _blank_comments, rel, source_files
+from gruntz.cleanliness.board import METRICS
 
 # Pull the four vtable regexes straight from the cleanliness scoreboard so the guard
 # and the score can never drift apart.

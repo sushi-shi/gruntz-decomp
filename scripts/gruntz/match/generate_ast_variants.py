@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archived libclang source-variant generator.
+"""libclang source-variant generator - the AST axis of match_variants (LIVE).
 
 The generator never compiles or modifies the source file.  It locates one reconstructed
 function by its ``VA(...)`` marker, derives conservative AST mutations, combines only

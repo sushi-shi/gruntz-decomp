@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archived COFF metric helper for TU-state experiments.
+"""COFF metric helper for the TU-state variant trials (LIVE, match_variants --state-trials).
 
 This deliberately hashes raw ``.text`` bytes and the ordered relocation target
 stream separately.  It handles both one-COMDAT-per-function `/O2` objects and

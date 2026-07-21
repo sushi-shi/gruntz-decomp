@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archived parser-visible TU-state experiment engine.
+"""Parser-visible TU-state variant engine (LIVE, match_variants --state-trials).
 
 This remains the standalone diagnostic/record-max compatibility engine. New combined
 searches should use ``scripts/match_variants.py``, which imports these state families and

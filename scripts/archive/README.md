@@ -6,7 +6,7 @@ the active tree, and do not re-create equivalents.** A new session that "notices
 missing" should read this file first.
 
 **The METRICS stay — only the TOOLS are archived.** The cast / placeholder / fake-view /
-fake-virtual counts these tools helped drive to 0 REMAIN LIVE in `gruntz.match.cleanliness`
+fake-virtual counts these tools helped drive to 0 REMAIN LIVE in `gruntz.cleanliness.board`
 (and the vtable/view build gates) as **regression guards**: they must hold at 0, and a
 non-zero count means a cast or fake-virtual was **reintroduced** — fix it at the source
 (re-type the member, dissolve the view, make the virtual real). Do NOT remove those metric
@@ -42,13 +42,13 @@ briefs — all empty for these; audit method in `docs/sema-greenfield.md`'s evid
 - `consolidate_globals.py` — the globals-consolidation campaign concluded in a design
   decision (a fat force-included Globals.h REGRESSES matched TUs); one-shot spent.
 - `cleanliness_ast.py` — the libclang AST cast metrics; the whole C-style-cast board is
-  **0** and the live regex ratchet in `gruntz.match.cleanliness` guards it.
+  **0** and the live regex ratchet in `gruntz.cleanliness.board` guards it.
 - `vtable_audit.py` — per-slot virtuality census; superseded by the LIVE build gates
-  (`match/vtable_virtuality.py`, `vtable_coverage.py`, `vtable_slot_binding.py`).
+  (`cleanliness/vtable_virtuality.py`, `vtable_coverage.py`, `vtable_slot_binding.py`).
 - `vtable_slot_identity.py` — placeholder-slot resolver; the `placeholder vtable slots`
   metric is **0** and every analysed vtable is covered (333/333).
 
-The live tooling that replaces the *purpose* of these lives in `scripts/gruntz/match/`
-(`cleanliness.py`, `residual_queue.py`, the vtable/view gates), `scripts/gruntz/sema/`
+The live tooling that replaces the *purpose* of these lives in `scripts/gruntz/cleanliness/` (the board + the vtable/view gates), `scripts/gruntz/match/`
+(`status.py`, `residual_queue.py`), `scripts/gruntz/sema/`
 (the navigation surface) and `scripts/gruntz/analysis/` (the still-active campaign
 tools). See `docs/gotchas.md` for what's current.

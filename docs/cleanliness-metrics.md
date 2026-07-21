@@ -4,12 +4,12 @@ Tracked targets for the reconstruction's **type/call/name layer** — the goal i
 clean, portable C++ source (the single source of truth), not just byte-matches.
 Each metric is matching-neutral to drive toward its target unless noted.
 
-**Live tracking.** These counts are computed by `gruntz.match.cleanliness`
+**Live tracking.** These counts are computed by `gruntz.cleanliness.board`
 (comment- and string-stripped, so prose/`//` annotations don't inflate) and printed
 in the **`gruntz build` report** right under the match summary, each with a **delta
 vs the committed baseline** (`config/cleanliness-baseline.tsv`) — `down = good`. So a
 matcher sees its own cast/placeholder/view change the moment it builds and steers on
-it. Bless a new baseline with `python -m gruntz.match.cleanliness --update` (the
+it. Bless a new baseline with `python -m gruntz.cleanliness.board --update` (the
 orchestrator refreshes it at integration, like `match_baseline.tsv`). The counts in
 the tables below are a **snapshot** (2026-07-05, comment-stripped) — the report is
 authoritative.
@@ -58,8 +58,8 @@ directly where `const char*` is expected, no cast (and no helper).
 
 | metric | command | current | state |
 |---|---|---|---|
-| SIZE missing | `python -m gruntz.match.class_sizes` | 0 | **FATAL** (enforced) |
-| VTBL missing | `python -m gruntz.match.class_vtables` | 333 | reporting → fatal at 0 |
+| SIZE missing | `python -m gruntz.cleanliness.class_sizes` | 0 | **FATAL** (enforced) |
+| VTBL missing | `python -m gruntz.cleanliness.class_vtables` | 333 | reporting → fatal at 0 |
 | src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | 0 | **FATAL** (enforced, no allowlist) — FULL generated symbol set: rva-macro + @rva-symbol + DATA (vendored zlib excluded by source, not allowlist) |
 | stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | 0 | **FATAL** (enforced) |
 

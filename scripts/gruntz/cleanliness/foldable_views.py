@@ -6,7 +6,7 @@ import re, csv
 from pathlib import Path
 from collections import defaultdict
 from gruntz.analysis import vtable_scan as vs
-from gruntz.match.view_debt import pure_phantom_classes, LIBRARY_CLASSES
+from gruntz.cleanliness.view_debt import pure_phantom_classes, LIBRARY_CLASSES
 REPO = next(p for p in Path(__file__).resolve().parents if (p/"flake.nix").exists())
 gen = {}
 for r in csv.DictReader(open(REPO/"build/gen/symbol_names.csv")):

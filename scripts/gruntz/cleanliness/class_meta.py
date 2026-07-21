@@ -2,8 +2,8 @@
 """Shared source scanner for the class-metadata completeness checks.
 
 Consumed by the two runnable checks:
-  * ``python -m gruntz.match.class_sizes``   - every class has SIZE/SIZE_UNKNOWN.
-  * ``python -m gruntz.match.class_vtables``  - every vtable-bearing class is
+  * ``python -m gruntz.cleanliness.class_sizes``   - every class has SIZE/SIZE_UNKNOWN.
+  * ``python -m gruntz.cleanliness.class_vtables``  - every vtable-bearing class is
                                                 catalogued (VTBL / manual / RTTI).
 
 SCOPING RULES (documented once here; identical for both checks, so a class is

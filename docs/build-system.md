@@ -479,6 +479,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
 annotation macros and `src/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
 package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, the
+cleanliness board + quality gates `cleanliness/`, the
 sema navigation surface `sema/`, and the analysis tools `analysis/`).
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),

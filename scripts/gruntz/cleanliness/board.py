@@ -4,7 +4,7 @@
 vs the committed baseline so a matcher can steer on its own change.
 
 Printed by ``gruntz build`` in the report block (below the match summary); runnable
-as ``python -m gruntz.match.cleanliness`` (shows counts + delta),
+as ``python -m gruntz.cleanliness.board`` (shows counts + delta),
 ``--update`` (bless: write the baseline), ``--csv``. See docs/cleanliness-metrics.md.
 
 Counts OCCURRENCES over ``src/`` + ``include/`` C++ sources with comments AND

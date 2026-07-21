@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gruntz.match.vtable_slot_binding - every vtable SLOT must be WIRED to a real virtual.
+"""gruntz.cleanliness.vtable_slot_binding - every vtable SLOT must be WIRED to a real virtual.
 
 THE GAP THIS CLOSES
 -------------------
@@ -66,11 +66,11 @@ is keyed on (vtable_rva, slot, symbol), so fixing one defect and introducing ano
 cannot net out to "still 259" and slip through - the new row simply is not in the set.
 Fixing a defect makes its row stale, which ``--update`` prunes and the gate reports.
 
-    python -m gruntz.match.vtable_slot_binding           # the gate (fail-closed vs baseline)
-    python -m gruntz.match.vtable_slot_binding --strict  # ignore the baseline: ALL violations
-    python -m gruntz.match.vtable_slot_binding --update  # bless the current set as baseline
-    python -m gruntz.match.vtable_slot_binding --list    # every slot, every vtable
-    python -m gruntz.match.vtable_slot_binding --info    # ... plus the (c) UNBOUND table
+    python -m gruntz.cleanliness.vtable_slot_binding           # the gate (fail-closed vs baseline)
+    python -m gruntz.cleanliness.vtable_slot_binding --strict  # ignore the baseline: ALL violations
+    python -m gruntz.cleanliness.vtable_slot_binding --update  # bless the current set as baseline
+    python -m gruntz.cleanliness.vtable_slot_binding --list    # every slot, every vtable
+    python -m gruntz.cleanliness.vtable_slot_binding --info    # ... plus the (c) UNBOUND table
 """
 from __future__ import annotations
 
@@ -79,8 +79,8 @@ import sys
 from pathlib import Path
 
 from gruntz.analysis import vtable_scan as vs
-from gruntz.match.class_meta import rel, vtbl_annotations
-from gruntz.match.vtable_virtuality import _index_classes
+from gruntz.cleanliness.class_meta import rel, vtbl_annotations
+from gruntz.cleanliness.vtable_virtuality import _index_classes
 
 REPO = vs.REPO
 LIB_CSV = REPO / "config" / "library_vtables.csv"
@@ -286,11 +286,11 @@ def load_baseline():
 def write_baseline(violations):
     BASELINE.parent.mkdir(parents=True, exist_ok=True)
     with BASELINE.open("w", newline="") as f:
-        f.write("# gruntz.match.vtable_slot_binding - the FROZEN backlog of vtable slots whose\n"
+        f.write("# gruntz.cleanliness.vtable_slot_binding - the FROZEN backlog of vtable slots whose\n"
                 "# body is bound under a non-virtual / wrong-class name (see the module docstring).\n"
                 "# The gate fails on any violation NOT listed here, so no NEW wiring defect can land.\n"
                 "# Drive these to 0 by wiring each body to its class's declared virtual; re-bless\n"
-                "# with `python -m gruntz.match.vtable_slot_binding --update`.\n")
+                "# with `python -m gruntz.cleanliness.vtable_slot_binding --update`.\n")
         w = csv.writer(f, delimiter="\t")
         w.writerow(["kind", "vtable_rva", "class", "slot", "body_rva", "symbol", "unit"])
         for v in sorted(violations, key=lambda x: (x[1], x[3])):
@@ -371,7 +371,7 @@ def main() -> int:
 
     if stale:
         print(f"vtable-slot-binding: {len(stale)} baselined violation(s) FIXED - re-bless with "
-              f"`python -m gruntz.match.vtable_slot_binding --update` to keep the ratchet tight")
+              f"`python -m gruntz.cleanliness.vtable_slot_binding --update` to keep the ratchet tight")
     if known:
         print(f"vtable-slot-binding: no new wiring defects; {len(known)} known violation(s) "
               f"remain in the frozen backlog ({rel(BASELINE)})")

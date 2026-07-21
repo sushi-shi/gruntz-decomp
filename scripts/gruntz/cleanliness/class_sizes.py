@@ -27,7 +27,7 @@ new-sites if "fixed". So correctness is asserted ONLY for names with exactly ONE
 where structs.json's number is unambiguous. Multiply-defined names are reported separately
 as UNVERIFIABLE (a real gap - the cure is to fold them to one definition, not to guess).
 
-Runnable as ``python -m gruntz.match.class_sizes``.
+Runnable as ``python -m gruntz.cleanliness.class_sizes``.
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ from pathlib import Path
 
 import sys
 
-from gruntz.match.class_meta import (_blank_comments, iter_class_defs, rel,
+from gruntz.cleanliness.class_meta import (_blank_comments, iter_class_defs, rel,
                                      size_annotated_names, source_files, unique_class_defs)
 
 _SIZE_DECL_RE = re.compile(r"\bSIZE\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gruntz.match.vtable_coverage - every vtable in GRUNTZ.EXE must be COVERED.
+"""gruntz.cleanliness.vtable_coverage - every vtable in GRUNTZ.EXE must be COVERED.
 
 The authoritative vtable set comes from OUR analysis (``gruntz.analysis.vtable_scan``),
 which finds every vtable by scanning the retail image for maximal stride-4 runs of
@@ -16,7 +16,7 @@ A vtable (rva) is COVERED when EITHER:
 
 Anything left is a GAME/engine vtable with no source binding: a real gap. This tool
 prints the gaps and exits nonzero. Wired into ``gruntz build`` as a FATAL gate, so
-a vtable can never go uncovered. Runnable as ``python -m gruntz.match.vtable_coverage``
+a vtable can never go uncovered. Runnable as ``python -m gruntz.cleanliness.vtable_coverage``
 (``--list`` for every covered/uncovered row).
 """
 from __future__ import annotations
@@ -78,7 +78,7 @@ def covered_rvas():
                 named.add(rva)
     # source VTBL() rvas, tree-wide (robust to symbol_names staleness)
     try:
-        from gruntz.match.class_meta import vtbl_annotations
+        from gruntz.cleanliness.class_meta import vtbl_annotations
         for _name, rva, _path, _ln in vtbl_annotations():
             named.add(rva)
     except Exception:

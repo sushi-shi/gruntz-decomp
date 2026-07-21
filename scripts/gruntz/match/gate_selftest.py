@@ -36,9 +36,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gruntz.match import class_meta, class_sizes, cleanliness, high_water, status
+from gruntz.cleanliness import board as cleanliness
+from gruntz.cleanliness import class_meta, class_sizes
+from gruntz.cleanliness import vtable_slot_binding as vsb
+from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun
-from gruntz.match import vtable_slot_binding as vsb
 
 
 class _Tree:

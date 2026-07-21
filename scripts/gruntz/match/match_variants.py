@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archived unified source-variant search frontend.
+"""Unified source-variant search frontend - LIVE drive-to-100% campaign engine (ported from homm2).
 
 This is the public entry point for the matching campaign.  It combines libclang AST
 mutations, parser-visible TU-state declarations/includes/functions, and optional exact
