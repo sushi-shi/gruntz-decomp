@@ -518,6 +518,21 @@ def cmd_build(args) -> None:
         out_sb = (rb.stdout + rb.stderr).strip()
         if out_sb:
             log(out_sb.splitlines()[-1])
+    # TU linker-order ratchet: each .cpp==.obj must be strictly-ascending in file
+    # order + one contiguous .text block (docs/tu-partition-brief.md). The backlog is
+    # FROZEN in config/tu-order-baseline.tsv (down-only roll); FATAL for any RISE -
+    # a re-home/move that breaks the layout invariant is caught here, not carried.
+    rt = subprocess.run([sys.executable, "-m", "gruntz.audit.tu_order_check", "--gate"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rt.returncode != 0:
+        for ln in (rt.stdout + rt.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("tu-order ratchet violated - a function move broke the linker-order "
+            "invariant (python -m gruntz.audit.tu_order_check --tu <name>)")
+    else:
+        out_to = (rt.stdout + rt.stderr).strip()
+        if out_to:
+            log(out_to.splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
     # phantom view folded onto its real class) - FATAL so it can never regress.
     run([sys.executable, "-m", "gruntz.cleanliness.view_debt", "--fatal"])

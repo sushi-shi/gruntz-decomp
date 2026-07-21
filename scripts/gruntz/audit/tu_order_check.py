@@ -133,6 +133,58 @@ def check_inter(tus):
     return out
 
 
+BASELINE = REPO / "config" / "tu-order-baseline.tsv"
+
+
+def _gate(intra, inter) -> int:
+    """Down-only ratchet vs the committed backlog. A TU whose intra-violation
+    count RISES (or a brand-new offender TU, or a rise in the total interleave
+    pair count) fails the build; improvements roll the baseline down. Floors
+    are never raised by tooling - fixing the layout is the only way down."""
+    cur = {tu: len(v) for tu, v in intra.items()}
+    pairs = len(inter)
+    base_tu, base_pairs = {}, None
+    if BASELINE.is_file():
+        for ln in BASELINE.read_text().splitlines():
+            if not ln.strip():
+                continue
+            k, _, v = ln.partition("\t")
+            if k == "(interleave-pairs)":
+                base_pairs = int(v)
+            else:
+                base_tu[k] = int(v)
+
+    def save():
+        rows = [f"{tu}\t{n}" for tu, n in sorted(cur.items())]
+        rows.append(f"(interleave-pairs)\t{pairs}")
+        BASELINE.write_text("\n".join(rows) + "\n")
+
+    if base_pairs is None:                 # no baseline yet: freeze the backlog
+        save()
+        print(f"tu-order: baseline frozen - {len(cur)} TU(s) with intra violations, "
+              f"{pairs} interleave pair(s) ({BASELINE.name})")
+        return 0
+    risen = [(tu, base_tu.get(tu, 0), n) for tu, n in sorted(cur.items())
+             if n > base_tu.get(tu, 0)]
+    if risen or pairs > base_pairs:
+        for tu, fl, n in risen:
+            print(f"tu-order RATCHET VIOLATED: {tu}  {fl} -> {n} intra violation(s)",
+                  file=sys.stderr)
+        if pairs > base_pairs:
+            print(f"tu-order RATCHET VIOLATED: interleave pairs  {base_pairs} -> {pairs}",
+                  file=sys.stderr)
+        print("a re-home/move broke the linker-order invariant (strictly-ascending, "
+              "one contiguous block per TU) - fix the layout, never bless it up "
+              f"(`python -m gruntz.audit.tu_order_check --tu <name>` for detail)",
+              file=sys.stderr)
+        return 2
+    if cur != base_tu or pairs < base_pairs:
+        save()                             # down-only roll
+    print(f"tu-order: no new wiring defects; backlog {len(cur)} TU(s) / "
+          f"{pairs} pair(s) (frozen in {BASELINE.name})")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--include-stub", action="store_true",
@@ -143,9 +195,17 @@ def main():
     ap.add_argument("--inter-only", action="store_true")
     ap.add_argument("--intra-only", action="store_true")
     ap.add_argument("--csv", help="write per-TU span + violation counts")
+    ap.add_argument("--gate", action="store_true",
+                    help="build-tail ratchet: compare per-TU intra violations + the "
+                         "interleave-pair count vs config/tu-order-baseline.tsv; any "
+                         "RISE fails (exit 2); improvements roll the baseline DOWN "
+                         "(the frozen-backlog pattern, like vtable-slot-binding)")
     args = ap.parse_args()
 
     tus = load_in_file_order(SRC, args.include_stub, args.exclude_pools)
+
+    if args.gate:
+        return _gate(check_intra(tus), check_inter(tus))
 
     if args.tu:
         seq = tus.get(args.tu)
