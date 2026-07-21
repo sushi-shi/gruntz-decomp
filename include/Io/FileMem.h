@@ -21,7 +21,7 @@ public:
     virtual void GetLength() = 0;              // slot 5  __purecall (CFileMem: return m_length)
     virtual void GetOffset() = 0;              // slot 6  __purecall (CFileMem: return m_offset)
     virtual i32 WantRead();                        // slot 7  (0x157940) read-vs-create gate
-    virtual void WantCreate();                  // slot 8  0x157950: return m_8 == 0 (mode 0 = create)
+    virtual void WantCreate();                  // slot 8  0x157950: return m_mode == 0 (mode 0 = create)
     virtual i32 Open() = 0;                        // slot 9  __purecall
     virtual i32 Ready() = 0;                       // slot 10 __purecall
     virtual i32 Read(void* buf, i32 n) = 0;        // slot 11 __purecall
@@ -29,7 +29,7 @@ public:
 
     // vptr implicit @ +0x00
     i32 m_4;        // +0x04
-    i32 m_8;        // +0x08
+    i32 m_mode;        // +0x08
     CString m_name; // +0x0c
 };
 SIZE(CFileMemBase, 0x10); // vptr + m_4 + m_8 + CString (base sub-object; m_file follows at +0x10)

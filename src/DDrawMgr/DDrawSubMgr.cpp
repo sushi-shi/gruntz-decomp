@@ -568,7 +568,7 @@ CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
 RVA(0x00157850, 0x54)
 CFileMemBase::CFileMemBase() {
     m_4 = 0;
-    m_8 = 0;
+    m_mode = 0;
     m_name.Empty();
 }
 
@@ -605,7 +605,7 @@ CFileMem::~CFileMem() {
 RVA(0x00157a40, 0x10)
 void CFileMemBase::Reset() {
     m_4 = 0;
-    m_8 = 0;
+    m_mode = 0;
     m_name.Empty();
 }
 
@@ -614,7 +614,7 @@ void CFileMem::Reset() {
     m_length = 0;
     m_offset = 0;
     m_4 = 0;
-    m_8 = 0;
+    m_mode = 0;
     m_name.Empty();
 }
 

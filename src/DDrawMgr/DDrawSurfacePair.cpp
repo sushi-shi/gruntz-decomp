@@ -1100,7 +1100,7 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
 RVA(0x00165e30, 0x27)
 i32 CFileMemBase::SetName(const char* name, i32 a, i32 b) {
     m_name = name;
-    m_8 = a;
+    m_mode = a;
     m_4 = b;
     return 1;
 }
