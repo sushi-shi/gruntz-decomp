@@ -282,7 +282,7 @@ public:
             i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by
                                        //         Lock, used as the pixel buffer by Fill/BlitDirect)
             char m_pad38[0x64 - 0x38]; // +0x38
-            i32 m_64;                  // +0x64  pixel-format bit depth / colour-key colour
+            i32 m_srcBitDepth;                  // +0x64  pixel-format bit depth / colour-key colour
             i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
             i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
             i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask

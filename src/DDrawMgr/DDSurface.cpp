@@ -63,7 +63,7 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
     if (a4 != 0 && a4 != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
         *reinterpret_cast<i32*>((this->m_desc + 4)) = 0x1007;
         *reinterpret_cast<i32*>((this->m_desc + 0x48)) = 0x20; // m_58
-        this->m_64 = a4;
+        this->m_srcBitDepth = a4;
     }
     return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
 }
@@ -82,7 +82,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
 
-    i32 bits = m_64;
+    i32 bits = m_srcBitDepth;
     m_hasColorKey = 0;
     m_bitDepth = bits;
     // NOTE: retail emits two MSVC jump tables here (selector = bits-8, range 25),
