@@ -42,11 +42,11 @@ def csv_find(path: Path, rva: int, key: str = "rva"):
 
 
 def src_loc_of(rva: int):
-    """(relpath, lineno) of the RVA(0x..)/RVAU(0x..) macro that defines the fn at
+    """(relpath, lineno) of the RVA(0x..) macro that defines the fn at
     `rva`, scanning src/ + include/. None if the fn is not annotated in source.
     Padding-agnostic: matches 0x0*<hex> so 0x0017fa40 and 0x17fa40 both hit."""
     import re
-    pat = re.compile(r"\bRVAU?\s*\(\s*0x0*%x\s*[,)]" % rva, re.IGNORECASE)
+    pat = re.compile(r"\bRVA\s*\(\s*0x0*%x\s*[,)]" % rva, re.IGNORECASE)
     for sub in ("src", "include"):
         base = REPO / sub
         if not base.is_dir():

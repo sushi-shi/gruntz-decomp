@@ -93,8 +93,8 @@ import re
 import sys
 from pathlib import Path
 
-RVA_RE = re.compile(r"^\s*(RVA|RVAU)\(\s*(0x[0-9a-fA-F]+)")
-ANNOT_RE = re.compile(r"^\s*(RVA|RVAU|SYMBOL)\(")
+RVA_RE = re.compile(r"^\s*(RVA)\(\s*(0x[0-9a-fA-F]+)")
+ANNOT_RE = re.compile(r"^\s*(RVA|SYMBOL)\(")
 
 
 def analyze(text):
@@ -105,7 +105,7 @@ def analyze(text):
       opens[i]         - count of code '{' on line i
       blank[i]         - line i is whitespace only
       comment[i]       - line i is comment-only (// , /* , or inside a block comment)
-      annot[i]         - line i is an RVA/RVAU/SYMBOL annotation (not in a comment)
+      annot[i]         - line i is an RVA/SYMBOL annotation (not in a comment)
     Braces/quotes inside strings, chars, comments and #directives are ignored."""
     lines = text.splitlines(keepends=True)
     n = len(lines)
@@ -202,7 +202,7 @@ def analyze(text):
 
 
 def find_anchors(a):
-    """Locate every RVA/RVAU-governed function: list of (rva, sig_line, body_end).
+    """Locate every RVA-governed function: list of (rva, sig_line, body_end).
     Adjacent RVA lines governing the SAME function merge (key = lowest RVA)."""
     lines, n = a["lines"], a["n"]
     ds, cs, net, opens = a["depth_start"], a["comment_start"], a["net"], a["opens"]

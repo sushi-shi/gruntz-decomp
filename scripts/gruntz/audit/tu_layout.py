@@ -4,7 +4,7 @@
 Answers: how far apart in retail RVA space are the functions of one class/TU, and
 does that layout give us a usable notion of which methods are "related"?
 
-It parses the matched `src/` directly - every RVA()/RVAU() macro is a function we
+It parses the matched `src/` directly - every RVA() macro is a function we
 have placed at a known retail address (src/Stub/ is skipped: those are the
 not-yet-matched backlog). No build artifacts are needed; this runs in the default
 `nix develop`.
@@ -60,10 +60,13 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
 
-# RVA(0x.., 0x..) carries a matched function's retail address + size; RVAU(0x..) is
+# RVA(0x.., 0x..) carries a matched function's retail address + size.
 # the unsized variant (an unpinned thunk). Same macros gruntz.match.verify_stubs reads.
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
-RVAU_RE = re.compile(r"\bRVAU\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
+# RVA_COMPGEN(<rva>, <size>, <mangled>) - a compiler-generated fn pin (rva.h);
+# participates in the intra-TU order check like RVA().
+RVA_COMPGEN_RE = re.compile(
+    r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
 # the Class::method (or Class::~Class / operator) on the definition line below it.
 SIG_RE = re.compile(r"([A-Za-z_]\w*)::(~?[A-Za-z_]\w*|operator[^\(]*)")
 
@@ -129,7 +132,7 @@ def _parse_size(s: str) -> int:
 
 
 def load_funcs(src: Path = SRC) -> list[Func]:
-    """Every matched (non-stub) RVA/RVAU-annotated function in src/, sorted by RVA."""
+    """Every matched (non-stub) RVA-annotated function in src/, sorted by RVA."""
     out: list[Func] = []
     for path in sorted(src.rglob("*.cpp")):
         if "Stub" in path.parts[len(src.parts):]:  # skip src/Stub/ backlog
@@ -138,13 +141,9 @@ def load_funcs(src: Path = SRC) -> list[Func]:
         lines = path.read_text(errors="replace").splitlines()
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
-            if m:
-                rva, size = int(m.group(1), 16), _parse_size(m.group(2))
-            else:
-                mu = RVAU_RE.search(ln)
-                if not mu:
-                    continue
-                rva, size = int(mu.group(1), 16), 0
+            if not m:
+                continue
+            rva, size = int(m.group(1), 16), _parse_size(m.group(2))
             cls = meth = None
             for j in range(i, min(i + 4, len(lines))):
                 sm = SIG_RE.search(lines[j])

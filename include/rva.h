@@ -10,8 +10,6 @@
 //                         byte extent; synth_pdb uses it as the authoritative
 //                         boundary for functions Ghidra never recovered as
 //                         objects.
-//   RVAU(addr)          - the rare matched function with NO known size ("U" =
-//                         unsized); the functions.csv boundary is used instead.
 //   SYMBOL(mangled)     - explicit mangled-name override for a function whose
 //                         clang MS-mangling differs from the retail symbol.
 //   DATA(addr)          - on an `extern` declaration of a matched GLOBAL (the
@@ -45,7 +43,7 @@
 // 5.0 under wine (the base objs). MSVC 5.0 predates __attribute__, [[...]], AND
 // C99 variadic macros (__VA_ARGS__), so each macro must be FIXED-arity and must
 // compile to nothing under any non-clang compiler. Under MSVC ALL of these macros
-// (RVA/RVAU/SYMBOL/DATA/OVERRIDE and now SIZE/SIZE_UNKNOWN/VTBL) vanish - they are
+// (RVA/SYMBOL/DATA/OVERRIDE and now SIZE/SIZE_UNKNOWN/VTBL) vanish - they are
 // purely clang-side labels and never perturb matched code. (SIZE/SIZE_UNKNOWN/VTBL
 // were once a negative-size typedef that FORCED sizeof under MSVC and rescheduled
 // includers' /O2 codegen; they are now MSVC-empty, so they are matching-neutral
@@ -70,7 +68,6 @@
 #if defined(__clang__) && defined(GRUNTZ_EMIT_META)
 
 #define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))
-#define RVAU(addr) __attribute__((annotate("rva:" #addr)))
 #define SYMBOL(mangled) __attribute__((annotate("symbol:" #mangled)))
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
 
@@ -117,7 +114,6 @@
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
-#define RVAU(addr)
 #define SYMBOL(mangled)
 #define DATA(addr)
 #define OVERRIDE

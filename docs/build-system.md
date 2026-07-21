@@ -462,7 +462,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 
    The macros (`src/rva.h`, compiled to nothing under MSVC 5.0 — it predates
    `__attribute__` and C99 variadic macros, so each macro is FIXED-arity):
-   - `RVA(addr, size)` / `RVAU(addr)` — a matched function (sized / unsized);
+   - `RVA(addr, size)` — a matched function;
    - `SYMBOL(mangled)` — an explicit mangled-name override for the rare case
      clang's MS mangling differs from VC5's;
    - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it

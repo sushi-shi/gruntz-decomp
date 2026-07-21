@@ -241,10 +241,10 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > **double-claim on the same bytes**. `python -m gruntz.match.verify_library_overlap`
 > (wired fatally into `gruntz build`, no allowlist) enforces
 > `src-claims ∩ library_labels.csv = ∅` over the **FULL generated symbol set**
-> (`build/gen/symbol_names.csv`), not just the `RVA()`/`RVAU()` macros the first cut
+> (`build/gen/symbol_names.csv`), not just the `RVA()` macros the first cut
 > parsed. A src claim is ANY of:
 >
-> - **rva-macro** — `RVA(0x.., 0x..)` / `RVAU(0x..)` (a reconstructed body);
+> - **rva-macro** — `RVA(0x.., 0x..)` (a reconstructed body);
 > - **rva-symbol** — `RVA_COMPGEN(<rva>, <size>, <mangled>)` (a self-contained fn label,
 >   e.g. a `??_G` scalar-deleting-dtor thunk the compiler synthesizes for a
 >   polymorphic game class);

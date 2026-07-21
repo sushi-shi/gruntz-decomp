@@ -532,6 +532,20 @@ def cmd_build(args) -> None:
         out_to = (rt.stdout + rt.stderr).strip()
         if out_to:
             log(out_to.splitlines()[-1])
+    # RVA_COMPGEN placement ratchet: every compiler-generated pin sits in RVA order
+    # among its TU's RVA() functions (reached 0 at introduction 2026-07-22) - FATAL
+    # so it can never regress.
+    rcg = subprocess.run([sys.executable, "-m", "gruntz.audit.compgen_order", "--gate"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rcg.returncode != 0:
+        for ln in (rcg.stdout + rcg.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
+            "RVA-sorted slot (python -m gruntz.audit.compgen_order)")
+    else:
+        out_cg = (rcg.stdout + rcg.stderr).strip()
+        if out_cg:
+            log(out_cg.splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
     # phantom view folded onto its real class) - FATAL so it can never regress.
     run([sys.executable, "-m", "gruntz.cleanliness.view_debt", "--fatal"])

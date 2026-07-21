@@ -198,7 +198,7 @@ All read-only against `$GRUNTZ_EXE` + `build/ghidra-enrich/exports/`:
 1. Parse the 273 `RVA(rva,size)` stubs from `Unmatched.cpp`.
 2. **Classify by first bytes** (`/tmp/classify_unmatched.py`): IAT-thunk,
    EH-tramp, ret-const, setvtbl, singleton-jmp, getter, body.
-3. **Nearest matched RVA**: parse every `RVA()/RVAU()` in `src/` (excluding
+3. **Nearest matched RVA**: parse every `RVA()` in `src/` (excluding
    `Stub/`) → bisect each stub against the real-class anchors (link order ≈ source
    order ⇒ the neighbor TU names the cluster).
 4. **Reference set**: resolve in-range `e8/e9` calls + `ff15` imports + DIR32

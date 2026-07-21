@@ -21,9 +21,9 @@ defect P0 reconciled. Two ways it recurs, both caught here:
 WHAT COUNTS AS A "src claim" (the widened set). A retail RVA is claimed by src
 through ANY of these, all folded into build/gen/symbol_names.csv by the labels
 step - so the FULL generated symbol set is the authoritative claim set, not just
-the RVA()/RVAU() macros the first cut of this guard parsed:
+the RVA() macros the first cut of this guard parsed:
 
-  * rva-macro   RVA(0x.., 0x..) / RVAU(0x..)     - a reconstructed body
+  * rva-macro   RVA(0x.., 0x..)                  - a reconstructed body
   * rva-symbol  // @rva-symbol: <mangled> <rva>  - a self-contained fn label
                                                     (e.g. a ??_G deleting-dtor
                                                     thunk the compiler synthesizes)
@@ -74,9 +74,8 @@ GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 # co-listed in symbol_names.csv AND library_labels.csv by design ("claimed wins").
 VENDORED_CONFIG = REPO / "config" / "zlib_labels.csv"
 
-# rva-macro: RVA(0x.., 0x..) / RVAU(0x..)  - a reconstructed body's retail address.
+# rva-macro: RVA(0x.., 0x..) - a reconstructed body's retail address.
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*\)")
-RVAU_RE = re.compile(r"\bRVAU\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # rva-symbol: `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained fn label.
 RSYM_RE = re.compile(r"@rva-symbol:\s*\S+\s+(0x[0-9a-fA-F]+)")
 # RVA_COMPGEN(<rva>, <size>, <mangled>) - the macro form (rva.h).
@@ -123,8 +122,6 @@ def src_claims() -> dict:
         for i, line in enumerate(text.splitlines()):
             for m in RVA_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-macro", f"{path.relative_to(REPO)}:{i + 1}"))
-            for m in RVAU_RE.finditer(line):
-                claims.setdefault(norm_addr(m.group(1)), ("rva-macro", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in RSYM_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-symbol", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in RCG_RE.finditer(line):
@@ -139,7 +136,7 @@ def src_claims() -> dict:
 def generated_claims() -> dict:
     """rva -> (claim-kind, location, name) for the FULL src-authored claim set,
     MINUS the vendored table. Primary source: the generated build/gen/symbol_names.csv
-    (authoritative - every RVA()/RVAU() body, @rva-symbol pin, DATA()/@data-symbol
+    (authoritative - every RVA() body, RVA_COMPGEN pin, DATA()/@data-symbol
     and ??_7 vtable folded in by the labels step). Augmented with a direct src parse
     so a stale/absent generated file cannot make the gate pass vacuously and so
     every offending row carries its claim kind + src location."""

@@ -6,7 +6,7 @@ file) down as ONE CONTIGUOUS .text run, functions in source order. So a faithful
 reconstruction must satisfy two invariants (verified by isle/reccmp and th06, the
 established MSVC matching decomps that build byte-identical the same way):
 
-  INTRA-TU  within each .cpp, the RVA()/RVAU() functions appear in FILE ORDER that
+  INTRA-TU  within each .cpp, the RVA() functions appear in FILE ORDER that
             is strictly increasing in retail RVA, and their [rva, rva+size) spans
             do not overlap.  (file order == link order == RVA order.)
 
@@ -34,7 +34,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from gruntz.audit.tu_layout import RVA_RE, RVAU_RE, SIG_RE, _parse_size, pooled
+from gruntz.audit.tu_layout import RVA_RE, SIG_RE, _parse_size, pooled
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -53,7 +53,7 @@ class Entry:
 
 
 def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
-    """Every RVA()/RVAU() function per .cpp, in FILE (source) order (NOT rva-sorted).
+    """Every RVA() function per .cpp, in FILE (source) order (NOT rva-sorted).
 
     exclude_pools drops functions living in the COMDAT dtor/ctor pools (tu_layout
     POOLS) - the linker places those away from their class's main run, so they are
@@ -69,13 +69,9 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
         seq: list[Entry] = []
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
-            if m:
-                rva, size = int(m.group(1), 16), _parse_size(m.group(2))
-            else:
-                mu = RVAU_RE.search(ln)
-                if not mu:
-                    continue
-                rva, size = int(mu.group(1), 16), 0  # unsized thunk: order-check only
+            if not m:
+                continue
+            rva, size = int(m.group(1), 16), _parse_size(m.group(2))
             if exclude_pools and pooled(rva):
                 continue
             name = None

@@ -3,7 +3,7 @@
 
 The source tree is the single source of truth for labeled-but-unmatched code:
 each stub carries a compact `// @...` comment block ending in `// @stub`, with
-its retail address on an RVA()/RVAU() macro (src/rva.h) above the definition:
+its retail address on an RVA() macro (src/rva.h) above the definition:
 
     // @confidence: high
     // @source: rtti-vptr
@@ -34,9 +34,8 @@ SRC = REPO / "src"
 REQUIRED_TAGS = ("confidence", "source")
 TAG_RE = re.compile(r"^\s*// @([A-Za-z_-]+):\s*(.*?)\s*$")
 STUB_BODY_RE = re.compile(r"\bStub_([0-9a-fA-F]+)\b")
-# RVA(0x.., 0x..) or RVAU(0x..) carrying the stub's retail address (+ size).
+# RVA(0x.., 0x..) carrying the stub's retail address (+ size).
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
-RVAU_RE = re.compile(r"\bRVAU\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 
 
 def norm_addr(value: str) -> str:
@@ -47,7 +46,7 @@ def scan_stub_blocks():
     """Yield (path, stub_line_no, tags, addr, size, body) for each `// @stub`.
 
     A block is the contiguous run of `// @tag:` comment lines immediately above a
-    `// @stub` line; the retail address/size come from the RVA()/RVAU() macro
+    `// @stub` line; the retail address/size come from the RVA() macro
     between the `// @stub` line and the definition (or None for an unpinned
     thunk), and `body` is the definition line (for the Stub_<rva> name check).
     """
@@ -71,12 +70,8 @@ def scan_stub_blocks():
                 if not s or s.startswith("//"):
                     continue
                 mr = RVA_RE.search(s)
-                mu = RVAU_RE.search(s)
                 if mr:
                     addr, size = mr.group(1), mr.group(2)
-                    continue
-                if mu:
-                    addr = mu.group(1)
                     continue
                 body = s          # the definition line
                 break
@@ -121,13 +116,13 @@ def main() -> int:
 
     # Cross-check: a stub address must NOT also be a MATCHED function - else it's
     # a stale stub duplicating reconstructed code (and labels.py skips the stub
-    # unit, so its own dup-guard can't see it). "Matched" = an RVA()/RVAU() macro
+    # unit, so its own dup-guard can't see it). "Matched" = an RVA() macro
     # NOT in a `// @stub` block, or a row in config/zlib_labels.csv.
     matched = {}
     for path in sorted(SRC.rglob("*.cpp")):
         lines = path.read_text().splitlines()
         for k, ln in enumerate(lines):
-            for mm in list(RVA_RE.finditer(ln)) + list(RVAU_RE.finditer(ln)):
+            for mm in RVA_RE.finditer(ln):
                 if any(lines[x].strip() == "// @stub" for x in range(max(0, k - 4), k)):
                     continue  # this RVA belongs to a stub, not a matched function
                 try:
