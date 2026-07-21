@@ -11,6 +11,9 @@ A class "has a vtable" when ANY of:
 
 It is "catalogued" (NOT a violator) when ANY of:
   * it carries a ``VTBL(Name, 0x..)`` annotation (the preferred single source), OR
+  * its ``??_7<Name>@@6B..`` datum is named through a ``// @data-symbol:`` /
+    ``// @rva-symbol:`` label (the escape hatch for the MI-decorated
+    ``??_7<Name>@@6B<Base>@@@`` name a plain ``VTBL()`` cannot spell), OR
   * it uses a manual ``&...Vtbl`` stamp - the vtable datum is already named through
     the older ``DATA(g_*Vtbl)`` global binding (a VTBL there would just collide on
     that rva; the sweep migrates these, it does not double-bind them), OR
@@ -43,6 +46,12 @@ from gruntz.match.class_meta import (
 
 _RTTI_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
 _MANUAL_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
+# A ??_7<Class>@@6B... datum named via a `// @data-symbol:` / `// @rva-symbol:` label
+# (the escape hatch for the MI-decorated ??_7<Class>@@6B<Base>@@@ names a plain
+# VTBL()'s ??_7<Class>@@6B@ cannot express - e.g. zPTree @0x1e94ac). The datum IS
+# named for the delinker, so the class IS catalogued.
+_DATA_SYM_VTBL_RE = re.compile(
+    r"@(?:data|rva)-symbol:\s*\?\?_7([A-Za-z_]\w*)@@6B")
 
 
 def rtti_vtables():
@@ -77,6 +86,18 @@ def present_rvas():
                 out.add(int(p[0], 16))
             except ValueError:
                 pass
+    return out
+
+
+def data_symbol_vtable_classes():
+    """{class_name} for every ??_7<Class>@@6B... datum named through a
+    `// @data-symbol:` / `// @rva-symbol:` label tree-wide. Captures the plain and
+    the MI-decorated (??_7<Class>@@6B<Base>@@@) forms alike - both name the class's
+    vtable datum for the delinker, so the class is catalogued."""
+    out = set()
+    for path in source_files():
+        for m in _DATA_SYM_VTBL_RE.finditer(path.read_text(errors="ignore")):
+            out.add(m.group(1))
     return out
 
 
@@ -131,6 +152,7 @@ def main() -> int:
     present = present_rvas()
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
+    data_sym_vtbl = data_symbol_vtable_classes()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -153,6 +175,7 @@ def main() -> int:
         catalogued = (
             name in vtbl_ann
             or manual[name]
+            or name in data_sym_vtbl
             or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"
