@@ -863,7 +863,7 @@ i32 CGruntzMgr::PollUnlessIdle() {
 RVA(0x0008f340, 0xf6)
 i32 CGruntzMgr::CaptureWorldFile() {
     i32 st = m_curState->Update();
-    if (st != 5 && st != 2 && st != 3 && st != 7) {
+    if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY && st != 7) {
         return 0;
     }
     CString name = RunCustomWorldDialog(reinterpret_cast<i32>(m_gameWnd->m_hwnd), 0);
@@ -1763,7 +1763,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
         return 1;
     }
     i32 stateId = st->Update();
-    if (stateId != 5 && stateId != 2) {
+    if (stateId != GAMESTATE_MENU && stateId != GAMESTATE_ATTRACT) {
         return 1;
     }
 
@@ -3330,7 +3330,7 @@ RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
     CBattlezDlg dlg(this, 0); // ctor 0x14b30 (a0 = this, pParent = null)
     i32 st = m_curState->Update();
-    if (st != 5 && st != 2 && st != 3 && st != 7) {
+    if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY && st != 7) {
         return 0;
     }
     ChannelSlots_InitAll();
