@@ -1877,7 +1877,7 @@ void CMulti::SendStatFlag(i32 id, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_statId = id;
-    pkt.m_value = LocalPlayer()->m_4;
+    pkt.m_value = LocalPlayer()->m_id;
     SendStatBuf(&pkt, flag);
 }
 
@@ -1917,7 +1917,7 @@ i32 CMulti::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_statId = id;
-    pkt.m_value = LocalPlayer()->m_4;
+    pkt.m_value = LocalPlayer()->m_id;
     return SendStatPair(recipient, &pkt, c);
 }
 
@@ -1926,8 +1926,8 @@ i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_statId = value;
-    pkt.m_value = LocalPlayer()->m_4;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
+    pkt.m_value = LocalPlayer()->m_id;
+    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
 
@@ -1961,7 +1961,7 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_statId = statId;
     pkt.m_value = value;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
     return hr == 0;
 }
 
@@ -1996,7 +1996,7 @@ i32 CMulti::PollSession() {
     } else {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
         count = 0;
-        i32 hr = dp->GetMessageCount(LocalPlayer()->m_4, &count);
+        i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &count);
         if (hr) {
             count = 0;
         }
@@ -2013,7 +2013,7 @@ i32 CMulti::PollSession() {
         }
 
         i32 size = 0x800;
-        i32 idTo = LocalPlayer()->m_4;
+        i32 idTo = LocalPlayer()->m_id;
         IDirectPlay4Z* dp = Peer()->m_directPlay;
         i32 hr = dp->Receive(&size, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
         if (hr) {
@@ -2023,7 +2023,7 @@ i32 CMulti::PollSession() {
             }
         }
         count--;
-        if (sender != LocalPlayer()->m_4) {
+        if (sender != LocalPlayer()->m_id) {
             DispatchRecvMsg(sender, g_recvBuffer, size);
             dispatched++;
         }
@@ -2065,7 +2065,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     CNetPlayerEntry* pd = static_cast<CNetPlayerEntry*>(Peer()->GetPlayerData(sender));
     if (m_connected != 0 || m_pumpGuard != 0) {
         if (pd != 0) {
-            CNetCmdSlot* slot = Session()->FindCmdSlot(pd->m_4);
+            CNetCmdSlot* slot = Session()->FindCmdSlot(pd->m_id);
             if (slot != 0) {
                 slot->m_latency = 0;
             }
@@ -2382,7 +2382,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 }
 
 CString CNetPlayerEntry::GetName() {
-    return m_8;
+    return m_name;
 }
 
 // ---------------------------------------------------------------------------
@@ -2914,7 +2914,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_4));
+        GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id));
         CString name = player->GetName();
         sprintf(line, "%s: %s", static_cast<const char*>(name), text);
     } else {
@@ -3674,7 +3674,7 @@ i32 CMulti::CreateLocalPlayer() {
         return 0;
     }
 
-    m_hostIndex = LocalPlayer()->m_4;
+    m_hostIndex = LocalPlayer()->m_id;
     if (WaitForConnect() == 0) {
         return 0;
     }

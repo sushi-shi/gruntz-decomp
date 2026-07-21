@@ -761,7 +761,7 @@ CNetPlayerEntry* CNetMgr::FindPlayerById(i32 id) {
         CNetPlayerNode* cur = node;
         node = node->m_next;
         CNetPlayerEntry* entry = cur->m_8;
-        if (entry->m_4 == id) {
+        if (entry->m_id == id) {
             return entry;
         }
     }
@@ -780,8 +780,8 @@ void* CNetMgr::GetPlayerData(i32 id) {
 
 RVA(0x00178ef0, 0x5c)
 i32 CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e) {
-    i32 ida = a ? a->m_4 : 0;
-    i32 idb = b ? b->m_4 : 0;
+    i32 ida = a ? a->m_id : 0;
+    i32 idb = b ? b->m_id : 0;
     i32 hr = m_directPlay->SetData5(ida, idb, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
@@ -815,8 +815,8 @@ i32 CNetMgr::Receive(
     void* lpData,
     i32* lpSize
 ) {
-    i32 idFrom = from ? from->m_4 : 0;
-    i32 idTo = to ? to->m_4 : 0;
+    i32 idFrom = from ? from->m_id : 0;
+    i32 idTo = to ? to->m_id : 0;
     i32 hr = m_directPlay->Receive(&idFrom, &idTo, flags, lpData, lpSize);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4b7, hr, 0);
@@ -826,7 +826,7 @@ i32 CNetMgr::Receive(
 
 RVA(0x00179090, 0x4c)
 i32 CNetMgr::SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e) {
-    i32 ida = a ? a->m_4 : 0;
+    i32 ida = a ? a->m_id : 0;
     i32 hr = m_directPlay->SetData5(ida, 0, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
@@ -872,7 +872,7 @@ i32 CNetMgr::GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags) {
     if (!a) {
         return 0;
     }
-    if (!a->m_4) {
+    if (!a->m_id) {
         return 0;
     }
     if (!desc) {
@@ -881,7 +881,7 @@ i32 CNetMgr::GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags) {
     memset(desc, 0, 0x28);
     *static_cast<i32*>(desc) = 0x28;
     IDirectPlay4Z* dp = m_directPlay;
-    i32 id = a->m_4;
+    i32 id = a->m_id;
     i32 hr = dp->GetGroupData(id, desc, flags);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, 0);

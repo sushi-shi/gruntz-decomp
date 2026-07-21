@@ -70,8 +70,8 @@ SIZE_UNKNOWN(CNetPlayerSlot); // m_4-relative slot view (3 gate/latency dwords p
 
 struct CNetPlayerEntry {
     char m_pad0[4];
-    i32 m_4;     // +0x4  the entry's id (the lookup key)
-    CString m_8; // +0x8  display name (returned by GetName; COMDAT-shares CNetMgr::GetName's code)
+    i32 m_id;     // +0x4  the entry's id (the lookup key)
+    CString m_name; // +0x8  display name (returned by GetName; COMDAT-shares CNetMgr::GetName's code)
 
     // The entry's display name (a CString at +0x8, returned by value / NRV). In the
     // retail this fetch shares CNetMgr::GetName's routine (0xba170) - same +0x8 read.
