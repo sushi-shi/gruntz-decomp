@@ -413,7 +413,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     // reconstructed: resolve the (tile,kind-7) switch element in the play state's
     // trigger container, fire it, then run every 0x9c logic child claiming its key.
     CTileTriggerContainer* trig = state->m_beginMarker;
-    CTileTriggerSwitchLogic* sw = trig->FindChild((y >> 5) + ((x >> 5) << 8), 7);
+    CTileTriggerSwitchLogic* sw = trig->FindChild((y >> 5) + ((x >> 5) << 8), TRIGID_TIME_SWITCH_7);
     if (sw == 0) {
         CString msg; // [esp+0x30] diagnostic temp
         msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
