@@ -1068,39 +1068,43 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
 // sample off the matched entry, store it at m_sound, and start it on the configured
 // channel. Returns 1 on success, 0 if already launched / any lookup gate fails.
 //
+// CProjectile::LaunchSound: retail shares ONE `return 0` epilogue (0xe220c) that
+// all five gates jump to; a per-gate `if (...) return 0` made cl emit the epilogue
+// inline per gate (the OLD note's "byte-exact reloc-artifact" claim was wrong - it
+// was a tail-merge structural miss). A shared `goto fail` reproduces the merged tail.
 // @early-stop
-// Code bytes byte-exact vs retail (verified by full llvm-objdump compare); the
-// residue is purely the reloc-naming artifact (docs/patterns, objdiff-reloc-scoring
-// memory): the four engine callees - CMapStringToOb::Lookup (0x1b8438), the sample
-// factory GetItem (0x135d70) and CSample Play/StopAndRewind (0x136300) - are not
-// yet named in symbol_names.csv, so their REL32 relocs stay fuzzy against the
-// target's FUN_ names. g_gameReg IS named (CGameRegistry). Flips to exact once those
-// engine functions get RVA-annotated stubs. ~44% scoring artifact, logic complete.
-// ---------------------------------------------------------------------------
+// residual: cl still inlines the LAST gate's return-0 (jne play vs retail je fail)
+// and schedules the reg->m_world load mid-setup vs retail's hoist-first - MSVC5 /O2
+// block-layout coin-flips on the shared-tail's final arm; not source-steerable.
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
+    CGruntzMgr* reg;
+    void* entry_ob;
+    LeafCue* entry;
     if (m_sound != 0) {
-        return 0;
+        goto fail;
     }
-    CGruntzMgr* reg = g_gameReg;
+    reg = g_gameReg;
     if (reg->m_soundEnabled == 0) {
-        return 0;
+        goto fail;
     }
-    void* entry_ob = 0;
+    entry_ob = 0;
     reg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
-    LeafCue* entry = static_cast<LeafCue*>(entry_ob);
+    entry = static_cast<LeafCue*>(entry_ob);
     if (entry == 0) {
-        return 0;
+        goto fail;
     }
     if (entry->m_10 == 0) {
-        return 0;
+        goto fail;
     }
     // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
     // view); the projectile owns the same buffer as its m_sound sound sample.
     m_sound = static_cast<DirectSoundMgr*>(entry->m_10->GetItem());
     if (m_sound == 0) {
-        return 0;
+        goto fail;
     }
     m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     return 1;
+fail:
+    return 0;
 }
