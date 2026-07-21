@@ -46,12 +46,17 @@ _Excluded from the % above — generated/library code, not independent reconstru
 
 ```
 scripts/gruntz/               THE package: ALL importable code (run `python -m gruntz`)
-  cli.py                      the one CLI: build / status / report / init / ghidra-refresh …
+  cli.py                      the one CLI: build / status / sema / audit / permute / init …
   build/ ghidra/ init/        the path-invoked pipeline steps (ninja/CLI call them)
-  match/                      the build gates: status, fingerprints, cleanliness, residual_queue,
-                              verify_* + the vtable/class-size checks (`python -m gruntz.match.<x>`)
-  analysis/                   one-shot analysis/discovery tools (`python -m gruntz.analysis.<x>`)
-  archive/                    retired one-shot tooling — do NOT resurrect (see its README)
+  core/                       the shared engine library: pe / symbols / report / vtable_scan /
+                              vtable_hierarchy / exe_map / class_meta / ir / cc_wrap / codeview
+  match/                      match scoring + integrity gates: status, fingerprints, high_water,
+                              residual_queue, verify_*, gate_selftest (`python -m gruntz.match.<x>`)
+  cleanliness/                the drive-to-0 quality board + gates (board, view_debt, vtable_*)
+  sema/                       the `gruntz sema` navigation surface (one module per subcommand)
+  permute/                    the source-permutation climbers (`gruntz permute fn|sweep|variants`)
+  audit/                      one-shot campaign audits (`gruntz audit <tool>`)
+scripts/archive/              retired one-shot tooling — do NOT resurrect (see its README)
 src/                          reconstructed C++ (single source of truth), grouped by the retail
                               compiland dirs: DDrawMgr/ DinMgr2/ Dsndmgr/ Net/ Gruntz/ Wwd/ …
 include/                      shared headers (mirror retail `incs\`): rva.h (RVA()/DATA()/VTBL()
