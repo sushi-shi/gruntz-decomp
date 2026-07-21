@@ -30,7 +30,30 @@ REPO = pathlib.Path(
          os.environ.get("REPO") or str(_CWD)))
 REPORT = REPO / "build/objdiff/report.json"
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
+LIBRARY_LABELS = REPO / "config/library_labels.csv"
 OUTPUT = REPO / "build/gen/residual_function_queue.tsv"
+
+
+def _rint(s):
+    s = str(s).strip()
+    return int(s, 16) if s.lower().startswith("0x") else int(s)
+
+
+def library_rvas(path):
+    """FID-identified CRT/MFC library RVAs (config/library_labels.csv). These are NOT
+    reconstruction targets - library code is IDENTIFIED (via FID matching) and carved
+    out, never matched - so they must not appear in the work queue."""
+    rvas = set()
+    p = pathlib.Path(path)
+    if not p.is_file():
+        return rvas
+    with p.open(encoding="latin-1", newline="") as stream:
+        for row in csv.DictReader(stream):
+            try:
+                rvas.add(_rint(row["rva"]))
+            except (KeyError, ValueError):
+                pass
+    return rvas
 
 
 def symbol_inventory(path):
@@ -43,9 +66,10 @@ def symbol_inventory(path):
     return rows
 
 
-def residual_rows(report, symbols):
+def residual_rows(report, symbols, lib_rvas=frozenset()):
     rows = []
     missing = []
+    n_library = 0
     for unit in report["units"]:
         unit_name = unit["name"]
         for function in unit.get("functions", []):
@@ -58,6 +82,10 @@ def residual_rows(report, symbols):
                 missing.append(key)
                 continue
             rva = int(symbol["rva"], 0)
+            if rva in lib_rvas:
+                # FID-identified CRT/MFC library - carved out, not a work item.
+                n_library += 1
+                continue
             rows.append({
                 "unit": unit_name,
                 "rva": rva,
@@ -74,7 +102,7 @@ def residual_rows(report, symbols):
     rows.sort(key=lambda row: (-row["fuzzy"], row["rva"], row["unit"], row["name"]))
     for rank, row in enumerate(rows, 1):
         row["rank"] = rank
-    return rows
+    return rows, n_library
 
 
 def write_queue(path, rows):
@@ -95,10 +123,12 @@ def write_queue(path, rows):
 
 def main():
     report = json.loads(REPORT.read_text(encoding="utf-8"))
-    rows = residual_rows(report, symbol_inventory(SYMBOLS))
+    rows, n_library = residual_rows(
+        report, symbol_inventory(SYMBOLS), library_rvas(LIBRARY_LABELS))
     write_queue(OUTPUT, rows)
-    print("residual queue: %d live non-exact functions -> %s" %
-          (len(rows), OUTPUT.relative_to(REPO)))
+    print("residual queue: %d live non-exact GAME functions -> %s "
+          "(%d FID-labeled library carved out)" %
+          (len(rows), OUTPUT.relative_to(REPO), n_library))
 
 
 if __name__ == "__main__":
