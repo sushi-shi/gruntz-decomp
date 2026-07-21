@@ -225,7 +225,8 @@ def summarize(report: dict, full: bool = True) -> None:
     # placeholder / view deltas (vs the committed baseline) immediately alongside
     # the match %, and steer on their own change. See docs/cleanliness-metrics.md.
     try:
-        from gruntz.match.cleanliness import count, report_lines, save_baseline, merge_baseline_downonly
+        from gruntz.match.cleanliness import (count, report_lines, save_baseline,
+                                              merge_baseline_downonly, load_baseline, _RATCHET)
         rows = count()
         for line in report_lines(rows):
             print(f"  {line}")
@@ -235,7 +236,21 @@ def summarize(report: dict, full: bool = True) -> None:
         # up silently across builds; other tracked metrics roll forward. Blessing a
         # LOWER floor stays a deliberate act (`cleanliness --update`).
         save_baseline(merge_baseline_downonly(rows))
-    except Exception as exc:  # never let the scoreboard break a build report
+        # HARD RATCHET GATE (fails the build). The cast / fake-view / fake-vtable metrics
+        # may only go DOWN. If a ratcheted metric rose above its committed floor, an agent
+        # REINTRODUCED a cast / fake view / fake virtual - fail so it is CAUGHT here, not
+        # silently carried as debt. (Floors are only ever lowered, deliberately, via
+        # `python -m gruntz.match.cleanliness --update`; never raised.)
+        _floor = load_baseline()
+        _viol = [(lbl, _floor[lbl], n) for lbl, n in rows
+                 if lbl in _RATCHET and lbl in _floor and n > _floor[lbl]]
+        if _viol:
+            for lbl, fl, n in _viol:
+                print(f"  RATCHET VIOLATED: {lbl}  {fl} -> {n}  (+{n - fl})", file=sys.stderr)
+            die("cleanliness ratchet violated: a cast/fake-view/fake-vtable metric rose above "
+                "its floor (see above). Fix the reintroduced cast/view at the SOURCE - dissolve "
+                "the view, type the member, make the virtual real. Never bless it up.")
+    except Exception as exc:  # never let the SCOREBOARD break a build report (die() is not caught)
         print(f"  cleanliness: (unavailable: {exc})")
     # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the
     # hierarchy discrepancies that a topological override analysis finds - INHERIT

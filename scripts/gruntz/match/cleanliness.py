@@ -117,6 +117,26 @@ def _count_offset_macro_casts(code: str) -> int:
 _CPP_EXTERN = re.compile(r"^\s*extern\b", re.MULTILINE)
 
 
+# --- C-style casts: the ONE cast ratchet (user directive 2026-07-21) ---
+# Policy (docs/cast-metric-policy.md): C-style `(T)expr` casts are BANNED; every cast is a
+# C++ NAMED cast (static_cast/reinterpret_cast/const_cast/dynamic_cast). So the only cast
+# metric that matters is "were any C-style casts introduced" - ratcheted to 0. Named casts
+# (`reinterpret_cast<CFoo*>(m_x)` etc.) are ALLOWED; whether one stands in for a fake view is
+# a SEPARATE concern caught by the view / caller-callee-fake-view metrics, not a cast count.
+_C_THIS_CAST = re.compile(r"\)this\b")
+_CHAR_STAR_CAST = re.compile(r"(?<![\w>)])\((?:const |unsigned |signed )*char ?\*\)")
+_NUMERIC_CAST = re.compile(
+    r"(?<![\w>)])\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)")
+
+
+def _count_c_style_casts(code: str) -> int:
+    """Every C-style `(T)expr` cast, one number: `)this`, `(T)m_x`, `(char*)`, numeric
+    `(i32)`, and the offset-cast-hiding macros. All must be C++ named casts instead."""
+    return (len(_C_THIS_CAST.findall(code)) + _count_nonstring_m_casts(code)
+            + len(_CHAR_STAR_CAST.findall(code)) + len(_NUMERIC_CAST.findall(code))
+            + _count_offset_macro_casts(code))
+
+
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable
 # code->int for structural counts. Occurrences summed over stripped code.
 METRICS = (
@@ -144,30 +164,8 @@ METRICS = (
     ("->vtbl accesses", re.compile(r"->\s*\w*[Vv]tbl\w*"), False),
     ("g_*Vtbl globals", re.compile(r"\bg_\w*[Vv]tbl\w*"), False),
     ("m_vtbl/m_vptr members", re.compile(r"\bm_v(?:tbl|ptr)\w*"), False),
-    # --- casts ---
-    (")this casts", re.compile(r"\)this\b"), False),
-    (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
-    # The declarator lookbehind (same as the numeric metric, audited 2026-07-19): a cast's
-    # `(char*)` is preceded by an operand/operator, never an identifier/`>`/`)` - those are
-    # fn-param lists `StrUpr(char*)` / fn-ptr types `)(const char*)`, not casts.
-    ("(char*) casts", re.compile(r"(?<![\w>)])\(char ?\*\)"), False),
-    ("(const char*) casts", re.compile(r"(?<![\w>)])\(const char ?\*\)"), False),
-    # reinterpret_cast<CFoo*>(m_x) where the operand IS the member (bare) -> a LAUNDER-SUSPECT: the
-    # doctrine fix is to RETYPE the member (cast vanishes + void* m_ drops), not wrap it. The operand
-    # must be exactly `m_x)` - a derived operand `m_list.GetNext(pos)` / `m_arr.GetData()[i]` is a
-    # correct MFC POSITION/void*-container reinterpret (opaque by contract, NOT retypable), not a
-    # member to type. (Audited 2026-07-19: the loose regex read 119, ALL of them derived - 89
-    # POSITION, 29 container-element, 1 chain; 0 bare. See metric-regexes-drift-from-tree.)
-    ("reinterpret_cast<class*>(m_)",
-     re.compile(r"reinterpret_cast<\s*[A-Z]\w*\s*\*+\s*>\(\s*m_[A-Za-z0-9_]+\s*\)"), False),
-    # C-style NUMERIC/math value casts -> static_cast<T>(...) (byte-neutral; un-matches this regex).
-    # A cast is `(TYPE)operand` in a VALUE context. The lookbehind excludes DECLARATOR contexts the
-    # bare regex mis-read as casts: a single-arg fn param list `Method(i32)`, a fn-pointer type
-    # `)(int)`, a template method `Foo<T>(i32)`, and `sizeof(int)` - all preceded by an identifier,
-    # `>` or `)`, never an operand. (Audited 2026-07-19: bare regex read 83, 82 of them param/fn-ptr
-    # decls; the one real macro-body cast was converted. See metric-regexes-drift-from-tree.)
-    ("C-style numeric casts",
-     re.compile(r"(?<![\w>)])\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)"), False),
+    # --- casts: ONE ratchet - no C-style casts (named casts are allowed) ---
+    ("C-style casts", _count_c_style_casts, False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
@@ -183,8 +181,7 @@ METRICS = (
 # `)this casts` (always) and `)m_ casts` (string-cast-excluded). Other metrics (m_<hex>, string
 # casts, ...) still count everywhere and are tracked, not ratcheted.
 _VIEW_METRICS = {"placeholder classes", ".cpp-local views", "placeholder vtable slots",
-                 "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members",
-                 ")this casts", ")m_ casts", "reinterpret_cast<class*>(m_)"}
+                 "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members"}
 
 
 def _is_scaffolding(path) -> bool:
@@ -233,9 +230,9 @@ def _caller_callee_counts() -> dict[str, int]:
     return res
 
 
-# Ratchet set: metrics that only go DOWN. The caller_callee edges + the C-style numeric-cast
-# sweep join the view/cast metrics.
-_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {"C-style numeric casts"}
+# Ratchet set: metrics that only go DOWN. The view/vtable metrics + the caller_callee
+# fake-view edge + the single "C-style casts" metric (no C-casts allowed, ever).
+_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {"C-style casts"}
 
 
 def count() -> list[tuple[str, int]]:
