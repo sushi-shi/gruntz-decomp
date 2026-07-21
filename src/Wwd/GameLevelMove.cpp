@@ -558,7 +558,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {
         return 0;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
+    CDDrawGroupNode* node =
+        reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
     }

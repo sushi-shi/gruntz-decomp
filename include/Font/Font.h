@@ -110,13 +110,6 @@ public:
 };
 SIZE(FontRenderer, 0x10); // stateful render shim; the ctor inits exactly the four
 
-struct CharCursor {
-    u8* m_str; // +0x00  (aliases CString::m_pchData)
-    RVA(0x0017b4f0, 0xc)
-    u8 GetChar(i32 i) {
-        return m_str[i];
-    }
-};
 SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 
 #endif // SRC_FONT_FONT_H

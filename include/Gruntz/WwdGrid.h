@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <Wap32/Object.h>           // CObject - the shared engine grand-base
 #include <Dsndmgr/SoundVoiceList.h> // the engine's ONE {head,tail} intrusive-list
-#include <Gruntz/WwdGridIter.h>       // WwdRegion (the node) + the rect cursor
+#include <Gruntz/WwdGridIter.h>     // WwdRegion (the node) + the rect cursor
 #include <rva.h>
 
 struct BucketHead;
@@ -27,6 +27,9 @@ VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 class CWwdGrid : public CObject {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
+    // (the empty default ctor exists for the concrete CWwdGridShell's two-phase
+    // construction; its base ??_7 stamp dead-store-elides under the derived stamp)
+    CWwdGrid() {}
     CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH);
     virtual ~CWwdGrid() OVERRIDE;
     // slot 5 (vtbl+0x14): __purecall in the retail 0x1f0328 vtable - the class is

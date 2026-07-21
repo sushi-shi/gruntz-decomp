@@ -68,7 +68,7 @@ void CGruntSpawnConfig::Clear() {
         void** p = reinterpret_cast<void**>(&m_stream0);
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                (reinterpret_cast<SoundStream*>(m_configTree->m_20))->DestroyVoice(static_cast<StreamVoice*>(p[0]));
+                m_configTree->m_20->DestroyVoice(static_cast<StreamVoice*>(p[0]));
                 p[0] = 0;
             }
             p++;
@@ -137,7 +137,7 @@ void CGruntSpawnConfig::ClearSprites() {
 // the former CSpawnGate/CSpawnGateInner .cpp-local views are dissolved). The two owned
 // voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
 // Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c).
-// (OpenStream lives on the unified CSpawnRemoveColl at m_04->m_20; see the header.)
+// (OpenStream lives on the SoundStream at m_04->m_20; see the header.)
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
@@ -156,7 +156,10 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (!IsReady()) {
         return 0;
     }
-    void* index = GetButeSlot(reinterpret_cast<CSpawnButeConfig*>(param_1), reinterpret_cast<CSpawnButeTarget*>(param_2));
+    void* index = GetButeSlot(
+        reinterpret_cast<CSpawnButeConfig*>(param_1),
+        reinterpret_cast<CSpawnButeTarget*>(param_2)
+    );
     CString local_10;
     CString local_14;
     local_14.Format("SG%i", reinterpret_cast<int>(index));
@@ -200,25 +203,30 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         if (c == gate->m_10->m_188) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
-                (static_cast<DirectSoundMgr*>(streams[1]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                (static_cast<DirectSoundMgr*>(streams[1]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
         } else if (a != 0 && streams[0] != 0) {
-            (static_cast<DirectSoundMgr*>(streams[0]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            (static_cast<DirectSoundMgr*>(streams[0]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     } else {
         chosen = 0;
         if (d == gate->m_10->m_188) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
-                (static_cast<DirectSoundMgr*>(streams[0]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                (static_cast<DirectSoundMgr*>(streams[0]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && streams[1] != 0) {
-            (static_cast<DirectSoundMgr*>(streams[1]))->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            (static_cast<DirectSoundMgr*>(streams[1]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = (reinterpret_cast<SoundStream*>(m_configTree->m_20))
-                              ->OpenStream(reinterpret_cast<CParseSource*>(src), 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] =
+            m_configTree->m_20
+                ->OpenStream(reinterpret_cast<CParseSource*>(src), 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -473,5 +481,4 @@ SIZE_UNKNOWN(CSpawnButeConfig);
 SIZE_UNKNOWN(CSpawnButeTarget);
 SIZE_UNKNOWN(CSpawnOwner);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CSpawnRemoveColl);
 SIZE_UNKNOWN(CSpawnTree);

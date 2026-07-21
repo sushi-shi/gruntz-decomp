@@ -109,14 +109,12 @@ public:
     i32 m_voiceVolume;      // +0x2c  = 0x64
 };
 
-struct CSpawnRemoveColl {
-    // Remove @0x1379d0 = SoundStream::DestroyVoice, OpenStream @0x137900 = SoundStream::OpenStream; cast at calls.
-};
 struct CSpawnTree {
     char m_pad00[8];
     CDDrawChildGroup* m_08; // +0x08  the sprite factory (LoadGruntVoices)
     char m_pad0c[0x20 - 0xc];
-    CSpawnRemoveColl* m_20; // +0x20  the remove/stream collection
+    class SoundStream* m_20; // +0x20  the sound-stream mgr (DestroyVoice/OpenStream;
+                             //        ex the empty CSpawnRemoveColl marker view)
 };
 
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
