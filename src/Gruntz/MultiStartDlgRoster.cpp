@@ -2,8 +2,8 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
-#include <EmptyString.h>       // g_emptyString
-#include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <EmptyString.h>   // g_emptyString
+#include <Gruntz/Multi.h>  // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
@@ -17,11 +17,11 @@
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
-void __stdcall Func1d70(i32 flag);            // 0x01d70
+CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
+void __stdcall Func1d70(i32 flag);              // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
-extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
+extern CString g_gruntNames[]; // 0x64bdb0 per-channel label table
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
 i32 ChannelSlots_FindFree();            // 0xdb280
@@ -628,7 +628,8 @@ void CMultiStartDlg::Sub_c3e30() {
             i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
-                (static_cast<CComboBox*>(item))->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
+                (static_cast<CComboBox*>(item))
+                    ->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
                 if (name.GetLength() != 0) {
                     m_6c = 0;
                 }
@@ -671,8 +672,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = reinterpret_cast<i32>(m_host->FindOptionsSlot(netMgr->m_hostIndex));
-        g_multiState->BroadcastOneChannel(transformedPlayerId);
+        g_multiState->BroadcastOneChannel(m_host->FindOptionsSlot(netMgr->m_hostIndex));
     }
 }
 
@@ -765,7 +765,12 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 if (slot->m_014) {
                     ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 4, 0);
                 } else {
-                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
+                    ::SendMessageA(
+                        this->KindCombo1929(idx)->m_hWnd,
+                        0x14e,
+                        slot->m_configId + 1,
+                        0
+                    );
                 }
             } else {
                 this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
@@ -791,9 +796,9 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     return 1;
 }
 
-extern "C" i32 g_watchBusy;      // 0x64bdc4
-extern "C" i32 g_watchBlinkA;    // 0x64bdc8
-extern "C" i32 g_watchBlinkB;    // 0x64bdcc
+extern "C" i32 g_watchBusy;   // 0x64bdc4
+extern "C" i32 g_watchBlinkA; // 0x64bdc8
+extern "C" i32 g_watchBlinkB; // 0x64bdcc
 
 // @early-stop
 // ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):

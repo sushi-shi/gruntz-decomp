@@ -5,12 +5,9 @@
 
 #include <Win32.h> // DirectDraw / Win32 raster types (pure-engine TU, no MFC)
 
-struct LfxRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
-};
+// The light-fx rect IS a plain Win32 RECT (same 4 LONG fields; the ex hand-rolled
+// twin forced reinterprets at every MFC-side caller).
+typedef RECT LfxRect;
 
 class CGruntzMgr;        // the game-manager singleton (Init's arg / m_mgr)
 class CTriggerMgr;       // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)

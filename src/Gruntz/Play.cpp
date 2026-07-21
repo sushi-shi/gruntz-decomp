@@ -463,10 +463,7 @@ i32 CPlay::Render() {
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
             m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
-            m_lightFx->ComputeRect(
-                m_world->m_drawTarget->m_backPair,
-                reinterpret_cast<LfxRect*>(&rc)
-            );
+            m_lightFx->ComputeRect(m_world->m_drawTarget->m_backPair, &rc);
         }
 
         m_mgr->m_inputState->Retune( // world sound retune off the plane scroll origin

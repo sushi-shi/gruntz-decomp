@@ -190,7 +190,7 @@ i32 CNetSession::Poll(i32 delta) {
     } else {
         i32 got;
         IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 r = ep->GetMessageCount(m_localDesc->m_playerId, reinterpret_cast<LPDWORD>(&got));
+        i32 r = ep->GetMessageCount(m_localDesc->m_id, reinterpret_cast<LPDWORD>(&got));
         avail = (r == 0) ? got : 0;
     }
 
@@ -198,9 +198,15 @@ i32 CNetSession::Poll(i32 delta) {
     i32 received = 0;
     while (avail > 0 && m_session->m_pollAbort == 0) {
         i32 len = 0x800;
-        i32 chan = m_localDesc->m_playerId;
+        i32 chan = m_localDesc->m_id;
         IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 st = ep->Receive(reinterpret_cast<LPDPID>(&a), reinterpret_cast<LPDPID>(&chan), 1, g_lobbyRecvBuf, reinterpret_cast<LPDWORD>(&len));
+        i32 st = ep->Receive(
+            reinterpret_cast<LPDPID>(&a),
+            reinterpret_cast<LPDPID>(&chan),
+            1,
+            g_lobbyRecvBuf,
+            reinterpret_cast<LPDWORD>(&len)
+        );
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
             if (st != 0) {
@@ -209,7 +215,7 @@ i32 CNetSession::Poll(i32 delta) {
         }
         received++;
         avail--;
-        if (a != m_localDesc->m_playerId) {
+        if (a != m_localDesc->m_id) {
             Dispatch(a, reinterpret_cast<LobbyMsg*>(g_lobbyRecvBuf), len);
         }
     }
@@ -359,7 +365,13 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
     return (reinterpret_cast<CNetMgr*>(m_latchedSeq))
-               ->SetData(m_desc->m_playerId, gruntId, 0, reinterpret_cast<i32>(&gA_flag), rec->m_payloadLen + 0xf)
+               ->SetData(
+                   m_desc->m_playerId,
+                   gruntId,
+                   0,
+                   reinterpret_cast<i32>(&gA_flag),
+                   rec->m_payloadLen + 0xf
+               )
            == 0;
 }
 
@@ -434,7 +446,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     gB_e08 = entry->m_count;
     memcpy(&gB_data, entry->m_payload, entry->m_payloadLen);
     return m_netMgr->SetData(
-               m_localDesc->m_playerId,
+               m_localDesc->m_id,
                slot->m_desc->m_netId,
                0,
                reinterpret_cast<i32>(&gB_flag),
@@ -695,7 +707,8 @@ i32 CNetCmdSlot::Init(i32 a1, SlotInfo* a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    m_owner = reinterpret_cast<CMulti*>(a1); // the session passes its owning CMulti in as an i32 handle
+    m_owner =
+        reinterpret_cast<CMulti*>(a1); // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
     m_isRemote = 0;
     m_latchedSeq = 0;

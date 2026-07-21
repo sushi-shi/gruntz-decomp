@@ -224,13 +224,14 @@ struct CNetSession {
         m_0; // +0x00  base of the per-slot command-buffer array (Init a1); ResetSync clears it
     CMulti*
         m_session; // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
-    CNetMgr* m_netMgr;      // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
-    SlotInfo* m_localDesc;  // +0x0c  local player descriptor
-    i32 m_tick;             // +0x10  sub-tick counter (also the lobby slot-count-id base)
-    i32 m_snapshotDone;     // +0x14  per-period snapshot-built flag
-    i32 m_seq;              // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
-    i32 m_period;           // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
-    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
+    CNetMgr* m_netMgr;            // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
+    CNetSessionNode* m_localDesc; // +0x0c  the LOCAL player session record (its m_id
+                                  //        +0x4 was the ex-SlotInfo view m_playerId)
+    i32 m_tick;                   // +0x10  sub-tick counter (also the lobby slot-count-id base)
+    i32 m_snapshotDone;           // +0x14  per-period snapshot-built flag
+    i32 m_seq;                    // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
+    i32 m_period;                 // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
+    CNetCmdSlot m_slots[4];       // +0x20  four inline command slots (0x64 each)
     CGruntzCommand*
         m_idMap[0x80]; // +0x1b0  armed-command ptr table (GetSlotPtr) / 0x200-byte resync scratch
     GruntRec m_records[0x80]; // +0x3b0  the resync grunt-record ring (the ex-
@@ -520,57 +521,11 @@ SIZE_UNKNOWN(MenuSelectEvent); // menu-select control-message view (touched offs
 
 class CFontConfig; // <Gruntz/FontConfig.h> (the deref TUs include the real header)
 
-struct CNetGameWnd {
-    char m_pad0[4];
-    HWND m_hwnd; // +0x4  the engine HWND
-};
-SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size TBD
-
-struct CNetGameMgr {
-    // (METHOD-FREE VIEW: every method once declared here was a phantom alias of a real
-    // CGruntzMgr method, resolved by reading each call site's rel32 through its ILT:
-    //   CountReadyOptionsSlots @0x92e30 -> CGruntzMgr::CountReadyOptionsSlots
-    //   ResetClockGlobals      @0x8f4f0 -> CGruntzMgr::ResetClockGlobals
-    //   ClearOptionsSlots      @0x92ec0 -> CGruntzMgr::ClearOptionsSlots
-    //   InitializeLobbyConnectionSettings @0x8eca0 -> CGruntzMgr's (same name)
-    //   GetWorldFileName       @0x928c0 -> CGruntzMgr::GetWorldFileName
-    //   BuildRezPath           @0x93d40 -> CGruntzMgr::BuildLevelRezPath
-    //   ShowModal              @0x8ef10 -> CGruntzMgr::EnterModalUI
-    //   FindPlayer  (ILT 0x2e00) @0x92e80 -> CGruntzMgr::FindOptionsSlot(i32) - and the
-    //     no-arg FindPlayer decl had DROPPED the i32 arg retail pushes at EVERY site.
-    // Callers (Multi.cpp / MultiStartDlgRoster.cpp) now call the canonical methods
-    // through CMulti::Mgr() / a CGruntzMgr cast of the singleton. Only the FIELD view
-    // remains; folding these fields onto CGruntzMgr (m_channels == m_options, the
-    // 5-name 0x238 record knot) is the record-merge TODO - see <Gruntz/Multi.h>.)
-    char m_pad0[4];     // +0x00
-    CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
-    char m_pad8[0x38 - 8];
-    Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
-    char m_pad3c[0x48 - 0x3c];
-    // +0x48: the sound/bank object - the SAME slot <Gruntz/GruntzMgr.h> types
-    // CGruntzSoundZ* m_sound (CNetGameMgr IS *g_gameReg). CMulti's join wait plays the
-    // AMBIENT%d cue through it; it was reached via a `WaitLogic` +0x48 view.
-    class CGruntzSoundZ* m_sound; // +0x48
-    char m_pad4c[0x5c - 0x4c];
-    CFontConfig*
-        m_chatDisplay; // +0x5c  the chat/text display (the real class; ex-CNetChatLog view)
-    char m_pad60[0x6c - 0x60];
-    CGruntzCmdMgr* m_cmdMgr; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
-    char m_pad70[0xac - 0x70];
-    i32 m_connectGuard; // +0xac  connect-in-progress guard (the CMulti slot-1 driver toggles 1/0 per phase)
-    char m_padb0[0xc8 - 0xb0];
-    // +0xc8 == CGruntzMgr::m_strWorldFile (CNetGameMgr IS *g_gameReg - same slot)
-    CString m_worldFile;
-    char m_padcc[0x110 - 0xcc];
-    i32 m_sessionArmed; // +0x110  session-armed gate (Setup saves the old value into CMulti::m_590)
-    i32 m_114;          // +0x114
-    char m_pad118[0x12c - 0x118];
-    i32 m_customLevel; // +0x12c  custom-vs-stock level flag (Setup sets 0 custom / 1 stock)
-    char m_pad130[0x150 - 0x130];
-    GruntzPlayer
-        m_channels[4]; // +0x150  the inline per-player slot array (== CGruntzMgr::m_options)
-};
-SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); retail size TBD
+// (CNetGameMgr + CNetGameWnd DISSOLVED 2026-07-21: the "network facet" WAS
+// *g_gameReg - every field folded onto the real CGruntzMgr slots (m_gameWnd,
+// m_settings, m_sound, m_chatLog, m_cmdSubMgr, m_modalBusy, m_strWorldFile,
+// m_isEffectsEnabled, m_114, m_12c custom-level flag, m_options). Multi.h's
+// NetGameMgr() now returns the typed CGruntzMgr*.)
 
 void ResetNetSlots(); // 0x004db1d0
 
@@ -884,7 +839,7 @@ public:
     // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
     // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
     // (vptr implicit at +0x000)
-    CNetGameMgr* m_4; // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
+    class CGruntzMgr* m_4; // +0x004  the game manager (ex the CNetGameMgr facet view)
     // +0x008  a name CString's raw payload. Retail's ~CNetMgr (0xb6000) destroys ONLY
     // the 3 CObLists (+0x1c/+0x38/+0x54) and leaks this - so it is NOT a destructible
     // CString member here.
