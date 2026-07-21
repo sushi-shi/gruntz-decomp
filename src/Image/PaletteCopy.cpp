@@ -29,14 +29,14 @@
 RVA(0x0017ca10, 0x49)
 void CMoviePlayer::UploadPalette() {
     u8* src = m_smackHandle->Palette; // the real SDK field (was an offset-cast at +0x6c)
-    u8* dst = m_colorSlots;
+    PALETTEENTRY* dst = m_palEntries;
     int n = 0x100;
     do {
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst += 4;
+        dst->peRed = src[0];
+        dst->peGreen = src[1];
+        dst->peBlue = src[2];
+        dst++;
         src += 3;
     } while (--n);
-    m_palette->SetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_colorSlots));
+    m_palette->SetEntries(0, 0, 0x100, m_palEntries);
 }

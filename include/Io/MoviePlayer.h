@@ -76,7 +76,7 @@ public:
         i32 p28,
         i32 p29,
         i32 p30,
-        i32 a31
+        struct IDirectSound* dsound
     ); // 0x17c3f0
     // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
     i32 Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x17c6f0
@@ -131,15 +131,8 @@ public:
     // happened to Frame (base emitted `lea edi,[esi+0x30]` for retail's `+0x9c`;
     // caught by the byte diff, not by the compiler). The distinct names make that
     // class of error impossible.
-    union {
-        char m_primaryDesc[0x6c]; //        raw view (Init bulk-clears it as dwords)
-        struct {
-            u32 m_descSize;  // +0x30  dwSize
-            u32 m_descFlags; // +0x34  dwFlags (Init sets DDSD_CAPS: `mov [esi+0x34],1`)
-            char m_descpad38[0x98 - 0x38];
-            u32 m_descCaps; // +0x98  ddsCaps.dwCaps
-        };
-    };
+    DDSURFACEDESC m_primaryDesc; // +0x30  (0x6c; Init memsets it + seeds dwSize/
+                                 // dwFlags=DDSD_CAPS/ddsCaps=DDSCAPS_PRIMARYSURFACE)
     // +0x9c  the SOURCE-surface DDSURFACEDESC (0x6c B; CheckGrid fills it, Frame passes
     // it to Lock). One object, two descs - which is why the two views each saw only
     // "the" desc. The movie view's m_lPitch/+0xac and m_lpSurface/+0xc0 are simply this
@@ -147,19 +140,13 @@ public:
     DDSURFACEDESC m_srcDesc;
     // +0x108  256 * 4-byte PALETTEENTRY slots. Two views: ResetPalette/UploadPalette
     // walk it byte-wise; Snapshot fills it as a real PALETTEENTRY[256].
-    union {
-        u8 m_colorSlots[0x400];
-        PALETTEENTRY m_palEntries[0x100];
-    };
-    union {                  // +0x508
-        i32 m_508;           //   InitMode's a31 pass-through scalar
-        struct IDirectSound* m_directSound; //   the DirectSound the movie half reads
-    };
+    PALETTEENTRY m_palEntries[0x100]; // (the ex-"m_colorSlots" raw arm was unused)
+    struct IDirectSound* m_directSound; // +0x508  (InitMode's last arg; Smack-
+                                        // SoundUseDirectSound reads it - ONE role)
     i32 m_50c; // +0x50c  frame-locked flag / reset to 0 by Configure
-    union {    // +0x510
-        i32 m_510;    //   cleared by InitMode after the 8bpp palette attach
-        i32 m_modeTag; //   the page-mgr view's mode tag
-    };
+    u32 m_smackBufMode; // +0x510  SmackToBuffer surface-mode flags (0x80000000/
+                        // 0xc0000000; 0 after the 8bpp palette attach - the ex
+                        // m_510/m_modeTag pair was ONE role)
     i32 m_514;         // +0x514  full-frame flag / mode-2 fallback
     u32 m_screenWidth; // +0x518
     u32 m_screenHeight; // +0x51c

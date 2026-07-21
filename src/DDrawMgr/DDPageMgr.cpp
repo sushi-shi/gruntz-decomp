@@ -75,15 +75,11 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    i32 i;
-    i32* d = reinterpret_cast<i32*>(m_primaryDesc);
-    for (i = 0x1b; i != 0; i--) {
-        *d++ = 0;
-    }
-    m_descSize = 0x6c;
-    m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_srcSurf)
-    m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
-    if (m_dd2->CreateSurface(reinterpret_cast<LPDDSURFACEDESC>(m_primaryDesc), &m_primaryRaw, 0) != 0) {
+    memset(&m_primaryDesc, 0, sizeof(m_primaryDesc));
+    m_primaryDesc.dwSize = sizeof(DDSURFACEDESC); // 0x6c
+    m_primaryDesc.dwFlags = DDSD_CAPS;
+    m_primaryDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+    if (m_dd2->CreateSurface(&m_primaryDesc, &m_primaryRaw, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -104,7 +100,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
             return 0;
         }
         m_primary->SetPalette(m_palette);
-        m_modeTag = 0;
+        m_smackBufMode = 0;
     }
 
     if (mode->bpp == 0x18) {
@@ -201,7 +197,7 @@ i32 CMoviePlayer::InitMode(
     i32 p28,
     i32 p29,
     i32 p30,
-    i32 a31
+    IDirectSound* dsound
 ) {
     if (!wnd || !dd2 || !primary) {
         return 0;
@@ -216,7 +212,7 @@ i32 CMoviePlayer::InitMode(
             return 0;
         }
         m_primary->SetPalette(m_palette);
-        m_510 = 0;
+        m_smackBufMode = 0;
     }
     if (bpp == 24) {
         HandleError();
@@ -235,7 +231,7 @@ i32 CMoviePlayer::InitMode(
     m_streamOpen = 0;
     m_srcSurf = 0;
     m_srcSurfRaw = 0;
-    m_508 = a31;
+    m_directSound = dsound;
     ::ShowCursor(0);
     m_initialized = 1;
     FreeAll();
@@ -466,7 +462,7 @@ i32 CMoviePlayer::Frame() {
         hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
     }
     if (hr == 0) {
-        SmackToBuffer(m_smackHandle, 0, 0, m_srcDesc.lPitch, m_smackHandle->Height, m_srcDesc.lpSurface, m_510);
+        SmackToBuffer(m_smackHandle, 0, 0, m_srcDesc.lPitch, m_smackHandle->Height, m_srcDesc.lpSurface, m_smackBufMode);
         SmackDoFrame(m_smackHandle);
         m_50c = 1;
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
@@ -779,11 +775,11 @@ i32 CMoviePlayer::CheckMode16() {
     }
 
     if (r == 5 && g == 5 && b == 5) {
-        m_modeTag = static_cast<i32>(0x80000000);
+        m_smackBufMode = static_cast<i32>(0x80000000);
         return 1;
     }
     if (r == 5 && g == 6 && b == 5) {
-        m_modeTag = static_cast<i32>(0xc0000000);
+        m_smackBufMode = static_cast<i32>(0xc0000000);
         return 1;
     }
     return 0;
