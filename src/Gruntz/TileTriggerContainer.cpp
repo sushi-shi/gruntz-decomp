@@ -258,22 +258,22 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     if (obj->m_1c == 0) {
         memcpy(obj->m_block, local, sizeof(local));
         if (obj->m_1c == 0) {
-            obj->m_0c = a4;
-            obj->m_08 = a3;
+            obj->m_tileY = a4;
+            obj->m_tileX = a3;
             obj->m_20 = this;
             obj->m_typeTag = logicType;
             obj->m_10 = a5;
             obj->m_1c = 1;
-            obj->m_34 = a6;
-            obj->m_24 = g_frameTime;
-            obj->m_2c = a8;
+            obj->m_tileToken = a6;
+            obj->m_startClock = g_frameTime;
+            obj->m_leadInSpan = a8;
             obj->m_dutyOn = 0;
-            obj->m_28 = a7;
-            obj->m_30 = a9;
+            obj->m_dutyOnSpan = a7;
+            obj->m_dutyOffSpan = a9;
             if (logicType != TRIGID_COVERED_POWERUP_26 && a9 == 0) {
-                obj->m_30 = a7;
+                obj->m_dutyOffSpan = a7;
             }
-            obj->m_24 = g_frameTime;
+            obj->m_startClock = g_frameTime;
             ok = 1;
         }
     }
@@ -427,20 +427,20 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
     }
     e->m_c0 = a5;
     e->m_c4 = a6;
-    e->m_0c = a2;
+    e->m_tileY = a2;
     e->m_typeTag = TRIGID_GIANT_ROCK_22;
-    e->m_08 = a1;
+    e->m_tileX = a1;
     e->m_10 = a3;
     e->m_20 = this;
     e->m_1c = 1;
     e->m_dutyOn = 0;
-    e->m_24 = g_frameTime;
-    e->m_28 = 0;
-    e->m_34 = 0;
-    e->m_2c = 0;
-    e->m_30 = 0;
-    e->m_30 = a7;
-    e->m_24 = g_frameTime;
+    e->m_startClock = g_frameTime;
+    e->m_dutyOnSpan = 0;
+    e->m_tileToken = 0;
+    e->m_leadInSpan = 0;
+    e->m_dutyOffSpan = 0;
+    e->m_dutyOffSpan = a7;
+    e->m_startClock = g_frameTime;
     m_list1.AddTail(e);
     return e;
 }
@@ -926,8 +926,8 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             obj->m_typeTag = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 x = obj->m_08;
-            i32 y = obj->m_0c;
+            i32 x = obj->m_tileX;
+            i32 y = obj->m_tileY;
             CLevelPlane* geo = level->m_mainPlane;
             if (x < 0) {
                 x = 0;

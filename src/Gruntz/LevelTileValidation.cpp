@@ -265,7 +265,7 @@ i32 CPlay::ValidateLevelTiles() {
                 if (r == 0) {
                     return 0;
                 }
-                i32 tcidx = r->m_34;
+                i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
                     return 0;
                 }

@@ -51,7 +51,7 @@ public:
         m_1c = 0;
     }
     // slot 0 (0x110c10 via ILT thunk 0x402072): the duty-edge tick virtual - the
-    // pyramid/bridge tile-transition dispatcher, run on this trigger's own (m_08, m_0c)
+    // pyramid/bridge tile-transition dispatcher, run on this trigger's own (m_tileX, m_tileY)
     // coords. Defined in TileTriggerSwitchLogic.cpp (@early-stop megafunction; it was
     // the old CPlayLevelLoad::LoadPyramidBridge shell - fake receiver + a fabricated
     // spriteType arg; the switch key is really the locally-resolved cell id). `Tick` is
@@ -82,7 +82,7 @@ public:
 
     // Slot-0 Tick's bridge/pyramid sound-cue helper: dispatch a 0x66-case jump table
     // over (type - 0xf), playing the matching bridge-transition cue for this trigger's
-    // own (m_08, m_0c) tile. Body in BridgeMoveSprites.cpp.
+    // own (m_tileX, m_tileY) tile. Body in BridgeMoveSprites.cpp.
     void LoadBridgeMove(i32 type); // 0x110860
 
     // The 0x9c family's serialize dispatcher (type 4 = save, 7 = load), and the pair it
@@ -96,8 +96,8 @@ public:
     // Field names below take the RICHER of the two spellings this class was reconstructed
     // under (the CTileGridCommand view named the tag/coords/duty spans; this one did not).
     i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
-    i32 m_08;                    // +0x08  coord x
-    i32 m_0c;                    // +0x0c  coord y
+    i32 m_tileX;                    // +0x08  coord x
+    i32 m_tileY;                    // +0x0c  coord y
     i32 m_10;                    // +0x10
     i32 m_14;                    // +0x14  flag
     i32 m_18;                    // +0x18
@@ -107,11 +107,11 @@ public:
                                  //        elements are THIS class, not the 0x8c switch logic
                                  //        whose dtor zeroes +0x20)
     CTileTriggerContainer* m_20; // +0x20  owning container
-    u32 m_24;                    // +0x24  game-clock snapshot (g_frameTime)
-    u32 m_28;                    // +0x28  duty on-span (unsigned duration)
-    u32 m_2c;                    // +0x2c  lead-in span (unsigned duration)
-    u32 m_30;                    // +0x30  duty off-span (unsigned duration)
-    i32 m_34;                    // +0x34
+    u32 m_startClock;                    // +0x24  game-clock snapshot (g_frameTime)
+    u32 m_dutyOnSpan;                    // +0x28  duty on-span (unsigned duration)
+    u32 m_leadInSpan;                    // +0x2c  lead-in span (unsigned duration)
+    u32 m_dutyOffSpan;                    // +0x30  duty off-span (unsigned duration)
+    i32 m_tileToken;                    // +0x34
     i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
     i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords; the "m_grid" of the
                                  //        folded view - same 24 dwords at the same offset)

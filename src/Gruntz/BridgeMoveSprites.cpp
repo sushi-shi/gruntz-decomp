@@ -40,8 +40,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
         case 104:
         case 105:
         case 106:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -56,8 +56,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             return;
         case 107:
         case 108:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -72,8 +72,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             return;
         case 113:
         case 114:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -82,8 +82,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             return;
         case 109:
         case 110:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -92,8 +92,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             return;
         case 115:
         case 116:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -102,8 +102,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             return;
         case 111:
         case 112:
-            py = (m_0c << 5) + 0x10;
-            px = (m_08 << 5) + 0x10;
+            py = (m_tileY << 5) + 0x10;
+            px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {

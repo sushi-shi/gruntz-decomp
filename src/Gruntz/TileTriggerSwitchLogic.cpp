@@ -166,12 +166,12 @@ i32 CTileTriggerLogic::Tick() {
     i32 transId = 0;                              // [esp+0x1c] transition logic handle
 
     // ---- resolve the source cell id at this trigger's tile (the switch key) ----
-    i32 srcId = PbResolveCell(level, m_08, m_0c); // [esp+0x18]
+    i32 srcId = PbResolveCell(level, m_tileX, m_tileY); // [esp+0x18]
 
     // ---- the PtInRect transition gate (rect = the view rect at +0x13c) ----
     {
-        i32 sy = (m_0c << 5) + 0x10;
-        i32 sx = (m_08 << 5) + 0x10;
+        i32 sy = (m_tileY << 5) + 0x10;
+        i32 sx = (m_tileX << 5) + 0x10;
         POINT pt;
         pt.x = sx;
         pt.y = sy;
@@ -374,8 +374,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
     i32 inRect = 0;
     POINT pt;
-    pt.y = (m_0c << 5) + 0x10;
-    pt.x = (m_08 << 5) + 0x10;
+    pt.y = (m_tileY << 5) + 0x10;
+    pt.x = (m_tileX << 5) + 0x10;
     if (PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
         inRect = 1;
     }
@@ -386,16 +386,16 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
             i32 value = *cursor;
-            i32 px = i + m_08 - 1;
-            i32 py = j + m_0c - 1;
+            i32 px = i + m_tileX - 1;
+            i32 py = j + m_tileY - 1;
             CPlaneRender* plane = g_gameReg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
                 CWwdGameObjectA* spr = gameMgr->m_childGroup->CreateSprite(
                     0,
-                    ((i + m_08) << 5) - 0x10,
-                    ((j + m_0c) << 5) - 0x10,
+                    ((i + m_tileX) << 5) - 0x10,
+                    ((j + m_tileY) << 5) - 0x10,
                     0xcf84f,
                     "Particlez",
                     0x40003
@@ -410,9 +410,9 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     }
 
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
-    i32 cx = (m_08 << 5) + 0x10;
-    i32 cy = (m_0c << 5) + 0x10;
-    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, static_cast<i32>(m_30), 1, 0);
+    i32 cx = (m_tileX << 5) + 0x10;
+    i32 cy = (m_tileY << 5) + 0x10;
+    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (m_c4 != 0) {
@@ -425,10 +425,10 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     }
 
     // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
-    if ((m_08 << 5) + 0x10 >= g_gameReg->m_viewOriginR
-        || (m_08 << 5) + 0x10 < g_gameReg->m_viewOriginL
-        || (m_0c << 5) + 0x10 >= g_gameReg->m_viewOriginB
-        || (m_0c << 5) + 0x10 < g_gameReg->m_viewOriginT) {
+    if ((m_tileX << 5) + 0x10 >= g_gameReg->m_viewOriginR
+        || (m_tileX << 5) + 0x10 < g_gameReg->m_viewOriginL
+        || (m_tileY << 5) + 0x10 >= g_gameReg->m_viewOriginB
+        || (m_tileY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
     CSndHost* sreg =
@@ -467,35 +467,35 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
-    if (m_34 != 0) {
+    if (m_tileToken != 0) {
         CGruntzMgr* reg = g_gameReg;
         CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
-        L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = m_34;
-        v = m_34;
-        (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
+        L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = m_tileToken;
+        v = m_tileToken;
+        (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
     } else {
         switch (verb) {
             case 0x22: {
                 CGruntzMgr* reg = g_gameReg;
                 CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
-                v = L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] + 1;
+                v = L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] + 1;
                 CPlaneRender* L2 = reg->m_world->m_level->m_mainPlane;
-                L2->m_tileGrid[L2->m_colOffsets[m_0c] + m_08] = v;
-                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
+                L2->m_tileGrid[L2->m_colOffsets[m_tileY] + m_tileX] = v;
+                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
                 break;
             }
             case 0x1f: {
                 CGruntzMgr* reg = g_gameReg;
                 CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5b;
-                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
+                L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5b;
+                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGruntzMgr* reg = g_gameReg;
                 CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5a;
-                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
+                L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5a;
+                (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5a);
                 break;
             }
             default:
@@ -503,14 +503,14 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    i32 py = (m_0c << 5) + 0x10;
-    i32 px = (m_08 << 5) + 0x10;
-    reg->m_cmdGrid->LoadPowerupIconSprites(m_28, px, py, m_30, 1, 0);
-    if (m_2c != 0) {
+    i32 py = (m_tileY << 5) + 0x10;
+    i32 px = (m_tileX << 5) + 0x10;
+    reg->m_cmdGrid->LoadPowerupIconSprites(m_dutyOnSpan, px, py, m_dutyOffSpan, 1, 0);
+    if (m_leadInSpan != 0) {
         CGameObject* rec =
             reg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
-            rec->m_124 = m_2c;
+            rec->m_124 = m_leadInSpan;
         }
     }
     return 1;
@@ -545,7 +545,7 @@ i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
 
 RVA(0x00112880, 0x12)
 void CTileTriggerLogic::RecordMove() {
-    m_24 = g_frameTime;
+    m_startClock = g_frameTime;
     m_20->MoveList1ToList2(this);
 }
 
@@ -573,20 +573,20 @@ void CTileTriggerLogic::RecordMove() {
 // identical instruction count. See docs/patterns/cse-defeat-uncached-global-rewalk.md.
 RVA(0x001128b0, 0x88)
 i32 CTileSecretTriggerLogic::Tick() {
-    i32 oldTok = m_34;
+    i32 oldTok = m_tileToken;
     if (oldTok == 0) {
         g_gameReg->ReportError(0x8009, 0x451);
         return 0;
     }
     CGruntzMgr* mgr = g_gameReg;
-    i32 grp = m_08;
-    i32 idx = m_0c;
+    i32 grp = m_tileX;
+    i32 idx = m_tileY;
     i32 newTok = mgr->m_world->m_level->m_mainPlane
                      ->m_tileGrid[mgr->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp];
     g_gameReg->m_world->m_level->m_mainPlane
         ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
-    m_34 = newTok;
+    m_tileToken = newTok;
     return 1;
 }
 
@@ -607,13 +607,13 @@ i32 CTileSecretTriggerLogic::Tick() {
 // COMDAT the linker scattered inside the band.
 RVA(0x00112970, 0xad)
 i32 CTileTriggerLogic::Classify(i32 arg) {
-    u32 elapsed = g_frameTime - m_24;
-    if (elapsed <= m_2c) {
+    u32 elapsed = g_frameTime - m_startClock;
+    if (elapsed <= m_leadInSpan) {
         goto ret1;
     }
-    elapsed -= m_2c;
+    elapsed -= m_leadInSpan;
     {
-        u32 period = m_30 + m_28;
+        u32 period = m_dutyOffSpan + m_dutyOnSpan;
         if (elapsed > period) {
             if (m_typeTag == TRIGID_TILE_TRIGGER_24) {
                 Tick();
@@ -627,7 +627,7 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
             }
         }
         u32 rem = elapsed % period;
-        if (rem < m_28) {
+        if (rem < m_dutyOnSpan) {
             if (m_dutyOn != 0) {
                 goto ret1;
             }
@@ -1292,18 +1292,18 @@ i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Write(&m_08, 4);
-    s->Write(&m_0c, 4);
+    s->Write(&m_tileX, 4);
+    s->Write(&m_tileY, 4);
     s->Write(&m_10, 4);
     s->Write(&m_14, 4);
     s->Write(&m_18, 4);
     s->Write(&m_1c, 4);
-    s->Write(&m_28, 4);
-    s->Write(&m_2c, 4);
-    s->Write(&m_30, 4);
-    s->Write(&m_34, 4);
+    s->Write(&m_dutyOnSpan, 4);
+    s->Write(&m_leadInSpan, 4);
+    s->Write(&m_dutyOffSpan, 4);
+    s->Write(&m_tileToken, 4);
     s->Write(&m_dutyOn, 4);
-    s->Write(&m_24, 4);
+    s->Write(&m_startClock, 4);
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
         s->Write(p, 4);
@@ -1320,18 +1320,18 @@ i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Read(&m_08, 4);
-    s->Read(&m_0c, 4);
+    s->Read(&m_tileX, 4);
+    s->Read(&m_tileY, 4);
     s->Read(&m_10, 4);
     s->Read(&m_14, 4);
     s->Read(&m_18, 4);
     s->Read(&m_1c, 4);
-    s->Read(&m_28, 4);
-    s->Read(&m_2c, 4);
-    s->Read(&m_30, 4);
-    s->Read(&m_34, 4);
+    s->Read(&m_dutyOnSpan, 4);
+    s->Read(&m_leadInSpan, 4);
+    s->Read(&m_dutyOffSpan, 4);
+    s->Read(&m_tileToken, 4);
     s->Read(&m_dutyOn, 4);
-    s->Read(&m_24, 4);
+    s->Read(&m_startClock, 4);
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
         s->Read(p, 4);
