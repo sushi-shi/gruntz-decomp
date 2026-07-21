@@ -17,7 +17,8 @@ tools (`analysis/`, incl. the `fid/` matcher). Run the non-pipeline tools as
 nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.
 
 See **`docs/build-system.md`** (the build, the `gruntz` CLI, and how `src/` became
-the single source of truth).
+the single source of truth) and **`docs/gotchas.md`** (measurement/build/matching
+traps + the mislabeled-bug audit playbook + which cleanliness tooling is live).
 
 ## Tools come from Nix
 
