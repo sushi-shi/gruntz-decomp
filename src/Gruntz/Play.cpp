@@ -6477,8 +6477,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
 // view (an unrolled run of Lookup-then-store).
 // (The CEffDesc/CEffResMgr/CEffMgr/CPlayEff views are GONE - the map is the
 // canonical CSndHost::m_10 (the holder's +0x28 sound-cue host) and the looked-up
-// descriptor is the CSbiCueRecord shape (StatusBarMgr.h): +0x18 is its interval/
-// display duration.)
+// descriptor is a LeafCue (LeafCue.h): +0x18 is its interval/display duration.)
 // @early-stop
 // ~67% Lookup out-param zero-init scheduling wall (large unrolled fn): logic is
 // complete and every name string + duration is byte-exact (all relocs pair), but
@@ -6488,7 +6487,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
 // deferred to the final sweep. docs/patterns/outparam-zeroinit-scheduling.md.
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
-    CSbiCueRecord* d;
+    LeafCue* d;
     d = 0;
     m_c->m_soundRegistry->m_10.Lookup("GAME_PYRAMIDMOVE", reinterpret_cast<void*&>(d));
     if (d != 0) {

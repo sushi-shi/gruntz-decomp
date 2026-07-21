@@ -911,7 +911,7 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                        LeafCue* p = static_cast<LeafCue*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -947,7 +947,7 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                        LeafCue* p = static_cast<LeafCue*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -982,7 +982,7 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                        LeafCue* p = static_cast<LeafCue*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2172,7 +2172,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                    LeafCue* p = static_cast<LeafCue*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2204,7 +2204,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
-                        CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                        LeafCue* p = static_cast<LeafCue*>(found);
                         if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2292,7 +2292,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                    LeafCue* p = static_cast<LeafCue*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -2322,7 +2322,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             i32 gate = g_sndEnabled;
             i32 item = g_sndCueTag;
             if (gate != 0) {
-                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                LeafCue* p = static_cast<LeafCue*>(found);
                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3110,7 +3110,7 @@ static __inline void HiCueTimed() {
         host->m_10.Lookup("GAME_TABHIGHLIGHT1", found); // CMapStringToPtr (mfc_class band)
         if (found && g_sndEnabled != 0) {
             i32 item = g_sndCueTag;
-            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+            LeafCue* p = static_cast<LeafCue*>(found);
             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                 p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3393,7 +3393,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
                 void* found = 0;
                 host->m_10.Lookup("GAME_DESTRUCT", found); // CMapStringToPtr (mfc_class band)
                 if (found) {
-                    DSoundCloneInst* f = (static_cast<CSbiSpriteCfg*>(found))->m_playFactory;
+                    DSoundCloneInst* f = (static_cast<LeafCue*>(found))->m_10;
                     if (f) {
                         DirectSoundMgr* obj = f->GetItem();
                         m_destructButton = obj;
@@ -3512,7 +3512,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
-                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                    LeafCue* p = static_cast<LeafCue*>(found);
                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3602,7 +3602,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             host->m_10.Lookup("GAME_REZBELTRETURN", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                                LeafCue* p = static_cast<LeafCue*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3622,7 +3622,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             host->m_10.Lookup("GAME_REZBELTBACKUP", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                                LeafCue* p = static_cast<LeafCue*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3727,7 +3727,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             host->m_10.Lookup("GAME_REZMACHINE", found); // CMapStringToPtr (mfc_class band)
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
-                                CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                                LeafCue* p = static_cast<LeafCue*>(found);
                                 if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3784,7 +3784,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 host->m_10.Lookup("GAME_REZBELTRETRACT", fnd); // CMapStringToPtr (mfc_class band)
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
-                                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(fnd);
+                                    LeafCue* p = static_cast<LeafCue*>(fnd);
                                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3802,7 +3802,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 host->m_10.Lookup("GAME_REZBELTDROP", fnd); // CMapStringToPtr (mfc_class band)
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
-                                    CSbiCueRecord* p = static_cast<CSbiCueRecord*>(fnd);
+                                    LeafCue* p = static_cast<LeafCue*>(fnd);
                                     if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3899,7 +3899,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         host->m_10.Lookup("GAME_CHIPFALLOUT", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                            LeafCue* p = static_cast<LeafCue*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3929,7 +3929,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         host->m_10.Lookup("GAME_CHIPLAND", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                            LeafCue* p = static_cast<LeafCue*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
@@ -3999,7 +3999,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         host->m_10.Lookup("GAME_CHIPLAND", found); // CMapStringToPtr (mfc_class band)
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
-                            CSbiCueRecord* p = static_cast<CSbiCueRecord*>(found);
+                            LeafCue* p = static_cast<LeafCue*>(found);
                             if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
