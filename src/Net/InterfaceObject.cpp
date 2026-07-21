@@ -9,6 +9,6 @@ CString InterfaceObject::GetName() {
 
 RVA(0x00179340, 0x48)
 InterfaceObject::~InterfaceObject() {
-    m_4 = 0;
-    m_c = 0;
+    m_guid = 0;
+    m_listPosition = 0;
 }

@@ -185,9 +185,9 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
         return 0;
     }
 
-    node->m_4 = reinterpret_cast<i32>(guid);
+    node->m_guid = reinterpret_cast<i32>(guid);
     node->m_name = static_cast<const char*>(name);
-    node->m_c = reinterpret_cast<i32>(m_groups.AddTail(static_cast<::CObject*>(node)));
+    node->m_listPosition = reinterpret_cast<i32>(m_groups.AddTail(static_cast<::CObject*>(node)));
     return reinterpret_cast<i32>(node);
 }
 
@@ -979,42 +979,42 @@ const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
 
 RVA(0x001794b0, 0x21)
 i32 InterfaceObject::IsInterface1() {
-    if (!m_4) {
+    if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_4), g_guid1, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid1, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x001794e0, 0x21)
 i32 InterfaceObject::IsInterface2() {
-    if (!m_4) {
+    if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_4), g_guid2, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid2, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179510, 0x21)
 i32 InterfaceObject::IsInterface3() {
-    if (!m_4) {
+    if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_4), g_guid3, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid3, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179540, 0x21)
 i32 InterfaceObject::IsInterface4() {
-    if (!m_4) {
+    if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_4), g_guid4, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid4, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179570, 0x21)
 i32 InterfaceObject::IsInterface5() {
-    if (!m_4) {
+    if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_4), g_guid5, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid5, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179680, 0x3a)

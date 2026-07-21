@@ -7,16 +7,16 @@
 #include <rva.h>
 
 struct InterfaceObject : public CObject {
-    i32 m_4;        // +0x04  the service-provider GUID (stored raw)
+    i32 m_guid;        // +0x04  the service-provider GUID (stored raw)
     CString m_name; // +0x08  the provider name
-    i32 m_c;        // +0x0c  cached AddTail position
+    i32 m_listPosition;        // +0x0c  cached AddTail position
 
     // Inline ctor: base CObject vptr stamp + m_name CString ctor + own vptr stamp,
     // then zero the GUID / cached position. Inlined into CNetMgr::AddGroupNode's
     // `new InterfaceObject()` (NetMgr.cpp) - the only construction site.
     InterfaceObject() {
-        m_4 = 0;
-        m_c = 0;
+        m_guid = 0;
+        m_listPosition = 0;
     }
     virtual ~InterfaceObject() OVERRIDE; // slot 1 (own dtor; 0x179340)
     CString GetName();                   // 0x179300
