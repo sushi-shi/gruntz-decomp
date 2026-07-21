@@ -443,11 +443,13 @@ i32 CTriggerMgr::LoadCameraSprite() {
     i32 count = *(*reinterpret_cast<i32**>((reinterpret_cast<char*>(g_gameReg->m_curState) + 0x2dc)));
 
     i32 ax, cx;
-    if (count == 0) {
+    if (count != 0) {
+        if (count > 0 && count <= 2) {
+            ax = vx - 0x28;
+            cx = vy - 0x28;
+        }
+    } else {
         ax = vx - 0xc8;
-        cx = vy - 0x28;
-    } else if (count > 0 && count <= 2) {
-        ax = vx - 0x28;
         cx = vy - 0x28;
     }
 
