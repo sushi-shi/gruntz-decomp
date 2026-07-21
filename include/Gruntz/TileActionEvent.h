@@ -18,7 +18,7 @@ public:
     // The inline dtor the container walkers inline before RezFree: clear the live
     // flag (no vtable, so no vptr stamp - retail's "clear +0x10, no stamp" delete).
     ~CTileActionEvent() {
-        m_10 = 0;
+        m_live = 0;
     }
 
     // Set m_actionCode from the action code, then fold a duplicate-action lookup
@@ -54,11 +54,11 @@ public:
     i32 m_actionCode; // +0x00  action-type code (0x12d..0x149)
     i32 m_tileX;      // +0x04  tile X
     i32 m_tileY;      // +0x08  tile Y
-    i32 m_c;          // +0x0c  cell key ((x<<8)|y; CTileTriggerContainer::FindByField0C match)
-    i32 m_10;         // +0x10  live flag (ctor zeroes; AddToList3 sets 1; dtor clears)
+    i32 m_cellKey;          // +0x0c  cell key ((x<<8)|y; CTileTriggerContainer::FindByField0C match)
+    i32 m_live;         // +0x10  live flag (ctor zeroes; AddToList3 sets 1; dtor clears)
     // +0x14  the owning CTileTriggerContainer (AddToList3/Serialize back-stamp it;
     // NOT serialized - which is exactly why the field skips the stream).
-    CTileTriggerContainer* m_14;
+    CTileTriggerContainer* m_owner;
     i32 m_playerFlags[4]; // +0x18..+0x24  per-player seen/active flags [0..3]
 };
 SIZE(CTileActionEvent, 0x28);

@@ -751,7 +751,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
 
 RVA(0x00112d80, 0xa)
 CTileActionEvent::CTileActionEvent() {
-    m_10 = 0;
+    m_live = 0;
 }
 
 RVA(0x00112da0, 0x9e)
@@ -1457,8 +1457,8 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     a->Write(&m_actionCode, 4);
     a->Write(&m_tileX, 4);
     a->Write(&m_tileY, 4);
-    a->Write(&m_c, 4);
-    a->Write(&m_10, 4);
+    a->Write(&m_cellKey, 4);
+    a->Write(&m_live, 4);
     a->Write(&m_playerFlags[0], 4);
     a->Write(&m_playerFlags[1], 4);
     a->Write(&m_playerFlags[2], 4);
@@ -1478,8 +1478,8 @@ i32 CTileActionEvent::DeserializeFields(void* ar) {
     a->Read(&m_actionCode, 4);
     a->Read(&m_tileX, 4);
     a->Read(&m_tileY, 4);
-    a->Read(&m_c, 4);
-    a->Read(&m_10, 4);
+    a->Read(&m_cellKey, 4);
+    a->Read(&m_live, 4);
     a->Read(&m_playerFlags[0], 4);
     a->Read(&m_playerFlags[1], 4);
     a->Read(&m_playerFlags[2], 4);

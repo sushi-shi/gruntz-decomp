@@ -310,20 +310,20 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     if (m == 0) {
         return 0;
     }
-    if (m->m_10 != 0) {
-        m->m_10 = 0;
+    if (m->m_live != 0) {
+        m->m_live = 0;
         ::operator delete(m);
         return 0;
     }
     m->m_tileX = a2;
     m->m_tileY = a3;
-    m->m_c = a4;
+    m->m_cellKey = a4;
     m->m_playerFlags[0] = a5;
     m->m_playerFlags[1] = a6;
     m->m_playerFlags[3] = a8;
     m->m_actionCode = a1;
-    m->m_14 = this;
-    m->m_10 = 1;
+    m->m_owner = this;
+    m->m_live = 1;
     m->m_playerFlags[2] = a7;
     m->SetActionCode(a1);
     m_list3.AddTail(m);
@@ -371,18 +371,18 @@ CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type
             d = 1;
             break;
     }
-    if (m->m_10 != 0) {
-        m->m_10 = 0;
+    if (m->m_live != 0) {
+        m->m_live = 0;
         ::operator delete(m);
         return 0;
     }
     m->m_tileX = a2;
     m->m_tileY = a3;
-    m->m_c = a4;
+    m->m_cellKey = a4;
     m->m_playerFlags[2] = b;
     m->m_actionCode = a1;
-    m->m_14 = this;
-    m->m_10 = 1;
+    m->m_owner = this;
+    m->m_live = 1;
     m->m_playerFlags[0] = d;
     m->m_playerFlags[1] = c;
     m->m_playerFlags[3] = a;
@@ -634,7 +634,7 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
         TtcNode* cur = node;
         node = node->m_next;
         CTileActionEvent* data = static_cast<CTileActionEvent*>(cur->m_data);
-        if (data->m_c == key) {
+        if (data->m_cellKey == key) {
             return data;
         }
     }
@@ -762,7 +762,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (m->Serialize(s, 7, a3, a4) == 0) {
             return 0;
         }
-        m->m_14 = this;
+        m->m_owner = this;
         m_list3.AddTail(m);
     }
     if (LoadFlag74(s) == 0) {
