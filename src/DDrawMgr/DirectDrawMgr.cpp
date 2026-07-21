@@ -861,33 +861,34 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 extern "C" void DdEnumModesCallback(); // 0x143390
 
 // @early-stop
-// 81% - regalloc/induction wall: the free loop, RemoveAll/Add (SetSize/SetAtGrow)
-// calls, EnumDisplayModes + GetErrorString and the selection sort are byte-faithful,
-// but retail colours the sort's outer index as a byte offset alongside a separate
-// counter, an induction shape the recompile doesn't reproduce.  No EH frame.
+// ~87% - selection-sort induction/spill wall (was 81%: accessing m_poolItems directly
+// instead of a hoisted `arr` alias fixed the this-relative-vs-arr-relative addressing
+// across the free loop + SetSize/SetAtGrow calls). Residual: retail spills n, n-1 and
+// the outer index to a 0x10-byte frame and colours the sort's outer index as a byte
+// offset alongside a separate counter; cl keeps them in registers (0x8 frame). Pure
+// register-pressure induction shape, not source-steerable. No EH frame.
 RVA(0x00143240, 0x143)
 void CDirectDrawMgr::SetupCaps() {
-    CPtrArray* arr = &m_poolItems;
-    for (i32 i = 0; i < arr->GetSize(); i++) {
-        ::operator delete(arr->GetData()[i]);
+    for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
+        ::operator delete(m_poolItems.GetData()[i]);
     }
-    arr->SetSize(0, -1);
+    m_poolItems.SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
     i32 hr = m_device->EnumDisplayModes(0, 0, 0, reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        arr->SetAtGrow(arr->GetSize(), g_modeArray.GetData()[j]);
+        m_poolItems.SetAtGrow(m_poolItems.GetSize(), g_modeArray.GetData()[j]);
     }
     g_modeArray.SetSize(0, -1);
-    i32 n = arr->GetSize();
+    i32 n = m_poolItems.GetSize();
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            if (Compare(arr->GetData()[a], arr->GetData()[b])) {
-                void* tmp = arr->GetData()[a];
-                arr->GetData()[a] = arr->GetData()[b];
-                arr->GetData()[b] = tmp;
+            if (Compare(m_poolItems.GetData()[a], m_poolItems.GetData()[b])) {
+                void* tmp = m_poolItems.GetData()[a];
+                m_poolItems.GetData()[a] = m_poolItems.GetData()[b];
+                m_poolItems.GetData()[b] = tmp;
             }
         }
     }
