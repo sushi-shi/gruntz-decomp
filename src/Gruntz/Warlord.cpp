@@ -12,6 +12,8 @@
 #include <Gruntz/GruntzMgr.h>      // CGruntzMgr (the RTTI-true singleton; ReportError @0x8dc60)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
+#include <Gruntz/Play.h>  // CPlay - m_curState real class (m_frameMarker timer)
+#include <Gruntz/Timer.h> // CTimer - the frame-marker (m_currentMs)
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
@@ -425,7 +427,8 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
     } else {
-        if ((reinterpret_cast<CWarlordMission*>(reg->m_curState))->m_objective->m_4c == 0) {
+        // the play state's frame-marker timer: not yet running / expired
+        if ((static_cast<CPlay*>(reg->m_curState))->m_frameMarker->m_currentMs == 0) {
             (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
             return 0;
         }
@@ -468,12 +471,12 @@ i32 CWarlord::AdvanceMovingAnim() {
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
-    CRegThreatHelper* h = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
-    if (h->m_288 != 0 && m_object->m_124 == g_curPlayer) {
-        h->m_2a0 = 0;
-        CRegThreatHelper* h2 = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
-        h2->m_window = 0x3e8;
-        h2->m_stamp = static_cast<u32>(g_frameTime);
+    CTriggerMgr* h = g_gameReg->m_cmdGrid;
+    if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
+        h->m_pendingFx = 0;
+        CTriggerMgr* h2 = g_gameReg->m_cmdGrid;
+        h2->m_timerWindow = 0x3e8;
+        h2->m_timerBase = static_cast<u32>(g_frameTime);
     }
     (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     return 0;
@@ -508,8 +511,8 @@ i32 CWarlord::RearmMoving2() {
 //   ... reg->m_150[o->m_124 * 0x48].m_0c = 0 (owner-array slot) ...
 // Reconstructed from the decode + the CProjectile water/death-splash template
 // (CreateSprite(0,x,y,0xcf84f,"Particlez",0x40003) -> ApplyName/ApplyLookupGeometry)
-// and the CWarlord::AdvanceMovingAnim panic-timer block (g_gameReg->m_cmdGrid viewed
-// as CRegThreatHelper). The spawn is offset (screenX-30, screenY+10); the fort-splash
+// and the CWarlord::AdvanceMovingAnim panic-timer block (the typed m_cmdGrid
+// members). The spawn is offset (screenX-30, screenY+10); the fort-splash
 // template is "LEVEL_FORTSPLASH"; the owner slot is g_gameReg->m_options[m_124] (the
 // 0x238-stride per-player record @+0x150).  1.2% (empty stub) -> 96.7%.
 // @early-stop
@@ -538,12 +541,12 @@ void CWarlord::BuildFortSplashParticles() {
         }
     }
 
-    CRegThreatHelper* h = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
-    if (h->m_288 != 0 && m_object->m_124 == g_curPlayer) {
-        h->m_2a0 = 0;
-        CRegThreatHelper* h2 = reinterpret_cast<CRegThreatHelper*>(g_gameReg->m_cmdGrid);
-        h2->m_window = 0x3e8;
-        h2->m_stamp = static_cast<u32>(g_frameTime);
+    CTriggerMgr* h = g_gameReg->m_cmdGrid;
+    if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
+        h->m_pendingFx = 0;
+        CTriggerMgr* h2 = g_gameReg->m_cmdGrid;
+        h2->m_timerWindow = 0x3e8;
+        h2->m_timerBase = static_cast<u32>(g_frameTime);
     }
 
     GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
@@ -703,7 +706,4 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     return 1;
 }
 
-SIZE_UNKNOWN(CRegThreatHelper);
 SIZE_UNKNOWN(CWarlordAnimSub);
-SIZE_UNKNOWN(CWarlordMission);
-SIZE_UNKNOWN(CWarlordObjective);

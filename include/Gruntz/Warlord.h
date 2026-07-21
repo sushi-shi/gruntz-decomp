@@ -27,31 +27,16 @@ extern "C" u32 g_frameTime;
 // (0x7d1d0), called directly on m_cmdGrid (see LoadAttributes). This view carries
 // ONLY the fort battle-cue timer sub-block AdvanceMovingAnim arms (armed on the
 // per-frame moving tick): m_288 the cue-armed gate, m_290/m_294 the 64-bit start
-// stamp (g_frameTime), m_298/m_29c the window (0x3e8 ms), m_2a0 the cue-active flag.
-// @identity-TODO: these +0x290/+0x2a0 cue fields overlap CTriggerMgr's overlay-
-// descriptor / m_pendingFx modeling (a conflation to reconcile cross-lane).
-// ---------------------------------------------------------------------------
-class CRegThreatHelper {
-public:
-    char m_pad00[0x288];
-    i32 m_288; // +0x288  cue-armed gate
-    char m_pad28c[0x290 - 0x28c];
-    i64 m_stamp;  // +0x290  cue start-stamp (lo=g_frameTime, hi=0)
-    i64 m_window; // +0x298  cue window (lo=0x3e8, hi=0)
-    i32 m_2a0;    // +0x2a0  cue-active flag
-};
+// (CRegThreatHelper DISSOLVED 2026-07-21: the "cue fields" were CTriggerMgr's own
+// m_phase/m_timerBase/m_timerWindow/m_pendingFx - the panic-timer blocks now write
+// the real members through the typed m_cmdGrid.)
 
 // (CRegBattleEvent DISSOLVED 2026-07-20: PostBattleEvent IS CGruntSpawnConfig::Cue on the
 // +0x60 m_cueSink - the warlord fort-alert path now calls reg->m_cueSink->Cue directly.)
 
-struct CWarlordObjective {
-    char m_pad00[0x4c];
-    i32 m_4c; // +0x4c  completion flag (0 = still playing)
-};
-struct CWarlordMission {
-    char m_pad00[0x3f4];
-    CWarlordObjective* m_objective; // +0x3f4  objective tracker
-};
+// (CWarlordMission/CWarlordObjective DISSOLVED 2026-07-21: the "mission" was CPlay
+// and the "objective tracker" its m_frameMarker CTimer - the +0x4c completion flag
+// is CTimer::m_currentMs.)
 
 class CWarlord : public CUserLogic, public CWapX {
 public:
