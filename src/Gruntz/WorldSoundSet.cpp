@@ -893,13 +893,12 @@ void SpawnPosSound(PosSoundObj* obj) {
 // active phase's [lo,hi], halve+clamp it to <=1000, and (re)play via Update.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rand()-call + idiv-scheduling wall (~70%, logic complete, all relocs paired).
-// The two structurally-identical reroll arms (phase A over m_40..m_44, phase B
-// over m_48..m_4c) each emit the global rand call twice (span==0 coin-flip vs
-// idiv-by-span) and cl interleaves the span test / idiv / the +0x50 store with the
-// loop-head box compares; no single source spelling pins that interleave. The box
-// in/out test + the countdown drain are byte-exact. See zero-register-pinning.md
-// and CGruntSpawnConfig::PickWeighted (the same rand-inline/idiv family).
+// ~95% idiv-scheduling/reroll-regalloc wall (was 89.7%: qualifying the 3 Update calls
+// to direct/non-virtual dispatch, the unsigned (u32) countdown shift, and reordering the
+// countdown compare to `frameDelta >= countdownMs` all landed). Residual: (a) the box2
+// last-term (y >= m_box2.bottom) inBox=1 block layout (jl vs jge) and (b) the two reroll
+// arms computing span=hi-lo+1 via `lea ebx,[eax+1]; test` (retail, span kept in a fresh
+// reg for the lo:hi coin-flip) vs cl's `inc edi` - pure register-pressure/scheduling.
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
     i32 inBox = 0;
@@ -916,7 +915,7 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
 
     if (inBox == 0) {
         if (m_isPlaying != 0 && m_voice != 0) {
-            Update(0, 0x3e8, 1);
+            CRandomAmbientSound::Update(0, 0x3e8, 1); // qualified -> direct (non-virtual) call
             m_isPlaying = 0;
         }
         m_phase = 0;
@@ -927,7 +926,8 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         return;
     }
 
-    if (static_cast<u32>(m_countdownMs) <= static_cast<u32>(g_frameDelta)) {
+    // retail: cmp frameDelta, countdownMs; jb subtract (frameDelta as the left operand).
+    if (static_cast<u32>(g_frameDelta) >= static_cast<u32>(m_countdownMs)) {
         m_countdownMs = 0;
     } else {
         m_countdownMs = m_countdownMs - g_frameDelta;
@@ -948,11 +948,11 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
             r = winapi_00cd00_timeGetTime() % span + lo;
         }
         m_countdownMs = r;
-        i32 half = r >> 1;
+        i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        Update(1, 0x64, half);
+        CRandomAmbientSound::Update(1, 0x64, half);
     } else {
         i32 lo = m_intervalLoB;
         i32 hi = m_intervalHiB;
@@ -964,11 +964,11 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
             r = winapi_00cd00_timeGetTime() % span + lo;
         }
         m_countdownMs = r;
-        i32 half = r >> 1;
+        i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        Update(0, 0x64, half);
+        CRandomAmbientSound::Update(0, 0x64, half);
     }
 }
 
