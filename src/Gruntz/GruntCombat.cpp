@@ -84,7 +84,7 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-static void GruntScratchTeardown();
+static inline void GruntScratchTeardown();
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
@@ -103,7 +103,7 @@ static void GruntScratchTeardown();
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.
 
-static void GruntScratchTeardown() {
+static inline void GruntScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -1714,26 +1714,28 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 // re-arms the ATTACK2 anim (RearmAttackAnim2). Returns 1 on commit, else 0.
 //
 // @early-stop
-// inline-strcmp result-register coin-flip (docs/patterns/return-bool-via-local-setcc):
-// CFG, every member offset/gate, the GetNameRecords+scratch-teardown, the inline
-// CRT strcmp, the PlayMoveSound/CreateHealthSprite/GetDwordDef call shapes, the
-// combat-timer block, and both returns are byte-faithful. Residue = retail lands the
-// inline-strcmp result + the sete bool in eax/cl where cl picks ecx/al, cascading the
-// register pairing through the bool-eval block; source-invariant (named `eq` local
-// already in place). Deferred to the final sweep.
+// ~78% (was 53.7%: the mislabeled note claimed byte-faithful, but retail SHARES one
+// return-0 tail all gates jump to - shared `goto fail` merges them - INLINES the scratch
+// teardown loop (marked inline) and defers the record->m_name load past it). Residual:
+// the inlined teardown's loop-induction form (retail dec/lea pre-adjusts the counter vs
+// cl's test/use) + the inline-strcmp result-bool register (retail eax, cl ecx). Both
+// MSVC5 /O2 coin-flips; not source-steerable.
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 a, i32 b) {
     if (m_entranceCommitted == 0) {
-        return 0;
+        goto fail;
     }
-    char* nm = g_typeColl.GetNameRecords(m_14->m_1c)->m_name;
-    GruntScratchTeardown();
-    bool eq = (strcmp(nm, s_codeF) == 0);
-    if (eq) {
-        return 0;
+    {
+        // retail defers the ->m_name load past the (inlined) scratch teardown loop
+        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_14->m_1c);
+        GruntScratchTeardown();
+        bool eq = (strcmp(rec->m_name, s_codeF) == 0);
+        if (eq) {
+            goto fail;
+        }
     }
     if (m_stamina < 0x64) {
-        return 0;
+        goto fail;
     }
 
     PlayMoveSound(a, b);
@@ -1750,6 +1752,8 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     m_20c = b;
     RearmAttackAnim2();
     return 1;
+fail:
+    return 0;
 }
 
 RVA(0x0005b6f0, 0xb5)
