@@ -202,8 +202,9 @@ def summarize(report: dict, full: bool = True, table: bool = False) -> None:
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
-    print("  DOCTRINE: recover the original structure; gate on BUILD, not match % "
-          "(reloc-fidelity + view debt outrank %; docs/exe-map/reloc.html).")
+    # DOCTRINE reminder is NOT printed here every build - it fires only on a %-drop,
+    # from the regressions reporter (gruntz.match.status check), where a matcher is
+    # actually tempted to revert to chase %. That is the teachable moment.
     if not full:   # --fast: just the objdiff %, skip the high-water/cleanliness/vtable probes
         return
     # MAX % high-water. The fuzzy % is a RATIO, so it barely moves even when structural

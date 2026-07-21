@@ -733,10 +733,14 @@ def cmd_check(args) -> int:
         # controls (matching one fn shifts a shared TU's codegen and nudges a
         # sibling; the target/delink side moves). This is a review signal, not a
         # build failure. Use --strict to opt into a non-zero exit (CI gate).
-        print(f"\n{n} CURRENT-% dip(s) to review. The MAX fuzzy shown (best-ever) is the "
-              f"TRACKED metric and is PRESERVED for each one above - a current dip is fine "
-              f"unless it means a real body broke; do NOT revert clean/typed work to chase "
-              f"current %. Bless when reviewed: python -m gruntz.match.status update --accept-regressions")
+        print(f"\n{n} CURRENT-% dip(s) to review - the MAX (best-ever) fuzzy shown above is "
+              f"the TRACKED metric and is PRESERVED for each.\n"
+              f"  DOCTRINE (structure-recovery phase): recover the ORIGINAL structure; do NOT "
+              f"protect match %. A dip from moving a function/global/view to its true home is "
+              f"EXPECTED and RECOVERS as more structure lands - gate on BUILD INTEGRITY, never "
+              f"revert a correct move for a %-drop (reloc-fidelity + view debt outrank %; "
+              f"docs/exe-map/reloc.html).\n"
+              f"  Bless when reviewed: python -m gruntz.match.status update --accept-regressions")
     else:
         extra = ""
         if buckets.get("IMPROVE"):
