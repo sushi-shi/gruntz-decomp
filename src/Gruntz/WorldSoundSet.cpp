@@ -102,11 +102,10 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
     return obj;
 }
 
-RVA(0x0000b790, 0xf)
-CAmbientSound::~CAmbientSound() {
-    m_voice = 0;
-    m_listNode = 0;
-}
+// 0xb790 - ??1CAmbientSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CAmbientSound (<Gruntz/AmbientSound.h>). Clears m_voice/m_listNode, folds the
+// inline ~CUserBase (stamp ??_7CUserBase). @rva-symbol NAMES the retail copy.
+// @rva-symbol: ??1CAmbientSound@@UAE@XZ 0x0000b790 0xf
 
 RVA(0x0000b7b0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
@@ -156,8 +155,10 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
     return obj;
 }
 
-RVA(0x0000b940, 0xf)
-CAmbientPosSound::~CAmbientPosSound() {}
+// 0xb940 - ??1CAmbientPosSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CAmbientPosSound (<Gruntz/AmbientSound.h>). Inlines the base ~CAmbientSound so it
+// collapses to the same bytes as 0xb790 (stamp ??_7CUserBase, clear m_voice/m_listNode).
+// @rva-symbol: ??1CAmbientPosSound@@UAE@XZ 0x0000b940 0xf
 
 RVA(0x0000b960, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {

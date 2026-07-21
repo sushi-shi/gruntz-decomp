@@ -24,7 +24,14 @@ struct AmbientBox {
 VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
-    virtual ~CAmbientSound() OVERRIDE;
+    // Inline leaf dtor: clears m_voice/m_listNode then folds the inline ~CUserBase
+    // (final ??_7CUserBase vptr store). Being inline lets ~CAmbientPosSound inline it
+    // (collapsing to byte-identical bytes) instead of tail-jmp'ing. The out-of-line
+    // COMDAT copy (0xb790) is pinned by @rva-symbol in WorldSoundSet.cpp.
+    virtual ~CAmbientSound() OVERRIDE {
+        m_voice = 0;
+        m_listNode = 0;
+    }
 
     // The non-virtual level setter (0xc200): scale `value` through m_0c/m_10,
     // clamp to 0..100, then drive the voice (mode 0 -> SetVolumeByIndex, else
@@ -75,7 +82,11 @@ SIZE(CAmbientSound, 0x40);
 VTBL(CAmbientPosSound, 0x001e7124);
 class CAmbientPosSound : public CAmbientSound {
 public:
-    virtual ~CAmbientPosSound() OVERRIDE;                  // slot 0
+    // Inline leaf dtor: inlines the (now inline) base ~CAmbientSound, collapsing to
+    // the same bytes (stamp ??_7CUserBase, clear m_voice/m_listNode). Its own OOL
+    // COMDAT (0xb940) is pinned by @rva-symbol in WorldSoundSet.cpp. m_40/m_44 are
+    // plain ints (no cleanup).
+    virtual ~CAmbientPosSound() OVERRIDE {}               // slot 0
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
 
     i32 m_40; // +0x40  anchor position x (seeded by Init6/Init5; role by analogy
