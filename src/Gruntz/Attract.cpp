@@ -1,7 +1,7 @@
-#include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
+#include <Gruntz/String.h>        // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
@@ -33,8 +33,8 @@ i32 g_suppress_64e360 = 0; // 0x24e360
 
 RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
-    (reinterpret_cast<CGruntzSoundZ*>(video()->m_48))->IsPlaying();
-    (reinterpret_cast<CGruntzSoundZ*>(video()->m_48))->StopAndFlush();
+    owner()->m_sound->IsPlaying();
+    owner()->m_sound->StopAndFlush();
     m_2c = static_cast<CResSource*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
@@ -70,13 +70,19 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
-            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
+            ->ShadeRect(
+                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                static_cast<tagRECT*>(0)
+            );
         menuRoot()->m_drawTarget->TransTitle();
     } else {
         menuRoot()->m_drawTarget->TransEnter();
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
-            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
+            ->ShadeRect(
+                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                static_cast<tagRECT*>(0)
+            );
         menuRoot()->m_drawTarget->TransExit();
     }
 
@@ -132,7 +138,10 @@ i32 CAttract::Activate() {
     }
 
     CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
-    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
+    tgt->ShadeRect(
+        g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+        static_cast<tagRECT*>(0)
+    );
     menuRoot()->m_drawTarget->TransTitle();
 
     RetireScene(0x50, 0x3e8, 0,
@@ -250,7 +259,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_1c = a2;
     t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
-    CFader* f = mgr->Add(1, reinterpret_cast<CFader*>(&t));
+    CFader* f = mgr->Add(1, &t);
     if (f == 0) {
         return 0;
     }
@@ -297,7 +306,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_18 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(1, reinterpret_cast<CFader*>(&t));
+    CFader* f = mgr->Add(1, &t);
     if (f == 0) {
         return 0;
     }
@@ -366,7 +375,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
+    CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
     }
@@ -423,7 +432,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
-    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
+    CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
     }
@@ -457,7 +466,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = reinterpret_cast<i32>(chan);
     t.m_08 = 0;
-    CFader* f = mgr->Add(2, reinterpret_cast<CFader*>(&t));
+    CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
     }
@@ -675,9 +684,6 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
 }
 
 SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
-SIZE_UNKNOWN(CAttractHost);
-SIZE_UNKNOWN(CAttractSceneSlot);
-SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CMenuBrightnessHolder);
 SIZE_UNKNOWN(CMenuBrightnessReset);
 SIZE_UNKNOWN(CMenuBrightnessTarget);

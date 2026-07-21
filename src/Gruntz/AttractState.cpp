@@ -17,7 +17,6 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
-
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
 extern char g_emptyString[];
@@ -129,7 +128,7 @@ i32 CAttract::Vslot09(i32 arg) {
     ); // the Ob-band read of the Ptr map (documented dual-band keep)
     CObject* found = 0;
     map->Lookup(buf, found);
-    m_host = reinterpret_cast<CAttractHost*>(found);
+    m_host = static_cast<LeafCue*>(found);
     if (found != 0 && m_activeFlag != 0) {
         if (g_sndEnabled) {
             m_host->m_10->ApplyAndPlay(0x64, 0, 0, 0);
@@ -309,6 +308,4 @@ CAttract::~CAttract() {
 }
 
 SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
-SIZE_UNKNOWN(CAttractHost);
-SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CDDrawSurfacePair);

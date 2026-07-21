@@ -36,11 +36,12 @@ inline CFaderArray::~CFaderArray() {
 SIZE_UNKNOWN(CFaderMgr);
 class CFaderMgr {
 public:
-    CFaderMgr();                                // 0x17d8f0
-    ~CFaderMgr();                               // 0x17d910
-    i32 SetConfig(i32 a, i32 b, i32 c);         // 0x17d980
-    void FreeAll();                             // 0x17d9a0
-    CFader* Add(i32 nFaderType, CFader* pInit); // 0x17d9c0
+    CFaderMgr();                                           // 0x17d8f0
+    ~CFaderMgr();                                          // 0x17d910
+    i32 SetConfig(i32 a, i32 b, i32 c);                    // 0x17d980
+    void FreeAll();                                        // 0x17d9a0
+    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit); // 0x17d9c0 (pInit = the
+                                                           // per-type transition descriptor)
     RVA(0x0017e160, 0x8)
     i32 Flush() {
         return (reinterpret_cast<CFaderMgr*>(&m_sharedSet2cArg))->Flush();

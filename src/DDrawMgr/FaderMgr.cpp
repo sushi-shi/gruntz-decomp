@@ -8,8 +8,8 @@
 
 extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
 
-static inline i32 InitTypeId(CFader* pInit) {
-    return *reinterpret_cast<i32*>(pInit);
+static inline i32 InitTypeId(CFxModeDesc* pInit) {
+    return pInit->m_type;
 }
 
 RVA(0x0017d8f0, 0x1e)
@@ -60,7 +60,7 @@ void CFaderMgr::FreeAll() {
 // MSVC5's EH-state machine + the inlined CObArray grow do not reproduce
 // byte-for-byte from this spelling. Logic complete; parked for the final sweep.
 RVA(0x0017d9c0, 0x786)
-CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
+CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
     CFader* fader = 0;
 
     switch (nFaderType) {
@@ -78,7 +78,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }
@@ -98,7 +98,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }
@@ -118,7 +118,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }
@@ -138,7 +138,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }
@@ -158,7 +158,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }
@@ -178,7 +178,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
                     goto badinit;
                 }
             } else {
-                if (!f->CopyFrom(pInit)) {
+                if (!f->ApplyInit(pInit)) {
                     goto append;
                 }
             }

@@ -9,25 +9,15 @@
 
 extern "C" i32 g_attractStateCount;
 
-class CAttractSceneSlot {
-public:
-    // PrimeScene @? IS CGruntzSoundZ::IsPlaying; cast at the call.
-    // RestoreScene @? IS CGruntzSoundZ::StopAndFlush; cast at the call.
-};
-
-class CAttractVideo {
-public:
-    char m_pad00[0x48];
-    CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
-};
+// (CAttractVideo/CAttractSceneSlot DISSOLVED 2026-07-21: the "video facet" was the
+// mgr again and its +0x48 "scene handle" the real CGruntzSoundZ m_sound - the two
+// call sites go through owner()->m_sound.)
 
 class CSymParser; // <Bute/SymParser.h> (ResolvePath 0x13c030); m_8 re-typed
 
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> (full def at the call sites)
-struct CAttractHost {
-    char m_pad00[0x10];
-    DirectSoundMgr* m_10; // +0x10  voice/host object (the real DirectSoundMgr)
-};
+// (CAttractHost DISSOLVED 2026-07-21: the sound-registry element is a LeafCue -
+// its m_10 is the pooled cue player.)
 
 class CGruntzMgr;
 
@@ -86,9 +76,6 @@ public:
     CSymParser* stateMgr() {
         return static_cast<CSymParser*>(m_symParser);
     }
-    CAttractVideo* video() {
-        return reinterpret_cast<CAttractVideo*>(m_mgr);
-    }
     CGruntzMgr* owner() {
         return static_cast<CGruntzMgr*>(m_mgr);
     }
@@ -98,9 +85,9 @@ public:
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).
     char m_pad1a8[0x1b4 - 0x1a8];
-    u32 m_idleTimer;      // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
-    CAttractHost* m_host; // +0x1b8  host/sound sub-object
-    i32 m_activeFlag;     // +0x1bc  attract-active flag
+    u32 m_idleTimer;        // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
+    struct LeafCue* m_host; // +0x1b8  the looked-up sound cue (ex the CAttractHost view)
+    i32 m_activeFlag;       // +0x1bc  attract-active flag
 };
 VTBL(CAttract, 0x001ea194);
 
