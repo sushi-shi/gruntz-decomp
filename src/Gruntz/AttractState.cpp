@@ -1,4 +1,4 @@
-#include <Gruntz/String.h> // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
+#include <Gruntz/String.h>        // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -126,7 +126,9 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>(&menuRoot()->m_soundRegistry->m_10); // the Ob-band read of the Ptr map (documented dual-band keep)
+    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>(
+        &menuRoot()->m_soundRegistry->m_10
+    ); // the Ob-band read of the Ptr map (documented dual-band keep)
     CObject* found = 0;
     map->Lookup(buf, found);
     m_host = reinterpret_cast<CAttractHost*>(found);
@@ -181,14 +183,14 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // idle, report the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's
 // pooled resource, tick the m_idleTimer timeout down by the frame delta, run every
 // actor's Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
-// Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
-// is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
-// bare delinker label), 0x136e20 (already owned by DirectSoundMgr::winapi_136e20_
-// timeGetTime; the sibling FrameSlot28 names it CAttractPooledRes::Stop too), and
-// the PostMessageA IAT call (target bakes a bare absolute 0x6c44c8, no symbol).
-// Not source-steerable; topic:scoring-artifact (docs/matching-patterns.md).
 // @early-stop
-// reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
+// The m_idleTimer countdown was a real branch-polarity bug - written `if (delta <
+// timer) sub; else zero`, cl emitted `jae`->zero where retail emits `jb`->sub;
+// rewriting to the `if (delta >= timer) zero; else sub` form (matching CDemo::Render)
+// flipped it byte-exact. Remaining residual: (1) a regalloc coin-flip on the
+// m_soundRegistry->m_2c chain (retail reuses eax for the intermediate ptr, cl uses
+// ecx) and (2) reloc-masked IAT/cross-unit operands (ReportError, 0x136e20, the
+// PostMessageA IAT absolute). Not source-steerable; topic:scoring-artifact.
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -204,10 +206,10 @@ i32 CAttract::Render() {
         res->PurgeVoiceList(-1);
     }
 
-    if (g_frameDelta < m_idleTimer) {
-        m_idleTimer -= g_frameDelta;
-    } else {
+    if (g_frameDelta >= m_idleTimer) {
         m_idleTimer = 0;
+    } else {
+        m_idleTimer -= g_frameDelta;
     }
 
     AttractActorList* list = g_actorList;
