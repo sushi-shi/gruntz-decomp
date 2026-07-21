@@ -518,42 +518,57 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // on stop it StopAndRewind's (kind==0) or CloneAndPlay-stops (kind!=0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 3-push frame + twin signed-/100 magic-division scheduling wall (logic complete,
-// all relocs paired). cl duplicates the scale-and-clamp block per kind branch (as
-// retail does) but permutes the eax/ecx/edx use across the two 0x51eb851f reductions
-// and the SetVolumeByIndex/CloneAndPlay tail; no source spelling pins that schedule.
-// See zero-register-pinning.md and CGruntSpawnConfig::PickWeighted (the /100 family).
+// ~89% register-materialization wall (was 35% - the play/stop branch polarity and both
+// kind branches are now retail-correct: playFlag!=0 play path is the fall-through, kind==0
+// is the fall-through in BOTH the play and stop arms). Residual: retail pushes the shared
+// ApplyAndPlay args (push 1 / push 1 immediates) once before the kind branch and stores
+// m_isPlaying=1 as an immediate; cl instead pins the constant 1 in ebp (mov ebp,1; push
+// ebp; ...; mov [esi+0x14],ebp), which blocks the arg-push hoist. Pure regalloc coin-flip
+// (the /100 magic-division family); no source spelling flips the ebp pin. See
+// zero-register-pinning.md.
 RVA(0x0000c2a0, 0x19e)
 void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (m_voice == 0) {
         return;
     }
-    if (playFlag == 0) {
-        // Stop path.
-        if (m_isPlaying == 0) {
+    if (playFlag != 0) {
+        // Play path (fall-through; retail's `je stop` branch polarity puts the
+        // shorter stop path last).
+        if (m_isPlaying != 0) {
             return;
         }
-        if (kind != 0) {
-            m_level = 0;
-            m_voice->CloneAndPlay(0, kind, 1);
-            m_isPlaying = 0;
+        if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        m_voice->StopAndRewind();
-        m_isPlaying = 0;
-        return;
-    }
-    if (m_isPlaying != 0) {
-        return;
-    }
-    if (g_gameReg->m_soundEnabled == 0) {
-        return;
-    }
-    if (g_gameReg->m_inputState->m_active == 0) {
-        return;
-    }
+        if (g_gameReg->m_inputState->m_active == 0) {
+            return;
+        }
+        if (kind == 0) {
+            m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+            i32 t = m_scaleA;
+            m_level = pos;
+            if (t > 5) {
+                t -= 0xf;
+            }
+            i32 v = (t * pos) / 100;
+            if (m_scaleB > 0) {
+                v = (v * m_scaleB) / 100;
+            }
+            if (v < 0) {
+                m_voice->SetVolumeByIndex(0);
+                m_level = pos;
+                m_isPlaying = 1;
+                return;
+            }
+            if (v > 0x64) {
+                v = 0x64;
+            }
+            m_voice->SetVolumeByIndex(v);
+            m_level = pos;
+            m_isPlaying = 1;
+            return;
+        }
 
-    if (kind != 0) {
         m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
         i32 t = m_scaleA;
         m_level = pos;
@@ -575,28 +590,19 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
         return;
     }
 
-    m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-    i32 t = m_scaleA;
-    m_level = pos;
-    if (t > 5) {
-        t -= 0xf;
-    }
-    i32 v = (t * pos) / 100;
-    if (m_scaleB > 0) {
-        v = (v * m_scaleB) / 100;
-    }
-    if (v < 0) {
-        m_voice->SetVolumeByIndex(0);
-        m_level = pos;
-        m_isPlaying = 1;
+    // Stop path (playFlag == 0). Retail's `jne` puts StopAndRewind (kind==0) as the
+    // fall-through and the CloneAndPlay-stop (kind!=0) as the jumped-to arm.
+    if (m_isPlaying == 0) {
         return;
     }
-    if (v > 0x64) {
-        v = 0x64;
+    if (kind == 0) {
+        m_voice->StopAndRewind();
+        m_isPlaying = 0;
+        return;
     }
-    m_voice->SetVolumeByIndex(v);
-    m_level = pos;
-    m_isPlaying = 1;
+    m_level = 0;
+    m_voice->CloneAndPlay(0, kind, 1);
+    m_isPlaying = 0;
 }
 
 // ---------------------------------------------------------------------------
