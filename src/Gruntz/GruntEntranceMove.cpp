@@ -1127,7 +1127,8 @@ RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
+    CAniAdvanceCursor* cur = &m_38->m_1a0; // one +0x1a0 sub-object base, two member reads
+    if (cur->m_28 == 0 || cur->m_20 != 0) {
         return 0;
     }
     if (m_36c == 0) {
