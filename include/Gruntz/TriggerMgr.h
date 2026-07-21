@@ -264,8 +264,8 @@ public:
     // 0x78520 / 0x78680: the two record-table reporters - scan the record list (+0x244)
     // for nodes of the magic group, collect their bytes, then call a world report helper
     // with one of two messages depending on the count. (__stdcall: ret 0xc / ret 0x10.)
-    void ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24);
-    void ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28);
+    void ReportRecordsA(i32 tag, i32 gx, i32 gy);
+    void ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag);
 
     // 0x78a50: PlaceObjectFull - the largest tile-object placer/switch driver (0x845 B,
     // a dense jump table over the logic kind, with two coordinate sub-tables). Builds the

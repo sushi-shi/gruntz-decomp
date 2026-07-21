@@ -25,13 +25,10 @@
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindGruntAt @0x75c60, CellDispatch)
 
 #include <Gruntz/Grunt.h>
-
-extern "C" u32 g_frameDelta;
+#include <Rez/FrameClock.h> // g_frameDelta/g_engineFrameDelta (frame-clock band)
 
 DATA(0x001ea400)
 const double g_slimeZero = 0.0;
-
-extern "C" u32 g_engineFrameDelta;
 
 #include <Gruntz/KitchenSlime.h>
 

@@ -50,14 +50,12 @@
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Globals.h>
 #include <Wap32/ZVec.h>
+#include <Rez/FrameClock.h> // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
 
 DATA(0x002461b0)
 extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 
-extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
-extern "C" i32 g_frameDelta; // DAT_00645584 @0x645584 (frame delta ms)
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
-extern "C" u32 g_engineFrameDelta; // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
 void RbCacheFirst(
     void* anim,

@@ -13,9 +13,7 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 #include <Globals.h>
-
-extern "C" u32 g_frameTime;
-extern "C" u32 g_engineFrameDelta;
+#include <Rez/FrameClock.h> // g_frameTime/g_engineFrameDelta (frame-clock band)
 
 #include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
 

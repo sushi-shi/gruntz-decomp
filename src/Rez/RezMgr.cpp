@@ -15,7 +15,7 @@ extern "C" {
     // (g_frameTime += dt, below) and owns this contiguous 0x245580-0x2455a0 .bss band,
     // so the definition lives here (was misfiled in Projectile.cpp).
     DATA(0x00245588)
-    i32 g_frameTime = 0;
+    u32 g_frameTime = 0; // unsigned running clock (canonical type in <Rez/FrameClock.h>)
     DATA(0x0024558c)
     i32 g_frameTicks = 0; // per-frame counter
     DATA(0x00245590)

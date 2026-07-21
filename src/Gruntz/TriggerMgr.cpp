@@ -299,38 +299,39 @@ i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     return 0;
 }
 
-// 0x78520: ReportRecordsA(a14, a18, a1c, a20, a24) - when the level flag (+0x400) is set,
-// scan the record list (+0x244) collecting the byte of each magic-group, un-triggered cell;
-// if exactly one matched, hand it to the world's single-record reporter, else hand the whole
-// collected array to the manager's multi-record reporter. (__stdcall: ret 0xc.)
-// @early-stop
-// reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
-// `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
-// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_gameReg->m_cmdSubMgr
-// passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
-// array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
+// 0x78520: ReportRecordsA(tag, gx, gy) - when the level flag (+0x400) is set, scan the
+// record list (+0x244) tracking each node's payload[0] byte (firstByte) and collecting the
+// payload[1] byte of each magic-group, un-triggered cell; if exactly one matched, EnqueueSingle
+// it on g_gameReg->m_cmdSubMgr, else EnqueueMulti the whole collected array. (__stdcall: ret 0xc.)
 RVA(0x00078520, 0x106)
-void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
+void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     if (m_groupFlag == 0) {
         return;
     }
-    u8 bytes[0x88];
     u8 count = 0;
+    u8 firstByte = 0;
+    u8 bytes[0x70];
     CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (n != 0) {
         CTmNode* next = n->m_next;
-        u8* payload = reinterpret_cast<u8*>(n->m_payload);
-        CTmCell* cell = m_grid[*reinterpret_cast<i32*>(payload + 4) + *reinterpret_cast<i32*>(payload) * TM_GRID_COLS];
+        i32* payload = n->m_payload;
+        firstByte = static_cast<u8>(payload[0]);
+        CTmCell* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
-            bytes[count] = payload[4];
+            bytes[count] = static_cast<u8>(payload[1]);
             count++;
         }
         n = next;
     }
+    CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
-        g_gameReg->m_cmdSubMgr->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
+        rep->EnqueueSingle(
+            tag, firstByte, bytes[0], 2, static_cast<i16>(gx), static_cast<i16>(gy), 0, 0
+        );
     } else {
-        this->ReportN(2, a14, bytes, a18, a1c, a20, a24);
+        rep->EnqueueMulti(
+            tag, firstByte, count, bytes, 2, static_cast<i16>(gx), static_cast<i16>(gy), 0
+        );
     }
 }
 
