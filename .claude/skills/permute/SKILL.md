@@ -64,6 +64,23 @@ are current). The `<unit>` is the `unit` stem from `config/units.toml`; the
   Discovers the unit's `<100%` functions in SOURCE order and permutes each in turn,
   accumulating wins. Prints a per-function `before -> after` line and a WIN summary.
 
+- **Exhaustive engine (escalation for a function `permute` can't move):**
+  ```
+  python3 -m gruntz.match.match_variants <src.cpp> <rva> \
+      --max-depth 3 --limit 512 -o /tmp/m.json --run --top 12
+  ```
+  The fuller homm2 engine. Where `permute` is a greedy random-walk over a few mutation
+  families, `match_variants` GENERATES an exhaustive, non-overlapping AST-mutation set
+  (commutative/relational order, decl split/merge/hoist, expression / read-advance /
+  nested / member-access inline extraction, identifier rename) with libclang, then
+  compiles+scores the whole Cartesian product and reports the best, gated on an EXACT
+  CLOSURE (objdiff score == 100.0 **and** size == retail **and** the ordered relocation
+  stream == retail). It does NOT edit the source in place — it writes candidates to a
+  manifest and an audited `exact.cpp` only on a real closure; apply that by hand. Add
+  `--state-trials N` to also search TU-state (declarations/includes emitted before the
+  target) when a function is stuck on cross-function codegen steering. Reach for it when
+  `permute` plateaus but the reconstruction is provably correct.
+
 ## After a run
 
 `git diff` the source, then **rebuild and confirm** (`gruntz build`) before committing —
@@ -91,4 +108,6 @@ byte-level reason.
   (a stacked mutation otherwise could, since scoring only reads the target).
 
 Ported from the HoMM2 sibling decomp (same units.toml + cc_wrap + objdiff-cli pipeline),
-then hardened onto a clang AST — HoMM2's version is still the precedence-blind regex.
+then hardened onto a clang AST. HoMM2's fuller multi-family generator + exact-closure
+batch runner are also ported here as `gruntz.match.match_variants` (see the escalation
+above); `permute` remains the fast iterative first pass.
