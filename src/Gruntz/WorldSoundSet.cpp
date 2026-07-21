@@ -80,17 +80,7 @@ void CWorldSoundSet::Teardown() {
 
 RVA(0x0000b6a0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    void* raw = RezAlloc(0x40);
-    CAmbientSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CAmbientSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
@@ -109,17 +99,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
 
 RVA(0x0000b7b0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    void* raw = RezAlloc(0x40);
-    CAmbientSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CAmbientSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
@@ -133,17 +113,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
 
 RVA(0x0000b850, 0x83)
 CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    void* raw = RezAlloc(0x48);
-    CAmbientPosSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CAmbientPosSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
     }
@@ -162,17 +132,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
 
 RVA(0x0000b960, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    void* raw = RezAlloc(0x48);
-    CAmbientPosSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CAmbientPosSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
     }
@@ -185,14 +145,9 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
 }
 
 // CRandomAmbientSound (0x58) with a validated bounding box: reject an inverted x
-// (a5<a4) or y (a7<a6) range, then ::operator new the channel (not RezAlloc), 6-arg
-// Init, the Init2 box roll, append, return. (a8 unused.)
-// @early-stop
-// ~84%: complete correct reconstruction. Residual is the same vtable-stamp-schedule +
-// shrink-wrap wall the sibling factories hit (CreateRandom_bb60/CreatePos ~87%): retail
-// defers the callee-saved pushes past the two range guards and schedules the ??_7 vptr
-// store AFTER the member inits (obj in eax), cl saves eagerly + stamps the vptr in the
-// placement-new ctor first (obj in esi). Not source-steerable; permuter no-change.
+// (a5<a4) or y (a7<a6) range, then `new CRandomAmbientSound` (operator new == RezAlloc,
+// which inlines the ctor's vptr stamp + seed stores), 6-arg Init, the Init2 box roll,
+// append, return. (a8 unused.)
 RVA(0x0000ba00, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::
     CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
@@ -202,17 +157,7 @@ CRandomAmbientSound* CWorldSoundSet::
     if (static_cast<u32>(a7) < static_cast<u32>(a6)) {
         return 0;
     }
-    void* raw = ::operator new(0x58);
-    CRandomAmbientSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CRandomAmbientSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == 0) {
         return 0;
     }
@@ -236,17 +181,7 @@ CRandomAmbientSound* CWorldSoundSet::
 RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::
     CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
-    void* raw = RezAlloc(0x58);
-    CRandomAmbientSound* obj;
-    if (raw != 0) {
-        obj = new (raw) CRandomAmbientSound;
-        obj->m_voice = 0;
-        obj->m_level = 0x64;
-        obj->m_isPlaying = 0;
-        obj->m_listNode = 0;
-    } else {
-        obj = 0;
-    }
+    CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == 0) {
         return 0;
     }

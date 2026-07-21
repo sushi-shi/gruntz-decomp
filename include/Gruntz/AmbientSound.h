@@ -24,6 +24,16 @@ struct AmbientBox {
 VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
+    // Inline ctor: the CWorldSoundSet::Create* factories use `new CAmbientSound`
+    // (operator new == RezAlloc @0x1b9b46), which inlines the vptr stamp + these
+    // four seed stores directly. Being inline is what lets that fold happen.
+    CAmbientSound() {
+        m_voice = 0;
+        m_level = 0x64;
+        m_isPlaying = 0;
+        m_listNode = 0;
+    }
+
     // Inline leaf dtor: clears m_voice/m_listNode then folds the inline ~CUserBase
     // (final ??_7CUserBase vptr store). Being inline lets ~CAmbientPosSound inline it
     // (collapsing to byte-identical bytes) instead of tail-jmp'ing. The out-of-line
@@ -82,6 +92,10 @@ SIZE(CAmbientSound, 0x40);
 VTBL(CAmbientPosSound, 0x001e7124);
 class CAmbientPosSound : public CAmbientSound {
 public:
+    // Inline: the CWorldSoundSet::CreatePos* factories inline the vptr stamp
+    // (??_7CAmbientPosSound) directly (no OOL ctor call), so this must be inline.
+    CAmbientPosSound() {}
+
     // Inline leaf dtor: inlines the (now inline) base ~CAmbientSound, collapsing to
     // the same bytes (stamp ??_7CUserBase, clear m_voice/m_listNode). Its own OOL
     // COMDAT (0xb940) is pinned by @rva-symbol in WorldSoundSet.cpp. m_40/m_44 are
