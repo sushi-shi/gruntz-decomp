@@ -133,11 +133,11 @@ public:
     // CRgn + CString members are constructed first, then the ??_7CCreditsState stamp,
     // then these field seeds).
     CCreditsState() {
-        m_1b8 = 0;
-        m_1bc = 0;
-        m_1c0 = 0;
-        m_1c4 = 0;
-        m_1f4 = 0;
+        m_flashColor = 0;
+        m_flashTimer = 0;
+        m_fadeCountdown = 0;
+        m_fxEnabled = 0;
+        m_scrollReseedTimer = 0;
         m_scrollAccum = 0;
         m_scrollStep = 0;
         CreditsRectSet(&m_scrollRect, 0, 0, 0x280, 0x1e0);
@@ -145,7 +145,7 @@ public:
         m_20c = 1;
         m_videoHandle = 0;
         m_videoPlaying = 0;
-        m_1b4 = 0;
+        m_musicStarted = 0;
     }
     // slot 1  0x038d20 (CreditsState.cpp; retail ??_7CCreditsState slot 1 = ILT
     // 0x3954 -> 0x38d20, ex "LoadCreditzStateAssets") - the credits asset loader.
@@ -193,11 +193,11 @@ public:
 
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
-    i32 m_1b4; // +0x1b4 one-shot FX latch
-    i32 m_1b8; // +0x1b8 packed random RGB flash color
-    i32 m_1bc; // +0x1bc flash re-roll timer
-    i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
-    i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
+    i32 m_musicStarted; // +0x1b4 CREDITZ music one-shot latch
+    i32 m_flashColor; // +0x1b8 packed random RGB flash color
+    i32 m_flashTimer; // +0x1bc flash re-roll timer
+    i32 m_fadeCountdown; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
+    i32 m_fxEnabled; // +0x1c4 conditional-FX gate / credits-music toggle
     // The two 0x10-byte rect sub-objects the ctor Set-initialises to the full 640x480
     // screen (Set @0x08c380, 4 args). They are plain RECTs: SetupTitle SetRect()s the
     // master scroll rect and DrawTextA-measures into the working one; the per-frame
@@ -206,7 +206,7 @@ public:
     RECT m_drawRect;   // +0x1d8  working/scrolled caption rect (DrawTextA target)
     CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
     CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
-    i32 m_1f4;         // +0x1f4  scroll reseed timer (counts the frame delta down)
+    i32 m_scrollReseedTimer;         // +0x1f4  scroll reseed timer (counts the frame delta down)
     // +0x1f8 / +0x200 are DOUBLES, not four ints: DrawScrollingCredits does
     // `fmul QWORD PTR [esi+0x200]` / `fadd|fstp QWORD PTR [esi+0x1f8]` and SetupTitle
     // seeds both through the x87 pipe. (The ctor's four zero-dword stores are how MSVC5
@@ -384,7 +384,7 @@ public:
     i32 m_radius;                   // +0x1dc  sine-spiral radius (loaded (float) for sin/cos)
     i32 m_angleStep;                // +0x1e0  spiral angle/step counter (advances by 5)
     i32 m_scratchX;                 // +0x1e4  computed scratch X
-    i32 m_1e8;                      // +0x1e8  computed scratch Y
+    i32 m_scratchY;                      // +0x1e8  computed scratch Y
     CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle sprites
                                     //         (the `(char*)this + 0x1ec` array of 0x19540)
     CWwdGameObjectA* m_cursorLetter;    // +0x1fc  the trailing/cursor letter sprite
@@ -515,7 +515,7 @@ public:
     i32 m_radius;    // +0x1dc sine-spiral radius (loaded (float) for sin/cos; shrinks to 0)
     i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
     i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
-    i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
+    i32 m_scratchY;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
     CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
                                     //         sprites (walked 0..m_letterIdx, %4-bounded)
     CWwdGameObjectA* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite

@@ -7,11 +7,11 @@
 
 RVA(0x00039dc0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {
-    i32 rising = (m_1c4 == 0);
-    m_1c4 = rising;
+    i32 rising = (m_fxEnabled == 0);
+    m_fxEnabled = rising;
     if (rising) {
-        m_1bc = 0;
-        m_1c0 = 3000;
+        m_flashTimer = 0;
+        m_fadeCountdown = 3000;
         CGruntzSoundInnerZ* cred = m_4->m_sound->FindBank("CREDITZ");
         if (cred != 0 && cred->IsBusy() != 0) {
             cred->StopAll();
@@ -22,7 +22,7 @@ void CCreditsState::LoadCreditzAssets() {
             g_gameReg->m_sound->Restart(0);
         }
     } else {
-        m_1c0 = 0;
+        m_fadeCountdown = 0;
         CGruntzSoundInnerZ* current = m_4->m_sound->m_pCurrent;
         CGruntzSoundInnerZ* mono = g_gameReg->m_sound->FindBank("MONOLITH");
         if (current == mono && mono != 0 && mono->IsBusy() != 0) {

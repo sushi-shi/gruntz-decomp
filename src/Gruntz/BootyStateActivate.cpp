@@ -147,7 +147,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_letterIdx = (reg->m_scoreHud->m_count - 1) % 4; // +0x7c->+0x04: the active letter count
     m_angleStep = 0;
     m_scratchX = 0;
-    m_1e8 = 0;
+    m_scratchY = 0;
     for (i32 i = 0; i < 4; i++) {
         CWwdGameObjectA* a = g_gameReg->m_world->m_childGroup
                              ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
@@ -211,7 +211,7 @@ void CMultiBootyState::StepGlitterAnim() {
     double r = static_cast<float>(m_radius); // load (float)m_radius first; shared across sin/cos terms
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
     m_scratchX = static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
-    m_1e8 = static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
+    m_scratchY = static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
     m_angleStep = step + 5;
     m_radius =
         static_cast<i32>((kGlitterStartRadius - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius));
@@ -234,9 +234,9 @@ void CMultiBootyState::StepGlitterAnim() {
     }
     // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
     m_cursorLetter->m_screenX = m_scratchX;
-    m_cursorLetter->m_screenY = m_1e8;
+    m_cursorLetter->m_screenY = m_scratchY;
     arr1ec[i]->m_screenX = m_scratchX;
-    arr1ec[i]->m_screenY = m_1e8;
+    arr1ec[i]->m_screenY = m_scratchY;
 
     MoveLettersByDir();
 

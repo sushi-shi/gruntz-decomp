@@ -50,10 +50,10 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     while (ShowCursor(0) >= 0)
         ;
 
-    m_1b8 = 0;
-    m_1bc = 0;
-    m_1c0 = 0;
-    m_1c4 = 0;
+    m_flashColor = 0;
+    m_flashTimer = 0;
+    m_fadeCountdown = 0;
+    m_fxEnabled = 0;
     m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_CREDITZ"));
     if (!m_2c) {
         return 0;
@@ -97,7 +97,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     SetupTitle();
     m_20c = 2;
     i32 r = FinishState();
-    m_1b4 = 0;
+    m_musicStarted = 0;
     return r;
 }
 
@@ -185,12 +185,12 @@ i32 CCreditsState::Render() {
         v4->m_overlayPair
     ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
 
-    if (!m_1b4 && Owner(this)->m_musicEnabled) {
+    if (!m_musicStarted && Owner(this)->m_musicEnabled) {
         Owner(this)->m_sound->PlayByName("CREDITZ", 1);
-        m_1b4 = 1;
+        m_musicStarted = 1;
     }
 
-    if (m_1c4) {
+    if (m_fxEnabled) {
         CGruntzSoundInnerZ* s = Owner(this)->m_sound->FindBank("MONOLITH");
         if (s && !s->IsStarted()) {
             Sub3();
@@ -339,21 +339,21 @@ i32 CCreditsState::DrawScrollingCredits() {
     // COM slot 17 (+0x44), ReleaseDC slot 26 (+0x68).
     CDDSurface* prov = m_c->m_drawTarget->m_backPair->m_surface;
 
-    if (g_frameDelta >= m_1f4) {
-        m_1f4 = 0;
+    if (g_frameDelta >= m_scrollReseedTimer) {
+        m_scrollReseedTimer = 0;
     } else {
-        m_1f4 -= g_frameDelta;
+        m_scrollReseedTimer -= g_frameDelta;
     }
-    if (m_1c4 != 0) {
-        if (g_frameDelta >= m_1bc) {
-            m_1bc = 0;
+    if (m_fxEnabled != 0) {
+        if (g_frameDelta >= m_flashTimer) {
+            m_flashTimer = 0;
         } else {
-            m_1bc -= g_frameDelta;
+            m_flashTimer -= g_frameDelta;
         }
-        if (g_frameDelta >= m_1c0) {
-            m_1c0 = 0;
+        if (g_frameDelta >= m_fadeCountdown) {
+            m_fadeCountdown = 0;
         } else {
-            m_1c0 -= g_frameDelta;
+            m_fadeCountdown -= g_frameDelta;
         }
     }
 
@@ -366,7 +366,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (m_drawRect.bottom < 0) {
         m_scrollAccum = 0.0;
         m_drawRect = m_scrollRect;
-        m_1f4 = static_cast<i32>((kScreenH / kScrollRate));
+        m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
     }
 
     HDC hdc = 0;
@@ -379,7 +379,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         i32 oldColor = SetTextColor(hdc, FlashColor());
         DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x50);
         SetTextColor(hdc, oldColor);
-        if (m_1c4 != 0 && m_1c0 != 0) {
+        if (m_fxEnabled != 0 && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, 0x280, 0x1e0};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
@@ -436,8 +436,8 @@ i32 CCreditsState::SetupTitle() {
         prov->m_8->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
-    m_1f4 = static_cast<i32>((kScreenH / kScrollRate));
-    m_scrollStep = (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_1f4));
+    m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
+    m_scrollStep = (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_scrollReseedTimer));
     return 1;
 }
 
@@ -492,16 +492,16 @@ i32 CCreditsState::StepVideo() {
 RVA(0x00039d00, 0x8c)
 i32 CCreditsState::FlashColor() {
     i32 color = 0xffffff;
-    if (m_1c4) {
-        if (m_1bc) {
-            return m_1b8;
+    if (m_fxEnabled) {
+        if (m_flashTimer) {
+            return m_flashColor;
         }
         i32 r = rand() % 256;
         i32 g = rand() % 256;
         i32 b = rand() % 256;
-        m_1bc = 0x12c;
+        m_flashTimer = 0x12c;
         color = (b << 16) | ((g & 0xff) << 8) | (r & 0xff);
-        m_1b8 = color;
+        m_flashColor = color;
     }
     return color;
 }
