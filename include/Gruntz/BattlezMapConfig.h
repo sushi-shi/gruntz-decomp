@@ -87,6 +87,13 @@ public:
     void Finish3e4f(CGrunt* g, CGrunt* a);                       // thunk 0x3e4f
 
     // ---- head block 0x000..0xdc: two phase-views of the same bytes ---------
+    // AUDIT 2026-07-21 (union-reconcile map; the arms are ONE field set):
+    //   m_ctx==m_levelInfo, m_triggerMgr==m_8, m_board==m_dims, m_cellQuery==m_14,
+    //   m_010 IS the load arm's CPlay* m_10 (run never touches it),
+    //   m_spawnPct@+0x30 IS DefenderChance, m_spawnInterval@+0x48 IS
+    //   GruntCreationTime (rescaled), m_repickInterval@+0x54 IS
+    //   ResourceCreationTime, m_060@+0x60 IS GauntletzChance. Merge = graft the
+    //   load arm's bute-key names onto the run skeleton (mechanical; deferred).
     union {
         // Run-phase (spawn state-machine) view.
         struct {
@@ -205,6 +212,11 @@ public:
     CDWordArray m_118;     // +0x118  CDWordArray
 
     // ---- tail block 0x12c..0x1e8: two phase-views of the same bytes --------
+    // AUDIT 2026-07-21: the run arm's ascending "band threshold" tables ARE the
+    // load arm's cumulative per-item percent totals (LoadConfig seeds running
+    // sums of the [Battlez] keys; the roll compares ascending) - band-C = the
+    // brick Pcts, band-B = the toy Pcts, band-A = the toolz Pcts. One table;
+    // merge = array spelling + per-index bute-key comments (deferred with the head).
     union {
         // Run-phase (spawn) view.
         struct {
