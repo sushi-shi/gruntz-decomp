@@ -39,20 +39,20 @@ extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
 struct CNetVersionMsg {
     char m_pad0[0x18];
-    i32 m_18; // +0x18  host remote-version word
-    i32 m_1c; // +0x1c  host local-version word
+    i32 m_remoteVersion; // +0x18  host remote-version word
+    i32 m_localVersion; // +0x1c  host local-version word
 };
 SIZE_UNKNOWN(CNetVersionMsg); // host-version msg view (only +0x18/+0x1c pinned); size TBD
 
 struct CNetVersionPacket {
     u8 m_0; // +0x00  flag byte (bit7 set)
     char m_pad1[7];
-    i32 m_8;  // +0x08  CButeMgr config word
-    i32 m_c;  // +0x0c  g_cfgWord
-    i32 m_10; // +0x10  stat id (0x417)
+    i32 m_buteConfig;  // +0x08  CButeMgr config word
+    i32 m_cfgWord;  // +0x0c  g_cfgWord
+    i32 m_statId; // +0x10  stat id (0x417)
     char m_pad14[4];
-    i32 m_18; // +0x18  g_remoteVersion
-    i32 m_1c; // +0x1c  g_localVersion
+    i32 m_remoteVersion; // +0x18  g_remoteVersion
+    i32 m_localVersion; // +0x1c  g_localVersion
 };
 SIZE(CNetVersionPacket, 0x20); // fully-known stack packet
 
@@ -543,9 +543,9 @@ struct INetReleasable {
 SIZE_UNKNOWN(INetReleasable); // external COM interface (opaque object); size TBD
 
 struct CNetCtrlMsg {
-    i32 m_0; // +0x0  message code (switch tag)
-    i32 m_4; // +0x4  sub-code
-    i32 m_8; // +0x8  payload (player id on the player-left path)
+    i32 m_code; // +0x0  message code (switch tag)
+    i32 m_subCode; // +0x4  sub-code
+    i32 m_playerId; // +0x8  payload (player id on the player-left path)
 };
 SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size TBD
 

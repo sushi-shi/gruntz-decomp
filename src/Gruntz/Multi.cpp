@@ -2404,15 +2404,15 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
         return 0;
     }
 
-    switch (msg->m_0) {
+    switch (msg->m_code) {
         case 3:
             HandleSpriteMsg(msg);
             return 1;
         case 5:
-            if (msg->m_4 != 1) {
+            if (msg->m_subCode != 1) {
                 return 1;
             }
-            OnPlayerLeft(msg->m_8);
+            OnPlayerLeft(msg->m_playerId);
             g_playerLeftFlag = 1;
             return 1;
         case 0x31:
@@ -3959,10 +3959,10 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
     }
 
     i32 mismatch = 0;
-    if (g_localVersion != msg->m_1c) {
+    if (g_localVersion != msg->m_localVersion) {
         mismatch = 1;
     }
-    if (g_remoteVersion != msg->m_18) {
+    if (g_remoteVersion != msg->m_remoteVersion) {
         mismatch = 1;
     }
 
@@ -4000,11 +4000,11 @@ void CMulti::AnnounceVersion(i32 param) {
     memset(&packet, 0, sizeof(packet));
 
     packet.m_0 |= 0x80;
-    packet.m_18 = g_remoteVersion;
-    packet.m_c = g_cfgWord;
-    packet.m_8 = g_buteMgrField4;
-    packet.m_1c = g_localVersion;
-    packet.m_10 = STAT_VERSIONPACKET;
+    packet.m_remoteVersion = g_remoteVersion;
+    packet.m_cfgWord = g_cfgWord;
+    packet.m_buteConfig = g_buteMgrField4;
+    packet.m_localVersion = g_localVersion;
+    packet.m_statId = STAT_VERSIONPACKET;
 
     SendStatPacket(param, &packet, 0x20, 1);
 }
