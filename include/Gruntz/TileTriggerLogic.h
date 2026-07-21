@@ -133,8 +133,8 @@ public:
     i32 DeserializeMatrix(CSerialArchive* s);                 // 0x113e70 (type-7 load)
 
     i32 m_matrix[9]; // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
-    i32 m_c0;        // +0xc0        streamed FIRST (before the matrix)
-    i32 m_c4;        // +0xc4        streamed SECOND; the object ends at 0xc8
+    i32 m_powerupType;        // +0xc0        streamed FIRST (before the matrix)
+    i32 m_textId;        // +0xc4        streamed SECOND; the object ends at 0xc8
 };
 SIZE(CGiantRockLogic, 0xc8);
 VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)

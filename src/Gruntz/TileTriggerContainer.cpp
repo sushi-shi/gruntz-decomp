@@ -61,18 +61,18 @@ i32 Gap_115b60(void) {
 
 RVA(0x00115f00, 0x13)
 i32 CTileTriggerContainer::GetFlag74() {
-    if (m_74 != 0) {
+    if (m_built != 0) {
         return 0;
     }
-    m_74 = 1;
+    m_built = 1;
     return 1;
 }
 
 RVA(0x00115f30, 0x18)
 void CTileTriggerContainer::DtorBase() {
-    if (m_74 != 0) {
+    if (m_built != 0) {
         RemoveAll();
-        m_74 = 0;
+        m_built = 0;
     }
 }
 
@@ -286,7 +286,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     TtcObList* list = logicType == TRIGID_TIME_TRIGGER_23 ? &m_list2 : &m_list1;
     list->AddTail(obj);
     if (logicType == TRIGID_TILE_TRIGGER_21 && (a1 == 0x67 || a1 == 0x68)) {
-        m_70 = obj;
+        m_latchedLeaf = obj;
     }
     return obj;
 }
@@ -425,8 +425,8 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
     for (i32 i = 0; i < 9; i++) {
         e->m_matrix[i] = block9[i];
     }
-    e->m_c0 = a5;
-    e->m_c4 = a6;
+    e->m_powerupType = a5;
+    e->m_textId = a6;
     e->m_tileY = a2;
     e->m_typeTag = TRIGID_GIANT_ROCK_22;
     e->m_tileX = a1;
@@ -563,7 +563,7 @@ void CTileTriggerContainer::RemoveAll() {
         delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
     }
     m_list3.RemoveAll();
-    m_70 = 0;
+    m_latchedLeaf = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -952,7 +952,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
                 type = rec->GetCollisionAt(0, 0);
             }
             if (type == 0x67 || type == 0x68) {
-                this->m_70 = obj;
+                this->m_latchedLeaf = obj;
             }
             return obj;
         }
@@ -994,7 +994,7 @@ i32 CTileTriggerContainer::TransferFlag74(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Write(&m_74, 4);
+    s->Write(&m_built, 4);
     return 1;
 }
 
@@ -1006,7 +1006,7 @@ i32 CTileTriggerContainer::LoadFlag74(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Read(&m_74, 4);
+    s->Read(&m_built, 4);
     return 1;
 }
 

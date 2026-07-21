@@ -412,16 +412,16 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
     i32 cx = (m_tileX << 5) + 0x10;
     i32 cy = (m_tileY << 5) + 0x10;
-    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
-    if (m_c4 != 0) {
+    if (m_textId != 0) {
         CGameObject* txt = g_gameReg->m_world->m_childGroup
                                ->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
         if (txt == 0) {
             return;
         }
-        txt->m_124 = m_c4;
+        txt->m_124 = m_textId;
     }
 
     // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
@@ -1385,8 +1385,8 @@ i32 CGiantRockLogic::SerializeMatrix(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Write(&m_c0, 4);
-    s->Write(&m_c4, 4);
+    s->Write(&m_powerupType, 4);
+    s->Write(&m_textId, 4);
     i32* p = m_matrix;
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
@@ -1413,8 +1413,8 @@ i32 CGiantRockLogic::DeserializeMatrix(CSerialArchive* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Read(&m_c0, 4);
-    s->Read(&m_c4, 4);
+    s->Read(&m_powerupType, 4);
+    s->Read(&m_textId, 4);
     i32* p = m_matrix;
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {

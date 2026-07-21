@@ -45,7 +45,7 @@ public:
     // `push 0x78; call ??2` + 4x CPtrList(0xa) + `[esi+0x74]=0`; CPlay::LoadGameAssetNamespaces
     // 0xc7ec0 likewise). m_70 is NOT initialized there - follow the bytes.
     CTileTriggerContainer() {
-        m_74 = 0;
+        m_built = 0;
     }
 
     i32 DelFromList1(void* data); // 0x116e60
@@ -182,8 +182,8 @@ public:
     TtcObList m_list1;       // +0x1c (head @ +0x20)
     TtcObList m_list2;       // +0x38 (head @ +0x3c)
     TtcObList m_list3;       // +0x54 (head @ +0x58)
-    CTileTriggerLogic* m_70; // +0x70  id-0x15 latches the built logic leaf here
-    i32 m_74;                // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
+    CTileTriggerLogic* m_latchedLeaf; // +0x70  id-0x15 latches the built logic leaf here
+    i32 m_built;                // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
 SIZE_UNKNOWN(CTileTriggerContainer);
 

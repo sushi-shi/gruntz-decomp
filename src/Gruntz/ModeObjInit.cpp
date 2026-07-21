@@ -166,7 +166,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
             new (&r78->m_list1) CPtrList(0xa);
             new (&r78->m_list2) CPtrList(0xa);
             new (&r78->m_list3) CPtrList(0xa);
-            r78->m_74 = 0;
+            r78->m_built = 0;
         } else {
             r78 = 0;
         }
