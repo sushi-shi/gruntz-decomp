@@ -122,7 +122,7 @@ public:
     IDirectDrawSurface* m_primaryRaw;   // +0x20  the raw primary (only Release'd)
     IDirectDrawSurface* m_srcSurf;      // +0x24  frame/tile SOURCE surface (Frame Locks it
                                         //        into m_srcDesc; CheckGrid creates it)
-    IDirectDrawSurface* m_28;           // +0x28  raw source surface (CheckGrid's out; Release'd)
+    IDirectDrawSurface* m_srcSurfRaw;           // +0x28  raw source surface (CheckGrid's out; Release'd)
     IDirectDrawPalette* m_palette;      // +0x2c  the palette (SetPalette'd onto m_primary)
     // +0x30  the PRIMARY-surface DDSURFACEDESC scratch. NB it is m_primaryDesc, not
     // "m_desc": BOTH ex-views had a member spelled m_desc at DIFFERENT offsets (the
@@ -180,14 +180,14 @@ public:
         i32 m_useDS;          //   movie view (DirectSound gate)
     };
     CWnd* m_videoWnd; // +0x53c  the video window (real MFC CWnd)
-    CFecFile m_540;   // +0x540  embedded decode store - the canonical CFecFile
+    CFecFile m_decodeStore;   // +0x540  embedded decode store - the canonical CFecFile
                       //         (0x814c B; ends exactly at the +0x868c playlist)
     // +0x868c  the Rez-owned playlist, an MFC CArray (RTTI-proven, COL @0x1e971c).
     // Its m_pData/m_nSize/m_nMaxSize land at +0x8690/+0x8694/+0x8698 - which is
     // EXACTLY what the ex CDDPageMgr view independently modelled as m_data/m_count/
     // m_8698, and its element IS that view's "CPageRec" (PLAYLISTINFOSTRUCT: the
     // three owned buffers RemoveAt frees at +0x00/+0x10/+0x14).
-    CMoviePlaylist m_868c;
+    CMoviePlaylist m_playlist;
     i32 m_loopCount; // +0x86a0  loop counter (the screen view's m_86a0, "reset by Configure")
 };
 SIZE_UNKNOWN(CMoviePlayer); // no op-new site names the size; the layout runs to 0x86a4

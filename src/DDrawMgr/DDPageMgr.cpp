@@ -120,7 +120,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
     m_screenWidth = w;
     m_srcSurf = 0;
-    m_28 = 0;
+    m_srcSurfRaw = 0;
     m_screenHeight = h;
     m_bpp = bpp;
     m_window = window;
@@ -234,7 +234,7 @@ i32 CMoviePlayer::InitMode(
     m_window = wnd;
     m_streamOpen = 0;
     m_srcSurf = 0;
-    m_28 = 0;
+    m_srcSurfRaw = 0;
     m_508 = a31;
     ::ShowCursor(0);
     m_initialized = 1;
@@ -289,9 +289,9 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         m_srcSurf->Release();
         m_srcSurf = 0;
     }
-    if (m_28) {
-        m_28->Release();
-        m_28 = 0;
+    if (m_srcSurfRaw) {
+        m_srcSurfRaw->Release();
+        m_srcSurfRaw = 0;
     }
     CloseSmacker();
     return r;
@@ -326,9 +326,9 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         m_srcSurf->Release();
         m_srcSurf = 0;
     }
-    if (m_28) {
-        m_28->Release();
-        m_28 = 0;
+    if (m_srcSurfRaw) {
+        m_srcSurfRaw->Release();
+        m_srcSurfRaw = 0;
     }
     CloseSmacker();
     return r;
@@ -339,20 +339,20 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (m_initialized == 0) {
         return 0;
     }
-    if (!m_540.Init()) {
+    if (!m_decodeStore.Init()) {
         return 0;
     }
-    if (!m_540.ReadArchive(reinterpret_cast<const char*>(a1))) {
-        m_540.Close();
+    if (!m_decodeStore.ReadArchive(reinterpret_cast<const char*>(a1))) {
+        m_decodeStore.Close();
         return 0;
     }
-    i32 hi = m_540.Lookup(static_cast<unsigned int>(a2));
+    i32 hi = m_decodeStore.Lookup(static_cast<unsigned int>(a2));
     if (!hi) {
-        m_540.Close();
+        m_decodeStore.Close();
         return 0;
     }
     if (!OpenHi(hi, a3, a4, a5, a6)) {
-        m_540.Close();
+        m_decodeStore.Close();
         return 0;
     }
     return 1;
@@ -439,7 +439,7 @@ i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
     }
-    m_540.Close();
+    m_decodeStore.Close();
     if (!m_smackHandle) {
         return 0;
     }
@@ -498,9 +498,9 @@ void CMoviePlayer::HandleError() {
         m_srcSurf->Release();
         m_srcSurf = 0;
     }
-    if (m_28) {
-        m_28->Release();
-        m_28 = 0;
+    if (m_srcSurfRaw) {
+        m_srcSurfRaw->Release();
+        m_srcSurfRaw = 0;
     }
     if (m_bpp == 8) {
         ResetPalette();
@@ -800,12 +800,12 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
         return 0;
     }
-    if (m_868c.GetSize() < idx) {
+    if (m_playlist.GetSize() < idx) {
         return 0;
     }
     // The "page record" IS the playlist clip (PLAYLISTINFOSTRUCT); its three owned
     // buffers are the three ::operator delete calls retail makes at 0x17d63e/50/63.
-    PLAYLISTINFOSTRUCT* rec = m_868c[idx - 1];
+    PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
     if (rec->m_src) {
         ::operator delete(reinterpret_cast<void*>(rec->m_src));
         rec->m_src = 0;
@@ -820,7 +820,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     }
     // the tail shuffle + count decrement retail emits IS CArray::RemoveAt inlined
     // (memmove(m_pData+i, m_pData+i+1, ...); m_nSize -= 1).
-    m_868c.RemoveAt(idx - 1);
+    m_playlist.RemoveAt(idx - 1);
     ::operator delete(rec);
     return 1;
 }
@@ -830,7 +830,7 @@ i32 CMoviePlayer::FreeAll() {
     if (!m_initialized) {
         return 0;
     }
-    i32 count = m_868c.GetSize();
+    i32 count = m_playlist.GetSize();
     for (i32 i = 0; i < count; i++) {
         if (!RemoveAt(1)) {
             return 0;
@@ -839,7 +839,7 @@ i32 CMoviePlayer::FreeAll() {
     // retail's `operator delete(m_pData); m_pData=0; m_nMaxSize=0; m_nSize=0` IS
     // CArray::RemoveAll inlined (delete[] (BYTE*)m_pData; m_pData=NULL;
     // m_nSize = m_nMaxSize = 0).
-    m_868c.RemoveAll();
+    m_playlist.RemoveAll();
     return 1;
 }
 
@@ -850,8 +850,8 @@ i32 CMoviePlayer::PlayList(i32 loops) {
     }
     i32 iter = 1;
     do {
-        for (i32 i = 0; i < m_868c.GetSize(); i++) {
-            PLAYLISTINFOSTRUCT* clip = m_868c[i]; // inline CArray::operator[] == m_pData[i]
+        for (i32 i = 0; i < m_playlist.GetSize(); i++) {
+            PLAYLISTINFOSTRUCT* clip = m_playlist[i]; // inline CArray::operator[] == m_pData[i]
             if (clip->m_src == 0) {
                 return 0;
             }
@@ -872,7 +872,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                     return 0;
                 }
             }
-            PLAYLISTINFOSTRUCT* c2 = m_868c[i];
+            PLAYLISTINFOSTRUCT* c2 = m_playlist[i];
             i32 result = Pump(c2->m_flags, c2->m_count);
             if (result != 0x11111111) {
                 CloseSmacker();

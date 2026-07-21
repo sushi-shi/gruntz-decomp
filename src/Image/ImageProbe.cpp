@@ -22,10 +22,10 @@ i32 CMoviePlayer::CheckGrid() {
     m_srcDesc.ddsCaps.dwCaps = 0x840; // DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY
     m_srcDesc.dwHeight = m_smackHandle->Height;
     m_srcDesc.dwWidth = m_smackHandle->Width;
-    if (m_dd2->CreateSurface(&m_srcDesc, &m_28, 0) != 0) {
+    if (m_dd2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
         return 0;
     }
-    if (m_28->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_srcSurf)) != 0) {
+    if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_srcSurf)) != 0) {
         return 0;
     }
     if (m_bpp == 8) {
