@@ -1206,9 +1206,11 @@ void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag
 // latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
 // install sibling of SetDisplayPaletteFrom/Direct; LoadPaletteMake950 tail-returns it.
 // @early-stop
-// ~78% mirror-register wall (same family as 0x143900/0x1439b0): retail keeps src in eax
-// and pre-increments dst in edx (-1/-4/-3/-2 displacements); MSVC mirrors the src/dst
-// registers here. Not source-steerable (permuter marginal). docs/patterns/zero-register-pinning.md.
+// ~92% (was 78%: the RGB reads are `*src++` (mov bl,[eax]; inc eax), not fixed
+// src[0..2]+src+=3 - now byte-exact). Residual: retail biases the dst cursor +1
+// (lea edx,[edi+0x53d], stores at edx-1/-4/-3/-2) and schedules the b2 store before
+// the alpha store; cl starts edx at +0 and reorders the last two stores. Pure MSVC
+// addressing/scheduling coin-flip. docs/patterns/zero-register-pinning.md.
 RVA(0x00143950, 0x56)
 CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     if (buf == 0) {
@@ -1217,12 +1219,11 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     const u8* src = static_cast<const u8*>(buf);
     u8* dst = reinterpret_cast<u8*>(m_palette);
     for (i32 i = 0; i < 256; i++) {
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
+        dst[0] = *src++; // post-inc read (mov bl,[eax]; inc eax), not fixed src[0..2]+src+=3
+        dst[1] = *src++;
+        dst[2] = *src++;
         dst[3] = 0;
         dst += 4;
-        src += 3;
     }
     m_hasPalette = 1;
     m_940 = z;
