@@ -914,10 +914,12 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 // record insert/update/remove over the global table at the cursor's m_04.
 // ===========================================================================
 // @early-stop
-// Control flow + 12-byte-stride index arithmetic + memmove shifts + global stores are
-// all faithful, but MSVC pins val->ebx / key->edi where retail uses key->ebx / val->edi
-// (callee-saved register-preference wall, docs/patterns/pin-local-for-callee-saved-reg.md);
-// the ebx<->edi swap is not source-steerable and cascades through every store. Deferred.
+// Structure fixed 2026-07-21 (18% -> 88%): the INSERT path (idx==-1) is INLINE and the
+// UPDATE/REMOVE path (idx!=-1) is OUT-OF-LINE (retail `cmp idx,-1; jne <update-far>`),
+// and BOTH array shifts are `memcpy` (not memmove). The reconstruction had them reversed +
+// memmove. Residual (~12%) is the genuine callee-saved register-preference wall: MSVC pins
+// val->ebx/key->edi where retail uses key->ebx/val->edi, cascading through the stores.
+// Not source-steerable; deferred.
 RVA(0x0016e360, 0x11a)
 void* CVariantSlot::Add(void* key, void* val) {
     int count = g_recCount23;
@@ -930,35 +932,35 @@ void* CVariantSlot::Add(void* key, void* val) {
     } else {
         idx = -1;
     }
-    if (idx != -1) {
-        void* old = g_recs23[idx].m_4;
-        if (val != 0) {
-            g_recs23[idx].m_4 = val;
-            return old;
+    if (idx == -1) {
+        if (val == 0) {
+            return 0;
         }
-        memmove(
-            &g_recs23[m_04],
-            &g_recs23[m_04 + 1],
-            (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec)
-        );
-        g_recCount23 = g_recCount23 - 1;
-        return old;
-    }
-    if (val == 0) {
+        if (g_recCount23 != 0) {
+            memcpy(
+                &g_recs23[m_04 + 1],
+                &g_recs23[m_04],
+                (g_recCount23 - m_04) * sizeof(TypeKeyRec)
+            );
+        }
+        g_recs23[m_04].m_4 = val;
+        g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
+        g_recCount23 = g_recCount23 + 1;
+        g_recs23[m_04].m_8 = 0;
         return 0;
     }
-    if (g_recCount23 != 0) {
-        memmove(
-            &g_recs23[m_04 + 1],
-            &g_recs23[m_04],
-            (g_recCount23 - m_04) * sizeof(TypeKeyRec)
-        );
+    void* old = g_recs23[idx].m_4;
+    if (val != 0) {
+        g_recs23[idx].m_4 = val;
+        return old;
     }
-    g_recs23[m_04].m_4 = val;
-    g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
-    g_recCount23 = g_recCount23 + 1;
-    g_recs23[m_04].m_8 = 0;
-    return 0;
+    memcpy(
+        &g_recs23[m_04],
+        &g_recs23[m_04 + 1],
+        (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec)
+    );
+    g_recCount23 = g_recCount23 - 1;
+    return old;
 }
 
 RVA(0x0016e480, 0x3e)
