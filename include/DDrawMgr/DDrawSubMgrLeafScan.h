@@ -23,13 +23,12 @@ public:
     // INHERITED from CLoadable. Slot 5/7 bodies live in the sibling CDDrawSubMgrLeaf TU.
     RVA(0x00157530, 0x17)
     virtual i32 IsLoaded() OVERRIDE { // [5] overrides CLoadable::IsLoaded (the worker-gate)
-        if (m_2c != 0) {
-            return 1;
+        // retail: both-zero falls through to `return 0`, either gate `jne` to a shared
+        // out-of-line `return 1` at the tail (the &&-guard shape, not a setne fold).
+        if (m_2c == 0 && m_30 == 0) {
+            return 0;
         }
-        if (m_30 != 0) {
-            return 1;
-        }
-        return 0;
+        return 1;
     }
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0); not
     // redeclared (the old "IsValidImage" was a phantom own-decl of that shared body).
