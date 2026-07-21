@@ -168,7 +168,7 @@ struct CNetCmdSlot {
     // Lobby-sync: emit one grunt-state record for the channel (sync SendAll's per-slot
     // send; reads m_08 as CNetMgr* + m_desc as the descriptor, ships via SetData).
     i32 SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // bfc70
-    CString* BuildHostName(CString* out); // bc3f0  fill `out` with the slot's host name [multi]
+    CString BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32
     Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record

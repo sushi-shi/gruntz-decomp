@@ -3564,25 +3564,18 @@ void CMulti::DropTimeout() {
         return;
     }
     g_dropPlayerId = *reinterpret_cast<i32*>((reinterpret_cast<char*>(slot->m_desc) + 0x18));
-    CString nm;
-    g_sessionName = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_sessionName = nm
+    g_sessionName = slot->BuildHostName(); // NRVO: nm constructed directly from m_desc->GetName()
     SendNetStat(0x40c, g_dropPlayerId, 1);
     OnDropPlayer();
 }
 
 // ---------------------------------------------------------------------------
-// 0x0bc3f0: fill `out` with the slot's host name (delegated to the +0xc manager's
-// 0x1f450 getter) and return it.
-// @early-stop
-// by-value-CString-return NRVO-temp wall: retail (and the identical-shape 0x1f450
-// getter it forwards to) reserves + zeroes a stack temp (`push ecx; mov [esp+4],0`)
-// from the CString-by-value return path; our signature is locked to `CString*` by the
-// matched CMulti.cpp call site (`*slot->BuildHostName(&nm)`), so that temp can't be
-// reproduced. Delegation + return-the-arg are otherwise exact. ~67%.
+// 0x0bc3f0: the slot's host name, returned BY VALUE (NRVO). Forwards the caller's
+// return buffer straight into m_desc's 0x1f450 GetName (GruntzPlayer::GetName), which
+// itself returns CString by value. Same by-value shape as GetName.
 RVA(0x000bc3f0, 0x1e)
-CString* CNetCmdSlot::BuildHostName(CString* out) {
-    *out = (reinterpret_cast<GruntzPlayer*>(m_desc))->GetName();
-    return out;
+CString CNetCmdSlot::BuildHostName() {
+    return (reinterpret_cast<GruntzPlayer*>(m_desc))->GetName();
 }
 
 RVA(0x000bc420, 0x2b)
