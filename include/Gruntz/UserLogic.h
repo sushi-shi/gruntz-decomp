@@ -87,12 +87,14 @@ public:
     // slot 9: a return-0 default; the one known override is CGrunt's per-frame
     // attack-fire step (@0x61cb0), which names the slot.
     virtual i32 StepAttackFire();
-    virtual i32 UserLogicVfunc8();
+    // slots 10/12/13/14/15: inert `ret` defaults (retail 0x8950/8990/89b0/89d0/89f0 are
+    // bare `ret`), so VOID - no override exists (only slot-11 Vfunc9 has a CGrunt i32 override).
+    virtual void UserLogicVfunc8();
     virtual i32 UserLogicVfunc9();
-    virtual i32 UserLogicVfuncA();
-    virtual i32 UserLogicVfuncB();
-    virtual i32 UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
-    virtual i32 UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
+    virtual void UserLogicVfuncA();
+    virtual void UserLogicVfuncB();
+    virtual void UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
+    virtual void UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
 
     // (The shared serialize chain at 0x16e7f0 is the `SerializeMove` slot-1 virtual
     // declared above - it is THIS class's own override, defined in MovingLogic.cpp.

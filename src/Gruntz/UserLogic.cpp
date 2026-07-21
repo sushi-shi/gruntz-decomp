@@ -19,7 +19,7 @@
 // calling the out-of-line helper.
 
 i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
-    return 0;
+    return 1; // retail 0x87d0: mov eax,1; ret 0x10
 }
 LogicTypeId CUserBase::GetTypeTag() {
     return static_cast<LogicTypeId>(0);
@@ -34,32 +34,22 @@ i32 CUserLogic::Activate() {
     return 0;
 }
 i32 CUserLogic::UserLogicVfunc5() {
-    return 0;
+    return 1; // retail 0x88f0: mov eax,1; ret
 }
 i32 CUserLogic::UserLogicVfunc6() {
-    return 0;
+    return 1; // retail 0x8910: mov eax,1; ret
 }
 i32 CUserLogic::StepAttackFire() {
-    return 0;
+    return 1; // retail 0x8930: mov eax,1; ret
 }
-i32 CUserLogic::UserLogicVfunc8() {
-    return 0;
-}
+void CUserLogic::UserLogicVfunc8() {} // retail 0x8950: bare ret
 i32 CUserLogic::UserLogicVfunc9() {
     return 0;
 }
-i32 CUserLogic::UserLogicVfuncA() {
-    return 0;
-}
-i32 CUserLogic::UserLogicVfuncB() {
-    return 0;
-}
-i32 CUserLogic::UserLogicVfuncC() {
-    return 0;
-}
-i32 CUserLogic::UserLogicVfuncD() {
-    return 0;
-}
+void CUserLogic::UserLogicVfuncA() {} // retail 0x8990: bare ret
+void CUserLogic::UserLogicVfuncB() {} // retail 0x89b0: bare ret
+void CUserLogic::UserLogicVfuncC() {} // retail 0x89d0: bare ret
+void CUserLogic::UserLogicVfuncD() {} // retail 0x89f0: bare ret
 
 // reloc-fidelity: pin the obj-defined base virtuals above to their real retail BODY
 // RVAs (CUserBase vtbl 0x5e70b4 slots 1-2; CUserLogic vtbl 0x5e705c slots 3-15, from
@@ -83,12 +73,12 @@ i32 CUserLogic::UserLogicVfuncD() {
 // @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x000088f0
 // @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x00008910
 // @rva-symbol: ?StepAttackFire@CUserLogic@@UAEHXZ 0x00008930
-// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEHXZ 0x00008950
+// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEXXZ 0x00008950
 // @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x00008970
-// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEHXZ 0x00008990
-// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEHXZ 0x000089b0
-// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEHXZ 0x000089d0
-// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEHXZ 0x000089f0
+// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEXXZ 0x00008990
+// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEXXZ 0x000089b0
+// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEXXZ 0x000089d0
+// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEXXZ 0x000089f0
 
 // @confidence: low
 // @source: winapi:CopyRect
