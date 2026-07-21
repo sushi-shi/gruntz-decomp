@@ -48,7 +48,7 @@ public:
     // `mov [this],offset ??_7; mov [this+0x20],0` - exactly retail's inlined delete
     // in RemoveByKeys.
     ~CTileTriggerSwitchLogic() {
-        m_20 = 0;
+        m_initGate = 0;
     }
     // FindIndexByKey (0x110820) is NOT a member: it does `add ecx,0x3c` then scans 24
     // dwords (-> this+0x3c..+0x9b), which overruns an 0x8c object. It is CTileTriggerLogic's
@@ -90,7 +90,7 @@ public:
     // 0x8c object cannot hold - that overrun was the "m_block[37]/[38]" contradiction.
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
-    i32 m_04;       // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
+    i32 m_typeId;       // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
                     //        Setup seeds it; CTileTriggerContainer::FindChild matches on it)
     i32 m_08;       // +0x08  (serialized in LoadState)
     i32 m_key0c;    // +0x0c  secondary key
@@ -98,8 +98,8 @@ public:
     i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)
     i32 m_18;       // +0x18  (serialized in LoadState)
     i32 m_1c;       // +0x1c  (serialized in LoadState)
-    i32 m_20;       // +0x20  init gate (ctor + dtor zero it, Setup sets 1 - the 0x8c
-                    //        family's twin of CTileTriggerLogic::m_1c; the old
+    i32 m_initGate;       // +0x20  init gate (ctor + dtor zero it, Setup sets 1 - the 0x8c
+                    //        family's twin of CTileTriggerLogic::m_initGate; the old
                     //        "ChildNode* child-list head" reading belonged to the
                     //        CONTAINER's +0x20 = m_list1 head, not to this class)
     // +0x24  the owning CTileTriggerContainer. Settled (was a container-vs-switch-logic
@@ -152,7 +152,7 @@ class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchUp() OVERRIDE;   // slot 3
 public:
     CCheckpointTriggerSwitchLogic(); // 0x1127f0
-    // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_20 gate (+0x20) and copies
+    // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_initGate (+0x20) and copies
     // the caller's 24-dword block into the BASE's m_block (+0x2c) - `rep movsd` ecx=0x18.
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,

@@ -838,7 +838,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
             i32 ry = pt2.m_y >> 5;
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, 0);
-            if (rec->m_04 == 2) {
+            if (rec->m_typeId == 2) {
                 unit->m_defenderState = 0;
                 if (unit->CoordCount() != 0) {
                     GruntCoordNode* n = unit->CoordHead();
@@ -2094,7 +2094,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 key = (keyHi << 8) + (tp.m_y >> 5);
         static_cast<void>((tp.m_x >> 5));
         CTileTriggerSwitchLogic* r = m_cellQuery->FindChild(key, 0);
-        if (r->m_04 == 2) {
+        if (r->m_typeId == 2) {
             g->m_defenderState = 0;
             ARR_RECYCLE(g);
             g->m_2d8 = 0xb;

@@ -45,7 +45,7 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
-    m_20 = 0;
+    m_initGate = 0;
 }
 
 RVA(0x00110460, 0x64)
@@ -60,7 +60,7 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     i32 a8,
     i32 a9
 ) {
-    if (m_20 != 0) {
+    if (m_initGate != 0) {
         return 0;
     }
     if (a2 == 4 && rect[0] == 0) {
@@ -81,10 +81,10 @@ i32 CTileTriggerSwitchLogic::Setup(
     i32 a6,
     i32 a7
 ) {
-    if (m_20) {
+    if (m_initGate) {
         return 0;
     }
-    m_04 = a1;
+    m_typeId = a1;
     m_08 = a2;
     m_key0c = a3;
     m_key1 = a4;
@@ -93,7 +93,7 @@ i32 CTileTriggerSwitchLogic::Setup(
     m_28 = a7;
     m_1c = 0;
     m_linkGate = a5;
-    m_20 = 1;
+    m_initGate = 1;
     return 1;
 }
 
@@ -104,7 +104,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
     for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
-    m_1c = 0;
+    m_initGate = 0;
 }
 
 RVA(0x00110820, 0x23)
@@ -546,7 +546,7 @@ i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
 RVA(0x00112880, 0x12)
 void CTileTriggerLogic::RecordMove() {
     m_startClock = g_frameTime;
-    m_20->MoveList1ToList2(this);
+    m_owner->MoveList1ToList2(this);
 }
 
 // ---------------------------------------------------------------------------
@@ -1202,7 +1202,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
     ar->Write(&m_linkGate, 4);
     ar->Write(&m_18, 4);
     ar->Write(&m_1c, 4);
-    ar->Write(&m_20, 4);
+    ar->Write(&m_initGate, 4);
     ar->Write(&m_28, 4);
     i32* p = m_block;
     i32 n = 24;
@@ -1227,7 +1227,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CSerialArchive* s) {
     s->Read(&m_linkGate, 4);
     s->Read(&m_18, 4);
     s->Read(&m_1c, 4);
-    s->Read(&m_20, 4);
+    s->Read(&m_initGate, 4);
     s->Read(&m_28, 4);
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
@@ -1297,7 +1297,7 @@ i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
     s->Write(&m_10, 4);
     s->Write(&m_14, 4);
     s->Write(&m_18, 4);
-    s->Write(&m_1c, 4);
+    s->Write(&m_initGate, 4);
     s->Write(&m_dutyOnSpan, 4);
     s->Write(&m_leadInSpan, 4);
     s->Write(&m_dutyOffSpan, 4);
@@ -1325,7 +1325,7 @@ i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
     s->Read(&m_10, 4);
     s->Read(&m_14, 4);
     s->Read(&m_18, 4);
-    s->Read(&m_1c, 4);
+    s->Read(&m_initGate, 4);
     s->Read(&m_dutyOnSpan, 4);
     s->Read(&m_leadInSpan, 4);
     s->Read(&m_dutyOffSpan, 4);

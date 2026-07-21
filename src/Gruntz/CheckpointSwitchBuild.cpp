@@ -31,7 +31,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 a8,
     i32 a9
 ) {
-    if (m_20 != 0) {
+    if (m_initGate != 0) {
         return 0;
     }
     if (a2 == 4 && rect[0] == 0) {

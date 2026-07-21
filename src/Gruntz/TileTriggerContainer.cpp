@@ -112,9 +112,9 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
         TtcNode* pn = node;  // GetNext local (ecx)
         node = node->m_next;
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(pn->m_data);
-        if (data->m_04 == k2 && data->m_key1 == k1) {
+        if (data->m_typeId == k2 && data->m_key1 == k1) {
             // ~CTileTriggerSwitchLogic is non-virtual + inline: the dtor restamps the vptr
-            // (`mov [data],offset ??_7`) + clears m_20, then ??3 frees it.
+            // (`mov [data],offset ??_7`) + clears m_initGate, then ??3 frees it.
             delete data;
             m_base.RemoveAt(reinterpret_cast<POSITION>(cur));
             return 1;
@@ -192,10 +192,10 @@ void CTileTriggerContainer::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceReco
 //   0x1a      -> CCoveredPowerupLogic  (ILT 0x2a4f -> ??0 0x112240)  trylevel 2
 //   0x17      -> CTileTimeTriggerLogic (ILT 0x18de -> ??0 0x112270)  trylevel 3
 //   0x16/other-> 0
-// Then (when the leaf's m_1c init-gate is clear) copy the six CTrigParam blocks into
+// Then (when the leaf's m_initGate is clear) copy the six CTrigParam blocks into
 // the leaf's m_block, fill the id/owner/clock fields, append it to m_list1 (m_list2
 // for id 0x17), and latch id-0x15 board tiles 0x67/0x68 into m_70.  The failure path
-// deletes the leaf (inline ~CTileTriggerLogic: ??_7 stamp + m_1c=0 + RezFree).
+// deletes the leaf (inline ~CTileTriggerLogic: ??_7 stamp + m_initGate=0 + RezFree).
 // @early-stop  (~70%)
 // /GX jump-table + per-`new` trylevel regalloc wall.  Full body + all four ctor / new /
 // delete / AddTail / ??_7CTileTriggerLogic / g_frameTime relocs bind - this is what binds
@@ -255,15 +255,15 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     local[5] = p6;
 
     i32 ok = 0;
-    if (obj->m_1c == 0) {
+    if (obj->m_initGate == 0) {
         memcpy(obj->m_block, local, sizeof(local));
-        if (obj->m_1c == 0) {
+        if (obj->m_initGate == 0) {
             obj->m_tileY = a4;
             obj->m_tileX = a3;
-            obj->m_20 = this;
+            obj->m_owner = this;
             obj->m_typeTag = logicType;
             obj->m_10 = a5;
-            obj->m_1c = 1;
+            obj->m_initGate = 1;
             obj->m_tileToken = a6;
             obj->m_startClock = g_frameTime;
             obj->m_leadInSpan = a8;
@@ -414,7 +414,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
     if (e == 0) {
         return 0;
     }
-    if (e->m_1c != 0) {
+    if (e->m_initGate != 0) {
         // The failure-path delete runs the BASE dtor (retail stamps ??_7CTileTriggerLogic
         // @0x5eaea4, not the rock's own vtable): the devs deleted through a
         // CTileTriggerLogic* whose non-virtual dtor makes the static type load-bearing.
@@ -431,8 +431,8 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
     e->m_typeTag = TRIGID_GIANT_ROCK_22;
     e->m_tileX = a1;
     e->m_10 = a3;
-    e->m_20 = this;
-    e->m_1c = 1;
+    e->m_owner = this;
+    e->m_initGate = 1;
     e->m_dutyOn = 0;
     e->m_startClock = g_frameTime;
     e->m_dutyOnSpan = 0;
@@ -467,7 +467,7 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
         if (elem == static_cast<CTileTriggerLogic*>(data)) {
             // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
-            // (??_7CTileTriggerLogic @0x5eaea4) + clears m_1c, then ??3.
+            // (??_7CTileTriggerLogic @0x5eaea4) + clears m_initGate, then ??3.
             delete elem;
             m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
             return 1;
@@ -484,7 +484,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, i32 k2) {
         node = node->m_next;
         CTileTriggerSwitchLogic* data = static_cast<CTileTriggerSwitchLogic*>(cur->m_data);
         if (data->m_key1 == k1) {
-            if (k2 == 0 || data->m_04 == k2) {
+            if (k2 == 0 || data->m_typeId == k2) {
                 return data;
             }
         }
@@ -536,7 +536,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
-        delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
+        delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
     }
     m_list1.RemoveAll();
     node = TtcHead(m_base);
@@ -544,7 +544,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerSwitchLogic* elem = static_cast<CTileTriggerSwitchLogic*>(cur->m_data);
-        delete elem; // vptr 0x5eae8c restamp + m_20 = 0, then ??3
+        delete elem; // vptr 0x5eae8c restamp + m_initGate = 0, then ??3
     }
     m_base.RemoveAll();
     node = TtcHead(m_list2);
@@ -552,7 +552,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
-        delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
+        delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
     }
     m_list2.RemoveAll();
     node = TtcHead(m_list3);
@@ -588,7 +588,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
             i32 r = elem->Classify(reinterpret_cast<i32>(arg));
             if (r == 0) {
                 m_list2.RemoveAt(reinterpret_cast<POSITION>(cur));
-                delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
+                delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
             } else if (r == -1) {
                 m_list2.RemoveAt(reinterpret_cast<POSITION>(cur));
                 m_list1.AddTail(elem);
@@ -789,7 +789,7 @@ SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLog
     if (o == 0) {
         return 0;
     }
-    i32 tag = o->m_04;
+    i32 tag = o->m_typeId;
     s->Write(&tag, 4);
     switch (tag) {
         case 1:
@@ -852,7 +852,7 @@ static void* RegSwitchTail(
         return 0;
     }
     obj->m_owner = self;
-    obj->m_04 = id;
+    obj->m_typeId = id;
     return obj;
 }
 
@@ -867,7 +867,7 @@ static void* RegLogicTail(
     if (obj->ValidateByType(reader, 7, a2, a3) == 0) {
         return 0;
     }
-    obj->m_20 = self;
+    obj->m_owner = self;
     obj->m_typeTag = id;
     return obj;
 }
@@ -922,7 +922,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             if (obj->ValidateByType(reader, 7, a2, a3) == 0) {
                 return 0;
             }
-            obj->m_20 = this;
+            obj->m_owner = this;
             obj->m_typeTag = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
             CGameLevel* level = g_gameReg->m_world->m_level;
@@ -961,7 +961,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             if (obj->ApplyByType(reader, 7, a2, a3) == 0) {
                 return 0;
             }
-            obj->m_20 = this;
+            obj->m_owner = this;
             obj->m_typeTag = id;
             return obj;
         }

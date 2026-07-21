@@ -6,7 +6,7 @@
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @ +0x2c / Write @ +0x30)
 
-class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileTriggerContainer.h)
+class CTileTriggerContainer; // owner, back-stamped into m_owner (fwd; def in TileTriggerContainer.h)
 
 extern i32 g_tileKindMagic;
 
@@ -48,7 +48,7 @@ class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
     ~CTileTriggerLogic() {
-        m_1c = 0;
+        m_initGate = 0;
     }
     // slot 0 (0x110c10 via ILT thunk 0x402072): the duty-edge tick virtual - the
     // pyramid/bridge tile-transition dispatcher, run on this trigger's own (m_tileX, m_tileY)
@@ -101,12 +101,12 @@ public:
     i32 m_10;                    // +0x10
     i32 m_14;                    // +0x14  flag
     i32 m_18;                    // +0x18
-    i32 m_1c;                    // +0x1c  init flag (zeroed by ctor AFTER m_block; the
+    i32 m_initGate;                    // +0x1c  init flag (zeroed by ctor AFTER m_block; the
                                  //        inlined `delete` in the container walkers zeroes
                                  //        exactly this - which is what proves those list
                                  //        elements are THIS class, not the 0x8c switch logic
                                  //        whose dtor zeroes +0x20)
-    CTileTriggerContainer* m_20; // +0x20  owning container
+    CTileTriggerContainer* m_owner; // +0x20  owning container
     u32 m_startClock;                    // +0x24  game-clock snapshot (g_frameTime)
     u32 m_dutyOnSpan;                    // +0x28  duty on-span (unsigned duration)
     u32 m_leadInSpan;                    // +0x2c  lead-in span (unsigned duration)
