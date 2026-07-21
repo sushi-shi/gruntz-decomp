@@ -1,12 +1,14 @@
-"""gruntz.sema.clangd - the clangd-LSP sema subcommands: symbol / def / refs /
-hover / rename (all USR-exact, no grep collisions).
+"""gruntz.sema.clangd - the clangd-LSP sema subcommands: refs / hover / rename
+(all USR-exact, no grep collisions). `symbol`/`def` were retired (0 uses in
+9,771 logged calls; the harness LSP covers them) - rename stays because the
+harness LSP has no rename.
 
 Engine: gruntz.analysis.clangd_query (shared with fingerprints/rename_member;
 also runnable directly as `python -m gruntz.analysis.clangd_query`).
 """
 import sys
 
-from gruntz.sema._common import run_tool
+from gruntz.sema._common import call_main
 
 
 def _point_argv(args) -> list:
@@ -14,16 +16,12 @@ def _point_argv(args) -> list:
     return [args.file, args.line] + ([args.col] if args.col is not None else [])
 
 
-def run_symbol(args) -> None:
-    sys.exit(run_tool("gruntz.analysis.clangd_query", ["symbol", args.query]))
-
-
-def run_point(args) -> None:                      # def / refs / hover share this
-    sys.exit(run_tool("gruntz.analysis.clangd_query", [args.sema, *_point_argv(args)]))
+def run_point(args) -> None:                      # refs / hover share this
+    sys.exit(call_main("gruntz.analysis.clangd_query", [args.sema, *_point_argv(args)]))
 
 
 def run_rename(args) -> None:
     argv = ["rename", *_point_argv(args), args.new_name]
     if args.dry_run:
         argv.append("--dry-run")
-    sys.exit(run_tool("gruntz.analysis.clangd_query", argv))
+    sys.exit(call_main("gruntz.analysis.clangd_query", argv))

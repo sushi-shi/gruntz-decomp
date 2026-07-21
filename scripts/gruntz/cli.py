@@ -986,12 +986,39 @@ def cmd_sema_xref(args) -> None:
     xref.run(args)
 
 
-def cmd_sema_symbol(args) -> None:
-    from gruntz.sema import clangd
-    clangd.run_symbol(args)
+def cmd_sema_batch(args) -> None:
+    """`gruntz sema -`: read newline-delimited sema command lines from stdin and
+    answer each against the process-wide Context (one EXE/symbol load for N
+    queries). Echoes `== gruntz sema <line>` before each answer; logs each line;
+    exits 0 (per-line rcs are in the log + echoed on non-zero)."""
+    import shlex
+    from gruntz.sema._common import log_invocation
+    ap = argparse.ArgumentParser(prog="gruntz")
+    _add_sema(ap.add_subparsers(dest="cmd", required=True))
+    for line in sys.stdin:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        toks = shlex.split(line)
+        if toks[:2] == ["gruntz", "sema"]:
+            toks = toks[2:]
+        elif toks[:1] == ["sema"]:
+            toks = toks[1:]
+        pretty = "gruntz sema " + " ".join(toks)
+        print(f"== {pretty}", flush=True)
+        rc = 0
+        try:
+            sub = ap.parse_args(["sema"] + toks)
+            sub.func(sub)
+        except SystemExit as e:
+            rc = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+        log_invocation(rc, cmd=pretty)
+        if rc:
+            print(f"== rc={rc}", flush=True)
+    sys.exit(0)
 
 
-def cmd_sema_point(args) -> None:                 # def / refs / hover share this
+def cmd_sema_point(args) -> None:                 # refs / hover share this
     from gruntz.sema import clangd
     clangd.run_point(args)
 
@@ -1041,16 +1068,15 @@ def _add_sema(sub) -> None:
     subcommand a thin delegation (see the cmd_sema_* funcs)."""
     sema = sub.add_parser(
         "sema", formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="semantic navigation: xref / clangd LSP / disasm / dossiers",
+        help="semantic navigation: xref / disasm / dossiers / clangd LSP",
         description="gruntz sema <cmd> - source & target navigation for matchers "
-                    "and classifiers.\nThin wrappers over the analysis tools (each "
-                    "also runnable as `python -m gruntz.<...>`).\nSEMANTIC questions "
-                    "go here; grep is lexical-only.",
+                    "and classifiers.\nOne module per subcommand in gruntz/sema/, "
+                    "in-process over gruntz/core (one EXE/symbol load).\nSEMANTIC "
+                    "questions go here; grep is lexical-only.\nrc: 0 answered, "
+                    "1 answered-NO (differs / not found), 2 error.",
         epilog="examples (use when ...):\n"
         "  gruntz sema xref 0x00080850           who calls this fn (attribution)\n"
-        "  gruntz sema xref --callees CFoo::Bar   its own call targets\n"
-        "  gruntz sema symbol CGruntzApp          fuzzy workspace-symbol search\n"
-        "  gruntz sema def   src/X.cpp 42         jump to the definition\n"
+        "  gruntz sema xref --callees CFoo::Bar   its own call targets (names resolve)\n"
         "  gruntz sema refs  include/X.h 30       every ref (USR-exact; no grep collisions)\n"
         "  gruntz sema hover src/X.cpp 42         type/decl at point\n"
         "  gruntz sema rename include/X.h 40 m_new --dry-run   tree-wide rename preview\n"
@@ -1062,8 +1088,14 @@ def _add_sema(sub) -> None:
         "  gruntz sema match cplay                per-fn % of a unit (or an RVA)\n"
         "  gruntz sema disasm 0x00080850          retail disasm + relocs\n"
         "  gruntz sema strings 0x00080850         the string set of a fn\n"
-        "  gruntz sema strings --find WORLDZ      reverse literal lookup\n")
+        "  gruntz sema strings --find WORLDZ      reverse literal lookup\n"
+        "  gruntz sema -                          BATCH: sema command lines on stdin,\n"
+        "                                         answered against ONE loaded Context\n")
     ss = sema.add_subparsers(dest="sema", required=True)
+
+    sb = ss.add_parser("-", help="batch: newline-delimited sema commands on stdin, "
+                                 "one loaded Context (N queries, 1 parse)")
+    sb.set_defaults(func=cmd_sema_batch)
 
     sx = ss.add_parser("xref", help="retail caller/callee graph (attribution)")
     sx.add_argument("target", nargs="+", help="RVA(s) (0x..) or symbol name(s)")
@@ -1076,12 +1108,9 @@ def _add_sema(sub) -> None:
                     help="--tree expansion cap (default 4; 0 = unlimited, can be huge)")
     sx.set_defaults(func=cmd_sema_xref)
 
-    sy = ss.add_parser("symbol", help="fuzzy workspace-symbol search (clangd)")
-    sy.add_argument("query")
-    sy.set_defaults(func=cmd_sema_symbol)
-
-    for nm, hlp in (("def", "definition at point"),
-                    ("refs", "references at point (USR-exact)"),
+    # `symbol` / `def` retired (0 uses in 9,771 logged calls - the harness LSP
+    # covers them); `refs`/`hover`/`rename` stay (rename is NOT in the harness LSP).
+    for nm, hlp in (("refs", "references at point (USR-exact)"),
                     ("hover", "type/decl at point")):
         p = ss.add_parser(nm, help=hlp + " (clangd)")
         p.add_argument("file")

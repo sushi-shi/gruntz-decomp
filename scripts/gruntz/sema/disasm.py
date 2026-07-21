@@ -22,7 +22,9 @@ def _capture(cmd: list) -> str:
 
 
 def target_text(rva: str) -> str:
-    return _capture([sys.executable, "-m", "gruntz.sema.dump_target", rva])
+    from gruntz.core import get_context
+    from gruntz.sema import dump_target
+    return dump_target.dump_text(get_context(), rva) + "\n"
 
 
 def base_text(rva: str) -> str:

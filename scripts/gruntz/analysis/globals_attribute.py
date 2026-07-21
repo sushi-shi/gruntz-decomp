@@ -37,7 +37,8 @@ from pathlib import Path
 
 import statistics
 
-from gruntz.analysis.xref import EXE, SYMCSV, _load, _names, _owner, ILT_LO, ILT_HI
+from gruntz.core.pe import EXE, ILT_HI, ILT_LO, load as _load
+from gruntz.core.symbols import SYMCSV, load_names as _names, owner as _owner
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])

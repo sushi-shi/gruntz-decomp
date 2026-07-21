@@ -61,7 +61,7 @@ This keeps you fast and keeps you honest to what was actually matched.
 
 **EXCEPTION — naming a whole placeholder/codename class (HP-rename: Severus/Draco/…, RVA-suffixed,
 ClassUnknown_N):** here the source uses the placeholder name everywhere, so the C++ alone can't tell
-you what the class IS. Use GHIDRA XREFS — `python -m gruntz.analysis.xref <rva|name>` (retail
+you what the class IS. Use GHIDRA XREFS — `gruntz sema xref <rva|name>` (retail
 caller/callee graph) + the Ghidra decomp's xrefs — as a PRIMARY tool, reading BOTH directions:
 - **callers/xrefs** — who `new`s the class and stores it where, who calls its methods on what
   `this`, which subsystem owns it, what the sibling already-named classes in the same call cluster are.
@@ -181,7 +181,7 @@ a hack — see the invariant.)
 ## Workflow
 
 1. Read the class **from the reconstructed C++** — its header + every TU that defines/uses it
-   (`rg '<Class>::'`, `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`). Build the
+   (`rg '<Class>::'`, `gruntz sema refs/hover (harness LSP covers def/symbol)`). Build the
    field/method-role picture from how the matchers' source reads/writes/calls each member. Only if a
    member's role stays ambiguous after reading every use-site, consult the disasm for that one spot
    (`python -m gruntz.sema.dump_target <rva>`) — the exception, not the routine.

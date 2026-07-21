@@ -1,15 +1,15 @@
 """gruntz.sema.rva - `gruntz sema rva`: one-shot address dossier.
 
-Joins symbol_names.csv, library_labels.csv, Ghidra functions.csv and the
-objdiff report.json - pure lookups, no analysis. A vtable-slot RVA (an ILT
-jmp-thunk) is chased to the body and THAT is reported, so `sema rva <slot>`
-and nvim's vg resolve the method.
+Joins the symbol db (symbol_names + ghidra), library_labels.csv and the
+objdiff report - pure lookups over gruntz.core, no analysis. A vtable-slot RVA
+(an ILT jmp-thunk) is chased to the body and THAT is reported, so
+`sema rva <slot>` and nvim's vg resolve the method.
 """
-import json
 import sys
 
-from gruntz.sema._common import (GEN_NAMES, GHIDRA_FUNCTIONS, REPO, REPORT,
-                                 csv_find, die, src_loc_of)
+from gruntz.core import get_context
+from gruntz.core.pe import REPO
+from gruntz.sema._common import GHIDRA_FUNCTIONS, csv_find, die, src_loc_of
 
 
 def run(args) -> None:
@@ -17,21 +17,24 @@ def run(args) -> None:
         rva = int(args.addr, 16)
     except ValueError:
         die(f"'{args.addr}' is not a hex RVA (e.g. 0x00080850)")
+    ctx = get_context()
+    db = ctx.symbols
     print(f"RVA 0x{rva:08x}")
 
-    claim = csv_find(GEN_NAMES, rva)
-    def_rva, via = rva, None
+    def src_claim(r):
+        nm_unit = db.names.get(r)
+        return None if nm_unit is None or nm_unit[1] == "ghidra" else nm_unit
+
+    claim, def_rva, via = src_claim(rva), rva, None
     if not claim:
         from gruntz.analysis import vtable_scan as vs
         body = vs.chase_thunk(rva)
-        if body is not None:
-            c2 = csv_find(GEN_NAMES, body)
-            if c2:
-                claim, def_rva, via = c2, body, body
+        if body is not None and src_claim(body):
+            claim, def_rva, via = src_claim(body), body, body
     if claim:
+        nm, unit = claim
         via_s = f"  (via ILT thunk -> 0x{via:08x})" if via is not None else ""
-        print(f"  src claim : {claim['name']}  [{claim['unit']}] "
-              f"({claim.get('kind', '?')}){via_s}")
+        print(f"  src claim : {nm}  [{unit}] ({db.kind.get(def_rva, '?')}){via_s}")
         loc = src_loc_of(def_rva)
         if loc:
             print(f"  src loc   : {loc[0]}:{loc[1]}")
@@ -50,18 +53,8 @@ def run(args) -> None:
     else:
         print("  ghidra    : (no function start at this RVA in the export)")
 
-    if claim and REPORT.is_file():
-        rep = json.loads(REPORT.read_text())
-        pct = None
-        for u in rep.get("units", []):
-            if claim.get("unit") and u.get("name") != claim["unit"]:
-                continue
-            for fn in u.get("functions") or []:
-                if fn.get("name") == claim["name"]:
-                    pct = fn.get("fuzzy_match_percent")
-                    break
-            if pct is not None:
-                break
+    if claim:
+        pct = ctx.report.fn_pct(claim[0], unit=claim[1] or None)
         if pct is not None:
             print(f"  match     : {pct:.2f}% fuzzy"
                   + ("  (EXACT)" if pct >= 100.0 else ""))

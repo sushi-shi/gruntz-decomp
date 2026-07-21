@@ -1,109 +1,32 @@
 #!/usr/bin/env python3
 """gruntz.sema.dump_target - dump a target function for matching: bytes + disasm + relocs.
 
-For a matcher: given an RVA (or a name in functions.csv/symbols.csv), print the
-function's size, raw bytes, an RVA-aligned x86 disassembly (objdump), and the
-relocation sites in range resolved to symbol names (the load-bearing address
-operands: vftables, globals, strings, imports). Calls (E8/E9 rel32) are shown by
-objdump with absolute RVA targets thanks to --adjust-vma.
+For a matcher: given an RVA (or a resolvable name), print the function's size,
+raw bytes, an RVA-aligned x86 disassembly (objdump), and the relocation sites
+in range resolved to symbol names (the load-bearing address operands: vftables,
+globals, strings, imports). Runs in-process over gruntz.core.
 
 Usage (inside nix develop):
     python3 -m gruntz.sema.dump_target 0x13d8c0 [0x13dc20 ...]
     python3 -m gruntz.sema.dump_target CGameApp::CloseResources
     python3 -m gruntz.sema.dump_target --no-disasm 0x13d8c0      # bytes+relocs only
 """
-import os, sys, struct, csv, subprocess, shutil
-from pathlib import Path
+import shutil
+import subprocess
+import sys
 
-REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
-            Path(__file__).resolve().parent)
-EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
-FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
-SYMS = REPO / "build/ghidra-enrich/exports/symbols.csv"
-IMAGEBASE = 0x400000
-
-d = EXE.read_bytes()
-e = struct.unpack_from('<I', d, 0x3c)[0]
-nsec = struct.unpack_from('<H', d, e+6)[0]; optsz = struct.unpack_from('<H', d, e+20)[0]; opt = e+24
-secs = [struct.unpack_from('<IIII', d, opt+optsz+i*40+8) for i in range(nsec)]
-
-def off(rva):
-    for vsz, va, rsz, rp in secs:
-        if va <= rva < va+max(vsz, rsz): return rva-va+rp
-    return None
-
-# functions: rva->(name,size); also name->rva
-frows = {}; byname = {}
-with open(FUNCS) as f:
-    for r in csv.DictReader(f):
-        try: rva = int(r['entry_rva'], 16)
-        except Exception: continue
-        frows[rva] = (r['name'], int(r['byte_size']))
-        byname[r['name']] = rva
-
-# symbols: rva->name (first/primary wins)
-syms = {}
-with open(SYMS) as f:
-    for r in csv.DictReader(f):
-        a = r['address_rva']
-        try: rva = int(a, 16) if not a.startswith('0x-') else -int(a[3:], 16)
-        except Exception: continue
-        if rva not in syms or r.get('is_primary') == '1':
-            syms[rva] = r['name']
-        byname.setdefault(r['name'], rva)
-
-# src claims (build/gen/symbol_names.csv): rva -> (name, size). The AUTHORITY for
-# functions Ghidra never carved (an RVA()+size stub pins the boundary); used as the
-# size fallback below so `disasm --target` can dump a freshly-carved function too.
-gen = {}
-GEN = REPO / "build/gen/symbol_names.csv"
-if GEN.exists():
-    with open(GEN) as f:
-        for r in csv.DictReader(f):
-            try: rva = int(r['rva'], 16)
-            except Exception: continue
-            try: sz = int((r.get('size') or '').strip(), 0)
-            except Exception: sz = 0
-            gen[rva] = (r['name'], sz)
-            byname.setdefault(r['name'], rva)
-
-# PE base relocations (IMAGE_REL_BASED_HIGHLOW=3) = the real DIR32 address-operand
-# sites. data dir index 5 = base reloc table.
-import bisect
-reloc_rva = struct.unpack_from('<I', d, opt+96+5*8)[0]
-reloc_sz = struct.unpack_from('<I', d, opt+96+5*8+4)[0]
-reloc_sites = []
-if reloc_rva:
-    base = off(reloc_rva); end = base + reloc_sz; p = base
-    while p < end:
-        page, blk = struct.unpack_from('<II', d, p)
-        if blk == 0: break
-        for i in range((blk-8)//2):
-            ent = struct.unpack_from('<H', d, p+8+i*2)[0]
-            if ent >> 12 == 3: reloc_sites.append(page + (ent & 0xfff))
-        p += blk
-reloc_sites.sort()
-
-def resolve(rva):
-    return syms.get(rva) or frows.get(rva, (None,))[0]
-
-def relocs_in(lo, hi):
-    out = []
-    i = bisect.bisect_left(reloc_sites, lo)
-    while i < len(reloc_sites) and reloc_sites[i] < hi:
-        site = reloc_sites[i]; o = off(site)
-        if o is not None:
-            val = struct.unpack_from('<I', d, o)[0]
-            tgt = val - IMAGEBASE
-            out.append((site, val, resolve(tgt) or resolve(val) or f"DAT_{tgt:08x}"))
-        i += 1
-    return out
+from gruntz.core import get_context
+from gruntz.core.pe import IMAGEBASE, REPO
 
 OBJDUMP = shutil.which("objdump") or "objdump"
 
-def disasm(rva, size):
-    o = off(rva); blob = d[o:o+size]
-    tmp = REPO / "build" / f".dt_{rva:06x}.bin"; tmp.parent.mkdir(exist_ok=True); tmp.write_bytes(blob)
+
+def _disasm(ctx, rva, size):
+    o = ctx.pe.off(rva)
+    blob = ctx.pe.data[o:o + size]
+    tmp = REPO / "build" / f".dt_{rva:06x}.bin"
+    tmp.parent.mkdir(exist_ok=True)
+    tmp.write_bytes(blob)
     try:
         out = subprocess.run([OBJDUMP, "-D", "-b", "binary", "-m", "i386",
                               "-Mintel", f"--adjust-vma=0x{rva:x}", str(tmp)],
@@ -113,34 +36,64 @@ def disasm(rva, size):
     # keep only the instruction lines
     return "\n".join(l for l in out.splitlines() if ":\t" in l)
 
+
+def _resolve_name(ctx, rva):
+    """Best label for a reloc target: ghidra symbol, then any known fn name."""
+    db = ctx.symbols
+    return db.gsyms.get(rva) or db.names.get(rva, (None,))[0]
+
+
+def _boundary(ctx, rva):
+    """(name, size) for the fn at `rva`: ghidra boundary first, the src RVA()+size
+    claim as the authority for functions Ghidra never carved."""
+    db = ctx.symbols
+    nm, unit = db.names.get(rva, (None, None))
+    size = db.fsize.get(rva, 0)
+    if nm is None:
+        nm = _resolve_name(ctx, rva) or "?"
+    return nm, size
+
+
+def dump_text(ctx, target, no_disasm=False) -> str:
+    """The full dump for one target (RVA int or resolvable name string)."""
+    rva = target if isinstance(target, int) else ctx.symbols.resolve(target)
+    name, size = _boundary(ctx, rva)
+    out = [f"\n{'=' * 72}\n{name}  @ RVA 0x{rva:06x}  (VA 0x{rva + IMAGEBASE:08x})  "
+           f"size {size} B\n{'=' * 72}"]
+    if size == 0:
+        out.append("  (no boundary in functions.csv / symbol_names.csv — recovery gap; "
+                   "size unknown)")
+        return "\n".join(out)
+    rl = []
+    for site, val in ctx.pe.relocs_in(rva, rva + size):
+        tgt = val - IMAGEBASE
+        nm = _resolve_name(ctx, tgt) or _resolve_name(ctx, val) or f"DAT_{tgt:08x}"
+        rl.append((site, val, nm))
+    if rl:
+        out.append("Relocations (address operands — reloc-masked in objdiff):")
+        for site, val, nm in rl:
+            out.append(f"  @0x{site:06x}  -> 0x{val:08x}  {nm}")
+    else:
+        out.append("Relocations: none (self-contained / rel32 calls only)")
+    if not no_disasm:
+        out.append("\nDisassembly (RVA-aligned):")
+        out.append(_disasm(ctx, rva, size))
+    return "\n".join(out)
+
+
 def main():
-    args = sys.argv[1:]; no_dis = False
-    if "--no-disasm" in args: no_dis = True; args.remove("--no-disasm")
+    args = sys.argv[1:]
+    no_dis = False
+    if "--no-disasm" in args:
+        no_dis = True
+        args.remove("--no-disasm")
     if not args:
-        print(__doc__); return
+        print(__doc__)
+        return
+    ctx = get_context()
     for a in args:
-        rva = int(a, 16) if a.lower().startswith("0x") else byname.get(a)
-        if rva is None:
-            print(f"!! unknown target: {a}"); continue
-        name, size = frows.get(rva, (None, 0))
-        if size == 0 and rva in gen:   # Ghidra never carved it: the src RVA()+size is authoritative
-            gname, size = gen[rva]
-            name = name or gname
-        if name is None:
-            name = resolve(rva) or "?"
-        print(f"\n{'='*72}\n{name}  @ RVA 0x{rva:06x}  (VA 0x{rva+IMAGEBASE:08x})  size {size} B\n{'='*72}")
-        if size == 0:
-            print("  (no boundary in functions.csv / symbol_names.csv — recovery gap; size unknown)"); continue
-        rl = relocs_in(rva, rva+size)
-        if rl:
-            print("Relocations (address operands — reloc-masked in objdiff):")
-            for site, val, nm in rl:
-                print(f"  @0x{site:06x}  -> 0x{val:08x}  {nm}")
-        else:
-            print("Relocations: none (self-contained / rel32 calls only)")
-        if not no_dis:
-            print("\nDisassembly (RVA-aligned):")
-            print(disasm(rva, size))
+        print(dump_text(ctx, a, no_disasm=no_dis))
+
 
 if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ directly as `python -m gruntz.analysis.vtable_scan`).
 """
 import sys
 
-from gruntz.sema._common import run_tool
+from gruntz.sema._common import call_main
 
 
 def run(args) -> None:
@@ -25,4 +25,4 @@ def run(args) -> None:
                 mode = "--dump"
         except Exception:
             pass
-    sys.exit(run_tool("gruntz.analysis.vtable_scan", [mode, tgt]))
+    sys.exit(call_main("gruntz.analysis.vtable_scan", [mode, tgt]))

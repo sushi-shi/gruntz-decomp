@@ -1,20 +1,23 @@
 """gruntz.sema - the `gruntz sema` semantic-navigation surface, one module per
 subcommand (browse this directory to see every tool):
 
-    xref.py         retail caller/callee graph        (engine: analysis/xref.py)
-    disasm.py       target/base/rich/diff disassembly (engine: sema/dump_target.py + llvm-objdump)
-    dump_target.py  retail fn dump: bytes+disasm+relocs (disasm's target-side engine)
-    rva.py          address dossier (claim/lib/ghidra/%)
-    match.py        per-function/unit match summary   (engine: match/status.py)
-    classof.py      class vtable slots / fn->slot     (engine: analysis/vtable_hierarchy.py)
-    vtable.py       binary vtable dump / holder find  (engine: analysis/vtable_scan.py)
-    strings.py      per-fn string set / reverse find
-    map.py          retail .text space map            (engine: analysis/exe_map.py)
-    clangd.py       symbol/def/refs/hover/rename      (engine: analysis/clangd_query.py)
+    xref.py         retail caller/callee graph        (in-process over core)
+    disasm.py       target/base/rich/diff disassembly (dump_target + llvm-objdump)
+    dump_target.py  retail fn dump: bytes+disasm+relocs (in-process over core)
+    rva.py          address dossier (claim/lib/ghidra/%) (in-process over core)
+    strings.py      per-fn string set / reverse find  (in-process over core)
+    match.py        per-function/unit match summary   (in-process: match/status)
+    classof.py      class vtable slots / fn->slot     (in-process: vtable_hierarchy)
+    vtable.py       binary vtable dump / holder find  (in-process: vtable_scan)
+    map.py          retail .text space map            (in-process: analysis/exe_map)
+    clangd.py       refs/hover/rename                 (in-process: clangd_query)
 
-Shared engines stay in gruntz/analysis (they serve build gates and campaign
-tools too); a sema-only engine lives here. cli.py owns argparse and delegates
-each subcommand to <module>.run(args) via run_logged().
+Everything runs IN ONE PROCESS over gruntz/core (Context: EXE + symbol db
+loaded once); child processes only for true externals (llvm-objdump, the
+clangd server, wine cl). `gruntz sema -` is batch mode: newline-delimited
+sema commands on stdin answered against one Context. rc convention: 0
+answered, 1 answered-NO, 2 error. cli.py owns argparse and delegates each
+subcommand to <module>.run(args) via run_logged().
 """
 import sys
 

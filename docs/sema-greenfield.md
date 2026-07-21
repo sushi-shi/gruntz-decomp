@@ -1,9 +1,9 @@
-# Sema greenfield — design (for review, no code yet)
+# Sema greenfield — design + implementation record
 
+**STATUS: IMPLEMENTED (P0-P4, 2026-07-21)** - kept as the design record.
 Reconstruct `gruntz sema` as **one process with code paths** (the Rust-crate
 shape: a lib `core/`, bin paths `sema/`, `cli.py` as `main.rs`) instead of the
-current scripts-execute-scripts wrapper stack. Status: design only; the
-package-boundary commits (`48b899438`, `0a77638a6`) are the P0 groundwork.
+old scripts-execute-scripts wrapper stack.
 
 ## Why (evidence from the usage log)
 
@@ -91,21 +91,23 @@ answer (same text as today's per-call output; trivially splittable).
 
 ## Migration plan
 
-- **P0 (done):** package boundaries — `sema/` one module per subcommand,
+- **P0 (DONE):** package boundaries — `sema/` one module per subcommand,
   sema-only engines moved in, cli.py = parser + shims.
-- **P1 (the core rewrite):** extract `core/pe.py` + `core/symbols.py` from the
+- **P1 (DONE - the core rewrite):** extract `core/pe.py` + `core/symbols.py` from the
   duplicated internals of `xref.py`/`dump_target.py`/`strings.py`/
   `vtable_scan.py` (each currently re-implements PE parsing + name loading);
   `core/report.py` from the readers in `rva.py`/`match`/status. Rewrite sema
   modules as `f(ctx, ...)` functions; cli dispatches in-process. Delete the
   `run_tool()` python-subprocess helper from the sema path.
-- **P2:** batch/REPL mode + the rc convention + log field for it.
-- **P3:** migrate the 4 attribution consumers (`caller_callee`, `data_home`,
+- **P2 (DONE):** batch/REPL mode + the rc convention + log field for it.
+- **P3 (DONE):** migrate the 4 attribution consumers (`caller_callee`, `data_home`,
   `globals_attribute`, `interleavers`) from `xref` internals onto `core/`;
-  `sema/xref.py` stops being a library. `vtable_scan`/`vtable_hierarchy`
-  re-base onto `core.pe` (they serve build gates too — they import core, they
-  don't move).
-- **P4:** prune dead surface: drop `symbol`/`def` (0 uses); keep
+  `sema/xref.py` stops being a library (`analysis/xref.py` deleted;
+  `parse_mangled` canonical in `core.symbols`). `vtable_scan`/
+  `vtable_hierarchy` are now CALLED in-process; re-basing their internal PE
+  parsing onto `core.pe` is deliberately deferred (they serve build gates —
+  touch them in their own verified pass).
+- **P4 (DONE):** prune dead surface: drop `symbol`/`def` (0 uses); keep
   `refs`/`hover`/`rename` under the clangd module. Update matcher/classifier
   briefs + build-system.md.
 

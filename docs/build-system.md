@@ -46,12 +46,18 @@ objdiff report -> summary). Pass ninja args after `--`, e.g.
 Source/target navigation for matchers & classifiers lives under one discoverable
 group (`gruntz sema -h` is self-teaching — one usage example per subcommand).
 Each subcommand's implementation is **one module in `scripts/gruntz/sema/`**
-(browse that directory for the full toolset; `sema/__init__.py` holds the
-inventory table). A subcommand either implements its view there (`disasm`,
-`rva`, `classof`) or delegates to a shared engine in `gruntz.analysis` /
-`gruntz.match` (each still runnable as `python -m gruntz.<...>`); the sema-only
-engines (`dump_target`, `strings`) live in `sema/` too. cli.py owns only
-argparse + lazy-import shims. **Semantic questions go here — grep is lexical-only.**
+(browse that directory; `sema/__init__.py` holds the inventory table), running
+**in one process** over the `gruntz/core` library (`pe`/`symbols`/`report` —
+the EXE + symbol db loaded once per process). Child processes only for true
+externals (llvm-objdump, the clangd server, wine cl) — sema never spawns
+python. Shared engines (`vtable_scan`/`vtable_hierarchy`, `exe_map`,
+`clangd_query`, `match/status`) are imported and called in-process. rc
+convention: **0 answered, 1 answered-NO** (diff differs / not a virtual / no
+hit), **2 error**. **Batch mode**: `gruntz sema -` reads newline-delimited
+sema command lines from stdin and answers each against ONE loaded Context (N
+queries, 1 parse — use it for investigation loops). `symbol`/`def` were
+retired (0 uses in 9,771 logged calls; the harness LSP covers them).
+**Semantic questions go here — grep is lexical-only.**
 
 Every `gruntz sema` invocation is appended to **`build/gruntz_sema.log`** (usage
 analysis → tool improvements). Metadata first, the shell-quoted command after the
@@ -67,8 +73,7 @@ gruntz sema disasm 0x0008c750 --rich --lite  # same, but bare asm (drops the add
 gruntz sema disasm 0x0008c750 --diff # base-vs-target asm diff (addresses masked; rc=1 if differs)
 gruntz sema disasm 0x0008c750 --lite # asm only - no addresses/bytes/reloc blocks
 gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
-gruntz sema symbol CGruntzApp        # fuzzy workspace-symbol search (clangd)
-gruntz sema def|refs|hover F L [C]   # go-to-def / all-refs (USR-exact) / type at point (clangd)
+gruntz sema refs|hover F L [C]       # all-refs (USR-exact) / type at point (clangd)
 gruntz sema rename F L [C] NEW [--dry-run]   # tree-wide, USR-keyed rename (clangd; matching-neutral)
 gruntz sema rva 0x00080850           # address dossier: src claim + lib row + Ghidra fn + match %
 gruntz sema class CImage             # vtable slots tagged new/override/inherited + hierarchy

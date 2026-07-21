@@ -36,7 +36,7 @@ import tomllib
 from collections import defaultdict
 from pathlib import Path
 
-from gruntz.analysis.xref import REPO, _load
+from gruntz.core.pe import REPO, load as _load
 from gruntz.analysis.globals_attribute import build_db, _sec_of, _rva_to_off
 
 DATA_LO = 0x208000                       # start of .data (mutable + .bss tail)

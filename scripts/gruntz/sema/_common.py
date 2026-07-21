@@ -5,7 +5,7 @@ usage log. Sema modules import from here only; nothing here imports cli.py
 (dependency direction: cli -> sema -> analysis).
 """
 import os
-import subprocess
+
 import sys
 import tomllib
 from pathlib import Path
@@ -21,12 +21,15 @@ GHIDRA_FUNCTIONS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv
 
 
 def die(msg: str) -> None:
+    """A REAL error (bad input, missing prerequisite): rc=2. Answered-NO paths
+    (diff differs, not a virtual, no hit) exit 1; answered exits 0."""
     print(f"[gruntz] ERROR: {msg}", file=sys.stderr)
-    sys.exit(1)
+    sys.exit(2)
 
 
 def pkg_env() -> dict:
-    """os.environ with scripts/ guaranteed on PYTHONPATH for child `python -m`."""
+    """os.environ with scripts/ guaranteed on PYTHONPATH (external children only:
+    llvm-objdump/clangd/wine; sema never spawns python)."""
     env = dict(os.environ)
     existing = env.get("PYTHONPATH", "")
     if str(SCRIPTS) not in existing.split(os.pathsep):
@@ -34,10 +37,22 @@ def pkg_env() -> dict:
     return env
 
 
-def run_tool(module: str, argv: list) -> int:
-    """Stream a read-only navigation tool's output (no `[gruntz] $` log noise)."""
-    return subprocess.run([sys.executable, "-m", module, *map(str, argv)],
-                          cwd=str(REPO), env=pkg_env()).returncode
+def call_main(module: str, argv: list) -> int:
+    """Run a gruntz module's main() IN-PROCESS with a patched sys.argv; returns
+    its rc. The single-process replacement for the old python-subprocess
+    delegation - module state (loaded EXE, symbol dbs) caches in sys.modules,
+    so batch mode pays one load."""
+    import importlib
+    mod = importlib.import_module(module)
+    old = sys.argv
+    sys.argv = [module.rsplit(".", 1)[-1], *map(str, argv)]
+    try:
+        rc = mod.main()
+        return rc if isinstance(rc, int) else 0
+    except SystemExit as e:
+        return e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+    finally:
+        sys.argv = old
 
 
 def units() -> list[dict]:
@@ -88,16 +103,18 @@ def src_loc_of(rva: int):
     return None
 
 
-def log_invocation(rc: int) -> None:
-    """One line per `gruntz sema` invocation (ALL subcommands); must NEVER break
-    the tool. Metadata first, command after the `: ` (shell-quoted):
+def log_invocation(rc: int, cmd: str = None) -> None:
+    """One line per `gruntz sema` invocation (ALL subcommands, incl. each batch
+    line via `cmd`); must NEVER break the tool. Metadata first, command after
+    the `: ` (shell-quoted):
         [2026-07-04][19:55:01][0]: gruntz sema xref 0x00080850 --raw
     Usage-analysis feed: what agents actually run -> tool improvements."""
     try:
         import datetime
         import shlex
         now = datetime.datetime.now()
-        cmd = shlex.join(["gruntz", *sys.argv[1:]])  # exactly what was invoked
+        if cmd is None:
+            cmd = shlex.join(["gruntz", *sys.argv[1:]])  # exactly what was invoked
         path = REPO / "build" / "gruntz_sema.log"
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "a") as f:

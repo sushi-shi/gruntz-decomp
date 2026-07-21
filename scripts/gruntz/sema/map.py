@@ -9,8 +9,9 @@ runnable directly as `python -m gruntz.analysis.exe_map`).
 """
 import sys
 
-from gruntz.sema._common import run_tool
+from gruntz.sema._common import call_main
 
 
 def run(args) -> None:
-    sys.exit(run_tool("gruntz.analysis.exe_map", args.rest))
+    from gruntz.analysis import exe_map
+    sys.exit(exe_map.main(list(args.rest)) or 0)

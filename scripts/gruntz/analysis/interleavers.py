@@ -17,7 +17,8 @@ import csv
 import os
 import struct
 
-from gruntz.analysis.xref import REPO, SYMCSV
+from gruntz.core.pe import REPO
+from gruntz.core.symbols import SYMCSV
 
 ILT_HI = 0x7c20
 

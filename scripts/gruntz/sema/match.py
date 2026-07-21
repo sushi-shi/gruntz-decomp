@@ -6,13 +6,13 @@ Engine: gruntz.match.status (also runnable as `python -m gruntz.match.status`).
 """
 import sys
 
-from gruntz.sema._common import GEN_NAMES, die, run_tool, units
+from gruntz.sema._common import GEN_NAMES, call_main, die, units
 
 
 def run(args) -> None:
     t = args.target
     if t in {u["unit"] for u in units()}:
-        sys.exit(run_tool("gruntz.match.status", ["status", "--unit", t]))
+        sys.exit(call_main("gruntz.match.status", ["status", "--unit", t]))
     grep = t
     if t.lower().startswith("0x") and GEN_NAMES.exists():
         import csv
@@ -28,4 +28,4 @@ def run(args) -> None:
                     pass
         if grep is None:
             die(f"no src function claims RVA {t} (nothing to score) - try a unit name")
-    sys.exit(run_tool("gruntz.match.status", ["status", "--grep", grep]))
+    sys.exit(call_main("gruntz.match.status", ["status", "--grep", grep]))

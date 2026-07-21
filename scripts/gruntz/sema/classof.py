@@ -6,10 +6,10 @@ for non-RTTI vtables and thunk-indirect slots.
 Engine: gruntz.analysis.vtable_hierarchy (+ vtable_scan for the binary
 fallback); also runnable as `python -m gruntz.analysis.vtable_hierarchy`.
 """
-import subprocess
+
 import sys
 
-from gruntz.sema._common import REPO, die, pkg_env, run_tool
+from gruntz.sema._common import call_main, die
 
 
 def _class_of_fn(query: str) -> int:
@@ -24,9 +24,7 @@ def _class_of_fn(query: str) -> int:
         pass
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         tmp = tf.name
-    rc = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
-                         "--csv", tmp], cwd=str(REPO), env=pkg_env(),
-                        capture_output=True, text=True).returncode
+    rc = call_main("gruntz.analysis.vtable_hierarchy", ["--csv", tmp])
     if rc:
         die("vtable_hierarchy --csv failed (run `gruntz init` first?)")
     hits = []
@@ -67,9 +65,7 @@ def _class_of_fn(query: str) -> int:
             owners.append(r["class"])
     for owner in owners[:2]:  # the defining class(es), not every inheritor
         print()
-        sys.stdout.flush()  # our lines must precede the subprocess's
-        subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
-                        "--class", owner], cwd=str(REPO), env=pkg_env())
+        call_main("gruntz.analysis.vtable_hierarchy", ["--class", owner])
     return 0
 
 
@@ -81,4 +77,4 @@ def run(args) -> None:
     looks_fn = args.name.lower().startswith("0x") or "@" in args.name
     if looks_fn:
         sys.exit(_class_of_fn(args.name))
-    sys.exit(run_tool("gruntz.analysis.vtable_hierarchy", argv))
+    sys.exit(call_main("gruntz.analysis.vtable_hierarchy", argv))

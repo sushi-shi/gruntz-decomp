@@ -42,7 +42,9 @@ import struct
 import sys
 from pathlib import Path
 
-from gruntz.analysis import xref
+from gruntz.core import pe as _pe
+from gruntz.core import symbols as _sym
+from gruntz.core.symbols import parse_mangled
 from gruntz.build import labels
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -56,45 +58,8 @@ OUT_MD = REPO / "config" / "caller-callee-reconcile.md"
 _SPECIAL = {"ctor", "dtor", "vec-dtor", "scalar-dtor", "op"}
 
 
-# --- mangling / IR helpers (ex caller_audit, archived; the metric stays live) ---
-# special member codes we can still attribute to a class (ctor/dtor/deleting
-# dtors/operators). `?_7`/`?_8`/`?_R*` are vftable/RTTI DATA - skip.
-_CTORDTOR = {"?0": "ctor", "?1": "dtor", "?_G": "vec-dtor", "?_E": "scalar-dtor"}
-
-
-def parse_mangled(m):
-    """(class_or_None, member_or_None, access_char_or_None) for a MSVC function
-    mangling. No templates in this binary, so `find('@@')` reliably terminates
-    the qualified name. Returns None for non-C++ / data-ish symbols."""
-    if not m.startswith("?"):
-        return None                        # extern "C" (_foo, _foo@N)
-    b = m[1:]
-    special = None
-    if b.startswith("?"):
-        b = b[1:]
-        if b.startswith("_"):
-            special = "?_" + b[1:2]
-            b = b[2:]
-        else:
-            special = "?" + b[:1]
-            b = b[1:]
-        if special.startswith("?_") and special not in _CTORDTOR:
-            return None                    # ?_7 vftable, ?_R0 RTTI, ... = data
-    end = b.find("@@")
-    if end < 0:
-        return None
-    tokens = b[:end].split("@")
-    rest = b[end + 2:]
-    access = rest[0] if rest else None
-    if special is not None:
-        cls = tokens[0] if tokens else None
-        member = _CTORDTOR.get(special, "op")
-        return (cls, member, access)
-    member = tokens[0] if tokens else None
-    cls = tokens[1] if len(tokens) > 1 else None   # None => free function
-    return (cls, member, access)
-
-
+# --- IR helpers (ex caller_audit, archived; the metric stays live) ----------
+# parse_mangled now lives in gruntz.core.symbols (the canonical home).
 _DEF_RE = re.compile(r'^define\b[^@\n]*@("(?:[^"\\]|\\.)*"|[-\w.$?@]+)\s*\(', re.M)
 # an instruction line that is a call/invoke (labels sit at col 0; instructions
 # are indented and start with an optional `%res =` then call/invoke).
@@ -167,14 +132,14 @@ def load_symbols():
 def _thunk_map(d, secs, names):
     """thunk_rva -> body_rva for every ILT-band `E9 rel32` entry (and ghidra thunk_*
     single-jmp). Chases up to 4 hops to a non-thunk body."""
-    _n, tva, tvsz, trp, trsz = xref._text(secs)
+    _n, tva, tvsz, trp, trsz = _pe.text(secs)
     tmap = {}
     tb = d[trp:trp + trsz]
     # ILT band entries
     i = 0
     while i < len(tb) - 4:
         rva = tva + i
-        if tb[i] == 0xE9 and xref.ILT_LO <= rva < xref.ILT_HI:
+        if tb[i] == 0xE9 and _pe.ILT_LO <= rva < _pe.ILT_HI:
             rel = struct.unpack_from("<i", tb, i + 1)[0]
             tmap[rva] = rva + 5 + rel
         i += 1
@@ -193,7 +158,7 @@ def target_edges(d, secs, names, fstarts, fsize, func_rvas):
     """{(caller_rva, callee_rva)} for retail direct call/jmp, thunks followed, where
     BOTH caller and callee are reconstructed (in func_rvas). Also returns per-caller
     the full set of thunk-followed callee RVAs (reconstructed or not) for diagnosis."""
-    _n, tva, tvsz, trp, trsz = xref._text(secs)
+    _n, tva, tvsz, trp, trsz = _pe.text(secs)
     tmap = _thunk_map(d, secs, names)
     tb = d[trp:trp + trsz]
 
@@ -267,8 +232,8 @@ def base_graph(m2rva, jobs=None):
 class Recon:
     def __init__(self, jobs=None):
         self.rva2sym, self.m2rva, self.func_rvas = load_symbols()
-        d, secs = xref._load()
-        self.names, self.byname, self.fstarts, self.fsize = xref._names()
+        d, secs = _pe.load()
+        self.names, self.byname, self.fstarts, self.fsize = _sym.load_names()
         self.tgt, self.allcallees = target_edges(
             d, secs, self.names, self.fstarts, self.fsize, self.func_rvas)
         self.base, self.base_defined, self.unresolved, self.ir_failed = base_graph(

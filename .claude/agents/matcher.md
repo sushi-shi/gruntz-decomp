@@ -28,7 +28,7 @@ The common jobs, all yours:
   THE CORRECT REAL CLASS; you never view it. Recover the identity from BOTH directions of
   its call graph:
   - **xrefs / callers** — who `new`s / stores / calls it, and on what `this`
-    (`gruntz sema xref <rva|name>`, `python -m gruntz.analysis.xref`, the RTTI census).
+    (`gruntz sema xref <rva|name>` (in-process; `python -m gruntz.sema.xref` standalone), the RTTI census).
   - **callees** — what IT calls: its vtable-slot dispatches (the `??_7` slot set it uses),
     the member functions it invokes on its own `this`, the API calls it makes. A struct that
     dispatches through a known vtable, or calls `CFoo::Bar(this)`, IS that class (or a subclass).
