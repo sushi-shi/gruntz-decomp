@@ -91,10 +91,10 @@ static inline void GruntScratchTeardown();
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
-// (g_typeColl.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
 // GetNameRecords form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
-// its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
+// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
 // reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
 //
@@ -1036,12 +1036,12 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // Occupied-coord recycle: three sequential resolver reject codes. Each block
     // resolves the current anim-set node's cell record (the resolver's coord-range
     // map; the bounds hit is the fast path, the two fallbacks are engine helpers).
-    char* nm0 = *g_typeColl.GetNameRecord(m_14->m_1c);
+    char* nm0 = *g_typeColl.GetNameRecord(m_objAux->m_1c);
     if (strcmp(nm0, s_codeH) == 0) {
         return 1;
     }
     {
-        i32 coord = reinterpret_cast<i32>(m_14->m_1c);
+        i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
@@ -1057,12 +1057,12 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         GruntScratchTeardown();
         static_cast<void>(rec);
     }
-    char* nm1 = *g_typeColl.GetNameRecord(m_14->m_1c);
+    char* nm1 = *g_typeColl.GetNameRecord(m_objAux->m_1c);
     if (strcmp(nm1, s_codeF) == 0) {
         return 1;
     }
     {
-        i32 coord = reinterpret_cast<i32>(m_14->m_1c);
+        i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
@@ -1080,7 +1080,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         GruntScratchTeardown();
         static_cast<void>(rec);
     }
-    char* nm2 = *g_typeColl.GetNameRecord(m_14->m_1c);
+    char* nm2 = *g_typeColl.GetNameRecord(m_objAux->m_1c);
     if (strcmp(nm2, s_codeO) == 0) {
         return 1;
     }
@@ -1356,7 +1356,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>((this->m_14->m_1c))));
+    char** typeRec = reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>((this->m_objAux->m_1c))));
     if (g_typeColl.m_grown != 0) {
         char* p = reinterpret_cast<char*>(g_typeColl.m_alloc);
         i32 n = g_typeColl.m_grown;
@@ -1540,8 +1540,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         this->m_lastTilePxX = newX;
         this->m_lastTilePxY = newY;
-        this->m_prevAnimSetNode = this->m_14->m_1c;
-        this->m_14->m_1c = g_buteTree.Find(s_typeO);
+        this->m_prevAnimSetNode = this->m_objAux->m_1c;
+        this->m_objAux->m_1c = g_buteTree.Find(s_typeO);
         double ddx = static_cast<double>(newX) - this->m_object->m_screenX;
         double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
@@ -1634,7 +1634,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeF) == 0);
     if (eq) {
         return 0;
     }
@@ -1647,7 +1647,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1658,7 +1658,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             -1
         );
     } else {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeN) == 0);
         if (eq) {
             i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
             i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -1671,8 +1671,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             }
             SnapToLastTile(1);
             if (redo) {
-                m_prevAnimSetNode = m_14->m_1c;
-                m_14->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+                m_prevAnimSetNode = m_objAux->m_1c;
+                m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
                 OnCoordCommit(m_coordToggle);
             }
         }
@@ -1727,7 +1727,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     }
     {
         // retail defers the ->m_name load past the (inlined) scratch teardown loop
-        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_14->m_1c);
+        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
         GruntScratchTeardown();
         bool eq = (strcmp(rec->m_name, s_codeF) == 0);
         if (eq) {

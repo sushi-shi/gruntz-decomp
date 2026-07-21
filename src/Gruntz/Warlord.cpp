@@ -564,8 +564,8 @@ i32 CGrunt::ResolveMovingAnimation() {
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
     m_animPlayer->m_1a0.Setup_15c2d0(m_movingGeoSrc);
 
-    m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_keyB);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_keyB);
 
     m_moveStartTime = (GruntRand() % 0x5dc1 + 0x1770) * 10;
     m_moveSeedHi = 0;
@@ -602,8 +602,8 @@ i32 CGrunt::ResolveDeathAnimation() {
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__DEATH);
 
-    m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_keyC);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_keyC);
     return 1;
 }
 
@@ -631,8 +631,8 @@ i32 CGrunt::ResolveAnimation() {
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__JOY);
 
-    m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_keyE);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_keyE);
     return 1;
 }
 
@@ -667,8 +667,8 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     m_animPlayer->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
 
-    m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_keyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_keyA);
     return 1;
 }
 
@@ -698,8 +698,8 @@ i32 CGrunt::ResolveBattlecryAnimation() {
 
     m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 
-    m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_keyF);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_keyF);
     return 1;
 }
 

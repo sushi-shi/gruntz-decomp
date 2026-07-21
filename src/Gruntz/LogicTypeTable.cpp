@@ -44,7 +44,7 @@ void CUserLogic::FinalizeStep(i32 /*unused*/) {
     if (m_deferredCallback == 0) {
         return;
     }
-    if (m_gatedCallback != 0 && reinterpret_cast<i32>(m_14->m_1c) == m_28) {
+    if (m_gatedCallback != 0 && reinterpret_cast<i32>(m_objAux->m_1c) == m_28) {
         (this->*reinterpret_cast<UserLogicCallback&>(m_gatedCallback))();
         m_gatedCallback = 0;
     }

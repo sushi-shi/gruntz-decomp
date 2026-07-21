@@ -36,11 +36,6 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 SIZE_UNKNOWN(CAnimLookupNode);
-struct CAnimLookupNode {
-    char m_pad0[0x1c];
-    void* m_1c; // +0x1c
-};
-
 extern i32 g_movingSeed;
 
 extern "C" i32 GruntRand(); // stub

@@ -226,7 +226,7 @@ L8b5:
 // Final-sweep candidate.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::ArrivalScanA() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -883,7 +883,7 @@ i32 CGrunt::ArrivalReticleScan() {
 //     the grunt-under-HUD pointer / clock / grid bases.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
-    char* name = *g_typeColl.GetNameRecord(m_14->m_1c);
+    char* name = *g_typeColl.GetNameRecord(m_objAux->m_1c);
     if (strcmp(name, "I") != 0) {
         return 1;
     }
@@ -1108,7 +1108,7 @@ i32 CGrunt::UpdateArrival() {
 // deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::ArrivalScanB() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -1924,7 +1924,7 @@ i32 CGrunt::StepArrivalDefense() {
 // same deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::ArrivalScanC() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
     CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
@@ -2122,7 +2122,7 @@ L_tailc:
 
 // @early-stop
 // regalloc + region-build wall. Complete reconstruction folded onto the canonical
-// CGrunt: the type-name gate (inline strcmp of g_typeColl.Lookup(m_14->m_1c) vs "F"),
+// CGrunt: the type-name gate (inline strcmp of g_typeColl.Lookup(m_objAux->m_1c) vs "F"),
 // the m_defenderState state dispatch (0x19/0x1a re-mark, 0/2/4), the 5x5-border
 // 16-point accumulator build + random-free-cell relocation with tile marking
 // (TileSwitch), the state-0 neighbour resolve (GetOccupant + RectContains/CommitNeighbor/
@@ -2138,7 +2138,7 @@ i32 CGrunt::PhaseStep() {
     GruntTilePos pb;
 
     m_358 = 0;
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeF) == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -2187,7 +2187,7 @@ i32 CGrunt::PhaseStep() {
     return 1;
 
 state2: {
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeF) == 0) {
         goto common;
     }
     i32 x = m_arrivalCol;
@@ -2637,7 +2637,7 @@ RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeI) == 0) {
         return 1;
     }
     CGrunt* occ;

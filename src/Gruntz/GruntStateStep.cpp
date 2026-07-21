@@ -149,7 +149,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
-                    (reinterpret_cast<CTypeNode*>(g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_14->m_1c))))->m_0;
+                    (reinterpret_cast<CTypeNode*>(g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_objAux->m_1c))))->m_0;
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
                     && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0
                     && strcmp(nm, "C") != 0 && strcmp(nm, "R") != 0) {

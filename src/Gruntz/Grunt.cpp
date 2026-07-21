@@ -110,10 +110,10 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
-// (g_typeColl.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
 // GetNameRecords form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
-// its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
+// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
 // reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
 //
@@ -685,23 +685,23 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeF) == 0);
     if (eq) {
         return;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
     if (eq) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "E") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "E") == 0);
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
@@ -719,11 +719,11 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
     if (eq) {
         goto codeI;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeM) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeM) == 0);
     if (eq) {
         goto walk;
     }
@@ -877,7 +877,7 @@ RVA(0x0004b370, 0xafd)
 void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     m_arrivalNotified = 0; // m_464 cleared on entry
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
     if (!eq && a == m_entrancePxX && b == m_entrancePxY) {
         goto reachedTarget;
     }
@@ -1177,7 +1177,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = 1;
     } else {
-        CAnimNameRecord* r = g_typeColl.ScratchResolve(m_14->m_1c);
+        CAnimNameRecord* r = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         bool ne;
         ne = (strcmp(r->m_name, "L") != 0);
@@ -1679,7 +1679,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
         bool eq;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
         if (eq && CoordCount() != 0) {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
@@ -1714,7 +1714,7 @@ void CGrunt::MovingSlot16() {
     // scratch CString teardown).
     GruntScratchTeardown();
     bool eq2;
-    eq2 = (strcmp(g_typeColl.GetNameRecords(m_14->m_1c)->m_name, s_codeD) == 0);
+    eq2 = (strcmp(g_typeColl.GetNameRecords(m_objAux->m_1c)->m_name, s_codeD) == 0);
     static_cast<void>(eq2);
     GruntScratchTeardown();
     OnMoveFinishA(0);

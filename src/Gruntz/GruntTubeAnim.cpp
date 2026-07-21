@@ -47,7 +47,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         ResetEntranceAnimation(0, 0, 1);
     }
 
-    CAnimNameRecord* node = reinterpret_cast<CAnimNameRecord*>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_14->m_1c)));
+    CAnimNameRecord* node = reinterpret_cast<CAnimNameRecord*>((static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c)));
     void* p = reinterpret_cast<void*>(g_typeColl.m_alloc); // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {

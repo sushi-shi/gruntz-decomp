@@ -43,7 +43,7 @@ public:
 SIZE_UNKNOWN(CUserBase);     // (was covered by the BoundaryMisc placeholder before its rename)
 VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
 
-struct CAnimLookupNode; // Grunt.h view of the +0x14 aux (anim-set lookup)
+
 class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
@@ -148,10 +148,9 @@ public:
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0
     // cache). The ex-"m_10" arm was the same type/role - one name now.
     CWwdGameObjectA* m_object;
-    union { // +0x14  aux sub-object (obj->m_7c); CGrunt views it as CAnimLookupNode*
-        AnimWorkerObj* m_objAux;
-        CAnimLookupNode* m_14;
-    };
+    // +0x14  aux sub-object (obj->m_7c, the bound object's AnimWorkerObj; the ex
+    // "CAnimLookupNode* m_14" arm was a pad-view of its +0x1c anim-set handle).
+    AnimWorkerObj* m_objAux;
     CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
     i32 m_28;             // +0x28
     i32 m_2c;             // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)

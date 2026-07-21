@@ -632,7 +632,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_14->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
+    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_objAux->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTileX;
         i32 py = cell->m_moveTileY;
@@ -663,7 +663,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (cell == 0 || outCol != g_curPlayer) {
         return;
     }
-    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_14->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
+    char* name = *static_cast<CActReg&>(g_typeColl).ResolveSlot_46e0c0(reinterpret_cast<i32>(cell->m_objAux->m_1c)); // g_typeColl IS the 0x6bf650 registry (TypeKeyColl.cpp's own verdict)
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;

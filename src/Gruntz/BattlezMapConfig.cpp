@@ -666,7 +666,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 // STRUCTURE (mapped from the retail disasm; reconstructable, just very large): the
 // master per-unit AI dispatch tick. `esi` is the CGrunt (the same CGrunt-family
 // object Method_029b40 drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
-// m_14->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
+// m_objAux->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
 //   * head (0x267c0..0x2690b): a screen-rect / board-rect intersect + PtInRect-style
 //     geometry gate (the IntersectRect/PtInRect winapi imports at PTR_..006c4568/6c
 //     that heuristically named this fn) + a first type-name probe.
