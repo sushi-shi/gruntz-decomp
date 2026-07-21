@@ -242,6 +242,12 @@ void CGrunt::FinalizeStep(i32 arg) {
 // frame (+0x14), looks the per-cell name up by the m_entranceCell {col,row} triple (cell
 // stride 0x68 at +0x468), applies the frame, then latches a fresh idle anim-set
 // node (g_entranceAnimSrc.LookupAnimSet) into m_14->m_1c. __thiscall, ret 0.
+// @early-stop
+// ~95.7% - copying the whole GruntEntranceCell triple (below) fixed the missing
+// dead `reason` (+0x444) load/spill (was 81%: source read only col/row, so cl
+// DCE'd reason; retail keeps the whole-struct copy with reason dead-spilled to
+// [esp+0x14]). Residual is the m_value(+0x15c) store schedule + edx/ecx colouring
+// on the first two statements - a scheduling coin-flip.
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     m_value = m_38->m_1a0.m_14;
@@ -251,8 +257,9 @@ i32 CGrunt::ResetGeometry() {
     i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem[0x14 / 4];
 
-    i32 col = m_entranceCell.col;
-    i32 row = m_entranceCell.row;
+    GruntEntranceCell cell = m_entranceCell; // retail copies the whole triple; `reason` dead-spills
+    i32 col = cell.col;
+    i32 row = cell.row;
     i32 index = 3 * col + row;
     const char* name = reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0));
     m_38->ApplyLookupSprite(name, frame);
