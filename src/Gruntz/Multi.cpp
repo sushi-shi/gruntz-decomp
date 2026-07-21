@@ -760,7 +760,7 @@ i32 CMulti::Render() {
             i32 v = m_curSlotId + static_cast<i32>(m_5a4) * 2;
             i32 s = v < 0 ? -v : v;
             s &= 0x7f;
-            node->m_6 = static_cast<u8>((v < 0 ? -s : s));
+            node->m_targetType = static_cast<u8>((v < 0 ? -s : s));
         }
         m_session->ArmSlot(node, static_cast<i32>(static_cast<u8>((static_cast<u8>(m_5a4) << 1))));
     }

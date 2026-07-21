@@ -41,13 +41,13 @@ class CState; // the live game state (Select's arg; slot-4 Update() reports its 
 
 class CGruntzCommand {
 public:
-    // m_4/m_6 are UNSIGNED: CGruntzCmdMgr::RemoveMatchingTarget (0x23b00) compares them
+    // m_targetIndex/m_targetType are UNSIGNED: CGruntzCmdMgr::RemoveMatchingTarget (0x23b00) compares them
     // against (u8)-cast params and retail emits the ZERO-extending `movzx` - a signed
     // `char` here makes cl emit `movsx` and drops that fn 100 -> 78.47 (the ex-GzTargetObj
     // view, which matched 100%, declared them u8; the binary is the arbiter).
-    u8 m_4;          // +0x04  per-team index byte
+    u8 m_targetIndex;          // +0x04  per-team index byte
     char m_5;        // +0x05
-    u8 m_6;          // +0x06  type/key byte
+    u8 m_targetType;          // +0x06  type/key byte
     char m_7;        // +0x07 (unused by this cluster)
     i16 m_8;         // +0x08
     i16 m_a;         // +0x0a

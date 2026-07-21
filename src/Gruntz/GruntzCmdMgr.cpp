@@ -75,7 +75,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
             if (!(flags & 1)) {
                 continue;
             }
-            if (static_cast<u8>(obj->m_6) != static_cast<u32>(param)) {
+            if (static_cast<u8>(obj->m_targetType) != static_cast<u32>(param)) {
                 continue;
             }
         }
@@ -105,7 +105,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
-        if (obj->m_6 == static_cast<u8>(typeByte) && obj->m_4 == static_cast<u8>(indexByte)) {
+        if (obj->m_targetType == static_cast<u8>(typeByte) && obj->m_targetIndex == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
             obj->Deselect();
             return;
@@ -196,9 +196,9 @@ void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
 
 RVA(0x00023e20, 0x2f)
 i32 CGruntzCommand::SetParams(char a0, char a1, char a2, i16 a3, i16 a4) {
-    m_4 = a0;
+    m_targetIndex = a0;
     m_5 = a1;
-    m_6 = a2;
+    m_targetType = a2;
     m_8 = a3;
     m_a = a4;
     return 1;
@@ -250,9 +250,9 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
-    m_4 = *buf++;
+    m_targetIndex = *buf++;
     m_5 = *buf++;
-    m_6 = *buf++;
+    m_targetType = *buf++;
     m_8 = *reinterpret_cast<i16*>(buf);
     buf += 2;
     m_a = *reinterpret_cast<i16*>(buf);
@@ -278,9 +278,9 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
-    m_4 = *buf++;
+    m_targetIndex = *buf++;
     m_5 = *buf++;
-    m_6 = *buf++;
+    m_targetType = *buf++;
     m_8 = *reinterpret_cast<i16*>(buf);
     buf += 2;
     m_a = *reinterpret_cast<i16*>(buf);
@@ -294,9 +294,9 @@ RVA(0x00024050, 0x57)
 i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
-    *++buf = m_4;
+    *++buf = m_targetIndex;
     *++buf = m_5;
-    *++buf = m_6;
+    *++buf = m_targetType;
     char* w = buf + 1;
     *reinterpret_cast<i16*>(w) = m_8;
     w += 2;
@@ -315,9 +315,9 @@ RVA(0x000240d0, 0x4d)
 i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
-    *++buf = m_4;
+    *++buf = m_targetIndex;
     *++buf = m_5;
-    *++buf = m_6;
+    *++buf = m_targetType;
     char* w = buf + 1;
     *reinterpret_cast<i16*>(w) = m_8;
     w += 2;
@@ -335,7 +335,7 @@ i32 CGruntzCommand::ApplyOne(CPlay* p) {
     }
     // ExecCommand's narrow (char/i16) params reproduce retail's mov al/mov dx
     // member loads (the ex-CGruntzCmdTarget shim is dissolved; one signature).
-    return p->ExecCommand(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
+    return p->ExecCommand(m_targetIndex, m_10, m_5, m_8, m_a, m_11, m_targetType);
 }
 
 RVA(0x00024190, 0x6c)
@@ -346,7 +346,7 @@ i32 CGruntzCommand::ApplyMask(CPlay* p) {
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *reinterpret_cast<u16*>(&m_10)) {
-            if (!p->ExecCommand(m_4, static_cast<char>(i), m_5, m_8, m_a, 0, m_6)) {
+            if (!p->ExecCommand(m_targetIndex, static_cast<char>(i), m_5, m_8, m_a, 0, m_targetType)) {
                 ok = 0;
             }
         }
@@ -452,9 +452,9 @@ i32 CGruntzSingleCommand::Save(CSerialArchive* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_4, 1);
+    s->Write(&m_targetIndex, 1);
     s->Write(&m_5, 1);
-    s->Write(&m_6, 1);
+    s->Write(&m_targetType, 1);
     s->Write(&m_8, 2);
     s->Write(&m_a, 2);
     s->Write(&m_submitted, 4);
@@ -471,9 +471,9 @@ i32 CGruntzSingleCommand::Load(CSerialArchive* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_4, 1);
+    s->Read(&m_targetIndex, 1);
     s->Read(&m_5, 1);
-    s->Read(&m_6, 1);
+    s->Read(&m_targetType, 1);
     s->Read(&m_8, 2);
     s->Read(&m_a, 2);
     s->Read(&m_submitted, 4);
@@ -510,9 +510,9 @@ i32 CGruntzMultiCommand::Save(CSerialArchive* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_4, 1);
+    s->Write(&m_targetIndex, 1);
     s->Write(&m_5, 1);
-    s->Write(&m_6, 1);
+    s->Write(&m_targetType, 1);
     s->Write(&m_8, 2);
     s->Write(&m_a, 2);
     s->Write(&m_submitted, 4);
@@ -528,9 +528,9 @@ i32 CGruntzMultiCommand::Load(CSerialArchive* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_4, 1);
+    s->Read(&m_targetIndex, 1);
     s->Read(&m_5, 1);
-    s->Read(&m_6, 1);
+    s->Read(&m_targetType, 1);
     s->Read(&m_8, 2);
     s->Read(&m_a, 2);
     s->Read(&m_submitted, 4);
