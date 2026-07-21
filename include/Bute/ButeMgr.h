@@ -24,12 +24,12 @@ VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
 
 struct CButeTail {
-    char m_00;      // +0x00
-    CButeTail();    // 0x16f680  external ctor (`mov eax,ecx; ret`; BSecObj10fCtor.cpp)
-    void Dtor();    // 0x16f6b0  (ret)
-    ~CButeTail() {
-        Dtor();
-    }
+    char m_00;   // +0x00
+    CButeTail(); // 0x16f680  external ctor (`mov eax,ecx; ret`; BSecObj10fCtor.cpp)
+    // The empty out-of-line dtor (0x16f6b0, one `ret`) - the +0x10f member teardown
+    // ~CButeMgr + its unwind funclet call (was mislabeled __fpclear in the library
+    // catalog, and faked here as a declared-only "Dtor()").
+    ~CButeTail();
 };
 SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 

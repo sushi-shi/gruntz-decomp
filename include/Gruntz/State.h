@@ -11,7 +11,6 @@ class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (D
 class CSymTab;
 typedef CSymTab CResSource; // +0x28/+0x30/+0x34 resolved asset banks (== the ButeMgr symbol table)
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
 class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
@@ -177,9 +176,6 @@ public:
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
     CDDrawSurfaceMgr* menuRoot() {
         return m_world;
-    }
-    CAttractScreenObj* screenObj() {
-        return reinterpret_cast<CAttractScreenObj*>(m_2c);
     }
 
     // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three

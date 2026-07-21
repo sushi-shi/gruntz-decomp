@@ -151,10 +151,10 @@ i32 CAttract::Activate() {
 // worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
 // started fade, else 0.
 // @early-stop
-// frame-reservation + reloc wall (~74%): logic + offsets byte-exact; retail reserves an
-// 0x40 frame (0xc outgoing-arg scratch below the 0x34 buf) where our cl reserves only the
-// 0x34 buf, and the ResolveScreen callee (FUN_00520120) is an unnamed body that can't pair
-// (reloc-masked DIR32). Not source-steerable. topic:wall.
+// frame-reservation wall (~74%): logic + offsets byte-exact; retail reserves an 0x40
+// frame (0xc outgoing-arg scratch below the 0x34 buf) where our cl reserves only the
+// 0x34 buf. (The resolver callee is the REAL CSymTab::ResolveQualified @0x13be40 now -
+// the ex-CAttractScreenObj::ResolveScreen "0x120120" was a misread; that rva is _strchr.)
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     static_cast<void>(a);
@@ -172,18 +172,18 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     char buf[0x34];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    void* page = screenObj()->ResolveScreen(buf, &g_screenTag);
+    CParseSource* page = SymTab2c()->ResolveQualified(buf, &g_screenTag); // 0x13be40
     if (page == 0) {
         return 0;
     }
     CDDrawSubMgrPages* w = menuRoot()->m_drawTarget;
-    if (w->Method_158b40(static_cast<CParseSource*>(page), e != 0 ? 2 : 1) != 0) {
+    if (w->Method_158b40(page, e != 0 ? 2 : 1) != 0) {
         return 1;
     }
     if (e == 0) {
         return 1;
     }
-    if (w->Method_158b40(static_cast<CParseSource*>(page), 1) != 0) {
+    if (w->Method_158b40(page, 1) != 0) {
         return 1;
     }
     return 0;
@@ -677,7 +677,6 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
 SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractSceneSlot);
-SIZE_UNKNOWN(CAttractScreenObj);
 SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CMenuBrightnessHolder);
 SIZE_UNKNOWN(CMenuBrightnessReset);

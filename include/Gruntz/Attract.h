@@ -31,11 +31,6 @@ struct CAttractHost {
 
 class CGruntzMgr;
 
-class CAttractScreenObj {
-public:
-    void* ResolveScreen(char* path, void* tag); // 0x120120
-};
-
 class CAttract : public CState {
 public:
     // slot 1  0x013fb0 (AttractState.cpp; retail ??_7CAttract slot 1 = ILT
@@ -87,7 +82,7 @@ public:
     // share them (the object at each slot IS that facet in the attract state; the
     // base declares them generically because other states put other types there).
     // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
-    // (menuRoot()/screenObj() moved to CState with the title-roll cluster.)
+    // (menuRoot() moved to CState with the title-roll cluster.)
     CSymParser* stateMgr() {
         return static_cast<CSymParser*>(m_symParser);
     }
