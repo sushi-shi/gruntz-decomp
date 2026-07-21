@@ -61,6 +61,9 @@ def unpack_lib(lib_path: Path, objs_dir: Path) -> None:
 
 
 def main() -> None:
+    if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
+        print(__doc__)
+        return
     msvc = os.environ.get("MSVC_DIR")
     if not msvc:
         sys.exit("[fid] $MSVC_DIR unset - run inside `nix develop`.")

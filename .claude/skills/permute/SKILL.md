@@ -65,9 +65,9 @@ are current). The `<unit>` is the `unit` stem from `config/units.toml`; the
 
 - **One function:**
   ```
-  python3 -m gruntz.permute.permute <src.cpp> <unit> <mangled-sym> [iters]
+  gruntz permute fn <src.cpp> <unit> <mangled-sym> [iters]
   # e.g.
-  python3 -m gruntz.permute.permute src/Gruntz/GameLevel.cpp gamelevel \
+  gruntz permute fn src/Gruntz/GameLevel.cpp gamelevel \
       '?ProbeFootBlocked@CGameLevel@@AAEHPAUCGameObject@@H@Z' 400
   ```
   Edits `<src.cpp>` IN PLACE, leaving the best-scoring variant (prints `start`/`FINAL`).
@@ -76,16 +76,16 @@ are current). The `<unit>` is the `unit` stem from `config/units.toml`; the
 
 - **A whole unit, top-down (preferred):**
   ```
-  python3 -m gruntz.permute.permute_sweep <unit> [iters]
+  gruntz permute sweep <unit> [iters]
   # e.g.
-  python3 -m gruntz.permute.permute_sweep gamelevel 60
+  gruntz permute sweep gamelevel 60
   ```
   Discovers the unit's `<100%` functions in SOURCE order and permutes each in turn,
   accumulating wins. Prints a per-function `before -> after` line and a WIN summary.
 
 - **Exhaustive engine (escalation for a function `permute` can't move):**
   ```
-  python3 -m gruntz.permute.match_variants <src.cpp> <rva> \
+  gruntz permute variants <src.cpp> <rva> \
       --max-depth 3 --limit 512 -o /tmp/m.json --run --top 12
   ```
   The fuller homm2 engine. Where `permute` is a greedy random-walk over a few mutation
@@ -128,5 +128,5 @@ byte-level reason.
 
 Ported from the HoMM2 sibling decomp (same units.toml + cc_wrap + objdiff-cli pipeline),
 then hardened onto a clang AST. HoMM2's fuller multi-family generator + exact-closure
-batch runner are also ported here as `gruntz.permute.match_variants` (see the escalation
+batch runner are also ported here as `gruntz permute variants` (module: gruntz/permute/match_variants.py) (see the escalation
 above); `permute` remains the fast iterative first pass.

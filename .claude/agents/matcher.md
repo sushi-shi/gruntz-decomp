@@ -234,7 +234,7 @@ are assigned is game/engine code, so you never identify or handle library yourse
      AutoTuneCmdDelay's "wall" was a `/9`-vs-`/30` divisor). Re-audit the disasm before
      believing "regalloc wall".
    - **Fast permuter pass** (operand-order / reassoc / decl-split residue on a genuinely
-     correct body): `python3 -m gruntz.permute.permute <src> <unit> <mangled-sym>` /
+     correct body): `gruntz permute fn <src> <unit> <mangled-sym>` /
      `permute_sweep <unit>`.
    - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
      exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
@@ -246,7 +246,7 @@ are assigned is game/engine code, so you never identify or handle library yourse
      not change (empirically 0/4 wall families moved, even at 1024 variants). So DON'T spend
      `--state-trials` on a documented intra-function regalloc/SIB/spill/width wall; only
      reach for it when the residue plausibly depends on TU-cumulative state.
-     `python3 -m gruntz.permute.match_variants <src.cpp> <rva> --state-trials 64 --max-depth 3
+     `gruntz permute variants <src.cpp> <rva> --state-trials 64 --max-depth 3
      --limit 512 -o /tmp/m.json --run --top 12`. See the **`permute` skill**.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
    reconstruction (full body, all logic) where EITHER (a) you have PROVEN with
