@@ -744,7 +744,7 @@ extern CLookupColl g_reg_644af0;
 // per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
-i32 CGrunt::PathScan57db0() {
+i32 CGrunt::PathScan() {
     CBrickzGrid* grid =
         g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CBrickzGrid)
     if (CoordCount() == 0) {

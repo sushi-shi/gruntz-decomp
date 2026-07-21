@@ -613,7 +613,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 RVA(0x00168060, 0x16)
 void CWwdGridShell::OnFound(WwdRegion* r) {
     CGameObject* obj = r->m_object;
-    obj->OwnerMgr()->m_childGroup->InsertSorted_159e40(obj, 1);
+    obj->OwnerMgr()->m_childGroup->InsertSorted(obj, 1);
 }
 
 // ===========================================================================
