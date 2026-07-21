@@ -754,12 +754,15 @@ public:
     // +0x468 owned-cell array (9 x 0x68, +0x468..+0x810; entrance-cell record table,
     // 0x68-byte stride). Value array so ~CGrunt auto-emits the __ehvec_dtor teardown.
     CGruntCellRec m_cells[9]; // +0x468..+0x810  (per-direction anim-name cell records)
-    i64 m_toyClock;           // +0x810 (toy timer: anchor clock; ex the Lo/Hi dword pair)
-    i64 m_toyDuration;        // +0x818 (toy timer: duration; ex the Lo/Hi dword pair)
-    i64 m_idleAnchor;       // +0x820 (idle-timer: low)
-    i64 m_idleDelay;        // +0x828 (idle-timer: delay low)
-    i64 m_idleTimer;        // +0x830 (idle-anchor: low)
-    i64 m_idleWindow;       // +0x838 (idle-window: low = 0x3a98)
+    // +0x810..+0x83f: three timer i64 pairs. Each is a union so the 64-bit
+    // arithmetic sites keep the i64 while the ctor's interleaved dword zeroing
+    // (lo,lo,hi,hi per block - retail's store order) is typed, not offset-cast.
+    union { i64 m_toyClock; struct { i32 m_toyClockLo, m_toyClockHi; }; };          // +0x810
+    union { i64 m_toyDuration; struct { i32 m_toyDurationLo, m_toyDurationHi; }; }; // +0x818
+    union { i64 m_idleAnchor; struct { i32 m_idleAnchorLo, m_idleAnchorHi; }; };    // +0x820
+    union { i64 m_idleDelay; struct { i32 m_idleDelayLo, m_idleDelayHi; }; };       // +0x828
+    union { i64 m_idleTimer; struct { i32 m_idleTimerLo, m_idleTimerHi; }; };       // +0x830
+    union { i64 m_idleWindow; struct { i32 m_idleWindowLo, m_idleWindowHi; }; };    // +0x838 (= 0x3a98)
     i32 m_entranceClockLo;    // +0x840 (entrance: = g_frameTime game clock, low dword)
     i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
     i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
@@ -792,10 +795,14 @@ public:
     i32 m_wingzClockHi;    // +0x894 (wingz timer: anchor clock hi = 0)
     i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
     i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)
-    i32 m_8a0;             // +0x8a0 (sub-ser record base, SerializeMove)
-    char m_pad8a4[0x8b0 - 0x8a4];
+    i32 m_8a0; // +0x8a0 (sub-ser record base, SerializeMove)
+    i32 m_8a4; // +0x8a4
+    i32 m_8a8; // +0x8a8
+    i32 m_8ac; // +0x8ac
     i32 m_8b0; // +0x8b0 (sub-ser record base, SerializeMove)
-    char m_pad8b4[0x8c0 - 0x8b4];
+    i32 m_8b4; // +0x8b4
+    i32 m_8b8; // +0x8b8
+    i32 m_8bc; // +0x8bc
     i32 m_8c0; // +0x8c0
     i32 m_8c4; // +0x8c4
     i32 m_8c8; // +0x8c8

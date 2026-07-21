@@ -194,28 +194,6 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
 // Deferred to the final sweep.
 
-#define GRUNT_ZERO_TIMER_BLOCK(p, b)                                                               \
-    do {                                                                                           \
-        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x0) = 0;                                                       \
-        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x8) = 0;                                                       \
-        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0x4) = 0;                                                       \
-        *reinterpret_cast<i32*>(reinterpret_cast<char*>(p) + (b) + 0xc) = 0;                                                       \
-    } while (0)
-#define GRUNT_ZERO_TIMER_BAND(p)                                                                   \
-    do {                                                                                           \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x810);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x820);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x830);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x840);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x850);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x860);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x870);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x880);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x890);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x8a0);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x8b0);                                                        \
-        GRUNT_ZERO_TIMER_BLOCK((p), 0x8c0);                                                        \
-    } while (0)
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
@@ -288,7 +266,56 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_arrivalRerollWindowHi = 0;
 
     // The +0x810..+0x8cc timer band (24 doubles, zeroed).
-    GRUNT_ZERO_TIMER_BAND(this);
+    // The +0x810..+0x8cf timer-band zero run (retail's per-block lo,lo,hi,hi
+    // dword order; ex the offset-cast GRUNT_ZERO_TIMER_* macros - typed now).
+    m_toyClockLo = 0;
+    m_toyDurationLo = 0;
+    m_toyClockHi = 0;
+    m_toyDurationHi = 0;
+    m_idleAnchorLo = 0;
+    m_idleDelayLo = 0;
+    m_idleAnchorHi = 0;
+    m_idleDelayHi = 0;
+    m_idleTimerLo = 0;
+    m_idleWindowLo = 0;
+    m_idleTimerHi = 0;
+    m_idleWindowHi = 0;
+    m_entranceClockLo = 0;
+    m_entranceSafeTimeLo = 0;
+    m_entranceClockHi = 0;
+    m_entranceSafeTimeHi = 0;
+    m_850 = 0;
+    m_858 = 0;
+    m_854 = 0;
+    m_85c = 0;
+    m_860 = 0;
+    m_attackDowntimeLo = 0;
+    m_864 = 0;
+    m_attackDowntimeHi = 0;
+    m_combatClockLo = 0;
+    m_combatTimeoutLo = 0;
+    m_combatClockHi = 0;
+    m_combatTimeoutHi = 0;
+    m_880 = 0;
+    m_888 = 0;
+    m_884 = 0;
+    m_88c = 0;
+    m_wingzClockLo = 0;
+    m_wingzDurationLo = 0;
+    m_wingzClockHi = 0;
+    m_wingzDurationHi = 0;
+    m_8a0 = 0;
+    m_8a8 = 0;
+    m_8a4 = 0;
+    m_8ac = 0;
+    m_8b0 = 0;
+    m_8b8 = 0;
+    m_8b4 = 0;
+    m_8bc = 0;
+    m_8c0 = 0;
+    m_8c8 = 0;
+    m_8c4 = 0;
+    m_8cc = 0;
 
     // Second-phase field inits (post CGrunt vptr restamp).
     m_entranceCell.col = g_gruntDefEntranceCell[0];
@@ -366,7 +393,56 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_2c4 = 0;
     m_2c8 = 0;
     m_2cc = 0;
-    GRUNT_ZERO_TIMER_BAND(this);
+    // The +0x810..+0x8cf timer-band zero run (retail's per-block lo,lo,hi,hi
+    // dword order; ex the offset-cast GRUNT_ZERO_TIMER_* macros - typed now).
+    m_toyClockLo = 0;
+    m_toyDurationLo = 0;
+    m_toyClockHi = 0;
+    m_toyDurationHi = 0;
+    m_idleAnchorLo = 0;
+    m_idleDelayLo = 0;
+    m_idleAnchorHi = 0;
+    m_idleDelayHi = 0;
+    m_idleTimerLo = 0;
+    m_idleWindowLo = 0;
+    m_idleTimerHi = 0;
+    m_idleWindowHi = 0;
+    m_entranceClockLo = 0;
+    m_entranceSafeTimeLo = 0;
+    m_entranceClockHi = 0;
+    m_entranceSafeTimeHi = 0;
+    m_850 = 0;
+    m_858 = 0;
+    m_854 = 0;
+    m_85c = 0;
+    m_860 = 0;
+    m_attackDowntimeLo = 0;
+    m_864 = 0;
+    m_attackDowntimeHi = 0;
+    m_combatClockLo = 0;
+    m_combatTimeoutLo = 0;
+    m_combatClockHi = 0;
+    m_combatTimeoutHi = 0;
+    m_880 = 0;
+    m_888 = 0;
+    m_884 = 0;
+    m_88c = 0;
+    m_wingzClockLo = 0;
+    m_wingzDurationLo = 0;
+    m_wingzClockHi = 0;
+    m_wingzDurationHi = 0;
+    m_8a0 = 0;
+    m_8a8 = 0;
+    m_8a4 = 0;
+    m_8ac = 0;
+    m_8b0 = 0;
+    m_8b8 = 0;
+    m_8b4 = 0;
+    m_8bc = 0;
+    m_8c0 = 0;
+    m_8c8 = 0;
+    m_8c4 = 0;
+    m_8cc = 0;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
