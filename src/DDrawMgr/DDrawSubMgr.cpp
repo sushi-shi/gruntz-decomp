@@ -1369,25 +1369,24 @@ void CDDrawSubMgrPages::Method_158d50(i32 a1) {
 // 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag
 // bit1 is set, flip m_frontPair and re-blt.
 // @early-stop
-// 71% - logic + offsets exact; residual is branch-layout/scheduling of the
-// first-block (Blt-fall-through vs our jmp) and the esi-pop placement, a
-// regalloc/scheduling wall (see docs/patterns/zero-register-pinning.md).
+// ~84% - init `ok=0` up front + only deref m_backPair->m_surface INSIDE the p10
+// guard (was 71%: caching a `p14=m_backPair` local + an else{ok=0} made cl pin
+// m_backPair in edi across the p10 checks and hoist/share the ok=0). Residual:
+// retail keeps the m_backPair pointer in ecx (loaded early) + inlines the ok=0
+// block after the checks, where cl loads m_backPair late + hoists ok=0 to the
+// prologue - a regalloc/branch-layout coin-flip (flat &&-else regressed to 68%).
+// docs/patterns/zero-register-pinning.md.
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::Method_158dc0() {
     CDDrawSurfacePair* p10 = m_frontPair;
-    CDDrawSurfacePair* p14 = m_backPair;
-    i32 ok;
+    i32 ok = 0;
     if (p10 && p10->m_surface) {
         CDDSurface* s10 = p10->m_surface;
-        CDDSurface* s14 = p14->m_surface;
+        CDDSurface* s14 = m_backPair->m_surface;
         if (s14) {
             i32 hr = s14->Blt(s10);
             ok = (hr == 0);
-        } else {
-            ok = 0;
         }
-    } else {
-        ok = 0;
     }
     if (!ok) {
         return ok;
