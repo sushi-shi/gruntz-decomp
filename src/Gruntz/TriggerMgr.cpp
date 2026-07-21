@@ -615,22 +615,25 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     // Classify into a selector: a28 (when nonzero) IS the selector; else derive from
     // hit/cell. sel 1/2/3 dispatch to the three report+spawn stanzas; else -> return 1.
     i32 sel;
-    if (cell == 0) {
-        sel = (hit != 0) ? 2 : 1;
-    } else if (cell->m_tileOwnerHi != g_curPlayer) {
-        return 1;
-    } else if (a28 != 0) {
-        sel = a28;
-    } else if (hit == 0) {
-        sel = 1;
-    } else if (hit == cell) {
-        m_pendingFxKind = 0;
-        (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
-        CGameObject* o = hit->m_10;
-        this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
-        return 1;
+    if (cell != 0) {
+        if (cell->m_tileOwnerHi != g_curPlayer) {
+            return 1;
+        }
+        if (a28 != 0) {
+            sel = a28;
+        } else if (hit == 0) {
+            sel = 1;
+        } else if (hit == cell) {
+            m_pendingFxKind = 0;
+            (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
+            CGameObject* o = hit->m_10;
+            this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
+            return 1;
+        } else {
+            sel = 2;
+        }
     } else {
-        sel = 2;
+        sel = (hit != 0) ? 2 : 1;
     }
 
     CGameObject* sprite;
