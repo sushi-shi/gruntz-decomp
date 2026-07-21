@@ -649,8 +649,8 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_5e8 = 0;
     m_accumTime = 0;
     m_5e4 = timeGetTime();
-    m_574 = 0;
     m_curSlotId = m_session->m_tick - 1;
+    m_574 = 0;
     // The CPlay slot-30 default body (0xca200) - qualified -> direct rel32 (this
     // method IS the CMulti override of that slot; ex the "LoadLevelByMode" alias).
     if (CPlay::LoadByMode(mode, 0) == 0) {
