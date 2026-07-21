@@ -2018,12 +2018,13 @@ void CButeMgr::ScanState(i16 state, char c) {
 // failing on a parse error or any non-continuation token. Type 4 continues the
 // loop (re-running the attribute-file driver).
 // @early-stop
-// 78% block-layout wall: the body is byte-identical (the shared `je fail` and
-// the `jne loop`-to-Parse loop-back all match) -- the ONLY divergence is the two
-// 3-byte cold exit blocks `xor al,al`(false) / `mov al,1`(true) emitted in
-// swapped .text order vs retail (false-first), which shifts the branch
-// displacements that target them. A block-placement coin-flip; while/break,
-// nested success-deepest, and continue forms all leave the order fixed.
+// 78% block-layout wall: the body is byte-identical AFTER fixing the tag test to
+// retail's order (t == 2 || t == 1, i.e. cmp 2 then cmp 1 - the prior model had
+// them reversed). The ONLY remaining divergence is the two 3-byte cold exit
+// blocks `xor al,al`(false) / `mov al,1`(true) emitted in swapped .text order vs
+// retail (false-first), which shifts the branch displacements that target them.
+// A block-placement coin-flip; while/break, nested success-deepest, and continue
+// forms all leave the order fixed.
 RVA(0x00171160, 0x45)
 bool CButeMgr::SkipToTag() {
     while ((static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
@@ -2031,7 +2032,7 @@ bool CButeMgr::SkipToTag() {
             break;
         }
         i16 t = m_tokType;
-        if (t == 1 || t == 2) {
+        if (t == 2 || t == 1) {
             return true;
         }
         if (t != 4) {
