@@ -12,6 +12,7 @@
 //   CGameLevel::ResolveRightX/LeftX        0x00167a20/b40
 //   CGameLevel::ResolveBottomY/TopY        0x00167c60/d80
 //   CGameLevel::BroadPhase                 0x00167ea0
+//   CWwdGridShell::OnFound                 0x00168060
 //   CWwdSpatialMgr::Init                   0x00168080
 //
 // The class definitions stay canonical (<Gruntz/GameLevel.h> / <Gruntz/UserLogic.h> /
@@ -30,6 +31,12 @@
 #include <rva.h>
 
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
+
+// Placement new for the two-phase grid construction (Init runs ??0CWwdGrid over
+// the raw CWwdGridShell allocation). Folds to the pointer; no call emitted.
+inline void* operator new(u32, void* p) {
+    return p;
+}
 
 // The mode-1..2 sub-dispatch is CGameLevel::MoveKindDispatch12 (@0x1671c0,
 // __thiscall), reconstructed below. ApplyMove's call to it reloc-masks to
@@ -599,6 +606,17 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 }
 
 // ===========================================================================
+// CWwdGridShell::OnFound (0x168060) - the concrete impl of the slot the abstract
+// CWwdGrid leaves __purecall: hand the found region's game object (+0x18) to the
+// world's broadcast child-group for sorted (re)insertion, addToMaps=1. The world
+// hop is the CLoadable-family int owner handle (OwnerMgr()).
+RVA(0x00168060, 0x16)
+void CWwdGridShell::OnFound(WwdRegion* r) {
+    CGameObject* obj = r->m_object;
+    obj->OwnerMgr()->m_childGroup->InsertSorted_159e40(obj, 1);
+}
+
+// ===========================================================================
 // CWwdSpatialMgr::Init (0x168080, __thiscall, ret 0x20 = 8 args): bring up the
 // 0xb8-byte plane grid/scroll worker. Allocate the three per-plane grids and
 // two-phase-construct each - a raw CWwdGridShell alloc (its inline default ctor
@@ -619,8 +637,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // 0x1f0328 base stamp, proving it is not a CWwdGrid subobject], so storing the concrete
 // grid into the polymorphic CWwdGrid* field WwdSpatialMgr.cpp drives is a reinterpret of
 // two layout-identical siblings - the same honest residue as ~CWwdGridShell's FreeBuckets
-// call. Setup @0x1915c0 (== CWwdGrid::CWwdGrid run as a re-init on the raw object; the
-// two-phase construction is not expressible in clean MSVC5 C++ - see WwdGrid.cpp 0x191770).
+// call. The second phase is ??0CWwdGrid @0x1915c0 run as a re-init on the raw shell -
+// spelled as the placement-new it is (the ctor's returned `this` is the && test).
 //
 // @early-stop
 // regalloc residue (~92%, was 99.51% as the `Builder_168080` view): the view kept the
@@ -638,8 +656,10 @@ i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6,
         m_grid1 = reinterpret_cast<CWwdGrid*>(g1);
         CWwdGridShell* g2 = new CWwdGridShell;
         m_grid2 = reinterpret_cast<CWwdGrid*>(g2);
-        if (g0 && g1 && g2 && g0->Setup(*rc, p3[0], p3[1]) && g1->Setup(*rc, p4[0], p4[1])
-            && g2->Setup(*rc, p5[0], p5[1])) {
+        if (g0 && g1 && g2
+            && new (g0) CWwdGrid(rc->left, rc->top, rc->right, rc->bottom, p3[0], p3[1])
+            && new (g1) CWwdGrid(rc->left, rc->top, rc->right, rc->bottom, p4[0], p4[1])
+            && new (g2) CWwdGrid(rc->left, rc->top, rc->right, rc->bottom, p5[0], p5[1])) {
             m_rect0Left = 0;
             m_rect0Top = 0;
             m_rect0Right = p6[0] - 1;
