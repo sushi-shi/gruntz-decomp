@@ -1167,7 +1167,7 @@ RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= 0x29) {
         i32 v = (code == 0x29) ? 1 : code;
-        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807f, v);
+        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, GOTOLEVEL, v);
     }
 }
 
