@@ -43,136 +43,136 @@ RVA(0x0001e720, 0x2fe)
 void __stdcall BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ";
     switch (key) {
-        case 1:
+        case PICKUP_BOMB:
             *reg += "TOOLZ_BOMBZ";
             return;
-        case 2:
+        case PICKUP_BOOMERANG:
             *reg += "TOOLZ_BOOMERANGZ";
             return;
-        case 3:
+        case PICKUP_BRICK:
             *reg += "TOOLZ_BRICKZ";
             return;
-        case 4:
+        case PICKUP_CLUB:
             *reg += "TOOLZ_CLUBZ";
             return;
-        case 5:
+        case PICKUP_GAUNTLETZ:
             *reg += "TOOLZ_GAUNTLETZ";
             return;
-        case 6:
+        case PICKUP_GLOVEZ:
             *reg += "TOOLZ_GLOVEZ";
             return;
-        case 7:
+        case PICKUP_GOOBER:
             *reg += "TOOLZ_GOOBERZ";
             return;
-        case 8:
+        case PICKUP_GRAVITYBOOTZ:
             *reg += "TOOLZ_GRAVITYBOOTZ";
             return;
-        case 9:
+        case PICKUP_GUNHAT:
             *reg += "TOOLZ_GUNHATZ";
             return;
-        case 10:
+        case PICKUP_NERFGUN:
             *reg += "TOOLZ_NERFGUNZ";
             return;
-        case 11:
+        case PICKUP_ROCK:
             *reg += "TOOLZ_ROCKZ";
             return;
-        case 12:
+        case PICKUP_SHIELD:
             *reg += "TOOLZ_SHIELDZ";
             return;
-        case 13:
+        case PICKUP_SHOVEL:
             *reg += "TOOLZ_SHOVELZ";
             return;
-        case 14:
+        case PICKUP_SPRING:
             *reg += "TOOLZ_SPRINGZ";
             return;
-        case 15:
+        case PICKUP_SPY:
             *reg += "TOOLZ_SPYZ";
             return;
-        case 16:
+        case PICKUP_SWORD:
             *reg += "TOOLZ_SWORDZ";
             return;
-        case 17:
+        case PICKUP_TIMEBOMB:
             *reg += "TOOLZ_TIMEBOMBZ";
             return;
-        case 18:
+        case PICKUP_TOOB:
             *reg += "TOOLZ_TOOBZ";
             return;
-        case 19:
+        case PICKUP_WAND:
             *reg += "TOOLZ_WANDZ";
             return;
-        case 20:
+        case PICKUP_WARPSTONE:
             *reg += "TOOLZ_WARPSTONEZ1";
             return;
-        case 21:
+        case PICKUP_WELDER:
             *reg += "TOOLZ_WELDERZ";
             return;
-        case 22:
+        case PICKUP_WINGZ:
             *reg += "TOOLZ_WINGZ";
             return;
-        case 23:
+        case PICKUP_BABYWALKER:
             *reg += "TOYZ_BABYWALKERZ";
             return;
-        case 24:
+        case PICKUP_BEACHBALL:
             *reg += "TOYZ_BEACHBALLZ";
             return;
-        case 25:
+        case PICKUP_BIGWHEEL:
             *reg += "TOYZ_BIGWHEELZ";
             return;
-        case 26:
+        case PICKUP_GOKART:
             *reg += "TOYZ_GOKARTZ";
             return;
-        case 27:
+        case PICKUP_JACKINTHEBOX:
             *reg += "TOYZ_JACKINTHEBOXZ";
             return;
-        case 28:
+        case PICKUP_JUMPROPE:
             *reg += "TOYZ_JUMPROPEZ";
             return;
-        case 29:
+        case PICKUP_POGOSTICK:
             *reg += "TOYZ_POGOSTICKZ";
             return;
-        case 30:
+        case PICKUP_SCROLL:
             *reg += "TOYZ_SCROLLZ";
             return;
-        case 31:
+        case PICKUP_SQUEAKTOY:
             *reg += "TOYZ_SQUEAKTOYZ";
             return;
-        case 32:
+        case PICKUP_YOYO:
             *reg += "TOYZ_YOYOZ";
             return;
-        case 50:
+        case PICKUP_MEGAPHONE:
             *reg += "POWERUPZ_MEGAPHONEZ";
             return;
-        case 54:
+        case PICKUP_GHOST:
             *reg += "POWERUPZ_GHOST";
             return;
-        case 55:
+        case PICKUP_SUPERSPEED:
             *reg += "POWERUPZ_SUPERSPEED";
             return;
-        case 56:
+        case PICKUP_INVULNERABILITY:
             *reg += "POWERUPZ_INVULNERABILITY";
             return;
-        case 57:
+        case PICKUP_CONVERSION:
             *reg += "POWERUPZ_CONVERSION";
             return;
-        case 58:
+        case PICKUP_DEATHTOUCH:
             *reg += "POWERUPZ_DEATHTOUCH";
             return;
-        case 59:
+        case PICKUP_ROIDZ:
             *reg += "POWERUPZ_ROIDZ";
             return;
-        case 60:
+        case PICKUP_REACTIVEARMOR:
             *reg += "POWERUPZ_REACTIVEARMOR";
             return;
-        case 61:
+        case PICKUP_RANDOMCOLORZ:
             *reg += "POWERUPZ_RANDOMCOLORZ";
             return;
-        case 62:
+        case PICKUP_SCREENSHAKE:
             *reg += "POWERUPZ_SCREENSHAKE";
             return;
-        case 63:
+        case PICKUP_BLACKSCREEN:
             *reg += "POWERUPZ_BLACKSCREEN";
             return;
-        case 64:
+        case PICKUP_MINICAM:
             *reg += "POWERUPZ_MINICAM";
             return;
         default:
