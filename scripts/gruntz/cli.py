@@ -383,7 +383,7 @@ def cmd_build(args) -> None:
     # forever. Each of those is now a test that fails against the code that shipped it.
     # This runs FIRST: if the checks are broken, their verdicts below are worthless.
     run([sys.executable, "-m", "gruntz.match.gate_selftest"])
-    summarize(json.loads(REPORT.read_text()), write=True)  # the ONE writer of the baselines
+    _report = json.loads(REPORT.read_text())
 
     # FAST tier - what a matcher's own %-grind edit can break: an annotation it just
     # added (a compgen pin, a moved DATA def) or an extern decl it changed. Run in
@@ -400,12 +400,17 @@ def cmd_build(args) -> None:
           "single-view ratchet violated - a global is declared with two types/"
           "linkages (python -m gruntz.audit.single_view)", "fast")
 
-    if req == 0:  # fast tier: the ratchets ran; the vtable/class-metadata family is normal+
-        log("fast tier: ran the sub-second ratchets; run `gruntz build` (normal) or "
+    if req == 0:  # fast tier: just the objdiff %, then stop (the cleanliness-board scan
+        summarize(_report, full=False)  # + baseline writes below are normal+ only)
+        log("fast tier: %% + the sub-second ratchets; run `gruntz build` (normal) or "
             "`--full` before committing.")
         _record_build_time("fast", time.monotonic() - build_start, ninja_s,
                            time.monotonic() - gates_t0)
         return
+
+    # normal+ only: the FULL scoreboard (high-water + cleanliness board) and the ONE
+    # write of the baselines - this is the ~several-second src/include cleanliness scan.
+    summarize(_report, write=True)
 
     # NORMAL tier - structural uniqueness invariants (low per-edit violation, so out of
     # the fast inner loop): the @stub-backlog address format, the game-body/library-body
