@@ -48,7 +48,7 @@ void RegisterActs_646188() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id)) = static_cast<void*>(&Handler_4025db);
+    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id)) = static_cast<void*>(&SpotLightActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -59,6 +59,6 @@ void RegisterActs_646188() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id2)) = static_cast<void*>(&Handler_402414);
+    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id2)) = static_cast<void*>(&SpotLightActB);
 }
 

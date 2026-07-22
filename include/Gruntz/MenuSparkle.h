@@ -38,6 +38,6 @@ extern CLogicActTable g_logicActReg_646010; // 0x00246010
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void LogicHandler_0ad2a0();
+extern "C" void MenuSparkleAct();
 
 #endif // GRUNTZ_CMENUSPARKLE_H

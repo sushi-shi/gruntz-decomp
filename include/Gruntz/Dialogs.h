@@ -303,8 +303,8 @@ public:
     // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
     // NetMgrMisc.cpp.
-    void Method_c2a50(); // 0xc2a50  reconcile channel 2 then Drive
-    void Method_c2a80(); // 0xc2a80  reconcile channel 3 then Drive
+    void ReconcileChannel2(); // 0xc2a50  reconcile channel 2 then Drive
+    void ReconcileChannel3(); // 0xc2a80  reconcile channel 3 then Drive
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)

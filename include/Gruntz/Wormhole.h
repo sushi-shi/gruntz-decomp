@@ -41,10 +41,10 @@ extern CTeleporterActReg g_teleporterActReg; // 0x002446b0
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void Handler_403846(); // 0x403846 (teleporter "B")
-extern "C" void Handler_40187a(); // 0x40187a (teleporter "A")
-extern "C" void Handler_403418(); // 0x403418 (puddle "B")
-extern "C" void Handler_4021f8(); // 0x4021f8 (puddle "A")
+extern "C" void TeleporterActB(); // 0x403846 (teleporter "B")
+extern "C" void TeleporterActA(); // 0x40187a (teleporter "A")
+extern "C" void PuddleActB(); // 0x403418 (puddle "B")
+extern "C" void PuddleActA(); // 0x4021f8 (puddle "A")
 extern i32 WormholeLogic_40181b();
 extern "C" void WormholeTypeMarker();
 

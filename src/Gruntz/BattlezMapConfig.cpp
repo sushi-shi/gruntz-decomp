@@ -1912,7 +1912,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     coll->m_scanCursor = reinterpret_cast<CDDrawGroupNode*>(coll->m_list.GetHeadPosition());
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != 0) {
-        if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(Handler_0040288d)
+        if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateInGameIcon)
             && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {

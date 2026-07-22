@@ -106,7 +106,7 @@ RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
     *reinterpret_cast<void**>(g_logicActReg_646010.ResolveEntry(id)) =
-        static_cast<void*>(&LogicHandler_0ad2a0);
+        static_cast<void*>(&MenuSparkleAct);
 }
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down

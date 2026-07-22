@@ -48,5 +48,5 @@ void ConstructLogicActRange_62bfa0() {
 RVA(0x0003a710, 0x18d)
 void RegisterXLogic_62bfa0() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_62bfa0.ResolveEntry(id)) = static_cast<void*>(&LogicHandler_039910);
+    *reinterpret_cast<void**>(g_logicActReg_62bfa0.ResolveEntry(id)) = static_cast<void*>(&CursorSnapAct);
 }

@@ -60,13 +60,13 @@ void CMultiStartDlg::ConnectStep() {
 }
 
 RVA(0x000c2a50, 0x13)
-void CMultiStartDlg::Method_c2a50() {
+void CMultiStartDlg::ReconcileChannel2() {
     SyncChannelSlot(2);
     Drive();
 }
 
 RVA(0x000c2a80, 0x13)
-void CMultiStartDlg::Method_c2a80() {
+void CMultiStartDlg::ReconcileChannel3() {
     SyncChannelSlot(3);
     Drive();
 }

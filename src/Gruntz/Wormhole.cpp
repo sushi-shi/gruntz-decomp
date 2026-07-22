@@ -400,7 +400,7 @@ void RegisterLogic() {
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id)) =
-        static_cast<void*>(&Handler_4021f8);
+        static_cast<void*>(&PuddleActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -412,7 +412,7 @@ void RegisterLogic() {
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id2)) =
-        static_cast<void*>(&Handler_403418);
+        static_cast<void*>(&PuddleActB);
 }
 
 // ===========================================================================
@@ -712,7 +712,7 @@ void CTeleporter_RegisterActs() {
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id)) =
-        static_cast<void*>(&Handler_40187a);
+        static_cast<void*>(&TeleporterActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -724,7 +724,7 @@ void CTeleporter_RegisterActs() {
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id2)) =
-        static_cast<void*>(&Handler_403846);
+        static_cast<void*>(&TeleporterActB);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
