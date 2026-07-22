@@ -6,7 +6,6 @@
 #include <rva.h>
 
 class CImage; // the frame element IS the real CImage (Image/CImage.h)
-struct CObject;
 
 #include <DDrawMgr/DDrawWorker.h> // the ONE real class (vtbl 0x1efbe8, CLoadable-derived)
 

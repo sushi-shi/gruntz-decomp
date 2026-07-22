@@ -48,7 +48,7 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 }
 
 RVA(0x0006b270, 0x1b)
-::CObject* CAniElement::AtChecked(i32 i) const {
+CObject* CAniElement::AtChecked(i32 i) const {
     if (i >= 0 && i < m_records.GetSize()) {
         return m_records.GetAt(i);
     }
@@ -735,7 +735,7 @@ i32 CResolveNode::Init(
 // touches it; its own map teardown is the [22] MapTeardown @0x1552b0.
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerCache::DestroyAll() {
-    ::CObject* val = 0;
+    CObject* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
@@ -780,15 +780,15 @@ void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, 
         }
         return 0;
     }
-    m_10[key] = static_cast<::CObject*>(w);
+    m_10[key] = static_cast<CObject*>(w);
     return w;
 }
 
 void* operator new(u32 n);
 
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerCache::FindKeyOfValue(::CObject* target) {
-    ::CObject* val = 0;
+CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
+    CObject* val = 0;
     POSITION pos = m_10.GetStartPosition();
     CString key;
     while (pos != 0) {
@@ -844,7 +844,7 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
         if (rec->Parse(ctx, reinterpret_cast<const i16*>(cursor)) == 0) {
             goto fail;
         }
-        m_records.SetAtGrow(m_records.GetSize(), static_cast<::CObject*>(rec));
+        m_records.SetAtGrow(m_records.GetSize(), static_cast<CObject*>(rec));
         cursor += g_aniParsedNameLen + 0x14;
         m_total += rec->GetSize();
     }
@@ -855,7 +855,7 @@ fail:
         delete rec;
     }
     for (i = 0; i < m_records.GetSize(); i++) {
-        ::CObject* p = m_records.GetAt(i);
+        CObject* p = m_records.GetAt(i);
         if (p != 0) {
             delete (static_cast<CAniRecordView*>(p));
         }

@@ -134,7 +134,7 @@ public:
     i32 m_shiftY;             // +0x90  tile->pixel shift Y
     i32 m_94;                 // +0x94  int scaled into m_scaleX (m_scaleX = m_94 * DAT_5f02a0)
     i32 m_98;                 // +0x98  int scaled into m_scaleY
-    ::CObArray m_frameSets;   // +0x9c  frame-set array (elements: CPlaneFrame*; the
+    CObArray m_frameSets;   // +0x9c  frame-set array (elements: CPlaneFrame*; the
                               //        draw loop indexes m_pData by handle>>16;
                               //        ctor 0x1b55e9 / ~ 0x1b561c; ex "m_obArray")
     CWwdSpatialMgr* m_scroll; // +0xb0  camera/scroll + spatial-grid worker

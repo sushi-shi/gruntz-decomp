@@ -192,7 +192,7 @@ InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {
 
     node->m_guid = static_cast<GUID*>(guid);
     node->m_name = static_cast<const char*>(name);
-    node->m_listPosition = m_groups.AddTail(static_cast< ::CObject*>(node));
+    node->m_listPosition = m_groups.AddTail(static_cast<CObject*>(node));
     return node;
 }
 
@@ -378,7 +378,7 @@ CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = static_cast<__POSITION*>(m_players.AddTail(static_cast< ::CObject*>(node)));
+    node->m_54 = static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
     return node;
 }
 
@@ -648,7 +648,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
 
     if (node != 0) {
         __POSITION* pos =
-            static_cast<__POSITION*>(m_sessions.AddTail(static_cast< ::CObject*>(node)));
+            static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
         if (pos == 0) {
             delete node;
         } else {

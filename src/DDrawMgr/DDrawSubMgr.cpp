@@ -249,7 +249,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
         }
         return 0;
     }
-    m_workers.AddTail(static_cast< ::CObject*>(w));
+    m_workers.AddTail(static_cast<CObject*>(w));
     return w;
 }
 
@@ -306,9 +306,9 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast< ::CObject*>(w));
+        m_workers.AddHead(static_cast<CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast< ::CObject*>(w));
+        m_workers.AddTail(static_cast<CObject*>(w));
     }
     return w;
 }
@@ -393,9 +393,9 @@ void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast< ::CObject*>(w));
+        m_workers.AddHead(static_cast<CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast< ::CObject*>(w));
+        m_workers.AddTail(static_cast<CObject*>(w));
     }
     return w;
 }
@@ -410,9 +410,9 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast< ::CObject*>(w));
+        m_workers.AddHead(static_cast<CObject*>(w));
     } else {
-        m_workers.AddTail(static_cast< ::CObject*>(w));
+        m_workers.AddTail(static_cast<CObject*>(w));
     }
     return w;
 }

@@ -88,7 +88,7 @@ public:
     }
     void AddFrameAt(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
-    ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
+    CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
     char m_name[0x40];   // +0x24  registry key buffer (SetKey strncpy's it,
                         //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
     i32 m_minIndex;           // +0x64  cached-index sentinel (Unload seeds 99999)
