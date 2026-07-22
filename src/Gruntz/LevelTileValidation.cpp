@@ -261,7 +261,7 @@ i32 CPlay::ValidateLevelTiles() {
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
                 // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
-                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_04, TRIGID_COVERED_POWERUP_26);
+                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == 0) {
                     return 0;
                 }
@@ -278,7 +278,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_MULTI_SWITCH_3,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -303,7 +303,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_EXCLUSIVE_SWITCH_4,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -328,7 +328,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_SECRET_SWITCH_6,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -353,7 +353,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_TIME_SWITCH_7,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -378,7 +378,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_CHECKPOINT_SWITCH_8,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -403,7 +403,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_SWITCH_1,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -428,7 +428,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_SWITCH_2,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -453,7 +453,7 @@ i32 CPlay::ValidateLevelTiles() {
                             TRIGID_SWITCH_5,
                             obj->m_164,
                             obj->m_168,
-                            obj->m_04,
+                            obj->m_id,
                             obj->m_extent,
                             obj->m_area,
                             obj->m_switchRect,
@@ -530,7 +530,7 @@ i32 CPlay::ValidateLevelTiles() {
                         tile,
                         obj->m_164,
                         obj->m_168,
-                        obj->m_04,
+                        obj->m_id,
                         obj->m_extent.left,
                         obj->m_extent.top,
                         obj->m_extent.right,

@@ -185,7 +185,6 @@
 ?GetPoolKind@CPoolItemAB8@@UAEHXZ
 ?GetPoolKind@CPoolItemAE8@@UAEHXZ
 ?GetSpawnPos@CGrunt@@QAEXPAH@Z
-?GetStateId@CDDrawWorkerMapSmall@@UAE?AW4StateId@@XZ
 ?GetStride@CImageSet1@@UAEHXZ
 ?GetStride@CImageSet2@@UAEHXZ
 ?GetStride@CImageSet3@@UAEHXZ
@@ -277,7 +276,6 @@
 ?IsInCombatRange@CGrunt@@QAEHHH@Z
 ?IsLoaded@AnimWorkerObj@@UAEHXZ
 ?IsLoaded@CAniAdvanceCursor@@UAEHXZ
-?IsLoaded@CDDrawWorkerHost@@UAEHXZ
 ?IsLoaded@CDDrawWorkerRegistry@@UAEHXZ
 ?IsLoaded@CDrawSubWorker@@UAEHXZ
 ?IsLoaded@CGameObject@@UAEHXZ
@@ -530,8 +528,6 @@
 ?Vslot15@CMulti@@UAEHXZ
 ?Vslot16@CGruntHealthSprite@@UAEHPAVCGrunt@@@Z
 ?Vslot1a@CMulti@@UAEHXZ
-?VtSlot11_163ac0@CDDrawWorkerHost@@UAEXXZ
-?VtSlot8_163ab0@CDDrawWorkerHost@@UAEXXZ
 ?WantCreate@CFileMemBase@@UAEXXZ
 ?WantRead@CFileMemBase@@UAEHXZ
 ?Wap32GameWndVfunc2@CGruntzWnd@@UAEHHHH@Z

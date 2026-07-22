@@ -59,10 +59,9 @@ static inline void StampParamBlock(CGameLevel* o) {
 // CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
-    m_04 = a2;
-    m_08 = a3;
-    m_0c =
-        reinterpret_cast<CDDrawSurfaceMgr*>(a1); // (merged CLoadable ctor; mangling-pinned i32 arg)
+    m_id = a2;
+    m_flags = a3;
+    m_ownerCtx = a1; // (fused CLoadable ctor stores; the owner handle - reads go through OwnerMgr())
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_pairA[1] = 250;
@@ -126,7 +125,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     strcpy(m_levelName, hdr->levelName); // inline strlen + rep movs
-    m_08 = *pflags;
+    m_flags = *pflags;
     m_checksum = hdr->checksum;
 
     i32 result = 0; // image-set result (the >=0 success / -1 failure sentinel)
@@ -233,10 +232,10 @@ i32 CGameLevel::IsLoaded() {
     if (m_planeCtx.left == LEVEL_COORD_UNSET) {
         goto fail;
     }
-    if (m_0c == 0) {
+    if (m_ownerCtx == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_id != -1) {
         return 1;
     }
 
@@ -442,7 +441,7 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 
 RVA(0x0015d8d0, 0xc3)
 CDDrawWorkerHost* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(m_0c, m_planes.GetSize(), 0);
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
         if (plane) {
@@ -464,7 +463,7 @@ CDDrawWorkerHost* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* 
 
 RVA(0x0015d9a0, 0xdc)
 CDDrawWorkerHost* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(m_0c, m_planes.GetSize(), 0);
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
         == 0) {
@@ -762,7 +761,7 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
 
 // ---------------------------------------------------------------------------
 // VisitVisible: z-ordered object render walk. When the level is origin-fixed
-// (m_08 & 1) walk ctx's object chain, Draw each object whose z-key is below the
+// (m_flags & 1) walk ctx's object chain, Draw each object whose z-key is below the
 // running plane's z bound, Sync the planes around it; otherwise Sync every plane
 // (around the main index) and dispatch ctx's Hook. `visitor` (1st param) is the
 // render visitor every Sync/Draw/Hook receives; `ctx` (2nd param) is the chain.
@@ -779,7 +778,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     // live) before loading the head - the CObList member keeps that byte shape.
     CObList* chain = &ctx->m_list;
 
-    if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
+    if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
             ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
         CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(chain->GetHeadPosition());
@@ -924,7 +923,7 @@ i32 CGameLevel::LoadName(void* sink) {
 // Logic/offsets/CFG exact; deferred to the final sweep.
 RVA(0x0015dfb0, 0x15b)
 i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
-    if (m_08 & 4) {
+    if (m_flags & 4) {
         return ApplyMove(target, a1, a2, a3);
     }
 
@@ -1498,7 +1497,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
     }
 
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
+        reinterpret_cast<CDDrawGroupNode*>(OwnerMgr()->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;

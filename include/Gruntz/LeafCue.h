@@ -43,9 +43,9 @@ struct LeafCue : public CLoadable {
 };
 SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, i32 handle) {
-    m_04 = count;
+    m_id = count;
     m_flags = 0;
-    m_0c = handle;
+    m_ownerCtx = handle;
     m_10 = 0;
     m_18 = 0;
     m_14 = 0;

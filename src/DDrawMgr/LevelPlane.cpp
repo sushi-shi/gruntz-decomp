@@ -7,7 +7,7 @@
 // the plane/render TU is [0x161350 .. 0x163a00] - heavily WOVEN, one obj - holding
 //   CDDrawWorkerHost ctor/ReadPlaneBlock-gap/RegisterNamed   (0x1615a0/640/c50)
 //   CDDrawWorkerHost InitGeometry/RecomputePlaneCoords/Build      (0x1619f0/c90/e80)
-//   CImageSet3 grid-owner leaves Cleanup/Prune/GetSize       (0x161bf0/0x1628d0/0x1633e0)
+//   CImageSet3 grid-owner leaves Unload/Prune/GetSize        (0x161bf0/0x1628d0/0x1633e0)
 //   CDDrawWorkerHost SetTileSize(FromImageSet)/Draw/CenterScrollA+B/InitScrollRects/
 //     ValidateTiles/ResolveColorKey/Save/Load (+ the serialize dispatcher)
 //   WwdFile RebuildPlanes/ReadPlaneObjects                   (0x1628f0/0x162af0)
@@ -52,7 +52,7 @@
 // plane TU. Local view duplicated from that TU (@identity-TODO: the grid-owner's
 // name-conflation with the Gruntz CImageSet3 variant record is unresolved).
 // The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
-// CDDrawWorkerHost::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
+// CDDrawWorkerHost::Unload prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
 // complete dtor (~CWwdSpatialMgr @0x163a40, body in WwdSpatialMgr.cpp; the ex-C163a40
 // GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
@@ -65,9 +65,9 @@
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
-    m_04 = field04;
+    m_id = field04;
     m_flags = flags;
-    m_mapData = mapData; // (merged CLoadable ctor)
+    m_ownerCtx = reinterpret_cast<i32>(mapData); // (fused CLoadable ctor stores - the CResolveNode shape)
     // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
     m_tileGrid = 0;
     m_colOffsets = 0;
@@ -207,7 +207,7 @@ i32 CDDrawWorkerHost::InitGeometry(
 }
 
 RVA(0x00161bf0, 0x5e)
-void CDDrawWorkerHost::Cleanup() {
+void CDDrawWorkerHost::Unload() {
     if (m_scroll != 0) {
         m_scroll->PruneCount();
     }
@@ -240,7 +240,7 @@ void CDDrawWorkerHost::Cleanup() {
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val = 0;
-    m_mapData->m_imageRegistry->m_10map.Lookup(key, val);
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, val);
     m_frameSets.SetAtGrow(index, val);
 }
 
@@ -604,7 +604,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     rc.right = m_wrapW - 1;
     rc.bottom = m_wrapH - 1;
 
-    CDDrawSurfaceMgr* reg = m_mapData;
+    CDDrawSurfaceMgr* reg = OwnerMgr();
     CDDrawChildGroup* src = reg->m_childGroup;
     if (src == 0) {
         return 0;
@@ -687,13 +687,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    obj->Construct(m_mapData, id, 0);
+    obj->Construct(OwnerMgr(), id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     new (static_cast<void*>(&obj->m_1a0))
-        CLoadable(reinterpret_cast<i32>(m_mapData), id, 0); // the embedded loadable (ctor 0x156cb0)
+        CLoadable(m_ownerCtx, id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_1a0.m_10 = 0;
     obj->m_1a0.m_14 = 0;
@@ -756,7 +756,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (imageSet.GetLength() != 0) {
         void* found = 0;
         CObject* foundOb = 0;
-        loaded = m_mapData->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
+        loaded = OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
         found = foundOb;
     }
 
@@ -988,7 +988,7 @@ void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
         return;
     }
-    CGameLevel* g = m_mapData->m_level;
+    CGameLevel* g = OwnerMgr()->m_level;
     if (g == 0) {
         return;
     }
@@ -1114,7 +1114,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 // zero-register-pinning.md family.
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
-    i32 format = m_mapData->m_drawTarget->m_frontPair->m_bpp;
+    i32 format = OwnerMgr()->m_drawTarget->m_frontPair->m_bpp;
     if (format == 8) {
         return;
     }
@@ -1134,7 +1134,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
     // is the flagged @identity-TODO tail of the cascade: the slot's element type is
     // the map's CObject*, and this worker's concrete palette-bearing class is the one
     // link no caller/new-site names (see <Wwd/WwdFile.h>).
-    CPlanePalOwner* owner = reinterpret_cast<CPlanePalOwner*>(m_mapData->m_workerMap->m_cachedWorker);
+    CPlanePalOwner* owner = reinterpret_cast<CPlanePalOwner*>(OwnerMgr()->m_workerMap->m_cachedWorker);
     if (owner == 0) {
         return;
     }

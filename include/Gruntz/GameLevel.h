@@ -91,17 +91,18 @@ struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
 class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.h>)
 
-class CGameLevel : public CWapObj {
+// (B)-form re-base 2026-07-22: retail ??0CGameLevel stamps ??_7CLoadable @0x5efc30
+// before its own 0x5f0150 stamp (GameLevel.cpp's own decode) - the base IS
+// CLoadable (deriving CWapObj directly made our compile emit a spurious
+// ??_7CWapObj retail lacks). The +0x04..+0x0c header trio is the INHERITED
+// CLoadable one (owner reads via OwnerMgr(): BroadPhase/StepAxisAlt walk its
+// m_childGroup, MovingLogic hops m_level).
+class CGameLevel : public CLoadable {
 public:
     // 0x160530: probe a .wwd file header on disk (open/read/validate; touches no
     // members - the custom-world dialog calls it on m_world->m_level; ex the
     // WwdLevelInfoSrc view).
     i32 IsValidWwd(const char* name, void* headerBuf);
-
-    i32 m_04, m_08;         // +0x04..0x0b (the CLoadable base header words, kept inline)
-    CDDrawSurfaceMgr* m_0c; // +0x0c  the owning world/display root (the CLoadable
-                            //        owner slot; BroadPhase/StepAxisAlt walk its
-                            //        m_childGroup, MovingLogic hops m_level)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base
@@ -114,13 +115,12 @@ public:
     // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
     // run Unload (slot +0x1c, the fail/reset hook).
     virtual ~CGameLevel() OVERRIDE;  // [1] +0x04 (dtor 0x1611e0; ??_G 0x1611c0 pinned in .cpp)
-    virtual i32 IsLoaded() OVERRIDE; // [5]  +0x14  0x161190 (overrides CWapObj)
+    virtual i32 IsLoaded() OVERRIDE; // [5]  +0x14  0x161190 (overrides CLoadable's)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
-    virtual void Unload(); // [7]  +0x1c  0x15d1f0  full unload (+ header zero; void -
-                           // retail's ret leaves no eax, same as the CLoadable scheme)
+    virtual void Unload() OVERRIDE; // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
     RVA(0x001611b0, 0x6)
-    virtual i32 GetClassId() {
+    virtual i32 GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }
     virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70

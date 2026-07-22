@@ -54,13 +54,13 @@ inline void* WwdKey(CGameObject* o) {
 }
 
 RVA(0x001591e0, 0x5)
-void CDDrawChildGroup::ForwardTo3C() {
+void CDDrawChildGroup::Unload() {
     this->DestroyChildren();
 }
 
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
-    CGameLevel* p = m_parent->m_level;
+    CGameLevel* p = OwnerMgr()->m_level;
     if (p != 0) {
         // m_mainPlane IS the plane/grid-owner CDDrawWorkerHost (the plane-family
         // unification: slots 9/10 of ??_7CDDrawWorkerHost are CDDrawWorkerHost methods).
@@ -95,7 +95,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
     char* obj = static_cast<char*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
-        int root = reinterpret_cast<int>(m_parent);
+        int root = m_ownerCtx;
         new (obj) CResolveNode(root, a1, a7);
         CWwdSlot9c* s9c = reinterpret_cast<CWwdSlot9c*>((obj + 0x9c));
         new (s9c) CWwdSlot9c();
@@ -153,7 +153,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
     int a7
 ) {
     CObject* val = 0;
-    m_parent->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     return CreateObject_159250(a1, a2, a3, a4, reinterpret_cast<int>(val), a6, a7);
 }
 
@@ -167,7 +167,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
     char* obj = static_cast<char*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
-        int root = reinterpret_cast<int>(m_parent);
+        int root = m_ownerCtx;
         new (obj) CResolveNode(root, a1, a4);
         CWwdSlot9c* s9c = reinterpret_cast<CWwdSlot9c*>((obj + 0x9c));
         new (s9c) CWwdSlot9c();
@@ -213,7 +213,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
 RVA(0x001595b0, 0x44)
 CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
     CObject* val = 0;
-    m_parent->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     return CreateObject_159440(a1, a2, reinterpret_cast<int>(val), a4);
 }
 
@@ -237,7 +237,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
-        i32 root = reinterpret_cast<i32>(m_parent);
+        i32 root = m_ownerCtx;
         new (obj) CResolveNode(root, a1, flags);
         new (obj + 0x9c) CWwdSlot9cA();
         new (obj + 0xb8) CWwdShadowRec();
@@ -290,7 +290,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 flags
 ) {
     CObject* tmpl_ob = 0;
-    m_parent->m_workerCache->m_10.Lookup(name, tmpl_ob);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
     CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
     if (!tmpl) {
         return 0;
@@ -327,7 +327,7 @@ i32 CDDrawChildGroup::AttachSprite(
         return 0;
     }
     CObject* tmpl_ob = 0;
-    m_parent->m_workerCache->m_10.Lookup(name, tmpl_ob);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
     CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
     if (!tmpl) {
         return 0;
@@ -357,7 +357,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
     char* obj = static_cast<char*>(RezAlloc(0x1fc));
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
-        int root = reinterpret_cast<int>(m_parent);
+        int root = m_ownerCtx;
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
         new (obj + 0x1a0) CLoadable(root, a1, a6); // the embedded loadable (ctor 0x156cb0)
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
@@ -399,7 +399,7 @@ RVA(0x00159a10, 0x57)
 CWwdGameObject*
 CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6) {
     CObject* val = 0;
-    m_parent->m_workerCache->m_10.Lookup(name, val);
+    OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }
@@ -820,12 +820,12 @@ i32 DrawObjectDebugGeometry(void) {
 // allocates one fewer scratch slot - flipping the ModRM byte of most accesses.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
-    if (!(m_flags08 & 0x200000)) {
+    if (!(m_flags & 0x200000)) {
         return;
     }
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    CDDrawSurfacePair* drawHost = m_parent->m_drawTarget->m_backPair;
-    CDDrawWorkerHost* view = m_parent->m_level->m_mainPlane;
+    CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+    CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
     if (node == 0) {
         return;
     }
@@ -940,7 +940,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->m_04 == type) {
+        if (obj->m_id == type) {
             return obj;
         }
     }
@@ -954,7 +954,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
             return obj;
         }
     }
@@ -979,7 +979,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
             // the worker notify fn doubles as the kind marker - match it against the
             // key worker (same idiom as the TriggerMgr grunt-notify compare)
             AnimWorkerObj* worker = obj->m_7c;
@@ -1012,7 +1012,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
-    m_parent->m_workerCache->m_10.Lookup(key, found);
+    OwnerMgr()->m_workerCache->m_10.Lookup(key, found);
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
@@ -1023,7 +1023,7 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
         node = node->m_next;
         CGameObject* obj = cur->m_obj;
         i32 tag = obj->GetClassId(); // vtable slot 8 (the type tag)
-        if (tag == 5 && obj->m_04 == id && obj->m_7c->m_notify == fp->m_notify) {
+        if (tag == 5 && obj->m_id == id && obj->m_7c->m_notify == fp->m_notify) {
             return obj;
         }
     } while (node != 0);
@@ -1044,7 +1044,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_04 == type
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
             && reinterpret_cast<void*>(obj->m_collCategory) == key) {
             return obj;
         }
@@ -1088,7 +1088,7 @@ i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->m_04 == kind) {
+        if (obj->m_id == kind) {
             if (found != 0) {
                 return 0;
             }
@@ -1106,7 +1106,7 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        if (obj->m_04 == kind) {
+        if (obj->m_id == kind) {
             ++count;
         }
     }
@@ -1151,7 +1151,7 @@ i32 CDDrawChildGroup::SumWeighted() {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
-        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_04);
+        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
         ++i;
     }
     return sum;
@@ -1266,7 +1266,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         switch (desc.m_08) {
             case 5: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
                     createdObj = CreateObject_159600(
                         desc.m_00,
@@ -1281,14 +1281,14 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             }
             case 0x16: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 createdObj =
                     CreateObject_159440(desc.m_00, desc.m_9c, reinterpret_cast<i32>(val), 0);
                 break;
             }
             case 0x1b: {
                 CObject* val;
-                m_parent->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
+                OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 if (val != 0) {
                     createdObj = CreateObject_1598d0(
                         desc.m_00,
@@ -1303,7 +1303,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             }
             case 0x1c: {
                 void* rec = 0;
-                if (m_parent->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec))
+                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec))
                     == 0) {
                     return 0;
                 }
@@ -1339,7 +1339,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         }
         if (desc.m_10 != 0) {
             void* child = 0;
-            if (m_parent->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
+            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
                 == 0) {
                 return 0;
             }

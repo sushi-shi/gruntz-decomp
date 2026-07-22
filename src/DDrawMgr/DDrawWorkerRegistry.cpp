@@ -57,10 +57,10 @@ static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
     CDDrawWorker* w = new CDDrawWorker;
     if (w != 0) {
         i32 field1c = ReadRegistryField1c(parent);
-        i32 surfaceMgr = parent->m_0c;
-        w->m_04 = field1c;
+        i32 surfaceMgr = parent->m_ownerCtx;
+        w->m_id = field1c;
         w->m_flags = 0;
-        w->m_0c = surfaceMgr;
+        w->m_ownerCtx = surfaceMgr;
         w->m_minIndex = 99999;
         w->m_maxIndex = 0;
     }
@@ -360,7 +360,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
 // below (MSVC5 has no /OPT:ICF, so both are emitted). Un-phantoms the slot.
 RVA(0x00155700, 0x16)
 i32 CLoadable::IsLoaded() {
-    if (m_0c != 0 && m_04 != -1) {
+    if (m_ownerCtx != 0 && m_id != -1) {
         return 1;
     }
     return 0;
@@ -376,7 +376,7 @@ RVA_COMPGEN(0x00155720, 0x1e, ??_GCLoadable@@UAEPAXI@Z)
 
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {
-    if (m_0c != 0 && m_04 != -1) {
+    if (m_ownerCtx != 0 && m_id != -1) {
         return 1;
     }
     return 0;

@@ -75,7 +75,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldL
         return 0;
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_08 |= 4;
+    m_world->m_level->m_flags |= 4; // the CLoadable +0x08 flag word
     return 1;
 }
 

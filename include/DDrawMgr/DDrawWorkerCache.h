@@ -4,25 +4,26 @@
 #include <Ints.h>
 #include <DDrawMgr/AnimWorkerObj.h> // GameObjNotifyFn (the CreateWorker registrant ABI)
 #include <rva.h>
-#include <Wap32/Object.h>
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
+#include <Gruntz/Loadable.h> // CLoadable - the real base (slot scheme 5-8)
 #include <Gruntz/MapStringToOb.h>
 
 class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-class CDDrawWorkerCache : public CObject {
+// (B)-form re-base 2026-07-22: vtbl 0x5efd00 slots 5-8 are the CLoadable scheme;
+// the +0x04..+0x0c trio is the INHERITED CLoadable header (ex the "merged
+// CDDrawWorkerCacheBase" flat words).
+class CDDrawWorkerCache : public CLoadable {
 public:
-    i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned at def)
     // [5] 0x1576d0 IsLoaded (the CLoadable-scheme slot-5 predicate): loaded iff +0x0c
     // is bound and the +0x04 status latch isn't -1. (Renamed from "IsReady" - slot 6
     // below is the scheme's IsReady.)
     RVA(0x001576d0, 0x16)
-    virtual i32 IsLoaded() {
-        if (m_0c == 0) {
+    virtual i32 IsLoaded() OVERRIDE {
+        if (m_ownerCtx == 0) {
             goto fail;
         }
-        if (m_04 != -1) {
+        if (m_id != -1) {
             return 1;
         }
 
@@ -34,17 +35,17 @@ public:
     // Only reference in the binary: ??_7CDDrawWorkerCache@@6B@+0x18. (Ex the fictional
     // "CDDrawSubMgr::GetStateId returning STATE_SUBMGR=1".)
     RVA(0x00157790, 0x6)
-    virtual i32 IsReady() {
+    virtual i32 IsReady() OVERRIDE {
         return 1;
     }
-    // [7] 0x165210 (body in DDrawSurfacePair.cpp): delete every m_10 map value,
+    // [7] Unload (ex "DestroyAll"; body 0x165210 in DDrawSurfacePair.cpp): delete every m_10 map value,
     // RemoveAll. Proven THIS class's slot body by exhaustive binary xref (one call
     // site = this class's dtor, one data ref = this vtable's slot 7); was
     // mis-attributed to CDDrawWorkerRegistry (whose real teardown is MapTeardown).
-    virtual void DestroyAll();
+    virtual void Unload() OVERRIDE; // (ex "DestroyAll")
     RVA(0x001576f0, 0x6)
-    virtual StateId GetStateId() {
-        return STATE_WORKERCACHE; // 0x13
+    virtual i32 GetClassId() OVERRIDE {
+        return CLASSID_WORKERCACHE; // 0x13
     }
     // The registered per-type notify/factory callback: the body hands it straight to
     // AnimWorkerObj::Init as the worker's GameObjNotifyFn (a1 was `i32` - every one

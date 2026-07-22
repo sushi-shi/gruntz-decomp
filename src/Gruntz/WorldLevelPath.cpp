@@ -61,7 +61,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         }
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_08 |= 4;
+    m_world->m_level->m_flags |= 4; // the CLoadable +0x08 flag word
     g_backView = m_world->m_level->FindPlaneByName("BACK");
     return 1;
 }

@@ -268,15 +268,15 @@ CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
-        int root = m_0c; // the CLoadable owner int handle (== this->m_0c, the CDDrawSurfaceMgr)
+        int root = m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
         result = reinterpret_cast<CWwdGameObjectA*>(obj);
         // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
         // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128
         // vptr stamp is compiler-emitted-vtable-dropped (% ok per drive-to-0).
-        result->m_1a0.m_04 = a1;
+        result->m_1a0.m_id = a1;
         result->m_1a0.m_flags = a6;
-        result->m_1a0.m_0c = root;
+        result->m_1a0.m_ownerCtx = root;
         result->m_1a0.m_10 = 0;
         result->m_1a0.m_14 = 0;
         result->m_1a0.m_element = 0;

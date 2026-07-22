@@ -4,8 +4,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>            // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
-#include <Wap32/WapObj.h>   // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
-#include <Gruntz/StateId.h> // StateId - the slot-8 GetStateId tag space
+#include <Gruntz/Loadable.h> // CLoadable - the real base (ctor 0x156cb0 at the Init new-site)
 
 struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
 
@@ -33,15 +32,18 @@ struct CDDrawGroupNode {
 };
 SIZE_UNKNOWN();
 
-class CDDrawChildGroup : public CWapObj {
+// (B)-form re-base 2026-07-22: CDDrawSurfaceMgr::Init constructs this with the
+// CLoadable 3-arg base ctor 0x156cb0 (retail decode), and vtbl 0x5efdc0 slots
+// 5-8 are the CLoadable scheme (IsLoaded/IsReady/Unload/GetClassId 0x10).
+class CDDrawChildGroup : public CLoadable {
 public:
     // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
     // the ex CDDrawChildGroupDtorHost view; ??_G @0x157610 is cl-generated there).
     virtual ~CDDrawChildGroup() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE; // slot 5  0x1575e0 (parent set && status != -1)
     virtual i32 IsReady() OVERRIDE;  // slot 6  0x1576c0 (own `return 1` copy)
-    virtual void ForwardTo3C();      // slot 7  0x1591e0 -> DestroyChildren
-    virtual StateId GetStateId();    // slot 8  0x157600 (STATE_CHILDGROUP = 0x10)
+    virtual void Unload() OVERRIDE;    // slot 7  0x1591e0 -> DestroyChildren (ex "ForwardTo3C")
+    virtual i32 GetClassId() OVERRIDE; // slot 8  0x157600 -> CLASSID_CHILDGROUP (0x10)
     // slot 9 (+0x24) = the per-frame kill-cue tick (0x159a70, ret 4 = 1 arg; body in
     // WwdObjMgr.cpp). CMulti/CPlay's frame pump dispatches it here with the frame
     // delta, then slot 16 below.
@@ -63,7 +65,7 @@ public:
     CWwdGameObjectA* CreateObject_159600(int a1, int a2, int a3, int a4, int a5, int flags);
     CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
     // Name-resolving factory front-ends: resolve `name` through the owner's
-    // worker-cache name map (m_parent->m_workerCache->m_10, the Ob-band Lookup
+    // worker-cache name map (OwnerMgr()->m_workerCache->m_10, the Ob-band Lookup
     // 0x1b8008) to an id, then forward it as the matching CreateObject argument.
     CWwdGameObject*
     CreateNamed_1593e0(int a1, int a2, int a3, int a4, const char* name, int a6, int a7);
@@ -114,11 +116,9 @@ public:
     i32 CountByKind(i32 kind);  // 0x15aa60 count of objs with m_04==kind
     i32 SumWeighted();          // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
-    i32 m_status;  // +0x04  initialized to -1 when inactive
-    i32 m_flags08; // +0x08  flags (bit 0x200000 = draw per-object debug counts)
-    // +0x0c  the owning CDDrawSurfaceMgr (the world/display root; its +0x24 is the
-    // CGameLevel and +0x04 the pages sub-manager).
-    class CDDrawSurfaceMgr* m_parent;
+    // (+0x04 m_04 / +0x08 m_flags / +0x0c m_0c are the INHERITED CLoadable header
+    // trio - m_flags bit 0x200000 = draw per-object debug counts; the owner read
+    // is OwnerMgr() == the ex "m_parent" CDDrawSurfaceMgr world root.)
     // +0x10  the REAL CObList (0x1c bytes: vptr, pNodeHead@+0x14, pTail, nCount@+0x1c,
     // free/blocks/blocksize). The intrusive walkers read the head via the inline
     // GetHeadPosition() (same `mov reg,[this+0x14]` bytes) cast to CDDrawGroupNode

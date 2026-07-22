@@ -3,24 +3,24 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h>
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
+#include <Gruntz/Loadable.h> // CLoadable - the real base (slot scheme 5-8)
 #include <Gruntz/MapStringToOb.h>
 #include <DDrawMgr/AniRecordBase2.h>
 
 #include <Gruntz/ParseSource.h> // the real parse-source record
 
-class CDDrawWorkerMapSmall : public CObject {
+// (B)-form re-base 2026-07-22: vtbl 0x5efcc8 slots 5-8 are the CLoadable scheme;
+// the +0x04..+0x0c trio is the INHERITED CLoadable header (ex the "merged
+// CDDrawWorkerMapBase" flat words).
+class CDDrawWorkerMapSmall : public CLoadable {
 public:
-    i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
-public:
-    virtual i32 IsLoaded();      // [5]  0x156cd0 (G obj; the worker-gate - CWapObj-scheme slot 5)
-    virtual i32 IsReady();       // [6]  0x156db0 (G obj; own return-1 copy of the scheme default)
-    virtual void DestroyAll();   // [7]  0x165810 (T obj)
-    // [8] the class's REAL GetStateId (`mov eax,0x14; ret` @0x156cf0 - a Ghidra
-    // recovery gap, declared-only). The old "GetStateId 0x157600" plain-method
-    // claim was a misbinding: 0x157600 is CDDrawChildGroup's slot 8 (id 0x10).
-    virtual StateId GetStateId(); // [8]  0x156cf0 (STATE_WORKERMAPSMALL = 0x14)
+    virtual i32 IsLoaded() OVERRIDE; // [5]  0x156cd0 (G obj; the worker-gate)
+    virtual i32 IsReady() OVERRIDE;  // [6]  0x156db0 (G obj; own return-1 copy)
+    virtual void Unload() OVERRIDE;  // [7]  0x165810 (T obj; ex "DestroyAll")
+    // [8] the REAL GetClassId (.mov eax,0x14; ret. @0x156cf0 - a Ghidra recovery
+    // gap; body defined at the dtor pocket). The old "GetStateId 0x157600"
+    // plain-method claim was a misbinding (that is CDDrawChildGroup.s id 0x10).
+    virtual i32 GetClassId() OVERRIDE; // [8]  0x156cf0 -> CLASSID_WORKERMAPSMALL (0x14)
     virtual void* Factory_1658c0(CParseSource* a1, const char* key, i32 a3); // [9] 0x1658c0
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10

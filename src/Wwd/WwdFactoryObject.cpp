@@ -55,9 +55,9 @@ VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoad
 // ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
-    m_04 = field04;
+    m_id = field04;
     m_flags = field08;
-    m_0c = owner;
+    m_ownerCtx = owner;
     m_dirtyRect.left = static_cast<i32>(0x80000000);
     m_dirtyArmed = -1;
     m_screenX = static_cast<i32>(0x80000000);
@@ -190,9 +190,9 @@ void CGameObject::Notify(void* p) {
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
     Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
-    m_04 = -1;
+    m_id = -1;
     m_flags = 0;
-    m_0c = 0;
+    m_ownerCtx = 0;
 }
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
@@ -209,9 +209,9 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 // (`: CLoadable(...)`), which contradicts its proven out-of-line 0x156cb0 body.
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
-    m_04 = field04;
+    m_id = field04;
     m_flags = field08;
-    m_0c = owner;
+    m_ownerCtx = owner;
     m_10 = 0;
     m_14 = 0;
     m_element = 0;

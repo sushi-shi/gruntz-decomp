@@ -50,8 +50,8 @@ public:
     // seed, then the DERIVED vptr, then m_78 - matching retail's store order + single
     // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
     CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
-        m_04 = 0;
-        m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
+        m_id = 0;
+        m_ownerCtx = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
         m_flags = 0;
         m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;

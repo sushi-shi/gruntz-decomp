@@ -117,7 +117,7 @@ RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_flags = a3;
     if (w <= 0 || h <= 0) {
-        i32 k = m_04;
+        i32 k = m_id;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         if (k == 1) {
             if (mgr->m_lastError == 0) {
@@ -138,7 +138,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[1] = 0;
     rect[2] = w;
     rect[3] = h;
-    if (m_04 == 1) {
+    if (m_id == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface =
             static_cast<CDDSurface*>(mgr->m_ptrColl
@@ -150,7 +150,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
             return 0;
         }
     }
-    if (m_04 != 1) {
+    if (m_id != 1) {
         if (m_flags & 0x10000) {
             m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
         } else {
@@ -192,7 +192,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
             m_srcRect[0] = 0;
             m_srcRect[1] = 0;
             m_srcRect[3] = h;
-            m_04 = 0x63;
+            m_id = 0x63;
             m_surface = src;
             m_ownsSurface = 0;
             return 1;
@@ -432,7 +432,7 @@ RVA(0x00164250, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
-        if (m_04 == 2) {
+        if (m_id == 2) {
             DDSCAPS caps;
             if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
                 sysmem = 0x800 & caps.dwCaps;
@@ -442,7 +442,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
         }
         OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
         m_surface = 0;
-        if (m_04 == 1) {
+        if (m_id == 1) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface =
                 static_cast<CDDSurface*>(mgr->m_ptrColl
@@ -451,7 +451,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
                 return 0;
             }
         }
-        if (m_04 != 1) {
+        if (m_id != 1) {
             if (sysmem != 0) {
                 m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
             } else {
@@ -719,8 +719,8 @@ i32 CResolveNode::Init(
     i32 field40,
     i32 field08
 ) {
-    m_0c = owner;
-    m_04 = field04;
+    m_ownerCtx = owner;
+    m_id = field04;
     m_flags = field08;
     m_drawFillArg = 0;
     m_drawActive = 0;
@@ -730,13 +730,13 @@ i32 CResolveNode::Init(
     return 1;
 }
 
-// CDDrawWorkerCache::DestroyAll (the [7] slot body). PROVEN owner by exhaustive
+// CDDrawWorkerCache::Unload (ex "DestroyAll"; the [7] slot body). PROVEN owner by exhaustive
 // binary xref: 0x165210 has NO ILT thunk, ONE call site (0x15774b, inside
 // ~CDDrawWorkerCache 0x157720) and ONE data ref (??_7CDDrawWorkerCache 0x1efd00
 // slot 7 @0x1efd1c) - CDDrawWorkerRegistry (the former attribution) never
 // touches it; its own map teardown is the [22] MapTeardown @0x1552b0.
 RVA(0x00165210, 0xa2)
-void CDDrawWorkerCache::DestroyAll() {
+void CDDrawWorkerCache::Unload() {
     CObject* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -758,7 +758,7 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     AnimWorkerObj* w = new AnimWorkerObj;
     if (w != 0) {
         i32 field1c = ReadWorkerCacheField1c(parent);
-        i32 surfaceMgr = parent->m_0c;
+        i32 surfaceMgr = parent->m_ownerCtx;
         w->m_04 = field1c;
         w->m_08 = 0;
         w->m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(surfaceMgr);
@@ -930,7 +930,7 @@ void CAniElement::DeleteAll() {
 }
 
 RVA(0x00165810, 0xa9)
-void CDDrawWorkerMapSmall::DestroyAll() {
+void CDDrawWorkerMapSmall::Unload() {
     CObject* val = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_map1.GetCount() != 0 ? -1 : 0));
     CString key;
@@ -960,7 +960,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i3
     if (data == 0) {
         return 0;
     }
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB(data, a3) == 0) {
         a1->EndParse();
         if (w != 0) {
@@ -983,7 +983,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i3
 // retail 4th).
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB(a1, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -1000,7 +1000,7 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
 // residual is only the vptr store position (cl 1st vs retail 4th).
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB2(a1, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -1026,7 +1026,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
         return 0;
     }
     const char* keyHandle = reinterpret_cast<const char*>(a1->m_length); // +0x0c doubles as the key handle for this entry kind
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
         if (w != 0) {
             delete w;

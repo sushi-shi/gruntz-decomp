@@ -77,7 +77,7 @@ i32 CPlay::ScanBuildTiles() {
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
             if (m_beginMarker
-                    ->AddToList1(p->m_164, p->m_168, p->m_04, buf, p->m_11c, p->m_118, p->m_130)
+                    ->AddToList1(p->m_164, p->m_168, p->m_id, buf, p->m_11c, p->m_118, p->m_130)
                 == 0) {
                 CString s;
                 s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
@@ -128,7 +128,7 @@ i32 CPlay::ScanBuildTiles() {
                     0x1a, // TRIGID: the CCoveredPowerupLogic factory arm
                     p->m_164,
                     p->m_168,
-                    p->m_04,
+                    p->m_id,
                     *reinterpret_cast<CTrigParam*>(&p->m_extent.left),
                     *reinterpret_cast<CTrigParam*>(&p->m_area.left),
                     *reinterpret_cast<CTrigParam*>(&p->m_switchRect.left),

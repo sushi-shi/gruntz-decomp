@@ -3,15 +3,16 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/StateId.h>  // StateId (GetStateId return type)
 #include <Wap32/WapObj.h>    // CWapObj : CObject - the real 7-slot grand-base
-#include <Gruntz/Loadable.h> // CLoadable (the CDrawSubWorker family base)
+#include <Gruntz/Loadable.h> // CLoadable - the real base (+ the CDrawSubWorker family base)
 
 class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
-class CDDrawSubMgrPages : public CWapObj {
+// (B)-form re-base 2026-07-22: vtbl 0x5efe08 slots 5-8 are the CLoadable scheme
+// (IsLoaded/IsReady/Unload/GetClassId 0xf).
+class CDDrawSubMgrPages : public CLoadable {
 public:
     virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0)
     // The `??_G` scalar-deleting destructor (slot 1 @0x1574b0): run the real
@@ -20,10 +21,10 @@ public:
     virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 IsReady INHERITED from CWapObj (the shared `return 1` default @0xd5da0,
     // reached via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
-    virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
+    virtual void Unload() OVERRIDE; // slot 7 (@0x1c) 0x158ac0 (ex "DestroyChildren": free the pairs)
     RVA(0x001574a0, 0x6)
-    virtual StateId GetStateId() {
-        return STATE_SUBMGRPAGES; // 0xf
+    virtual i32 GetClassId() OVERRIDE {
+        return CLASSID_SUBMGRPAGES; // 0xf
     }
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
@@ -48,10 +49,7 @@ public:
     i32 TransTitle();                          // 0x158e90
     i32 TransExit();                           // 0x158ee0
 
-    // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
-    i32 m_04;                         // +0x04  (reset to -1 on teardown)
-    i32 m_08;                         // +0x08  (reset to 0)
-    CDDrawSurfaceMgr* m_0c;           // +0x0c  root manager back-pointer (reset to 0)
+    // (+0x04..+0x0c = the INHERITED CLoadable header trio; owner via OwnerMgr().)
     CDDrawSurfacePair* m_frontPair;   // +0x10  front (Flip target; the "child A" element)
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)

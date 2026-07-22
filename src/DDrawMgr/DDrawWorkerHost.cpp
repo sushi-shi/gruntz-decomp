@@ -5,6 +5,23 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
 
+// [5] the "plane loaded?" gate: both owned grid buffers must be bound.
+RVA(0x00163a90, 0x17)
+i32 CDDrawWorkerHost::IsLoaded() {
+    if (m_tileGrid != 0 && m_colOffsets != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+RVA(0x00163ab0, 0x6)
+i32 CDDrawWorkerHost::GetClassId() {
+    return CLASSID_WORKERHOST; // 0x1a
+}
+
+RVA(0x00163ac0, 0x3)
+void CDDrawWorkerHost::VtSlot11_163ac0(i32) {}
+
 // ===========================================================================
 // 0x163af0 - ~CDDrawWorkerHost: stamp own vtable; if the worker is live run its
 // PruneCount (0x1688b0) and then delete it (its FreeGrids body 0x1682f0 + the +0x70

@@ -13,8 +13,14 @@ enum LoadableClassId {
     // The DDraw sub-manager kinds (<Gruntz/StateId.h> still spells the not-yet-
     // rebased holdouts' ids in the SAME one retail id space - slot 8 is
     // GetClassId family-wide).
+    CLASSID_SUBMGRPAGES = 0xf, // CDDrawSubMgrPages::GetClassId @0x1574a0 (ex STATE_SUBMGRPAGES)
+    CLASSID_CHILDGROUP = 0x10, // CDDrawChildGroup::GetClassId @0x157600 (ex STATE_CHILDGROUP)
     CLASSID_WORKERLIST = 0x11, // CDDrawWorkerList::GetClassId @0x156f20 (ex STATE_WORKERLIST)
-    CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+    CLASSID_WORKERREGISTRY = 0x12, // CDDrawWorkerRegistry::GetClassId @0x156de0 (ex STATE_WORKERREGISTRY)
+    CLASSID_WORKERCACHE = 0x13, // CDDrawWorkerCache::GetClassId @0x1576f0 (ex STATE_WORKERCACHE)
+    CLASSID_WORKERMAPSMALL = 0x14, // CDDrawWorkerMapSmall::GetClassId @0x156cf0 (ex STATE_WORKERMAPSMALL)
+    CLASSID_GAMELEVEL = 0x19,  // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+    CLASSID_WORKERHOST = 0x1a, // CDDrawWorkerHost::GetClassId @0x163ab0 (mov eax,0x1a)
     // Id 5 = CWwdGameObjectA's OWN class id (the CreateSprite kind): its slot 8
     // @0x15b760 is `mov eax,5; ret` (byte-proven). The serialize Read probes
     // (CSpotLight::SerializeMove focus resolve, CPlay::SerializeMove cell-entry
@@ -45,9 +51,15 @@ public:
                        // (C2561) on a return-less non-void function)
     virtual i32 GetClassId();       // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
-    i32 m_04; // +0x04  (reset to -1 on teardown)
+    // +0x04  per-child id/index (Init hands 0; the page pairs 1/2; the planes their
+    // index) doubling as the liveness latch: teardown resets -1, every family
+    // IsLoaded gates on `m_id != -1`.
+    i32 m_id;
     i32 m_flags; // +0x08  (reset to 0; the wide-object collision/state flag word)
-    i32 m_0c; // +0x0c  (reset to 0)
+    // +0x0c  the owner-context handle (the CDDrawSurfaceMgr across the draw family
+    // - read via OwnerMgr(); plane/leaf embedders park other context words here,
+    // which is why the slot stays a generic i32). Reset to 0 on teardown.
+    i32 m_ownerCtx;
 
     CLoadable() {}
     // Arg-taking base ctor - OUT-OF-LINE at 0x156cb0 (DDrawSubMgr.cpp; the ex
@@ -64,14 +76,16 @@ public:
     // (surface pairs/children, workers, resolve nodes, cue leaves - every read site
     // agrees); plane/leaf embedders park OTHER context words in the same slot and
     // never call this. One value-read of the generic i32 handle, typed once.
-    class CDDrawSurfaceMgr* OwnerMgr() { return reinterpret_cast<class CDDrawSurfaceMgr*>(m_0c); }
+    class CDDrawSurfaceMgr* OwnerMgr() {
+        return reinterpret_cast<class CDDrawSurfaceMgr*>(m_ownerCtx);
+    }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject
     // (no manual `*(void**)this = &g_*Vtbl`).
     virtual ~CLoadable() OVERRIDE {
-        m_04 = -1;
+        m_id = -1;
         m_flags = 0;
-        m_0c = 0;
+        m_ownerCtx = 0;
     }
 };
 SIZE(0x10);

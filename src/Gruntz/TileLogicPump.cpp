@@ -418,7 +418,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_stateFlags |= 1;
     m_object->m_164 = m_object->m_screenX >> 5;
     m_object->m_168 = m_object->m_screenY >> 5;
-    m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
+    m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
 }
 
 RVA(0x0010e420, 0x15)
@@ -479,7 +479,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_stateFlags |= 1;
     m_object->m_164 = m_object->m_screenX >> 5;
     m_object->m_168 = m_object->m_screenY >> 5;
-    m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
+    m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
 }
 
 // RE-ATTRIBUTED (the ex @identity-TODO shift-by-one, executed): this cluster

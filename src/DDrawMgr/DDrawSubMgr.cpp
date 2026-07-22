@@ -119,22 +119,28 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
 
 RVA(0x00156cb0, 0x20)
 CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {
-    m_04 = field04;
+    m_id = field04;
     m_flags = field08;
-    m_0c = owner;
+    m_ownerCtx = owner;
 }
 
 RVA(0x00156cd0, 0x16)
 i32 CDDrawWorkerMapSmall::IsLoaded() {
-    if (m_0c == 0) {
+    if (m_ownerCtx == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_id != -1) {
         return 1;
     }
 
 fail:
     return 0;
+}
+
+// [8] the class id (was a Ghidra recovery gap / declared-only).
+RVA(0x00156cf0, 0x6)
+i32 CDDrawWorkerMapSmall::GetClassId() {
+    return CLASSID_WORKERMAPSMALL; // 0x14
 }
 
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): REAL virtual dtor. cl stamps
@@ -150,7 +156,7 @@ fail:
 // destructible members intervene). Logic complete.
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
-    DestroyAll();
+    Unload();
     // m_map3 / m_map2 / m_map1 (reverse decl order) and the grand-base
     // auto-destruct here under the /GX member-teardown trylevels.
 }
@@ -162,7 +168,7 @@ i32 CDDrawWorkerMapSmall::IsReady() {
 
 RVA(0x00156de0, 0x6)
 i32 CDDrawWorkerRegistry::GetClassId() {
-    return STATE_WORKERREGISTRY; // 0x12
+    return CLASSID_WORKERREGISTRY; // 0x12
 }
 
 // ---------------------------------------------------------------------------
@@ -212,10 +218,10 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
 
 RVA(0x00156f00, 0x16)
 i32 CDDrawWorkerList::IsLoaded() {
-    if (m_0c == 0) {
+    if (m_ownerCtx == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_id != -1) {
         return 1;
     }
 
@@ -283,9 +289,9 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     m_screenX = static_cast<i32>(0x80000000);
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    m_04 = -1;
+    m_id = -1;
     m_flags = 0;
-    m_0c = 0; // the owner-ctx handle
+    m_ownerCtx = 0; // the owner-ctx handle
 }
 
 RVA(0x00157110, 0x20)
@@ -339,9 +345,9 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     m_screenX = static_cast<i32>(0x80000000);
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
-    m_04 = -1;
+    m_id = -1;
     m_flags = 0;
-    m_0c = 0; // the owner-ctx handle
+    m_ownerCtx = 0; // the owner-ctx handle
 }
 
 RVA(0x00157280, 0x30)
@@ -437,11 +443,8 @@ RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
 
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
-    DestroyChildren();
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-    // implicit ~CWapObj -> ~CObject folds the grand-base re-stamp (0x5e8cb4) last.
+    Unload();
+    // implicit ~CLoadable (the three header resets) -> ~CObject grand-base re-stamp.
 }
 
 // 0x157550 is the compiler-generated scalar-deleting destructor (auto-emitted COMDAT).
@@ -471,39 +474,34 @@ CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
 
 RVA(0x001575e0, 0x16)
 i32 CDDrawChildGroup::IsLoaded() {
-    if (m_parent == 0 || m_status == -1) {
+    if (m_ownerCtx == 0 || m_id == -1) {
         return 0;
     }
     return 1;
 }
 
 RVA(0x00157600, 0x6)
-StateId CDDrawChildGroup::GetStateId() {
-    return STATE_CHILDGROUP; // 0x10
+i32 CDDrawChildGroup::GetClassId() {
+    return CLASSID_CHILDGROUP; // 0x10
 }
 
 // ---------------------------------------------------------------------------
 // 0x157630: ~CDDrawChildGroup (real ??1; the cl-generated ??_G @0x157610 calls it).
-// cl stamps ??_7CDDrawChildGroup (0x5efdc0) at entry, runs ForwardTo3C (slot 7,
+// cl stamps ??_7CDDrawChildGroup (0x5efdc0) at entry, runs Unload (slot 7,
 // devirtualized in the dtor to retail's direct `call 0x1591e0`), resets the three
 // header words, then the members auto-destruct in reverse decl order under the /GX
 // trylevels - ~m_map48/~m_map2c (CMapPtrToPtr @0x1b8665), ~m_list (CObList
 // @0x1b5a2b) - and ~CObject folds the grand-base re-stamp last.
-// @early-stop
-// reset-position residual: retail sinks the three header resets AFTER the member
-// teardown (they lived in the devs' CLoadable-like base dtor); spelling them there
-// needs the : CLoadable re-base, which would untype m_parent (the typed hops in
-// WwdObjMgr/Play) into )m_ casts - the typed truth wins, resets stay in the body
-// (emitted before the member dtors). All instructions present, block order differs.
+// (Reset-position residual RESOLVED by the : CLoadable re-base 2026-07-22: the
+// three header resets now come from ~CLoadable AFTER the member teardown -
+// retail.s exact order.)
 // The cl-auto scalar-deleting destructor (vtable slot 1):
 RVA_COMPGEN(0x00157610, 0x1e, ??_GCDDrawChildGroup@@UAEPAXI@Z)
 RVA(0x00157630, 0x82)
 CDDrawChildGroup::~CDDrawChildGroup() {
-    ForwardTo3C();
-    m_status = -1;
-    m_flags08 = 0;
-    m_parent = 0;
-    // implicit: ~m_map48, ~m_map2c, ~m_list, then the ~CObject grand-base re-stamp.
+    Unload();
+    // implicit: ~m_map48, ~m_map2c, ~m_list, then ~CLoadable (the three header
+    // resets + grand-base re-stamp) - retail.s reset-after-members order.
 }
 
 RVA(0x001576c0, 0x6)
@@ -528,17 +526,17 @@ RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 // reloc-masked EH-state/teardown/vtable symbol names. Logic complete.
 RVA(0x00157720, 0x68)
 CDDrawWorkerCache::~CDDrawWorkerCache() {
-    DestroyAll();
+    Unload();
     // implicit: ~m_10 (CMapStringToPtr), then the grand-base field resets + the
     // ??_7 re-stamp - reproduces retail's teardown order.
 }
 
 RVA(0x001577a0, 0x16)
 i32 CDDrawSubMgrLeaf::IsLoaded() {
-    if (m_0c == 0) {
+    if (m_ownerCtx == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_id != -1) {
         return 1;
     }
 
@@ -622,7 +620,7 @@ void CFileMem::Reset() {
 
 RVA(0x00157a80, 0x51)
 i32 CAniAdvanceCursor::SelectCue(void* force) {
-    char* mgr = reinterpret_cast<char*>(m_0c); // the +0x0c owner (cue-role: the sub-manager)
+    char* mgr = reinterpret_cast<char*>(m_ownerCtx); // the +0x0c owner (cue-role: the sub-manager)
     if (mgr == 0) {
         return 0;
     }
@@ -752,7 +750,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
     if (m_emitGate != 0) {
         return 0;
     }
-    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_0c);
+    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
     if (e == 0) {
         return 0;
     }
@@ -781,7 +779,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
     if (m_emitGate != 0) {
         return 0;
     }
-    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_0c);
+    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
     if (e == 0) {
         return 0;
     }
@@ -1177,12 +1175,12 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
-    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(reinterpret_cast<i32>(m_0c), 0, 0);
+    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(a);
 
     CDDrawSurfacePair* b = static_cast<CDDrawSurfacePair*>(operator new(0x34));
     if (b != 0) {
-        new (b) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 1, 0);
+        new (b) CDDrawSurfacePair(m_ownerCtx, 1, 0);
         b->m_width = 0;
         b->m_surface = 0;
         b->m_ownsSurface = 1;
@@ -1191,7 +1189,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     CDDrawSurfacePair* c = static_cast<CDDrawSurfacePair*>(operator new(0x34));
     if (c != 0) {
-        new (c) CDDrawSurfacePair(reinterpret_cast<i32>(m_0c), 2, 0);
+        new (c) CDDrawSurfacePair(m_ownerCtx, 2, 0);
         c->m_width = 0;
         c->m_surface = 0;
         c->m_ownsSurface = 1;
@@ -1199,21 +1197,21 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_overlayPair = c;
 
     if (a->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24] (the mode-surface creator)
-        if (m_0c->m_lastError == 0) {
-            m_0c->m_lastError = 0x7d1;
+        if (OwnerMgr()->m_lastError == 0) {
+            OwnerMgr()->m_lastError = 0x7d1;
         }
         return 0;
     }
     if (b->Create(a1, a2, a3, 0) == 0) {
-        if (m_0c->m_lastError == 0) {
-            m_0c->m_lastError = 0x7d2;
+        if (OwnerMgr()->m_lastError == 0) {
+            OwnerMgr()->m_lastError = 0x7d2;
         }
         return 0;
     }
     if (!(a4 & 1)) {
         if (c->Create(a1, a2, a3, 0) == 0) {
-            if (m_0c->m_lastError == 0) {
-                m_0c->m_lastError = 0x7d3;
+            if (OwnerMgr()->m_lastError == 0) {
+                OwnerMgr()->m_lastError = 0x7d3;
             }
             return 0;
         }
@@ -1222,7 +1220,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 RVA(0x00158ac0, 0x44)
-void CDDrawSubMgrPages::DestroyChildren() {
+void CDDrawSubMgrPages::Unload() {
     if (m_frontPair != 0) {
         delete m_frontPair;
         m_frontPair = 0;
@@ -1274,7 +1272,7 @@ i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, i32 arg2) {
 RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontPair->m_surface->Flip(0);
-    CDDrawSurfaceMgr* n = m_0c;
+    CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
     c->WalkDispatch30(
@@ -1359,7 +1357,7 @@ void CDDrawSubMgrPages::ClearAllPages(i32 a1) {
     m_frontPair->m_surface->Flip(0);
     m_backPair->m_surface->Fill(a1);
     m_frontPair->m_surface->Flip(0);
-    if (m_0c->m_flags & 2) {
+    if (OwnerMgr()->m_flags & 2) {
         m_backPair->m_surface->Fill(a1);
         m_frontPair->m_surface->Flip(0);
     }
@@ -1390,7 +1388,7 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     if (!ok) {
         return ok;
     }
-    if (!(m_0c->m_flags & 2)) {
+    if (!(OwnerMgr()->m_flags & 2)) {
         return ok;
     }
     m_frontPair->m_surface->Flip(0);
@@ -1481,9 +1479,9 @@ i32 CDDrawSubMgrPages::TransExit() {
 
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
-    m_04 = a2;
+    m_id = a2;
     m_flags = a3;
-    m_0c = a1;
+    m_ownerCtx = a1;
     m_width = 0;
 }
 RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
@@ -1539,7 +1537,7 @@ inline void* operator new(u32, void* p) {
 
 RVA(0x00159090, 0x24)
 i32 CDDrawSurfacePair::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_0c != 0 && m_04 != -1) {
+    if (m_surface != 0 && m_width > 0 && m_ownerCtx != 0 && m_id != -1) {
         return 1;
     }
     return 0;
@@ -1555,7 +1553,7 @@ CDDrawSurfacePair::~CDDrawSurfacePair() {
 
 RVA(0x00159150, 0x24)
 i32 CDDrawSurfaceChildA::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_0c != 0 && m_04 != -1) {
+    if (m_surface != 0 && m_width > 0 && m_ownerCtx != 0 && m_id != -1) {
         return 1;
     }
     return 0;

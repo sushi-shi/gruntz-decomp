@@ -81,10 +81,10 @@ public:
     // CDDrawWorker::m_owner) proved the type: it is handed to each created frame as
     // CImage::m_parent (`new CImage(index, m_owner)`).
     CImageParent* Owner() const {
-        return reinterpret_cast<CImageParent*>(m_0c);
+        return reinterpret_cast<CImageParent*>(m_ownerCtx);
     }
     void SetOwner(CImageParent* p) {
-        m_0c = reinterpret_cast<i32>(p);
+        m_ownerCtx = reinterpret_cast<i32>(p);
     }
     void AddFrameAt(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 

@@ -492,7 +492,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_04;
+            w->m_04 = m_id;
             w->m_08 = 0;
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
@@ -551,7 +551,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_04;
+            w->m_04 = m_id;
             w->m_08 = 0;
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
@@ -598,7 +598,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_04;
+            w->m_04 = m_id;
             w->m_08 = 0;
             w->m_0c = OwnerMgr();
             StampWorkerVtbl(w);
@@ -788,7 +788,7 @@ i32 CGameObject::Serialize(i32 arParam) {
     ar->Write(&m_fillFraction, 4);
     ar->Write(&m_drawActive, 4);
     ar->Write(&m_clip.left, 0x10); // +0x64 clip rect
-    ar->Write(&m_04, 4);
+    ar->Write(&m_id, 4);
     ar->Write(&m_flags, 4);
     ar->Write(&m_184, 4);
 
@@ -869,7 +869,7 @@ i32 CGameObject::SerializeObjectState(i32 arParam) {
     ar->Read(&m_fillFraction, 4);
     ar->Read(&m_drawActive, 4);
     ar->Read(&m_clip.left, 0x10); // +0x64 clip rect
-    ar->Read(&m_04, 4);
+    ar->Read(&m_id, 4);
     ar->Read(&m_flags, 4);
     ar->Read(&m_184, 4);
 
@@ -973,7 +973,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     }
 
     WwdSnapshot rec;
-    rec.m_00 = m_04;
+    rec.m_00 = m_id;
     rec.m_08 = this->GetClassId();
     rec.m_04 = m_188;
     rec.m_94 = m_screenX;

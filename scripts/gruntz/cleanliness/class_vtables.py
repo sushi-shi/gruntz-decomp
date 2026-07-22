@@ -121,6 +121,29 @@ def vtbl_rva_collisions():
     return {rva: sites for rva, sites in by_rva.items() if len(sites) > 1}
 
 
+def absent_emitted_in_base(absent_names):
+    """[(class, obj)] for every VTBL_ABSENT class whose ??_7 our OWN base objs
+    nonetheless DEFINE. Retail provably lacks these vtables, so a base-side
+    emission means a ctor/dtor stamp SURVIVED that retail never had - a wrong
+    base in the hierarchy (e.g. deriving the grand-base directly where retail
+    derives an intermediate whose stamp is the one that lives). Codegen truth
+    the source-side census cannot see; found 2026-07-22 (??_7CWapObj emitted by
+    ??0CGameLevel / ??0CDDrawWorkerHost while both really derive CLoadable)."""
+    if not absent_names:
+        return []
+    import subprocess
+    from gruntz.cleanliness.view_debt import _current_objs
+    pats = {f"??_7{n}@@6B@": n for n in absent_names}
+    hits = []
+    for o in _current_objs():
+        out = subprocess.run(["llvm-nm", o], capture_output=True, text=True).stdout
+        for ln in out.splitlines():
+            p = ln.split()
+            if len(p) == 3 and p[1] != "U" and p[2] in pats:
+                hits.append((pats[p[2]], o))
+    return hits
+
+
 def main() -> int:
     # rva->name uniqueness: warn on any vtable rva bound by >1 VTBL() (the shared-base
     # / fallback mis-catalog). Reported always, so the build gate surfaces it.
@@ -160,6 +183,17 @@ def main() -> int:
     for name in sorted(vtbl_absent & (set(vtbl_ann) | set(rtti))):
         print(f"vtbl-absent CONTRADICTION: {name} is VTBL_ABSENT but also "
               f"positively bound (VTBL/RTTI) - remove one", file=sys.stderr)
+
+    # BASE-SIDE enforcement: a VTBL_ABSENT ??_7 that our own objs emit is a
+    # surviving ctor/dtor stamp retail never had - a hierarchy mis-model. FATAL.
+    emitted = absent_emitted_in_base(vtbl_absent)
+    if emitted:
+        print(f"vtbl-absent VIOLATION: {len(emitted)} base-obj emission(s) of "
+              f"proven-absent vtables (a ctor/dtor stamp survives that retail "
+              f"lacks - fix the emitting class's base):", file=sys.stderr)
+        for name, obj in emitted:
+            print(f"  ??_7{name}  emitted by {obj}", file=sys.stderr)
+        return 1
 
     violators = []
     have_vtable = 0

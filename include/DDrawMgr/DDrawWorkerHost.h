@@ -2,8 +2,8 @@
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
 #include <Ints.h>
-#include <Wap32/WapObj.h>         // CWapObj : CObject (pulls <Mfc.h>/windows.h: RECT + ::CObArray)
-#include <DDrawMgr/DDrawWorker.h> // CLoadable (m_frameSets is the real MFC ::CObArray)
+#include <Gruntz/Loadable.h>      // CLoadable : CWapObj : CObject (pulls <Mfc.h>/windows.h)
+#include <DDrawMgr/DDrawWorker.h> // (m_frameSets is the real MFC ::CObArray)
 #include <ddraw.h> // DDBLTFX (the +0xf4 blit-fx member; windows.h via <Mfc.h> above)
 #include <rva.h>
 
@@ -18,7 +18,11 @@ class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDraw
 
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
-class CDDrawWorkerHost : public CWapObj {
+// (B)-form re-base 2026-07-22: retail ??0CDDrawWorkerHost (0x1615a0) stamps
+// ??_7CLoadable @+0x2a (surviving across the m_frameSets CObArray member ctor)
+// before its own 0x5f0270 stamp - the base IS CLoadable (deriving CWapObj
+// directly made our compile emit a spurious ??_7CWapObj retail lacks).
+class CDDrawWorkerHost : public CLoadable {
 public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE; // slot 1 (scalar-deleting dtor) 0x163af0
@@ -32,13 +36,14 @@ public:
     // --- own vtable slots 5..11 (retail ??_7 @0x1f0270 is 12 slots; per-slot RTTI
     // map from `vtable_hierarchy --class CDDrawWorkerHost`). ------------------------
     virtual i32 IsLoaded() OVERRIDE; // slot 5  (+0x14) 0x163a90 "plane loaded?" gate
-                                     //         (the ValidateTiles gate; overrides CWapObj)
+                                     //         (the ValidateTiles gate; overrides CLoadable's)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own "VtSlot6_1c08").
-    // slot 7 (+0x1c) 0x161bf0 - free the spatial worker (PruneCount then delete) and
-    // the two owned grid buffers. (Ex the LevelPlane.cpp-local "CImageSet3" pocket.)
-    virtual void Cleanup();
-    virtual void VtSlot8_163ab0(); // slot 8  (+0x20) 0x163ab0 (role unrecovered)
+    // slot 7 (+0x1c) 0x161bf0 - the CLoadable Unload hook (ex "Cleanup"): free the
+    // spatial worker (PruneCount then delete) and the two owned grid buffers.
+    // (Ex the LevelPlane.cpp-local "CImageSet3" pocket.)
+    virtual void Unload() OVERRIDE;
+    virtual i32 GetClassId() OVERRIDE; // slot 8 (+0x20) 0x163ab0 -> CLASSID_WORKERHOST (0x1a)
     // slot 9 (+0x24) 0x1619f0 - the geometry init / object-plane reader
     // CGameLevel::ReadObjectPlane dispatches: seed tile/wrap/origin/shift
     // fields from the 8 args, log2 the tile shifts, strcpy the name, alloc the tile
@@ -57,7 +62,9 @@ public:
     // CGameLevel::ReadPlane dispatches (parses one WwdPlaneHeader, fans out to
     // the tile/imageset/object sub-readers). Stub body in LevelPlane.cpp (ex Gap_161640).
     virtual i32 Read(void* planeData, void* blockBase, void* bounds);
-    virtual void VtSlot11_163ac0(); // slot 11 (+0x2c) 0x163ac0 (role unrecovered)
+    // slot 11 (+0x2c) 0x163ac0: `ret 4` - a ONE-dword-arg void no-op (the old no-arg
+    // decl mis-spelled the frame). Role unrecovered.
+    virtual void VtSlot11_163ac0(i32);
 
     // --- non-virtual methods (union of the facets' method sets; one decl per RVA -
     // the duplicate facet names Sync/Refresh/QueryA/QueryB/Notify are dissolved onto
@@ -94,12 +101,11 @@ public:
     // --- layout (the union of every facet's proven members; offsets load-bearing).
     // Where a union appears, TWO views recovered different readings of ONE retail
     // field - both spellings kept, reconcile in a naming pass. ---------------------
-    i32 m_04;                 // +0x04  (merged CLoadable base field; ctor arg2)
-    u32 m_flags;              // +0x08  bit0 = MAIN/origin-fixed plane, bit1 hidden,
-                              //        bit2/3 = wrap X/Y (ctor arg3)
-    // +0x0c  the owning world/display root (ctor arg1). Ex CPlaneMapData - a facet
-    // view of THIS class; see the cascade proof in <Wwd/WwdFile.h>.
-    CDDrawSurfaceMgr* m_mapData;
+    // (+0x04 m_04 / +0x08 m_flags / +0x0c m_0c are the INHERITED CLoadable header
+    // trio - ctor args field04/flags/mapData, spelled fused in our ctor body like
+    // CResolveNode's. The owner read is OwnerMgr() (== the ex "m_mapData"; the
+    // CPlaneMapData facet-view cascade proof lives in <Wwd/WwdFile.h>.)
+    // m_flags bits: bit0 = MAIN/origin-fixed plane, bit1 hidden, bit2/3 = wrap X/Y.
     float m_scaledX;          // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
     float m_scaledY;          // +0x14  scroll origin Y
     float m_scaleX;           // +0x18  X parallax factor (ctor seeds 1.0f)
