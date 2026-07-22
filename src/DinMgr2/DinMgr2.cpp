@@ -384,7 +384,7 @@ RVA_COMPGEN(0x001332e0, 0x1e, ??_GCInputDevice@@UAEPAXI@Z)
 
 RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
-    Teardown();
+    ReleaseDevices();
 }
 // 0x133370 - ??1CInputDevRoot@@UAE@XZ: cl's auto-emitted out-of-line copy of the
 // header-inline grand-base dtor (`mov [ecx],??_7CInputDevRoot; jmp ReleaseDevices
@@ -419,18 +419,18 @@ RVA_COMPGEN(0x00133440, 0x1e, ??_GCDeviceConfigC@@UAEPAXI@Z)
 // (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
 // ~CInputDevice - cl auto-emits the EH frame + vptr re-stamp (leaf 0x5ef658/0x5ef640 ->
 // base 0x5ef680 -> root 0x5ef670) with the [esp+0x10] try-level stamps, then calls the
-// leaf teardown (Free6d0 / Free360, bodies in BoundaryUpper.cpp - reloc-masked) and
+// leaf teardown (the ReleaseDevices overrides, ex Free6d0/Free360) and
 // inlines each base cleanup (ReleaseDevices). Replaces the manual-vptr DevCfgChain
 // stamps that were @early-stop in BoundaryUpper2Eh.cpp.
 RVA(0x00133460, 0x6a)
 CDeviceConfigC::~CDeviceConfigC() {
-    Free6d0();
+    ReleaseDevices();
 }
 RVA_COMPGEN(0x001334d0, 0x1e, ??_GCDeviceConfigB@@UAEPAXI@Z)
 
 RVA(0x001334f0, 0x6a)
 CDeviceConfigB::~CDeviceConfigB() {
-    Free360();
+    ReleaseDevices();
 }
 
 RVA(0x00133560, 0x27)
@@ -586,7 +586,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
 }
 
 RVA(0x00133bf0, 0x33)
-void CInputDevice::Teardown() {
+void CInputDevice::ReleaseDevices() {
     if (m_stateBuffer != 0) {
         operator delete(m_stateBuffer);
         m_stateBuffer = 0;
@@ -898,7 +898,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
     return IsReady() != 0;
 }
 RVA(0x00134360, 0x33)
-void CDeviceConfigB::Free360() {
+void CDeviceConfigB::ReleaseDevices() {
     if (m_stateBuffer) {
         operator delete(m_stateBuffer);
         m_stateBuffer = 0;
@@ -937,7 +937,7 @@ typedef enum MouseKeyFlags {
     } while (0)
 
 RVA(0x001343b0, 0x27e)
-i32 CInputDevice::PollMouse() {
+i32 CDeviceConfigB::Poll() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
     if (ReadState() == 0) {
@@ -1010,7 +1010,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
     return SetupAxes() != 0;
 }
 RVA(0x001346d0, 0x33)
-void CDeviceConfigC::Free6d0() {
+void CDeviceConfigC::ReleaseDevices() {
     if (m_stateBuffer) {
         operator delete(m_stateBuffer);
         m_stateBuffer = 0;
@@ -1045,7 +1045,7 @@ i32 CDeviceConfigC::SetupAxes() {
 }
 
 RVA(0x001347d0, 0x40a)
-i32 CInputDevice::PollJoystick() {
+i32 CDeviceConfigC::Poll() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
     if (PollDevice() == 0) {

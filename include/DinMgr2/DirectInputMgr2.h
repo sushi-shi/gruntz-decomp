@@ -132,6 +132,9 @@ public:
     }
 
     // Shared non-virtual COM helpers.
+    i32 Acquire();          // 0x134fb0
+    i32 PollDevice();       // 0x135040  (used by every leaf Poll override)
+    DeviceState* ReadState(); // 0x134d90
     i32 Unacquire();        // 0x134fe0
     i32 Escape(void* data); // 0x135000  IDirectInputDevice2::Escape
 
@@ -197,17 +200,11 @@ class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
     virtual ~CInputDevice() OVERRIDE;       // 0x133300 (the /GX multilevel deleting-dtor)
-    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x133bf0 (Teardown)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x133bf0 (ex Teardown; keyboard leaf teardown)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x133b50
-    void Teardown();                                                           // 0x133bf0
     void SetupKeyTable();                                                      // 0x133c30
     virtual i32 Poll() OVERRIDE;                                               // slot 4  0x133d00
-    i32 PollMouse();                                                           // 0x1343b0
-    i32 PollJoystick();                                                        // 0x1347d0
-    i32 PollDevice();                                                          // 0x135040
-    DeviceState* ReadState();                                                  // 0x134d90
-    i32 Acquire();                                                             // 0x134fb0
 
     u32 m_keyTable[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)
     i32 m_modeFlags;      // +0x334  keyboard/mouse mode flag (bit 0 = direct/async)
@@ -218,12 +215,11 @@ class CDeviceConfigB : public CInputDevBase {
 public:
     CDeviceConfigB();
     virtual ~CDeviceConfigB() OVERRIDE;     // 0x1334f0 (the /GX multilevel deleting-dtor)
-    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x134360 (Free360)
-    virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (PollMouse)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x134360 (ex Free360; mouse leaf teardown)
+    virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (ex CInputDevice::PollMouse)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x1342c0
     i32 IsReady(); // 0x1343a0 (out-of-line)
-    void Free360(); // 0x134360 (mouse leaf teardown; body in BoundaryUpper.cpp)
 
     i32 m_flags; // +0x2b4
     char m_pad2b8[0x2c8 - 0x2b8];
@@ -234,11 +230,10 @@ class CDeviceConfigC : public CInputDevBase {
 public:
     CDeviceConfigC(); // inline; the enum callback new's it (zeroes m_flags, stamps ??_7)
     virtual ~CDeviceConfigC() OVERRIDE;     // 0x133460 (the /GX multilevel deleting-dtor)
-    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (Free6d0)
-    virtual i32 Poll() OVERRIDE;            // slot 4  (joystick poll override)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (ex Free6d0; joystick leaf teardown)
+    virtual i32 Poll() OVERRIDE;            // slot 4  0x1347d0 (ex CInputDevice::PollJoystick)
     i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x134630
     i32 SetupAxes(); // 0x134710 (axis ranges + dead zones; CreateDevJoystick's finalizer)
-    void Free6d0();  // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 
     i32 m_flags; // +0x2b4
 };

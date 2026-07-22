@@ -48,7 +48,7 @@ void CInputDevRoot::ReleaseDevices() {
 }
 
 RVA(0x00134d90, 0x60)
-DeviceState* CInputDevice::ReadState() {
+DeviceState* CInputDevRoot::ReadState() {
     if (m_stateBuffer == 0) {
         return 0;
     }
@@ -146,7 +146,7 @@ i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwD
 }
 
 RVA(0x00134fb0, 0x29)
-i32 CInputDevice::Acquire() {
+i32 CInputDevRoot::Acquire() {
     i32 hr = m_device2->Acquire();
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x17a, hr);
@@ -175,7 +175,7 @@ i32 CInputDevRoot::Escape(void* data) {
 }
 
 RVA(0x00135040, 0x65)
-i32 CInputDevice::PollDevice() {
+i32 CInputDevRoot::PollDevice() {
     i32 hr = m_device2->Poll();
     if (hr == 0) {
         return 1;

@@ -18,11 +18,6 @@ WIRING	0x1e9fe4	CMulti	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	wor
 WIRING	0x1ea0bc	CPlay	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
 WIRING	0x1ea8ec	CMultiStartDlg	51	0x0c4c00	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 WIRING	0x1eaecc	CTileExclusiveTriggerSwitchLogic	2	0x112080	?Broadcast@CTileTriggerSwitchLogic@@QAEHXZ	tileswitchlogic
-WIRING	0x1ef628	CInputDevice	2	0x133bf0	?Teardown@CInputDevice@@QAEXXZ	directinputmgr2
-WIRING	0x1ef640	CDeviceConfigB	2	0x134360	?Free360@CDeviceConfigB@@QAEXXZ	directinputmgr2
-WIRING	0x1ef640	CDeviceConfigB	4	0x1343b0	?PollMouse@CInputDevice@@QAEHXZ	directinputmgr2
-WIRING	0x1ef658	CDeviceConfigC	2	0x1346d0	?Free6d0@CDeviceConfigC@@QAEXXZ	directinputmgr2
-WIRING	0x1ef658	CDeviceConfigC	4	0x1347d0	?PollJoystick@CInputDevice@@QAEHXZ	directinputmgr2
 WIRING	0x1efbe8	CDDrawWorker	7	0x151eb0	?DeleteAll@CDDrawWorker@@QAEXXZ	wwdgameobject
 WIRING	0x1efd00	CDDrawWorkerCache	7	0x165210	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	ddrawsurfacepair
 MISBOUND	0x1effa0	CDrawSubWorker	9	0x158fd0	?SetGeometry@CDDrawSurfacePair@@UAEHHHH@Z	ddrawsubmgr
