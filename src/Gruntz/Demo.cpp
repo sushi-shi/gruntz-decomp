@@ -17,7 +17,6 @@
 #include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
 #include <Gruntz/GameLevel.h>         // m_world->m_level (CGameLevel; ex-CWorldState view dissolved)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Globals.h>
 #include <Ints.h>
 #include <stdlib.h> // rand (0x11fee0, the engine LCG)
 

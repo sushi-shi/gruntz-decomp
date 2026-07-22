@@ -9,7 +9,6 @@
 #include <Mfc.h>                 // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> dispatch table + zvec accessors
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Globals.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 

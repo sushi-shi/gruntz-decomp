@@ -19,13 +19,13 @@
 #include <Bute/ButeTree.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Wap32/ZVec.h>
-#include <Globals.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 
 // g_vtrigActReg (0x00251500): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 #include <Gruntz/GruntVoiceActReg.h> // g_actReg_6514d8 (ex .cpp extern)
+#include <Wap32/zBitVec.h> // ex Globals.h
 DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
 
 

@@ -51,7 +51,7 @@
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
 #include <DDrawMgr/AniAdvance.h>      // CAniBlitTrigger (the per-frame sound trigger)
 #include <Wap32/WapObj.h>             // CWapObj : CObject
-#include <Globals.h>
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 void operator delete(void*);
 

@@ -4,7 +4,6 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + WarpTextureBlit decl
 #include <rva.h>
-#include <Globals.h>
 
 // is-power-of-two gate (0x145e00): returns 1 iff exactly one bit of n is set
 // (popcount(x) == 1 over all 32 bits). Folded from Stub/BoundaryUpper.cpp

@@ -8,7 +8,8 @@
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
 
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
-#include <Globals.h>
+#include <Image/ImagePool.h> // ex Globals.h
+#include <Image/FileImage.h> // own exported globals (ex Globals.h)
 
 enum {
     PCX_HEADER_SIZE = 0x80

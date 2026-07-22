@@ -10,6 +10,7 @@
 #include <Io/SaveGame.h>           // SaveSlot (m_saveInfoRec; the ex-SaveInfo twin)
 #include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink
 #include <Gruntz/GruntzMapMgr.h>
+#include <Image/CImage.h> // ex Globals.h
 class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
 
 #include <Gruntz/GruntzPlayer.h>
@@ -519,4 +520,9 @@ extern "C" CGruntzMgr* g_gameReg;
 extern "C" u32 GameGetTime(void);           // 0xcd00
 extern "C" void RecomputePlaneCoords(void); // 0x161c90
 
+extern i32 g_warpX;
+extern i32 g_warpY;
+extern "C" char g_msgScratch[];
+extern "C" i32 g_cdPromptResult;
+extern i32 g_debugDisplayFlags;
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

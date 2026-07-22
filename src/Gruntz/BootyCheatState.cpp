@@ -5,7 +5,6 @@
 #include <rva.h>
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
-#include <Globals.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry (InstallTree)
 #include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
@@ -14,6 +13,7 @@
 #include <Gruntz/GruntzMgr.h>          // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
+#include <Gruntz/BootyCheatState.h> // own exported globals (ex Globals.h)
 
 char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
 char g_cheatTableEnd[4];  // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])

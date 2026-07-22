@@ -9,7 +9,6 @@
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (+0x10 image registrar) + CDDrawSubMgrPages
 #include <rva.h>
-#include <Globals.h>                   // g_gameReg / shared globals
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DinMgr2/InputMgrPtr.h>       // g_inputMgr (DirectInputMgr2* view; the one decl)

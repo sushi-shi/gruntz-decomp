@@ -1,6 +1,5 @@
 #include <Gruntz/GameText.h>
 #include <rva.h>
-#include <Globals.h>          // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
 #include <Bute/ButeMgr.h> // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
 #include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
 

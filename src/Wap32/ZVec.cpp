@@ -3,7 +3,6 @@
 #include <rva.h>
 #include <Mfc.h> // CString (0x1b9b93 default ctor)
 #include <new>   // placement CString ctor
-#include <Globals.h>
 #include <Bute/ButeTree.h>
 
 #include <stdlib.h> // realloc (0x125180), free (0x120c30)

@@ -5,8 +5,11 @@
 #include <Gruntz/MovingLogicSerial.h> // the serialize helpers (WriteName/ReadName/ReadCurve)
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_level hop)
-#include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
 #include <rva.h>
+#include <Gruntz/MotionState.h> // ex Globals.h
+
+DATA(0x001f04f8)
+const double g_motionNegHalf = -0.5;
 
 DATA(0x001f04f0)
 const double g_motionTimeScale = 0.001; // 0x5f04f0

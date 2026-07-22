@@ -400,4 +400,5 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 extern "C" i32 CALLBACK WndProc_15a10(HWND, UINT, WPARAM, LPARAM); // 0x15a10 (C linkage carrier)
 
+extern const i32 g_msgmap_CBattlezDlgColors;
 #endif // SRC_GRUNTZ_DIALOGS_H

@@ -29,7 +29,6 @@
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world def; +0x28 CSndHost)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
-#include <Globals.h>
 #include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
@@ -37,6 +36,8 @@
 #include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
 #include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/Random.h> // ex Globals.h transitive
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)

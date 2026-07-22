@@ -1,8 +1,9 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the real owner of the three methods below
 #include <Rez/RezMgr.h>       // RezFormat/RezFileExists helper decls (rez-path externs)
 #include <Rez/FrameClock.h>
-#include <Globals.h> // g_disableHqMovie (0x2455d4) - the GruntzLo.FEC selector
 #include <rva.h>
+#include <Rez/RezSync.h> // ex Globals.h
+#include <Wap32/GameApp.h> // ex Globals.h
 
 typedef CGameMgr CGameMgrBase;
 

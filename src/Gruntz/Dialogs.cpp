@@ -4,8 +4,10 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <rva.h>
-#include <Globals.h>
 #include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
+
+DATA(0x001e8d10)
+const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
 RVA(0x00014b10, 0x5)
 long CBattlezDlg::DoDefault() {

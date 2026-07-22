@@ -3,6 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <DDrawMgr/ShadeDescrTable.h> // ex Globals.h
 
 class CString;    // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDSurface.h>
@@ -129,4 +130,5 @@ SIZE(0x3c);
 
 extern ShadeDescr* g_blendDescr; // 0x002bf218
 
+extern u8 g_scratch[];
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

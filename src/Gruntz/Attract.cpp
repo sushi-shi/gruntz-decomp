@@ -22,12 +22,12 @@
 #include <Gruntz/MgrPersist.h>         // CMgrPersistObj / SplashParams (the persisted settings obj)
 #include <Wap32/EngStr.h>              // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <rva.h>
-#include <Globals.h>
 
 #include <stdio.h>  // sprintf (the "\SCREENZ\%s" path formatter)
 #include <string.h> // inline /Oi strlen (repnz scasb) for the Vslot17 TextOutA
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
+#include <Gruntz/LevelPreview.h> // ex Globals.h
 
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360

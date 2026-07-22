@@ -42,7 +42,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
-#include <Globals.h>
+#include <Gruntz/GruntEntranceMove.h> // own exported globals (ex Globals.h)
+
+
+DATA(0x0020d7f4)
+char s_codeM[] = "M";
+
+DATA(0x0020cca4)
+char s_codeD[] = "D";
 
 DATA(0x001e9a48)
 double g_wingzScale = 100.0; // 0x5e9a48

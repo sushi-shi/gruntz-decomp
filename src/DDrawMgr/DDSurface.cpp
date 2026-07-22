@@ -9,7 +9,6 @@
 #include <rva.h>
 #include <stdio.h>
 #include <string.h>  // inline strcpy / memcpy / memset
-#include <Globals.h> // g_clut (bank planes = interior slices; RGB565 shift/size ints are local: g_rUp/g_gUp/g_rDown/g_gDown/g_bDown)
 
 #include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"

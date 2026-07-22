@@ -15,7 +15,6 @@
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Globals.h>                        // g_actLo/Hi/Base/Stride/Scratch/Cur/Coll2 (fast range)
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 

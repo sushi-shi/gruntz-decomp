@@ -4,6 +4,7 @@
 #include <Mfc.h> // CPtrList + <windows.h> (HINSTANCE/HWND/HPALETTE/PALETTEENTRY)
 #include <Ints.h>
 #include <rva.h>
+#include <Io/SaveGame.h> // ex Globals.h
 
 class CRezImage; // <Image/Image.h> - the pool's DIB-surface node (pointer-only here)
 namespace ApiCallerStubs {
@@ -64,4 +65,5 @@ extern "C" HINSTANCE g_hResModule; // 0x002bf6e0 (C linkage - the owner def's wr
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" HINSTANCE g_hResModule;
 
+extern char g_bmpHeaderTemplate[];
 #endif // SRC_IMAGE_IMAGEPOOL_H

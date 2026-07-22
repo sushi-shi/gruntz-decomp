@@ -14,4 +14,5 @@ extern CString g_brickText1; // 0x00245524
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
 extern CActReg g_actRegCaption;
 
+extern char g_msgCaption[];
 #endif // SRC_GRUNTZ_GAMETEXT_H

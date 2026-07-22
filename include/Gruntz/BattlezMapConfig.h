@@ -301,4 +301,9 @@ SIZE(0x1e8);
 // VAs are reloc-masked at use) ---
 extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
+extern const float g_diffScale;
+extern i32 g_stepRun;
+extern i32 g_stepCol;
+extern i32 g_stepRow;
+extern i32 g_diffTier;
 #endif // SRC_GRUNTZ_BATTLEZMAPCONFIG_H

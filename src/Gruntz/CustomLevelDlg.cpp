@@ -3,10 +3,12 @@
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (IsBattlezMapFile)
 #include <Ints.h>
 #include <rva.h>
-#include <Globals.h> // g_battlezCustomMsgMap (this dialog's MFC message map @0x5e8e98)
 
 #include <io.h>     // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
 #include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
+#include <Gruntz/CustomLevelDlg.h> // ex Globals.h
+
+DATA_SYMBOL(0x001e8e98, 0x4, ?g_battlezCustomMsgMap@@3PAXA)
 
 // @early-stop
 // stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList

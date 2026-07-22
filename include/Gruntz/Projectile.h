@@ -108,4 +108,5 @@ struct CCoordColl;
 extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 extern CCoordColl g_tbombColl;
 
+extern const double g_projPhase1;
 #endif // GRUNTZ_PROJECTILE_H

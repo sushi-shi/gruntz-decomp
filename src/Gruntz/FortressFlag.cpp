@@ -19,7 +19,6 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Bute/ButeTree.h>     // CVariantSlot::Set (the grow-path node inserter m_4->Set)
-#include <Globals.h>           // g_part* (CParticlez's registry scalars)
 
 // The handler entry record (FortressFlagHandler/CFortressFlagActEntry, the PMF slot,
 // proven at 0x46080/0x461e0) is defined in <Gruntz/FortressFlag.h> after the

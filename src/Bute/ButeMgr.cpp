@@ -49,7 +49,6 @@
 #include <EmptyString.h>      // g_emptyString
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
-#include <Globals.h>
 
 #include <fstream.h> // the REAL CRT iostream/ios (the ??_Diostream emission carrier)
 #include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels

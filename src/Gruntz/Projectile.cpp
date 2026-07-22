@@ -20,7 +20,6 @@
 #include <math.h>           // sin / cos (StepMotion's parabola)
 #include <string.h>         // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
-#include <Globals.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
@@ -39,6 +38,7 @@
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
 #include <Gruntz/AniElement.h> // CAniElement complete type (KeyOfValue's CObject* upcast)
+#include <Wap32/zBitVec.h> // ex Globals.h
 
 
 VTBL(CTimeBomb, 0x001e771c);

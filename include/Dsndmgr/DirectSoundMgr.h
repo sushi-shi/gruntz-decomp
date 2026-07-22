@@ -137,4 +137,9 @@ extern const char s_rb[];
 
 extern "C" i32 ConvertVolumeToPercent(i32 v); // 0x135110 (C linkage carrier)
 
+extern const double c_volScale;
+extern const double c_volNum;
+extern const double c_powExp;
+extern const double c_acosNorm;
+extern i32 g_panTable[];
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

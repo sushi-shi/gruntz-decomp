@@ -79,4 +79,5 @@ extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
 // VAs are reloc-masked at use) ---
 extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a4, i32 a5);
 
+extern i32 g_posSoundReq;
 #endif // GRUNTZ_CWORLDSOUNDSET_H

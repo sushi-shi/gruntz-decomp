@@ -20,6 +20,7 @@
 #include <rva.h>
 
 #include <Gruntz/SpotLightActReg.h> // g_actReg_646188 (ex .cpp extern)
+#include <Gruntz/Random.h> // ex Globals.h transitive
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0

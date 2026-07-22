@@ -6,7 +6,6 @@
 #include <rva.h>
 #include <stdlib.h> // qsort in the palette-sort builders
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
-#include <Globals.h>
 
 DATA(0x002bf224)
 PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)

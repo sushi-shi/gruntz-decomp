@@ -3,7 +3,7 @@
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
-#include <Globals.h>
+#include <Net/NetMgrReportError.h> // own exported globals (ex Globals.h)
 
 DATA(0x002bf6e8)
 i32 g_logEnabled = 0; // drives the format-line path

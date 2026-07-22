@@ -21,10 +21,11 @@
 #include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
 #include <Gruntz/LogicFnTable.h>      // the shared LogicFnTable dispatch-table shape
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Globals.h>
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/Random.h> // ex Globals.h transitive
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);

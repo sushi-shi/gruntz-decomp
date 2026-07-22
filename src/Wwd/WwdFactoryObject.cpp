@@ -27,10 +27,10 @@
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
 #include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
-#include <Globals.h>
 
 #include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
 #include <Gruntz/SoundState.h> // g_sndCueTag (ex the g_aniCueItem alias)
+#include <Wwd/WwdObjMgr.h> // ex Globals.h
 namespace Rng {
     i32 Next2();
 }

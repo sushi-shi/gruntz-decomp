@@ -13,7 +13,12 @@
 #include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views
 
 #include <rva.h>
-#include <Globals.h>
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/Random.h> // ex Globals.h transitive
+#include <Gruntz/BootyWalkAnim.h> // ex Globals.h
+
+DATA(0x001e9068)
+i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 
 
 DATA(0x001e93a8)

@@ -2,7 +2,6 @@
 #include <Gruntz/MotionState.h>
 #include <math.h>
 #include <rva.h>
-#include <Globals.h>
 #include <Gruntz/Projectile.h> // g_movingLogicMax (ex .cpp extern)
 
 DATA(0x001f0500)

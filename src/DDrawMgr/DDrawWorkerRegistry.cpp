@@ -21,12 +21,12 @@
 #include <ddraw.h> // DDBLTFX (g_bltFx - the shared BltEx fx block)
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in InstallTree / LoadNamespace)
-#include <Globals.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDrawWorker.h> // the ONE canonical keyed worker (vtable 0x1efbe8)
 #include <Gruntz/String.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
+#include <Image/CImage.h> // ex Globals.h
 
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 inline void* operator new(u32, void* p) {

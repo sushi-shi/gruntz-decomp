@@ -41,4 +41,5 @@ public:
 };
 SIZE(0x1b8);
 
+extern u8 g_titleBuf;
 #endif // GRUNTZ_HELPSTATE_H

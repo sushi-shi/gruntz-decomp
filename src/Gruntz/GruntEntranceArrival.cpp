@@ -53,6 +53,7 @@
 #include <Bute/ButeMgr.h>
 
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
 
 DATA(0x001e9a68)
 double s_fpZero = 0.0;        // 0x5e9a68
@@ -127,7 +128,18 @@ static void GruntScratchTeardown() {
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 
 #include <Gruntz/GruntBehaviorLeaf.h>
-#include <Globals.h> // k_60df94 (ex .cpp extern)
+
+DATA(0x0020df94)
+char k_60df94[] = "S";
+
+DATA(0x0020dc0c)
+char s_codeO[] = "O";
+
+DATA(0x0020dc04)
+char s_codeN[] = "N";
+
+DATA(0x0020dc08)
+char s_codeQ[] = "Q"; // RVA-contiguous with s_codeN/s_codeO (ex GruntEntranceMove home)
 // ---------------------------------------------------------------------------
 // CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
 // @early-stop

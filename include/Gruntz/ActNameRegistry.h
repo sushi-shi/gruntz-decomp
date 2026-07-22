@@ -3,6 +3,7 @@
 
 #include <Bute/ButeTree.h>
 #include <Wap32/ZVec.h>
+#include <Wap32/zBitVec.h> // ex Globals.h
 
 class CVariantSlot; // folded CActColl2
 #include <Gruntz/TypeKeyColl.h>

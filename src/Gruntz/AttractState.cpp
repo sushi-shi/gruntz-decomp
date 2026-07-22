@@ -14,9 +14,10 @@
 #include <DDrawMgr/DDSurface.h>        // CDDSurface (Vslot07 Flip; m_10->m_2c)
 #include <ddraw.h>                     // IDirectDrawSurface (Render busy IsLost)
 #include <rva.h>
-#include <Globals.h> // Vslot09: g_randSeeded / g_randSeed
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/Random.h> // ex Globals.h transitive
 
 VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);

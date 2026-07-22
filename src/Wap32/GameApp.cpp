@@ -3,7 +3,7 @@
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
-#include <Globals.h>
+#include <Wap32/GameApp.h> // own exported globals (ex Globals.h)
 
 // CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
 // header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject

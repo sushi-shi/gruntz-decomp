@@ -8,6 +8,7 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - A's +0x1a0 member
 #include <Gruntz/WwdGridIter.h>      // WwdRegion - the embedded +0x9c spatial-grid node
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj - the owned +0x7c..+0x90 workers
+#include <Wwd/WwdObjMgr.h> // ex Globals.h
 
 class
     CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)

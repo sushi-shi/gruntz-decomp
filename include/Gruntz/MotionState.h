@@ -52,4 +52,6 @@ public:
 };
 SIZE_UNKNOWN();
 
+extern const double g_motionNegHalf;
+extern const double g_motionNegTwo;
 #endif // GRUNTZ_MOTIONSTATE_H

@@ -6,6 +6,7 @@
 #include <rva.h>
 
 #include <Gruntz/TypeKeyColl.h> // the real registry chain (zDArray : _zdvec : _zvec)
+#include <Wap32/zBitVec.h> // ex Globals.h
 
 struct CActReg : public zDArray {
     // 0x464e0 (defined out-of-line in FortressFlag.cpp, inside that band): the

@@ -6,7 +6,6 @@
 #include <Gruntz/Grunt.h> // complete CGrunt (its slot-3 XferName stub is homed here)
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
-#include <Globals.h>
 #include <Gruntz/TypeKeyColl.h>
 
 // The two out-of-line base-ctor COMDATs (CUserLogic() @0x138d0 / CUserLogic(obj)

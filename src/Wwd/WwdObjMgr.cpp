@@ -21,7 +21,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_drawTarget->m_backPair)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
-#include <Globals.h>
 #include <Gruntz/Sprite.h> // CSprite (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (the factory base sub-object)
@@ -39,6 +38,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
 #include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CLevelPlane
 #include <Win32.h>                     // SetRect + RECT
+#include <Wwd/WwdObjMgr.h> // own exported globals (ex Globals.h)
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;

@@ -12,7 +12,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry == CDDrawWorkerRegistry (InstallTree)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
-#include <Globals.h>
+#include <Gruntz/GameAssetNamespaces.h> // own exported globals (ex Globals.h)
 
 DATA(0x00251614)
 i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)

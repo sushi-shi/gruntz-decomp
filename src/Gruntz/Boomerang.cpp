@@ -3,7 +3,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
-#include <Globals.h>             // g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
 

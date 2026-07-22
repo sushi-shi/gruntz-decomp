@@ -3,6 +3,7 @@
 #define GRUNTZ_GRUNTZ_STARTUPPROMPT_H
 
 #include <Ints.h>
+#include <Gruntz/GruntzMgr.h> // ex Globals.h
 
 extern HINSTANCE g_appResHandle; // 0x00251618
 

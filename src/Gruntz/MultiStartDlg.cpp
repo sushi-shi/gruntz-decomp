@@ -13,7 +13,7 @@
 #include <string.h>               // inline strcmp (empty-text WM_SETTEXT gate / name resync)
 #include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
-#include <Globals.h>
+#include <Gruntz/MultiStartDlg.h> // own exported globals (ex Globals.h)
 
 enum {
     NUM_PLAYER_SLOTS = 4

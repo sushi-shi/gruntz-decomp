@@ -20,8 +20,16 @@
 #include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
-#include <Globals.h>
 #include <Wap32/ZVec.h>
+
+DATA(0x002bf454)
+void* g_projActName;
+
+DATA(0x002bf428)
+void* g_retAddrBreadcrumb;
+
+DATA(0x002bf400)
+i32 g_helperRefCount; // owner def (zero-init .bss; C linkage via TypeKeyColl.h decl)
 
 // g_typeColl (0x002bf650): zDArray - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

@@ -19,7 +19,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSurfaceChildA (SetGeom_1646b0 here)
 #include <Io/FileMem.h>                // CFileMem/CFileMemBase (the runtime core here)
 #include <Gruntz/AniElement.h>         // CAniElement + CAniRecordView (the ANI section here)
-#include <Globals.h>                   // g_aniParsedNameLen (the record-parse cursor)
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/String.h>
 #include <Mfc.h>
@@ -28,6 +27,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
+#include <DDrawMgr/AniRecord.h> // ex Globals.h
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and

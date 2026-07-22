@@ -18,11 +18,9 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
     // stays void* and the `(CSpawnOwner*)` cast at the call site STAYS: the cast is
     // telling the truth - the type above it is still unresolved. Settle the conflation
     // (one object, two class names) and the cast falls out on its own.
-extern "C" void* g_inputMgr;
     // 0x645578 IS the CGruntSpawnConfig singleton - PROVEN in this very function:
     // RezAlloc(0x28) (its exact size), then ->Init(CSpawnOwner*), then RezFree on the
     // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
-extern "C" CGruntSpawnConfig* g_spawnConfig;
 extern "C" char* StrUpr(char*); // 0x18d330
 extern "C" void cb_403193();
 extern "C" void cb_401bc2();
@@ -35,4 +33,15 @@ extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" i32 g_attractStateCount;
 
+extern "C" i32 g_disableAudio;
+extern "C" i32 g_disableSound;
+extern "C" i32 g_disableMusic;
+extern "C" i32 g_disableJoystick;
+extern "C" i32 g_disableSoundFonts;
+extern "C" i32 g_disableDirectVideo;
+extern "C" i32 g_disableHqMovie;
+extern "C" i32 g_enableTriple;
+extern "C" i32 g_enableHiColor;
+extern "C" i32 g_enableTrueColor;
+extern "C" i32 g_enableEmulation;
 #endif // GRUNTZ_REZ_REZSYNC_H_H

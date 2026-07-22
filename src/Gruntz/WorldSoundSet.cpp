@@ -8,7 +8,6 @@
 #include <Rez/RezMgr.h>      // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
-#include <Globals.h>          // g_posSoundReq
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 

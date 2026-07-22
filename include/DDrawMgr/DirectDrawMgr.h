@@ -142,4 +142,8 @@ extern "C" void DdEnumModesCallback(); // 0x143390
 extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
 
+extern i32 (*g_restoreHandler)();
+class CDDrawPtrCollections;
+typedef CDDrawPtrCollections CDirectDrawMgr;
+extern "C" CDirectDrawMgr* g_DirectDrawMgr;
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

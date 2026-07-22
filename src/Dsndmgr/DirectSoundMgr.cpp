@@ -12,7 +12,19 @@
 #include <io.h>     // _filelength (0x18c480) - the RIFF file-size query
 #include <string.h> // inline strcpy/memcpy (rep movs / repne scasb)
 
-#include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
+#include <Wap32/Wap32.h> // ex Globals.h
+
+DATA(0x001ef6b0)
+const double c_acosNorm = 2.0; // 0x5ef6b0  acos() normalizer arg
+
+DATA(0x001ef6a8)
+const double c_powExp = 10.0; // 0x5ef6a8  pow() exponent
+
+DATA(0x001ef6a0)
+const double c_volNum = 1.0; // 0x5ef6a0  numerator of the reciprocal
+
+DATA(0x001ef698)
+const double c_volScale = 100.0; // 0x5ef698  v / c_volScale, and the final * c_volScale
 
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 

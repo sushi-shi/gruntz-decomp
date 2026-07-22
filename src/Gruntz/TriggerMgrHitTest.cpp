@@ -25,7 +25,6 @@
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
-#include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
 

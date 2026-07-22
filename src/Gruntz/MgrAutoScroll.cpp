@@ -9,7 +9,8 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarMgr.h> // the status-bar mgr (bar->m_position gates the h-center)
-#include <Globals.h>
+#include <Gruntz/ScrollState.h> // ex Globals.h transitive
+#include <Gruntz/MgrAutoScroll.h> // own exported globals (ex Globals.h)
 
 
 DATA(0x002452a4)

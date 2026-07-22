@@ -2,7 +2,6 @@
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
-#include <Globals.h>
 #include <Gruntz/SpotLightActReg.h> // g_actReg_646188 decl
 
 // g_actReg_646188 (0x00246188): CActReg - no provable static init (the type has no

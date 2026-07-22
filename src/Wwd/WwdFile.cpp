@@ -2,7 +2,6 @@
 #include <rva.h>
 
 #include <Mfc.h>
-#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate

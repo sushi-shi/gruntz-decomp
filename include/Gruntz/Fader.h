@@ -62,4 +62,6 @@ extern const float g_faderBiasFade = -1.0f; // -1.0  (fade - K == fade + 1.0)
 extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade - frame > 1.0)
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
+extern float g_fxBias;
+extern float g_fxEps;
 #endif // GRUNTZ_GRUNTZ_CFADER_H

@@ -585,4 +585,5 @@ extern "C" void IconClassInitA(); // 0x40288d
 // VAs are reloc-masked at use) ---
 extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
 
+extern i32 g_groupSentinel;
 #endif

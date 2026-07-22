@@ -36,9 +36,10 @@
 #include <Wap32/EngStr.h>             // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <stdio.h>                    // engine sprintf (reloc-masked)
 #include <stdlib.h>                   // srand (reloc-masked)
-#include <Globals.h>
 
 #include <Utils/DebugTiming.h> // ActiveWait (ex .cpp extern)
+#include <Net/NetMgrReportError.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
@@ -163,6 +164,9 @@ void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 #include <Gruntz/Play.h> // ChannelSlots_InitAll (ex .cpp extern)
+
+DATA(0x00248cec)
+i32 g_activePlayerCount = 0;
 
 // g_sessionName (0x002473d8): CString - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

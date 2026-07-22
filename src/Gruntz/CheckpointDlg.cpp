@@ -3,7 +3,10 @@
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
 #include <Gruntz/GruntzCommand.h> // canonical g_singleCmdList/g_multiCmdList (@0x62b5d0/0x62b640)
 #include <rva.h>
-#include <Globals.h> // g_msgmap_CCheckpointDlg
+#include <Gruntz/CheckpointDlg.h> // ex Globals.h
+
+DATA(0x001e94b8)
+const i32 g_msgmap_CCheckpointDlg = 6205544;
 
 VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 RVA(0x000234a0, 0x1e)

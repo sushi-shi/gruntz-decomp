@@ -16,7 +16,6 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
 #include <Gruntz/Sprite.h>           // CSprite (frame-data value; the looked-up direction sprite)
-#include <Globals.h>
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -32,6 +31,9 @@ DATA(0x001ea400)
 const double g_slimeZero = 0.0;
 
 #include <Gruntz/KitchenSlime.h>
+
+DATA(0x001ea3e0)
+const double g_slimeSpeedNum = 32.0;
 
 DATA_SYMBOL(0x00246228, 0x24, ?g_kslimeColl@@3UCActReg@@A)
 

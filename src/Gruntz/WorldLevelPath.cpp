@@ -3,7 +3,6 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Globals.h>
 
 #include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/16/17 + non-virtuals)
@@ -11,6 +10,7 @@
 #include <Gruntz/GameLevel.h>       // m_world->m_level (CGameLevel)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GruntzMgr.h>       // m_mgr fields (world file, battlez/multi gates)
+#include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 
 class CParseSource;
 

@@ -6,7 +6,6 @@
 #include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <Globals.h>                   // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
 i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 

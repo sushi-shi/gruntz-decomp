@@ -5,9 +5,9 @@
 #include <Win32.h> // GetCurrentDirectoryA / FreeLibrary
 
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
-#include <Globals.h>           // g_sfDevice, g_sfReady, g_sfDeviceCount, g_sfDll
 #include <stdio.h>             // sprintf (0x11f890, _sprintf)
 #include <string.h>            // strlen (inline repne scas)
+#include <Gruntz/SFSelectDevice.h> // ex Globals.h
 
 DATA(0x0024dacc)
 WORD g_sfCfgA0 = 0; // config block A +0 (runtime =1)

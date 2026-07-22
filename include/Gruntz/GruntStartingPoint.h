@@ -43,4 +43,5 @@ extern "C" void ActReg4Handler(); // 0x4040a2
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
 extern CActReg g_actReg4;
 
+extern u32 g_zvecErrSentinel;
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

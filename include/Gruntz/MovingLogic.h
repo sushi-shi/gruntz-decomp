@@ -175,4 +175,5 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     // @+0x150, assigned by each derived ctor's body.)
 }
 
+extern const double g_motionTimeScale;
 #endif // GRUNTZ_CMOVINGLOGIC_H

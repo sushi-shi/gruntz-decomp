@@ -7,7 +7,6 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
 #include <Gruntz/Play.h>      // CPlay - m_curState real class (m_levelIndex)
 #include <Gruntz/CheatMgr.h>  // CCheatMgr - m_124 "a cheat was used" latch
-#include <Globals.h>          // g_previewMgr / g_previewImage
 #include <stdio.h>            // sprintf (reloc-masked)
 #include <rva.h>
 

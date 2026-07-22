@@ -26,8 +26,9 @@
 #include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
 #include <Gruntz/Wnd.h>   // the real MFC CWnd via <afxwin.h> (FromHandle; m_hWnd @+0x1c)
 #include <Gruntz/Enums.h> // RES_640x480/RES_800x600/RES_1024x768
-#include <Globals.h>      // the g_opt_* staging globals
 #include <string.h>       // strcat (inline repnz scasb + rep movs under /O2 /Oi)
+#include <Rez/RezSync.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl

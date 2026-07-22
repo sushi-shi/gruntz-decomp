@@ -1,8 +1,11 @@
-#include <Globals.h> // g_poolCount (ex .cpp extern)
 #include <rva.h>
 #include <Mfc.h> // CPtrList
 
 #include <Net/CmdPool.h>
+#include <Net/PacketPool.h> // ex Globals.h
+
+DATA(0x0024acb4)
+i32 g_poolCount;
 
 RVA(0x000bef10, 0xd)
 void Unmatched_bef10() {

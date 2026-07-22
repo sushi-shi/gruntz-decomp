@@ -14,7 +14,6 @@
 #include <string.h>                    // inline strcat/strlen intrinsics (/O2)
 
 #include <rva.h>
-#include <Globals.h>
 
 CString FormatElapsed(i32 count);
 

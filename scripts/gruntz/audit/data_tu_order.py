@@ -51,6 +51,45 @@ def repo_root():
     return p
 
 
+# A datum is COMDAT (linker-pooled per-segment, NON-linear) if its symbol name is
+# a compiler-generated vague-linkage kind (vtable ??_7, RTTI ??_R, string ??_C /
+# $S, vbtable ??_8, local static guard/init ??__), or if the delinker attributed
+# the SAME rva to more than one object (a folded/replicated COMDAT). Only ORDINARY
+# (single-owner, ordinarily-named) data is linearly TU-attributed and thus subject
+# to the per-(TU, storage) band invariant.
+COMDAT_NAME_RE = re.compile(r"^(?:\?\?_[789A-DR]|\?\?__|\$S|_?\$SG)")
+
+
+def load_manifest(root):
+    """rva -> storage, plus the set of COMDAT (pooled) rvas, from the delinker's
+    data manifest. Returns ({}, set()) if the manifest is absent (audit degrades
+    to name-only COMDAT detection)."""
+    path = os.path.join(root, "build", "gen", "delink_data_manifest.tsv")
+    rva2storage = {}
+    objs_at = {}  # rva -> set(object)
+    names_at = {}  # rva -> a symbol name
+    if not os.path.exists(path):
+        return rva2storage, set()
+    with open(path, errors="replace") as fh:
+        header = fh.readline()
+        for ln in fh:
+            c = ln.rstrip("\n").split("\t")
+            if len(c) < 5:
+                continue
+            try:
+                rva = int(c[2], 16)
+            except ValueError:
+                continue
+            rva2storage.setdefault(rva, c[4])
+            objs_at.setdefault(rva, set()).add(c[1])
+            names_at.setdefault(rva, c[0])
+    comdat = set()
+    for rva, objs in objs_at.items():
+        if len(objs) > 1 or COMDAT_NAME_RE.match(names_at.get(rva, "")):
+            comdat.add(rva)
+    return rva2storage, comdat
+
+
 def strip_line_comment(s):
     # remove a trailing // comment (naive: no // inside strings in these decls)
     i = s.find("//")
@@ -189,43 +228,90 @@ def within_file_audit(files):
     return problems
 
 
-def cross_file_audit(files, pool_threshold=4):
-    """Map def-rva -> file; find defs sitting strictly inside another file's band."""
-    defs = []  # (rva, path, name)
+def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None):
+    """Band ORDINARY (non-COMDAT) data per (file, storage) and find defs sitting
+    strictly inside ANOTHER file's SAME-storage band.
+
+    Storage-aware: a TU contributes an independent contiguous run to EACH of
+    .rdata/.data/.bss, so bands are keyed by (file, storage) - a single all-storage
+    envelope (the old model) engulfed every multi-segment TU into a false pool.
+    COMDAT data (vtables/RTTI/strings/guards) is linker-pooled, not linearly
+    attributed, so it is excluded from the band model entirely."""
+    rva2storage = rva2storage or {}
+    comdat = comdat or set()
+
+    def is_comdat(rva, name):
+        return (rva in comdat) or (name is not None and COMDAT_NAME_RE.match(name)) \
+            or name == "??_7"
+
+    # (rva, path, name, storage) for every ordinary storage-emitting def
+    defs = []
     for path in files:
         for b in parse_file(path):
-            if b.is_def:
-                defs.append((b.rva, path, b.name))
-    # per-file band over definitions
-    bands = {}
-    byfile = {}
-    for rva, path, name in defs:
-        byfile.setdefault(path, []).append(rva)
-    for path, rvas in byfile.items():
-        bands[path] = (min(rvas), max(rvas), len(rvas))
-    # for each file, which OTHER files' defs fall strictly inside its band
-    contains = {}  # path -> set of foreign paths whose defs land inside
-    crossings = []  # (rva, owner_path(where defined), container_path)
-    foreign_inside = {}  # container -> count of foreign DEFS strictly inside its band
-    def_sorted = sorted(defs)
-    for rva, path, name in def_sorted:
-        for cpath, (lo, hi, cnt) in bands.items():
-            if cpath == path:
+            if not b.is_def or is_comdat(b.rva, b.name):
+                continue
+            storage = rva2storage.get(b.rva, "data")
+            defs.append((b.rva, path, b.name, storage))
+
+    # band per (path, storage)
+    byband = {}
+    for rva, path, name, storage in defs:
+        byband.setdefault((path, storage), []).append(rva)
+    bands = {key: (min(v), max(v), len(v)) for key, v in byband.items()}
+
+    contains = {}       # (cpath,storage) -> set of foreign paths inside
+    crossings = []      # (rva, owner_path, name, container_path, storage)
+    foreign_inside = {}
+    for rva, path, name, storage in sorted(defs):
+        for (cpath, cstorage), (lo, hi, cnt) in bands.items():
+            if cpath == path or cstorage != storage:
                 continue
             if lo < rva < hi:
-                contains.setdefault(cpath, set()).add(path)
-                foreign_inside[cpath] = foreign_inside.get(cpath, 0) + 1
-                crossings.append((rva, path, name, cpath))
-    # A "pool"/scattered TU: its band holds as many (or more) FOREIGN defs than its
-    # own -> the band model does not describe a clean contiguous run for it (either
-    # a designed consolidation like Globals.cpp, or its own defs are placed next to
-    # their functions). Re-homing into/out of these needs the real owner proven.
-    pools = set()
-    for p, (lo, hi, cnt) in bands.items():
-        fi = foreign_inside.get(p, 0)
-        if fi >= cnt or len(contains.get(p, ())) >= pool_threshold:
-            pools.add(p)
+                contains.setdefault((cpath, cstorage), set()).add(path)
+                foreign_inside[(cpath, cstorage)] = foreign_inside.get((cpath, cstorage), 0) + 1
+                crossings.append((rva, path, name, cpath, storage))
+    # a (file,storage) band that swallows many foreign defs is a pool/scattered run
+    pools = set()  # set of (path, storage)
+    for key, (lo, hi, cnt) in bands.items():
+        if foreign_inside.get(key, 0) >= cnt or len(contains.get(key, ())) >= pool_threshold:
+            pools.add(key)
     return defs, bands, crossings, pools, contains
+
+
+BASELINE = os.path.join("config", "data-tu-order-baseline.tsv")
+
+
+def real_crossings(root, pool_threshold=4):
+    """The ordinary-data interleave violations (container is not a pool)."""
+    files = sorted(glob.glob(os.path.join(root, "src", "**", "*.cpp"), recursive=True))
+    files = [f for f in files if "/Stub/" not in f]
+    rva2storage, comdat = load_manifest(root)
+    defs, bands, crossings, pools, contains = cross_file_audit(
+        files, pool_threshold, rva2storage, comdat)
+    real = [c for c in crossings if (c[3], c[4]) not in pools]
+    return real, defs, bands, pools, contains
+
+
+def crossing_key(c):
+    rva, owner, name, container, storage = c
+    return (f"{rva:#010x}", name or "?", os.path.basename(owner),
+            os.path.basename(container), storage)
+
+
+def load_baseline(root):
+    path = os.path.join(root, BASELINE)
+    keys = set()
+    if not os.path.exists(path):
+        return keys
+    with open(path, errors="replace") as fh:
+        for ln in fh:
+            ln = ln.split("#", 1)[0].strip()
+            if not ln:
+                continue
+            parts = ln.split("\t")
+            if len(parts) == 5:
+                keys.add(tuple(parts))
+    return keys
 
 
 def main():
@@ -233,16 +319,19 @@ def main():
     ap.add_argument("--within", action="store_true", help="per-file ordering audit")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--pool-threshold", type=int, default=4)
+    ap.add_argument("--ratchet", action="store_true",
+                    help="FATAL if an ordinary-data def lands in another TU's band "
+                         "and is not in config/data-tu-order-baseline.tsv")
+    ap.add_argument("--write-baseline", action="store_true",
+                    help="(re)write the baseline from the current crossings")
     ap.add_argument("--root", default=None)
     args = ap.parse_args()
 
     root = args.root or repo_root()
-    files = sorted(
-        glob.glob(os.path.join(root, "src", "**", "*.cpp"), recursive=True)
-    )
-    files = [f for f in files if "/Stub/" not in f]
 
     if args.within:
+        files = sorted(glob.glob(os.path.join(root, "src", "**", "*.cpp"), recursive=True))
+        files = [f for f in files if "/Stub/" not in f]
         probs = within_file_audit(files)
         print(f"== within-file DATA ordering: {len(probs)} file(s) with an out-of-order run ==")
         for path, run in probs:
@@ -253,24 +342,51 @@ def main():
                 print(f"    L{b.line:<5} {b.rva:#010x} {flag} {b.name}")
         return
 
-    defs, bands, crossings, pools, contains = cross_file_audit(
-        files, args.pool_threshold
-    )
-    # filter crossings: drop those whose container is a pool
-    real = [c for c in crossings if c[3] not in pools]
-    print(f"== cross-TU DATA interleave audit ==")
-    print(f"   {len(defs)} storage-emitting DATA definitions across {len(bands)} files")
+    real, defs, bands, pools, contains = real_crossings(root, args.pool_threshold)
+    keys = {crossing_key(c) for c in real}
+
+    if args.write_baseline:
+        path = os.path.join(root, BASELINE)
+        with open(path, "w") as fh:
+            fh.write("# data-tu-order baseline: ordinary-data defs that land inside another\n")
+            fh.write("# TU's same-storage band (known scattered singletons / accepted homes).\n")
+            fh.write("# Regenerate: python -m gruntz.audit.data_tu_order --write-baseline\n")
+            fh.write("# rva\tname\towner_cpp\tcontainer_cpp\tstorage\n")
+            for k in sorted(keys):
+                fh.write("\t".join(k) + "\n")
+        print(f"wrote {len(keys)} baseline crossings -> {BASELINE}")
+        return
+
+    if args.ratchet:
+        base = load_baseline(root)
+        new = keys - base
+        stale = base - keys
+        if new:
+            print(f"[data-tu-order] FATAL: {len(new)} NEW ordinary-data interleave(s) "
+                  f"(a DATA def landed inside another TU's same-storage band):")
+            for k in sorted(new):
+                rva, name, owner, container, storage = k
+                print(f"   {rva} {name:28s} in {owner:32s} INSIDE {container} .{storage} band")
+            print("   Home the def in its real owner TU (RVA-contiguous), or - if it is a")
+            print("   proven scattered singleton - bless via --write-baseline.")
+            raise SystemExit(1)
+        msg = f"[data-tu-order] OK - no new ordinary-data interleaves ({len(base)} baselined"
+        print(msg + (f", {len(stale)} baseline row(s) now clean)" if stale else ")"))
+        return
+
+    print(f"== cross-TU DATA interleave audit (storage-aware) ==")
+    print(f"   {len(defs)} ordinary storage-emitting defs across {len(bands)} (file,storage) bands")
     print(f"   pools (band swallows >= {args.pool_threshold} other files' defs): {len(pools)}")
-    for p in sorted(pools):
-        lo, hi, cnt = bands[p]
-        print(f"     POOL  {os.path.relpath(p, root):40s} band [{lo:#08x},{hi:#08x}] {cnt} defs, contains {len(contains[p])} files")
+    for (p, storage) in sorted(pools):
+        lo, hi, cnt = bands[(p, storage)]
+        print(f"     POOL  {os.path.relpath(p, root):40s} .{storage:5s} [{lo:#08x},{hi:#08x}] "
+              f"{cnt} defs, contains {len(contains[(p, storage)])} files")
     print()
     print(f"   {len(real)} interleave violation(s) (container is NOT a pool):")
-    # group by (container, owner)
-    for rva, owner, name, container in sorted(real):
-        lo, hi, cnt = bands[container]
-        print(f"     {rva:#010x} {name or '?':28s} defined in {os.path.relpath(owner, root):34s} "
-              f"INSIDE band of {os.path.relpath(container, root)} [{lo:#08x},{hi:#08x}]")
+    for rva, owner, name, container, storage in sorted(real):
+        lo, hi, cnt = bands[(container, storage)]
+        print(f"     {rva:#010x} {name or '?':28s} in {os.path.relpath(owner, root):30s} "
+              f"INSIDE {os.path.relpath(container, root)} .{storage} [{lo:#08x},{hi:#08x}]")
 
 
 if __name__ == "__main__":

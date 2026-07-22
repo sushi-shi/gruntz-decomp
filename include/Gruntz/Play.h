@@ -692,4 +692,12 @@ extern "C" void PlaneQuadF();
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" u32 g_killCueClock;
 
+extern i32 g_lastLevelNum;
+extern "C" i32 g_areaHazardParam;
+extern "C" i32 g_levelBias100;
+extern "C" i32 g_soundChannelInUse[17];
+extern char* g_colorNames[];
+extern char* g_difficultyNames[];
+extern "C" i32 g_profAccA;
+extern "C" i32 g_profAccB;
 #endif // SRC_GRUNTZ_CPLAY_H

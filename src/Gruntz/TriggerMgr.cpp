@@ -36,7 +36,6 @@
 #include <Bute/ButeMgr.h>             // canonical CButeMgr (one shape)
 #include <Wwd/WwdFile.h>              // CPlaneRender - the canonical plane (dims here)
 #include <stdlib.h>                   // rand (0x11fee0, reloc-masked)
-#include <Globals.h>
 
 #include <Gruntz/Play.h>         // CPlay (PostHudRect/DispatchHudClick drive HudRect @0x78060)
 #include <Gruntz/GameLevel.h>    // CLevelPlane (PositionUpdate @0x788d0 tail call)
@@ -59,6 +58,7 @@
 #include <Gruntz/TileGridCommand.h>        // canonical CTileTriggerLogic (rock-break)
 
 #include <Gruntz/TriggerMgrViews.h>
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 DATA(0x00244ca4)
 i32 g_groupSentinel;

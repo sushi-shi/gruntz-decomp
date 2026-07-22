@@ -8,7 +8,6 @@
 #include <math.h>       // fild/fsqrt/__ftol board distance
 #include <string.h>     // inline strcmp type-name gate
 #include <stdlib.h>     // engine rand (0x11fee0)
-#include <Globals.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Brickz.h> // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
 #include <Gruntz/Grunt.h>  // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14

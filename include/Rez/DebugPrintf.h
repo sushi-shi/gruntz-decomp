@@ -15,4 +15,5 @@ extern "C" void DebugSink_184df0(char* line);
 // VAs are reloc-masked at use) ---
 extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
 
+extern i32 g_debugPrintMode;
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

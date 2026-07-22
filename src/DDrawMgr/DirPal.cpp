@@ -6,7 +6,6 @@
 #include <DDrawMgr/DirPal.h> // LogPal256 (this TU owns the palette snapshots)
 #include <stdio.h>
 #include <string.h>  // strrchr / _stricmp / inline memcpy
-#include <Globals.h> // g_DirectDrawMgr (the singleton whose device the notify waits on)
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 

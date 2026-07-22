@@ -78,4 +78,5 @@ public:
 };
 SIZE_UNKNOWN();
 
+extern float g_zeroF;
 #endif // GRUNTZ_BATTLEZDATA_H

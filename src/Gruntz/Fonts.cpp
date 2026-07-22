@@ -1,7 +1,6 @@
 #include <Font/Font.h>
 #include <Gruntz/Fonts.h> // the shared InitializeFonts decl (Run boot-calls it)
 #include <rva.h>
-#include <Globals.h>
 
 DATA(0x0024ea58)
 Font g_tinyFont;

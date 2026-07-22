@@ -3,6 +3,7 @@
 
 #include <stdlib.h> // realloc (0x125180), malloc (0x120b60)
 #include <string.h> // memset (rep stos)
+#include <Wap32/zBitVec.h> // ex Globals.h
 
 #pragma intrinsic(strlen, strcmp, memcpy)
 

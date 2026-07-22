@@ -19,8 +19,13 @@
 #include <Dsndmgr/SoundStream.h>          // SoundStream::Stop (ResetPreview's owned stream)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Gruntz/PreviewState.h> // canonical CPreviewState (the level-preview screen state)
-#include <Globals.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_killCueClock)
+#include <Rez/RezSync.h> // ex Globals.h
+#include <Wap32/GameApp.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/LevelPreview.h> // ex Globals.h
+
+DATA_SYMBOL(0x00104358, 0x4, ?g_screenTag@@3HA)
 
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {

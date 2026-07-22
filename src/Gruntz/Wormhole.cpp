@@ -56,9 +56,9 @@
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/ActNameRegistry.h>   // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
 #include <Bute/ButeMgr.h>
-#include <Globals.h>
 #include <Mfc.h> // CString (the scratch name-vec element)
 #include <rva.h>
+#include <Wap32/zBitVec.h> // ex Globals.h
 
 // g_teleporterActReg (0x002446b0): CTeleporterActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

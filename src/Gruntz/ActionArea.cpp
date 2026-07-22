@@ -6,7 +6,6 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
-#include <Globals.h>
 #include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
 #include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
 #include <Gruntz/TypeColl.h>

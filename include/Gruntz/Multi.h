@@ -396,4 +396,7 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" i32 g_sharedFlag;
 
+extern i32 g_dplayAppGuid[4];
+extern char s_GameKey[];
+extern u32 g_ackThrottleDeadline;
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

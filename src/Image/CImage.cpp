@@ -650,7 +650,6 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
     }
 }
 
-#include <Globals.h> // g_bltFx (the shared BltEx DDBLTFX)
 
 DATA_SYMBOL(0x002bf228, 0x0, _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863)
 DATA_SYMBOL(0x002bf29c, 0x0, _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865)

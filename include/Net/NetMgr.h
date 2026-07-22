@@ -929,4 +929,5 @@ extern "C" BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWO
 extern "C" BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags,
                                     CNetMgr* ctx); // 0x178b00
 
+extern "C" i32 g_activePlayerCount;
 #endif // NET_NETMGR_H

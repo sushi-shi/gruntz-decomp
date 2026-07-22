@@ -7,7 +7,6 @@
 #include <Image/Image.h>                  // the single-source CDDSurface extras' records
 #include <ddraw.h>                        // IDirectDrawSurface (UpdateOverlay passthrough)
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
-#include <Globals.h>
 
 void BuildColorChannelTables();
 

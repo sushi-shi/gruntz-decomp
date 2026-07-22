@@ -47,6 +47,8 @@
 #include <Gruntz/PickupType.h> // the toy/vehicle grunt-kind id band
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
 
+DATA_SYMBOL(0x00051510, 0x0, ?g_typeDesc1@@3PADA)
+
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98

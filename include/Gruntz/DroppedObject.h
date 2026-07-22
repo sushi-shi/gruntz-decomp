@@ -51,4 +51,6 @@ extern CSiblingActReg g_shadowActReg; // 0x0024bf00
 extern i32 DropActB_c7be0();
 extern i32 DropActA_c7090();
 
+extern const double g_objDropDiv;
+extern double g_dropFallBias;
 #endif // GRUNTZ_CDROPPEDOBJECT_H

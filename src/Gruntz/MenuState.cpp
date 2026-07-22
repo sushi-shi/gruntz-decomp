@@ -21,7 +21,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
-#include <Globals.h>
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 
 DATA(0x00245574)

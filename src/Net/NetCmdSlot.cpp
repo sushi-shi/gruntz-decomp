@@ -7,9 +7,9 @@
 #include <Ints.h>
 #include <Rez/RezMgr.h>
 #include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
-#include <Globals.h>
 #include <rva.h>
 #include <string.h> // memcpy / memset / strcat (see #pragma intrinsic below)
+#include <Net/NetCmdSlot.h> // own exported globals (ex Globals.h)
 
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)

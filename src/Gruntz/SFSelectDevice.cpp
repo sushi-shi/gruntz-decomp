@@ -6,10 +6,10 @@
 #include <string.h> // memset (rep stos intrinsic)
 
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
-#include <Globals.h>
 
 
 #include <Gruntz/SoundFontPath.h> // g_sfDeviceId (ex .cpp extern)
+#include <Gruntz/SFSelectDevice.h> // own exported globals (ex Globals.h)
 DATA(0x00213dff)
 char g_id0_613dff = 0;
 DATA(0x00213e00)

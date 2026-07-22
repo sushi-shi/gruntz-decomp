@@ -4,7 +4,6 @@
 
 #include <Bute/ButeMgr.h> // CButeTree
 #include <Bute/ButeTree.h>
-#include <Globals.h>
 #include <Gruntz/StringNode.h>    // the type-name teardown slot
 #include <Gruntz/TypeColl.h>      // the shared type-name registry collection
 #include <Gruntz/TypeColl2.h>     // its Insert facet

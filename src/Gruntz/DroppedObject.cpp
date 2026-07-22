@@ -22,7 +22,6 @@
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
-#include <Globals.h>
 
 #include <string.h> // inline strcmp for the direction-name match
 

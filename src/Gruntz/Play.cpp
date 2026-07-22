@@ -55,9 +55,9 @@
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize (the plane/grid-owner)
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
 #include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
-#include <Globals.h>
 
 #include <Gruntz/GameText.h> // g_brickText1 (ex .cpp extern)
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -5970,6 +5970,12 @@ i32 CPlay::ResetPlayState() {
 }
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+
+DATA(0x002455f0)
+i32 g_levelBias100 = 0;
+
+DATA(0x0024553c)
+i32 g_areaHazardParam = 0;
 
 DATA(0x00245270)
 i32 g_areaPageSize; // owner def (zero-init .bss)

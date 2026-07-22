@@ -18,4 +18,11 @@ extern "C" const float g_rasterScaleNeg; // 0x001efb1c  -16384.0f
 extern "C" ClipVtx g_rasterEdgeR[]; // 0x6856f8
 extern "C" ClipVtx g_rasterEdgeL[]; // 0x6a2cf0 (per-scanline edge rows; fixed x/u/v at fx/fu/fv)
 
+extern i32 g_warpU;
+extern i32 g_warpV;
+extern i32 g_warpTexBase;
+extern i32 g_warpUStep;
+extern i32 g_warpVStep;
+extern i32 g_warpUMask;
+extern i16 g_warpColorkey;
 #endif // GRUNTZ_IMAGE_WARPTEXTUREBLIT_H

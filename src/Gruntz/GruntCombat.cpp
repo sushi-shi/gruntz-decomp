@@ -48,7 +48,6 @@
 #include <string.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Globals.h>
 #include <Gruntz/WorkerHandler.h> // Owner/Worker + Worker_DefaultPump (GruntSpawnPump)
 #include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
 #include <new>             // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
@@ -62,6 +61,8 @@
 #include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board
 #include <Gruntz/GruntBehaviorLeaf.h> // CGruntBehaviorLeaf - 3 of the 19 act handlers (decay/wand AI leaves)
 #include <new>
+#include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -230,6 +231,12 @@ void CGrunt::EntranceTileOffset(i32* out) {
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/GruntCombat.h> // g_reg_644af0 decl
+
+DATA(0x0020d7fc)
+char s_codeH[] = "H";
+
+DATA(0x0020d2e8)
+char s_codeF[] = "F";
 
 // g_reg_644af0 (0x00244af0): CLookupColl - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

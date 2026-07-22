@@ -23,7 +23,6 @@
 #include <DDrawMgr/DDScreen.h>      // canonical CDDScreen + CTileInfo
 #include <stdio.h>
 #include <string.h> // memset / inlined memcpy (rep movsd)
-#include <Globals.h>
 
 DATA(0x001ef848)
 const GUID IID_IDirectDraw2 = {

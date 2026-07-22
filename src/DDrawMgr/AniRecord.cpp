@@ -12,7 +12,7 @@
 #include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
 #include <DDrawMgr/AniRecordViews.h> // honest by-offset owner/surface models (@identity-TODO, no RTTI)
 #include <string.h>                  // strlen (inline repnz scas)
-#include <Globals.h>
+#include <DDrawMgr/AniRecord.h> // own exported globals (ex Globals.h)
 
 VTBL(CAniRecordView, 0x001f02c0);
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)

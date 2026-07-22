@@ -3,7 +3,6 @@
 
 #include <Ints.h>
 #include <math.h>
-#include <Globals.h>
 #include <Image/RasterVtx.h>
 
 DATA(0x001efb10)

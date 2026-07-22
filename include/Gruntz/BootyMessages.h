@@ -19,4 +19,7 @@ extern "C" void DrawStatText(void* ctx, CString* text, RECT* rc, i32 y, i32 flag
 
 extern "C" i32 g_bootyLetterCoords[]; // 0x001e8fe8 (bound by DATA_SYMBOL in BootyStateActivate.cpp)
 
+extern float g_secretRatioScale;
+extern char g_secretMsgA[0x20];
+extern char g_secretMsgB[0x80];
 #endif // GRUNTZ_GRUNTZ_BOOTYMESSAGES_H

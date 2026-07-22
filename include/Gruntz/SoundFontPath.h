@@ -20,4 +20,16 @@ extern "C" char g_id1_613e00; // (def in SFSelectDevice.cpp)
 extern "C" char g_id2_613e01; // (def in SFSelectDevice.cpp)
 extern "C" char g_id3_613e02; // (def in SFSelectDevice.cpp)
 
+extern "C" char g_id0_613dff;
+extern "C" char g_id1_613e00;
+extern "C" char g_id2_613e01;
+extern "C" char g_id3_613e02;
+extern u32 g_sfCfgB0;
+extern char* g_sfCurPath;
+extern u16 g_sfCfgB12;
+extern char g_sfMusic4[];
+extern char g_sfLocal4[];
+extern char g_sfMusic[];
+extern char g_sfLocal[];
+extern char g_sfDir[];
 #endif // GRUNTZ_GRUNTZ_SOUNDFONTPATH_H

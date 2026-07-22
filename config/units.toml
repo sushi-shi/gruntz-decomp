@@ -2130,7 +2130,3 @@ unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "globals"
-source = "src/Globals.cpp"
-flags = "base"

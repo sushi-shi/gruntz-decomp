@@ -5,6 +5,7 @@
 #include <rva.h> // VTBL
 
 #include <Mfc.h>
+#include <Wap32/GameApp.h> // ex Globals.h
 
 enum GruntzCommand;
 
@@ -221,4 +222,6 @@ public:
 };
 SIZE(0x254); // == CGruntzApp's size too: the derived app adds no fields (m_errorDetail@0x250 last)
 
+extern CGameWnd* g_activeGameWnd;
+extern i32 g_gameAppInstanceCount;
 #endif // WAP32_H

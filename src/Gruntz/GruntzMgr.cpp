@@ -67,7 +67,10 @@
 #include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // CImageRegistry - the REAL m_world->m_imageRegistry
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
-#include <Globals.h>
+#include <Gruntz/MgrAutoScroll.h> // ex Globals.h
+#include <Rez/RezSync.h> // ex Globals.h
+#include <Wap32/GameApp.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)

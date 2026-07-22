@@ -92,4 +92,11 @@ SIZE(0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 // VAs are reloc-masked at use) ---
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 
+extern float g_one;
+extern float g_255;
+extern float g_p01;
+extern float g_lumaR;
+extern float g_lumaG;
+extern float g_lumaB;
+extern float g_inv255;
 #endif // GRUNTZ_DDRAWMGR_SHADETABLECACHE_H

@@ -10,7 +10,8 @@
 #include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views (BzSink is dissolved)
 
 #include <rva.h>
-#include <Globals.h>
+#include <Gruntz/BootyWalkAnim.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {

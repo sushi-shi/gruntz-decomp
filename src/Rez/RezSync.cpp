@@ -42,7 +42,11 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/BattlezData.h>
-#include <Globals.h>
+#include <Gruntz/SoundFxEmitter.h> // ex Globals.h
+#include <Wap32/GameApp.h> // ex Globals.h
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
+
+#include <Rez/RezSyncViews.h> // RezSync's private split-views of g_inputMgr/g_spawnConfig
 
 void* operator new(unsigned int);
 void operator delete(void*);

@@ -546,6 +546,22 @@ def cmd_build(args) -> None:
         out_cg = (rcg.stdout + rcg.stderr).strip()
         if out_cg:
             log(out_cg.splitlines()[-1])
+    # DATA-rva band ratchet: the .data/.rdata/.bss analog of tu-order. Every ORDINARY
+    # (non-COMDAT) global a .cpp defines must fall in that TU's own contiguous
+    # same-storage run; a def landing strictly inside ANOTHER TU's band is a misplaced
+    # home. The known scattered-singleton backlog is FROZEN in
+    # config/data-tu-order-baseline.tsv; FATAL for any NEW interleave.
+    rdo = subprocess.run([sys.executable, "-m", "gruntz.audit.data_tu_order", "--ratchet"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rdo.returncode != 0:
+        for ln in (rdo.stdout + rdo.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("data-tu-order ratchet violated - a DATA def lands inside another TU's "
+            "same-storage band (python -m gruntz.audit.data_tu_order)")
+    else:
+        out_do = (rdo.stdout + rdo.stderr).strip()
+        if out_do:
+            log(out_do.splitlines()[-1])
     # Label-style ratchet: every label macro canonical (8-digit addr, unpadded hex
     # size, one line), comment @markers restricted to the blessed vocabulary
     # (docs/comment-markers.md) - reached 0 at introduction 2026-07-22, FATAL.

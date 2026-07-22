@@ -4,13 +4,13 @@
 #include <Ints.h>
 
 #include <rva.h>
-#include <Globals.h>
 #include <Gruntz/LeafCue.h>      // canonical LeafCue (PlayIfElapsed)
 #include <Gruntz/Grunt.h>        // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
 #include <Gruntz/Play.h>         // canonical CPlay (the ex-CCmdHandler identity)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (CPlay::m_4)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
+#include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec

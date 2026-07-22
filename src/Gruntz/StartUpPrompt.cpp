@@ -8,8 +8,8 @@
 #include <string.h> // inline strcpy intrinsic (/O2 /Oi)
 
 #include <rva.h>
-#include <Globals.h>
 #include <Gruntz/StartUpPrompt.h> // g_appResHandle decl
+#include <Gruntz/GruntzMgr.h> // ex Globals.h
 
 // g_appResHandle (0x00251618): HINSTANCE - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

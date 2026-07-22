@@ -31,4 +31,5 @@ extern const double g_boomTimeScale; // 0x5eaae0
 extern const double g_boomRetC3;     // 0x5eaaf0
 extern const double g_boomRetC4;     // 0x5eaaf8
 
+extern const double g_projPhase0;
 #endif // GRUNTZ_BOOMERANG_H

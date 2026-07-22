@@ -4,7 +4,6 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Globals.h>
 
 DATA(0x001eab40)
 float g_zeroF = 0.0f; // 0x5eab40

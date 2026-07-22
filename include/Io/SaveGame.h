@@ -92,4 +92,8 @@ extern "C" void SaveOverwriteProc();
 extern "C" void SaveDeleteProc();
 extern "C" void SaveInfoProc();
 
+extern char* g_areaNames[];
+class CImagePool;
+extern CImagePool* g_previewMgr;
+extern void* g_previewImage;
 #endif // SRC_IO_SAVEGAME_H

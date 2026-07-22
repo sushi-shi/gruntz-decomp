@@ -37,7 +37,6 @@
 #include <Bute/ButeMgr.h>                  // canonical CButeMgr (one shape)
 #include <Wwd/WwdFile.h>                   // CPlaneRender - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
-#include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 

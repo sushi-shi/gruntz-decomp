@@ -72,4 +72,5 @@ extern "C" void KSlimeActivationHandler(); // 0x40180c
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
 extern CActReg g_kslimeColl;
 
+extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

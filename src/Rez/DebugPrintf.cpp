@@ -3,7 +3,6 @@
 
 #include <stdlib.h> // atol / getenv
 #include <string.h> // inline strcpy (rep movs / repne scasb), strpbrk, strstr
-#include <Globals.h>
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
 #include <Rez/DebugConfig.h> // canonical CDebugConfig (the debug-output config singleton)
 

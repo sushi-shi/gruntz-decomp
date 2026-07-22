@@ -8,7 +8,6 @@
 #include <Gruntz/GameRegistry.h> // the canonical manager singleton view (m_gameWnd/m_world/m_owner)
 #include <Gruntz/GruntzMgr.h>    // the MFC view of the same singleton (IsBattlezMapFile)
 #include <Wwd/WwdFile.h>         // WwdHeader + WwdFile statics + WwdFile_CheckHeader
-#include <Globals.h>             // g_dat62c268 / g_mapNameBuf / g_mapNamePre
 #include <Ints.h>
 #include <rva.h>
 
@@ -17,6 +16,7 @@
 #include <stdio.h>  // sprintf
 #include <stdlib.h> // atoi
 #include <string.h> // strstr / inline strcpy-strlen
+#include <Gruntz/CustomWorldDialog.h> // own exported globals (ex Globals.h)
 
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the

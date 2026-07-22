@@ -9,7 +9,6 @@
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy / memcpy / memset (rep stos)
-#include <Globals.h>
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"

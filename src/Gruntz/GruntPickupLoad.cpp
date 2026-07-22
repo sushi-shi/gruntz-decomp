@@ -10,7 +10,6 @@
 #include <string.h>
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
-#include <Globals.h>
 
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Play.h>         // CPlay (m_curState downcast; m_guts @+0x2dc)

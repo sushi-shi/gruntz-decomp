@@ -48,10 +48,10 @@
 #include <rva.h>
 #include <Gruntz/GameLevel.h> // CTileImageSet (the tile-descriptor the resolver dispatches on)
 #include <string.h>           // inline strcmp for the ctor's direction-name match
-#include <Globals.h>
 #include <Wap32/ZVec.h>
 #include <Rez/FrameClock.h>    // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
+#include <Gruntz/KitchenSlime.h> // ex Globals.h
 
 // g_rollingBallActReg (0x002461b0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
