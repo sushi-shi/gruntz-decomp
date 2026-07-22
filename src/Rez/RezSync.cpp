@@ -47,39 +47,35 @@
 void* operator new(unsigned int);
 void operator delete(void*);
 
-extern "C" {
-    DATA(0x002455b4)
-    i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
-    DATA(0x002455bc)
-    i32 g_disableSound = 0; // "Disable Sound"        sound FX
-    DATA(0x002455c0)
-    i32 g_disableMusic = 0; // "Disable Music"        XMidi music
-    DATA(0x002455c4)
-    i32 g_disableFades = 0; // "Disable Fades"        (was Attract's g_fxDirectGate)
-    DATA(0x002455c8)
-    i32 g_disableJoystick = 0; // "Disable Joystick"
-    DATA(0x002455cc)
-    i32 g_disableSoundFonts = 0; // "Disable SoundFonts"
-    DATA(0x002455d0)
-    i32 g_disableDirectVideo = 0; // "Disable Direct Video Access"
-    DATA(0x002455d4)
-    i32 g_disableHqMovie = 0; // "Disable High Quality Movie"
-    DATA(0x002455d8)
-    i32 g_enableTriple = 0; // "Enable Triple"        triple buffering
-    DATA(0x002455dc)
-    i32 g_enableHiColor = 0; // "Enable HiColor"
-    DATA(0x002455e0)
-    i32 g_enableTrueColor = 0; // "Enable TrueColor"
-    DATA(0x002455e4)
-    i32 g_enableEmulation = 0; // "Enable Emulation"
-}
+DATA(0x002455b4)
+i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
+DATA(0x002455bc)
+i32 g_disableSound = 0; // "Disable Sound"        sound FX
+DATA(0x002455c0)
+i32 g_disableMusic = 0; // "Disable Music"        XMidi music
+DATA(0x002455c4)
+i32 g_disableFades = 0; // "Disable Fades"        (was Attract's g_fxDirectGate)
+DATA(0x002455c8)
+i32 g_disableJoystick = 0; // "Disable Joystick"
+DATA(0x002455cc)
+i32 g_disableSoundFonts = 0; // "Disable SoundFonts"
+DATA(0x002455d0)
+i32 g_disableDirectVideo = 0; // "Disable Direct Video Access"
+DATA(0x002455d4)
+i32 g_disableHqMovie = 0; // "Disable High Quality Movie"
+DATA(0x002455d8)
+i32 g_enableTriple = 0; // "Enable Triple"        triple buffering
+DATA(0x002455dc)
+i32 g_enableHiColor = 0; // "Enable HiColor"
+DATA(0x002455e0)
+i32 g_enableTrueColor = 0; // "Enable TrueColor"
+DATA(0x002455e4)
+i32 g_enableEmulation = 0; // "Enable Emulation"
 
 
 
 DATA(0x00245534)
-extern "C" {
-    i32 g_attractStateCount = 0; // 0x645534
-}
+i32 g_attractStateCount = 0; // 0x645534
 
 
 

@@ -255,4 +255,11 @@ public:
 };
 SIZE(0x54);
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" i32 LogicHitFactory(CGameObject* obj);
+extern "C" i32 LogicAttackFactory(CGameObject* obj);
+extern "C" i32 LogicBumpFactory(CGameObject* obj);
+
 #endif // GRUNTZ_USERLOGIC_H

@@ -391,4 +391,9 @@ extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFileIO is i
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" i32 g_sharedFlag;
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

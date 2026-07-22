@@ -110,9 +110,7 @@ DATA(0x0021ab24)
 i32 g_sndCueTag = 100; // 0x61ab24  the cue-item id (retail .data init = 100)
 
 DATA(0x0024556c)
-extern "C" {
-    CGruntzMgr* g_gameReg = 0;
-}
+CGruntzMgr* g_gameReg = 0;
 
 void RedrawMapIndex(i32 idx); // FUN_00558c70
 
@@ -138,12 +136,10 @@ DATA_SYMBOL(0x00245600, 0x4, _g_resolutionChanged)
 DATA(0x002455f4)
 i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 
-extern "C" {
-    DATA(0x00245570)
-    DirectInputMgr2* g_inputMgr = 0; // DAT_00245570
-    DATA(0x00245578)
-    StateMgrBZ* g_spawnConfig = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
-}
+DATA(0x00245570)
+DirectInputMgr2* g_inputMgr = 0; // DAT_00245570
+DATA(0x00245578)
+StateMgrBZ* g_spawnConfig = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 
 // CGruntzMgr's ctor/dtor pass the m_options[4] element ctor/dtor to the __ehvec
 // iterators through the retail /INCREMENTAL ILT thunks 0x2a7c (ctor) / 0x1465 (dtor).

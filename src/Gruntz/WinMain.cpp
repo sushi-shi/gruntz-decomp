@@ -8,27 +8,25 @@ typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
 } GruntzHotKey;
 
-extern "C" {
-    // CheckExePath (reached via an incremental-link thunk). Validates
-    // the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
-    // proceed to the single-instance check.
-    i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
+// CheckExePath (reached via an incremental-link thunk). Validates
+// the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
+// proceed to the single-instance check.
+i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
 
-    // StartupGate (reached via a thunk). __cdecl 1 arg; runs the
-    // resource/CD/launch validation, returns nonzero to proceed.
-    i32 StartupGate(i32 nReserved);
+// StartupGate (reached via a thunk). __cdecl 1 arg; runs the
+// resource/CD/launch validation, returns nonzero to proceed.
+i32 StartupGate(i32 nReserved);
 
-    // SettleDelay - a GetTickCount busy-wait used as a brief settle delay
-    // before the hot-key sample. __cdecl 1 arg (ms).
-    i32 SettleDelay(i32 nMs);
+// SettleDelay - a GetTickCount busy-wait used as a brief settle delay
+// before the hot-key sample. __cdecl 1 arg (ms).
+i32 SettleDelay(i32 nMs);
 
-    // VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
-    // version ints). __cdecl variadic.
-    i32 VersionScan(const char* pszVersion, const char* pszFormat, ...);
+// VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
+// version ints). __cdecl variadic.
+i32 VersionScan(const char* pszVersion, const char* pszFormat, ...);
 
-    // VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
-    // come from <windows.h> (winver, pulled by afx.h/MFC).
-}
+// VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
+// come from <windows.h> (winver, pulled by afx.h/MFC).
 
 i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 

@@ -5,26 +5,24 @@
 #include <string.h> // inline strcpy (rep movs / repne scasb)
 #include <Globals.h>
 
-extern "C" {
-    DATA(0x002bf6e8)
-    i32 g_logEnabled = 0; // drives the format-line path
-    DATA(0x002bf6ec)
-    i32 g_msgBoxEnabled = 0; // drives the MessageBox path
-    DATA(0x002bf6f0)
-    i32 g_beepEnabled = 0; // gates the startup beep
-    DATA(0x002bf6f4)
-    i32 g_thirdEnabled = 0; // third "any output wanted" gate
-    DATA(0x002bf6f8)
-    i32 g_hr = 0; // the raw HRESULT, saved at entry
-    DATA(0x002bf6fc)
-    i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
-    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-}
+DATA(0x002bf6e8)
+i32 g_logEnabled = 0; // drives the format-line path
+DATA(0x002bf6ec)
+i32 g_msgBoxEnabled = 0; // drives the MessageBox path
+DATA(0x002bf6f0)
+i32 g_beepEnabled = 0; // gates the startup beep
+DATA(0x002bf6f4)
+i32 g_thirdEnabled = 0; // third "any output wanted" gate
+DATA(0x002bf6f8)
+i32 g_hr = 0; // the raw HRESULT, saved at entry
+DATA(0x002bf6fc)
+i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
+// UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+// UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
 
 DATA(0x002293f4)
 char g_emptyString[] = ""; // decl in <Net/EmptyString.h>

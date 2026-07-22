@@ -59,4 +59,9 @@ SIZE_UNKNOWN();
 
 extern "C" HINSTANCE g_hResModule; // 0x002bf6e0 (C linkage - the owner def's wrapper)
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" HINSTANCE g_hResModule;
+
 #endif // SRC_IMAGE_IMAGEPOOL_H

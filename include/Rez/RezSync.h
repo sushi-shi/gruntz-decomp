@@ -30,4 +30,9 @@ extern char g_lab504358[]; // 0x504358
 extern char g_lab545854[]; // 0x545854
 extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree74
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" i32 g_attractStateCount;
+
 #endif // GRUNTZ_REZ_REZSYNC_H_H

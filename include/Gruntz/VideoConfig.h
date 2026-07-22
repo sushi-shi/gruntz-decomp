@@ -1,0 +1,7 @@
+// VideoConfig.h
+#ifndef GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H
+#define GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H
+
+#include <Ints.h>
+
+#endif // GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H

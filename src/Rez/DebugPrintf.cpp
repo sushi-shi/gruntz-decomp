@@ -1,3 +1,4 @@
+#include <Rez/DebugPrintf.h> // C-linkage decls for the ex-wrapped defs
 #include <rva.h>
 
 #include <stdlib.h> // atol / getenv
@@ -166,57 +167,55 @@ void MonoClear() {
     g_monoCol = 0;
 }
 
-extern "C" {
-    int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
-    void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)
+int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
+void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)
 
-    RVA(0x00184e00, 0x55)
-    SYMBOL(_RezAssertFail)
-    void RezAssertFail(char* fmt, ...) {
-        char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
-            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
-            DebugSink_184df0(buf);
-        }
+RVA(0x00184e00, 0x55)
+SYMBOL(_RezAssertFail)
+void RezAssertFail(char* fmt, ...) {
+    char buf[256];
+    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
+        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        DebugSink_184df0(buf);
     }
+}
 
-    // 0x184e60 - channel-0 debug printf that first positions the cursor (x,y).
-    RVA(0x00184e60, 0x6d)
-    SYMBOL(_RezDebugPrintfXY)
-    void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
-        char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
-            DebugSetCursorXY(x, y);
-            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
-            DebugSink_184df0(buf);
-        }
+// 0x184e60 - channel-0 debug printf that first positions the cursor (x,y).
+RVA(0x00184e60, 0x6d)
+SYMBOL(_RezDebugPrintfXY)
+void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
+    char buf[256];
+    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
+        DebugSetCursorXY(x, y);
+        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        DebugSink_184df0(buf);
     }
+}
 
-    // 0x184ed0 - debug printf gated on a caller-supplied channel.
-    RVA(0x00184ed0, 0x5b)
-    SYMBOL(_RezDebugPrintfCh)
-    void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
-        char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
-            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
-            DebugSink_184df0(buf);
-        }
+// 0x184ed0 - debug printf gated on a caller-supplied channel.
+RVA(0x00184ed0, 0x5b)
+SYMBOL(_RezDebugPrintfCh)
+void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
+    char buf[256];
+    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
+        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        DebugSink_184df0(buf);
     }
+}
 
-    // 0x184f30 - channel-gated debug printf that positions the cursor (x,y) first.
-    RVA(0x00184f30, 0x73)
-    SYMBOL(_RezDebugPrintfChXY)
-    void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
-        char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
-            && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
-            DebugSetCursorXY(x, y);
-            vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
-            DebugSink_184df0(buf);
-        }
+// 0x184f30 - channel-gated debug printf that positions the cursor (x,y) first.
+RVA(0x00184f30, 0x73)
+SYMBOL(_RezDebugPrintfChXY)
+void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
+    char buf[256];
+    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
+        DebugSetCursorXY(x, y);
+        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        DebugSink_184df0(buf);
     }
 }
 

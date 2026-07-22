@@ -679,4 +679,22 @@ extern "C" char CreateCoveredPowerup[]; // 0x3d0f (counted object keyed on m_11c
 extern "C" char
     CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" void PlaneType_Rock();
+extern "C" void PlaneType_Covered();
+extern "C" void PlaneQuadA();
+extern "C" void PlaneQuadB();
+extern "C" void PlaneQuadC();
+extern "C" void PlaneQuadD();
+extern "C" void PlaneQuadE();
+extern "C" void PlaneQuadF();
+
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" u32 g_engineFrameDelta;
+extern "C" u32 g_killCueClock;
+
 #endif // SRC_GRUNTZ_CPLAY_H

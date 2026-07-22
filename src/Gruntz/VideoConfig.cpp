@@ -14,6 +14,7 @@
 // helper).
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
+#include <Gruntz/VideoConfig.h> // C-linkage decls for the ex-wrapped defs
 #include <Mfc.h> // afx.h FIRST (before any windows.h): GameRegistry.h/GruntzMgr.h pull MFC
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
@@ -37,33 +38,29 @@ i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
 #include <afxcmn.h>
 
-extern "C" {
-}
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 
-extern "C" {
-    DATA(0x0022bd64)
-    i32 g_opt_22bd64 = 0;
-    DATA(0x0022bd68)
-    i32 g_opt_22bd68 = 0;
-    DATA(0x0022bd6c)
-    i32 g_opt_22bd6c = 0;
-    DATA(0x0022bd70)
-    i32 g_opt_22bd70 = 0;
-    DATA(0x0022bd84)
-    i32 g_opt_22bd84 = 0;
-    DATA(0x0022bdc4)
-    i32 g_opt_22bdc4 = 0;
-    DATA(0x0022bdc8)
-    i32 g_opt_22bdc8 = 0;
-    DATA(0x0022bdcc)
-    i32 g_opt_22bdcc = 0;
-    DATA(0x0022bdd0)
-    i32 g_opt_22bdd0 = 0;
-    DATA(0x0022bdd4)
-    i32 g_opt_22bdd4 = 0;
-}
+DATA(0x0022bd64)
+i32 g_opt_22bd64 = 0;
+DATA(0x0022bd68)
+i32 g_opt_22bd68 = 0;
+DATA(0x0022bd6c)
+i32 g_opt_22bd6c = 0;
+DATA(0x0022bd70)
+i32 g_opt_22bd70 = 0;
+DATA(0x0022bd84)
+i32 g_opt_22bd84 = 0;
+DATA(0x0022bdc4)
+i32 g_opt_22bdc4 = 0;
+DATA(0x0022bdc8)
+i32 g_opt_22bdc8 = 0;
+DATA(0x0022bdcc)
+i32 g_opt_22bdcc = 0;
+DATA(0x0022bdd0)
+i32 g_opt_22bdd0 = 0;
+DATA(0x0022bdd4)
+i32 g_opt_22bdd4 = 0;
 
 DATA(0x0022bdd8)
 HWND g_optHwndMusic = 0; // IDC 0x46d

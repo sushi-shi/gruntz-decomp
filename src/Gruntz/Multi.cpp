@@ -88,13 +88,11 @@ DATA_SYMBOL(0x00248cf4, 0x4, _g_netCreateCtx)
 //     by-value modeling deferred to the final sweep).
 
 DATA(0x0020fa70)
-extern "C" {
-    // = 1, read straight out of the retail image: [0x20fa70,+4) holds 01 00 00 00,
-    // file-backed in .data's raw span (which ends at 0x229400), matching its
-    // adjacent sibling g_remoteVersion. It was `= 0` here, which cl folds into
-    // .bss - so the base emitted no bytes where retail has an initializer.
-    i32 g_localVersion = 1; // 0x20fa70  local protocol/rez-sync version word
-}
+// = 1, read straight out of the retail image: [0x20fa70,+4) holds 01 00 00 00,
+// file-backed in .data's raw span (which ends at 0x229400), matching its
+// adjacent sibling g_remoteVersion. It was `= 0` here, which cl folds into
+// .bss - so the base emitted no bytes where retail has an initializer.
+i32 g_localVersion = 1; // 0x20fa70  local protocol/rez-sync version word
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
 DATA(0x0020fab8)
@@ -121,9 +119,7 @@ i32 g_chanStat422_id; // 0x246fdc
 DATA(0x00246fe0)
 i32 g_chanStat422_val; // 0x246fe0
 DATA(0x00248ce0)
-extern "C" {
-    i32 g_sharedFlag = 0; // 0x248ce0
-}
+i32 g_sharedFlag = 0; // 0x248ce0
 DATA(0x00248d04)
 i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
 DATA(0x00248d08)

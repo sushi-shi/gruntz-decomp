@@ -11,9 +11,7 @@ enum {
 }; // the .RID resource header (pixels follow)
 
 DATA(0x002bf6e0)
-extern "C" {
-    HINSTANCE g_hResModule = 0; // 0x6bf6e0
-}
+HINSTANCE g_hResModule = 0; // 0x6bf6e0
 
 namespace ApiCallerStubs {
     // The palette list node CImagePaletteNode is the ONE canonical class in

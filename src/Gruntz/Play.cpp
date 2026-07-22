@@ -652,13 +652,9 @@ alt2:
 }
 
 DATA(0x002bf3bc)
-extern "C" {
-    u32 g_engineFrameDelta = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_frameDelta / g_lastDelta)
-}
+u32 g_engineFrameDelta = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_frameDelta / g_lastDelta)
 DATA(0x002bf3c0)
-extern "C" {
-    u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
-}
+u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;

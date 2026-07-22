@@ -1,3 +1,4 @@
+#include <Gruntz/MenuState.h> // C-linkage decls for the ex-wrapped defs
 #include <Gruntz/GameMode.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/MenuVersion.h> // g_versionMajor/Mid/Minor (owner-only decl header)
@@ -22,17 +23,11 @@
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Globals.h>
 
-extern "C" {
-}
 
-extern "C" {
-    DATA(0x00245574)
-    AttractActorList* g_actorList = 0;
-}
+DATA(0x00245574)
+AttractActorList* g_actorList = 0;
 DATA(0x00245cc8)
-extern "C" {
-    CGMVerRect g_versionRect; // .bss - zero at load
-}
+CGMVerRect g_versionRect; // .bss - zero at load
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;

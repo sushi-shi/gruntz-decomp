@@ -506,4 +506,9 @@ extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 extern CString g_brickText1;
 extern CString g_brickText2;
 
+
+// --- C-linkage carriers for the TU's extern-C definitions (the defs
+// inherit the linkage from these decls; the .cpp wrappers are gone) ---
+extern "C" CGruntzMgr* g_gameReg;
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

@@ -6,27 +6,25 @@
 
 typedef CGameMgr CGameMgrBase;
 
-extern "C" {
-    DATA(0x00245580)
-    i32 g_lastNow = 0; // last timeGetTime() sample
-    DATA(0x00245584)
-    i32 g_frameDelta = 0; // frame delta, clamped to <= 0x64
-    // 0x245588 - the running accumulated frame time. This TU is the SOLE writer
-    // (g_frameTime += dt, below) and owns this contiguous 0x245580-0x2455a0 .bss band,
-    // so the definition lives here (was misfiled in Projectile.cpp).
-    DATA(0x00245588)
-    u32 g_frameTime = 0; // unsigned running clock (canonical type in <Rez/FrameClock.h>)
-    DATA(0x0024558c)
-    i32 g_frameTicks = 0; // per-frame counter
-    DATA(0x00245590)
-    i32 g_timer32 = 0; // interval countdown, seed 0x32
-    DATA(0x00245598)
-    i32 g_timer200 = 0; // interval countdown, seed 0xc8
-    DATA(0x0024559c)
-    i32 g_timer400 = 0; // interval countdown, seed 0x190
-    DATA(0x002455a0)
-    i32 g_timer500 = 0; // interval countdown, seed 0x1f4
-}
+DATA(0x00245580)
+i32 g_lastNow = 0; // last timeGetTime() sample
+DATA(0x00245584)
+i32 g_frameDelta = 0; // frame delta, clamped to <= 0x64
+// 0x245588 - the running accumulated frame time. This TU is the SOLE writer
+// (g_frameTime += dt, below) and owns this contiguous 0x245580-0x2455a0 .bss band,
+// so the definition lives here (was misfiled in Projectile.cpp).
+DATA(0x00245588)
+u32 g_frameTime = 0; // unsigned running clock (canonical type in <Rez/FrameClock.h>)
+DATA(0x0024558c)
+i32 g_frameTicks = 0; // per-frame counter
+DATA(0x00245590)
+i32 g_timer32 = 0; // interval countdown, seed 0x32
+DATA(0x00245598)
+i32 g_timer200 = 0; // interval countdown, seed 0xc8
+DATA(0x0024559c)
+i32 g_timer400 = 0; // interval countdown, seed 0x190
+DATA(0x002455a0)
+i32 g_timer500 = 0; // interval countdown, seed 0x1f4
 DATA(0x00245594)
 i32 g_timer100 = 0; // interval countdown, seed 0x64
 
