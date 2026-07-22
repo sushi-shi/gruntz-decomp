@@ -99,4 +99,9 @@ SIZE_UNKNOWN();
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
+
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

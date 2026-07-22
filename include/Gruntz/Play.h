@@ -672,12 +672,8 @@ extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, b
 extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
 extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
 extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
-extern "C" char
-    CreateGruntStartingPoint[];     // 0x24a5 ("multi-sprite warlord" m_11c/m_120 + m_118 switch)
-extern "C" char CreateInGameIcon[]; // 0x288d (counted object keyed on m_124)
-extern "C" char CreateCoveredPowerup[]; // 0x3d0f (counted object keyed on m_11c)
-extern "C" char
-    CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
+// (the Create* registrant addresses are the REAL functions - see
+//  <Gruntz/GameObjectFactory.h>; the old per-TU char[] thunk views are gone)
 
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs

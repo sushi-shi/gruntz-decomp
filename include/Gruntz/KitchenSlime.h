@@ -66,4 +66,10 @@ SIZE_UNKNOWN();
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void KSlimeActivationHandler(); // 0x40180c
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+#include <Gruntz/ActReg.h> // CActReg (for the extern below)
+extern CActReg g_kslimeColl;
+
 #endif // GRUNTZ_CKITCHENSLIME_H

@@ -38,6 +38,7 @@ struct BzGeomPair {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/GlyphStringDraw.h> // RECT (for the extern below)
 extern RECT g_levelMsgRectsB[8];
 
 #include <Gruntz/State.h>

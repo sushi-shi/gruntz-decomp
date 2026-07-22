@@ -27,4 +27,10 @@ SIZE(0x54);
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 SimpleAnimLogic_4028b0();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+#include <Gruntz/LogicFnTable.h> // LogicFnTable (for the extern below)
+extern LogicFnTable g_simpleAnimDispatch;
+
 #endif // GRUNTZ_CSIMPLEANIMATION_H

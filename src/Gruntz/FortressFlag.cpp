@@ -31,8 +31,7 @@ VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
 VTBL(CExplosion, 0x001e766c);
 
-DATA(0x00244870)
-extern CActReg g_partColl;
+DATA_SYMBOL(0x00244870, 0x24, ?g_partColl@@3UCActReg@@A)
 
 static inline CPartEntry* PartLookup(i32 coord) {
     return reinterpret_cast<CPartEntry*>(g_partColl.ResolveEntry(coord));

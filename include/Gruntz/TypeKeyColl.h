@@ -51,4 +51,12 @@ extern zDArray g_typeColl;
 
 extern i32 g_typeCounter;
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 g_recCount23;
+extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
+#include <Bute/ButeTree.h> // CButeTree (for the extern below)
+extern CButeTree g_buteTree;
+
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

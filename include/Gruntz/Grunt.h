@@ -1164,4 +1164,9 @@ extern char s_codeN[]; // "N" (0x0060dc04)
 extern char s_codeO[]; // "O" (0x0060dc0c)
 extern char s_codeQ[]; // "Q" (0x0060dc08)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
+
 #endif // SRC_GRUNTZ_GRUNT_H

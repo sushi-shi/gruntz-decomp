@@ -182,7 +182,6 @@ CGrunt::~CGrunt() {
     UserLogicVfunc9();
 }
 
-extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop

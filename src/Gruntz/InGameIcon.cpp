@@ -13,7 +13,6 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
 #include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
 
-extern "C" {}
 
 #include <rva.h>
 
@@ -29,10 +28,8 @@ extern "C" {}
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
-DATA(0x002458b0)
-extern LogicFnTable g_iconActionTable;
-DATA(0x00245928)
-extern LogicFnTable g_iconStateTable;
+DATA_SYMBOL(0x002458b0, 0x24, ?g_iconActionTable@@3UCLogicActTable@@A)
+DATA_SYMBOL(0x00245928, 0x24, ?g_iconStateTable@@3UCLogicActTable@@A)
 
 DATA(0x00245950)
 

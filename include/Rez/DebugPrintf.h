@@ -10,4 +10,9 @@
 extern "C" int vsprintf(char* buf, const char* fmt, char* va);
 extern "C" void DebugSink_184df0(char* line);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
+
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

@@ -1,4 +1,5 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
+#include <Gruntz/GameRegStatzPtr.h> // g_gameReg under the Statz facet view (TU-private)
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/TriggerMgr.h>
@@ -8,7 +9,6 @@
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
-extern "C" CStatzGameReg* g_gameReg;
 
 
 RVA(0x000ea470, 0x24)

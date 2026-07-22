@@ -68,12 +68,8 @@ i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
-extern "C" {
-    DATA(0x002bf618)
-    i32 g_recCount23;
-}
+DATA_SYMBOL(0x002bf618, 0x4, _g_recCount23)
 
-extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
@@ -1050,8 +1046,7 @@ i32 ProjTypeXfer(CUserLogic* ar) {
 // @0x6bf620): this is its construction owner (DynInitButeTree below). The type-complete
 // decl lives in <Bute/ButeTree.h> (included above); consumers reach it there. DATA() in
 // a header is ignored, so the reloc-name binding is pinned here, on the owner TU's decl.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
+DATA_SYMBOL(0x002bf620, 0x2c, ?g_buteTree@@3VCButeTree@@A)
 
 void ButeTreeNopFree(void*);
 

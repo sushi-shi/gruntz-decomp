@@ -11,4 +11,9 @@ struct LogPal256 {
 };
 SIZE_UNKNOWN();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern HINSTANCE g_resModule;
+
 #endif // GRUNTZ_DDRAWMGR_DIRPAL_H

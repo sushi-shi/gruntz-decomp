@@ -33,8 +33,7 @@ const double g_slimeZero = 0.0;
 
 #include <Gruntz/KitchenSlime.h>
 
-DATA(0x00246228)
-extern CActReg g_kslimeColl;
+DATA_SYMBOL(0x00246228, 0x24, ?g_kslimeColl@@3UCActReg@@A)
 
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     return reinterpret_cast<CKSlimeEntry*>(g_kslimeColl.ResolveEntry(coord));

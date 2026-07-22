@@ -74,4 +74,9 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a4, i32 a5);
+
 #endif // GRUNTZ_CWORLDSOUNDSET_H

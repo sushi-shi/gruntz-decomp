@@ -23,11 +23,9 @@ typedef enum GruntzAppResId {
 // error message buffer @ 0x244ea0, DEFINED here (owner TU) with C linkage (_g_errorText).
 // The extern "C" block keeps the fixed, renumber-proof symbol while the def line itself
 // carries no `extern` keyword (a real, initialized definition).
-extern "C" {
 VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
-    DATA(0x00244ea0)
-    char g_errorText[0x100] = {0};
-}
+DATA(0x00244ea0)
+char g_errorText[0x100] = {0};
 
 #include <Gruntz/GruntzApp.h>
 
@@ -86,7 +84,6 @@ CGruntzApp::~CGruntzApp() {
 // GameObjectFactory's _CreateXxx thunks); ShowMessage takes the SAME proc's address
 // (both dialogs share ErrorDialogProc), so it pushes the same thunk.
 DATA_SYMBOL(0x000033c8, 0x0, _ErrorDialogProcThunk@16)
-extern "C" INT_PTR CALLBACK ErrorDialogProcThunk(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_errorDetail

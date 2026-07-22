@@ -100,4 +100,12 @@ extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 extern i32 TBombLogic_e1e60();
 extern "C" void ProjActivationHandler(); // 0x403896
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+struct CActReg;
+struct CCoordColl;
+extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
+extern CCoordColl g_tbombColl;
+
 #endif // GRUNTZ_PROJECTILE_H

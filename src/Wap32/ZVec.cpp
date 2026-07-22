@@ -9,7 +9,6 @@
 #include <stdlib.h> // realloc (0x125180), free (0x120c30)
 #include <string.h> // memcpy (0x121960), memset (rep stos)
 
-extern void* const zDArrayLiveTable; // 0x5e70fc
 
 // ---------------------------------------------------------------------------
 // _zdvec::Destroy() - re-stamp the live vtable, then run ~_zdvec. 0x8750.

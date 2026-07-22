@@ -45,4 +45,10 @@ struct CHaznEntry {
 };
 SIZE_UNKNOWN();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+#include <Gruntz/HaznColl.h> // CCoordColl (for the extern below)
+extern CCoordColl g_haznColl;
+
 #endif // GRUNTZ_CSTATICHAZARD_H

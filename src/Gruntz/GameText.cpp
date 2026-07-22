@@ -34,8 +34,7 @@ static CString g_worldName[8] = {
 
 #include <Gruntz/ActReg.h> // CActReg - the shared registry-cell archetype
 VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
-DATA(0x002451a8)
-extern CActReg g_actRegCaption;
+DATA_SYMBOL(0x002451a8, 0x24, ?g_actRegCaption@@3UCActReg@@A)
 RVA(0x00082aa0, 0x10)
 void Register() {
     g_actRegCaption.Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);

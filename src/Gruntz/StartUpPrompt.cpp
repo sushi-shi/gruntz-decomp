@@ -16,10 +16,8 @@
 DATA_SYMBOL(0x00251618, 0x0, _g_appResHandle)
 
 DATA(0x002455ec)
-extern "C" {
-    i32 g_cdPromptResult = 0;
+i32 g_cdPromptResult = 0;
 
-}
 
 
 // @early-stop

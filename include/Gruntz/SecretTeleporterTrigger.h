@@ -43,4 +43,9 @@ SIZE_UNKNOWN();
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_secretActReg; // 0x00244598
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern CActReg g_actColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
+
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

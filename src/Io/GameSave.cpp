@@ -13,8 +13,6 @@
 // symbol to the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8):
 // the DIR32 target IS the thunk, so have==want==0x24e6 -> CORRECT (no MISBOUND).
 DATA_SYMBOL(0x000024e6, 0x0, ?SaveRunCallback@@YAHPAX0HHH@Z)
-extern i32 __cdecl
-SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
 
 DATA(0x00229930) // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
 i32 g_saveBuf[0x24]; // the OWNER DEFINITION (zero-init, matching the retail datum)

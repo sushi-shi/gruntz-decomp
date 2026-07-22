@@ -65,4 +65,9 @@ SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern const char g_fmtPathJoin[];
+
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H

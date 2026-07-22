@@ -128,4 +128,11 @@ public:
 };
 SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+struct ParseFmt; // the RIFF fmt-chunk view (def in DirectSoundMgr.cpp)
+extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
+extern const char s_rb[];
+
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

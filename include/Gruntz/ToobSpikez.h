@@ -33,4 +33,10 @@ SIZE(0x54);
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 ToobLogic_114bc0();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+#include <Gruntz/ActReg.h> // CActReg (for the extern below)
+extern CActReg g_toobColl;
+
 #endif // GRUNTZ_CTOOBSPIKEZ_H

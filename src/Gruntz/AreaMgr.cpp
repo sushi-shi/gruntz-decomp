@@ -7,7 +7,6 @@
 #include <stdio.h>  // sprintf (reloc-masked engine CRT)
 #include <string.h> // inline strcmp / strncmp
 
-extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)

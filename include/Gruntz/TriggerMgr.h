@@ -580,4 +580,9 @@ extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4
 extern "C" void IconClassInitB(); // 0x402bad
 extern "C" void IconClassInitA(); // 0x40288d
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
+
 #endif

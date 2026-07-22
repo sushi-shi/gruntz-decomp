@@ -297,4 +297,9 @@ SIZE(0x1e8);
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void Handler_0040288d(void);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
+
 #endif // SRC_GRUNTZ_BATTLEZMAPCONFIG_H

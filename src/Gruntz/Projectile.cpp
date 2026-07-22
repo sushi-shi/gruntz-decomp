@@ -413,8 +413,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
 #include <Gruntz/TypeKeyColl.h>
 
-DATA(0x0024c758)
-extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
+DATA_SYMBOL(0x0024c758, 0x24, ?g_projActColl@@3UCActReg@@A)
 
 
 static inline CProjActEntry* ProjActLookup(i32 coord) {
@@ -1062,8 +1061,7 @@ i32 CProjectile::SerializeMove(CGruntArchive* s, i32 mode, i32 a2, i32 a4) {
     return 1;
 }
 
-DATA(0x0024c780)
-extern CCoordColl g_tbombColl;
+DATA_SYMBOL(0x0024c780, 0x24, ?g_tbombColl@@3UCCoordColl@@A)
 
 RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {

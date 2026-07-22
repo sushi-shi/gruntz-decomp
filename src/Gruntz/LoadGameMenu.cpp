@@ -8,7 +8,6 @@
 #include <rva.h>
 #include <Win32.h>
 
-extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 

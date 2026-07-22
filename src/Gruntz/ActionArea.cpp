@@ -19,8 +19,7 @@
 VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
-DATA(0x00229388)
-extern CCoordColl g_projReg;
+DATA_SYMBOL(0x00229388, 0x24, ?g_projReg@@3UCCoordColl@@A)
 
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     return reinterpret_cast<CActionAreaActEntry*>(g_projReg.ResolveEntry(coord));

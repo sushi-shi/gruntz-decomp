@@ -21,7 +21,6 @@ typedef enum DSoundDx5Magic {
     DSBUFFERDESC_SIZE = 0x14,  // retail sizeof(DSBUFFERDESC) (DX6 grew the struct)
 } DSoundDx5Magic;
 
-extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
@@ -40,7 +39,6 @@ i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
 // would miss the base obj's undefined external. The DATA_SYMBOL name is the exact
 // cl mangling and is authority-checked against the base obj.
 DATA_SYMBOL(0x0020b668, 0x0, ?s_rb@@3PBDB)
-extern const char s_rb[];
 
 // ---------------------------------------------------------------------------
 // VolumeToAttenuation (static __cdecl, x87): 0..100 volume -> centi-dB attenuation.

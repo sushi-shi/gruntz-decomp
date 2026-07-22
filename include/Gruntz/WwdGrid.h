@@ -68,4 +68,9 @@ SIZE(0x44);
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" double log(double);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" double pow(double, double);
+
 #endif // GRUNTZ_WWDGRID_H

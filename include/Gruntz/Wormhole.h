@@ -48,4 +48,11 @@ extern "C" void Handler_4021f8(); // 0x4021f8 (puddle "A")
 extern i32 WormholeLogic_40181b();
 extern "C" void WormholeTypeMarker();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
+#include <Gruntz/LogicFnTable.h> // LogicFnTable (for the extern below)
+extern LogicFnTable g_wormholeDispatch;
+
 #endif // GRUNTZ_CWORMHOLE_H

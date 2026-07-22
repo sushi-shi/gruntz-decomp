@@ -22,8 +22,7 @@
 struct CHaznEntry; // an entry: first dword is the registered handler
 
 VTBL(CStaticHazard, 0x001e7824);
-DATA(0x0024e3d0)
-extern CCoordColl g_haznColl;
+DATA_SYMBOL(0x0024e3d0, 0x24, ?g_haznColl@@3UCCoordColl@@A)
 
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 

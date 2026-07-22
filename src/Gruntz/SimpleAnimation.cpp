@@ -36,8 +36,7 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);
-DATA(0x00246038)
-extern LogicFnTable g_simpleAnimDispatch;
+DATA_SYMBOL(0x00246038, 0x24, ?g_simpleAnimDispatch@@3UCLogicActTable@@A)
 
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {

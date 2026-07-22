@@ -84,4 +84,12 @@ extern i32 IconState_40370b();
 extern i32 IconAction_403c06();
 extern i32 IconAction_4023d3();
 
+
+#include <Gruntz/LogicFnTable.h> // LogicFnTable (the dispatch-table shell)
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern LogicFnTable g_iconActionTable;
+extern LogicFnTable g_iconStateTable;
+
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

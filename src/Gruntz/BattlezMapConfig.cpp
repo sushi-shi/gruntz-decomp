@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // the real Create* registrant decls (ex thunk-shaped aliases)
 #include <Gruntz/Play.h> // complete CPlay (the m_10 spawn-info holder is the play state)
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -58,13 +59,7 @@ i32 g_diffTier;
 DATA(0x0022b7ec)
 i32 g_spawnState;
 
-extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
-extern "C" {
-    void* CreateGruntCreationPoint(); // ILT thunk 0x17e4 (GameObjectFactory.cpp)
-    void* CreateExitTrigger();        // ILT thunk 0x192e
-    void* CreateWayPoint();           // ILT thunk 0x1087
-}
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(list->m_list.GetHeadPosition());

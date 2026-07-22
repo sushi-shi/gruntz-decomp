@@ -222,4 +222,11 @@ extern CButeMgr g_buteMgr;
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
+extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
+extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
+
 #endif // SRC_BUTE_BUTEMGR_H

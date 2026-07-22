@@ -1,3 +1,4 @@
+#include <Gruntz/HeapDiag.h> // own extern surface
 #include <Win32.h>  // OutputDebugStringA
 #include <malloc.h> // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
 #include <stdio.h>  // sprintf
@@ -146,7 +147,6 @@ int HeapStats() {
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, MODULEENTRY32* out, u32 size);
 
 // -------------------------------------------------------------------------
 // FindProcessByName

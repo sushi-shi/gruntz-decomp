@@ -381,4 +381,10 @@ SIZE(0x6d4);
 
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+// (EditSink is GameLevel.cpp's CSerialArchive typedef; spell the underlying type here)
+extern i32 __stdcall ResolveLevelName(class CFileMemBase* sink, i32 a, i32 b, i32 c);
+
 #endif // SRC_GRUNTZ_GAMELEVEL_H

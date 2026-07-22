@@ -15,4 +15,9 @@ extern CActReg g_tileTriggerSwitchActReg; // 0x0024e798
 
 extern CActReg g_warpStonePadActReg; // 0x0024e6a0
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern CActReg g_tileActReg;
+
 #endif // GRUNTZ_GRUNTZ_TILELOGICPUMP_H

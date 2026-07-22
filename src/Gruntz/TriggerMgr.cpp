@@ -926,7 +926,6 @@ void CTriggerMgr::ResetSpawnState() {
     this->RefreshB(6);
 }
 
-extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
 
 // 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
 // (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the

@@ -12,6 +12,7 @@
 //
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
 
+#include <DDrawMgr/DDrawSubMgr.h> // own extern surface
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/ParseSource.h>     // canonical CParseSource - MUST precede the Leaf headers
@@ -82,7 +83,6 @@ VTBL(CDDrawSurfacePair, 0x001eff30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
-extern char g_emptyString[]; // 0x2293f4
 
 void* operator new(u32 n);
 void operator delete(void* p);

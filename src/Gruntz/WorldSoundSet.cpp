@@ -22,7 +22,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a4, i32 a5);
 
 void SpawnPosSound(PosSoundObj* obj);
 

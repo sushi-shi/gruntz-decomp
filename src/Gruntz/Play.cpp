@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // the real Create* registrants (ex char[] thunk views)
 #include <Gruntz/Play.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h>       // g_lastNow / g_frameTicks (frame-clock band)

@@ -19,8 +19,7 @@ DATA(0x001e9760)
 const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
-DATA(0x002448c8)
-extern DirDesc g_dirDescTable[9];
+DATA_SYMBOL(0x002448c8, 0x0, ?g_voiceE@@3UCGruntVoiceRec@@A)
 
 // MotionEntity (the position-bearing entity Classify runs on) is defined in
 // <Gruntz/DirectionClassify.h>; identity @identity-TODO.

@@ -6,10 +6,8 @@
 #include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
 
 #include <Image/WarpTextureBlit.h> // g_rasterDestPtr/Scale/ScaleNeg (ex .cpp externs; bound at their defs)
-DATA(0x002856f8)
-extern "C" FillEdgeRow g_rasterEdgeR[]; // 0x6856f8 (ascending-edge table; fill reads +0x10)
-DATA(0x002a2cf0)
-extern "C" FillEdgeRow g_rasterEdgeL[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
+DATA_SYMBOL(0x002856f8, 0x0, _g_rasterEdgeR)
+DATA_SYMBOL(0x002a2cf0, 0x0, _g_rasterEdgeL)
 
 // FillPolygon (0x146fe0, __cdecl) - scanline-fill a polygon into a CDDSurface. Pass 1
 // walks each edge (prev->cur, wrapping), ftol's the endpoints, picks the asc/desc edge

@@ -50,8 +50,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
 }
 
 VTBL(CGruntStartingPoint, 0x001e8284);
-DATA(0x002446d8)
-extern CActReg g_actReg4;
+DATA_SYMBOL(0x002446d8, 0x24, ?g_actReg4@@3UCActReg@@A)
 
 RVA(0x0003e120, 0x15)
 void Register6446d8Range() {

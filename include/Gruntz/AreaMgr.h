@@ -86,4 +86,9 @@ SIZE(0x28);
 extern CAreaMgr g_areaMgr;
 extern CAreaMgr* g_pAreaMgr;
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
+
 #endif // SRC_GRUNTZ_AREAMGR_H

@@ -19,7 +19,6 @@ CGruntzWnd::~CGruntzWnd() {
 }
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg (0x64557c, active modeless-dialog HWND)
-extern void __stdcall Sub_138940(WPARAM, LPARAM); // 0x138940 (empty hook)
 
 // -------------------------------------------------------------------------
 // CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,

@@ -70,11 +70,9 @@ VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-DATA(0x002445e8)
-extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
+DATA_SYMBOL(0x002445e8, 0x24, ?g_logicDispatch_6445e8@@3UCLogicActTable@@A)
 
-DATA(0x00244660)
-extern LogicFnTable g_wormholeDispatch;
+DATA_SYMBOL(0x00244660, 0x24, ?g_wormholeDispatch@@3UCLogicActTable@@A)
 
 
 

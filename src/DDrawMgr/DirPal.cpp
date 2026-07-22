@@ -10,7 +10,6 @@
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
-extern HINSTANCE g_resModule;
 
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {

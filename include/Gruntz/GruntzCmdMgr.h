@@ -79,4 +79,10 @@ public:
 };
 SIZE_UNKNOWN();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern CGruntzCmdList g_singleCmdList;
+extern CGruntzCmdList g_multiCmdList;
+
 #endif // GRUNTZ_GRUNTZCMDMGR_H

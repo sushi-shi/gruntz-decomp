@@ -22,7 +22,6 @@ void* g_debugLogFile = 0;
 
 void DebugSetCursorXY(i32 x, i32 y);
 void DebugSetCursor(i32, i32, i32); // 0x184fd0
-extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
 
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;

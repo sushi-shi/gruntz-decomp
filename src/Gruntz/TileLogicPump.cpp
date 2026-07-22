@@ -80,8 +80,7 @@ VTBL(CCheckpointTrigger, 0x001e7ebc);
 VTBL(CTileTrigger, 0x001e7f14);
 VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 
-DATA(0x0024e720)
-extern CActReg g_tileActReg;
+DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
 
 
 

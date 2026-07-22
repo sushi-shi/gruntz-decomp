@@ -44,4 +44,9 @@ public:
 };
 SIZE(0x254);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" INT_PTR CALLBACK ErrorDialogProcThunk(HWND, UINT, WPARAM, LPARAM);
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

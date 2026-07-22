@@ -1,3 +1,4 @@
+#include <DDrawMgr/DDSurface.h> // own extern surface
 #include <Io/FileStream.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 
@@ -305,7 +306,6 @@ i32 Gap_13e8f0(void) {
     return 0;
 }
 
-extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
 // ---------------------------------------------------------------------------
 // 0x13e9a0: the IDirectDrawSurface::EnumAttachedSurfaces callback (DDENUMSURFACESCALLBACK,

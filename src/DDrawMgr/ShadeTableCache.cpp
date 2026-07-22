@@ -11,7 +11,6 @@
 DATA(0x002bf224)
 PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
-extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 

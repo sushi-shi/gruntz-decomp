@@ -36,7 +36,6 @@ void operator delete(void*);
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled; // owner def (zero-init .bss)
 
-extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 
 VTBL(CCreditsState, 0x001e9c64);
 

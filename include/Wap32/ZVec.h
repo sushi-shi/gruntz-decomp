@@ -42,4 +42,9 @@ public:
 };
 SIZE_UNKNOWN(); // derived; adds override, no storage
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern void* const zDArrayLiveTable; // 0x5e70fc
+
 #endif // GRUNTZ_WAP32_ZVEC_H

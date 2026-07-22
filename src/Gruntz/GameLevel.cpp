@@ -524,7 +524,6 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
 typedef CSerialArchive EditSink;
 
-extern i32 __stdcall ResolveLevelName(EditSink* sink, i32 a, i32 b, i32 c);
 
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {

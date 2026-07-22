@@ -7,6 +7,7 @@
 // and CSymParser (the parser/owner) - plus two stray fns that carry Rez names
 // but whose text AND private .data cells sit inside this obj's band
 // (Load@CRezDirNode 0x13a0f0, FindEntry@CRezDir 0x13c080; @identity-TODO).
+#include <Bute/SymTab.h> // own extern surface
 #include <Mfc.h> // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
 #include <rva.h>
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose (ParseRecords)
@@ -1575,7 +1576,6 @@ i32 CSymParser::ReParse() {
     return ParseBuffer(m_cachedSourceBuffer, 1, 0);
 }
 
-extern "C" i32 _stat(const char* path, void* statbuf);
 
 RVA(0x0013c080, 0x3c)
 i32 CRezDir::FindEntry(char* name) {

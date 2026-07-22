@@ -36,4 +36,9 @@ public:
 };
 SIZE(0x10); // recovered from the operator-new site (gruntz.analysis.news)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern void __stdcall Sub_138940(WPARAM, LPARAM); // 0x138940 (empty hook)
+
 #endif // GRUNTZ_GRUNTZWND_H

@@ -51,4 +51,12 @@ public:
 };
 SIZE(0x9c); // 0x94 SoundDevice base + DSoundList m_voices (8 B)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 g_ssLogEnabled; // 0x653c4c -> OutputDebugStringA
+extern "C" i32 g_ssMsgBoxEnabled; // 0x653c50 -> MessageBox
+extern "C" i32 g_ssBeepEnabled; // 0x653c54 -> startup beep
+extern "C" i32 g_ssThirdEnabled; // 0x653c58 -> "any output" gate
+
 #endif // DSNDMGR_SOUNDSTREAM_H

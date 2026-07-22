@@ -23,4 +23,9 @@ struct MotionEntity {
 };
 SIZE_UNKNOWN();
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern DirDesc g_dirDescTable[9];
+
 #endif // GRUNTZ_GRUNTZ_DIRECTIONCLASSIFY_H

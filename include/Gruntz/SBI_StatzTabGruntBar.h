@@ -145,5 +145,4 @@ public:
 };
 SIZE_UNKNOWN();
 
-
 #endif // SBI_STATZTABGRUNTBAR_H

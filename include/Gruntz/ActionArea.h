@@ -58,4 +58,10 @@ SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+#include <Gruntz/HaznColl.h> // CCoordColl (for the extern below)
+extern CCoordColl g_projReg;
+
 #endif // GRUNTZ_CACTIONAREA_H

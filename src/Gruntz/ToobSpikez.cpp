@@ -48,8 +48,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
 }
 
 VTBL(CToobSpikez, 0x001e7774);
-DATA(0x0024e978)
-extern CActReg g_toobColl;
+DATA_SYMBOL(0x0024e978, 0x24, ?g_toobColl@@3UCActReg@@A)
 
 typedef void (CUserLogic::*ToobHandler)();
 
