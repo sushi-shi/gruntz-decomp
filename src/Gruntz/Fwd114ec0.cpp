@@ -8,11 +8,11 @@
 
 #include <rva.h>
 
-void Fwd114f00(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
+void SaveFrontBufferShotImpl(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
 
 RVA(0x00114ec0, 0x27)
-void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7) {
-    Fwd114f00(bute, mgr, w, h, name, arg7);
+void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7) {
+    SaveFrontBufferShotImpl(bute, mgr, w, h, name, arg7);
 }
 
 // @early-stop
@@ -20,7 +20,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 // tail across the two null guards; retail emits the inline ret at each site. Deref
 // chain + 6-arg re-push forward are byte-faithful.
 RVA(0x00114f00, 0x3e)
-void Fwd114f00(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7) {
+void SaveFrontBufferShotImpl(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7) {
     CDDrawSurfacePair* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == 0) {
         return;

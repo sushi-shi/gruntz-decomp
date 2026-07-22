@@ -70,7 +70,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (mgr->m_sound == 0) {
                 return 1;
             }
-            Sub_138940(wParam, lParam);
+            EmptyMsgHook(wParam, lParam);
             if (wParam != 1) {
                 return 1;
             }

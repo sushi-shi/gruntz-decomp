@@ -40,7 +40,7 @@
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State + default step
 #include <Gruntz/CBrickz.h>               // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
 #include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
-#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (Handler_110110 anim sub-object)
+#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (TransitionAct anim sub-object)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
@@ -727,7 +727,7 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 }
 
 // RegisterActs (0x10fe70) - intern this class's activation key "A" into the shared bute-tree
-// name map, then bind that id to this class's per-frame handler (Handler_110110).
+// name map, then bind that id to this class's per-frame handler (TransitionAct).
 // @early-stop
 // register-pinning wall (docs/patterns/zero-register-pinning.md +
 // test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
@@ -752,7 +752,7 @@ void CTileTriggerTransition::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::Handler_110110);
+    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
 RVA(0x00110070, 0x71)
@@ -770,7 +770,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 }
 
 RVA(0x00110110, 0x39)
-i32 CTileTriggerTransition::Handler_110110() {
+i32 CTileTriggerTransition::TransitionAct() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;

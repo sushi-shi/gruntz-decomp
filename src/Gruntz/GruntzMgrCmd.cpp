@@ -28,7 +28,7 @@
 
 i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
-void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
+void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
 
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
@@ -1090,7 +1090,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             CheckDisplayBoundsB();
             return 1;
         case kCmdScreenshot: { // 0x89fbc  screenshot (front surface -> SaveScreenshot)
-            Fwd114ec0(
+            SaveFrontBufferShot(
                 m_settings,
                 this,
                 g_gameReg->m_modeW,
