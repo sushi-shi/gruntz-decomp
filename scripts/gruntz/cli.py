@@ -431,6 +431,14 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
           "class name (python -m gruntz.audit.view_typedef)", "normal")
+    # DATA_SYMBOL is a storage-less name->rva binding; legit only for ctor'd-object
+    # globals + compiler-gen ($S/??_) symbols. A POD/scalar/const one leaves the datum
+    # undefined (unresolved at link) - it must be a real DATA def. Down-only backlog in
+    # config/data-symbol-baseline.tsv; FATAL for any NEW scalar/POD/const DATA_SYMBOL.
+    _gate("gruntz.audit.data_symbol", ["--ratchet"],
+          "data-symbol ratchet violated - a POD/scalar/const global is bound by a "
+          "storage-less DATA_SYMBOL; write a real DATA(rva) type name; def "
+          "(python -m gruntz.audit.data_symbol)", "normal")
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
