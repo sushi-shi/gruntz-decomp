@@ -1,3 +1,4 @@
+#include <DDrawMgr/WallProject.h> // own const decls (external linkage)
 #include <rva.h>
 
 #include <Ints.h>
@@ -6,9 +7,9 @@
 #include <Image/RasterVtx.h>
 
 DATA(0x001efb10)
-extern float g_c10;
+const float g_c10 = 0.0f; // retail rdata (owner def)
 DATA(0x001efb20)
-extern float g_c20;
+const float g_c20 = 0.5f; // retail rdata (owner def)
 DATA(0x001efb24)
 float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*dy - g_c24))
 

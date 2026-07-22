@@ -385,4 +385,19 @@ VTBL(CMultiHelpDlg, 0x001ea474);
 
 extern CString g_gruntNames[4]; // 0x0024bdb0 per-channel label table (def in MultiStartDlg.cpp)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 g_watchBusy;   // 0x64bdc4
+extern "C" i32 g_watchBlinkA; // 0x64bdc8
+extern "C" i32 g_watchBlinkB; // 0x64bdcc
+
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern CWnd* __stdcall GetDlgItemThreaded(i32 id);
+extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+extern "C" i32 CALLBACK WndProc_15a10(HWND, UINT, WPARAM, LPARAM); // 0x15a10 (C linkage carrier)
+
 #endif // SRC_GRUNTZ_DIALOGS_H

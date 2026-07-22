@@ -19,8 +19,7 @@
 #include <Wap32/ZVec.h>          // _zdvec base
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 
-DATA(0x00246060)
-extern LogicFnTable g_eyeCandyDispatch;
+DATA_SYMBOL(0x00246060, 0x24, ?g_eyeCandyDispatch@@3UCLogicActTable@@A)
 
 RVA(0x000acb30, 0x15)
 void InitLogicDispatch_646060() {

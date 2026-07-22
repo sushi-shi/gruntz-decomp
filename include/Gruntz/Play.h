@@ -690,7 +690,6 @@ extern "C" void PlaneQuadF();
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
-extern "C" u32 g_engineFrameDelta;
 extern "C" u32 g_killCueClock;
 
 #endif // SRC_GRUNTZ_CPLAY_H

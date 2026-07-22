@@ -15,4 +15,9 @@ extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
 extern char g_sfLocal[]; // "<cwd>\Gruntz.SF2"
 extern char g_sfDir[]; // GetCurrentDirectoryA(0xff, ...) scratch
 
+extern "C" char g_id0_613dff; // (def in SFSelectDevice.cpp)
+extern "C" char g_id1_613e00; // (def in SFSelectDevice.cpp)
+extern "C" char g_id2_613e01; // (def in SFSelectDevice.cpp)
+extern "C" char g_id3_613e02; // (def in SFSelectDevice.cpp)
+
 #endif // GRUNTZ_GRUNTZ_SOUNDFONTPATH_H

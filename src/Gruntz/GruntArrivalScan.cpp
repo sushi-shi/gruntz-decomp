@@ -25,11 +25,7 @@
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
-extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 
-extern "C" {
-    i32 GameRand(); // 0x51fee0 (__cdecl)
-}
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \

@@ -77,7 +77,7 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
 // final-sweep lead.
 RVA(0x00135110, 0x8e)
 SYMBOL(_ConvertVolumeToPercent)
-extern "C" i32 ConvertVolumeToPercent(i32 v) {
+i32 ConvertVolumeToPercent(i32 v) {
     if (v == 0) {
         return 100;
     }
@@ -1452,7 +1452,7 @@ i32 DSoundVoice::Stop() {
 // source `p += 2` -> two `add $4` (retail) vs one `add $8` (MSVC5 /O2 fold). Not steerable.
 RVA(0x00137110, 0x8d)
 SYMBOL(_ParseWaveChunks)
-extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
+i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     u32* p = reinterpret_cast<u32*>((reinterpret_cast<char*>(riff) + 4));
     u32 riffSize = *p;
     p++;

@@ -42,8 +42,7 @@ namespace StatusBarTabBuilders {
     // CSbWorldSlot) are cast locally at the deref sites. C++-namespaced (its OWN symbol,
     // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
     // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
-    extern "C" i32
-        g_curPlayer; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
+    // (g_curPlayer's decl lives in <Gruntz/StatusBarItem.h> now)
 
 } // namespace StatusBarTabBuilders
 
@@ -129,7 +128,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 sel =
         g_gameReg->m_spriteFactory
             ->GetSel(
-                g_gameReg->m_options[StatusBarTabBuilders::g_curPlayer].m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
+                g_gameReg->m_options[g_curPlayer].m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
                 0
             );
     if (sel == 0) {

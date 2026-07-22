@@ -24,7 +24,6 @@ typedef enum DinBufferSize {
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
 
 DATA(0x00253aa4)
 i32 g_dinputLogEnabled; // 0x653aa4
@@ -41,26 +40,21 @@ i32 g_dinputThirdEnabled; // 0x653ab0
 // class while cl 5.0 emits `P` (?g_X@@3PBEB), so a DATA() label's mangling misses
 // the base obj's undefined external (leaving the push-by-address reloc UNBOUND).
 DATA_SYMBOL(0x00190aa0, 0x0, ?g_keyboardDataFormat@@3PBEB)
-extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 
 // The mouse DIDATAFORMAT (c_dfDIMouse, 0x10-byte DIMOUSESTATE) the device-B
 // bring-up (CDeviceConfigB::CreateDev) passes to SetDataFormat; reloc-masked DIR32.
 DATA_SYMBOL(0x00190b30, 0x0, ?g_mouseDataFormat@@3PBEB)
-extern const u8 g_mouseDataFormat[]; // 0x590b30
 
 // The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
 // bring-up (CDeviceConfigC::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
 DATA_SYMBOL(0x00191590, 0x0, ?g_joystickDataFormat@@3PBEB)
-extern const u8 g_joystickDataFormat[]; // 0x591590
 
 // The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
 // by address (reloc-masked DIR32 operand). DATA_SYMBOL (not DATA): same const-u8[]
 // P-vs-Q mangling drop as the DIDATAFORMAT externs above.
 DATA_SYMBOL(0x001ef548, 0x0, ?g_deviceConfigA@@3PBEB)
-extern const u8 g_deviceConfigA[]; // 0x5ef548
 
 DATA_SYMBOL(0x001ef538, 0x0, ?g_deviceConfigB@@3PBEB)
-extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
 VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable

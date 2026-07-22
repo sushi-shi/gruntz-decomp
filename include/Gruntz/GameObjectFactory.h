@@ -92,4 +92,8 @@ extern "C" i32 CreateDemoSign(CGameObject* obj); // GameObjNotifyFn ABI (CreateW
     // (0x1149c0), CTimeBomb::RegisterActs (0xe1990), CVoiceTrigger::RegisterActs
     // (0x11a500).)
 
+extern "C" i32 LogicHitFactory(CGameObject* obj);    // GameObjNotifyFn ABI
+extern "C" i32 LogicAttackFactory(CGameObject* obj); // GameObjNotifyFn ABI
+extern "C" i32 LogicBumpFactory(CGameObject* obj);   // GameObjNotifyFn ABI
+
 #endif // GRUNTZ_GRUNTZ_GAMEOBJECTFACTORY_H

@@ -4,8 +4,7 @@
 
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-DATA(0x001ef458)
-extern "C" const GUID IID_IDirectInputDevice2A;
+DATA_SYMBOL(0x001ef458, 0x0, _IID_IDirectInputDevice2A)
 
 RVA(0x00134cb0, 0x94)
 i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) {

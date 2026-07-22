@@ -135,4 +135,6 @@ struct ParseFmt; // the RIFF fmt-chunk view (def in DirectSoundMgr.cpp)
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 extern const char s_rb[];
 
+extern "C" i32 ConvertVolumeToPercent(i32 v); // 0x135110 (C linkage carrier)
+
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

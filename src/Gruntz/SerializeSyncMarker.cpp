@@ -6,12 +6,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (arc->Read @+0x2c / Write @+0x30)
 #include <rva.h>
 
-extern "C" {
-    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-    extern char g_syncErrMsgBuf[];
-}
 
 RVA(0x00013610, 0x8c)
 i32 SerializeSyncMarker(CSerialArchive* arc, i32 mode, const char* name, i32 line) {

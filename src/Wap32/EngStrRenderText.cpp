@@ -1,9 +1,9 @@
+#include <Wap32/EngStr.h> // own extern surface
 #include <Mfc.h> // real MFC CString (copy ctor 0x1b9ba3) + windows.h (RECT/CopyRect/OffsetRect)
 #include <Ints.h>
 #include <rva.h>
 #include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
-extern FontRenderer g_textObj;
 
 // @early-stop
 // WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds match retail exactly.
@@ -19,7 +19,7 @@ extern FontRenderer g_textObj;
 // encoding in the switch prologue - not source-steerable.
 RVA(0x00115930, 0x15b)
 SYMBOL(_EngStr_RenderText)
-extern "C" i32 EngStr_RenderText(
+i32 EngStr_RenderText(
     void* self,
     i32 a1,
     i32 a2,

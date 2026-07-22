@@ -211,13 +211,6 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     return 1;
 }
 
-extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
-extern "C" void Activate_4322(void* target, i32 f);
-extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
-extern "C" unsigned char g_randSeeded; // 0x6c127d
-extern "C" i32 g_randSeed;             // 0x6c1288
-extern u32 (*g_pTimeGetTime)();        // 0x6c4650
-extern char s_LEVEL_UFOHAZARDLASER[];  // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 
 // CSpotLight::Tick @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live

@@ -1,8 +1,8 @@
+#include <Globals.h> // g_poolCount (ex .cpp extern)
 #include <rva.h>
 #include <Mfc.h> // CPtrList
 
 #include <Net/CmdPool.h>
-extern int g_poolCount; // 0x64acb4 (CANONICAL name, shared with Globals.cpp)
 
 RVA(0x000bef10, 0xd)
 void Unmatched_bef10() {

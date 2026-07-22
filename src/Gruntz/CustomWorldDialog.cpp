@@ -104,7 +104,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
 }
 
 RVA(0x0003ae60, 0xec)
-extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     switch (msg) {
         case 0x110: // WM_INITDIALOG
@@ -214,8 +214,7 @@ namespace m4 {
 
 } // namespace m4
 
-DATA(0x002c4554)
-extern "C" i32 func_2176(HWND hDlg);
+// (the dead DATA(0x002c4554) fn-decl binding is gone - it never emitted a row)
 
 // ===========================================================================
 // FillLevelInfoDialog @0x3b1a0 - populate the four level-info dialog items from the

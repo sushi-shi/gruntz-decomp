@@ -30,4 +30,10 @@ void EngStr_DrawText(
     i32 a8
 );
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+class FontRenderer; // <Font/Font.h>
+extern FontRenderer g_textObj;
+
 #endif // GRUNTZ_WAP32_ENGSTR_H

@@ -1,13 +1,9 @@
+#include <Gruntz/GameObjectFactory.h> // the Logic*Factory registrants (ex .cpp externs)
 #include <Mfc.h> // real MFC CMapStringToOb (the logic-name map's Lookup @0x1b8438)
 #include <rva.h>
 #include <Gruntz/Grunt.h>     // CAnimLookupNode (the m_14 aux the guard reads at +0x1c)
 #include <Gruntz/UserLogic.h> // CUserLogic - the real owner of 0x8b90 (ex CFinalize8b90)
 
-extern "C" {
-    i32 LogicHitFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
-    i32 LogicAttackFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
-    i32 LogicBumpFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
-}
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>

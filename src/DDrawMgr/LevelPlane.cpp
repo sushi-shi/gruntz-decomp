@@ -21,6 +21,7 @@
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
+#include <DDrawMgr/LevelPlane.h> // own extern surface
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
@@ -1147,8 +1148,6 @@ void CDDrawWorkerHost::ResolveColorKey() {
                        | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown)))));
 }
 
-extern i32 __stdcall PlaneSaveVia(void* stream); // 0x163780 == CDDrawWorkerHost::Save entry
-extern i32 __stdcall PlaneLoadVia(void* stream); // 0x1638c0 == CDDrawWorkerHost::Load entry
 // @early-stop
 // jump-table-shape wall (~84%): retail lowers the kind switch (cases 3..8, only 4 and 7
 // active) to a dense `jmp [eax*4+table]`; MSVC here folds the 4 default-equal cases and

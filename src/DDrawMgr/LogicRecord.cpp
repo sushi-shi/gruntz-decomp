@@ -1,3 +1,4 @@
+#include <DDrawMgr/LogicRecord.h> // own extern surface
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c (the owner/world root)
 #include <DDrawMgr/DDrawChildGroup.h> // m_childGroup->m_map48 (the id->object resolver)
@@ -6,7 +7,6 @@
 #include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
 #include <Io/FileMem.h> // CFileMemBase complete type (the CSerialArchive Read/Write dispatch)
 
-extern "C" void Engine_Delete(void* p);
 
 // ---------------------------------------------------------------------------
 // Dispatch (0x164830, __thiscall). Run one of the record's six actions selected

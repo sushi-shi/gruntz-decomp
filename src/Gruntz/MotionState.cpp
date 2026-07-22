@@ -1,3 +1,4 @@
+#include <Gruntz/MovingLogic.h> // own extern surface
 #include <Gruntz/MotionState.h>
 #include <math.h>
 #include <rva.h>
@@ -5,7 +6,7 @@
 #include <Gruntz/Projectile.h> // g_movingLogicMax (ex .cpp extern)
 
 DATA(0x001f0500)
-extern const double g_motionZero;
+const double g_motionZero = 0.0; // 0x5f0500 (owner-TU def; decl in MotionState.h)
 DATA(0x001f0508)
 const double g_motionNegTwo = -2.0; // 0x5f0508  discriminant term (owner-TU def)
 

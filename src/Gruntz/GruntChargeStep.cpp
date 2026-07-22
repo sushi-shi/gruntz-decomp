@@ -11,8 +11,6 @@
 #include <Gruntz/GruntSpawnConfig.h> // the m_cueSink voice driver (SpawnVoiceDriver)
 #include <Gruntz/TriggerMgr.h>       // canonical CTriggerMgr (the +0x260 board)
 
-extern "C" {
-}
 
 // ---------------------------------------------------------------------------
 // @early-stop

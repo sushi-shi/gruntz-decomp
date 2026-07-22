@@ -41,8 +41,7 @@ static HINSTANCE g_hInstance;
 
 SYMBOL(_WinMain@16)
 RVA(0x0011c860, 0x327)
-extern "C" i32 WINAPI
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
+i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
     char szModulePath[0xFE]; // [esp+0x1c] - the GetModuleFileNameA buffer
 
     // 1. Module path + engine path-check. When the path-check SUCCEEDS this is

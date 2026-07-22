@@ -115,7 +115,6 @@
             break;                                                                                 \
     }
 
-extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127
 
 RVA(0x000f42f0, 0x1193)
 i32 CGrunt::ScanNearestTarget() {

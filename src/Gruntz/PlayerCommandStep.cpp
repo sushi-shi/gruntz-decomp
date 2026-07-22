@@ -16,11 +16,6 @@ static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
-extern "C" {
-    void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
-    i32 BadSelect(const char* msg);                                           // 0x402cca (__cdecl)
-    i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e);                       // 0x403c6a (__cdecl)
-}
 
 // @early-stop
 // Reconstructed against the REAL engine classes (xref-recovered, no fake views): the

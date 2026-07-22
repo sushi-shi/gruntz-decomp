@@ -37,4 +37,8 @@ SIZE_UNKNOWN();
 struct CActReg;
 extern CActReg g_textDispatch; // 0x245950 (registry archetype; zDArray<T> instantiation)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

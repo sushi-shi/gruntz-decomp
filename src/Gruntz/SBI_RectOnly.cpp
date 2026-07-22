@@ -39,9 +39,7 @@
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
 
 DATA(0x00244c54)
-extern "C" {
-    i32 g_curPlayer = 0;
-}
+i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 

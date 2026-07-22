@@ -1169,4 +1169,20 @@ extern char s_codeQ[]; // "Q" (0x0060dc08)
 // VAs are reloc-masked at use) ---
 extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
+extern "C" i32 GameRand(); // 0x51fee0 (__cdecl)
+
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127
+
+// Command-step cue thunks (ILT VAs; reloc-masked at use).
+extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
+extern "C" i32 BadSelect(const char* msg);                     // 0x402cca (__cdecl)
+extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x403c6a (__cdecl)
+
 #endif // SRC_GRUNTZ_GRUNT_H

@@ -11,12 +11,6 @@
 #include <Gruntz/StatusBarMgr.h> // the status-bar mgr (bar->m_position gates the h-center)
 #include <Globals.h>
 
-extern "C" {
-    // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
-    // timeGetTime(). Reloc-masked E8 call.
-    u32 GameGetTime(void);           // 0xcd00
-    void RecomputePlaneCoords(void); // 0x161c90
-}
 
 DATA(0x002452a4)
 i32 g_jitterX;

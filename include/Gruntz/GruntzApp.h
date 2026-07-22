@@ -49,4 +49,6 @@ SIZE(0x254);
 // VAs are reloc-masked at use) ---
 extern "C" INT_PTR CALLBACK ErrorDialogProcThunk(HWND, UINT, WPARAM, LPARAM);
 
+extern "C" i32 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, i32); // 0x11c860 (C linkage carrier)
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

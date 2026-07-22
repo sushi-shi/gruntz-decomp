@@ -1,3 +1,4 @@
+#include <Net/CmdPool.h> // g_pool (ex .cpp extern)
 #include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
@@ -38,8 +39,7 @@ DATA(0x0024a8b6)
 unsigned char gA_e08; // 0x24a8b6
 DATA(0x0024a8b7)
 unsigned char gA_data; // 0x24a8b7
-DATA(0x0024aca8)
-extern CPtrList g_pool; // 0x64aca8
+DATA_SYMBOL(0x0024aca8, 0x1c, ?g_pool@@3VCPtrList@@A)
 DATA(0x0024b6a0)
 char g_idScratch[0x10]; // 0x24b6a0
 

@@ -127,4 +127,9 @@ public:
 };
 SIZE(0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern i32 g_multiplayerAvail;
+
 #endif // GRUNTZ_MENUPAGE_H

@@ -97,7 +97,7 @@ DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
 
 RVA(0x00015a10, 0x70)
-extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
             return 0;

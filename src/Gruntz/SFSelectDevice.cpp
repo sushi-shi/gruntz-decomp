@@ -10,16 +10,14 @@
 
 
 #include <Gruntz/SoundFontPath.h> // g_sfDeviceId (ex .cpp extern)
-extern "C" {
-    DATA(0x00213dff)
-    char g_id0_613dff = 0;
-    DATA(0x00213e00)
-    char g_id1_613e00 = 0;
-    DATA(0x00213e01)
-    char g_id2_613e01 = 0;
-    DATA(0x00213e02)
-    char g_id3_613e02 = 0;
-}
+DATA(0x00213dff)
+char g_id0_613dff = 0;
+DATA(0x00213e00)
+char g_id1_613e00 = 0;
+DATA(0x00213e01)
+char g_id2_613e01 = 0;
+DATA(0x00213e02)
+char g_id3_613e02 = 0;
 
 DATA(0x0024da80)
 u16 g_idx_64da80 = 0; // current device index

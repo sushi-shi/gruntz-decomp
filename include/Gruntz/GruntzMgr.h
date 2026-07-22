@@ -511,4 +511,12 @@ extern CString g_brickText2;
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" CGruntzMgr* g_gameReg;
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+    // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
+    // timeGetTime(). Reloc-masked E8 call.
+extern "C" u32 GameGetTime(void);           // 0xcd00
+extern "C" void RecomputePlaneCoords(void); // 0x161c90
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

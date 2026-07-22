@@ -44,7 +44,6 @@ inline void* operator new(u32, void* p) {
 // the same address regardless of convention; modeling it as this __stdcall leaf
 // gives ApplyMove's surrounding code a closer byte match (94.78%) than the
 // literal method-call form (92.61%) - see ApplyMove's @early-stop note.
-extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
 
 // ---------------------------------------------------------------------------
 // ApplyMove: drive the +0xe4 edit-state machine. editKind <= 0: nothing; kind 7

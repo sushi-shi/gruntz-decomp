@@ -1,3 +1,4 @@
+#include <DDrawMgr/DDPageMgr.h> // C-linkage carriers for the GUID defs
 #include <Mfc.h> // CString + windows.h (afx-first)
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
@@ -25,14 +26,14 @@
 #include <Globals.h>
 
 DATA(0x001ef848)
-extern "C" const GUID IID_IDirectDraw2 = {
+const GUID IID_IDirectDraw2 = {
     0xB3A6F3E0,
     0x2B43,
     0x11CF,
     {0xA2, 0xDE, 0x00, 0xAA, 0x00, 0xB9, 0x33, 0x56},
 }; // 0x5ef848
 DATA(0x001ef888)
-extern "C" const GUID IID_IDirectDrawSurface3 = {
+const GUID IID_IDirectDrawSurface3 = {
     0xDA044E00,
     0x69B2,
     0x11D0,

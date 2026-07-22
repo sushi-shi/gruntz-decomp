@@ -1,3 +1,4 @@
+#include <Gruntz/BootyMessages.h> // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
@@ -40,8 +41,7 @@ void ShowHudMessageAlt(
 
 void operator delete(void*);
 
-DATA(0x001e8fe8)
-extern "C" i32 g_bootyLetterCoords[];
+DATA_SYMBOL(0x001e8fe8, 0x0, _g_bootyLetterCoords)
 
 static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
 static const double kDegToRad = 0.017453292;     // was g_5e93b8 (pi/180)
@@ -582,8 +582,6 @@ i32 CMultiBootyState::QueryGruntSlots() {
     return 0;
 }
 
-extern "C" void
-DrawStatText(void* ctx, CString* text, RECT* rc, i32 y, i32 flag, i32 b, i32 g, i32 r, i32 a9);
 CString* GetColorName(CString* out);
 
 DATA(0x001e9178)

@@ -112,4 +112,6 @@ inline CStatusBarItem::~CStatusBarItem() {
 }
 #endif
 
+extern "C" i32 g_curPlayer; // 0x00244c54  the current world index (def in SBI_RectOnly.cpp)
+
 #endif // STATUSBARITEM_H

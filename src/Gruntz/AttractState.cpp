@@ -1,3 +1,4 @@
+#include <EmptyString.h> // g_emptyString (ex .cpp extern)
 #include <Gruntz/String.h>        // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
 #include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -21,7 +22,6 @@ VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
-extern char g_emptyString[];
 
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
