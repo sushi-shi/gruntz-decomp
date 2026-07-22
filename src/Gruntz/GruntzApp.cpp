@@ -16,8 +16,7 @@ typedef enum GruntzAppResId {
 // The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
 // via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
 // per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
-// so a `DATA_SYMBOL(.., .., _g_errorText$S<n>)` bind silently goes UNBOUND on the next pool
-// churn. `extern "C"` gives the fixed, renumber-proof `_g_errorText`; DATA() pins it to
+// so a `// churn. `extern "C"` gives the fixed, renumber-proof `_g_errorText`; DATA() pins it to
 // 0x244ea0. The buffer is only address-taken here (no init/sizeof), so a definition-free
 // extern is sufficient - the DIR32 loads/stores stay reloc-masked (byte-neutral).
 // error message buffer @ 0x244ea0, DEFINED here (owner TU) with C linkage (_g_errorText).

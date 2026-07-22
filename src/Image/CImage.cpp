@@ -624,8 +624,6 @@ i32 g_surfaceColorKey = 0; // 0x2bf380
 // The `$S<5-digit>` tail on the .bss names is cl5's per-TU COMDAT sequence number: it
 // SHIFTS if CImage.cpp's earlier statics change, so re-read it from the base obj
 // (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
-DATA_SYMBOL(0x002bf2a0, 0x0, _?clip@?1??RenderFrame@CImage@@QAEXPAX000@Z@4VCResolveNode@@A$S26840)
-DATA_SYMBOL(0x002bf314, 0x0, _?$S28@?1??RenderFrame@CImage@@QAEXPAX000@Z@4EA$S26842)
 RVA_COMPGEN(0x00153800, 0x10, _$E29)
 
 RVA(0x00153810, 0x95)
@@ -649,8 +647,6 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
     }
 }
 
-DATA_SYMBOL(0x002bf228, 0x0, _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863)
-DATA_SYMBOL(0x002bf29c, 0x0, _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865)
 RVA_COMPGEN(0x001538b0, 0x10, _$E31)
 
 // ---------------------------------------------------------------------------

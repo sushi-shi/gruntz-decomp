@@ -80,9 +80,9 @@ void __cdecl ButeValueTeardown(void* pValue) {
 // name sorts last and wins the per-rva dedup). BOTH TUs that build a CButeNode - this
 // one and butemgr's ParseTagLine (which inlines the ctor) - now emit these same two
 // names, so both bind. (DATA_SYMBOL is read from the .cpp only, never from a header.)
-DATA_SYMBOL(0x001f051c, 0x0, ??_7CButeNode@@6BCContainerErr@@@)
+VTBL2(CButeNode, CContainerErr, 0x001f051c)
 // The +0x08 second-base-in-derived vtable @0x5f0518 (the `mov [esi+0x8],0x5f0518` stamp).
-DATA_SYMBOL(0x001f0518, 0x4, ??_7CButeNode@@6BCButeNodeEntry@@@)
+VTBL2(CButeNode, CButeNodeEntry, 0x001f0518)
 // ===========================================================================
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
@@ -90,8 +90,8 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 // zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
 // destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
 // the ultimate polymorphic base.
-DATA_SYMBOL(0x001e94ac, 0x4, ??_7zPTree@@6BzErrHandling@@@)
-DATA_SYMBOL(0x001e949c, 0x4, ??_7zPTree@@6BCButeNodeEntry@@@)
+VTBL2(zPTree, zErrHandling, 0x001e94ac)
+VTBL2(zPTree, CButeNodeEntry, 0x001e949c)
 RVA(0x00174d70, 0x70)
 CButeNode::~CButeNode() {}
 

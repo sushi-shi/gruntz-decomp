@@ -108,6 +108,16 @@
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
 
+// VTBL2(derived, base, addr) - the SECONDARY (multiple-inheritance) vtable
+// ??_7<derived>@@6B<base>@@@: the vftable for `derived`'s non-first polymorphic base
+// `base` (a base subobject at a nonzero offset). A multiply-inheriting class emits
+// one such secondary vtable per extra polymorphic base; VTBL only names the primary
+// ??_7<derived>@@6B@. Text-scanned by labels.py (like DATA_SYMBOL); expands to nothing
+// for BOTH compilers. Retires the raw secondary-vtable DATA_SYMBOL and lets the vtable
+// tooling coverage-check secondaries (gruntz.cleanliness.vtable_coverage - an MI class
+// must bind every secondary vtable).
+#define VTBL2(derived, base, addr)
+
 // VTBL_ABSENT(type) - catalog a vtable-bearing class whose ??_7 datum is PROVEN
 // ABSENT from the retail image: a base whose every ctor/dtor is folded under a
 // derived stamp (no standalone emission), or a never-constructed dispatch facet
@@ -142,6 +152,7 @@
 #define SIZE(bytes)
 #define SIZE_UNKNOWN()
 #define VTBL(type, addr)
+#define VTBL2(derived, base, addr)
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)
 #define DATA_SYMBOL(addr, size, symbol)

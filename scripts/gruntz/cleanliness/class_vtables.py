@@ -53,6 +53,10 @@ from gruntz.core.class_meta import (
 _DATA_SYM_VTBL_RE = re.compile(
     r"\bDATA_SYMBOL\s*\(\s*0x[0-9a-fA-F]+\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*,"
     r"\s*\?\?_7([A-Za-z_]\w*)@@6B")
+# A secondary (MI) vtable named via VTBL2(derived, base, addr) - ??_7<derived>@@6B
+# <base>@@@. The `derived` class's vtable datum is named for the delinker, so the
+# class IS catalogued (the successor to the raw secondary-vtable DATA_SYMBOL).
+_VTBL2_RE = re.compile(r"\bVTBL2\s*\(\s*([A-Za-z_]\w*)\s*,")
 
 
 def present_rvas():
@@ -78,7 +82,10 @@ def data_symbol_vtable_classes():
     for the delinker, so the class is catalogued."""
     out = set()
     for path in source_files():
-        for m in _DATA_SYM_VTBL_RE.finditer(path.read_text(errors="ignore")):
+        text = path.read_text(errors="ignore")
+        for m in _DATA_SYM_VTBL_RE.finditer(text):
+            out.add(m.group(1))
+        for m in _VTBL2_RE.finditer(text):
             out.add(m.group(1))
     return out
 

@@ -96,6 +96,9 @@ DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # it yet). Only simple global-namespace class names lower cleanly here;
 # templated/namespaced vtables stay in vtable_names.csv.
 VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
+# VTBL2(derived, base, addr) -> ??_7<derived>@@6B<base>@@@ (secondary MI vtable).
+VTBL2_MACRO_RE = re.compile(
+    r"\bVTBL2\s*\(\s*([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # `RVA_COMPGEN(<rva>, <size>, <mangled>)` - a self-contained function label for a
 # compiler-generated body that has NO source definition to hang an RVA() attribute
 # on (a `??_G` scalar-deleting destructor, a `??_D` vbase dtor, an `_$E` funclet).
@@ -139,7 +142,7 @@ ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # compiler-emitted COMDAT, like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>)
 # carries only RVA_COMPGEN/DATA_SYMBOL rows, and without those alternatives it
 # silently fell through to the vendored-C path and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN|DATA_SYMBOL)\s*\(")
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN|DATA_SYMBOL|VTBL2)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -873,6 +876,12 @@ def vtbl_labels(repo):
             for m in VTBL_MACRO_RE.finditer(text):
                 rva = int(m.group(2), 16)
                 name = f"??_7{m.group(1)}@@6B@"
+                if (rva, name) not in seen:
+                    seen.add((rva, name))
+                    out.append((rva, name))
+            for m in VTBL2_MACRO_RE.finditer(text):
+                rva = int(m.group(3), 16)
+                name = f"??_7{m.group(1)}@@6B{m.group(2)}@@@"
                 if (rva, name) not in seen:
                     seen.add((rva, name))
                     out.append((rva, name))

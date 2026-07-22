@@ -772,14 +772,6 @@ static const double s_doubleErr = DBL_MIN;
 // ButeMgr.cpp gains or loses ANY symbol. Pinning a literal id rots on the next edit (it
 // did, twice), so these pins are WILDCARD: `$S*` is resolved by prefix against
 // butemgr.obj's actual symbols at label time. Nothing to re-pin when this TU changes.
-DATA_SYMBOL(0x002240a8, 0x0, _s_fmtBadSymbol$S*)
-DATA_SYMBOL(0x002240d0, 0x0, _s_fmtFormatError$S*)
-DATA_SYMBOL(0x002241d4, 0x0, _s_fmtDupTag$S*)
-DATA_SYMBOL(0x00224204, 0x0, _s_fmtTypeMismatch$S*)
-DATA_SYMBOL(0x00224228, 0x0, _s_fmtInvalidTag$S*)
-DATA_SYMBOL(0x00224250, 0x0, _s_fmtNotFound$S*)
-DATA_SYMBOL(0x001f0520, 0x0, _s_floatErr$S*)
-DATA_SYMBOL(0x001f0528, 0x0, _s_doubleErr$S*)
 
 static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
 static const char s_strDword[] = "(DWORD)";
@@ -1220,8 +1212,6 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
 // (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
 // pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
 // set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-DATA_SYMBOL(0x002bf688, 0x0, _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S*)
-DATA_SYMBOL(0x002bf6d0, 0x0, _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S*)
 RVA_COMPGEN(0x00173840, 0x0, _$E48)
 
 RVA(0x00173cb0, 0x4e)
@@ -1239,8 +1229,6 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     return def;
 }
 
-DATA_SYMBOL(0x002bf67c, 0x0, _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S*)
-DATA_SYMBOL(0x002bf690, 0x0, _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S*)
 RVA_COMPGEN(0x00173dc0, 0x0, _$E50)
 
 // CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
