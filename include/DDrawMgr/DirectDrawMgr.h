@@ -136,4 +136,10 @@ extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void DdEnumModesCallback(); // 0x143390
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
+extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
+
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

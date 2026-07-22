@@ -7,4 +7,16 @@
 #include <Gruntz/ActReg.h> // CLookupColl (extern below)
 extern CLookupColl g_reg_644af0; // 0x00244af0
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" i32 g_dirVec[9][4]; // DAT_00644970
+extern "C" unsigned char g_hitTable[]; // DAT_005e9788
+extern "C" float g_dtScale;            // DAT_005e999c death-touch duration scale
+extern "C" float g_tanC0;              // DAT_005e99a0
+extern "C" float g_tanC1;              // DAT_005e99a4
+extern "C" double g_tanC2;             // DAT_005e99a8
+extern "C" double g_tanC3;             // DAT_005e99b0
+extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation registry)
+
 #endif // GRUNTZ_GRUNTZ_GRUNTCOMBAT_H

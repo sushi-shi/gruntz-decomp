@@ -470,4 +470,25 @@ void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ModeResetCallback(); // LAB_00403193
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+// The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
+extern "C" i32 g_monologoShown;
+extern "C" void Format(CString* dst, const char* fmt, ...);
+    // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
+    // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
+    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
+extern "C" char g_msgScratch[256]; // 0x6452d8
+    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
+    // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
+extern "C" u32 g_gruntDestruction;
+extern "C" u32 g_gruntCreation;
+extern "C" u32 g_gooPuddlez;
+extern "C" u32 g_explosionz;
+extern "C" u32 g_resolutionChanged; // DAT_00245600 (owner-TU definition, .bss)
+extern "C" CGruntzMgr* g_gameReg;
+extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
+extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

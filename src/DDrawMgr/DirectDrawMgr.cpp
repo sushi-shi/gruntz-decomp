@@ -35,8 +35,7 @@ extern "C" {
     i32 g_ddThirdEnabled = 0; // 0x683ec4
 }
 
-DATA(0x001ef848)
-extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
+DATA_SYMBOL(0x001ef848, 0x0, _IID_IDirectDraw2)
 
 DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0; // 0x683edc
@@ -578,7 +577,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     return item;
 }
 
-extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
 
 // ---------------------------------------------------------------------------
 // CreateRange (0x142630). Build a numbered sequence of a58 pool items named

@@ -58,8 +58,7 @@ i32 g_optionsCursor = 0; // decl in Multi.h
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
 
-DATA(0x00248cf4)
-extern "C" CNetCreateCtx* g_netCreateCtx;
+DATA_SYMBOL(0x00248cf4, 0x4, _g_netCreateCtx)
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
@@ -160,20 +159,10 @@ enum {
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
 
-extern "C" i32 g_serviceId;           // 0x611d8c
 
-extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
-extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
-extern "C" CMulti* g_connectRptMgr;                                   // 0x648cf8
 
-extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
 
-extern "C" HWND g_setupDlgHwnd;                                    // 0x64557c
-extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
-extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
-extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 
-extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
 void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
@@ -203,7 +192,6 @@ enum {
 
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 
-extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 
 
 // The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
@@ -259,7 +247,6 @@ void InitStr6473d8() {
     g_sessionName.CString::CString();
 }
 
-extern CFileIO g_obj646778;
 RVA(0x000b5400, 0xa)
 void ConstructFileIOGlobal() {
     g_obj646778.CFile::CFile();
@@ -917,7 +904,6 @@ i32 CMulti::PumpA() {
     return 1;
 }
 
-extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 
 // @early-stop
 // large-body regalloc/scheduling wall (~83%). All branch structure is byte-exact
@@ -2065,7 +2051,6 @@ i32 CMulti::PollSession() {
 i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
-extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
 
 
 // @early-stop
@@ -3878,7 +3863,6 @@ i32 CMulti::AutoTuneCmdDelay() {
     return WriteCmdDelay(0);
 }
 
-extern "C" CMulti* g_connectRptMgr; // 0x648cf8
 
 // ---------------------------------------------------------------------------
 // CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).

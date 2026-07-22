@@ -1,3 +1,4 @@
+#include <Gruntz/SoundFontPath.h> // own extern surface
 #include <rva.h>
 #include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
 
@@ -19,18 +20,13 @@ DATA(0x0024dad4)
 char* g_sfCurPath = 0; // the path currently being tried
 DATA(0x0024dadc)
 u16 g_sfCfgB12 = 0; // config block B +0xc
-DATA(0x0024dae0)
-extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
-DATA(0x0024dc28)
-extern char g_sfLocal4[]; // "<cwd>\Gruntz4.SF2"
+DATA_SYMBOL(0x0024dae0, 0x0, ?g_sfMusic4@@3PADA)
+DATA_SYMBOL(0x0024dc28, 0x0, ?g_sfLocal4@@3PADA)
 DATA(0x0024dd28)
 WORD g_sfDeviceId;
-DATA(0x0024dd30)
-extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
-DATA(0x0024de30)
-extern char g_sfLocal[]; // "<cwd>\Gruntz.SF2"
-DATA(0x0024dfa0)
-extern char g_sfDir[]; // GetCurrentDirectoryA(0xff, ...) scratch
+DATA_SYMBOL(0x0024dd30, 0x0, ?g_sfMusic@@3PADA)
+DATA_SYMBOL(0x0024de30, 0x0, ?g_sfLocal@@3PADA)
+DATA_SYMBOL(0x0024dfa0, 0x0, ?g_sfDir@@3PADA)
 
 i32 SfDeviceInitKeys();
 i32 FileExistsCopyF90F0(char* szPath);

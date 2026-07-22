@@ -75,13 +75,7 @@ i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
-extern "C" {
-VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
-VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
-VTBL(CMenuState, 0x001e9e84);
-    DATA(0x00248ce8)
-    i32 g_scoreTimeBase;
-}
+DATA_SYMBOL(0x00248ce8, 0x4, _g_scoreTimeBase)
 
 void OpenSettingsStore();  // FUN_005158f0
 void CloseSettingsStore(); // FUN_004f8e20
@@ -103,13 +97,12 @@ DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-extern "C" {
-    // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
-    DATA(0x002455e8)
-    i32 g_monologoShown;
-}
+DATA_SYMBOL(0x002455e8, 0x4, _g_monologoShown)
 
-extern "C" {}
+
+VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
+VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
+VTBL(CMenuState, 0x001e9e84);
 
 DATA(0x0021ab20)
 i32 g_sndEnabled = 1; // 0x61ab20  sound-on gate (retail .data init = 1)
@@ -134,28 +127,14 @@ void CreateWorldObjects(void* world);
 void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
 
-extern "C" void Format(CString* dst, const char* fmt, ...);
 
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
-extern "C" {
-    // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
-    // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
-    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
-    char g_msgScratch[256]; // 0x6452d8
-    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
-    // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
-    DATA(0x002455a4)
-    u32 g_gruntDestruction;
-    DATA(0x002455a8)
-    u32 g_gruntCreation;
-    DATA(0x002455ac)
-    u32 g_gooPuddlez;
-    DATA(0x002455f8)
-    u32 g_explosionz;
-    DATA(0x00245600)
-    u32 g_resolutionChanged; // DAT_00245600 (owner-TU definition, .bss)
-}
+DATA_SYMBOL(0x002455a4, 0x4, _g_gruntDestruction)
+DATA_SYMBOL(0x002455a8, 0x4, _g_gruntCreation)
+DATA_SYMBOL(0x002455ac, 0x4, _g_gooPuddlez)
+DATA_SYMBOL(0x002455f8, 0x4, _g_explosionz)
+DATA_SYMBOL(0x00245600, 0x4, _g_resolutionChanged)
 DATA(0x002455f4)
 i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 
@@ -2675,8 +2654,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     return 1;
 }
 
-DATA(0x0024556c)
-extern "C" CGruntzMgr* g_gameReg;
+DATA_SYMBOL(0x0024556c, 0x4, _g_gameReg)
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::EnterModalUI (0x08ef10; ret 4). Suspends the in-game world for a
@@ -3592,7 +3570,6 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 // The loaded map's playable extent (m_world->m_level->m_mainPlane) is the shared CPlaneRender;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
-extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
 
 // @early-stop
 // regalloc wall (~92%): the control flow, every branch/call, the two play-state
@@ -3681,7 +3658,6 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     return 1;
 }
 
-extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
 // @early-stop
 // zero-register-pinning + /GX EH-frame wall (docs/patterns/zero-register-pinning.md):

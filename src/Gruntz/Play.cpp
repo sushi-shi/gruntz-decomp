@@ -62,18 +62,11 @@ inline void* operator new(u32, void* p) {
 }
 
 #include <Gruntz/String.h>
-extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 
 #include <Bute/ButeMgr.h>
 
 #include <Wap32/EngStr.h>
 
-extern "C" {
-    // (Eng_Profiler1/2 are GONE - the per-frame tick is m_c->m_soundStream, the REAL
-    // SoundStream: PurgeVoiceList @0x136e20 + TickSubManagers @0x137ac0, __thiscall.)
-    void Eng_HudDraw(void* hud, RECT* r, i32 c);
-    void Eng_FrameTimerStep(void* t, i32 now); // carcass-only; identity unrecovered
-}
 class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);                  // 0x0ebd70
@@ -667,7 +660,6 @@ extern "C" {
     u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 }
 
-extern "C" i32 g_playActive;   // DAT_0064e35c
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;
 
@@ -2262,20 +2254,6 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // masks (retail compares ILT thunk addresses, delinker has no thunk symbols).
 // ===========================================================================
 
-extern "C" {
-    void VisFn_40fe90();        // 0x40fe90
-    void VisFn_4bf150();        // 0x4bf150
-    void VisFn_423b40();        // 0x423b40
-    void VisFn_Roll();          // 0x4cd70  (Roll)
-    void VisFn_41e570();        // 0x41e570
-    void VisFn_41e520();        // 0x41e520
-    void VisFn_47e160();        // 0x47e160 (7th visible-type notify fn; retail thunk 0x402d24)
-    void VisFn_49b410();        // 0x49b410
-    void VisFn_IntersectRect(); // 0x432060 (winapi_032060_IntersectRect)
-    void VisFn_49b310();        // 0x49b310
-    void VisFn_CBattlezDlg();   // 0x414b30 (CBattlezDlg)
-    void VisFn_4fce80();        // 0x4fce80
-}
 
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
@@ -2570,11 +2548,6 @@ i32 CPlay::DrawWorldFrames() {
     return steps;
 }
 
-extern "C" {
-    // The variadic profiler logger (cdecl). 0x1b2cf5.
-    void ProfLog(void* sink, const char* fmt, ...);
-}
-extern "C" {}
 
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
@@ -2615,12 +2588,8 @@ i32 CPlay::ProfileDeltaFrame() {
     return 1;
 }
 
-extern "C" {
-    DATA(0x0024c284)
-    i32 g_profAccA;
-    DATA(0x0024c288)
-    i32 g_profAccB;
-}
+DATA_SYMBOL(0x0024c284, 0x4, _g_profAccA)
+DATA_SYMBOL(0x0024c288, 0x4, _g_profAccB)
 
 // ===========================================================================
 // CPlay::ProfileInputFrame (0x0c9e40) - the fully-instrumented frame: nine
@@ -3500,10 +3469,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     return s;
 }
 
-extern "C" {
-    DATA(0x0024c3f0)
-    i32 g_soundChannelInUse[17];
-}
+DATA_SYMBOL(0x0024c3f0, 0x44, _g_soundChannelInUse)
 
 RVA(0x000db1d0, 0x14)
 void ChannelSlots_InitAll() {
@@ -4991,10 +4957,6 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
 // float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
 // trailing nop padding - not source-steerable (zero-register-pinning family).
-extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
-extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
-extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
-extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
@@ -6293,12 +6255,6 @@ finish:
     return 1;
 }
 
-extern "C" char
-    CreateGruntStartingPoint[];     // 0x24a5 ("multi-sprite warlord" m_11c/m_120 + m_118 switch)
-extern "C" char CreateInGameIcon[]; // 0x288d (counted object keyed on m_124)
-extern "C" char CreateCoveredPowerup[]; // 0x3d0f (counted object keyed on m_11c)
-extern "C" char
-    CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
 
 // @early-stop
 // /GX list-walk wall: the registration loop + CString error log are faithful, but

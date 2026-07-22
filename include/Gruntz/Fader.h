@@ -50,4 +50,16 @@ SIZE(0x38);
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern const float g_faderScale_5f085c = 0.01f; // 0x5f085c  intensity->magnitude scale
+extern const double g_faderPowK = 2.0; // 2.0
+extern const float g_faderHalf = 0.5f; // 0.5
+extern const double g_faderScale = 10000.0; // 10000.0
+extern const double g_faderBiasR = -1.0; // -1.0  (r - K == r + 1.0)
+extern const float g_faderBiasFade = -1.0f; // -1.0  (fade - K == fade + 1.0)
+extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade - frame > 1.0)
+extern "C" int _access(const char* path, int mode); // 0x193900 CRT
+
 #endif // GRUNTZ_GRUNTZ_CFADER_H

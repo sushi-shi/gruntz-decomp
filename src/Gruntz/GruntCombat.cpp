@@ -135,14 +135,7 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-extern "C" i32 g_dirVec[9][4]; // DAT_00644970
 
-extern "C" unsigned char g_hitTable[]; // DAT_005e9788
-extern "C" float g_dtScale;            // DAT_005e999c death-touch duration scale
-extern "C" float g_tanC0;              // DAT_005e99a0
-extern "C" float g_tanC1;              // DAT_005e99a4
-extern "C" double g_tanC2;             // DAT_005e99a8
-extern "C" double g_tanC3;             // DAT_005e99b0
 
 static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
 static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
@@ -1860,7 +1853,6 @@ i32 GruntSpawnPump(CGameObject* owner) {
     return 1;
 }
 
-extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation registry)
 RVA(0x0005bc50, 0x15)
 void ConstructActRange_644af0() {
     g_reg_644af0.Construct(0x7d0, 0x7da);

@@ -642,4 +642,41 @@ void ChannelSlots_InitAll();    // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 extern i32 g_areaPageSize; // 0x00245270
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
+    // (Eng_Profiler1/2 are GONE - the per-frame tick is m_c->m_soundStream, the REAL
+    // SoundStream: PurgeVoiceList @0x136e20 + TickSubManagers @0x137ac0, __thiscall.)
+extern "C" void Eng_HudDraw(void* hud, RECT* r, i32 c);
+extern "C" void Eng_FrameTimerStep(void* t, i32 now); // carcass-only; identity unrecovered
+extern "C" i32 g_playActive;   // DAT_0064e35c
+extern "C" void VisFn_40fe90();        // 0x40fe90
+extern "C" void VisFn_4bf150();        // 0x4bf150
+extern "C" void VisFn_423b40();        // 0x423b40
+extern "C" void VisFn_Roll();          // 0x4cd70  (Roll)
+extern "C" void VisFn_41e570();        // 0x41e570
+extern "C" void VisFn_41e520();        // 0x41e520
+extern "C" void VisFn_47e160();        // 0x47e160 (7th visible-type notify fn; retail thunk 0x402d24)
+extern "C" void VisFn_49b410();        // 0x49b410
+extern "C" void VisFn_IntersectRect(); // 0x432060 (winapi_032060_IntersectRect)
+extern "C" void VisFn_49b310();        // 0x49b310
+extern "C" void VisFn_CBattlezDlg();   // 0x414b30 (CBattlezDlg)
+extern "C" void VisFn_4fce80();        // 0x4fce80
+    // The variadic profiler logger (cdecl). 0x1b2cf5.
+extern "C" void ProfLog(void* sink, const char* fmt, ...);
+extern "C" i32 g_profAccA;
+extern "C" i32 g_profAccB;
+extern "C" i32 g_soundChannelInUse[17];
+extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
+extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
+extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
+extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
+extern "C" char
+    CreateGruntStartingPoint[];     // 0x24a5 ("multi-sprite warlord" m_11c/m_120 + m_118 switch)
+extern "C" char CreateInGameIcon[]; // 0x288d (counted object keyed on m_124)
+extern "C" char CreateCoveredPowerup[]; // 0x3d0f (counted object keyed on m_11c)
+extern "C" char
+    CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
+
 #endif // SRC_GRUNTZ_CPLAY_H

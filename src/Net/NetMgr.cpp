@@ -1,3 +1,4 @@
+#include <Net/DPlayImports.h> // DirectPlayCreate/Enumerate (TU-private import decls)
 #include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
 #include <Net/NetGuids.h>        // g_guid1..g_guid5 (owner-only decl header)
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
@@ -5,15 +6,11 @@
 #include <rva.h>
 #include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
-extern "C" i32 __stdcall DirectPlayCreate(void* lpGUID, void* lplpDP, void* pUnk);
-extern "C" i32 __stdcall DirectPlayEnumerate(void* lpEnumCallback, void* lpContext);
 
-extern "C" {
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
-    DATA(0x002bf840)
-    i32 g_spEnumValidated = 0; // 0x6bf840  (owner-TU definition, C linkage _g_spEnumValidated)
-}
+DATA(0x002bf840)
+i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 
 static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor, void* context);
 
@@ -302,8 +299,6 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     m_groupSel = reinterpret_cast<InterfaceObject*>(data); // the LB item data IS the group node
     return data;
 }
-extern "C" BOOL __stdcall
-NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
 
 // ---------------------------------------------------------------------------
 // CNetMgr::EnumPlayersInto  (__thiscall).
@@ -343,8 +338,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
 }
 
 RVA(0x001786a0, 0x2a)
-extern "C" BOOL __stdcall
-NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx) {
+BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx) {
     if (ctx != 0 && (dwFlags & 1) == 0 && lpThisSD != 0) {
         ctx->AddPlayerNode(lpThisSD);
         return TRUE;
@@ -606,8 +600,7 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
 }
 
 RVA(0x00178b00, 0x30)
-extern "C" BOOL __stdcall
-NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx) {
+BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx) {
     if (ctx == 0) {
         return FALSE;
     }

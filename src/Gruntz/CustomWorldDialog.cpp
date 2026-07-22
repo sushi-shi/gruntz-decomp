@@ -18,14 +18,12 @@
 #include <stdlib.h> // atoi
 #include <string.h> // strstr / inline strcpy-strlen
 
-extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
 // retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
 // so the DIR32 stored is 0x305d, not the body 0x3b600. Bind the address-taken symbol to
 // the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8) so have==want.
 DATA_SYMBOL(0x0000305d, 0x0, _CustomWorldInfoDlgProcThunk@16)
-extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 DATA(0x0022c010)
@@ -155,7 +153,6 @@ namespace m4 {
 
     // The directory walk is the real CRT _findfirst/_findnext (0x11f900 / 0x11fa30,
     // FID-carved) over <io.h>'s _finddata_t.
-    extern "C" i32 CustomGate(const char* name); // 0x0018d290
 
     // The "reentrancy lock" guarding the directory walk is the MFC wait cursor:
     // AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor (<Gruntz/WaitCursorApp.h>).

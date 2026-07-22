@@ -5,10 +5,6 @@
 #include <rva.h>
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-extern "C" i32 g_gruntDestruction;
-extern "C" i32 g_gruntCreation;
-extern "C" i32 g_gooPuddlez;
-extern "C" i32 g_explosionz;
 
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)

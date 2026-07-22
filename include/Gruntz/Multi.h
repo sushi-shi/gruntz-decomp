@@ -370,4 +370,25 @@ void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
 extern "C" void ServicesDispatchCb(); // 0x401a19
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+struct CNetCreateCtx;
+class CFile;
+extern "C" CNetCreateCtx* g_netCreateCtx;
+extern "C" i32 g_serviceId;           // 0x611d8c
+extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
+extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
+extern "C" CMulti* g_connectRptMgr;                                   // 0x648cf8
+extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
+extern "C" HWND g_setupDlgHwnd;                                    // 0x64557c
+extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
+extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
+extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
+extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
+extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
+extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFileIO is its typedef)
+extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
+extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

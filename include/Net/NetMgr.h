@@ -917,4 +917,16 @@ public:
 };
 SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 
+
+// --- NetMgr.cpp's extern surface (C-linkage carriers; the defs inherit it) ---
+// (DirectPlayCreate/Enumerate import decls live in <Net/DPlayImports.h> -
+//  NetMgr.cpp-private, because dplay.h macro-renames DirectPlayEnumerate.)
+extern "C" i32 g_spEnumValidated; // 0x002bf840 (_g_spEnumValidated; def in NetMgr.cpp)
+class CNetMgr;
+struct NetDPName;
+extern "C" BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags,
+                                          CNetMgr* ctx); // 0x1786a0
+extern "C" BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags,
+                                    CNetMgr* ctx); // 0x178b00
+
 #endif // NET_NETMGR_H
