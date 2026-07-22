@@ -17,7 +17,6 @@
 // switch-jumptable-separate-comdat.md) plus a 2-byte `add eax,-100` imm8-vs-imm32
 // encoding in the switch prologue - not source-steerable.
 RVA(0x00115930, 0x15b)
-SYMBOL(_EngStr_RenderText)
 i32 EngStr_RenderText(
     void* self,
     i32 a1,
