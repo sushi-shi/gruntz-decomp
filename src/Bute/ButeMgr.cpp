@@ -2121,6 +2121,9 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 // inline `operator<<(ostream&(*)(ostream&))` manipulator overload, emitted as a COMDAT
 // into this TU) and 0x193340 (ButeTree.cpp) are ours. Reconstruction BLOCKED on modelling
 // the MSVC iostream `ostream` + the manipulator overload; identity recovered, body parked.
+// @dead-code
+// reached ONLY from @dead-code Gap_171640 (its sole address-taking, +0x28e) which is
+// itself zero-ref - so this inline ostream<< manipulator COMDAT is transitively dead.
 RVA(0x001714e0, 0x66)
 i32 Gap_1714e0(void) {
     return 0;
@@ -2129,6 +2132,11 @@ i32 Gap_1714e0(void) {
 // @early-stop
 // 0x171640 (1010 B) - a large ButeMgr worker (contains a small 0x52-byte leaf head
 // then the body); homed pending leaf-first reconstruction (>512 B).
+// @dead-code
+// zero-ref: no rel32 caller, no data-slot, no .text address-taking anywhere in
+// the image (gruntz sema xref --tree). A large ButeMgr worker retail kept without
+// /OPT:REF; its owner/receiver identity cannot be traced from a reference that does
+// not exist.
 RVA(0x00171640, 0x3f2)
 i32 Gap_171640(void) {
     return 0;

@@ -111,6 +111,10 @@ CHashBase* CHashBase::Construct(i32 count) {
 // direct Tm_DestroyArray, matching retail), so there is no source construct to regenerate
 // it at this RVA without spuriously reshaping RemoveAll. Homed as a stub (not a hand-written
 // method masquerading as the compiler thunk).
+// @dead-code
+// zero-ref (gruntz sema xref --tree): a CHashBase ??_E vector-dtor COMDAT retail
+// emitted but never referenced (RemoveAll inlines its own ehvec), so no live delete[]
+// site regenerates it - a dead compiler artifact.
 RVA(0x001849d0, 0x50)
 i32 Gap_1849d0(void) {
     return 0;

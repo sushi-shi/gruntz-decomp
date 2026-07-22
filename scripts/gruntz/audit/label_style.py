@@ -72,7 +72,7 @@ COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # @identity-TODO are the CLAUDE.md function-state markers (stale_walls.py reads
 # them); @interleaver records a linker-pooled out-of-line member's placement.
 ALLOWED_MARKERS = {"stub", "early-stop", "identity-TODO", "confidence", "source",
-                   "interleaver"}
+                   "interleaver", "dead-code"}
 MARKER_RE = re.compile(r"^\s*// ?@([A-Za-z][A-Za-z0-9_-]*)")
 
 

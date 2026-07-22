@@ -54,6 +54,10 @@ CTileTriggerContainer::~CTileTriggerContainer() {
 // obj->m_4->m_10 chain would require FABRICATING a view of an un-xref-able receiver
 // (no-fake-view rule). Everything except arg0's type is settled; the moment any caller of
 // 0x115b60 is reconstructed, this is a ~20-line write-out.
+// @dead-code
+// zero-ref (gruntz sema xref --tree, already noted below): a dead debug helper,
+// compiled in but never called; its un-typeable arg0 receiver cannot be recovered
+// from a caller that does not exist.
 RVA(0x00115b60, 0x97)
 i32 Gap_115b60(void) {
     return 0;

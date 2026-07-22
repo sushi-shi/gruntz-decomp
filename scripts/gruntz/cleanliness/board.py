@@ -28,7 +28,45 @@ _STR = re.compile(r'"(?:\\.|[^"\\\n])*"')
 _CHR = re.compile(r"'(?:\\.|[^'\\\n])*'")
 
 
+# `// @dead-code` (docs/comment-markers.md): a PROVEN-zero-ref function - no rel32
+# caller, no data-slot, no .text address-taking anywhere in the image (verified with
+# `gruntz sema xref`, the default --tree). Retail emitted it (no /OPT:REF) but nothing
+# reaches it, so its identity is genuinely UNRECOVERABLE (no reference to trace) and
+# recovering it has no value. A placeholder name on such a fn is a permanent, non-
+# actionable artifact - NOT an open identity-TODO - so the metric blanks the whole
+# marked function body (marker -> its closing brace), excluding it exactly like a
+# library carve-out. The marker must state the zero-ref proof (as @identity-TODO must
+# state what it tried); an unproven @dead-code is a lie the reviewer must reject.
+_DEAD = re.compile(r"//\s*@dead-code\b")
+
+
+def _blank_dead(text: str) -> str:
+    """Blank each `// @dead-code`-marked function (marker .. matching `}`) so its
+    placeholder name contributes to no metric. Brace-matched from the first `{`
+    after the marker; leaves newlines so line numbers are unperturbed."""
+    out = list(text)
+    for m in _DEAD.finditer(text):
+        b = text.find("{", m.start())
+        if b < 0:
+            continue
+        depth, i, n = 0, b, len(text)
+        while i < n:
+            c = text[i]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        for k in range(m.start(), min(i + 1, n)):
+            if out[k] != "\n":
+                out[k] = " "
+    return "".join(out)
+
+
 def _strip(text: str) -> str:
+    text = _blank_dead(text)   # drop proven-dead fns before any metric sees them
     text = _BLOCK.sub(" ", text)
     text = _LINE.sub("", text)
     text = _STR.sub(" ", text)

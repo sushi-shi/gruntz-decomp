@@ -6848,6 +6848,9 @@ i32 CPlay::SetEffectSpriteDurations() {
 // @early-stop
 // 0x0cf0a0 (1.4 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5); a large Play
 // worker in this TU's .text block, no vtable-ref. Homed pending leaf-first reconstruction.
+// @dead-code
+// zero-ref (gruntz sema xref --tree): a 1.4KB Play worker sitting after
+// CPlay::DrawWorldPresent, reached by nothing; retail kept it, no /OPT:REF.
 RVA(0x000cf0a0, 0x567)
 i32 Gap_0cf0a0(void) {
     return 0;
@@ -6856,6 +6859,9 @@ i32 Gap_0cf0a0(void) {
 // @early-stop
 // 0x0cfc90 (465 B) - homed from src/Stub/GapFunctions.cpp (matcher-5); a Play leaf,
 // no vtable-ref. Homed pending leaf-first reconstruction.
+// @dead-code
+// zero-ref (gruntz sema xref --tree): a Play leaf after CPlay::Vslot15, reached
+// by nothing; retail kept it, no /OPT:REF.
 RVA(0x000cfc90, 0x1d1)
 i32 Gap_0cfc90(void) {
     return 0;

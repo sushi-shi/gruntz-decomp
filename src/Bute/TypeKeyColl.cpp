@@ -1062,9 +1062,11 @@ void DynInitButeTree() {
 // (0x16e070 on &g_buteTree, 0x16cfc0 on the +8 subobject via the `p?&p->m8:0` neg/sbb/and
 // idiom) and tail-jmps the base dtor 0x16ca60. A COMPILER-GENERATED atexit thunk: emitting
 // it byte-exact needs g_buteTree defined (not extern) with the real ~CButeTree chain, which
-// conflicts with the hand-written DynInit; homed pending that restructure.
+// conflicts with the hand-written DynInit; homed pending that restructure. The
+// name states the proven ??__F identity; RVA_COMPGEN(0x16e6e0, 0x3e,
+// ??__Fg_buteTree@@YAXXZ) is the target model, MISSING until that emission lands.
 RVA(0x0016e6e0, 0x3e)
-i32 Gap_16e6e0(void) {
+i32 ButeTreeAtexitDtor(void) {
     return 0;
 }
 
@@ -1116,7 +1118,7 @@ void DynInitTypeColl() {
 // COMPILER-GENERATED atexit thunk (same restructure blocker as ??__Fg_buteTree above);
 // homed pending g_typeColl defined with its real ~zDArray chain.
 RVA(0x0016e7a0, 0x48)
-i32 Gap_16e7a0(void) {
+i32 TypeCollAtexitDtor(void) {
     return 0;
 }
 

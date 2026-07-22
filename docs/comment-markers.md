@@ -19,6 +19,7 @@ prose). Mid-line `@name` mentions are prose and stay free.
 | `// @early-stop` | `gruntz.audit.stale_walls`; the final-sweep worklist is `rg '@early-stop' src` | A COMPLETE reconstruction parked below 100% match. The reason goes on the next comment line (regalloc wall, scheduling wall, …). |
 | `// @identity-TODO` | `stale_walls`, doctrine in `CLAUDE.md` | An unproven class/owner identity — leave it, never fabricate. State what was tried / what would prove it. |
 | `// @interleaver <sym> …` | none (structured record) | A linker-pooled out-of-line member emitted INSIDE another unit's contribution range (see `docs/` interleaver notes + the `interleavers` tool that detects them from layout). Records the placement proof at the site. |
+| `// @dead-code` | `gruntz.cleanliness.board` (identity metric) | A PROVEN-zero-ref function — no rel32 caller, no data-slot, no `.text` address-taking anywhere in the image (verify with `gruntz sema xref` — the default `--tree` surfaces all three). Retail kept it (no `/OPT:REF`) but nothing reaches it, so its identity is genuinely unrecoverable and worthless to recover. The identity metric blanks the marked function, excluding its placeholder name like a library carve-out. MUST state the zero-ref proof — an unproven `@dead-code` is a lie. |
 
 Rules of use:
 
