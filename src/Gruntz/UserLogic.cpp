@@ -104,7 +104,7 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // @confidence: med
 // @source: string-xref;vtable-slot
 // @stub
-SYMBOL(?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z)
+// retail identity: ?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z (stub; the fold onto CGrunt is deferred)
 RVA(0x0004dd50, 0x22c0)
 i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) {
     return 0;

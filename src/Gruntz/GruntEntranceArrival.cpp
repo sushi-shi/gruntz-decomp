@@ -979,7 +979,8 @@ i32 CGrunt::StepEntranceRelatchA() {
 // (winapi_04a9f0) invokes it thiscall-style (mov ecx,this ignored; 3 pushed args) so it
 // emits ?RectSegProbe@CGrunt@@. SYMBOL exports it under that name so those 4 calls bind;
 // the body stays the byte-matched __stdcall leaf (it ignores ecx / uses pure stack args).
-SYMBOL(?RectSegProbe@CGrunt@@QAEHPAX00@Z)
+// retail identity: ?RectSegProbe@CGrunt@@QAEHPAX00@Z (byte-matched as the __stdcall leaf
+// CGrunt_SegBoxOverlap, which ignores ecx; the fold onto CGrunt is deferred)
 RVA(0x00062b70, 0x205)
 i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2) {
     i32 e1y = e1->m_4;

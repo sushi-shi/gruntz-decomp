@@ -116,7 +116,7 @@ namespace Rng {
     // pick the "AMBIENT%d" variant index. SYMBOL exports it under the canonical CPlay
     // name so those calls bind; the Rng::CoinFlip view is the recovered-symbol placeholder
     // (m_1c == CPlay+0x1c replay-seed; body-fold onto CPlay deferred).
-    SYMBOL(?GetAmbientId@CPlay@@QAEHXZ)
+    // retail identity: ?GetAmbientId@CPlay@@QAEHXZ (byte-matched as CoinFlip::Flip; fold onto CPlay deferred)
     RVA(0x000da200, 0x9b)
     i32 CoinFlip::Flip() {
         CGruntzMgr* gr = g_gameReg;

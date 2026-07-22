@@ -516,7 +516,8 @@ i32 g_playActive;
 // under the canonical CState::InputVirtual name so those overrides' base calls bind;
 // the CMgrPersistObj member VIEW is a fake facet of CState (m_levelData@+0x0c ==
 // CState::m_c) - its body-shape fold onto CState is deferred.
-SYMBOL(?InputVirtual@CState@@UAEHXZ)
+// retail identity: ?InputVirtual@CState@@UAEHXZ (reconstructed under the byte-matched
+// CMgrPersistObj::Init placeholder; the body-fold onto CState is deferred)
 RVA(0x000face0, 0x17c)
 i32 CMgrPersistObj::Init() {
     if (m_levelData == 0) {
@@ -600,7 +601,8 @@ i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
 // (body-fold onto CPlay deferred - it touches no members here). The param mangles
 // PAVCFileMemBase (CFileMemBase is a typedef of the class CFileMemBase), matching
 // CPlay::SyncState's emitted HeaderSerialize call - NOT an elaborated struct U.
-SYMBOL(?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@HHH@Z)
+// retail identity: ?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@HHH@Z (byte-matched as the
+// __stdcall leaf Validate_fafa0, which ignores ecx; the fold onto CPlay is deferred)
 RVA(0x000fafa0, 0x3b)
 i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     if (a0 == 0) {

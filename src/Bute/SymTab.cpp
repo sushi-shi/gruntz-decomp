@@ -436,7 +436,6 @@ void* CSymTab::Find(const char* path) {
     return Insert(fname, arg);
 }
 
-SYMBOL(?Load@CRezDirNode@@QAEHH@Z)
 RVA(0x0013a0f0, 0x99)
 i32 CRezDirNode::Load(i32 childFlag) {
     if (m_buf != 0) {
