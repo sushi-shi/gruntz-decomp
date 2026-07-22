@@ -101,6 +101,9 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // a user-declared `~CActionArea() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// 0x7fa0 - the scalar-deleting dtor ??_7CActionArea slot 0 dispatches to
+// (via the ILT thunk): call ??1, cond operator delete.
+RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
 RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
 RVA(0x00008060, 0x15)
@@ -228,6 +231,10 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
+// 0x8810 - the CUserBase scalar-deleting dtor (??_7CUserBase @0x1e70b4 slot 0
+// -> ILT 0x2be9 -> here): re-stamps ??_7CUserBase inline (the trivial ~ folds),
+// cond operator delete. Same COMDAT pool as the ??1s (this obj emits it).
+RVA_COMPGEN(0x00008810, 0x22, ??_GCUserBase@@UAEPAXI@Z)
 // 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
 // /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's
@@ -235,6 +242,9 @@ RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 // ??_7CUserLogic, inline-destructs the +0x18 link's ~EngStr, stamps ??_7CUserBase.
 // Was the L_8860 placeholder shell (BoundaryLeafLogicViews.h), dissolved 2026-07-17.
 RVA_COMPGEN(0x00008860, 0x44, ??1CUserLogic@@UAE@XZ)
+// 0x8a10 - the CUserLogic scalar-deleting dtor (??_7CUserLogic @0x1e705c slot 0
+// -> ILT 0x3cfb -> here): call ??1CUserLogic (thunk), cond operator delete.
+RVA_COMPGEN(0x00008a10, 0x1e, ??_GCUserLogic@@UAEPAXI@Z)
 // 0x8be0 - ??1CWapX@@QAE@XZ: the out-of-line COMDAT copy of the EMPTY inline
 // ~CWapX (<Gruntz/UserLogic.h> - the tile-logic second base), a 1-byte `ret`.
 // cl auto-emits it here (the /GX leaf ctor/dtor funclets reference it for the

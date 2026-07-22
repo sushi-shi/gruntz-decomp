@@ -306,7 +306,7 @@ public:
     i32 Type13Check();
     void Apply13(i32 a, i32 b);
     i32 Dispatch(i32 kind, i32 a);
-    virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
+    virtual void Activate() OVERRIDE;       // slot 6  @0x5caa0 (void family slot)
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
     virtual i32 StepAttackFire() OVERRIDE;  // slot 9  @0x61cb0 (attack-fire step)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
@@ -316,7 +316,7 @@ public:
     // hit to the neighbor-cell grunt, then applies the "AttackDowntime" timer.
     // Returns 0. (Base CUserLogic slot 9 is a return-0 default; this is its one
     // known override, hence the slot's name.)
-    virtual i32 UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360
+    virtual void UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360 (void family slot)
     virtual void MovingSlot16() OVERRIDE;   // slot 16 @0x5f310
 
     i32 CreateHealthSprite();

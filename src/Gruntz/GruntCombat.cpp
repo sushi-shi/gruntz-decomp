@@ -1912,7 +1912,7 @@ void RegisterActs_644af0() {
 // juggling for sqrt(2.0) and the 1/sqrt2 diagonals (the `fld st(1)` scheduling) rarely
 // matches from C source. Deferred to the final sweep.
 RVA(0x0005caa0, 0x5e4)
-i32 CGrunt::Activate() {
+void CGrunt::Activate() {
     double diag = sqrt(g_dirConst2); // sqrt(2.0)
     // the per-direction m_cells records (stride 0x68; retail index math is 13*(3*lo+hi)
     // doubles == exactly &m_cells[3*lo+hi].m_dirX - the old "15-double stride" tbl was
@@ -2012,7 +2012,6 @@ i32 CGrunt::Activate() {
     m_24c = 0;
     m_deathAnimStarted = 0;
     m_tileClaimed = 0;
-    return 0;
 }
 
 #undef REGISTER_KEY_644AF0

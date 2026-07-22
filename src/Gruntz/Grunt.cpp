@@ -483,7 +483,7 @@ i32 g_serialCounter;
 // +0x31c, then drains the name CPtrList at +0x338 (count = PayloadHead()->m_8; each node
 // freed via the engine deleter).
 RVA(0x00048360, 0x7e)
-i32 CGrunt::UserLogicVfunc9() {
+void CGrunt::UserLogicVfunc9() {
     if (CoordCount() != 0) {
         void** node = reinterpret_cast<void**>(CoordHead());
         if (node) {
@@ -505,7 +505,7 @@ i32 CGrunt::UserLogicVfunc9() {
         i32 n = PayloadCount();
         i32 count = n ? reinterpret_cast<i32>(m_338.GetHead()) : 0;
         if (count == 0) {
-            return 0;
+            return;
         }
         if (n == 0) {
             continue;
@@ -513,7 +513,6 @@ i32 CGrunt::UserLogicVfunc9() {
         void* p = m_338.RemoveHead();
         GruntNode_Delete(p);
     }
-    return 0;
 }
 
 RVA(0x00048400, 0x47)
@@ -1747,10 +1746,15 @@ i32 CGrunt::CreateSelectedSprite() {
 }
 
 // ===========================================================================
-// TAIL ORPHANS: the five fns below are NOT part of the
+// TAIL ORPHANS: the fns below are NOT part of the
 // grunt-main obj (0x47a10-0x4d7c6). Each sits in its own single-fn retail
 // interval with no dominant foreign unit and no private-.data / init-frag
 // anchor, so their owning original TUs are unrecovered:
+//   0x4d800  winapi_04d800_CopyRect  (ex-userlogic parking; @identity-TODO)
+//   0x4dd50  LoadGruntTypeTable stub (xref-proven CGrunt; interval after the
+//            grunt-main obj)
+//   0x5d210  CGrunt::XferName stub   (slot-3 override; interval after the
+//            gruntcombat obj)
 //   0x5f310  MovingSlot16            (interval 0x5f310-0x5fe6e, between the
 //            0x5ecd0 single and the 0x60150 asset-loader obj)
 //   0xec670 / 0xf26f0 / 0xf2b20 / 0xf8240  the far arrival-defense family
@@ -1760,6 +1764,41 @@ i32 CGrunt::CreateSelectedSprite() {
 // (@identity-TODO). CGrunt::Load @0xd8060 (also in this tail band) carries its
 // own blocked-move note (the play-TU move is header-gated).
 // ===========================================================================
+
+// @confidence: low
+// @source: winapi:CopyRect
+// @stub
+RVA(0x0004d800, 0x423)
+i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+    return 0;
+}
+
+// XREF-RECOVERED IDENTITY (matcher-1): LoadGruntTypeTable (0x4dd50, 8896 B) and
+// LoadGruntTuningConstants (0x5d210, 5187 B) are CGrunt methods, NOT CUserLogic - both
+// run on a CGrunt `this` (fields to +0x3f0), and 0x5d210 is CGrunt vtable slot 3
+// (?LoadGruntTuningConstants is data-ref'd at ~??_7CGrunt@@6B@+0xc; it calls 0xee800 =
+// CGrunt::ArrivalReticleScan). Supporting singletons are the canonical classes:
+// CGameRegistry (g_gameReg @0x64556c), CMapMgr (+0x70), g_typeColl (zDArray,
+// tuning), g_resButeMgr (config strings: FadeTransparency/SafeFlashTime/AccelerateFlash/
+// EntranceSafeTime). Both are DEFERRED to the final sweep: they are decompiler-gated
+// mega-methods (MSVC /O2 stack-slot aliasing + a local CByteArray + the tile grid double-
+// loops + switch tables), of the same shape as CGrunt::ArrivalReticleScan whose front is
+// banked in GruntReticle.cpp. Kept as stubs here (RVA-anchored); reconstructing them
+// needs the Ghidra decompiler C.
+// @confidence: med
+// @source: string-xref;vtable-slot
+// @stub
+// retail identity: ?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z (stub; the fold onto CGrunt is deferred)
+RVA(0x0004dd50, 0x22c0)
+i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) {
+    return 0;
+}
+
+// @confidence: med
+// @source: string-xref;vtable-slot
+// @stub
+RVA(0x0005d210, 0x1443)
+void CGrunt::XferName(char* name) {}
 
 // ---------------------------------------------------------------------------
 // CGrunt::MovingSlot16()   @0x5f310   (ret 0)

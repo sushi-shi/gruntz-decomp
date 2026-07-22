@@ -1230,11 +1230,6 @@ source = "src/Gruntz/InputDeviceConfig.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "logictypetable"
-source = "src/Gruntz/LogicTypeTable.cpp"
-flags = "base"
-
-[[unit]]
 unit = "ddrawshadeblit"
 source = "src/DDrawMgr/DDrawShadeBlit.cpp"
 flags = "base"
@@ -1253,11 +1248,6 @@ flags = "base"
 [[unit]]
 unit = "ddrawsurfacemgr"
 source = "src/DDrawMgr/DDrawSurfaceMgr.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "serialobjref"
-source = "src/Gruntz/SerialObjRef.cpp"
 flags = "eh"
 
 [[unit]]

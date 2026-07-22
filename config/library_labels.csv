@@ -9,10 +9,8 @@ rva,name,lib,confidence,source
 0x007b80,__inc,LIBCMT,LOW,anchored
 0x007bd0,__inc,LIBCMT,LOW,anchored
 0x7c20,??_H@YGXPAXIHP6EX0@Z@Z,NAFXCW,HIGH,vector-ctor-iterator
-0x007fa0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x008090,___inittime,LIBCMT,LOW,anchored
 0x008780,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x008a10,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x008dc0,__inc,LIBCMT,LOW,anchored
 0x008e10,__inc,LIBCMT,LOW,anchored
 0x008e60,__inc,LIBCMT,LOW,anchored

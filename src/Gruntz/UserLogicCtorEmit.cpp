@@ -35,7 +35,7 @@ RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ) // (100% - byte-exact)
 //      _LogicHitFactory/_LogicAttackFactory/_LogicBumpFactory, but retail's symbols
 //      at 0x56e4c0/d0/e0 are delinked as ?KeyPrefixBits_16e480@@YAHPBD0@Z (a Ghidra
 //      mislabel shared across the logic-type TUs) -> DIR32 name mismatch. Renaming
-//      is a cross-unit symbol-naming fix (would also touch logictypetable), out of
+//      is a cross-unit symbol-naming fix (would also touch userlogic), out of
 //      this TU's scope.
 //   2. MSVC scheduling coin-flip inside the inlined BuildLogicTypeTable: retail
 //      schedules the `found = 0` store + the `obj->m_c` reload AFTER the Lookup

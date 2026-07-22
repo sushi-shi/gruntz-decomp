@@ -71,22 +71,26 @@ public:
     virtual void FireActivation(i32 id);
     // slot 5 (+0x14): the per-tick finalize step - SIGNATURE SETTLED (Fable A2,
     // 2026-07-14) from all three bodies: base 0x8b90 (`ret 4`, arg unused; body in
-    // LogicTypeTable.cpp - fires the two m_04/m_08 deferred callbacks, resets
+    // UserLogic.cpp - fires the two m_04/m_08 deferred callbacks, resets
     // m_28), CMovingLogic's 0x13c70 override (QAEXH, 100% EXACT; + MovingSlot16
     // tail) and CGrunt's 0x5ecd0 (`ret 4`, NO exit materializes eax -> void).
     // Was the no-arg/i32 `UserLogicVfunc3` placeholder + a non-virtual
     // FinalizeStep twin of the same 0x8b90 body.
     virtual void FinalizeStep(i32 unused);
-    virtual i32 Activate();
+    // slots 6/11 (Activate/Vfunc9): VOID - the base defaults (0x88d0/0x8970) are
+    // bare `c3` (cl5 C2561 forbids a return-less i32 body), and the CGrunt
+    // override tails (0x5caa0/0x48360) materialize NO eax either. Every dispatch
+    // site discards the slot.
+    virtual void Activate();
     virtual i32 UserLogicVfunc5();
     virtual i32 UserLogicVfunc6();
     // slot 9: a return-0 default; the one known override is CGrunt's per-frame
     // attack-fire step (@0x61cb0), which names the slot.
     virtual i32 StepAttackFire();
     // slots 10/12/13/14/15: inert `ret` defaults (retail 0x8950/8990/89b0/89d0/89f0 are
-    // bare `ret`), so VOID - no override exists (only slot-11 Vfunc9 has a CGrunt i32 override).
+    // bare `ret`), so VOID - no override exists.
     virtual void UserLogicVfunc8();
-    virtual i32 UserLogicVfunc9();
+    virtual void UserLogicVfunc9();
     virtual void UserLogicVfuncA();
     virtual void UserLogicVfuncB();
     virtual void UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
@@ -131,7 +135,7 @@ public:
     // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's AnimWorkerObj::m_logic):
     // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
     // lighting/config arm). Reloc-masked leaf bodies.
-    // (FinalizeStep - 0x8b90, body in LogicTypeTable.cpp - is now the slot-5
+    // (FinalizeStep - 0x8b90, body in UserLogic.cpp - is now the slot-5
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
