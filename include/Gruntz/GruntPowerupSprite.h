@@ -41,4 +41,7 @@ struct CPowerupActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
+extern CIndicatorActReg g_powerupActReg; // 0x00244d30
+
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

@@ -1,5 +1,10 @@
 #include <rva.h> // int aliases (i8..u64)
 #include <Bute/ButeTree.h>
+#include <Globals.h> // g_helperRefCount decl
+
+#include <Gruntz/GruntStartingPoint.h> // g_zvecErrSentinel (ex .cpp extern)
+DATA(0x002bf400)
+i32 g_helperRefCount; // owner def (zero-init .bss)
 
 struct AttractActorList;
 struct CVariantSlot;
@@ -52,8 +57,6 @@ DATA(0x001ef6a8)
 extern const double c_powExp = 10.0; // 0x5ef6a8  pow() exponent
 DATA(0x001ef6b0)
 extern const double c_acosNorm = 2.0; // 0x5ef6b0  acos() normalizer arg
-DATA(0x001f0464)
-extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
 extern const double g_motionNegHalf = -0.5;
 DATA(0x0020cca4)
@@ -82,8 +85,6 @@ DATA(0x00248cec)
 extern "C" i32 g_activePlayerCount = 0;
 DATA(0x0024acb4)
 i32 g_poolCount;
-DATA(0x002bf400)
-extern "C" i32 g_helperRefCount; // 0x6bf400
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
 DATA(0x002bf454)

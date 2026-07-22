@@ -37,4 +37,7 @@ struct CSingleFrameActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_singleFrameActReg; // 0x00245ef0
+
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

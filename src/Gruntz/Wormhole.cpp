@@ -60,6 +60,10 @@
 #include <Mfc.h> // CString (the scratch name-vec element)
 #include <rva.h>
 
+// g_teleporterActReg (0x002446b0): CTeleporterActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002446b0, 0x0, ?g_teleporterActReg@@3UCTeleporterActReg@@A)
+
 extern "C" void WormholeTypeMarker();
 
 VTBL(CGruntPuddle, 0x001e8124);
@@ -73,8 +77,6 @@ extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-b
 DATA(0x00244660)
 extern LogicFnTable g_wormholeDispatch;
 
-DATA(0x002446b0)
-extern CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte
 
 extern i32 WormholeLogic_40181b();
 

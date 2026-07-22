@@ -43,4 +43,6 @@ extern CSiblingActReg g_dropColl; // 0x0024bed8
 
 extern CSiblingActReg g_dropperActReg; // 0x0024be90
 
+extern CSiblingActReg g_shadowActReg; // 0x0024bf00
+
 #endif // GRUNTZ_CDROPPEDOBJECT_H

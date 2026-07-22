@@ -7,8 +7,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CSingleAnimation, 0x001e745c);
-DATA(0x00245f70)
-extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
 
 RVA(0x000104a0, 0x47)
@@ -96,3 +94,7 @@ i32 CSingleAnimation::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+
+// g_singleAnimActReg (0x00245f70): CSingleAnimActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00245f70, 0x0, ?g_singleAnimActReg@@3UCSingleAnimActReg@@A)

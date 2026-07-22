@@ -38,8 +38,6 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
 }
 
 VTBL(CSingleFrameMessage, 0x001e864c);
-DATA(0x00245ef0)
-extern CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 
 RVA(0x000ab530, 0x15)
 void CSingleFrameMessage::InitActReg() {
@@ -89,3 +87,7 @@ void CSingleFrameMessage::RegisterActs() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+
+// g_singleFrameActReg (0x00245ef0): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00245ef0, 0x0, ?g_singleFrameActReg@@3UCActReg@@A)

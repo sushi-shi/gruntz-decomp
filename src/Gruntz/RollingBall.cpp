@@ -53,9 +53,11 @@
 #include <Rez/FrameClock.h>    // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
 
+// g_rollingBallActReg (0x002461b0): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002461b0, 0x0, ?g_rollingBallActReg@@3UCActReg@@A)
+
 VTBL(CRollingBall, 0x001e86fc);
-DATA(0x002461b0)
-extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
 

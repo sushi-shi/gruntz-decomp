@@ -35,4 +35,7 @@ public:
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CTeleporterActReg (extern below)
+extern CTeleporterActReg g_teleporterActReg; // 0x002446b0
+
 #endif // GRUNTZ_CWORMHOLE_H

@@ -30,4 +30,6 @@ struct StartActEntry {
 };
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
+extern u32 g_zvecErrSentinel; // 0x002bf464
+
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

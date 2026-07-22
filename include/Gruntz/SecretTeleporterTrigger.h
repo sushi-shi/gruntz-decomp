@@ -40,4 +40,7 @@ struct CTelActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_secretActReg; // 0x00244598
+
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

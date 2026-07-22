@@ -11,8 +11,6 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
 VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
-DATA(0x00244d30)
-extern CIndicatorActReg g_powerupActReg; // 0x644d30
 
 // ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
@@ -20,6 +18,10 @@ extern CIndicatorActReg g_powerupActReg; // 0x644d30
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+
+// g_powerupActReg (0x00244d30): CIndicatorActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244d30, 0x0, ?g_powerupActReg@@3UCIndicatorActReg@@A)
 RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
 RVA(0x0007fdb0, 0x166)

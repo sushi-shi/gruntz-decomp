@@ -23,12 +23,14 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 
+// g_vtrigActReg (0x00251500): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
+
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);
-DATA(0x00251500)
-extern CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 

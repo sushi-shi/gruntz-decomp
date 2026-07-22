@@ -63,4 +63,7 @@ struct CRollingBallActEntry {
 SIZE_UNKNOWN();
 
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_rollingBallActReg; // 0x002461b0
+
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

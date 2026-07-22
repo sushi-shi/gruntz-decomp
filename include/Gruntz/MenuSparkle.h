@@ -32,4 +32,7 @@ public:
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CLogicActTable (extern below)
+extern CLogicActTable g_logicActReg_646010; // 0x00246010
+
 #endif // GRUNTZ_CMENUSPARKLE_H

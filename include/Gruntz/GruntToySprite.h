@@ -43,4 +43,7 @@ struct CToyActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
+extern CIndicatorActReg g_toyActReg; // 0x00244d58
+
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

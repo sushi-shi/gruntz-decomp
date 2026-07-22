@@ -23,6 +23,10 @@
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 
+// g_typeColl (0x002bf650): zDArray - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002bf650, 0x0, ?g_typeColl@@3VzDArray@@A)
+
 VTBL(zBitVec, 0x001f04c8);
 VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 VTBL(_zdvec, 0x001f04d4); // ~_zdvec-entry vtable (0x5f04d4)
@@ -59,8 +63,6 @@ DATA_SYMBOL(0x0021ad28, 0x0, ?g_defaultProjActSize@@3HA)
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
-DATA(0x002bf650)
-extern zDArray g_typeColl; // 0x6bf650
 
 i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 

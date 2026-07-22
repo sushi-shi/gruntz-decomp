@@ -19,6 +19,10 @@
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
+// g_secretActReg (0x00244598): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244598, 0x0, ?g_secretActReg@@3UCActReg@@A)
+
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);
 DATA(0x00244688)
@@ -28,8 +32,6 @@ static inline CActEntry* ActLookup(i32 coord) {
     return reinterpret_cast<CActEntry*>(g_actColl.ResolveEntry(coord));
 }
 
-DATA(0x00244598)
-extern CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
 
 
 RVA(0x00010a10, 0x47)

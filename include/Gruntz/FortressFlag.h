@@ -42,4 +42,7 @@ SIZE_UNKNOWN();
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_fortressFlagActReg; // 0x00244638
 
+#include <Gruntz/ActReg.h> // CLogicActTable (extern below)
+extern CLogicActTable g_logicActReg_6447f8; // 0x002447f8
+
 #endif // GRUNTZ_CFORTRESSFLAG_H

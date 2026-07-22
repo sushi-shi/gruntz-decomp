@@ -55,8 +55,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 #include <rva.h>
 
 VTBL(CMenuSparkle, 0x001e82dc);
-DATA(0x00246010)
-extern CLogicActTable g_logicActReg_646010; // 0x646010
 
 extern "C" void LogicHandler_0ad2a0();
 
@@ -147,3 +145,7 @@ i32 CMenuSparkle::AdvanceAnim() {
 }
 
 #include <rva.h>
+
+// g_logicActReg_646010 (0x00246010): CLogicActTable - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00246010, 0x0, ?g_logicActReg_646010@@3UCLogicActTable@@A)

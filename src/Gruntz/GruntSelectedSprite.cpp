@@ -11,8 +11,6 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
 VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class)
-DATA(0x00244da8)
-extern CIndicatorActReg g_selectedActReg; // 0x644da8
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -24,6 +22,10 @@ extern CIndicatorActReg g_selectedActReg; // 0x644da8
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+
+// g_selectedActReg (0x00244da8): CIndicatorActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244da8, 0x0, ?g_selectedActReg@@3UCIndicatorActReg@@A)
 RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
 RVA(0x0007e3e0, 0x178)

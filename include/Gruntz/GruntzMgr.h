@@ -451,4 +451,6 @@ SIZE(0xa30);
 
 i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 
+extern "C" i32 g_scoreTimeBase; // 0x00248ce8
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

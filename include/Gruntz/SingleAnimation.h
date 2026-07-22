@@ -39,4 +39,7 @@ struct CSingleAnimActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CSingleAnimActReg (extern below)
+extern CSingleAnimActReg g_singleAnimActReg; // 0x00245f70
+
 #endif // GRUNTZ_CSINGLEANIMATION_H

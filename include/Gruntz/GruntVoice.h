@@ -78,4 +78,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
     return g_vactCur;
 }
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_vtrigActReg; // 0x00251500
+
 #endif // GRUNTZ_GRUNTZ_CGRUNTVOICE_H

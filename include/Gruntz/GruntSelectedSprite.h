@@ -35,4 +35,7 @@ struct CSelectedActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
+extern CIndicatorActReg g_selectedActReg; // 0x00244da8
+
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

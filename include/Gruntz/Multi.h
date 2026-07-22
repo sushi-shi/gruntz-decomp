@@ -358,4 +358,8 @@ extern "C" i32 g_optionsCursor;
 
 extern CNetMgr* g_groupEnumMgr; // 0x00248cf4
 
+extern i32 g_hostServicesMode; // 0x00248cf0
+
+extern HWND g_netPlayerListHwnd; // 0x00248d00
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

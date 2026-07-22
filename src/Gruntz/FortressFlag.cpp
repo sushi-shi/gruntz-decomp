@@ -38,8 +38,6 @@ static inline CPartEntry* PartLookup(i32 coord) {
     return reinterpret_cast<CPartEntry*>(g_partColl.ResolveEntry(coord));
 }
 
-DATA(0x002447f8)
-extern CLogicActTable g_logicActReg_6447f8; // 0x6447f8 (owner TU: the merged CExplosion
 
 extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 
@@ -471,6 +469,10 @@ void RegisterXLogic_6447f8() {
 }
 
 #include <rva.h>
+
+// g_logicActReg_6447f8 (0x002447f8): CLogicActTable - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002447f8, 0x0, ?g_logicActReg_6447f8@@3UCLogicActTable@@A)
 
 // g_fortressFlagActReg (0x00244638): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

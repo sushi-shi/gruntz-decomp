@@ -10,4 +10,6 @@ SIZE_UNKNOWN();
 
 extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
 
+extern CString g_levelMsgStrings[8]; // 0x00229ef8
+
 #endif // GRUNTZ_GRUNTZ_BOOTYMESSAGES_H

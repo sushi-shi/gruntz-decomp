@@ -304,7 +304,6 @@ i32 g_levelMsgIconPos[16] = {
     0xe9,
     0x1a8
 }; // 0x60b8b8
-extern CString g_levelMsgStrings[8]; // 0x629ef8
 
 extern void ShowHudMessage(
     CDDrawSurfaceMgr* sink,

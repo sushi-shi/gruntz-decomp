@@ -42,8 +42,6 @@ VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emi
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
 
-DATA(0x002473d8)
-extern CString g_sessionName; // 0x6473d8
 
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
 // (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
@@ -161,7 +159,6 @@ enum {
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
 
-extern "C" i32 g_hostServicesMode;    // 0x648cf0
 extern "C" i32 g_serviceId;           // 0x611d8c
 extern "C" void ServicesDispatchCb(); // 0x401a19
 
@@ -177,13 +174,21 @@ extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
 extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 
-DATA(0x00248d00)
-extern "C" HWND g_netPlayerListHwnd;                     // 0x648d00
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
 void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 #include <Gruntz/Play.h> // ChannelSlots_InitAll (ex .cpp extern)
+
+// g_sessionName (0x002473d8): CString - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002473d8, 0x0, ?g_sessionName@@3VCString@@A)
+
+DATA(0x00248d00)
+HWND g_netPlayerListHwnd; // owner def (zero-init .bss)
+
+DATA(0x00248cf0)
+i32 g_hostServicesMode; // owner def (zero-init .bss)
 
 DATA(0x00248cf4)
 CNetMgr* g_groupEnumMgr; // owner def (zero-init .bss)
@@ -196,7 +201,6 @@ enum {
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
 
-extern "C" i32 g_scoreTimeBase; // 0x648ce8
 
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 
