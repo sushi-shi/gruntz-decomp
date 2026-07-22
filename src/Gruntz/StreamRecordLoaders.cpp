@@ -2,12 +2,12 @@
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (reader; Read @ vtable +0x2c)
 #include <Gruntz/StreamRecordLoaders.h> // CEventLoadRec (this TU owns the loader)
-#include <Gruntz/Sprite.h>             // CSprite (the looked-up, index-gated frame table)
+#include <Gruntz/Sprite.h>             // CDDrawWorker (the looked-up, index-gated frame table)
 #include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
 #include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
 
@@ -17,7 +17,7 @@
 // hoists). The idx-in-callee-saved-reg regalloc is steered by the `i32 i = idx;`
 // copy. ~92%.
 RVA(0x0009c650, 0x372)
-i32 CEventLoadRec::Load(CSerialArchive* s) {
+i32 CEventLoadRec::Load(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -38,7 +38,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_8 = static_cast<CSprite*>(out);
+        m_8 = static_cast<CDDrawWorker*>(out);
     } else {
         m_8 = 0;
     }
@@ -52,7 +52,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -71,7 +71,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -90,7 +90,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -109,7 +109,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -128,7 +128,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));

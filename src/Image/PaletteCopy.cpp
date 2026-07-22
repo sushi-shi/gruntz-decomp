@@ -13,7 +13,7 @@
 #undef s16
 #undef s32
 #undef s64
-#include <Io/MoviePlayer.h> // THE class (CDDScreen is a typedef alias of it) // canonical CDDScreen (shared layout)
+#include <Io/MoviePlayer.h> // THE class (CMoviePlayer is a typedef alias of it) // canonical CMoviePlayer (shared layout)
 
 // ---------------------------------------------------------------------------
 // 0x17ca10 - copy RGB triples into the slot array (alpha byte left untouched),

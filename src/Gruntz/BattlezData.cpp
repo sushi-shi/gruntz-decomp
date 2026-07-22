@@ -1,7 +1,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 
@@ -395,7 +395,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 // edi/ebx past the null guard (pushing only ecx/ebp/esi upfront), which shifts
 // every spill-slot offset (`[esp+0x18]` vs `[esp+0x14]`) downstream. Not source-steerable.
 RVA(0x000fd3f0, 0x425)
-i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
+i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3) {
     i32* p;
     i32 i;
     i32 r;

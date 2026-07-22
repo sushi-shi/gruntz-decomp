@@ -147,7 +147,6 @@ int HeapStats() {
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-
 // -------------------------------------------------------------------------
 // FindProcessByName
 // Scans running processes via a Toolhelp32 snapshot, case-insensitively comparing

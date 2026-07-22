@@ -14,13 +14,11 @@ struct LeafCue;          // the +0x19c resolved leaf-scan cue (<Gruntz/LeafCue.h
 class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class CUserLogic; // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct Coord;
-typedef Coord GruntTilePos; // the {m_x,m_y} out-point == the one engine Coord (<Gruntz/CoordNode.h>)
 
 #include <DDrawMgr/AnimWorkerObj.h>
 
 class CDDrawWorker;           // the +0x194 cached sprite IS CDDrawWorker
-typedef CDDrawWorker CSprite;   // (identical repeat of Sprite.h's typedef)
-typedef CDDrawWorker CImageSet; // the +0x194 union's other role - the SAME class again
+
 class CImage;
 
 #include <Wwd/WwdGameObjectFamily.h>
@@ -31,24 +29,23 @@ extern CButeMgr g_buteMgr;
 extern i32 g_logicTypesRegistered;
 
 class CFileMemBase;
-typedef CFileMemBase CGruntArchive;
+
 class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {} // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4); // slot 1
     virtual LogicTypeId
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
 SIZE_UNKNOWN(); // (was covered by the BoundaryMisc placeholder before its rename)
-
 
 class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     // slot 3 (+0x0c): the serialize name-in hook - ProjTypeXfer (0x16e4f0) resolves
     // the type name and dispatches it here virtually (`push name; call [vptr+0xc]`,
@@ -105,9 +102,9 @@ public:
 
     // Copies the bound object's screen position into the out point (m_object->m_5c
     // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4. The out-point is the
-    // shared {m_x,m_y} GruntTilePos (CGrunt reaches this same method inherited).
-    typedef GruntTilePos ScreenPoint;
-    void GetScreenPos(ScreenPoint* out); // 0x29a50 (out-of-line in BattlezMapConfig.cpp)
+    // shared {m_x,m_y} Coord (CGrunt reaches this same method inherited).
+
+    void GetScreenPos(Coord* out); // 0x29a50 (out-of-line in BattlezMapConfig.cpp)
 
     // True when the bound object's current screen pos (m_object->m_5c/m_60) still
     // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
@@ -191,7 +188,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive == CFileMemBase (typedef; NEVER fwd-declare it)
+#include <Gruntz/SerialArchive.h> // CFileMemBase == CFileMemBase (typedef; NEVER fwd-declare it)
 class CWapX {
 public:
     CWapX() {}
@@ -203,7 +200,7 @@ public:
     ~CWapX() {} // EMPTY INLINE (see the 0x8be0 evidence above); out-of-line COMDAT
                 // pinned by RVA_COMPGEN in ActionArea.cpp
     // Serialize the referenced object by its registry key name (read/write per mode).
-    i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
+    i32 Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
 
     // Field names keep the tile-leaf +0x34 spellings (this class is reached at THREE
     // displacements - see the note above - so no one spelling can be offset-accurate).
@@ -231,7 +228,7 @@ SIZE(0x20);
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
@@ -254,7 +251,6 @@ public:
     // pin in src/Gruntz/UserLogic.cpp.
 };
 SIZE(0x54);
-
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---

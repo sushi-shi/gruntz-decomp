@@ -8,8 +8,8 @@
 #include <rva.h>
 
 class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+
 class CImage; // the frame element (AnyValueMatches probes each set for it)
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
@@ -34,7 +34,7 @@ public:
     virtual i32 ProbeWorkerKey(CSymTab* arg1, i32 arg2);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;
     // recurses over child scopes through THIS slot (virtual self-dispatch). The
-    // ex-CImageRegistry/ObjImageRegistry "Install"/"LoadTree"/"InsertWorkerKey" names
+    // ex-CDDrawWorkerRegistry/ObjImageRegistry "Install"/"LoadTree"/"InsertWorkerKey" names
     // all denoted this one slot.
     virtual i32 InstallTree(void* tree, const char* szName, const char* szKey);
     // [19] 0x155160 - the read-side twin: validate a resolved namespace under a prefix;
@@ -53,7 +53,7 @@ public:
     i32 RemoveKeysEqual(const char* base, const char* str);
     i32 SumSizesEqual(const char* str, i32 a2);
     i32 HasKeyEqual(const char* str);
-    // Reverse frame lookup: scan every map value (a CImageSet) for `frame`; on a hit
+    // Reverse frame lookup: scan every map value (a CDDrawWorker) for `frame`; on a hit
     // copy the set name into outName + the frame index into outIndex (FindFrame).
     i32 AnyValueMatches(CImage* frame, char* outName, i32* outIndex);
     // FindKeyOfValue (0x165360) moved to CDDrawWorkerCache (its true owner: the
@@ -62,6 +62,5 @@ public:
     void ReadField(i32 handle, char* tmp, i32* outZero);
 };
 SIZE_UNKNOWN();
-
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H

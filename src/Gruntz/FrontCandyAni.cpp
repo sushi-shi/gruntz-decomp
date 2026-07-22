@@ -4,16 +4,16 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>       // the shared CActReg coordinate-registry archetype
-#include <Gruntz/LogicFnTable.h> // g_eyeCandyDispatch's canonical LogicFnTable type
+#include <Gruntz/LogicFnTable.h> // g_eyeCandyDispatch's canonical CLogicActTable type
 #include <Gruntz/FrontCandy.h> // 0xfa60 is CFrontCandy's slot-1 (??_7CFrontCandy+0x4), not CFrontCandyAni's
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
 
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 RVA(0x0000fa60, 0x47)
-i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -30,7 +30,7 @@ i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
 RVA(0x0000fdf0, 0x47)
-i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -46,7 +46,7 @@ i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
 RVA(0x0000ff20, 0x47)
-i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

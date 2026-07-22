@@ -10,7 +10,7 @@ class CTileTriggerContainer; // CMulti::m_2e4
 class CGruntzSoundZ;         // CGruntzMgr::m_sound (+0x48; PlayByName/FindBank)
 class CFontConfig;           // CGruntzMgr::m_chatLog (+0x5c; the chat/text-input config)
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
-#include <Gruntz/MapMgr.h>   // CBrickzGrid IS CMapMgr (a typedef now - a fwd decl
+#include <Gruntz/MapMgr.h>   // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 class CNetMgr;               // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
 class CNetSessionNode;       // the local-player descriptor stored at +0x5bc (<Net/NetMgr.h>)
@@ -364,12 +364,10 @@ extern HWND g_netPlayerListHwnd; // 0x00248d00
 
 void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
 extern "C" void ServicesDispatchCb(); // 0x401a19
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -387,10 +385,9 @@ extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
 extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
-extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFileIO is its typedef)
+extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFile is its typedef)
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
-
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---

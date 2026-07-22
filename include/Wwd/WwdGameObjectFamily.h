@@ -13,9 +13,8 @@
 class
     CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)
 class CWwdGameObject;  // the flat dispatch model (CWwdGameObject factory pair return type)
-class CDDrawWorker;             // CSprite/CImageSet ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
-typedef CDDrawWorker CSprite;   // (repeats Sprite.h's identical typedef - legal)
-typedef CDDrawWorker CImageSet; // (repeats ImageSet.h's - the +0x194 union's other role)
+class CDDrawWorker;             // CDDrawWorker/CDDrawWorker ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
+
 class CImage;      // the cached frame element (<Image/CImage.h>)
 struct LeafCue;    // the leaf-scan cache value (<Gruntz/LeafCue.h>)
 class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.h>)
@@ -226,18 +225,18 @@ public:
     union {          // +0x194  role-union (the flat model's proof): a WwdFile-loaded
                      //         object keeps its source-def record (class-name string
                      //         at +0x24); a CreateSprite'd object caches the looked-up
-                     //         sprite (ApplyName/ApplyLookupSprite) / its CImageSet
+                     //         sprite (ApplyName/ApplyLookupSprite) / its CDDrawWorker
                      //         (ActionArea's pulse ramp SetAllTypes/SetAllField18)
         char* m_194; // source-def record
-        CSprite* m_sprite;     // cached sprite (frame-cache role)
-        CImageSet* m_imageSet; // cached image set (color/brightness role)
+        CDDrawWorker* m_sprite;     // cached sprite (frame-cache role)
+        CDDrawWorker* m_imageSet; // cached image set (color/brightness role)
     };
     CImage* m_layer; // +0x198  cached frame POINTER (the flat model name)
     union {          // +0x19c  role-union (mirrors +0x194): resolved sound-cue value
                      //         (ReadState -> FindKeyOfValue) vs the cached anim
                      //         sprite (LookupAnimSprite); WwdFile stamps 0
         LeafCue* m_19c;
-        CSprite* m_19cSprite;
+        CDDrawWorker* m_19cSprite;
     };
     CAniAdvanceCursor m_1a0; // +0x1a0..+0x1db  the anim/command cursor (its
                              //  ~CAniAdvanceCursor folds inline in ~A/~B - the
@@ -370,6 +369,5 @@ public:
     i32 m_18;
 };
 SIZE_UNKNOWN();
-
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H

@@ -17,7 +17,7 @@ public:
 
     // +0x04 the per-value teardown callback. This was `void* m_desc`, a "node descriptor"
     // whose dual role (opaque tag ptr / store callback) was never resolved. It is ONE
-    // thing: a function pointer. CButeStore::ClearRecursive CALLS it on every node value
+    // thing: a function pointer. zPTree::ClearRecursive CALLS it on every node value
     // (`m_teardown(n->m_val)`), and the only value ever stored here is the address of
     // ButeValueTeardown (0x174df0) - the phantom `g_nodeDescriptor` / `g_node174df0Tag`
     // "globals" were that function's address all along.
@@ -34,7 +34,7 @@ public:
 
     // The recursive keyed-node free (0x16e070, defined in src/Bute/TypeKeyColl.cpp).
     // node==0 starts from the root. This is the method the whole engine calls as
-    // `CButeStore::ClearRecursive` - CButeStore IS zPTree (see the typedef in
+    // `zPTree::ClearRecursive` - zPTree IS zPTree (see the typedef in
     // <Bute/ButeStore.h>), so both spellings mangle to the one real symbol.
     void ClearRecursive(CButeTreeNode* node);
 

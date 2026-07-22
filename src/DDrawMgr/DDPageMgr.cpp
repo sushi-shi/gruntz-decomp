@@ -19,8 +19,8 @@
 #include <Io/MoviePlayer.h>         // canonical CMoviePlayer
 #include <Crypto/FecCrypt.h>        // the +0x540 decode store IS a CFecFile (Close @0x17b570)
 #include <Io/FileStream.h>          // DDPageMgr's former god-TU include env
-#include <DDrawMgr/DirectDrawMgr.h> // CDDPageMgr, DDModeInfo, CPageRec (canonical)
-#include <DDrawMgr/DDScreen.h>      // canonical CDDScreen + CTileInfo
+#include <DDrawMgr/DirectDrawMgr.h> // CMoviePlayer, DDModeInfo, CPageRec (canonical)
+#include <DDrawMgr/DDScreen.h>      // canonical CMoviePlayer + CTileInfo
 #include <stdio.h>
 #include <string.h> // memset / inlined memcpy (rep movsd)
 

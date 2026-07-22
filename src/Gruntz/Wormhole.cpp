@@ -34,7 +34,7 @@
 // GruntPuddle.cpp with an @identity-TODO note.)
 #include <Gruntz/Wormhole.h>    // the shared CWormhole class (object logic + acts)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (the shared type/name registry)
-#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h>  // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
@@ -44,9 +44,9 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
-#include <Gruntz/LogicFnTable.h>   // the shared LogicFnTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h>   // the shared CLogicActTable dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Grunt.h>         // CGrunt (Teleporter::Update's hit-test target)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
@@ -64,7 +64,6 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x002446b0, 0x0, ?g_teleporterActReg@@3UCTeleporterActReg@@A)
 
-
 VTBL(CGruntPuddle, 0x001e8124);
 VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
@@ -73,9 +72,6 @@ char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 DATA_SYMBOL(0x002445e8, 0x24, ?g_logicDispatch_6445e8@@3UCLogicActTable@@A)
 
 DATA_SYMBOL(0x00244660, 0x24, ?g_wormholeDispatch@@3UCLogicActTable@@A)
-
-
-
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -211,7 +207,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 RVA(0x0003fed0, 0xa9)
-i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -484,7 +480,7 @@ i32 CGruntPuddle::Remove() {
     if (m_placed != 0) {
         CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
-        CTileGrid* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
         i32 flags;
         if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
@@ -534,7 +530,7 @@ i32 CGruntPuddle::Remove() {
 // this->m_10 before each store (aliasing-conservative) where retail caches m_object
 // once in edi. Hoisting m_object into a local made the asm byte-identical (160 insns).
 RVA(0x00040e50, 0x170)
-i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -641,7 +637,7 @@ i32 CWormhole::ReapplyConfig() {
 }
 
 RVA(0x00041350, 0xee)
-i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

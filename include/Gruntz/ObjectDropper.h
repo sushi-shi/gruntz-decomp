@@ -7,7 +7,6 @@
 #include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CObjectDropper : public CUserLogic, public CWapX {
 public:
@@ -20,7 +19,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_OBJECTDROPPER;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).

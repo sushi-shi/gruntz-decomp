@@ -6,7 +6,7 @@
 #include <Mfc.h>    // CString + <windows.h>
 #include <string.h> // strncpy (the FillSlot CRT helper, reloc-masked)
 
-#include <Io/FileStream.h> // CFileIO (the stack-local file wrapper)
+#include <Io/FileStream.h> // CFile (the stack-local file wrapper)
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
@@ -69,7 +69,7 @@ public:
     void SetMagic();         // 0x000e56b0 (m_magic = 0x42a)
 
     CString m_str0; // +0x00  the directory CString
-    CString m_name; // +0x04  the file-name CString passed to CFileIO::Open
+    CString m_name; // +0x04  the file-name CString passed to CFile::Open
     // 0xa1c-byte header blob at +0x08 (Read/Write/memset as a whole); the three
     // scalar fields below are named overlays inside it, the rest is opaque tail.
     char m_header[0x10];  // +0x08  header base (ComputeAll writes [0..0xc])
@@ -84,7 +84,6 @@ public:
     SaveSlot m_slots[10]; // +0xa24, 10 x 0x100
 };
 SIZE_UNKNOWN(); // fully modeled but tail not proven; owner may upgrade
-
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

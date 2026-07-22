@@ -10,7 +10,7 @@ class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
 #include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
-#include <Image/ImageSet.h> // the config record IS the canonical CImageSet (SbiConfig.h fold)
+#include <Image/ImageSet.h> // the config record IS the canonical CDDrawWorker (SbiConfig.h fold)
 
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
@@ -29,7 +29,7 @@ public:
     // slot 1 (vtbl 0x1eadbc thunk 0x381e -> 0xe8e00): the grunt-machine serialize leg,
     // tail-chaining CStatusBarItem::SerializeFields (retail 0xe9202: `call 0x1848`).
     // 4 args, proven by the body's `ret 0x10` + its `[esp+0xa0/0xa4/0xa8]` arg reads.
-    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8e00
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8e00
     virtual void Reset() OVERRIDE; // slot 3 - 0xe8c70
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe8b30
@@ -62,7 +62,7 @@ public:
 
     // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
     // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.
-    CImageSet* m_config; // +0x30  resolved config record (frame table host; ex CGmConfig view)
+    CDDrawWorker* m_config; // +0x30  resolved config record (frame table host; ex CGmConfig view)
     CImage* m_frameA;    // +0x34  resolved frame for index m_frameIdxA
     i32 m_frameIdxA;        // +0x38  frame index A (resolved into m_frameA)
     CImage* m_frameB;    // +0x3c  resolved frame for index m_frameIdxB

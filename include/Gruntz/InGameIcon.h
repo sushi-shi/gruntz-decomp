@@ -32,7 +32,7 @@ void __stdcall Eng_PostCmd(i32 ctx, i32 a, i32 b, i32 c); // 0x41f940
 
 class CInGameIcon : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011cb0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMEICON;
@@ -76,7 +76,6 @@ SIZE_UNKNOWN();
 
 typedef i32 (CUserLogic::*IconActHandler)();
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 TextLogic_402013();
@@ -84,12 +83,11 @@ extern i32 IconState_40370b();
 extern i32 IconAction_403c06();
 extern i32 IconAction_4023d3();
 
-
-#include <Gruntz/LogicFnTable.h> // LogicFnTable (the dispatch-table shell)
+#include <Gruntz/LogicFnTable.h> // CLogicActTable (the dispatch-table shell)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern LogicFnTable g_iconActionTable;
-extern LogicFnTable g_iconStateTable;
+extern CLogicActTable g_iconActionTable;
+extern CLogicActTable g_iconStateTable;
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

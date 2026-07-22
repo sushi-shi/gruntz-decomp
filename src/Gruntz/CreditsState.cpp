@@ -3,7 +3,7 @@
 #include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
 #include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
 #include <Io/MoviePlayer.h>     // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
-#include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
+#include <Gruntz/BankMgr.h>     // CSymTab (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>  // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual)
@@ -36,7 +36,6 @@ void operator delete(void*);
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled; // owner def (zero-init .bss)
 
-
 VTBL(CCreditsState, 0x001e9c64);
 
 static const double kScreenH = 480.0;    // 0x5e96f8  screen height
@@ -56,7 +55,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_flashTimer = 0;
     m_fadeCountdown = 0;
     m_fxEnabled = 0;
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_CREDITZ"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_CREDITZ"));
     if (!m_2c) {
         return 0;
     }
@@ -152,7 +151,7 @@ i32 CCreditsState::Render() {
 
     // per-entity Update pass
     {
-        CGMEntityList* L = g_actorList;
+        AttractActorList* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
             L->m_data[i]->Update();
         }
@@ -160,7 +159,7 @@ i32 CCreditsState::Render() {
 
     // message scan: first flagged entity posts a WM_COMMAND
     {
-        CGMEntityList* L = g_actorList;
+        AttractActorList* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
             if (L->m_data[j]->m_2ac & 0xffffff) {
@@ -302,12 +301,12 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(titleName, "TITLE%d", idx);
     void* saved = static_cast<void*>(m_2c);
     void* state = m_symParser->ResolvePath(stateName);
-    m_2c = static_cast<CResSource*>(state);
+    m_2c = static_cast<CSymTab*>(state);
     if (state == 0) {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = static_cast<CResSource*>(saved);
+    m_2c = static_cast<CSymTab*>(saved);
     if (faded == 0) {
         return 0;
     }

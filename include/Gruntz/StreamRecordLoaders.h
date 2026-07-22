@@ -4,13 +4,13 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (a typedef - a bare fwd decl
+#include <Gruntz/SerialArchive.h> // CFileMemBase (a typedef - a bare fwd decl
 
 struct CEventLoadRec {
-    i32 Load(CSerialArchive* s);
+    i32 Load(CFileMemBase* s);
 
     i32 m_0, m_4; // +0x00,+0x04  raw
-    class CDDrawWorker* m_8; // +0x08  the name-looked-up registry sprite (CSprite)
+    class CDDrawWorker* m_8; // +0x08  the name-looked-up registry sprite (CDDrawWorker)
     i32 m_c;            // +0x0c  raw
     class CImage* m_10; // +0x10  indexed frame (items.GetAt bounds-checked)
     class CImage* m_14; // +0x14  indexed frame

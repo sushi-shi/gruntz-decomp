@@ -4,7 +4,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h>   // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h>  // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
@@ -12,8 +12,8 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - m_world->m_childGroup (embedded GruntObjMap m_map48 @+0x48)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
 #include <Gruntz/Grunt.h> // CGrunt - the Probe_32ce (CTriggerMgr::FindGruntAt) result (m_gruntKind)
 #include <math.h>         // sin / cos (the Tick rotation)
@@ -105,7 +105,6 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
     CSpotActEntry* e = reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id));
@@ -127,9 +126,9 @@ void CSpotLight::FireActivation(i32 id) {
 // the Write-id load `id = m_focus->m_188` uses ecx here vs eax in retail (a 1-byte
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
-i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
+i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(
-            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))),
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
             mode,
             c,
             d
@@ -137,11 +136,11 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
         == 0) {
         return 0;
     }
-    if (Chain(static_cast<CSerialArchive*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
+    if (Chain(static_cast<CFileMemBase*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
         return 0;
     }
     CGruntzMgr* reg = g_gameReg;
-    CSerialArchive* s = static_cast<CSerialArchive*>(arc);
+    CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case 4: // Write
             s->Write(&m_58, 8);
@@ -212,7 +211,6 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     return 1;
 }
 
-
 // CSpotLight::Tick @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
 // non-self target; if found, re-resolve the "B" bute node, copy the target's coords,
@@ -258,7 +256,7 @@ i32 CSpotLight::Tick() {
                 i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
                 CString name;
                 name.Format(s_LEVEL_UFOHAZARDLASER, laser);
-                CSndHost* obj = reg->m_world->m_soundRegistry; // the name->cue map host
+                CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry; // the name->cue map host
                 if (obj->m_emitGate == 0) {
                     void* out = 0;
                     if (obj->m_10.Lookup(name, out) && out != 0 && g_sndEnabled != 0) {

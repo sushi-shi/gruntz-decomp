@@ -60,7 +60,7 @@ public:
     // CSBI_MenuItem (dossier #16); body in SBI_Image.cpp. This IS the slot - it used to
     // be a non-virtual `SerializeChain` sitting beside a fabricated 0-arg `SbiVfunc0`
     // that held the slot instead.
-    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe6e40
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe6e40
     virtual void Reset() OVERRIDE; // slot 3 - 0xe6d90 (ex ClearFrame)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe6dd0 (ex TickRenderCurrent)

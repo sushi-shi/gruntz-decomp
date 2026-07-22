@@ -7,7 +7,6 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 struct CTeleAnimSink {
     char m_pad00[0x20];
@@ -63,7 +62,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TELEPORTER;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32)
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32)
         OVERRIDE;                    // slot 1 (body: Serialize 0x41350)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).

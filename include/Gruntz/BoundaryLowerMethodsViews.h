@@ -3,7 +3,7 @@
 //
 // RTTI cannot attribute these COMDAT-folded methods, so the owning class names are
 // placeholders; only the OFFSETS + emitted code bytes are load-bearing (campaign
-// doctrine). The serialize/archive object folds to the canonical CSerialArchive
+// doctrine). The serialize/archive object folds to the canonical CFileMemBase
 // (Read @ +0x2c / Write @ +0x30).
 // BLOCKED - vtable-attributed but the home needs a base-model/conflict fix a follow-up
 // must do (each stays @early-stop in place):
@@ -48,7 +48,5 @@
 #include <rva.h>
 #include <Gruntz/SerialArchive.h>     // canonical Read@+0x2c / Write@+0x30 archive stream
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-
-
 
 #endif // GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H

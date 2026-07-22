@@ -11,7 +11,6 @@ extern "C" i32 g_rasterDestRow; // 0x002a2ce8
 extern "C" const float g_rasterScale;    // 0x001efb18  +16384.0f fixed-point scale
 extern "C" const float g_rasterScaleNeg; // 0x001efb1c  -16384.0f
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 #include <Image/RasterVtx.h> // ClipVtx (for the extern below)

@@ -2,7 +2,6 @@
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
-
 // CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
 // header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
 // cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this

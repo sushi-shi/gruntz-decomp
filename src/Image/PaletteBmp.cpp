@@ -1,9 +1,8 @@
 #include <Image/ImagePaletteNode.h> // ApiCallerStubs::CImagePaletteNode (Build/ProcessPal)
-#include <Io/FileStream.h>          // CFileIO - the engine KERNEL32 file reader (0x1befd7..)
+#include <Io/FileStream.h>          // CFile - the engine KERNEL32 file reader (0x1befd7..)
 #include <Ints.h>
 #include <rva.h>
 #include <Image/ImagePool.h> // g_hResModule (ex .cpp extern)
-
 
 namespace ApiCallerStubs {
 
@@ -13,7 +12,7 @@ namespace ApiCallerStubs {
     // source-steerable.
     RVA(0x00177480, 0x169)
     i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
-        CFileIO f;
+        CFile f;
         if (f.Open(path, 0, 0) == 0) {
             return 0;
         }

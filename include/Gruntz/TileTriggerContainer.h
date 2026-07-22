@@ -3,7 +3,7 @@
 
 #include <Mfc.h> // MFC CPtrList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
 #include <Gruntz/TileActionEvent.h>   // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
@@ -33,9 +33,9 @@ inline TtcNode* TtcHead(const ::CPtrList& l) {
 }
 
 i32 __stdcall
-SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
+SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
 i32 __stdcall
-SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o); // 0x117710
+SerializeApplyB(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
@@ -155,16 +155,16 @@ public:
     // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
     // then for each list reads a count and LoadElement's that many elements, AddTail'd
     // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
-    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117280
+    i32 Serialize(CFileMemBase* s, i32 op, i32 a3, i32 a4); // 0x117280
 
     // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
-    void* LoadElement(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117800
+    void* LoadElement(CFileMemBase* s, i32 op, i32 a3, i32 a4); // 0x117800
 
     // The serialize-walk pre/post hooks: stream the m_74 latch. LoadFlag74 closes
     // the load (op 7, read slot +0x2c); TransferFlag74 the save (op 4, write +0x30).
-    i32 LoadFlag74(CSerialArchive* s);     // 0x117e70
-    i32 TransferFlag74(CSerialArchive* s); // 0x117e20
+    i32 LoadFlag74(CFileMemBase* s);     // 0x117e70
+    i32 TransferFlag74(CFileMemBase* s); // 0x117e20
 
     // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.

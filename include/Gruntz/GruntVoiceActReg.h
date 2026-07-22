@@ -7,7 +7,6 @@
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_actReg_6514d8; // 0x002514d8
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void GruntVoiceActB(); // 0x402dd8

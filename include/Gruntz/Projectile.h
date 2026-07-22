@@ -16,7 +16,7 @@ public:
     // trajectory block, the 7 sprite frames by registry key, the shadow by object
     // id, the hit list via the coord pool, then the CMovingLogic chain + the CWapX
     // record tail.
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE;
     RVA(0x00012960, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
@@ -92,14 +92,10 @@ SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 
-
-
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 TBombLogic_e1e60();
 extern "C" void ProjActivationHandler(); // 0x403896
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -1576,7 +1576,6 @@ i32 CSymParser::ReParse() {
     return ParseBuffer(m_cachedSourceBuffer, 1, 0);
 }
 
-
 RVA(0x0013c080, 0x3c)
 i32 CRezDir::FindEntry(char* name) {
     RezFindRec rec;

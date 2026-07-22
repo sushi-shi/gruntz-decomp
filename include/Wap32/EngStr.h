@@ -30,7 +30,6 @@ void EngStr_DrawText(
     i32 a8
 );
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 class FontRenderer; // <Font/Font.h>

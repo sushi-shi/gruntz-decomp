@@ -88,8 +88,6 @@ public:
 };
 SIZE(0x58); // per-buffer wrapper base (fields end at +0x58)
 
-typedef DSoundList CloneList;
-
 class DSoundBaseSub : public DirectSoundMgr {
 public:
     DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x136230
@@ -124,10 +122,9 @@ public:
     // declared-only here so the call reloc-masks.
     void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10 (== ctor)
 
-    CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
+    DSoundList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
 };
 SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

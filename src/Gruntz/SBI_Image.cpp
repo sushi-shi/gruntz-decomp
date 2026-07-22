@@ -4,7 +4,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
@@ -12,9 +12,9 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches (SerializeChain's reverse lookup)
 #include <Gruntz/GameRegistry.h>          // canonical g_gameReg singleton
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)        // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CImageRegistry)
-#include <Gruntz/SerialArchive.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/Sprite.h>             // CDDrawWorker (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)        // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawWorkerRegistry)
+#include <Gruntz/SerialArchive.h>      // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Image/CImage.h>              // the resolved frame record (Render's blit)
 #include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
 
@@ -63,7 +63,7 @@ i32 CSBI_Image::SetupImage(
         m_frame = 0;
         return 0 != 0;
     }
-    CImageSet* rec = 0;
+    CDDrawWorker* rec = 0;
     (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         m_frame = 0;
@@ -119,7 +119,7 @@ i32 CSBI_Image::Render() {
 // ebx + this in esi; the recompile swaps them) plus the dead-spill-slot packing
 // (retail's temps share a slot, shifting the esp+ frame offsets by 4). Deferred.
 RVA(0x000e6e40, 0x17c)
-i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
+i32 CSBI_Image::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -140,7 +140,7 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             if (strlen(name) != 0) {
                 CObject* r_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
-                CSprite* r = static_cast<CSprite*>(r_ob);
+                CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
                 if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
                     m_frame = static_cast<CImage*>(r->m_items.GetAt(idx));
                 } else {

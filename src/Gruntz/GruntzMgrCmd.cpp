@@ -24,8 +24,6 @@
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
-
-
 i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
 void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
@@ -69,10 +67,10 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
                             ? static_cast<CGrunt*>(                                           \
                                   m_cmdGrid->m_grid                                                \
-                                      [reinterpret_cast<CTrigPoint*>(                              \
+                                      [reinterpret_cast<Coord*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \
                                            ->m_y                                                     \
-                                       + reinterpret_cast<CTrigPoint*>(                            \
+                                       + reinterpret_cast<Coord*>(                            \
                                              m_cmdGrid->m_recList.GetHead())                       \
                                                  ->m_x                                               \
                                              * 15])                                                \
@@ -98,10 +96,10 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
         CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
                             ? static_cast<CGrunt*>(                                           \
                                   m_cmdGrid->m_grid                                                \
-                                      [reinterpret_cast<CTrigPoint*>(                              \
+                                      [reinterpret_cast<Coord*>(                              \
                                            m_cmdGrid->m_recList.GetHead())                         \
                                            ->m_y                                                     \
-                                       + reinterpret_cast<CTrigPoint*>(                            \
+                                       + reinterpret_cast<Coord*>(                            \
                                              m_cmdGrid->m_recList.GetHead())                       \
                                                  ->m_x                                               \
                                              * 15])                                                \

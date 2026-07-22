@@ -81,7 +81,7 @@ public:
     // Initialise an already-allocated sprite against a named template (@0x159830).
     i32 AttachSprite(CWwdGameObject* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
 
-    // Level-load path (reader = the shared CSerialArchive == CFileMemBase).
+    // Level-load path (reader = the shared CFileMemBase == CFileMemBase).
     i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
 
     // List / map ops.
@@ -165,6 +165,5 @@ struct WwdObjDesc {
     i32 m_9c;               // +0x9c
 };
 SIZE_UNKNOWN();
-
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

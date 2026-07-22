@@ -29,7 +29,6 @@ CStatusBarItem::CStatusBarItem() {
 // and forces the COMDAT out in this TU.)
 RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
-
 // ---------------------------------------------------------------------------
 // CStatusBarItem::Setup (0x100660, vtable slot 2): the base 10-arg config setter -
 // inherited by CSBI_StatzTabGruntBar / CSBI_GruntMachine / CSBI_SideTab, overridden by

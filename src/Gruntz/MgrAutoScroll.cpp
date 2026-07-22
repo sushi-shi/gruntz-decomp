@@ -5,13 +5,12 @@
 #include <Bute/ButeMgr.h>                 // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level; its m_mainPlane)
-#include <Wwd/WwdFile.h>      // canonical CLevelPlane (== CDDrawWorkerHost) - the scroll plane
+#include <Wwd/WwdFile.h>      // canonical CDDrawWorkerHost (== CDDrawWorkerHost) - the scroll plane
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarMgr.h> // the status-bar mgr (bar->m_position gates the h-center)
 #include <Gruntz/ScrollState.h> // ex Globals.h transitive
 #include <Gruntz/MgrAutoScroll.h> // own exported globals (ex Globals.h)
-
 
 DATA(0x002452a4)
 i32 g_jitterX;
@@ -23,7 +22,7 @@ DATA(0x0024550c)
 i32 g_panMaxX;
 
 DATA(0x0024c27c)
-CLevelPlane* g_backView;
+CDDrawWorkerHost* g_backView;
 DATA(0x0024cfb0)
 i64 g_scrollAccum;
 DATA(0x0024cfb8)
@@ -60,7 +59,7 @@ static i32 RandRange(i32 lo, i32 hi) {
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
-    CLevelPlane* v = pm->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_snappedX;
     i32 scrollY = v->m_snappedY;
 
@@ -90,7 +89,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    CLevelPlane* v2 = pm->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* v2 = pm->m_world->m_level->m_mainPlane;
     if (scrollX > v2->m_wrapW - cx) {
         scrollX = v2->m_wrapW - cx;
     }
@@ -106,7 +105,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    CLevelPlane* v3 = pm->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
     {
         float sx = static_cast<float>(scrollX);
         float sy = static_cast<float>(scrollY);
@@ -119,7 +118,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     }
     RecomputePlaneCoords();
 
-    CLevelPlane* gm = g_backView;
+    CDDrawWorkerHost* gm = g_backView;
     if (gm != 0) {
         i32 nx = gm->m_snappedX;
         i32 ny = gm->m_snappedY;
@@ -130,7 +129,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         if (static_cast<i64>(g_frameTime) - g_scrollAccum >= g_scrollLimit) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
-            CLevelPlane* g2 = g_backView;
+            CDDrawWorkerHost* g2 = g_backView;
             float fx = static_cast<float>(nx);
             float fy = static_cast<float>(ny);
             if (!(g2->m_flags & 1)) {

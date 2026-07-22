@@ -42,7 +42,7 @@ extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long; one canonical si
 
 class CPathHazard : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b3b60;
     // shared by CUFO/CRainCloud); a plain method - the base placeholder blocks the
     // int-arg OVERRIDE spelling.

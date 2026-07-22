@@ -3,12 +3,12 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/DroppedObject.h> // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CLevelPlane (its m_mainPlane wrap extent)
+#include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CDDrawWorkerHost (its m_mainPlane wrap extent)
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
@@ -17,14 +17,13 @@
 #include <Gruntz/TriggerMgr.h>        // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
 #include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/SerialArchive.h>     // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h>     // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 
 #include <string.h> // inline strcmp for the direction-name match
-
 
 VTBL(CDroppedObjectShadow, 0x001e787c);
 VTBL(CDroppedObject, 0x001e78d4);
@@ -33,7 +32,6 @@ DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
 DATA(0x001eaa00)
 double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
-
 
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
@@ -52,7 +50,6 @@ static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
-
 
 static inline CDropEntry* DropLookup(i32 coord) {
     return reinterpret_cast<CDropEntry*>(g_dropColl.ResolveEntry(coord));
@@ -346,7 +343,7 @@ i32 CObjectDropper::Update() {
             box.bottom = o->m_screenY + o->m_layer->m_anchorY - 7;
             i32 tx;
             i32 ty;
-            CTmCell* found =
+            CGrunt* found =
                 g_gameReg->m_cmdGrid
                     ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &tx, &ty, &box);
             if (found != 0) {
@@ -355,7 +352,7 @@ i32 CObjectDropper::Update() {
                         CGameObject* fo = found->m_object;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
-                        CTileGrid* plane = g_gameReg->m_tileGrid;
+                        CMapMgr* plane = g_gameReg->m_tileGrid;
                         i32 cx = fx >> 5;
                         i32 cy = fy >> 5;
                         u32 flags;
@@ -424,7 +421,7 @@ i32 CObjectDropper::Update() {
 }
 
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -616,7 +613,7 @@ i32 CDroppedObject::ActA() {
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
-        CTileGrid* g = g_gameReg->m_tileGrid;
+        CMapMgr* g = g_gameReg->m_tileGrid;
         i32 cell;
         {
             i32 cx = x >> 5;
@@ -695,7 +692,7 @@ i32 CDroppedObject::UserLogicVfunc5() {
 }
 
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -818,11 +815,11 @@ i32 CDroppedObjectShadow::Advance() {
 }
 
 RVA(0x000c7b40, 0x76)
-i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, c, d)) {
+i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, c, d)) {
         return 0;
     }
-    if (!Chain(static_cast<CSerialArchive*>(ar), mode, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(static_cast<CFileMemBase*>(ar), mode, c, reinterpret_cast<CGameObject*>(d))) {
         return 0;
     }
     if (mode == 8) {

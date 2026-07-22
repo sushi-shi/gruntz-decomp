@@ -4,13 +4,12 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleAnimation.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CSingleAnimation, 0x001e745c);
 
-
 RVA(0x000104a0, 0x47)
-i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

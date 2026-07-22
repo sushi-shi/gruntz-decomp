@@ -4,12 +4,10 @@
 
 #include <Ints.h>
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void LoadDeleteDlgProc(); // 0x121c (GAME_DELETE)
 extern "C" void LoadInfoDlgProc();   // 0x1e3d (GAME_INFO)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

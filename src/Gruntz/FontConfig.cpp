@@ -20,7 +20,6 @@ i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
 DATA(0x0022b43c)
 i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
 
-
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
     m_lowScrollThreshold = lowScrollThreshold;

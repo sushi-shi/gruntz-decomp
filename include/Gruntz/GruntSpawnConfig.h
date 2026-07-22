@@ -60,7 +60,7 @@ class CGrunt; // CueA/CueSpawn first arg
 
 class CGruntSpawnConfig {
 public:
-    // --- the on-screen cue receiver face (folded from Grunt.h's CGruntCueSink -
+    // --- the on-screen cue receiver face (folded from Grunt.h's CGruntSpawnConfig -
     // the +0x60 registry object is ONE class wearing three names: spawn config ==
     // cue sink == the GruntzMgr "TimerObj" poll face). All declared-only:
     // reloc-masked thunk calls.

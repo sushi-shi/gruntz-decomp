@@ -53,5 +53,4 @@ struct CGridLookup {
 };
 SIZE_UNKNOWN();
 
-
 #endif // GRUNTZ_TRIGGERMGR_RECORDS_H

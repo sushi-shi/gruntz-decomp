@@ -15,13 +15,13 @@
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_drawTarget->m_backPair)
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
-#include <Gruntz/Sprite.h> // CSprite (frame-data template value)
+#include <Gruntz/Sprite.h> // CDDrawWorker (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (the factory base sub-object)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
@@ -34,9 +34,9 @@
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
 #include <Gruntz/UserLogic.h>          // CGameObject - the real class of the AABB pair
-#include <Wwd/WwdFile.h>               // CPlaneRender (m_parent->m_24->m_5c world transform)
+#include <Wwd/WwdFile.h>               // CDDrawWorkerHost (m_parent->m_24->m_5c world transform)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
-#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CLevelPlane
+#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CDDrawWorkerHost
 #include <Win32.h>                     // SetRect + RECT
 #include <Wwd/WwdObjMgr.h> // own exported globals (ex Globals.h)
 
@@ -63,7 +63,7 @@ void CDDrawChildGroup::DestroyChildren() {
     CGameLevel* p = m_parent->m_level;
     if (p != 0) {
         // m_mainPlane IS the plane/grid-owner CDDrawWorkerHost (the plane-family
-        // unification: slots 9/10 of ??_7CDDrawWorkerHost are CLevelPlane methods).
+        // unification: slots 9/10 of ??_7CDDrawWorkerHost are CDDrawWorkerHost methods).
         CDDrawWorkerHost* q = static_cast<CDDrawWorkerHost*>(p->m_mainPlane);
         if (q != 0) {
             q->Prune();
@@ -291,7 +291,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 ) {
     CObject* tmpl_ob = 0;
     m_parent->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    CSprite* tmpl = static_cast<CSprite*>(tmpl_ob);
+    CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
     if (!tmpl) {
         return 0;
     }
@@ -328,7 +328,7 @@ i32 CDDrawChildGroup::AttachSprite(
     }
     CObject* tmpl_ob = 0;
     m_parent->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    CSprite* tmpl = static_cast<CSprite*>(tmpl_ob);
+    CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
     if (!tmpl) {
         return 0;
     }
@@ -798,7 +798,7 @@ i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
 // 0x15a210 (1074 B) = a CDDrawChildGroup-family debug OVERLAY, twin of
 // DrawObjectCounts (same subsystem, both dead-in-retail). __thiscall, gated
 // on a +0x08 debug flag; walks the +0x14 child list and per object draws debug
-// geometry via CPlaneRender::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
+// geometry via CDDrawWorkerHost::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
 // DrawCross(x,y), ResLoaders::DrawHost2_164420::DrawLabel(RECT*,char*) (falling
 // back to "???" @0x1f0a94). Draws gated by g_dbg61ab28/2c/30. Held pending
 // reconstruction (>512 B, novel per-object geometry).
@@ -825,7 +825,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
     }
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     CDDrawSurfacePair* drawHost = m_parent->m_drawTarget->m_backPair;
-    CPlaneRender* view = m_parent->m_level->m_mainPlane;
+    CDDrawWorkerHost* view = m_parent->m_level->m_mainPlane;
     if (node == 0) {
         return;
     }
@@ -1245,7 +1245,7 @@ i32 CDDrawChildGroup::ForEachProbe(i32 a1, i32 a2) {
 // stack-buffer + null-register (ebp=0) regalloc across the arms is non-steerable
 // under /O2. Final sweep.
 RVA(0x0015ad30, 0x2be)
-i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
+i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
     i32 savedCounter = 0;
     if (reader == 0) {
         return 0;
@@ -1362,7 +1362,7 @@ i32 CDDrawChildGroup::LoadObjects(CSerialArchive* reader, u32 count, i32 unused)
 // epilogues, our cl hoists the body and merges the epilogue. An optimizer
 // CFG-shape choice; logic exact.
 RVA(0x0015b020, 0xc0)
-i32 CDDrawChildGroup::ForEachSerialize(CSerialArchive* ar, i32 a2) {
+i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
     if (ar == 0) {
         return 0;
     }
@@ -1395,7 +1395,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CSerialArchive* ar, i32 a2) {
 // reproducible from C without re-introducing the (here dead) name build; logic /
 // CFG / offsets are exact, the dead cleanup branch is the residual.
 RVA(0x0015b0e0, 0xec)
-i32 CDDrawChildGroup::Deserialize(CSerialArchive* ar, u32 count, i32 flag) {
+i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
     if (ar == 0) {
         return 0;
     }

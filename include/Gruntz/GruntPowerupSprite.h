@@ -4,12 +4,12 @@
 #include <rva.h>
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
-#include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
+#include <Gruntz/SerialArchive.h>        // shared CFileMemBase (Read +0x2c / Write +0x30)
 
 class CGruntPowerupSprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012320, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPOWERUPSPRITE;

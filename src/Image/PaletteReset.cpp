@@ -4,7 +4,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Mfc.h> // afx.h FIRST (before ddraw.h's windows.h): <Io/MoviePlayer.h> below is
 #include <ddraw.h>
-#include <Io/MoviePlayer.h> // THE class (CDDScreen is a typedef alias of it)
+#include <Io/MoviePlayer.h> // THE class (CMoviePlayer is a typedef alias of it)
 
 RVA(0x0017ca60, 0x35)
 void CMoviePlayer::ResetPalette() {

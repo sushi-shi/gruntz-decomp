@@ -20,7 +20,6 @@ CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
 void __stdcall RefreshRosterRow(i32 flag);              // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
-
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
 i32 ChannelSlots_FindFree();            // 0xdb280
 CString GetConfigNameA();               // 0xb6090
@@ -793,7 +792,6 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     ::InvalidateRect(this->GetDlgItem(0x507)->m_hWnd, 0, 1);
     return 1;
 }
-
 
 // @early-stop
 // ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):

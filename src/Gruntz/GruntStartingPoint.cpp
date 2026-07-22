@@ -1,6 +1,6 @@
 #include <Gruntz/GruntStartingPoint.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Bute/ButeMgr.h> // CButeTree
 #include <Bute/ButeTree.h>
@@ -14,7 +14,7 @@
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 RVA(0x000105d0, 0x47)
-i32 CGruntStartingPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -63,7 +63,6 @@ DATA(0x002bf464)
 u32 g_zvecErrSentinel; // owner def (zero-init .bss)
 DATA(0x002bf464)
 void* g_projActCache;
-
 
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;

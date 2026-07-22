@@ -9,7 +9,7 @@
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit

@@ -7,7 +7,6 @@
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_actReg_646188; // 0x00246188
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void SpotLightActB(); // 0x402414

@@ -6,7 +6,6 @@
 #include <Gruntz/SBI_Image.h> // CSBI_Image base
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CImage;
 class CDDSurface;
@@ -16,7 +15,7 @@ class CDDrawShadeBlit;
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE frame-set class)
+#include <Image/ImageSet.h> // CDDrawWorker == CDDrawWorker (the ONE frame-set class)
 #include <Gruntz/SpriteRefTable.h>
 
 class CSBI_WellGoo : public CSBI_Image {
@@ -33,7 +32,7 @@ public:
     // slot 1 (vtbl 0x1eadfc thunk 0x3e90 -> 0xe64c0): the goo serialize. Round-trips the
     // fill/rect fields + two frame handles by name+index, (mode 8) re-resolves the goo
     // surface + rebinds the frames' shade nodes, then chains CSBI_Image::SerializeFields.
-    virtual i32 SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
+    virtual i32 SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
     virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value SbRect - see StatusBarItem.h)
     virtual void Reset() OVERRIDE; // slot 3 (ex Free)

@@ -7,14 +7,13 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CRollingBall : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012f30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ROLLINGBALL;
@@ -62,10 +61,8 @@ struct CRollingBallActEntry {
 };
 SIZE_UNKNOWN();
 
-
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_rollingBallActReg; // 0x002461b0
-
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

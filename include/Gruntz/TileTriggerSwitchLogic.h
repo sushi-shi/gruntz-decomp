@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 class CTileTriggerLogic;     // the SEPARATE 0x9c logic family (not a base: 0x8c < 0x9c)
@@ -71,10 +71,10 @@ public:
     // ret 0x10; this flows through in ecx untouched to the two state helpers -
     // which is why the old `__stdcall Gate113860(obj,...)` free-fn model scored
     // only ~93% (its callers dropped retail's `mov ecx,<element>`).
-    i32 ValidateByType(CSerialArchive* s, i32 mode, i32 a3, i32 a4); // 0x113860
-    i32 SaveState(CSerialArchive* s); // 0x1138b0 (write via slot +0x30; was the
+    i32 ValidateByType(CFileMemBase* s, i32 mode, i32 a3, i32 a4); // 0x113860
+    i32 SaveState(CFileMemBase* s); // 0x1138b0 (write via slot +0x30; was the
                                       // "CTileTriggerData::LoadV4" view - same fields)
-    i32 LoadState(CSerialArchive* s); // 0x1139a0 (read via slot +0x2c)
+    i32 LoadState(CFileMemBase* s); // 0x1139a0 (read via slot +0x2c)
     // ValidateByType (0x113a90) / ApplyByType (0x113d40) / SerializeMatrix (0x113dd0) /
     // DeserializeMatrix (0x113e70) are NOT members - they were misattributed here. Retail's
     // CTileTriggerFactory::Build calls them on freshly-`new`ed objects of the OTHER family:

@@ -1,5 +1,5 @@
 #include <Mfc.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <Gruntz/MapLogic.h>
 
@@ -8,7 +8,7 @@
 #include <Gruntz/ScrollState.h> // g_scrollAccum (bound in MgrAutoScroll.cpp)
 
 RVA(0x000ec230, 0x11c)
-i32 MapSerializeCurve(CSerialArchive* ar, i32 mode, i32, i32) {
+i32 MapSerializeCurve(CFileMemBase* ar, i32 mode, i32, i32) {
     if (ar == 0) {
         return 0;
     }

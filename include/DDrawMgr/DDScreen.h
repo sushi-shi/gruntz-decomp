@@ -12,6 +12,5 @@ struct CTileInfo {
 SIZE_UNKNOWN();
 
 class CMoviePlayer;
-typedef CMoviePlayer CDDScreen;
 
 #endif // GRUNTZ_DDRAWMGR_DDSCREEN_H

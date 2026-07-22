@@ -39,7 +39,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair
 #include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor
-#include <Gruntz/SerialArchive.h>         // the shared CSerialArchive stream
+#include <Gruntz/SerialArchive.h>         // the shared CFileMemBase stream
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
@@ -47,7 +47,7 @@
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (the ANI catalog host)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawWorkerHost.h> // CLevelPlane (the m_ctx geometry chain)
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (the m_ctx geometry chain)
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
 #include <DDrawMgr/AniAdvance.h>      // CAniBlitTrigger (the per-frame sound trigger)
 #include <Wap32/WapObj.h>             // CWapObj : CObject
@@ -82,7 +82,6 @@ float g_sndPanScale = 0.009999999776482582f;
 VTBL(CDDrawSurfacePair, 0x001eff30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
-
 
 void* operator new(u32 n);
 void operator delete(void* p);
@@ -592,7 +591,7 @@ CString CFileMemBase::GetName() {
 }
 
 // CFileMem::~CFileMem (0x157980): cl stamps the derived vtable at entry, run
-// Reset() (derived), destruct the inner CFileIO, call the base Reset(), then cl
+// Reset() (derived), destruct the inner CFile, call the base Reset(), then cl
 // folds the base vtable restamp + the CString member dtor on unwind.
 // @early-stop
 // EH-dtor scheduling wall (~59%): the teardown logic is byte-faithful, but the
@@ -601,7 +600,7 @@ CString CFileMemBase::GetName() {
 RVA(0x00157980, 0x74)
 CFileMem::~CFileMem() {
     Reset();
-    m_file.~CFileIO();
+    m_file.~CFile();
     CFileMemBase::Reset();
 }
 

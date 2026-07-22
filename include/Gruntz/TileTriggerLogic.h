@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @ +0x2c / Write @ +0x30)
 
 class CTileTriggerContainer; // owner, back-stamped into m_owner (fwd; def in TileTriggerContainer.h)
 
@@ -89,8 +89,8 @@ public:
     // calls ValidateByType (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c
     // CTileTriggerLogic (`push 0x9c; call ??2; mov ecx,eax; call ??0CTileTriggerLogic`).
     i32 ValidateByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113a90
-    i32 Serialize(CSerialArchive* s);                            // 0x113ae0
-    i32 Deserialize(CSerialArchive* s);                          // 0x113c10
+    i32 Serialize(CFileMemBase* s);                            // 0x113ae0
+    i32 Deserialize(CFileMemBase* s);                          // 0x113c10
 
     // Field names below take the RICHER of the two spellings this class was reconstructed
     // under (the CTileGridCommand view named the tag/coords/duty spans; this one did not).
@@ -129,8 +129,8 @@ public:
     void BuildRockBreakInGameText(); // 0x1122a0
 
     i32 ApplyByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113d40 (ILT 0x1d39)
-    i32 SerializeMatrix(CSerialArchive* s);                   // 0x113dd0 (type-4 save)
-    i32 DeserializeMatrix(CSerialArchive* s);                 // 0x113e70 (type-7 load)
+    i32 SerializeMatrix(CFileMemBase* s);                   // 0x113dd0 (type-4 save)
+    i32 DeserializeMatrix(CFileMemBase* s);                 // 0x113e70 (type-7 load)
 
     i32 m_matrix[9]; // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
     i32 m_powerupType;        // +0xc0        streamed FIRST (before the matrix)

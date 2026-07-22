@@ -1,6 +1,6 @@
 #include <Gruntz/LevelTimeDtor.h>
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h>        // the serialize stream (== the real CFileMemBase)
 
 // CLevelTime::~CLevelTime @0x00011a50 - folds the bare CUserLogic teardown: store
@@ -15,11 +15,11 @@
 
 VTBL(CLevelTime, 0x001e801c);
 RVA(0x000119b0, 0x47)
-i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CLevelTime::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)

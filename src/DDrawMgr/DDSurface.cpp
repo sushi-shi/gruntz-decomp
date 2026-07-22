@@ -81,7 +81,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_descSize = 0x6c;
     i32 hr = m_ddSurface->GetSurfaceDesc(reinterpret_cast<LPDDSURFACEDESC>(m_desc));
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
 
     i32 bits = m_srcBitDepth;
@@ -211,7 +211,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
     if (hr == 0) {
         return 1;
     }
-    CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x1d2, hr);
+    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x1d2, hr);
     return 0;
 }
 
@@ -229,10 +229,10 @@ i32 CDDSurface::Lock(void* rect) {
         if (hr == 0) {
             return m_lockBits;
         }
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x203, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x203, hr);
         return 0;
     }
-    CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x209, hr);
+    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x209, hr);
     return 0;
 }
 
@@ -247,7 +247,7 @@ i32 CDDSurface::Fill(u32 color) {
     fx[0x14] = static_cast<i32>(color); // dwFillColor @ +0x50
     i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"), 0x22c, hr);
+        CDDrawPtrCollections::GetErrorString(const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"), 0x22c, hr);
     }
     return hr == 0;
 }
@@ -263,7 +263,7 @@ i32 CDDSurface::Restore(void* dstRect, i32 fillColor) {
     fx.dwFillColor = fillColor;
     i32 hr = BltEx(dstRect, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
     if (hr) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x26d, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x26d, hr);
     }
     return hr == 0;
 }
@@ -286,10 +286,10 @@ i32 CDDSurface::Flip(CDDSurface* target) {
         if (hr == 0) {
             return 0;
         }
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x2ae, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2ae, hr);
         return hr;
     }
-    CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x2b4, hr);
+    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2b4, hr);
     return hr;
 }
 
@@ -297,14 +297,13 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // 0x13e8f0 (176 B) = a DIRSURF image-cache reload (__thiscall): scalar-deletes each
 // g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
 // this->m_8->EnumAttachedSurfaces(0, &EnumSurfacesCallback) (slot 9), reports through
-// CDirectDrawMgr::GetErrorString, then repopulates m_94 from g_imageCache. Homed from
+// CDDrawPtrCollections::GetErrorString, then repopulates m_94 from g_imageCache. Homed from
 // GapFunctions.cpp (matcher-5); lives in the DIRSURF block (DDSurface.cpp) by RVA.
 // Homed pending the owning class (m_8 vtable + m_94 array) + the Build PMF push modelled.
 RVA(0x0013e8f0, 0xb0)
 i32 ReloadImageCache(void) {
     return 0;
 }
-
 
 // ---------------------------------------------------------------------------
 // 0x13e9a0: the IDirectDrawSurface::EnumAttachedSurfaces callback (DDENUMSURFACESCALLBACK,
@@ -356,7 +355,7 @@ RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, void* key) {
     i32 hr = m_ddSurface->SetColorKey(flags, static_cast<LPDDCOLORKEY>(key));
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x353, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x353, hr);
         return hr;
     }
     return 0;
@@ -542,7 +541,7 @@ i32 CDDSurface::Blt(CDDSurface* src) {
         }
     }
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x48c, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x48c, hr);
     }
     return hr;
 }
@@ -563,7 +562,7 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
         }
     }
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x4b0, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x4b0, hr);
     }
     return hr;
 }
@@ -579,7 +578,7 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
         }
     }
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x4da, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x4da, hr);
     }
     return hr;
 }
@@ -956,7 +955,7 @@ i32 CDDSurface::GetColorKey() {
         if (hr == 0) {
             return key.dwColorSpaceLowValue;
         }
-        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x695, hr);
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x695, hr);
     }
     return -1;
 }
@@ -1737,7 +1736,6 @@ i32 CDDSurface::DecodeRun24(void* src) {
 }
 
 #pragma optimize("", on)
-
 
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(

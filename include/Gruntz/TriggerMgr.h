@@ -2,7 +2,7 @@
 #define SRC_GRUNTZ_TRIGGERMGR_H
 #include <rva.h>
 #include <Mfc.h>                  // CPtrList and the MFC list helpers (reloc-masked)
-#include <Gruntz/SerialArchive.h> // CSerialArchive - the Load serializer's stream (Read @ +0x2c)
+#include <Gruntz/SerialArchive.h> // CFileMemBase - the Load serializer's stream (Read @ +0x2c)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 extern FreeNodePool g_coordPool;
@@ -15,11 +15,10 @@ typedef enum TmGridDim {
 } TmGridDim;
 
 #include <Gruntz/CoordNode.h>
-typedef Coord CTrigPoint;
 
 class CGrunt;
 struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprite returns
-typedef CGrunt CTmCell;
+
 class CDDrawSurfaceMgr;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
@@ -66,12 +65,12 @@ public:
     // (the 4x15 placed-object grid, per-row state bands, byte table, record list,
     // ten selection lists, base object list, overlay sub-object + tail scalars).
     // /GX; lives in the eh sibling TU. ret 1, or 0 on any missing referent.
-    i32 Load(CSerialArchive* ar);
+    i32 Load(CFileMemBase* ar);
 
     // --- the small reconstructed leaf interface (retail-RVA order) -------------
     // 0x759e0: copy the cached origin pair (+0x174,+0x178) into the caller's
     // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).
-    CTrigPoint* GetOriginXY(CTrigPoint* out); // 0x759e0
+    Coord* GetOriginXY(Coord* out); // 0x759e0
 
     // 0x6b640: store the supplied world holder at +0x22c, clear m_armed + m_pendingFx
     // and raise m_countdownActive; returns 1 (0 when arg is null).
@@ -130,7 +129,7 @@ public:
     // 0x6bc20: scan the cell grid (+0x1c) for the cell pointer == `obj` (startRow, or
     // rows 0..3 when startRow==5) and dispatch it via CellDispatch(row,col,kind,arg);
     // ret 0 when `obj` is not placed. (callee-cleans: ret 0x10.)
-    i32 DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg);
+    i32 DispatchCellForObject(CGrunt* obj, i32 startRow, i32 kind, i32 arg);
 
     // 0x6bcb0: grid-cell dispatch - looks up cell[row*15+col] (+0x1c) and, if it has
     // a +0x368 hook, runs this->NotifyCell(row,col,0) (ret 0); else routes by `kind`
@@ -177,7 +176,7 @@ public:
     // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_tileOwnerHi (15 cells) for the live
     // cell whose display object is nearest g's tile pos (g->m_17c/m_180 >> 5), within the
     // squared cutoff 2*g->m_defenderRadius; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
-    CTmCell* FindNearestInRow(CTmCell* g);
+    CGrunt* FindNearestInRow(CGrunt* g);
 
     // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the
     // selection lists (when fromSelection) and from the record list, clearing the cell's
@@ -256,7 +255,7 @@ public:
     // around a pixel point (bounded by the tile-span rect, or an explicit source rect)
     // through the tile grid's packed owner word into m_grid; return the first live cell
     // (m_1fc) whose 15x15 display box hits the rect, reporting its (col,row). (ret 0x18.)
-    CTmCell* FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src);
+    CGrunt* FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src);
 
     // 0x78520 / 0x78680: the two record-table reporters - scan the record list (+0x244)
     // for nodes of the magic group, collect their bytes, then call a world report helper
@@ -292,11 +291,11 @@ public:
 
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
-    i32 ScanGroup(CSerialArchive* ar);
+    i32 ScanGroup(CFileMemBase* ar);
 
     // 0x7df8: the overlay-serialize self-call ScanGroup tails into (writes the overlay into
     // the archive). Still-UNRECONSTRUCTED; declared so the reloc-masked self-call is clean.
-    i32 SerializeOverlay(CSerialArchive* ar, i32 b, i32 c);
+    i32 SerializeOverlay(CFileMemBase* ar, i32 b, i32 c);
 
     // 0x7b1b0: TriggerCell(x, y) - look up the (x,y) cell, switch on its logic kind and
     // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
@@ -377,7 +376,7 @@ public:
     // BrickzCellFlags_077790.cpp (ex `Grid_77df0::FindNearest` - the receiver at
     // every call site is the grunt's +0x260 board == THIS class; the identity the
     // old @identity-TODO said "does not crack" cracks from that settled slot type).
-    CTmCell* FindNearestEnemy(CTmCell* g);
+    CGrunt* FindNearestEnemy(CGrunt* g);
 
     // 0x7cf40: centre the view on the selection group's bounding-box midpoint, then
     // (single selection) re-arm the record latch. Ex-`CGroupSel` view (TriggerMgr.cpp
@@ -444,16 +443,16 @@ public:
     i32 PlaceCell(i32 a, i32 b, i32 c); // DestroyGroup placement self-call (reloc-masked)
     // (ReportObjectAt is GONE - its thunk 0x3030 jumps to 0x6e120, which IS
     // ApplyTriggerB; CGrunt::StepPeerTracking calls the real name.)
-    void RecallCell(CTmCell* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
+    void RecallCell(CGrunt* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
     void RefreshB(i32 a);
     void RefreshC();
-    CTmCell* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
+    CGrunt* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
     void ClearMagic(i32 key);
     i32 Classify(i32 x, i32 y);
     void Refresh2();
     void Record2(i32 x, i32 y);
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
-    CTmCell* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
+    CGrunt* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
     i32 PlaceA(i32 a, i32 b, i32 c, i32 d);
     i32 PlaceB(i32 a, i32 b, i32 c);
     void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
@@ -508,7 +507,7 @@ public:
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
     CPtrList m_baseList;   // +0x000  base object-list (holds CTmRecNode payloads)
-    CTmCell* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    CGrunt* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
     i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
     i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
                            //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
@@ -549,7 +548,7 @@ public:
     // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
     // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
     // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
-    CTmCell* m_pendingFx;    // +0x2a0  pending-fx grunt logic
+    CGrunt* m_pendingFx;    // +0x2a0  pending-fx grunt logic
     i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
     i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
     char _pad2ac[0x4];       // +0x2ac
@@ -573,13 +572,11 @@ SIZE_UNKNOWN();
 
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
 extern "C" void IconClassInitB(); // 0x402bad
 extern "C" void IconClassInitA(); // 0x40288d
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

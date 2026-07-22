@@ -6,12 +6,12 @@
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Gruntz/TypeKeyColl.h>   // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0; +0x48 GruntObjMap)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
 
 // CExitTrigger::~CExitTrigger @0x0108c0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -85,8 +85,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_warlordLogic = e->m_7c->m_logic;
         if (m_object->m_124 == g_curPlayer) {
             // track the local player's warlord in the trigger mgr's pending-fx
-            // grunt slot (CTmCell == CGrunt; the warlord logic is a grunt leaf)
-            g_gameReg->m_cmdGrid->m_pendingFx = static_cast<CTmCell*>(m_warlordLogic);
+            // grunt slot (CGrunt == CGrunt; the warlord logic is a grunt leaf)
+            g_gameReg->m_cmdGrid->m_pendingFx = static_cast<CGrunt*>(m_warlordLogic);
         }
         GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_124];
         if (slot2 != 0) {
@@ -112,11 +112,11 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // A branch-vs-branchless codegen coin-flip - the permuter found no operand-order
 // spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
-i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    CSerialArchive* arc = static_cast<CSerialArchive*>(ar);
+    CFileMemBase* arc = static_cast<CFileMemBase*>(ar);
     if (!Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4))) {
         return 0;
     }

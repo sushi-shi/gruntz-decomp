@@ -16,7 +16,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EXITTRIGGER;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x3f040)
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1 (0x3f040)
     // slot 4 (0x3f290, body in WormholeActs.cpp): the act-registry PMF dispatcher over
     // g_exitTriggerActReg. RE-ATTRIBUTED from the ex "CWormhole act cluster" - RTTI:
     // CExitTrigger[4] override -> ILT 0x0042e6, and 0x0042e6 -> jmp 0x3f290 (sema

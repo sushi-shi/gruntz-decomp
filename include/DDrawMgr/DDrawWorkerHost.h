@@ -14,15 +14,15 @@ struct CWwdSpatialMgr;
 
 class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
 struct CPlaneDrawCtx; // Draw's render context (its +0x2c is the blit target surface)
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
 class CDDrawWorkerHost : public CWapObj {
 public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE; // slot 1 (scalar-deleting dtor) 0x163af0
-    // `new CPlane` (CGameLevel::ReadPlane/ReadObjectPlane) needs an accessible
+    // `new CDDrawWorkerHost` (CGameLevel::ReadPlane/ReadObjectPlane) needs an accessible
     // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward to
     // global new (byte-identical: the same `push 0x158; call ??2@YAPAXI@Z`).
     void* operator new(size_t n) {
@@ -70,7 +70,7 @@ public:
     void RecomputePlaneCoords();                  // 0x161c90 wrap/clamp scaled coords
     void Build(LevelCoordRect* coords);           // 0x161e80 re-place + recompute one plane
     void SetTileSize(i32 tileW, i32 tileH);       // 0x161f00 derive wrap dims/fill/shifts
-    void SetTileSizeFromImageSet(CImageSet* set); // 0x161fa0 seed tile size from a frame
+    void SetTileSizeFromImageSet(CDDrawWorker* set); // 0x161fa0 seed tile size from a frame
     void Draw(CPlaneDrawCtx* ctx);                // 0x162010 the tile-grid render (ex "Sync")
     i32 Prune();                           // 0x1628d0 forward the grid's Prune
     i32 CenterScrollA();                          // 0x163300 (ex "QueryA")
@@ -147,9 +147,6 @@ public:
 };
 SIZE(0x158);
 
-typedef CDDrawWorkerHost CPlane;       // the WwdFile.h loader-facet spelling
-typedef CDDrawWorkerHost CPlaneRender; // the render-facet spelling
 SIZE_UNKNOWN();
-typedef CDDrawWorkerHost CLevelPlane;  // the GameLevel.h level-facet spelling
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

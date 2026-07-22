@@ -6,7 +6,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase) - SerializeMove
+#include <Gruntz/SerialArchive.h> // CFileMemBase (== CFileMemBase) - SerializeMove
 
 class CActionArea : public CUserLogic, public CWapX {
 public:
@@ -33,7 +33,7 @@ public:
     // ONE reference to that body: ??_7CActionArea+0x4, this slot; the
     // "pulse-highlight leaf" WAS this class): CUserLogic chain + CWapX Chain +
     // the raw +0x54..+0x67 pulse-block byte stream.
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE;
     // 0x8440 (ex "CPulseHighlight::Tick"): per-frame brightness ramp over the
     // bound sprite's image set. UNREFERENCED in retail (no /OPT:REF keeps it);
     // its ILT thunk 0x3517 has no referent either.
@@ -52,12 +52,9 @@ struct CActionAreaActEntry {
 };
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
-
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

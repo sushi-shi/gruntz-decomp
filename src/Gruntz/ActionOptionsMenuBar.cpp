@@ -4,7 +4,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Image/CImage.h> // CImage::RenderFrameClipped (0x153810) - m_frame's clipped blit
-#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>
@@ -13,7 +13,7 @@
 
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (world->screen transform)
+#include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane (world->screen transform)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
 
@@ -50,7 +50,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 
     m_active = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
-    CSprite* spr = static_cast<CSprite*>(spr_ob);
+    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
                   ? static_cast<CImage*>(spr->m_items.GetAt(1))
                   : 0;
@@ -63,7 +63,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         "GAME_INGAMEICONZ_NORMCHIPZ",
         spr_ob
     );
-    spr = static_cast<CSprite*>(spr_ob);
+    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
@@ -74,7 +74,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         "GAME_INGAMEICONZ_HIGHCHIPZ",
         spr_ob
     );
-    spr = static_cast<CSprite*>(spr_ob);
+    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
@@ -85,7 +85,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         "GAME_INGAMEICONZ_GREYCHIPZ",
         spr_ob
     );
-    spr = static_cast<CSprite*>(spr_ob);
+    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -187,21 +187,21 @@ i32 CActionOptionsMenuBar::Refresh() {
         i32 frame;
         switch (p[-4]) {
             case 1: {
-                CSprite* s = m_normChipSprite;
+                CDDrawWorker* s = m_normChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
             case 2: {
-                CSprite* s = m_highChipSprite;
+                CDDrawWorker* s = m_highChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
             case 3: {
-                CSprite* s = m_greyChipSprite;
+                CDDrawWorker* s = m_greyChipSprite;
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
@@ -347,7 +347,7 @@ void CActionOptionsMenuBar::Deactivate() {
 // `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
 // arg offset by 4. Body (vtable Write dispatch @+0x30 + inlined memset/strcpy) exact.
 RVA(0x00009810, 0x2df)
-i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
+i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -446,7 +446,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
 // this-expression and a map-receiver temp (regressed to 89%); the store position
 // is the MSVC5 scheduler coin-flip, source-invariant.
 RVA(0x00009bb0, 0x367)
-i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
+i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -476,7 +476,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_normChipSprite = static_cast<CSprite*>(out);
+        m_normChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_normChipSprite = 0;
     }
@@ -486,7 +486,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_highChipSprite = static_cast<CSprite*>(out);
+        m_highChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_highChipSprite = 0;
     }
@@ -496,7 +496,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        m_greyChipSprite = static_cast<CSprite*>(out);
+        m_greyChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_greyChipSprite = 0;
     }
@@ -508,7 +508,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -527,7 +527,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -546,7 +546,7 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         i32 i = idx;
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
-        CSprite* tt = static_cast<CSprite*>(out);
+        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));

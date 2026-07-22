@@ -1,4 +1,4 @@
-// Brickz.cpp - the scattered OUT-OF-LINE CBrickzGrid singletons (Tier B of the
+// Brickz.cpp - the scattered OUT-OF-LINE CMapMgr singletons (Tier B of the
 // de-fragmentation assessment below). The Tier-A out-of-line pathfinding core
 // (block F, 0x9ea60..0x9f7b7: AllocGrid/Search/Expand/Insert/PopFront/CellPush/
 // Find/FindCellNode/Drain/Reset/Unlink/CellPop) is homed in src/Gruntz/MapMgr.cpp
@@ -11,8 +11,8 @@
 //
 // ---------------------------------------------------------------------------
 // DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10; Tier A since re-homed):
-// One dominant class, CBrickzGrid (non-polymorphic grid/pathfinding container,
-// all QAE), + two tiny homed helpers (CLevelPlane::SetCell @0x77dc0,
+// One dominant class, CMapMgr (non-polymorphic grid/pathfinding container,
+// all QAE), + two tiny homed helpers (CDDrawWorkerHost::SetCell @0x77dc0,
 // CTriggerMgr::FindNearestEnemy @0x77df0). Game object CBrickz is its own TU
 // (src/Gruntz/CBrickz.cpp).
 //
@@ -33,7 +33,7 @@
 //   hand-written inlined body where retail inlined it (see BrickzLoad.cpp), NEVER
 //   the `inline` keyword. IsCellClear is data-ref'd ONLY from vtable slots
 //   ??_7CMapMgr@@6B@+0x14 & ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of
-//   CMapMgr (slot 5), mislabeled CBrickzGrid::IsCellClear (@owner-TODO). Virtuals
+//   CMapMgr (slot 5), mislabeled CMapMgr::IsCellClear (@owner-TODO). Virtuals
 //   ARE safe as header-inline (vtable dispatch = `call *(%eax)`, never inlined at
 //   the call site) - that is the ONLY safe header-inline case. See docs/patterns/
 //   nonvirtual-inline-header-craters-delinker-packing.md (corrected: root cause is
@@ -41,13 +41,13 @@
 //
 // Remaining work: per-method @early-stop residue (final sweep); (the ex-Grid_77df0
 // via xref (@identity-TODO); IsCellClear -> CMapMgr slot 5 (real virtual,
-// header-inline-safe); the CBrickzGrid<->CMapMgr identity reconcile (see MapMgr.cpp).
+// header-inline-safe); the CMapMgr<->CMapMgr identity reconcile (see MapMgr.cpp).
 // ---------------------------------------------------------------------------
-// CARVE (holding-TU drain, 2026-07-11): CBrickzGrid::Clip (0x02b340) and the 0x077790
-// obj (ComputeCellFlags 0x077790 + CLevelPlane::SetCell 0x077dc0 + CTriggerMgr::
+// CARVE (holding-TU drain, 2026-07-11): CMapMgr::Clip (0x02b340) and the 0x077790
+// obj (ComputeCellFlags 0x077790 + CDDrawWorkerHost::SetCell 0x077dc0 + CTriggerMgr::
 // FindNearest 0x077df0) were carved into src/Gruntz/BrickzClip_02b340.cpp and
 // src/Gruntz/BrickzCellFlags_077790.cpp - each a distinct contiguous retail .text obj
-// (CBrickzGrid methods compiled in 3 different objs). This file keeps ONLY the main
+// (CMapMgr methods compiled in 3 different objs). This file keeps ONLY the main
 // pathfinding obj (SearchEdge/UpdateDiagonals/LineIsClear/IsCellClear @0x081e10..) +
 // the pooled Serialize @0x09356c.
 #include <Win32.h> // RECT - CMapMgr::m_bounds is a real RECT member now
@@ -59,7 +59,7 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::SearchEdge (0x081e10) - run a Search between two adjacent cells with
+// CMapMgr::SearchEdge (0x081e10) - run a Search between two adjacent cells with
 // their edge state temporarily punched open, then restore. Bounds-check both
 // cells (cols < m_c, rows < m_10); save cellA.m_0/m_4 + cellB.m_0/m_4 + cellB's
 // 0x20000000 edge bit; clear that bit, set both cells' m_4 = -1 and (when
@@ -73,7 +73,7 @@
 // `this` in ebx (xA in edi) where MSVC5 here pins `this` in edi, plus a 1-slot frame
 // delta (0x1c vs 0x18); the zero-pin/this-reg choice is not source-steerable.
 RVA(0x00081e10, 0x1a7)
-i32 CBrickzGrid::SearchEdge(
+i32 CMapMgr::SearchEdge(
     i32 xA,
     i32 yA,
     i32 xB,
@@ -120,7 +120,7 @@ i32 CBrickzGrid::SearchEdge(
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::UpdateDiagonals (0x082030) - when m_5c (dirty) is set, walk the whole
+// CMapMgr::UpdateDiagonals (0x082030) - when m_5c (dirty) is set, walk the whole
 // flat cell pool and, for each cell with flag bit 0x100 set, clear its 0x1000 bit
 // and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
 // is both passable (no 0x939 bit). Clears m_5c and returns 1.
@@ -132,7 +132,7 @@ i32 CBrickzGrid::SearchEdge(
 // in ebx by pushing ebx first; MSVC5 here picks ebp) and the 4 stack-slot diagonal
 // neighbour layout; neither is source-steerable. Parked for the final sweep.
 RVA(0x00082030, 0x1a1)
-i32 CBrickzGrid::UpdateDiagonals(i32 unused) {
+i32 CMapMgr::UpdateDiagonals(i32 unused) {
     BrickzCell* cell = m_cellPool;
     if (m_dirty == 0) {
         return 1;
@@ -173,7 +173,7 @@ i32 CBrickzGrid::UpdateDiagonals(i32 unused) {
 }
 
 RVA(0x00082250, 0x17c)
-i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
+i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {
         return 1;
     }
@@ -220,7 +220,7 @@ i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
 }
 
 RVA(0x000853f0, 0x46)
-i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
+i32 CMapMgr::IsCellClear(i32 x, i32 y) {
     i32 occ;
     if (static_cast<u32>(x) >= m_width || static_cast<u32>(y) >= m_height) {
         occ = 1;
@@ -231,7 +231,7 @@ i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// DELETED (ML1, 2026-07-17): `CBrickzGrid::Serialize` @0x09356c was a PHANTOM - not a
+// DELETED (ML1, 2026-07-17): `CMapMgr::Serialize` @0x09356c was a PHANTOM - not a
 // function at all, but the TAIL of CGruntzMgr::BroadcastCmd @0x093460, double-claimed.
 // BroadcastCmd's RVA(0x00093460, 0x15c) covers 0x93460..0x935bc; this claim's
 // 0x9356c..0x935a4 sat ENTIRELY INSIDE it - the same 56 bytes scored twice, under two

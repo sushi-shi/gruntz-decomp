@@ -10,7 +10,6 @@
 class SoundDevice;
 
 class DSoundCloneInst; // the concrete per-buffer leaf the factories mint
-typedef DirectSoundMgr SoundBuf;
 
 struct ParseFmt {
     WaveFormatX* m_fmt; // +0x00  fmt-chunk WAVEFORMATEX pointer (into the RIFF blob)

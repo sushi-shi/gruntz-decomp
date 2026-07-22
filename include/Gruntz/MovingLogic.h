@@ -4,7 +4,7 @@
 #include <Mfc.h>
 #include <Gruntz/UserLogic.h> // CUserLogic (0x30) / CTileLogic (0x40) base, CGameObject, AnimWorkerObj
 #include <Gruntz/MotionState.h>   // CMotionState (+0x38 band) + Init/SetParams/SetZ
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Serialize arg)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Serialize arg)
 #include <rva.h>
 
 extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
@@ -19,7 +19,7 @@ class CAniElement;     // resolved anim-geometry handle (the grunt arm's *GeoSrc
 
 class CMovingLogic : public CUserLogic {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     // slot 5 (0x13c70; out-of-line body in Projectile.cpp - the deferred-callback
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,

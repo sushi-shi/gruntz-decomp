@@ -17,7 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ANICYCLE;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // The vtable slot-1 override (two-chain Serialize): the shared CUserLogic
     // serialize helper on `this`, then the +0x34 sub-object's chain.
     // Construct the class's activation-coordinate registry singleton over the

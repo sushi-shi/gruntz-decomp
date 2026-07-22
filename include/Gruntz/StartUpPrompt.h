@@ -7,7 +7,6 @@
 
 extern HINSTANCE g_appResHandle; // 0x00251618
 
-
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" i32 g_cdPromptResult;

@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 class CTileTriggerContainer; // owner container (back-stamped into m_14)
 

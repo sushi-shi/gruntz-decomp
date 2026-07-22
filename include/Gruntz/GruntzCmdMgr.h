@@ -1,21 +1,16 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
-#include <Mfc.h> // the REAL MFC CPtrList (GzObList IS CPtrList; see the note below)
+#include <Mfc.h> // the REAL MFC CPtrList (CPtrList IS CPtrList; see the note below)
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/GruntzCommand.h> // the queued command (the ex-GzTargetObj view)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/GruntzCommand.h> // the queued command (the ex-CGruntzCommand view)
 class CState;
 
-typedef CPtrList GzObList;
-
-typedef CGruntzCommand GzTargetObj;
 SIZE_UNKNOWN();
 
 class CGruntzMgr; // consumers that deref m_38 include <Gruntz/GruntzMgr.h>
-
-typedef CGruntzCommand GzSerCmd;
 
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node
@@ -58,7 +53,7 @@ public:
     void Dispatch(i32 cmdHead, i32 seq);
     // 0x024890 - the command-queue (de)serializer. mode 4 = write the queue to
     // the stream; mode 7 = read it back, rebuilding the queue.
-    i32 Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4);
+    i32 Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
     i32 IsActive(i32 enable);
     // 0x023d90 - snap the cursor rect to the 0x20 tile grid and dispatch the
@@ -73,16 +68,15 @@ public:
     // (reloc-masked external; ex CMultiLogicList::Step20b3 - that view is dissolved).
     void Step20b3(i32 v);
 
-    GzObList m_base;  // +0x00  primary target queue
-    GzObList m_1c;    // +0x1c  nested subset queue
+    CPtrList m_base;  // +0x00  primary target queue
+    CPtrList m_1c;    // +0x1c  nested subset queue
     CGruntzMgr* m_38; // +0x38  the game-manager singleton (RezSync::Init self-registers)
 };
 SIZE_UNKNOWN();
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CGruntzCmdList g_singleCmdList;
-extern CGruntzCmdList g_multiCmdList;
+extern CPtrList g_singleCmdList;
+extern CPtrList g_multiCmdList;
 
 #endif // GRUNTZ_GRUNTZCMDMGR_H

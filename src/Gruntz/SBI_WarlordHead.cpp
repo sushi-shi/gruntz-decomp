@@ -2,15 +2,15 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
+#include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
-#include <Image/ImageSet.h> // canonical CImageSet (the m_34 config record; ex CWhConfig view)
+#include <Image/ImageSet.h> // canonical CDDrawWorker (the m_34 config record; ex CWhConfig view)
 #include <DDrawMgr/DDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
 #include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CDDrawSurfaceMgr m_world
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
+#include <Gruntz/Sprite.h>             // CDDrawWorker (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)           // CDDrawSubMgrPages (m_world->m_drawTarget->m_backPair)
 
 VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
@@ -56,7 +56,7 @@ i32 CSBI_WarlordHead::SetupImage(
 // symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
-    CImageSet* cfg = m_34;
+    CDDrawWorker* cfg = m_34;
     if (cfg == 0) {
         return 0;
     }
@@ -115,7 +115,7 @@ i32 CSBI_WarlordHead::Render() {
     m_28--;
     i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
-    CImageSet* cfg = m_34;
+    CDDrawWorker* cfg = m_34;
     CImage* f;
     if (m_direction == 1) {
         f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(3));
@@ -157,7 +157,7 @@ i32 CSBI_WarlordHead::Render() {
 // floats it to the tail (forward je). The m_3c transfer, the base-chain call and the
 // neg/sbb/neg bool are byte-faithful.
 RVA(0x000eb970, 0x72)
-i32 CSBI_WarlordHead::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }

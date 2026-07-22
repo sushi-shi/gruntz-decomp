@@ -1,4 +1,4 @@
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
@@ -51,7 +51,6 @@ DATA_SYMBOL(0x0024e978, 0x24, ?g_toobColl@@3UCActReg@@A)
 
 typedef void (CUserLogic::*ToobHandler)();
 
-
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
@@ -73,7 +72,7 @@ void CToobSpikez::Register() {
 }
 
 RVA(0x00012bc0, 0x47)
-i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }

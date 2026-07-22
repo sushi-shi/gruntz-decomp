@@ -5,8 +5,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic (m_logic SerializeMove dispatch) + CGameObject (m_170)
 #include <rva.h>
 #include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
-#include <Io/FileMem.h> // CFileMemBase complete type (the CSerialArchive Read/Write dispatch)
-
+#include <Io/FileMem.h> // CFileMemBase complete type (the CFileMemBase Read/Write dispatch)
 
 // ---------------------------------------------------------------------------
 // Dispatch (0x164830, __thiscall). Run one of the record's six actions selected
@@ -36,13 +35,13 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             break;
         case 4:
             // the serialize walk (ForEachSerialize, WRITES the stream)
-            if (Save(reinterpret_cast<CSerialArchive*>(a)) == 0) {
+            if (Save(reinterpret_cast<CFileMemBase*>(a)) == 0) {
                 return 0;
             }
             break;
         case 7:
             // the deserialize walk (Deserialize, READS the stream)
-            if (Load(reinterpret_cast<CSerialArchive*>(a)) == 0) {
+            if (Load(reinterpret_cast<CFileMemBase*>(a)) == 0) {
                 return 0;
             }
             break;
@@ -57,7 +56,7 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove(reinterpret_cast<CGruntArchive*>(a), mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
+        if (m_logic->SerializeMove(reinterpret_cast<CFileMemBase*>(a), mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
             return 0;
         }
     }
@@ -77,7 +76,7 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
 }
 
 RVA(0x00164960, 0x41a)
-i32 AnimWorkerObj::Save(CSerialArchive* ar) {
+i32 AnimWorkerObj::Save(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -157,7 +156,7 @@ i32 AnimWorkerObj::Save(CSerialArchive* ar) {
 }
 
 RVA(0x00164d80, 0x421)
-i32 AnimWorkerObj::Load(CSerialArchive* ar) {
+i32 AnimWorkerObj::Load(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }

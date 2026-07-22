@@ -1,6 +1,6 @@
 #include <Gruntz/Demo.h>
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
-#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
@@ -10,8 +10,8 @@
 #include <Bute/ButeMgr.h>         // CButeMgr (Parse @0x3cc20)
 #include <Bute/SymTab.h>          // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/GameLevel.h>     // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/GameLevel.h>     // canonical CGameLevel + CDDrawWorkerHost (RecomputePlaneCoords)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialRecords.h>     // CTriRecord
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
@@ -137,7 +137,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
                 curY--;
             }
             // apply the (optionally parallax-scaled) coords to the main plane + recompute.
-            CLevelPlane* mg = gh->m_mainPlane;
+            CDDrawWorkerHost* mg = gh->m_mainPlane;
             float fx = static_cast<float>(curX);
             float fy = static_cast<float>(curY);
             if (!(mg->m_flags & 1)) {
@@ -150,7 +150,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             // apply the same coords to every plane layer (the m_planes CObArray;
             // the element cast is the devs' own - CObArray stores CObject*).
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
-                CLevelPlane* p = static_cast<CLevelPlane*>(gh->m_planes[i]);
+                CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
                 float px = static_cast<float>(curX);
                 float py = static_cast<float>(curY);
                 if (!(p->m_flags & 1)) {
@@ -196,7 +196,6 @@ const i32 g_rotTableB_60d078[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
 }; // CCW transitions
 
-
 // @early-stop
 // Counter-register regalloc wall: retail pins the loop counter in edi (push edi at
 // entry, callee-saved) which frees edx for the m_4 temp + esi for the `e` pointer,
@@ -231,7 +230,7 @@ void Orient3::StepB(i32 count) {
 }
 
 RVA(0x0003c8f0, 0x76)
-i32 CTriRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     switch (tag) {
         case 4:
             ar->Write(&m_0, 4);

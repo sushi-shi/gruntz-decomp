@@ -578,6 +578,19 @@ def cmd_build(args) -> None:
         out_sv = (rsv.stdout + rsv.stderr).strip()
         if out_sv:
             log(out_sv.splitlines()[-1])
+    # View-typedef ratchet: no `typedef RealClass ViewName;` alias relics (a folded
+    # view's second name). Reached 0 at introduction (2026-07-22); FATAL.
+    rvt = subprocess.run([sys.executable, "-m", "gruntz.audit.view_typedef", "--ratchet"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rvt.returncode != 0:
+        for ln in (rvt.stdout + rvt.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("view-typedef ratchet violated - delete the alias typedef and use the real "
+            "class name (python -m gruntz.audit.view_typedef)")
+    else:
+        out_vt = (rvt.stdout + rvt.stderr).strip()
+        if out_vt:
+            log(out_vt.splitlines()[-1])
     # Label-style ratchet: every label macro canonical (8-digit addr, unpadded hex
     # size, one line), comment @markers restricted to the blessed vocabulary
     # (docs/comment-markers.md) - reached 0 at introduction 2026-07-22, FATAL.

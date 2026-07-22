@@ -529,13 +529,11 @@ void WaitKeyEdge(int vk, int timeoutMs) {
     }
 }
 
-
 static CGameApp* volatile g_forceEmitCGameApp;
 #pragma inline_depth(0)
 void ForceEmitCGameAppDtor() {
     g_forceEmitCGameApp->CGameApp::~CGameApp();
 }
 #pragma inline_depth()
-
 
 VTBL(CGameApp, 0x001e9b0c);

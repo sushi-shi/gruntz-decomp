@@ -51,7 +51,6 @@ public:
 };
 SIZE(0x9c); // 0x94 SoundDevice base + DSoundList m_voices (8 B)
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 g_ssLogEnabled; // 0x653c4c -> OutputDebugStringA

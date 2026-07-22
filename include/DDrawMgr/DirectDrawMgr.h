@@ -27,8 +27,6 @@ struct CDdModePair {
 };
 SIZE_UNKNOWN();
 
-typedef CDDrawPtrCollections CDirectDrawMgr;
-
 struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
     // Pool-item construction (the CDDrawPtrCollections MakeB*/Create factories
@@ -128,14 +126,12 @@ struct CPageRec {
 SIZE_UNKNOWN();
 
 class CMoviePlayer;
-typedef CMoviePlayer CDDPageMgr;
-extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 
+extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void DdEnumModesCallback(); // 0x143390
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -144,6 +140,6 @@ extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
 
 extern i32 (*g_restoreHandler)();
 class CDDrawPtrCollections;
-typedef CDDrawPtrCollections CDirectDrawMgr;
-extern "C" CDirectDrawMgr* g_DirectDrawMgr;
+
+extern "C" CDDrawPtrCollections* g_DirectDrawMgr;
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

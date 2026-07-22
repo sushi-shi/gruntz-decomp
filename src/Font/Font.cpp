@@ -8,7 +8,6 @@
 #include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
 #include <rva.h>
 
-
 RVA(0x00179700, 0x10)
 Font::Font() {
     m_surfaces = 0;

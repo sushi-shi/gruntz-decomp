@@ -6,7 +6,7 @@
 
 class CDDrawChildGroup;      // <DDrawMgr/DDrawChildGroup.h> the walked object collection (m_coll)
 
-class CMapMgr;               // <Gruntz/MapMgr.h>   (== CBrickzGrid) the tile/path grid
+class CMapMgr;               // <Gruntz/MapMgr.h>   (== CMapMgr) the tile/path grid
 class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
 struct CGameObject;          // <Gruntz/UserLogic.h>
 class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>

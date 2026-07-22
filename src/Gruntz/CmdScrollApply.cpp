@@ -4,7 +4,6 @@
 #include <Gruntz/ScrollState.h> // g_scrollAccum / g_scrollClock (auto-scroll state block)
 #include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 
-
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     i32 t = a0 + g_frameTime;

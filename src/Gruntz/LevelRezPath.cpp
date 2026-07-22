@@ -1,5 +1,5 @@
 #include <Mfc.h>           // MFC CString (ctor/dtor/op=/op+, all reloc-masked)
-#include <Io/FileStream.h> // CFileIO (0x1befd7 ctor / 0x1bf121 dtor / Open/Read/GetLength/Close)
+#include <Io/FileStream.h> // CFile (0x1befd7 ctor / 0x1bf121 dtor / Open/Read/GetLength/Close)
 #include <string.h>        // inline memcpy (rep movsd) at /O2
 #include <stdio.h>         // sprintf (0x11f890)
 
@@ -25,7 +25,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     char scratch[16];
     LevelRezData buf;
     if (a3 != 0) {
-        CFileIO file;
+        CFile file;
         CString path;
         if (a1 == 0 && a2 == 0) {
             path = "custom\\" + name;

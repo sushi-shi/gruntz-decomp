@@ -3,10 +3,10 @@
 #include <rva.h>
 
 class CBattlezData; // folded BrickzSerObj
-struct tagRECT;     // Win32 RECT (CBrickzGrid::Clip arg)
+struct tagRECT;     // Win32 RECT (CMapMgr::Clip arg)
 
 #include <Ints.h>
-#include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (see the fold note below)
+#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (see the fold note below)
 
 struct BrickzNode {
     // m_0/m_4 are a (key1,key2) pair when the node is in the lookup list, and a

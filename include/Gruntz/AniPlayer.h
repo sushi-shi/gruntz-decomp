@@ -24,7 +24,7 @@
 #include <rva.h>
 
 #include <Gruntz/SBI_ImageSetAni.h> // the proven base chain (fields m_3c..m_50 + slot bodies)
-#include <Gruntz/SerialArchive.h>   // CSerialArchive (Serialize's stream view)
+#include <Gruntz/SerialArchive.h>   // CFileMemBase (Serialize's stream view)
 
 class CAniPlayer : public CSBI_ImageSetAni {
 public:
@@ -46,7 +46,7 @@ public:
     );                                                            // 0xe5ad0
     i32 TickToggle(i32 param);                             // 0xe5b90
     i32 RenderCel();                                       // 0xe5c10
-    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0xe5c90
+    i32 Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4); // 0xe5c90
 
     i32 m_58; // +0x58  timed-play window start (i64 lo)
     i32 m_5c; // +0x5c  (i64 hi)

@@ -10,8 +10,8 @@
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList - the +0x0c worker pump (Draw@slot10 = CreateWorkerB28)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr / CDDrawSubMgrPages (SurfaceA/SurfaceB pages) - the 0x115300 blit host
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the CState::m_c render/resource holder (ctx/sink)
-#include <Image/CImage.h>        // CImage - the 0x115300 blit source + the CImageSet frame element
-#include <Image/ImageSet.h> // CImageSet - the glyph atlas (m_frames@+0x14, min/max frame index @+0x64/+0x68)
+#include <Image/CImage.h>        // CImage - the 0x115300 blit source + the CDDrawWorker frame element
+#include <Image/ImageSet.h> // CDDrawWorker - the glyph atlas (m_frames@+0x14, min/max frame index @+0x64/+0x68)
 
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(
@@ -19,7 +19,7 @@ i32 DrawGlyphString(
     i32 x,
     i32 y,
     const char* str,
-    CImageSet* font,
+    CDDrawWorker* font,
     i32 advance
 ) {
     if (!ctx) {
@@ -93,7 +93,6 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
     dst->BltFast(dx, dy, srcHandle, &rc2, flags);
     return 1;
 }
-
 
 // @early-stop
 // tail-merge / block-layout wall (~94.3%): the page load + the 10-arg

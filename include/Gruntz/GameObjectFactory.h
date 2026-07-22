@@ -8,7 +8,6 @@ struct CGameObject;     // the registrants' arg (<Wwd/WwdGameObjectFamily.h>)
 
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx); // 0x00a3b0
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 CreateAniCycle(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)

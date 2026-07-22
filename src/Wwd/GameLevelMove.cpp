@@ -129,7 +129,7 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cx >= pc->m_wrapW) {
                 cx = pc->m_wrapW - 1;
             }
@@ -138,12 +138,12 @@ looptop: {
         if (cy < 0) {
             cy = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cy >= pc->m_wrapH) {
                 cy = pc->m_wrapH - 1;
             }
         }
-        CLevelPlane* pl = m_mainPlane;
+        CDDrawWorkerHost* pl = m_mainPlane;
         i32 qx = cx >> pl->m_shiftX;
         i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
@@ -222,7 +222,7 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cx >= pc->m_wrapW) {
                 cx = pc->m_wrapW - 1;
             }
@@ -231,12 +231,12 @@ looptop: {
         if (cy < 0) {
             cy = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cy >= pc->m_wrapH) {
                 cy = pc->m_wrapH - 1;
             }
         }
-        CLevelPlane* pl = m_mainPlane;
+        CDDrawWorkerHost* pl = m_mainPlane;
         i32 qx = cx >> pl->m_shiftX;
         i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
@@ -315,7 +315,7 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cx >= pc->m_wrapW) {
                 cx = pc->m_wrapW - 1;
             }
@@ -324,12 +324,12 @@ looptop: {
         if (cy < 0) {
             cy = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cy >= pc->m_wrapH) {
                 cy = pc->m_wrapH - 1;
             }
         }
-        CLevelPlane* pl = m_mainPlane;
+        CDDrawWorkerHost* pl = m_mainPlane;
         i32 qx = cx >> pl->m_shiftX;
         i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;
@@ -408,7 +408,7 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cx >= pc->m_wrapW) {
                 cx = pc->m_wrapW - 1;
             }
@@ -417,12 +417,12 @@ looptop: {
         if (cy < 0) {
             cy = 0;
         } else {
-            CLevelPlane* pc = m_mainPlane;
+            CDDrawWorkerHost* pc = m_mainPlane;
             if (cy >= pc->m_wrapH) {
                 cy = pc->m_wrapH - 1;
             }
         }
-        CLevelPlane* pl = m_mainPlane;
+        CDDrawWorkerHost* pl = m_mainPlane;
         i32 qx = cx >> pl->m_shiftX;
         i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;

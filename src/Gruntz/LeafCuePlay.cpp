@@ -5,7 +5,6 @@
 #include <Gruntz/LeafCue.h>         // LeafCue (the sound-cue leaf)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 
-
 // @early-stop
 // 66% -- split-epilogue wall (twin of RefreshAsset's 100% idiom, but 4-arg):
 // the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the

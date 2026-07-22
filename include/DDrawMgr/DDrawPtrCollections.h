@@ -52,7 +52,7 @@ struct CDdModePair; // <DDrawMgr/DirectDrawMgr.h> (the mode-pair the finders fil
 
 class CDDrawPtrCollections {
 public:
-    // --- the DDRAWMGR.CPP method set (ex 'CDirectDrawMgr' - same object) ---
+    // --- the DDRAWMGR.CPP method set (ex 'CDDrawPtrCollections' - same object) ---
     // Device bring-up (__thiscall, 6 args; arg1 unused). If the global DirectDraw
     // object already exists it reuses it, else DirectDrawCreate + QueryInterface
     // for IID_IDirectDraw2; then SetCooperativeLevel, GetCaps, an internal setup
@@ -73,7 +73,7 @@ public:
     i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp); // 0x143740
 
     // Fetch the shared GDI (primary) surface from the device. On a failed COM call
-    // it TRACEs "CDirectDrawMgr::GetGDISurface()" and returns 0. (__thiscall.)
+    // it TRACEs "CDDrawPtrCollections::GetGDISurface()" and returns 0. (__thiscall.)
     IDirectDrawSurface* GetGDISurface(); // 0x1438c0
 
     // Query the device's free video memory (DDSCAPS_TEXTURE); returns the free-byte
@@ -185,15 +185,15 @@ public:
     i32 GetCapsChecked(); // 0x08dd80
 
     IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device (Release on Clear)
-                           //         NOTE (wave4-K): +0x00/+0x04 mirror CDirectDrawMgr's
+                           //         NOTE (wave4-K): +0x00/+0x04 mirror CDDrawPtrCollections's
                            //         m_device/m_dd1 - CDDrawPtrCollections and
-                           //         CDirectDrawMgr are two views of ONE DDRAWMGR.CPP
+                           //         CDDrawPtrCollections are two views of ONE DDRAWMGR.CPP
                            //         manager class (shared +0x4b4 array, +0x93c..+0x944
                            //         tail); flagged for a canonical-class unification.
     IDirectDraw* m_dd1;     // +0x04  the raw pre-QI IDirectDraw (Release on Clear)
     // +0x008/+0x184: the driver + HEL DDCAPS blocks (0x17c B each; the SDK DDCAPS'
     // sizeof differs across DX versions, so raw dword storage + LPDDCAPS casts at
-    // the GetCaps call - the CDDPageMgr view models its copy the same way).
+    // the GetCaps call - the CMoviePlayer view models its copy the same way).
     i32 m_driverCaps[0x5f]; // +0x008  driver DDCAPS (GetCapsChecked fills)
     i32 m_helCaps[0x5f];    // +0x184  HEL DDCAPS (GetCapsChecked fills)
     char _pad300[0x47c - 0x300];

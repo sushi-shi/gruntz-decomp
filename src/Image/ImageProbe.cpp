@@ -9,7 +9,7 @@
 #undef s16
 #undef s32
 #undef s64
-#include <Io/MoviePlayer.h> // THE class (CDDScreen is a typedef alias of it)
+#include <Io/MoviePlayer.h> // THE class (CMoviePlayer is a typedef alias of it)
 #include <Ints.h>
 #include <rva.h>
 #include <string.h> // inline memset (rep stos) for the descriptor zero

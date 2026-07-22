@@ -36,24 +36,24 @@ public:
     virtual CImage* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3); // slot 11 @0x152110
     virtual CImage* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3); // slot 12 @0x152060
     virtual CImage* CreateFrame30(i32 a0, i32 index, i32 a2);         // slot 13 @0x151fb0
-    // FOLD (stage 4, DONE for CSprite): the ex `CSprite` (<Gruntz/Sprite.h>) IS this
+    // FOLD (stage 4, DONE for CDDrawWorker): the ex `CDDrawWorker` (<Gruntz/Sprite.h>) IS this
     // class - it is now a typedef of it. Slot 14's body @0x151f00 was declared as
-    // ?InsertFrame@CSprite@@ while BEING this vtable's slot-14 body: its own code reads
+    // ?InsertFrame@CDDrawWorker@@ while BEING this vtable's slot-14 body: its own code reads
     // the frame CObArray at +0x10 (m_pData@+0x14 / m_nSize@+0x18) and the owner at
     // +0x0c - i.e. m_items/m_owner, offset for offset - and it already cast its own
     // array to the real ::CObArray to call SetAtGrow. Declaring it here as the real
     // virtual retires that WIRING row. The return type is CImage* (the body's own
     // mangled name says PAVCImage, not the `i32` this slot used to be declared with).
     //
-    // FOLD (stage 5, DONE for CImageSet): that third view of this same 0x6c object is
+    // FOLD (stage 5, DONE for CDDrawWorker): that third view of this same 0x6c object is
     // dissolved too - it is now a typedef, and slots [11]/[12]/[13] (0x152110/0x152060/
-    // 0x151fb0), which it had declared as CImageSet::CreateFrame24/28/30, are this
+    // 0x151fb0), which it had declared as CDDrawWorker::CreateFrame24/28/30, are this
     // class's own virtuals. Their return type is CImage* (the bodies' mangled names say
     // PAVCImage), not the `i32` the slots used to be declared with.
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
     virtual i32 ReloadFrame(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
-    // ---- the ex-CImageSet non-virtual methods (stage 5 of the fold; bodies in
+    // ---- the ex-CDDrawWorker non-virtual methods (stage 5 of the fold; bodies in
     // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
     // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.
     i32 SetAllTypes(i32 type);        // 0x152480  walk [min,max], set each frame's draw type
@@ -72,13 +72,13 @@ public:
     }
 
     // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex
-    // CSprite::GetFrame; out-of-line in the spriteresource unit).
+    // CDDrawWorker::GetFrame; out-of-line in the spriteresource unit).
     i32 GetFrame(i32 n); // 0x15cc30
     // The +0x0c owning parent context, typed. CLoadable models m_0c as a plain i32
     // because each of its derivatives owns a DIFFERENT parent type - retyping the
     // shared base would be wrong for the others - so the concrete type lives here, in
-    // ONE accessor, instead of a cast at every use site. Both ex-views (CSprite::m_c /
-    // CImageSet::m_owner) proved the type: it is handed to each created frame as
+    // ONE accessor, instead of a cast at every use site. Both ex-views (CDDrawWorker::m_c /
+    // CDDrawWorker::m_owner) proved the type: it is handed to each created frame as
     // CImage::m_parent (`new CImage(index, m_owner)`).
     CImageParent* Owner() const {
         return reinterpret_cast<CImageParent*>(m_0c);

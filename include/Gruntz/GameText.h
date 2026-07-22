@@ -8,7 +8,6 @@
 
 extern CString g_brickText1; // 0x00245524
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)

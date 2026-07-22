@@ -1,10 +1,10 @@
-#include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
@@ -99,7 +99,7 @@ i32 CGruntToySprite::Update() {
     if (m_lastLayer != layer) {
         CWwdGameObjectA* r = m_object;
         m_lastLayer = layer;
-        CSprite* h = r->m_sprite;
+        CDDrawWorker* h = r->m_sprite;
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
@@ -117,7 +117,7 @@ i32 CGruntToySprite::Update() {
 }
 
 RVA(0x0007fa20, 0x89)
-i32 CGruntToySprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);

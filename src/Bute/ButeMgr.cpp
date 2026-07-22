@@ -30,7 +30,7 @@
 //   CButeMgr::ParseGroup     - the recursive per-tag descent
 //   CButeMgr::Exists         - tag/key existence probe
 //   CButeMgr::~CButeMgr    - the EH-frame (/GX) scalar destructor (0x0213c0);
-//                            tears down the 3 CButeStore sub-trees + 5 CStrings +
+//                            tears down the 3 zPTree sub-trees + 5 CStrings +
 //                            the +0x10f tail object (@early-stop on the EH-region
 //                            granularity wall; see its definition below).
 //
@@ -753,9 +753,6 @@ i16 g_transTable[97][49][3] = {
      {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
 };
 
-
-
-
 static i16 g_tokenLen;
 
 static const char s_fmtFormatError[] =
@@ -811,7 +808,7 @@ static const char s_strRBrack[] = "]";
 // Its two ex-siblings were never copies at all: 0x174d70 is the real
 // ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - byte-identical
 // only because neither subclass adds destructible state. The inline ~zPTree
-// expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@CButeStore@@
+// expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@zPTree@@
 // @0x16e070), fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
 // (~zErrHandling 0x16da60). __thiscall, /GX.
 // 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
@@ -845,7 +842,7 @@ CButeMgr::~CButeMgr() {}
 
 // ---------------------------------------------------------------------------
 // 0x021570 - CBSecStream::~CBSecStream, the section-stream's REAL destructor (ex
-// "third ~CButeStore copy"). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
+// "third ~zPTree copy"). IDENTITY PROOF (vtable-owner audit, 2026-07-19):
 // CBSecStream's vtable 0x1f0510 slot 0 is the sdd 0x174d30, whose ~ call reaches
 // exactly this body via ILT 0x3567. The dtor is spelled INLINE in-class (retail's
 // was compiler-generated: ~CButeMgr INLINES its expansion, and a user out-of-line

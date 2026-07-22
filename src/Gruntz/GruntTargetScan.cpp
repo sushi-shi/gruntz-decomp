@@ -14,7 +14,7 @@
 // GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
 // CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
 // m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS
-// CGruntCueSink::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_level chain
+// CGruntSpawnConfig::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_level chain
 // (CDDrawSurfaceMgr -> CGameLevel, board base at +0x5c). CScanGrid stays the shared
 // <Gruntz/ScanGrid.h> board-grid view (dims).
 //
@@ -38,10 +38,10 @@
 #include <string.h>
 
 #include <rva.h>
-#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntCueSink / CGameRegistry
+#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
 #include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
-#include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane (world->m_24->m_mainPlane->m_originX)
+#include <Gruntz/GameLevel.h>    // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_originX)
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
 #include <stdlib.h>              // engine rand (0x11fee0)
 
@@ -115,7 +115,6 @@
             break;                                                                                 \
     }
 
-
 RVA(0x000f42f0, 0x1193)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
@@ -156,13 +155,13 @@ i32 CGrunt::ScanNearestTarget() {
     // center falls outside it.
     i32 halfBox = m_defenderRadius + m_reachRadius + 1;
     i32 pt[2];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
+    GetScreenPos(reinterpret_cast<Coord*>(pt));
     i32 by = pt[1] >> 5;
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
+    GetScreenPos(reinterpret_cast<Coord*>(pt));
     i32 bx = pt[0] >> 5;
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
+    GetScreenPos(reinterpret_cast<Coord*>(pt));
     i32 t3y = pt[1] >> 5;
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(pt));
+    GetScreenPos(reinterpret_cast<Coord*>(pt));
     i32 t4x = pt[0] >> 5;
     RECT box;
     box.left = t4x - halfBox;
@@ -285,7 +284,7 @@ i32 CGrunt::ScanNearestTarget() {
             }
             {
                 i32 cc[4];
-                best->GetScreenPos(reinterpret_cast<GruntTilePos*>(cc));
+                best->GetScreenPos(reinterpret_cast<Coord*>(cc));
                 if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_scanDone;
                 }

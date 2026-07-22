@@ -7,7 +7,6 @@
 #include <Gruntz/AniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
 #include <rva.h>                  // OVERRIDE
 
-typedef CObArray CAniRecordArray;
 SIZE_UNKNOWN();
 
 struct CAniSource {
@@ -38,7 +37,7 @@ public:
     void DeleteAll();                                        // 0x165730 (CAniElementCollection.cpp)
 
     i32 m_flags;               // +0x04
-    CAniRecordArray m_records; // +0x08  (0x14 bytes)
+    CObArray m_records; // +0x08  (0x14 bytes)
     char* m_name;              // +0x1c
     float m_scale;             // +0x20
     i32 m_total;               // +0x24

@@ -5,7 +5,7 @@
 #include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
 
 RVA(0x00011880, 0x47)
-i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

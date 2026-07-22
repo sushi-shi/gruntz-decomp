@@ -15,7 +15,7 @@
 #include <Gruntz/GruntzMgr.h>          // canonical CGruntzMgr (the ex-LfxMgr identity)
 #include <Gruntz/Grunt.h>              // canonical CGrunt (the board cells; ex LfxTileDesc)
 #include <Gruntz/Brickz.h>             // BrickzCell (the 0x1c map cell; ex LfxCell)
-#include <Gruntz/GameLevel.h>          // CGameLevel + CLevelPlane (ex LfxView/LfxWorldRect)
+#include <Gruntz/GameLevel.h>          // CGameLevel + CDDrawWorkerHost (ex LfxView/LfxWorldRect)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (ex LfxBorderCtx)
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
@@ -248,12 +248,12 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // slot arrangement than retail (which holds W in ebp live across the H compute +
 // first idiv, +1 frame slot). Logic 100% correct; deferred to the final sweep.
 RVA(0x000a3820, 0x18e)
-i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
+i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
     if (surf == 0) {
         return 0;
     }
-    LfxRect* srcRect = reinterpret_cast<LfxRect*>(&m_srcL);
+    RECT* srcRect = reinterpret_cast<RECT*>(&m_srcL);
     *srcRect = *src;
     i32 w = src->right - src->left + 1;
     i32 h = src->bottom - src->top + 1;
@@ -277,7 +277,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
     }
     // The live world rect is the main plane's origin/extent quad (+0x40..+0x4c);
     // >>5 converts world pixels to tile units.
-    CLevelPlane* world = m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* world = m_world->m_level->m_mainPlane;
     i32 l = world->m_originX >> 5;
     i32 t = world->m_originY >> 5;
     i32 rr = world->m_extentX >> 5;
@@ -288,7 +288,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
         rr = rr * m_scale + m_scale - 1;
         b = b * m_scale + m_scale - 1;
     }
-    LfxRect box;
+    RECT box;
     box.left = l + m_dstL;
     box.right = rr + m_dstL;
     box.top = t + m_dstT;
@@ -313,7 +313,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
 // color-dword into ebx, where cl keeps `this` in a callee-saved reg - a register-
 // coloring choice not source-steerable. Logic byte-for-byte correct.
 RVA(0x000a3a20, 0xe2)
-void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
+void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
     u16* tp = reinterpret_cast<u16*>(
@@ -359,7 +359,7 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
 // `this` via `push ecx`, a 1-instr phase shift that renames registers through
 // the whole body. Logic 100% correct.
 RVA(0x000a3b50, 0xfa)
-void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
+void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
     u16* base = reinterpret_cast<u16*>(surf->Lock(0));
     if (base == 0) {

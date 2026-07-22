@@ -14,7 +14,7 @@ class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the DirectSound clone (des
 #include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the one *0x24556c singleton)
 #include <Gruntz/SbRect.h>        // the geometry rect passed by value into the configure virtuals
 #include <Gruntz/SbiConfig.h>     // canonical config-host family (one shape)
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
 
 struct CSbiSlot {
@@ -57,7 +57,6 @@ struct CSbiHlRow {
 };
 SIZE(0x18);
 // The machine-phase readers walk the SAME 0x18 record under this name.
-typedef CSbiHlRow SbiPhaseSlot;
 
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
 
@@ -106,7 +105,6 @@ SIZE_UNKNOWN();
 // (CSbiSpriteCfg DISSOLVED 2026-07-21: it was a partial .cpp-reached view of LeafCue -
 // its m_playFactory @+0x10 IS LeafCue::m_10, the pooled cue play-factory. See
 // <Gruntz/LeafCue.h>.)
-
 
 // VTBL_ABSENT: never-constructed dispatch view (same CStatusBarItem-family scheme
 // + @identity-TODO as CSbiNotifyPayload above).
@@ -262,8 +260,8 @@ public:
     i32 SetTab(i32 tab, i32 flag);
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
-    i32 Serialize(CSerialArchive* s);
-    i32 Deserialize(CSerialArchive* s);
+    i32 Serialize(CFileMemBase* s);
+    i32 Deserialize(CFileMemBase* s);
     void NotifyAllSlots();
 
     i32 ConfigureRect(
@@ -410,8 +408,8 @@ public:
     char m_pad314[0x318 - 0x314];
     // +0x318/+0x330: the two rez-machine phase slots (ex the "HUD-rect group B/A"
     // flat-dword mis-model; LoadRezMachineConfig drives them as SbiPhaseSlots).
-    SbiPhaseSlot m_machineB;             // +0x318  right machine phase slot
-    SbiPhaseSlot m_machineA;             // +0x330  left machine phase slot
+    CSbiHlRow m_machineB;             // +0x318  right machine phase slot
+    CSbiHlRow m_machineA;             // +0x330  left machine phase slot
     CSBI_GruntMachine* m_machineDisplay; // +0x348  the Resource-tab MACHINE widget (SetFrames)
     i32 m_34c;                           // +0x34c
     i32 m_350;                           // +0x350

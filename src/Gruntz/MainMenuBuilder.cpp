@@ -45,7 +45,6 @@ RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 #include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
 #include <Io/SaveGame.h>     // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
-
 static i32 RegisterPage(void* arg, CMenuPage* page) {
     return static_cast<CChatBox*>(arg)->AddNode(page);
 }

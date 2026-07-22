@@ -1,13 +1,13 @@
 #include <rva.h>
-#include <Gruntz/Grunt.h>      // CGrunt (== CTmCell) + CGruntHud - the grid cells
+#include <Gruntz/Grunt.h>      // CGrunt (== CGrunt) + CGruntHud - the grid cells
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindNearestEnemy's owner)
 #include <Mfc.h> // CObArray (CGameLevel::m_imageSets) + RECT/POINT/PtInRect (FindNearest)
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane / CTileImageSet (ex Brickz* views)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (CBrickzGrid::m_attrMgr's real type)
+#include <Gruntz/GameLevel.h>    // CGameLevel / CDDrawWorkerHost / CTileImageSet (ex Brickz* views)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (CMapMgr::m_attrMgr's real type)
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
+// CMapMgr::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
 // Look up the 1-based bute-type id for cell (x,y) through the m_78 attribute
 // manager (clamp x/y into the grid, index the flat id table; id 0xeeeeeeee /
 // 0xffffffff = empty), switch it to a packed flag value, OR in the preserved high
@@ -25,7 +25,7 @@
 // data region (REL32 vs cl's $L self-relocs) drags the whole-symbol % to 0 (the
 // jumptable-data-overlap scoring artifact). Logic complete; parked for the sweep.
 RVA(0x00077790, 0x37d)
-void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
+void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
     // across the whole body (retail's esi).
     BrickzCell* cell = &m_rows[y][x];
@@ -219,18 +219,18 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
 // m_reachRadius/m_defenderRadius) and the +0x10 spatial obj is CGruntHud - the
 // same shapes as the sibling FindNearestInRow @0x77f80 in TriggerMgr.cpp.
 RVA(0x00077df0, 0x13d)
-CTmCell* CTriggerMgr::FindNearestEnemy(CTmCell* w) {
-    CTmCell* best = 0;
+CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
+    CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 tileX = w->m_lastTilePxX >> 5;
     i32 tileY = w->m_lastTilePxY >> 5;
-    CTmCell** rowPtr = m_grid;
+    CGrunt** rowPtr = m_grid;
     for (i32 i = 0; i < 4; i++) {
         if (i != w->m_tileOwnerHi) {
-            CTmCell** colPtr = rowPtr;
+            CGrunt** colPtr = rowPtr;
             i32 j = 15;
             do {
-                CTmCell* cell = *colPtr;
+                CGrunt* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != 0x36) {
                     i32 dx = (cell->m_object->m_screenX >> 5) - tileX;
                     i32 dy = (cell->m_object->m_screenY >> 5) - tileY;

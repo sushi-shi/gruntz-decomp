@@ -51,5 +51,4 @@ inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_14 = 0;
 }
 
-
 #endif // GRUNTZ_GRUNTZ_LEAFCUE_H

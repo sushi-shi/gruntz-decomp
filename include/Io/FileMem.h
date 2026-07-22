@@ -5,7 +5,7 @@
 #include <Ints.h>
 #include <Mfc.h> // CString + <windows.h>
 
-#include <Io/FileStream.h> // CFileIO (the embedded physical file)
+#include <Io/FileStream.h> // CFile (the embedded physical file)
 
 class CFileMemBase {
 public:
@@ -46,10 +46,10 @@ public:
     virtual i32 Read(void* buf, i32 n) OVERRIDE; // slot 11 0x00165f00
     virtual i32 Write(const void* buf, i32 n) OVERRIDE; // slot 12 0x00165f50
 
-    CFileIO m_file; // +0x10
+    CFile m_file; // +0x10
     i32 m_length;   // +0x20
     i32 m_offset;   // +0x24
 };
-SIZE(0x28); // base 0x10 + CFileIO m_file 0x10 + m_length + m_offset
+SIZE(0x28); // base 0x10 + CFile m_file 0x10 + m_length + m_offset
 
 #endif // SRC_IO_FILEMEM_H

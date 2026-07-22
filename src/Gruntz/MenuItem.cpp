@@ -88,7 +88,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 }
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CImageSet* s = static_cast<CImageSet*>(m_sprite);
+    CDDrawWorker* s = static_cast<CDDrawWorker*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -100,7 +100,7 @@ i32 CMenuItem::GetFrameWidth() {
 }
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetWidth() {
-    CImageSet* s = static_cast<CImageSet*>(m_sprite);
+    CDDrawWorker* s = static_cast<CDDrawWorker*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -226,17 +226,17 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     sprintf(name, "%s_NORMAL", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteNormal = static_cast<CImageSet*>(sprite);
+    m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(name, "%s_SELECTED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteSelected = static_cast<CImageSet*>(sprite);
+    m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(name, "%s_DISABLED", reinterpret_cast<const char*>(a2));
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
-    m_spriteDisabled = static_cast<CImageSet*>(sprite);
+    m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
 
     return 1;
 }
@@ -284,7 +284,7 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     return 1;
 }
 RVA(0x00185950, 0x1b)
-CImageSet* CMenuItem2::GetCurrentSprite() {
+CDDrawWorker* CMenuItem2::GetCurrentSprite() {
     switch (m_state) {
         case 1:
             return m_spriteNormal;
@@ -304,7 +304,7 @@ CImageSet* CMenuItem2::GetCurrentSprite() {
 // every return epilogue differs by a pop. docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00185970, 0x4d)
 CImage* CMenuItem2::GetCurrentFrame() {
-    CImageSet* s = GetCurrentSprite();
+    CDDrawWorker* s = GetCurrentSprite();
     if (!s) {
         return 0;
     }
@@ -322,7 +322,7 @@ i32 CMenuItem2::NextFrame() {
     }
     m_frameIdx = m_frameIdx + 1;
     if (m_flags & 0x10000) {
-        CImageSet* s = GetCurrentSprite();
+        CDDrawWorker* s = GetCurrentSprite();
         if (s) {
             if (m_frameIdx > s->m_maxIndex) {
                 m_frameIdx = m_frameIdx - 1;

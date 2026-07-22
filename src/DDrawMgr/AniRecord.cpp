@@ -234,7 +234,7 @@ i32 CAniRecordBase2::PushPalette() {
 }
 
 // 0x16b230 was a mis-homed, mis-identified "gap orphan" here. The old @identity-TODO
-// guessed a CLevelPlane plane-geometry Init, but the retail disasm disproves that: it is
+// guessed a CDDrawWorkerHost plane-geometry Init, but the retail disasm disproves that: it is
 // the MSVC C++ iostreams library method streambuf::xsgetn(char*, int) - a bulk get that
 // reads byte-at-a-time via the virtual underflow (slot 8, off 0x20) when m_08 != 0, else
 // rep-movs block-copies from the get-area [m_28,m_2c). It is referenced ONLY as slot 6

@@ -72,7 +72,7 @@ public:
     // NAME CONFLICT (+0x04): this header calls it m_status ("-1 inactive"), while BOTH of
     // the hand-rolled stand-ins that WERE this class (WwdGameObject.cpp's CFrameWorker and
     // <Image/ImageFrame.h>'s CImageFrame) called it the frame index/number - and
-    // CSprite::InsertFrame stores `n` (the frame index) straight into it. Kept as m_status
+    // CDDrawWorker::InsertFrame stores `n` (the frame index) straight into it. Kept as m_status
     // to avoid churning CImage.cpp; the index reading is better-evidenced and is a rename
     // for a follow-up. (The rest of the 0x34 layout was ALREADY complete below - the views
     // added no field knowledge this class did not have, only worse names.)
@@ -80,8 +80,8 @@ public:
     i32 m_08;               // +0x08
     CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 
-    // The frame ctor (inline; the 4 construction sites - CImageSet::CreateFrame24/28/30
-    // @0x151fb0/152060/152110 and CSprite::InsertFrame @0x151f00 - all build a CImage
+    // The frame ctor (inline; the 4 construction sites - CDDrawWorker::CreateFrame24/28/30
+    // @0x151fb0/152060/152110 and CDDrawWorker::InsertFrame @0x151f00 - all build a CImage
     // with the SAME 7-field seed). Modeled as a real ctor (not spelled-out stores) so
     // cl schedules the vptr store AMONG the member inits (retail emits it 4th: after
     // m_status/m_08/m_parent, before m_width) - see

@@ -1,16 +1,16 @@
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/GruntzMgr.h>     // the REAL singleton class
-#include <Gruntz/TileGrid.h>      // CTileGrid == CMapMgr (the +0x70 board's real class)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/TileGrid.h>      // CMapMgr == CMapMgr (the +0x70 board's real class)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 #include <Rez/FrameClock.h> // g_frameTime/g_engineFrameDelta (frame-clock band)
 
@@ -281,7 +281,7 @@ i32 CStaticHazard::LoadAttributes() {
                 m_object->m_flags |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
                 grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
@@ -341,13 +341,13 @@ dispatch:
             m_object->m_sortKey = m_object->m_placeMode;
             m_object->m_flags |= 0x20000;
         }
-        CTileGrid* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
         if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[m_tileRow][m_tileCol * 7] |= 0x8000000;
         }
     } else {
-        CTileGrid* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
         if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
@@ -369,7 +369,7 @@ dispatch:
                                         : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
                 grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
@@ -383,8 +383,8 @@ dispatch:
 #include <Wap32/ZVec.h>
 
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* arc = static_cast<CSerialArchive*>(ar);
+i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    CFileMemBase* arc = static_cast<CFileMemBase*>(ar);
     switch (mode) {
         case 4:
             arc->Write(&m_pulseEpoch, 4);
@@ -404,7 +404,7 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             break;
     }
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))),
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
             a3,
             a4

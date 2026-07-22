@@ -7,7 +7,6 @@
 #include <Gruntz/ActReg.h> // CLookupColl (extern below)
 extern CLookupColl g_reg_644af0; // 0x00244af0
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 g_dirVec[9][4]; // DAT_00644970

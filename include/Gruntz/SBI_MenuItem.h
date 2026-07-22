@@ -5,7 +5,7 @@
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 class CDDrawSurfaceMgr;
 
@@ -42,7 +42,7 @@ public:
     // slot 1 (vtbl 0x1eab4c thunk 0x100a -> 0xe8520): the menu-item serialize leg;
     // tail-chains CSBI_Image::SerializeFields. Was the non-virtual `Serialize` beside a
     // fabricated 0-arg `SbiVfunc0` placeholder that held the slot.
-    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
     virtual void Reset() OVERRIDE; // slot 3 - 0xe81a0 (ex ClearFrame2)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe82a0 (ex DecCounter, decrement-and-blit)
@@ -80,14 +80,14 @@ public:
 
     // ----- own fields (after CSBI_Image @0x34) -----
     i32 m_state; // +0x34  menu state tag
-    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores the real CImageSet
-    // the image registry yields, Serialize (case 7) stores the CSprite view of that
+    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores the real CDDrawWorker
+    // the image registry yields, Serialize (case 7) stores the CDDrawWorker view of that
     // same record. Same physical shape, distinct modeled classes reached on
     // different code paths -> kept void*.
-    // +0x38  resolved cue/config record. Typed CImageSet*; the serialize leg's
-    // Lookup result was spelled CSprite - the SAME +0x14/+0x24/+0x64/+0x68 shape
-    // (the CImageSet==CSprite duplicate-class question; see the session report).
-    CImageSet* m_record;
+    // +0x38  resolved cue/config record. Typed CDDrawWorker*; the serialize leg's
+    // Lookup result was spelled CDDrawWorker - the SAME +0x14/+0x24/+0x64/+0x68 shape
+    // (the CDDrawWorker==CDDrawWorker duplicate-class question; see the session report).
+    CDDrawWorker* m_record;
 };
 SIZE_UNKNOWN();
 

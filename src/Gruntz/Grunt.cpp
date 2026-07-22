@@ -5,7 +5,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h> // CGameLevel + CLevelPlane (m_world->m_level->m_mainPlane rect)
+#include <Gruntz/GameLevel.h> // CGameLevel + CDDrawWorkerHost (m_world->m_level->m_mainPlane rect)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
@@ -653,7 +653,6 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     h->m_drawFillCmd = keep50;
     h->m_drawFillArg = sel;
 }
-
 
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):

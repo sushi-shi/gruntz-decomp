@@ -6,8 +6,8 @@
 #include <rva.h>
 
 class CUserLogic;
-class CFileMemBase; // the serialize stream (CSerialArchive == CFileMemBase)
-typedef CFileMemBase CSerialArchive;
+class CFileMemBase; // the serialize stream (CFileMemBase == CFileMemBase)
+
 struct CGameObject; // the owning wide game object (<Gruntz/UserLogic.h>)
 
 typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
@@ -52,8 +52,8 @@ struct AnimWorkerObj : public CWapObj {
     i32 Consume(i32 amount);                         // 0x15b340 (kill-cue budget m_20)
     i32 Dispatch(i32 a, i32 mode, void* c, void* d); // 0x164830
     i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
-    i32 Save(CSerialArchive* ar);                    // 0x164960 (writes, slot 12 +0x30)
-    i32 Load(CSerialArchive* ar);                    // 0x164d80 (reads, slot 11 +0x2c;
+    i32 Save(CFileMemBase* ar);                    // 0x164960 (writes, slot 12 +0x30)
+    i32 Load(CFileMemBase* ar);                    // 0x164d80 (reads, slot 11 +0x2c;
                                                      //   allocates the m_payload blob)
     i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
 

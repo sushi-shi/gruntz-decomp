@@ -69,6 +69,4 @@ struct CWwdSpatialMgr {
 SIZE(0xb8); // RebuildPlanes' `operator new(0xb8)`
 SIZE_UNKNOWN();
 
-typedef CWwdSpatialMgr CPlaneScroll; // the ex-WwdFile.h spelling
-
 #endif // GRUNTZ_WWD_WWDSPATIALMGR_H

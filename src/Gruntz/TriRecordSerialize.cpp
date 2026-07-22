@@ -1,10 +1,10 @@
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/SerialRecords.h>
 
 RVA(0x00058ee0, 0x5c)
-i32 CPairRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CPairRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     switch (tag) {
         case 4:
             ar->Write(&m_0, 8);

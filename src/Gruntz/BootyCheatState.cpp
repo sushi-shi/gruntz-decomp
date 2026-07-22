@@ -6,9 +6,9 @@
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry (InstallTree)
-#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)    // canonical CImageRegistry (the +0x10 image registrar)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree)
+#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)    // canonical CDDrawWorkerRegistry (the +0x10 image registrar)
 #include <Gruntz/GameMode.h>           // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h>          // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
@@ -64,7 +64,7 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     m_mgr->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
 
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
     if (!m_2c) {
         goto fail;
     }

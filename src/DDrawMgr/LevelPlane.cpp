@@ -1,22 +1,22 @@
 // LevelPlane.cpp - the plane/render module of the level subsystem.
 // original TU: plane/render module (@identity-TODO - filename unknown; the
-// CLevelPlane + CPlaneRender + WwdFile-plane-method + CImageSet3-helper +
+// CDDrawWorkerHost + CDDrawWorkerHost + WwdFile-plane-method + CImageSet3-helper +
 // CDDrawWorkerHost bodies at [0x1615a0 .. 0x1638c0])
 //
 // Consolidated by retail .text birth position (interval dossier 0x15ccd0, wave1-C):
 // the plane/render TU is [0x161350 .. 0x163a00] - heavily WOVEN, one obj - holding
 //   CDDrawWorkerHost ctor/ReadPlaneBlock-gap/RegisterNamed   (0x1615a0/640/c50)
-//   CLevelPlane InitGeometry/RecomputePlaneCoords/Build      (0x1619f0/c90/e80)
+//   CDDrawWorkerHost InitGeometry/RecomputePlaneCoords/Build      (0x1619f0/c90/e80)
 //   CImageSet3 grid-owner leaves Cleanup/Prune/GetSize       (0x161bf0/0x1628d0/0x1633e0)
-//   CPlaneRender SetTileSize(FromImageSet)/Draw/CenterScrollA+B/InitScrollRects/
+//   CDDrawWorkerHost SetTileSize(FromImageSet)/Draw/CenterScrollA+B/InitScrollRects/
 //     ValidateTiles/ResolveColorKey/Save/Load (+ the serialize dispatcher)
 //   WwdFile RebuildPlanes/ReadPlaneObjects                   (0x1628f0/0x162af0)
 // (The 0x161350-0x161558 CImageSet1/2/3 scalar-dtor pocket before the ctor is
 // COMDAT-at-usage emission - those classes home elsewhere; ~CDDrawWorkerHost
 // @0x163af0 is past the TU end and stays in DDrawWorkerHost.cpp.)
 //
-// Class definitions stay canonical: <Gruntz/GameLevel.h> (CLevelPlane + the
-// CImageSet view + <Wwd/WwdFile.h> CPlaneRender/WwdFile; CPlane == the canonical
+// Class definitions stay canonical: <Gruntz/GameLevel.h> (CDDrawWorkerHost + the
+// CDDrawWorker view + <Wwd/WwdFile.h> CDDrawWorkerHost/WwdFile; CDDrawWorkerHost == the canonical
 // CDDrawWorkerHost, the stream is the real CFileMemBase),
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
@@ -25,10 +25,10 @@
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <Gruntz/GameLevel.h>    // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
+#include <Gruntz/GameLevel.h>    // CDDrawWorkerHost + LevelCoordRect + CDDrawWorker view (+ WwdFile.h)
 #include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
 #include <Image/CImage.h>        // CImage m_gridW/m_gridH (SetTileSizeFromImageSet)
-#include <Image/ImageSet.h> // the REAL CImageSet (0x6c frame collection): SetTileSizeFromImageSet's
+#include <Image/ImageSet.h> // the REAL CDDrawWorker (0x6c frame collection): SetTileSizeFromImageSet's
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -246,7 +246,7 @@ void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
 
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::RecomputePlaneCoords() {
-    CLevelPlane* p = this;
+    CDDrawWorkerHost* p = this;
     u32 flags = p->m_flags;
     i32 wrapX = flags & 4;
 
@@ -400,7 +400,7 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
 }
 
 RVA(0x00161fa0, 0x6c)
-void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
+void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != 0) {
             CImage* f = set->GetAt(i);
@@ -925,7 +925,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 // docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::CenterScrollA() {
-    CPlaneScroll* scroll = m_scroll;
+    CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -952,7 +952,7 @@ i32 CDDrawWorkerHost::CenterScrollA() {
 // 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::CenterScrollB() {
-    CPlaneScroll* scroll = m_scroll;
+    CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -1000,7 +1000,7 @@ void CDDrawWorkerHost::InitScrollRects() {
     i32 d8 = g->m_rectCWidth;
     i32 dc = g->m_rectCHeight;
 
-    CPlaneScroll* s = m_scroll;
+    CWwdSpatialMgr* s = m_scroll;
     s->m_rect0Left = 0;
     s->m_rect0Top = 0;
     s->m_rect0Right = c8 - 1;

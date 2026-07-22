@@ -12,7 +12,6 @@
 class CInputDevBase;
 
 class CInputDevice;
-typedef CInputDevice CDeviceConfigA;
 
 struct CDeviceListNode {
     CDeviceListNode() {
@@ -239,7 +238,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
@@ -248,7 +246,6 @@ extern const u8 g_mouseDataFormat[]; // 0x590b30
 extern const u8 g_joystickDataFormat[]; // 0x591590
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

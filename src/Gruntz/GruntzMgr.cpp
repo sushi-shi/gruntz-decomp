@@ -5,7 +5,7 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/TraitorMode.h>   // g_traitorMode
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MapLogic.h>      // MapSerializeCurve (0x0ec230) - BroadcastCmd's fan-out hook
 #include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 #ifdef __clang__
@@ -19,7 +19,7 @@
 #include <Image/CImage.h>     // the "Gruntz" set's frames the cheats read ARE CImages
 #include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
 #include <Gruntz/BoundaryUpperViews.h>
-#include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
+#include <DDrawMgr/DirectDrawMgr.h> // CDDrawPtrCollections::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Rez/FrameClock.h> // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
@@ -37,11 +37,11 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_world->m_drawTarget (ex CWorldSub4; BlitPage pause)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CSndHost == the leaf-scan registry)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CDDrawSubMgrLeafScan == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; m_124 flag)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
@@ -53,7 +53,7 @@
 #include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
 #include <Gruntz/FontConfig.h>    // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
-#include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
+#include <Io/FileStream.h> // CFile (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
 #include <rva.h>
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
@@ -62,10 +62,10 @@
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
 #include <DinMgr2/DirectInputMgr2.h>      // the REAL g_inputMgr input singleton
 #include <Bute/SymParser.h>               // CSymParser - the REAL m_symParser (+0x34)
-#include <Image/ImageSet.h>               // the REAL CImageSet (config/color rows: m_frames/+0x14,
+#include <Image/ImageSet.h>               // the REAL CDDrawWorker (config/color rows: m_frames/+0x14,
 #include <Net/NetMgr.h>                   // the ONE CNetMgr (ReportError is its static member)
 #include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // CImageRegistry - the REAL m_world->m_imageRegistry
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // CDDrawWorkerRegistry - the REAL m_world->m_imageRegistry
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
 #include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 #include <Rez/RezSync.h> // ex Globals.h
@@ -102,7 +102,6 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 DATA_SYMBOL(0x002455e8, 0x4, _g_monologoShown)
 
-
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
 VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
 VTBL(CMenuState, 0x001e9e84);
@@ -127,7 +126,6 @@ void CreateWorldObjects(void* world);
 // expansion is part of the documented MFC-inline residual on this @early-stop fn).
 void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
-
 
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
@@ -162,7 +160,6 @@ DATA(0x00212610)
 i32 g_warpX = -1;
 DATA(0x00212614)
 i32 g_warpY = -1;
-
 
 // 0x83330 is the compiler-generated scalar-deleting destructor - cl auto-emits the
 // COMDAT with the vtable; the ex hand-written ScalarDeletingDtor stand-in is GONE.
@@ -399,7 +396,6 @@ VTBL(CMulti, 0x001e9fe4); // vtable_names -> code (RTTI game class)
 
 VTBL(CPlay, 0x001ea0bc);
 
-
 // 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
 // defined) base-state dtor, referenced only by /GX EH-unwind funclets (13+ sites: the
 // base-subobject cleanup when a CState-derived ctor throws). ??_GCState @0x8c710 and
@@ -503,7 +499,7 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
         return;
     }
     // 0x155460 is CDDrawWorkerRegistry::SumSizesEqual - the registry key helper.
-    // CImageRegistry and CDDrawWorkerRegistry
+    // CDDrawWorkerRegistry and CDDrawWorkerRegistry
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
     w->m_imageRegistry->SumSizesEqual(0, 1);
@@ -738,8 +734,8 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            CPlaneRender* layer =
-                (idx < 0 || idx >= count) ? 0 : static_cast<CPlaneRender*>(view->m_planes[idx]);
+            CDDrawWorkerHost* layer =
+                (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -754,7 +750,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            CPlaneRender* layer = view->m_mainPlane;
+            CDDrawWorkerHost* layer = view->m_mainPlane;
             if (layer) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -769,8 +765,8 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            CPlaneRender* layer =
-                (view->m_planes.GetSize() > 0) ? static_cast<CPlaneRender*>(view->m_planes[0]) : 0;
+            CDDrawWorkerHost* layer =
+                (view->m_planes.GetSize() > 0) ? static_cast<CDDrawWorkerHost*>(view->m_planes[0]) : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1235,7 +1231,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* out = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
-    CImageSet* rec = static_cast<CImageSet*>(out);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
     if (rec == 0) {
         return 0;
     }
@@ -1246,9 +1242,9 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     i32 geoA = e->m_width;
     i32 geoB = e->m_height;
-    CPlaneRender* found = static_cast<CPlaneRender*>(m_world->m_level->FindPlaneByName("MONOLITH"));
+    CDDrawWorkerHost* found = static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == 0) {
-        CPlaneRender* spr = m_world->m_level->ReadObjectPlane(
+        CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
             0x20,
             0x20,
             geoA,
@@ -1286,11 +1282,11 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 }
 
 RVA(0x000910d0, 0x75)
-i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
+i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
         CObject* out = 0; // CMapStringToOb::Lookup (0x1b8008) takes a CObject&
         m_world->m_imageRegistry->m_10map.Lookup(key, out);
-        CImageSet* row = static_cast<CImageSet*>(out);
+        CDDrawWorker* row = static_cast<CDDrawWorker*>(out);
         if (row) {
             CImage* dst = static_cast<CImage*>(row->m_items.GetAt(row->m_minIndex));
             if (dst) {
@@ -1344,7 +1340,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     }
     CObject* found = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_DEVHEADS", found);
-    CImageSet* out = static_cast<CImageSet*>(found);
+    CDDrawWorker* out = static_cast<CDDrawWorker*>(found);
     if (out == 0) {
         return 0;
     }
@@ -1387,7 +1383,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CImageSet* set = static_cast<CImageSet*>(found);
+        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
         if (set) {
             CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
@@ -1401,9 +1397,9 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         set->SetAllTypes(1);
                         AppendChatMessage(const_cast<char*>("Back from the dead?"));
                     }
-                    CSndHost* host = m_world->m_soundRegistry;
+                    CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
-                        // CSndHost::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
+                        // CDDrawSubMgrLeafScan::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
                         // the image registry's CMapStringToOb above.
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
@@ -1447,7 +1443,7 @@ void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
         CObject* found = 0;
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CImageSet* set = static_cast<CImageSet*>(found);
+        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
         if (set) {
             CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
@@ -1462,9 +1458,9 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(1);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    CSndHost* host = m_world->m_soundRegistry;
+                    CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
-                        // CSndHost::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
+                        // CDDrawSubMgrLeafScan::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
                         // the image registry's CMapStringToOb above.
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_MINORCHEAT", cue_ob);
@@ -2279,7 +2275,6 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 
-
 // -------------------------------------------------------------------------
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's
 // three scaled-extent pairs from its tile rect (width/height + 1) at three zoom
@@ -2390,16 +2385,16 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
-    // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CSerialArchive* it hands
+    // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CFileMemBase* it hands
     // to its own Save/Load slots. BroadcastCmd carries it as an i32 - hence the cast; the
     // arg's REAL type is the archive.
-    if (m_tileGrid->Visit(reinterpret_cast<CSerialArchive*>(a0), cmd, a2, a3) == 0) {
+    if (m_tileGrid->Visit(reinterpret_cast<CFileMemBase*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
     // 0x93570: `push ebx/ebp/esi/edi; call 0x17da; add esp,0x10` - the __cdecl
     // scroll-state serializer 0x0ec230 (MapLogic.cpp). This 4-push/`add esp,0x10` site
     // is what PROVES its arity is 4; the callee reads only the first two.
-    if (MapSerializeCurve(reinterpret_cast<CSerialArchive*>(a0), cmd, a2, a3) == 0) {
+    if (MapSerializeCurve(reinterpret_cast<CFileMemBase*>(a0), cmd, a2, a3) == 0) {
         return 0;
     }
     return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
@@ -2447,7 +2442,7 @@ void CGruntzMgr::UpdateScoreHud() {
 }
 
 RVA(0x00093620, 0x254)
-i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
+i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -2495,7 +2490,7 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
 }
 
 RVA(0x00093920, 0x22f)
-i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
+i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -2622,7 +2617,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             m_inputState->Stop();
         }
         if (m_world) {
-            CSndHost* sub = m_world->m_soundRegistry;
+            CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
             if (sub && sub->m_2c) {
                 sub->m_2c->Stop();
             }
@@ -2811,7 +2806,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::UnloadSoundChain() {
     if (m_world) {
-        CSndHost* sub = m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
         if (sub) {
             SoundStream* obj = sub->m_2c;
             if (obj) {
@@ -3404,7 +3399,6 @@ CGruntzMgr::CGruntzMgr() {
     m_optionsCount = 3;
 }
 
-
 // @early-stop
 // reloc-masked plateau (~97%): code bytes exact; the only residual is the
 // call-rel32 operands to the unmatched engine callees ResolveHi (0x143510) and
@@ -3478,7 +3472,7 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_INITDIALOG: {
             // the view's `m_24->m_5c` IS CGameLevel::m_mainPlane (+0x5c) - the field exists
             // on the real class under its real name; only the fake view lacked it.
-            CLevelPlane* warp = g_gameReg->m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
             i32 seedX = warp->m_originX;
             i32 seedY = warp->m_originY;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
@@ -3566,7 +3560,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-// The loaded map's playable extent (m_world->m_level->m_mainPlane) is the shared CPlaneRender;
+// The loaded map's playable extent (m_world->m_level->m_mainPlane) is the shared CDDrawWorkerHost;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 
@@ -3590,7 +3584,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_NONE) {
         if (m_world->m_level != 0) {
-            CPlaneRender* f = m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
             if (f != 0) {
                 if (w > f->m_wrapW || h > f->m_wrapH) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
@@ -3657,7 +3651,6 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     return 1;
 }
 
-
 // @early-stop
 // zero-register-pinning + /GX EH-frame wall (docs/patterns/zero-register-pinning.md):
 // the file open/read/SubstringMatch logic, the >= 0x5f4 header gate, the "Battlez"
@@ -3668,7 +3661,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
 // pin under /O2; also the EH scope-table cookie (Unwind vs $L) is not steerable.
 RVA(0x00093be0, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
-    CFileIO file;
+    CFile file;
     if (file.Open(path, 0, 0)) {
         if (file.GetLength() >= 0x5f4) {
             char hdr[0x5f4];
@@ -3683,6 +3676,5 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     }
     return 0;
 }
-
 
 VTBL(CDemo, 0x001e9f0c); // vtable_names -> code (RTTI game class; dtor 0x8d0d0 lives here)

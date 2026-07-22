@@ -8,7 +8,7 @@
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock/GetCaps)
 #include <string.h>             // memset for the edge-row fills (inline rep-stos CRT)
 #include <stdio.h>              // sprintf (DrawCount's itoa)
-#include <DDrawMgr/DirectDrawMgr.h>       // canonical CDirectDrawMgr (CreatePoolItem/CreateDevice)
+#include <DDrawMgr/DirectDrawMgr.h>       // canonical CDDrawPtrCollections (CreatePoolItem/CreateDevice)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // CDDrawWorkerMapSmall (hoisted; meat here)
 #include <DDrawMgr/DDrawWorkerList.h>     // CDDrawWorkerList (hoisted; teardown here)
 #include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (Plot/helpers here)
@@ -23,7 +23,7 @@
 #include <Gruntz/String.h>
 #include <Mfc.h>
 #include <Gruntz/ResolveNode.h>           // canonical CResolveNode (Init here, 0x1647e0)
-#include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue's target)
+#include <Image/ImageSet.h>               // CDDrawWorker (FindKeyOfValue's target)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
@@ -39,8 +39,8 @@
 // onto them (2026-07-14): pool +0x1c = m_ptrColl, caps +0x34 = m_flags, hWnd/device
 // +0x30 = m_hWnd, mgr-err +0x38 = m_lastError, pool-err +0x944 = m_944, and the fake
 // pixel-format chain +0x04 -> +0x10 -> +0x2c is m_drawTarget -> m_frontPair -> m_surface.
-// CreatePoolItem/CreateDevice remain (CDirectDrawMgr*) casts on m_ptrColl (the
-// documented CDDrawPtrCollections==CDirectDrawMgr manager-unification @identity-TODO).
+// CreatePoolItem/CreateDevice remain (CDDrawPtrCollections*) casts on m_ptrColl (the
+// documented CDDrawPtrCollections==CDDrawPtrCollections manager-unification @identity-TODO).
 
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
@@ -798,7 +798,7 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
         // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
         // constant-vs-itself and the scan returns the first key. That is pre-existing
         // and out of this fold's scope - the fold only preserves the same memory read.
-        if (val != 0 && *reinterpret_cast<i32*>(&(static_cast<CImageSet*>(val))->m_items) == *reinterpret_cast<i32*>(&(static_cast<CImageSet*>(target))->m_items)) {
+        if (val != 0 && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items) == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {
             return key;
         }
     }
@@ -883,7 +883,6 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
     return r;
 }
 
-
 // ---------------------------------------------------------------------------
 // 0x165620: load + build the element from a file.  Open the reader on `filename`;
 // on failure return 0.  Otherwise read the whole file into a RezAlloc'd buffer,
@@ -893,7 +892,7 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
 // 97.29% — the whole body is byte-faithful (Open/GetLength/RezAlloc/Read/Build/
 // RezFree + the three reader-dtor cleanup tails + the /GX frame).  Residual is the
 // EH scope-table cookie (retail push 0x8 / Unwind@005e2410 vs our push 0x0 / $L
-// funclet) + the reloc-masked names (retail's reader is CFileIO with a virtual
+// funclet) + the reloc-masked names (retail's reader is CFile with a virtual
 // dtor; modeling that is matching-neutral, tested).  docs/patterns/gx-scoped-local-
 // eh-frame-size.md.
 RVA(0x00165620, 0x101)

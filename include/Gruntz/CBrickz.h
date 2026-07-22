@@ -21,7 +21,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_BRICKZ;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 4 (0x10ea80, body in TileLogicPump.cpp): the act-registry PMF dispatcher
     // over g_brickzActReg. RE-ATTRIBUTED from CCheckpointTrigger - the TileLogicPump
     // act clusters were shifted one class down. RTTI: CBrickz[4] override -> 0x0012b2,

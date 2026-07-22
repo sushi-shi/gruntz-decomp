@@ -3,6 +3,4 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 
-typedef CDDrawChildGroup CTeleSpriteFactory;
-
 #endif // GRUNTZ_GRUNTZ_CTELESPRITEFACTORY_H

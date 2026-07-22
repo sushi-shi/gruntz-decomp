@@ -4,11 +4,11 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/PathHazard.h>  // CPathHazard base (+ CGruntArchive / CGameObject)
+#include <Gruntz/PathHazard.h>  // CPathHazard base (+ CFileMemBase / CGameObject)
 
 class CUFO : public CPathHazard {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 @0xb4c40
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1 @0xb4c40
     // GetTypeTag (0x133b0, ??_7CUFO slot 2 -> this body): CUFO's own 6-byte
     // copy - and it returns 0x426, NOT a per-class id distinct from every
     // sibling: the id sits between CRainCloud's 0x425 and CFortressFlag's

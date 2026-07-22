@@ -17,7 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_VOICETRIGGER;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     static void InitActReg(); // 0x11a320 (constructs g_vtrigColl @0x651500)
     virtual void FireActivation(i32 id)
         OVERRIDE;                      // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)

@@ -11,7 +11,6 @@
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
-
 void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 struct SaveTempRec;

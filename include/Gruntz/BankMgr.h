@@ -5,6 +5,5 @@
 #include <rva.h> // SIZE_UNKNOWN class-metadata macro
 
 class CSymTab;
-typedef CSymTab CResSource;
 
 #endif // GRUNTZ_GRUNTZ_CBANKMGR_H

@@ -24,7 +24,6 @@ typedef enum DinBufferSize {
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-
 DATA(0x00253aa4)
 i32 g_dinputLogEnabled; // 0x653aa4
 DATA(0x00253aa8)
@@ -49,7 +48,7 @@ DATA_SYMBOL(0x00190b30, 0x0, ?g_mouseDataFormat@@3PBEB)
 // bring-up (CDeviceConfigC::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
 DATA_SYMBOL(0x00191590, 0x0, ?g_joystickDataFormat@@3PBEB)
 
-// The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
+// The config blob InitA passes to CInputDevice::CreateDev (@0x5ef548), pushed
 // by address (reloc-masked DIR32 operand). DATA_SYMBOL (not DATA): same const-u8[]
 // P-vs-Q mangling drop as the DIDATAFORMAT externs above.
 DATA_SYMBOL(0x001ef548, 0x0, ?g_deviceConfigA@@3PBEB)
@@ -61,7 +60,6 @@ VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
 VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 VTBL(CInputDevRoot, 0x001ef670);  // grand-base subobject vtable (4 slots)
 VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
-
 
 inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
@@ -154,7 +152,7 @@ void DirectInputMgr2::Shutdown() {
 }
 
 // DirectInputMgr2::InitA (__thiscall, ret 4 => 1 arg = flags). When the DInput
-// object exists, new's a 0x338-byte CDeviceConfigA, inits its fields + stamps its
+// object exists, new's a 0x338-byte CInputDevice, inits its fields + stamps its
 // foreign vftable, then CreateDev(m_directInput, g_deviceConfigA, m_owner, flags). On failure
 // scalar-deletes it (m_deviceA) and returns 0; on success keeps it in m_deviceA, returns 1.
 // @early-stop
@@ -167,7 +165,7 @@ i32 DirectInputMgr2::InitA(u32 flags) {
     if (di == 0) {
         return 0;
     }
-    CDeviceConfigA* dev = new CDeviceConfigA;
+    CInputDevice* dev = new CInputDevice;
     m_deviceA = dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigA, m_owner, flags) == 0) {
         if (m_deviceA != 0) {

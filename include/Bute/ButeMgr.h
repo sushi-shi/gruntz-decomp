@@ -147,7 +147,7 @@ public:
     bool Exists(const char* tag, const char* key);
 
     // The /GX (EH-frame) scalar destructor (0x213c0): tears down the three owned
-    // CButeStore sub-trees + the five CStrings + the +0x10f tail object, each at
+    // zPTree sub-trees + the five CStrings + the +0x10f tail object, each at
     // its own descending trylevel (reverse declaration order).
     ~CButeMgr();
 
@@ -217,11 +217,9 @@ SIZE(0x110); // == sizeof(CButeMgr): the single base, no added members
 
 extern CButeMgr g_buteMgr;
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

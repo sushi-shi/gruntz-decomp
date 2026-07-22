@@ -1,10 +1,9 @@
 #include <rva.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
+
 class CImage; // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
-class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
-typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 
 class CActionOptionsMenuBar {
 public:
@@ -17,12 +16,12 @@ public:
     i32 HitClick(i32 mx, i32 my);
     i32 HitHover(i32 mx, i32 my);
     void Deactivate();
-    i32 Serialize(CSerialArchive* ar);
+    i32 Serialize(CFileMemBase* ar);
     void Dtor(); // in-place dtor (DestroyGroup teardown, reloc-masked)
     i32 LoadAssets();
 
     void Forward(i32 a, i32 b);         // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
-    int Deserialize(CSerialArchive* s); // 0x00009bb0
+    int Deserialize(CFileMemBase* s); // 0x00009bb0
 
     i32 m_gridX;               // +0x00  grid X
     i32 m_gridY;               // +0x04  grid Y
@@ -36,9 +35,9 @@ public:
     i32 m_button0Icon;         // +0x24  button[0] icon
     i32 m_button1Icon;         // +0x28  button[1] icon
     i32 m_active;              // +0x2c  active flag
-    CSprite* m_normChipSprite; // +0x30  norm-chip sprite
-    CSprite* m_highChipSprite; // +0x34  high-chip sprite
-    CSprite* m_greyChipSprite; // +0x38  grey-chip sprite
+    CDDrawWorker* m_normChipSprite; // +0x30  norm-chip sprite
+    CDDrawWorker* m_highChipSprite; // +0x34  high-chip sprite
+    CDDrawWorker* m_greyChipSprite; // +0x38  grey-chip sprite
     i32 m_loaded;              // +0x3c  loaded flag
 };
 SIZE_UNKNOWN();

@@ -18,7 +18,6 @@ VTBL(CRezFile, 0x001ef7d0);
 DATA(0x0021a0a0)
 const char g_wildcard[] = "*.*"; // decl in RezFile.h
 
-
 RVA(0x0013c4d0, 0x1)
 void CRezList::V0() {}
 
@@ -226,7 +225,6 @@ i32 CRezItm::Flush() {
     }
     return 0;
 }
-
 
 RVA(0x0013c8f0, 0x41)
 i32 CRezItm::Check() {

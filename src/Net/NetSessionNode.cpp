@@ -4,7 +4,6 @@
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
 
-
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
     FreeStrings();

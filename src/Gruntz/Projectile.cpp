@@ -2,7 +2,7 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Grunt.h>
@@ -26,20 +26,18 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection (CCoordColl)
 #include <Gruntz/TimeBomb.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h>     // CSerialArchive (the inherited CWapX::Chain arg)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h>     // CFileMemBase (the inherited CWapX::Chain arg)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 Lookup; ex SerialObjRef.h pull)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
 #include <Gruntz/ActName.h>       // CActName (shared)
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup (0x15c2d0) for the m_1a0 forwarder
 
-
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
 #include <Gruntz/AniElement.h> // CAniElement complete type (KeyOfValue's CObject* upcast)
 #include <Wap32/zBitVec.h> // ex Globals.h
-
 
 VTBL(CTimeBomb, 0x001e771c);
 VTBL(CProjectile, 0x001e798c);
@@ -415,7 +413,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
 DATA_SYMBOL(0x0024c758, 0x24, ?g_projActColl@@3UCActReg@@A)
 
-
 static inline CProjActEntry* ProjActLookup(i32 coord) {
     return reinterpret_cast<CProjActEntry*>(g_projActColl.ResolveEntry(coord));
 }
@@ -636,7 +633,7 @@ void CProjectile::MovingSlot16() {
     i32 tier = 0;
     if (m_kind != 0x16) {
         CGruntzMgr* reg = g_gameReg;
-        CTileGrid* plane = reg->m_tileGrid;
+        CMapMgr* plane = reg->m_tileGrid;
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
@@ -897,7 +894,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment +
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000e0d40, 0x6c2)
-i32 CProjectile::SerializeMove(CGruntArchive* s, i32 mode, i32 a2, i32 a4) {
+i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
@@ -1088,8 +1085,6 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-
-
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     CTBombEntry* e = TBombLookup(coord);
@@ -1173,7 +1168,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     i32 cx = m_object->m_screenX >> 5;
     i32 cy = m_object->m_screenY >> 5;
-    CTileGrid* g = g_gameReg->m_tileGrid;
+    CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
         char* row = reinterpret_cast<char*>(g->m_rows[cy]);
         *reinterpret_cast<i32*>((row + cx * 0x1c)) |= 0x1000000;
@@ -1181,9 +1176,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_124 = -1;
 }
 
-
 static inline i32 TBombGridCell(CGameObject* obj) {
-    CTileGrid* g = g_gameReg->m_tileGrid;
+    CMapMgr* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
@@ -1194,7 +1188,7 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     return 1;
 }
 static inline void TBombGridClear(CGameObject* obj) {
-    CTileGrid* g = g_gameReg->m_tileGrid;
+    CMapMgr* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
@@ -1264,11 +1258,11 @@ i32 CTimeBomb::LoadAttributes() {
 // consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
 // field address - a callee-saved-register coloring choice not steerable from C.
 RVA(0x000e2080, 0xc1)
-i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
+    CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     if (mode == 4) {
         sa->Write(&m_startTime, 8);
         sa->Write(&m_duration, 8);
@@ -1281,7 +1275,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         sa->Read(&m_fastPhase, 4);
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;

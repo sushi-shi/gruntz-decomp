@@ -4,15 +4,15 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h>    // g_sndEnabled/g_sndCueTag
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CImageRegistry + CSprite)
+#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CDDrawWorkerRegistry + CDDrawWorker)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_soundRegistry's real class (the cue host: m_10 cue map + m_30 gate)
 #include <Gruntz/LeafCue.h>            // the cue-map value class (ex the CMiCue view)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (one shape)
@@ -88,12 +88,12 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
-    CImageSet* rec = static_cast<CImageSet*>(rec_v);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
     if (rec == 0) {
         return reinterpret_cast<i32>(rec);
     }
-    CImageSet* r = rec;
+    CDDrawWorker* r = rec;
     if (a == -1) {
         i32 lo = r->m_minIndex;
         m_frame = static_cast<CImage*>(r->m_items.GetAt(lo));
@@ -192,7 +192,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             }
         }
     }
-    CImageSet* r = m_record;
+    CDDrawWorker* r = m_record;
     CImage* frame;
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
         frame = static_cast<CImage*>(r->m_items.GetAt(state));
@@ -228,7 +228,7 @@ i32 CSBI_MenuItem::Blit() {
 }
 
 RVA(0x000e8520, 0x152)
-i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
+i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -246,7 +246,7 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
-                m_record = static_cast<CImageSet*>(found_ob);
+                m_record = static_cast<CDDrawWorker*>(found_ob);
             } else {
                 m_record = 0;
             }
@@ -274,7 +274,7 @@ RVA(0x0010bfa0, 0x1)
 void CStatusBarItem::Reset() {}
 
 RVA(0x0010bfc0, 0xe8)
-i32 CStatusBarItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
+i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }

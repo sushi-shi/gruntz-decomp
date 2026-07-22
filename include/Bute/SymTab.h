@@ -218,7 +218,6 @@ SIZE(0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
 extern "C" const char g_sepSlash[]; // 0x60cff0  "\"  (CSymTab directory-path builder)
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 _stat(const char* path, void* statbuf);

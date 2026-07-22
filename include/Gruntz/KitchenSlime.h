@@ -4,11 +4,11 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CGruntArchive)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CFileMemBase)
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000130b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_KITCHENSLIME;
@@ -61,11 +61,9 @@ struct CKSlimeEntry {
 };
 SIZE_UNKNOWN();
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void KSlimeActivationHandler(); // 0x40180c
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

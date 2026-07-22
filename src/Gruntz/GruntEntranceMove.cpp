@@ -23,7 +23,7 @@
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
+#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
@@ -43,7 +43,6 @@
 #include <string.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GruntEntranceMove.h> // own exported globals (ex Globals.h)
-
 
 DATA(0x0020d7f4)
 char s_codeM[] = "M";
@@ -381,7 +380,7 @@ void CGrunt::LoadEntranceConfig() {
     if (m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGruntzMgr* g = g_gameReg;
         CWwdGameObjectA* h = m_object;
-        CTileGrid* grid = g->m_tileGrid;
+        CMapMgr* grid = g->m_tileGrid;
         i32 tx = h->m_screenX >> 5;
         i32 ty = h->m_screenY >> 5;
 
@@ -420,12 +419,12 @@ void CGrunt::LoadEntranceConfig() {
         i32 newTileY = newPxY >> 5;
 
         if (oldX != -1 && m_lastTilePxY != -1) {
-            CTileGrid* og = g_gameReg->m_tileGrid; // implicit upcast (the one board class)
+            CMapMgr* og = g_gameReg->m_tileGrid; // implicit upcast (the one board class)
             (reinterpret_cast<char*>(&og->m_rowInts[oldTileY][oldTileX * 7]))[3] &= ~0x20;
             og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
-            CTileGrid* ng = static_cast<CTileGrid*>(g_gameReg->m_tileGrid);
+            CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
             (reinterpret_cast<char*>(&ng->m_rowInts[newTileY][newTileX * 7]))[3] |= 0x20;
             ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }

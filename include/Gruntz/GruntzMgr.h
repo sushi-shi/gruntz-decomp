@@ -16,15 +16,14 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
 #include <Gruntz/GruntzPlayer.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CDDrawSubMgrLeafScan;
-typedef CDDrawSubMgrLeafScan CSndHost;
+
 class CDDrawWorkerRegistry;
-typedef CDDrawWorkerRegistry CImageRegistry;
+
 SIZE_UNKNOWN();
 class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
-typedef CDDrawWorker CImageSet; // (identical repeat of ImageSet.h's typedef)
+
 class CDDrawSurfaceMgr;
 
 struct IDirectPlayLobby;
@@ -166,7 +165,7 @@ public:
     i32 CheatRevealTreasures();    // @0x090f10 (PLAY-only: color all treasure/collectible rows)
     // x0910d0 - blit one frame of `sink` over the same-named frame of the image set
     // registered under `key` (both are real CImageSets; the copy is CImage::CopyFrom).
-    i32 SetGruntColor(CImageSet* sink, const char* key, i32 idx);
+    i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
     void CheatSkeletonToggle(); // @0x091250 (toggle the grunt "skeleton" image type + cue)
     void CheatEclipseToggle();  // @0x091390 (toggle the grunt "eclipse" image type + cue)
     i32 WarpCheat();            // @0x08eaf0 (per-level warp X/Y registry set/apply)
@@ -236,8 +235,8 @@ public:
     i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
     i32 FillSaveInfo(SaveSlot* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
-    i32 LoadState(CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
+    i32 SaveState(CFileMemBase* ar);               // @0x093620 (shared CFileMemBase)
+    i32 LoadState(CFileMemBase* ar);               // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
     // world view's rect at m_world->m_level + 0x10) written to *out. Was the fake
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
@@ -466,11 +465,9 @@ extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 
 void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ModeResetCallback(); // LAB_00403193
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -492,7 +489,6 @@ extern "C" CGruntzMgr* g_gameReg;
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
 extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" u32 g_gruntDestruction; // "Grunt destruction"
@@ -507,11 +503,9 @@ extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 extern CString g_brickText1;
 extern CString g_brickText2;
 
-
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" CGruntzMgr* g_gameReg;
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

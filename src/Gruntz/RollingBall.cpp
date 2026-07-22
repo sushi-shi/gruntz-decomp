@@ -39,7 +39,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegMfcPtr.h>   // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
@@ -272,7 +272,7 @@ i32 CRollingBall::Update() {
             RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
             m_value = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
-            CTileGrid* map = g_gameReg->m_tileGrid;
+            CMapMgr* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
             i32 cy = logic->m_screenY >> 5;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
@@ -315,7 +315,7 @@ i32 CRollingBall::Update() {
         // dispatch on the rolling-ball action.
         RbClearCell(g_gameReg->m_cmdGrid, m_targetY, m_targetX, 0);
 
-        CTileGrid* map = g_gameReg->m_tileGrid;
+        CMapMgr* map = g_gameReg->m_tileGrid;
         i32 cx = m_targetX >> 5;
         i32 cy = m_targetY >> 5;
         i32 terrain;
@@ -354,7 +354,7 @@ i32 CRollingBall::Update() {
                     ay = h - 1;
                 }
             }
-            CLevelPlane* pl = lvl->m_mainPlane;
+            CDDrawWorkerHost* pl = lvl->m_mainPlane;
             i32 idx = pl->m_colOffsets[ay] + ax;
             i32 raw = pl->m_tileGrid[idx];
             i32 obj = 0;
@@ -488,7 +488,7 @@ i32 CRollingBall::Update() {
 }
 
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

@@ -9,6 +9,4 @@ class CImage; // the frame element IS the real CImage (Image/CImage.h)
 
 #include <DDrawMgr/DDrawWorker.h> // the ONE real class (vtbl 0x1efbe8, CLoadable-derived)
 
-typedef CDDrawWorker CSprite;
-
 #endif // GRUNTZ_SPRITE_H

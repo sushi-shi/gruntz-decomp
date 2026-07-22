@@ -87,7 +87,6 @@ public:
 };
 SIZE(0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0

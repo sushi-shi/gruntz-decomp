@@ -1,11 +1,11 @@
-#include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
@@ -100,7 +100,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellY = y;
     i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
     CWwdGameObjectA* obj = m_object;
-    CSprite* map = obj->m_sprite;
+    CDDrawWorker* map = obj->m_sprite;
     if (map) {
         CImage* glyph;
         if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
@@ -145,7 +145,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     if (m_health != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CWwdGameObjectA* obj = m_object;
-        CSprite* holder = obj->m_sprite;
+        CDDrawWorker* holder = obj->m_sprite;
         if (holder != 0) {
             CImage* glyph;
             if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
@@ -164,7 +164,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
 }
 
 RVA(0x0007f270, 0xa3)
-i32 CGruntHealthSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);

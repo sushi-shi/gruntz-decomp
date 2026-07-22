@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 struct GruntDataRecord {
     char* m_str[5];  // +0x00..+0x10  five owned name strings
@@ -15,11 +15,11 @@ struct GruntDataRecord {
 
     // Write the five names (as fixed 0x80 fields) + the four fixed blocks through
     // `ar`; returns 0 if `ar` is null, else 1. (0x56da0, __thiscall, 1 stdcall arg.)
-    i32 SerializeStrings(CSerialArchive* ar);
+    i32 SerializeStrings(CFileMemBase* ar);
     // The read counterpart (0x56eb0): read each fixed 0x80 name field into a temp
     // and assign it to the owned CString member (CString::operator=), then read the
     // four fixed blocks back verbatim. Returns 0 if `ar` is null, else 1.
-    i32 DeserializeStrings(CSerialArchive* ar);
+    i32 DeserializeStrings(CFileMemBase* ar);
 };
 SIZE_UNKNOWN();
 

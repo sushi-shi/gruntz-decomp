@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize) + CImageSetStream
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize) + CFileMemBase
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
@@ -22,9 +22,9 @@ public:
     virtual ~CSBI_ImageSetAni() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1ead6c thunk 0x2829 -> 0xe7cd0): serialize the six persistent ints
     // (m_interval..m_frameEnd) through the stream, then chain CSBI_ImageSet::SerializeFields.
-    // CImageSetStream is a typedef of CSerialArchive == the real CFileMemBase, so this is
+    // CFileMemBase is a typedef of CFileMemBase == the real CFileMemBase, so this is
     // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
-    virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe7b00 (ex Tick)
     // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980

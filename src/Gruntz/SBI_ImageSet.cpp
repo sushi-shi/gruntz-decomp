@@ -4,14 +4,14 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
+#include <Io/FileMem.h>           // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CImageRegistry + CSprite)
-#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
+#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawWorkerRegistry + CDDrawWorker)
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CFileMemBase (the frameless method view)
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CDDrawSurfaceMgr m_world)
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
 #include <Image/CImage.h>        // the resolved frame record (Render's blit)
@@ -60,7 +60,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == 0) {
         return 0;
     }
-    CImageSet* rec = 0;
+    CDDrawWorker* rec = 0;
     (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
     m_34 = rec;
     if (rec == 0) {
@@ -98,7 +98,7 @@ RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
     if (m_28 > 0) {
         m_28--;
-        CImageSet* tbl = m_34;
+        CDDrawWorker* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
             cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
@@ -131,7 +131,7 @@ i32 CSBI_ImageSet::Render() {
 // result to recover the dead store regresses it (98.4%) - a non-steerable /O2
 // dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -146,10 +146,10 @@ i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) 
             g_serialCounter++;
             s->Read(buf, 0x80);
             if (strlen(buf)) {
-                CImageSet* out;
+                CDDrawWorker* out;
                 CObject* outOb;
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
-                out = static_cast<CImageSet*>(outOb);
+                out = static_cast<CDDrawWorker*>(outOb);
                 m_34 = out;
             } else {
                 m_34 = 0;

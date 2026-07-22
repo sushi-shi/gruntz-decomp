@@ -297,7 +297,6 @@ void CFaderMgr::DeleteAll() {
     m_arr.m_nSize = 0;
 }
 
-
 RVA(0x0017e230, 0xc)
 void __stdcall Fader_TraceStr(CString s) {
     static_cast<void>(s);

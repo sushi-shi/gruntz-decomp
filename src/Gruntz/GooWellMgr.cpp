@@ -15,7 +15,7 @@
 #include <Gruntz/LeafCue.h>  // the name-map VALUE (its +0x10 DSoundCloneInst plays the cue)
 #include <Gruntz/Multi.h>    // CMulti : CPlay - the +0x594 battlez gate is ITS member
 #include <Gruntz/Play.h>     // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
-#include <Gruntz/SoundCue.h> // CSndHost - the world holder's +0x28 named-cue registry
+#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan - the world holder's +0x28 named-cue registry
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + GruntObjEntry - the +0x08 id->object map
 
 // ---------------------------------------------------------------------------

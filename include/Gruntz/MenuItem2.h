@@ -9,7 +9,7 @@
 #include <Gruntz/MenuItem.h>
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
-#include <Image/ImageSet.h> // CImageSet == CDDrawWorker (the ONE real class)
+#include <Image/ImageSet.h> // CDDrawWorker == CDDrawWorker (the ONE real class)
 
 class CMenuItem2 : public CMenuItem {
 public:
@@ -26,13 +26,13 @@ public:
     virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)
 
     // Non-virtual __thiscall frame-cursor helpers (bodies in MenuItem2.cpp):
-    CImageSet* GetCurrentSprite(); // 0x185950
+    CDDrawWorker* GetCurrentSprite(); // 0x185950
     CImage* GetCurrentFrame();       // 0x185970
     i32 NextFrame();                 // 0x1859c0
 
-    CImageSet* m_spriteNormal;   // +0x5c  NORMAL-state sprite (m_state 1)
-    CImageSet* m_spriteSelected; // +0x60  SELECTED-state sprite (m_state 2)
-    CImageSet* m_spriteDisabled; // +0x64  DISABLED-state sprite (m_state 3)
+    CDDrawWorker* m_spriteNormal;   // +0x5c  NORMAL-state sprite (m_state 1)
+    CDDrawWorker* m_spriteSelected; // +0x60  SELECTED-state sprite (m_state 2)
+    CDDrawWorker* m_spriteDisabled; // +0x64  DISABLED-state sprite (m_state 3)
     i32 m_frameIdx;                // +0x68  current frame cursor
     i32 m_6c;                      // +0x6c  (zeroed by Init; role unproven)
     i32 m_70;                      // +0x70  seeded to 0x64 (role unproven)

@@ -90,7 +90,7 @@ public:
     i32 m_state;                   // +0x24  visual state: 1 normal, 2 selected, 3 disabled
     CObject* m_sprite;             // +0x28  resolved sprite/placer: the CMapStringToOb
                                    //        catalog Lookup value (a CObject*; consumers
-                                   //        downcast to CImageSet / the placer page)
+                                   //        downcast to CDDrawWorker / the placer page)
     POSITION m_listPos;            // +0x2c  cached POSITION in the page's item list
                                    //        (= CMenuPage::m_items.AddTail return)
     i32 m_cmdParam;                // +0x30  WM_COMMAND lParam (NotifyCmd)

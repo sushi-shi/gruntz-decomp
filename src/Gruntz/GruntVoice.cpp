@@ -8,11 +8,11 @@
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_childGroup
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - m_map48 (the id->object map)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CTmCell
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CGrunt
 #include <Gruntz/Grunt.h>            // complete CGrunt - FindGruntAt result (m_object reads)
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
 #include <Gruntz/Ufo.h>              // the REAL CUFO (the ex-L_13400 shell is dissolved)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h> // CActName (shared)
 #include <Gruntz/ActReg.h> // CActReg - the ONE registry archetype (subsumes the old per-field globals)
@@ -27,7 +27,6 @@
 #include <Gruntz/GruntVoiceActReg.h> // g_actReg_6514d8 (ex .cpp extern)
 #include <Wap32/zBitVec.h> // ex Globals.h
 DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
-
 
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);
@@ -52,7 +51,6 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-
 // @early-stop
 // MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
 // ~CUFO, but retail's /O2 collapsed the CUFO:CPathHazard:CUserLogic dtor chain to a
@@ -73,7 +71,7 @@ RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
 RVA(0x000134e0, 0x47)
-i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -318,7 +316,7 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CTmCell* hit = g_gameReg->m_cmdGrid->FindGruntAt(
+    CGrunt* hit = g_gameReg->m_cmdGrid->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
         &m_object->m_extent,

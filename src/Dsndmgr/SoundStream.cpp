@@ -163,7 +163,6 @@ StreamVoice::~StreamVoice() {
     m_feeder.FeederReset(0);
 }
 
-
 // 0x1376c0 - ??1StreamVoiceFeeder: cl's auto-generated IMPLICIT dtor for the
 // derived feeder (no members to destroy -> a bare 5-byte tail-jmp to ~StreamFeeder
 // @0x137cf0, no vptr re-stamp). ~StreamVoice's EH unwind funclet (state 1: destroy
@@ -538,7 +537,7 @@ void StreamFeeder::FeederReset(i32 doStop) {
         OnDrain(); // slot 2 (virtual)
         if (doStop != 0) {
             // m_buffer and RemoveBuffer's param are the same DirectSoundMgr base view now
-            // (matcher-6 unified the former SoundBuf dual-view into DirectSoundMgr).
+            // (matcher-6 unified the former DirectSoundMgr dual-view into DirectSoundMgr).
             m_owner->RemoveBuffer(m_buffer);
         }
         m_buffer = 0;

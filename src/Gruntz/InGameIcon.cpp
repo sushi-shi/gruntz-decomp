@@ -1,6 +1,6 @@
 #include <Mfc.h>              // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Wap32/zBitVec.h>    // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>       // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>       // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
@@ -8,18 +8,17 @@
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
-#include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>  // CFileMemBase (Read +0x2c / Write +0x30) for SerializeMove
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
 #include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
-
 
 #include <rva.h>
 
 #include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>      // the shared LogicFnTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h>      // the shared CLogicActTable dispatch-table shape
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
@@ -33,7 +32,6 @@ DATA_SYMBOL(0x002458b0, 0x24, ?g_iconActionTable@@3UCLogicActTable@@A)
 DATA_SYMBOL(0x00245928, 0x24, ?g_iconStateTable@@3UCLogicActTable@@A)
 
 DATA(0x00245950)
-
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -439,7 +437,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = m_object->m_188;
-    CTileGrid* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
@@ -628,7 +626,7 @@ i32 CInGameIcon::RefreshCell() {
     i64 delta =
         static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
     if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
-        CTileGrid* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
@@ -671,7 +669,7 @@ i32 CInGameIcon::PeekCycle() {
     if (cmd == 0x55) {
         CGruntzMgr* reg = g_gameReg;
         i32 tileY = obj->m_screenY >> 5;
-        CTileGrid* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> 5;
         i32 cell;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
@@ -723,7 +721,7 @@ i32 CInGameIcon::PeekCycle() {
 }
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    CTileGrid* grid = reg->m_tileGrid;
+    CMapMgr* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
     i32 tileY = owner->m_screenX >> 5;
     if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
@@ -775,7 +773,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
-        CTmCell* cell = reg->m_cmdGrid->m_grid[idx];
+        CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
         i32 ok;
         if (cell == 0 || cell->m_entranceCommitted == 0) {
             ok = 0;
@@ -806,7 +804,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
-    CTmCell* cell = reg->m_cmdGrid->m_grid[idx];
+    CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
     i32 ok;
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         ok = 0;
@@ -818,7 +816,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         return 0;
     }
     if (cmd == 0x14) {
-        CTmCell* placed = reg->m_cmdGrid->m_grid[idx];
+        CGrunt* placed = reg->m_cmdGrid->m_grid[idx];
         if (placed != 0) {
             placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;
@@ -890,7 +888,7 @@ i32 CInGameIcon::Reposition() {
         CWwdGameObjectA* obj = m_object;
         i32 tileX = obj->m_screenX >> 5;
         i32 tileY = obj->m_screenY >> 5;
-        CTileGrid* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->m_tileGrid;
         i32 cellVal;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
@@ -950,10 +948,9 @@ i32 CInGameIcon::Reposition() {
 // A faithful reconstruction needs the corrected boundary first; pinned no-body so
 // its RVA registers and the unit builds. See report.
 RVA(0x00098c90, 0x31f)
-i32 CInGameIcon::SerializeMove(CGruntArchive*, i32, i32, i32) {
+i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, i32) {
     return 0;
 }
-
 
 typedef i32 (CUserLogic::*LogicFn)();
 
@@ -1053,7 +1050,7 @@ void RegisterTextLogic() {
 }
 
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
+i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }

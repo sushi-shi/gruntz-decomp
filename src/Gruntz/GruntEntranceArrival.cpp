@@ -33,7 +33,7 @@
 #include <Gruntz/Enums.h>             // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
 #include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
+#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
@@ -85,7 +85,7 @@ static const char s_animKeyK[] = "K";
 
 static void GruntScratchTeardown();
 
-static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
+static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
@@ -902,7 +902,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
         CGruntzMgr* g = g_gameReg;
-        CTileGrid* grid = g->m_tileGrid;
+        CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
@@ -1160,7 +1160,7 @@ void CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_object->m_screenX == m_lastTilePxX
         && m_object->m_screenY == m_lastTilePxY) {
         CGruntzMgr* g = g_gameReg;
-        CTileGrid* grid = g->m_tileGrid;
+        CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_object->m_screenX >> 5;
         i32 ty = m_object->m_screenY >> 5;
         i32 flags;
@@ -1293,7 +1293,7 @@ i32 CGrunt::StepEntranceReinit() {
     // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
     // fresh "D" anim set and re-stamp the first entrance-cell frame.
     GruntCoord* co = static_cast<GruntCoord*>(m_31c.GetHead());
-    CTileGrid* b = g_gameReg->m_tileGrid;
+    CMapMgr* b = g_gameReg->m_tileGrid;
     i32 flag;
     if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_height)) {
@@ -1473,7 +1473,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
 
-        CTileGrid* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
@@ -1618,10 +1618,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_exitKeyB));
 
-    CSprite* found;
+    CDDrawWorker* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = static_cast<CSprite*>(
+        found = static_cast<CDDrawWorker*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
         );
         CGruntzMgr* g = g_gameReg;
@@ -1633,7 +1633,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = static_cast<CSprite*>(
+        found = static_cast<CDDrawWorker*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_TWO)
         );
         CGruntzMgr* g = g_gameReg;
@@ -1645,7 +1645,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = static_cast<CSprite*>(
+        found = static_cast<CDDrawWorker*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_THREE)
         );
         CGruntzMgr* g = g_gameReg;
@@ -1938,7 +1938,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     m_entranceActive = 0;
     CGruntzMgr* g = g_gameReg;
-    CTileGrid* grid = g->m_tileGrid;
+    CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
@@ -1984,7 +1984,7 @@ i32 CGrunt::StepArrivalCommitB() {
         return 0;
     }
     CGruntzMgr* g = g_gameReg;
-    CTileGrid* grid = g->m_tileGrid;
+    CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
@@ -2211,7 +2211,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
     OnCoordCommit(m_coordToggle);
     CGruntzMgr* g = g_gameReg;
-    CTileGrid* grid = g->m_tileGrid;
+    CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 f1;

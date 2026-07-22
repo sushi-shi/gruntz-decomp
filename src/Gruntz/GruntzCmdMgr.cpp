@@ -1,7 +1,7 @@
 #include <Mfc.h>                  // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/State.h>         // CState::Update (slot 4) - the live state's id tag
@@ -14,13 +14,13 @@
 
 i32 __stdcall IsActive2(void* enable);
 
-i32 CGruntzCommand::Serialize(CSerialArchive*, i32, i32, i32) {
+i32 CGruntzCommand::Serialize(CFileMemBase*, i32, i32, i32) {
     return 1;
 }
-i32 CGruntzCommand::Save(CSerialArchive*) {
+i32 CGruntzCommand::Save(CFileMemBase*) {
     return 0;
 }
-i32 CGruntzCommand::Load(CSerialArchive*) {
+i32 CGruntzCommand::Load(CFileMemBase*) {
     return 0;
 }
 i32 CGruntzCommand::GetTag() {
@@ -61,7 +61,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     // slot 4 (+0x10): the state reports its own id tag. 0x11 IS GAMESTATE_NONE (the
     // PerFrameTick sentinel), not the PLAY id - the local's historical name is kept.
     i32 isPlay = (sp->Update() == GAMESTATE_NONE);
-    GzTargetObj* table[4];
+    CGruntzCommand* table[4];
     table[0] = 0;
     table[1] = 0;
     table[2] = 0;
@@ -69,7 +69,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj = *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
         i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
@@ -90,7 +90,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     }
     if (isPlay) {
         for (i = 0; i < 4; i++) {
-            GzTargetObj* obj = table[i % 4];
+            CGruntzCommand* obj = table[i % 4];
             if (obj) {
                 obj->Select(sp);
                 obj->Deselect();
@@ -104,7 +104,7 @@ RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        GzTargetObj* obj = *reinterpret_cast<GzTargetObj**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj = *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
         if (obj->m_targetType == static_cast<u8>(typeByte)
             && obj->m_targetIndex == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
@@ -117,7 +117,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
 RVA(0x00023bc0, 0x25)
 void CGruntzCmdMgr::DrainBase() {
     while (m_base.GetCount()) {
-        GzTargetObj* obj = static_cast<GzTargetObj*>(m_base.RemoveTail());
+        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.RemoveTail());
         if (obj) {
             obj->Deselect();
         }
@@ -189,7 +189,7 @@ void __stdcall BlitTileMarkerAt(i32, i32, i32, i32, i32, i32, i32, i32);
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
     CGameLevel* p = m_38->m_world->m_level;
-    CLevelPlane* r = p->m_mainPlane;
+    CDDrawWorkerHost* r = p->m_mainPlane;
     i32 sx = ((r->m_originX - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
     i32 sy = ((r->m_originY - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
     BlitTileMarkerAt(a1, a2, 0, 0, sx, sy, 0, a5);
@@ -430,7 +430,7 @@ void CGruntzMultiCommand::FreeAll() {
 }
 
 RVA(0x000244d0, 0x3b)
-i32 CGruntzSingleCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
+i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
     if (!s) {
         return 0;
     }
@@ -450,7 +450,7 @@ i32 CGruntzSingleCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
 }
 
 RVA(0x00024520, 0x98)
-i32 CGruntzSingleCommand::Save(CSerialArchive* s) {
+i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
@@ -469,7 +469,7 @@ i32 CGruntzSingleCommand::Save(CSerialArchive* s) {
 }
 
 RVA(0x000245f0, 0x98)
-i32 CGruntzSingleCommand::Load(CSerialArchive* s) {
+i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
@@ -488,7 +488,7 @@ i32 CGruntzSingleCommand::Load(CSerialArchive* s) {
 }
 
 RVA(0x000246c0, 0x3b)
-i32 CGruntzMultiCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
+i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
     if (!s) {
         return 0;
     }
@@ -508,7 +508,7 @@ i32 CGruntzMultiCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
 }
 
 RVA(0x00024710, 0x8b)
-i32 CGruntzMultiCommand::Save(CSerialArchive* s) {
+i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
@@ -526,7 +526,7 @@ i32 CGruntzMultiCommand::Save(CSerialArchive* s) {
 }
 
 RVA(0x000247d0, 0x8b)
-i32 CGruntzMultiCommand::Load(CSerialArchive* s) {
+i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
@@ -562,7 +562,7 @@ i32 CGruntzMultiCommand::Load(CSerialArchive* s) {
 // AddTail; the recompile keeps both in callee-saved regs (no spill), swapping esi/edi/ebx.
 // Not source-steerable; final sweep.
 RVA(0x00024890, 0x18d)
-i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
+i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
     if (!stream) {
         return 0;
     }

@@ -32,12 +32,12 @@ typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
 class CMoviePlayer {
 public:
-    // ----- ex CDDPageMgr (the display bring-up / page cache) -------------------
+    // ----- ex CMoviePlayer (the display bring-up / page cache) -------------------
     i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags); // 0x17c040
     i32 CheckMode16();                                       // 0x17d2b0
     i32 RemoveAt(i32 idx);                                   // 0x17d600
     i32 FreeAll();                                           // 0x17d6b0
-    // ----- ex CDDScreen (the frame/palette/blit half) --------------------------
+    // ----- ex CMoviePlayer (the frame/palette/blit half) --------------------------
     void HandleError();                                            // 0x17cc80
     void ResetPalette();                                           // 0x17ca60
     void Snapshot(HWND hWnd);                                      // 0x17cd90
@@ -103,7 +103,7 @@ public:
     i32 m_initialized; // +0x04  init/active flag (Open + Advance bail when 0)
     i32 m_streamOpen;  // +0x08  stream-open flag (InitMode clears it)
     i32 m_0c;          // +0x0c  ==0 gates the full DDraw-stack teardown (owns-vs-borrows)
-    // +0x10  the RAD Smacker stream handle (SmackOpen's result). The ex CDDScreen
+    // +0x10  the RAD Smacker stream handle (SmackOpen's result). The ex CMoviePlayer
     // view called this a "CTileInfo*" tile/mode descriptor - same slot: the Smack
     // handle's Version/Width/Height ARE its m_0/m_width/m_height (+0x0/+0x4/+0x8),
     // its +0x68 is the new-palette flag Frame tests, and the RGB palette source it
@@ -171,7 +171,7 @@ public:
                       //         (0x814c B; ends exactly at the +0x868c playlist)
     // +0x868c  the Rez-owned playlist, an MFC CArray (RTTI-proven, COL @0x1e971c).
     // Its m_pData/m_nSize/m_nMaxSize land at +0x8690/+0x8694/+0x8698 - which is
-    // EXACTLY what the ex CDDPageMgr view independently modelled as m_data/m_count/
+    // EXACTLY what the ex CMoviePlayer view independently modelled as m_data/m_count/
     // m_8698, and its element IS that view's "CPageRec" (PLAYLISTINFOSTRUCT: the
     // three owned buffers RemoveAt frees at +0x00/+0x10/+0x14).
     CMoviePlaylist m_playlist;

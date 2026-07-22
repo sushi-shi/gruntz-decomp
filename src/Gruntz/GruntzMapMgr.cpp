@@ -1,6 +1,6 @@
 #include <Gruntz/GruntzMapMgr.h>
 
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
@@ -42,7 +42,7 @@ VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 // text.) Structure is correct (real inheritance, real qualified base call, no
 // casts), so the residue is the permuter's job, not a source-shape bug.
 RVA(0x00082430, 0x161)
-i32 CGruntzMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }

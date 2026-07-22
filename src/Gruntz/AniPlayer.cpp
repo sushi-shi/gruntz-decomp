@@ -9,7 +9,7 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
@@ -18,8 +18,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
-#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CImageSet (the resolved record)
-
+#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CDDrawWorker (the resolved record)
 
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
@@ -77,7 +76,7 @@ i32 CAniPlayer::TickToggle(i32 param) {
 // ===========================================================================
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
-    CImageSet* tbl = m_34;
+    CDDrawWorker* tbl = m_34;
     CImage* cel;
     if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
         cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
@@ -108,7 +107,7 @@ i32 CAniPlayer::RenderCel() {
 // the serialize cluster.
 // ===========================================================================
 RVA(0x000e5c90, 0x87)
-i32 CAniPlayer::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -118,7 +117,7 @@ i32 CAniPlayer::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     // no RTTI row, so whether 0xe5c90 is CAniPlayer's own slot 1 is unproven. Naming it
     // SerializeFields would give it the base virtual's exact name+signature and silently
     // make it an override (C++ implicit virtual), claiming a slot on no evidence.
-    if (CSBI_ImageSetAni::SerializeFields(static_cast<CImageSetStream*>(arc), mode, a3, a4) == 0) {
+    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, a3, a4) == 0) {
         return 0;
     }
     if (mode == 4) {

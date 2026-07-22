@@ -8,18 +8,17 @@
 #include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
 #include <Mfc.h>                 // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> dispatch table + zvec accessors
-#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h> // the shared CLogicActTable dispatch-table shape
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 RVA(0x0000f930, 0x47)
-i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
-
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible
 // members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown:
@@ -36,7 +35,6 @@ RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);
 DATA_SYMBOL(0x00246038, 0x24, ?g_simpleAnimDispatch@@3UCLogicActTable@@A)
-
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;

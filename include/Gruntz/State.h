@@ -9,7 +9,7 @@ class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_worl
 class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
 class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
 class CSymTab;
-typedef CSymTab CResSource; // +0x28/+0x30/+0x34 resolved asset banks (== the ButeMgr symbol table)
+
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
 class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
@@ -206,7 +206,7 @@ public:
     // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
     // CGameRegistry::m_world (+0x30) == the canonical CDDrawSurfaceMgr - non-polymorphic;
     // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
-    // @0x158ee0) and its +0x10 registrar is CImageRegistry (Install/LoadTree +0x48,
+    // @0x158ee0) and its +0x10 registrar is CDDrawWorkerRegistry (Install/LoadTree +0x48,
     // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
     // slot-8 loaders) reach it through this one holder. Its render sub-object facets
     // live in <Gruntz/View.h>.
@@ -230,7 +230,7 @@ public:
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
     // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
     // TITLE state here. A 4-byte pointer slot.
-    CResSource* m_2c; // +0x2c
+    CSymTab* m_2c; // +0x2c
     // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
     // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
     CSymTab* SymTab2c() {

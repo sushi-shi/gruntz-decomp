@@ -7,8 +7,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (m_c->m_04 page gate)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
-#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
-#include <Gruntz/GameMode.h>     // CGMEntity/CGMEntityList/g_actorList/GM_SimpleAnim (Render spine)
+#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
+#include <Gruntz/GameMode.h>     // AttractActor/AttractActorList/g_actorList/GM_SimpleAnim (Render spine)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the m_c holder)
@@ -20,7 +20,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 
 #include <Gruntz/AssetRoot.h>
-
 
 // @confidence: high
 // @source: decomp-xref
@@ -44,7 +43,7 @@ i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
     SetCursor(0);
     m_mgr->RestoreVideoMode(0);
 
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
     if (!m_2c) {
         return 0;
     }
@@ -113,14 +112,14 @@ i32 CSplashState::Render() {
     }
 
     {
-        CGMEntityList* L = g_actorList;
+        AttractActorList* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
             L->m_data[i]->Update();
         }
     }
 
     {
-        CGMEntityList* L = g_actorList;
+        AttractActorList* L = g_actorList;
         i32 n = L->m_count;
         i32 j;
         for (j = 0; j < n; j++) {

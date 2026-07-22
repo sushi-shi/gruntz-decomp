@@ -5,11 +5,10 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/Sprite.h> // CSprite (the glyph maps; ex CStatzGlyphMap view)
+#include <Gruntz/Sprite.h> // CDDrawWorker (the glyph maps; ex CStatzGlyphMap view)
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
-
 
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
@@ -210,7 +209,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
     // value 0: status (glyph/value, main glyph map)
     if (m_statusValue != statusVal) {
-        CSprite* gm = m_glyphMap;
+        CDDrawWorker* gm = m_glyphMap;
         m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
                                    ? 0
                                    : static_cast<CImage*>(gm->m_items.GetAt(statusVal));
@@ -219,7 +218,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     }
     // value 1: ability (glyph/value, main glyph map)
     if (m_abilityValue != abilityVal) {
-        CSprite* gm = m_glyphMap;
+        CDDrawWorker* gm = m_glyphMap;
         m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
                                     ? 0
                                     : static_cast<CImage*>(gm->m_items.GetAt(abilityVal));
@@ -228,7 +227,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     }
     // value 2: override (glyph/value, main glyph map)
     if (m_overrideValue != overrideVal) {
-        CSprite* gm = m_glyphMap;
+        CDDrawWorker* gm = m_glyphMap;
         m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
                                      ? 0
                                      : static_cast<CImage*>(gm->m_items.GetAt(overrideVal));
@@ -240,7 +239,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         if (selectVal == 0) {
             m_selectGlyph = reinterpret_cast<CImage*>(selectVal); // selectVal == 0 (store the reg, not imm)
         } else {
-            CSprite* gm = m_glyphMap;
+            CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
             m_selectGlyph =
                 (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : static_cast<CImage*>(gm->m_items.GetAt(key));
@@ -250,7 +249,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     }
     // value 4: timer (glyph/value, timer glyph map)
     if (m_timerValue != timerVal) {
-        CSprite* gm = m_timerGlyphMap;
+        CDDrawWorker* gm = m_timerGlyphMap;
         m_timerGlyph =
             (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
                 ? 0

@@ -44,7 +44,6 @@ enum FileImageFormat {
     FMT_PID = 4,
 };
 
-
 typedef enum DDSurfacePoolKind {
     POOLKIND_PLAIN = 0,     // CDDSurface base default        (0x141300: xor eax,eax)
     POOLKIND_MODE = 1,      // CPoolItemAB8 device/mode page  (0x143cd0)
@@ -154,9 +153,9 @@ public:
     void* DecodePid(void* surf, void* buf, u32 size, void* surf2);
     i32 DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5);
 
-    // The file-backed BMP/PCX/PID loaders (Image.cpp): construct a stack CFileIO, open the
+    // The file-backed BMP/PCX/PID loaders (Image.cpp): construct a stack CFile, open the
     // file, slurp it into an `operator new` buffer and call the matching decoder (the
-    // CFileIO stack object forces a C++ EH frame -> /GX).
+    // CFile stack object forces a C++ EH frame -> /GX).
     void* LoadBmp(char* name, char* path);
     void* LoadPcx(char* name, char* path);
     void* LoadPid(char* name, char* path, void* a3);
@@ -311,7 +310,6 @@ public:
 SIZE(0xc0);
 SIZE(0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
 SIZE_UNKNOWN();
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

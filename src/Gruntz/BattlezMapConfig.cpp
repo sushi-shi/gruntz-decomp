@@ -4,7 +4,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - FindByField0C's real return type
 #include <Gruntz/UserLogic.h>
@@ -13,7 +13,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
@@ -21,14 +21,14 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (the local dup class is gone)
 #include <Gruntz/GruntPuddle.h>       // CGruntPuddle (the m_baseList spawn-candidate element)
-#include <Gruntz/MapMgr.h>            // CBrickzGrid == CMapMgr (the board / tile grid)
+#include <Gruntz/MapMgr.h>            // CMapMgr == CMapMgr (the board / tile grid)
 #include <DDrawMgr/DDrawChildGroup.h> // the level's game-object collection (ex CQueueDrainHost view)
 #include <Wap32/zBitVec.h>            // zErrHandling (the zvec error-report target)
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg1)
 #include <Bute/ButeMgr.h>     // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
 #include <math.h>   // sqrt (CBattlezMapConfig::Step board-distance)
@@ -57,8 +57,6 @@ DATA(0x0022b738)
 i32 g_diffTier;
 DATA(0x0022b7ec)
 i32 g_spawnState;
-
-
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(list->m_list.GetHeadPosition());
@@ -731,7 +729,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
 // @early-stop
 // deferred - SIZE wall, not an idiom/regalloc wall. A faithful reconstruction is
 // tractable (the arm pattern is regular; every callee + type is already modeled - the
-// CGrunt/g_typeColl/CBrickzGrid views used by ValidateUnitPath above cover it), but at
+// CGrunt/g_typeColl/CMapMgr views used by ValidateUnitPath above cover it), but at
 // 10269 B it is a dedicated multi-session leaf-first job, not a single-matcher batch.
 // objdiff scores the WHOLE function's alignment, so any sub-complete partial (even a
 // 1-2 KB faithful head) still scores ~0 and diverges its own regalloc - reconstructing
@@ -753,7 +751,7 @@ void* __stdcall ListNodeAdvance(void** it) {
 }
 
 RVA(0x00029a50, 0x15)
-void CUserLogic::GetScreenPos(ScreenPoint* out) {
+void CUserLogic::GetScreenPos(Coord* out) {
     CWwdGameObjectA* o = m_object;
     i32 y = o->m_screenY;
     i32 x = o->m_screenX;
@@ -808,7 +806,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(i32 unitArg) {
         goto recycleBail;
     }
     {
-        CBrickzGrid* board = m_board;
+        CMapMgr* board = m_board;
         // tile0: is the unit's own coord cell blocked (low flag byte == 1)?
         i32 tile0;
         if (static_cast<u32>(ux) < static_cast<u32>(board->m_width)
@@ -1151,7 +1149,7 @@ recycleBail:
 // the board dirty-rect to a 13x13 box around its screen coord (IntersectRect copy-
 // back), then scan up to three of its coord-list nodes for one on a blocked (bit 0)
 // tile (or its own tail coord); for such a node build the FindPath flag word from
-// the unit's 0x12/0x16/0xe anim modes and ask CBrickzGrid::FindPath (flags 0x2000098f) for
+// the unit's 0x12/0x16/0xe anim modes and ask CMapMgr::FindPath (flags 0x2000098f) for
 // a route into a local CPtrList. On a route: recycle the route head + the unit's old
 // coords onto g_coordPool.m_freeHead/g_coordPool, empty its coord list, AddTail the new route,
 // re-clamp the board dirty-rect, stamp the unit's packed coord from the new tail, and
@@ -1175,7 +1173,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     void* pos = unit->CoordHead();
     Coord center;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
     RECT bounds;
@@ -1527,7 +1525,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     i32 left = (tl2->m_screenX >> 5) - 5;
     i32 xcoord = (tl->m_screenX >> 5) + r2 - 5;
     i32 right = (tl2->m_screenX >> 5) + 5;
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     i32 bottom = (tl2->m_screenY >> 5) + 5;
     i32 top = (tl2->m_screenY >> 5) - 5;
     RECT box;
@@ -1552,7 +1550,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
 
 RVA(0x0002b420, 0x419)
 i32 CBattlezMapConfig::Serialize(void* arArg) {
-    CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
+    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
     if (ar == 0) {
         return 0;
     }
@@ -1661,7 +1659,7 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
 // edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
 RVA(0x0002b950, 0x513)
 i32 CBattlezMapConfig::Deserialize(void* arArg) {
-    CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
+    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
     if (ar == 0) {
         return 0;
     }
@@ -1791,7 +1789,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::SerializeState(i32 objArg, void* kindArg, i32, i32) {
-    CSerialArchive* obj = reinterpret_cast<CSerialArchive*>(objArg);
+    CFileMemBase* obj = reinterpret_cast<CFileMemBase*>(objArg);
     i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {
         case 4:
@@ -1847,7 +1845,6 @@ i32 CBattlezMapConfig::EnterDefenderMode(i32 unitArg, i32 value) {
     return 1;
 }
 
-
 // ===========================================================================
 // CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect  @0x02c140
 // For an idle unit (m_gruntKind==0, prim anim clear) clamp the board dirty-rect to an 8x8
@@ -1893,7 +1890,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     Coord c4;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&c4));
     box.left = (c4.m_x >> 5) - 3;
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     RECT bounds;
     static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
     RECT clamp;
@@ -1940,7 +1937,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == 0) {
                     if (RouteUnitTo(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                        CBrickzGrid* bd = m_board;
+                        CMapMgr* bd = m_board;
                         RECT mb;
                         mb.left = 0;
                         mb.top = 0;
@@ -1968,7 +1965,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                     }
                     if (p2 == 0) {
                         if (RouteUnitTo(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                            CBrickzGrid* bd = m_board;
+                            CMapMgr* bd = m_board;
                             RECT r1;
                             static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
                             RECT r2;
@@ -2022,7 +2019,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
         (g)->m_31c.RemoveAll();                                                                    \
     }
 
-static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
+static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
         return grid->m_rows[row][col].m_0;
@@ -2072,11 +2069,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     i32 fcx = fc->m_x; // grunt head coord x (long-lived)
     i32 fcy = fc->m_y; // grunt head coord y
 
-    GruntTilePos a;
+    Coord a;
     g->GetTilePos(&a);
     i32 gy = a.m_y >> 5;
     i32 gx = a.m_x >> 5;
-    GruntTilePos b;
+    Coord b;
     g->GetTilePos(&b);
     i32 bx = b.m_x >> 5;
 
@@ -2114,7 +2111,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             // door-open transform: build a search rect from the grunt pos, then a per-cell
             // CString-EH loop recycling edge nodes onto g_coordPool.m_freeHead. (Byte-walled: retail
             // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
-            GruntTilePos da;
+            Coord da;
             g->GetTilePos(&da);
             for (i32 drow = m_board->m_bounds.top; drow < m_board->m_bounds.bottom; drow++) {
                 for (i32 dcol = m_board->m_bounds.left; dcol < m_board->m_bounds.right; dcol++) {
@@ -2151,7 +2148,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     // ---- door body flag (dest.flags & 4) ----
     if ((dest.m_0 & 4) && g->m_2d8 != 0xb) {
-        GruntTilePos tp;
+        Coord tp;
         i32 keyHi = g->m_object->m_screenX >> 5;
         g->GetTilePos(&tp);
         i32 key = (keyHi << 8) + (tp.m_y >> 5);
@@ -2528,7 +2525,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(i32 a4, i32 col, i32 row, i32 a5) {
         i32 cp = col + 1;
         i32 rm = row - 1;
         i32 rp = row + 1;
-        CBrickzGrid* b;
+        CMapMgr* b;
         i32* nt;
         i32 nw;
 
@@ -2647,7 +2644,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     Coord g2;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&g2));
     i32 left = (g2.m_x >> 5) - 8;
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     RECT bounds;
     static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
     RECT box;
@@ -2863,7 +2860,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     if (static_cast<u32>(unit->m_dwell) <= 0x64) {
         return 1;
     }
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     RECT bounds;
     static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
     RECT* boxp = &box;
@@ -2988,7 +2985,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 // bit. Otherwise scan the current cell-row for the nearest eligible unit (passing
 // the cached-cell + clear-flag guards and NOT an I/G/L/P/J/C/R type code) within
 // distance 0x190, build the FindPath flags from its 0x16/0x12 anim modes, ask
-// CBrickzGrid::FindPath for a route, and swap that unit's path onto this one (recycle old
+// CMapMgr::FindPath for a route, and swap that unit's path onto this one (recycle old
 // coords onto g_coordPool, AddTail the new, set state 5). Returns 1 on a reroute.
 // ===========================================================================
 // @early-stop
@@ -3072,7 +3069,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(i32 unitArg, i32 useArg, i32 ax, i
             GruntCoordNode* p = unit->CoordHead();
             GruntCoord* c = p->m_coord;
             i32 word;
-            CBrickzGrid* b = m_board;
+            CMapMgr* b = m_board;
             if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
                 && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
                 word = (reinterpret_cast<i32*>(
@@ -3775,7 +3772,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(i32 selfUnit, i32 qx, i32 qy) {
             continue;
         }
         if (unit->CoordCount() != 0 && unit->CoordHead() != 0) {
-            CBrickzGrid* board = m_board;
+            CMapMgr* board = m_board;
             GruntCoordNode* node = unit->CoordHead();
             while (node != 0) {
                 GruntCoordNode* cur = node;
@@ -3969,7 +3966,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
 // pointer block for the candidate, not colliding with `unit` (IsCoordOccupied),
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
-// ask CBrickzGrid::FindPath for a route into a local CPtrList, then swap the unit's path
+// ask CMapMgr::FindPath for a route into a local CPtrList, then swap the unit's path
 // (recycle old coord nodes onto g_coordPool.m_freeHead, AddTail the new ones, stamp the packed
 // target coord + state 5). Returns 1 on a reroute, 0 otherwise.
 // ===========================================================================
@@ -4395,7 +4392,7 @@ L_clear:
 // where our cl pins `out` in eax and elides that move (cascading the m_5c/m_60 register
 // pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
 RVA(0x00031c70, 0x1d)
-GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
+Coord* CGrunt::GetTilePos(Coord* out) {
     CWwdGameObjectA* h = m_object;
     i32 x = h->m_screenX >> 5;
     i32 y = h->m_screenY >> 5;
@@ -4451,7 +4448,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             }
             // Clamp the board dirty-rect to (0,0,w,h): the CRect / IntersectRect
             // copy-back idiom (shared with GruntPathScan's SCAN_BOUNDS).
-            CBrickzGrid* board = m_board;
+            CMapMgr* board = m_board;
             RECT r1;
             static_cast<RECT*>(new (&r1) CRect(0, 0, board->m_width, board->m_height));
             RECT r2;
@@ -4772,7 +4769,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     if (unit->m_defenderState != 7) {
         return 1;
     }
-    CBrickzGrid* board = m_board;
+    CMapMgr* board = m_board;
     RECT box2;
     box2.left = 0;
     box2.top = 0;

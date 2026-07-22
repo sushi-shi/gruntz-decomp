@@ -1,7 +1,7 @@
 #include <Mfc.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/MgrSettings.h>
@@ -9,7 +9,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzMgr.h>         // the *0x24556c singleton (CGruntzMgr)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (ex CMgrActiveHolder view)
-#include <Gruntz/Sprite.h> // CSprite - the looked-up, index-gated record (ex CMgrLookupRec view)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the looked-up, index-gated record (ex CMgrLookupRec view)
 #include <string.h>        // strlen / memset (inlined to repne scasb / rep stos)
 
 // @early-stop
@@ -22,7 +22,7 @@
 // + pin-local-for-callee-saved-reg). Not source-steerable (& and || forms both
 // normalize to the same fail-first regalloc). Logic complete; final-sweep deferred.
 RVA(0x00109e00, 0x245)
-i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMgrSettings::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -53,7 +53,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             }
             CObject* out = 0;
             lvl->m_imageRegistry->m_10map.Lookup(name, out);
-            CSprite* rec = static_cast<CSprite*>(out);
+            CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
             if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
                 m_38 = 0;
             } else {

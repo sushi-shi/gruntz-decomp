@@ -15,7 +15,7 @@
 #include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
+#include <Gruntz/BankMgr.h> // CSymTab::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
 #include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CDDrawSurfaceMgr facet
 #include <Gruntz/GruntzMgr.h>         // CMultiBootyState::Render: CState::m_4 owner (ReportError)
 #include <DDrawMgr/DDrawChildGroup.h> // CMultiBootyState::Render: m_c->m_childGroup frame-worker slots 9/10
@@ -23,7 +23,7 @@
 #include <Gruntz/UserLogic.h>   // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
 #include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CSndHost (CState::m_c draw+cue context)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
 struct HudMsgSink;
@@ -51,7 +51,7 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     SoundStream* r =
-        m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+        m_world->m_soundRegistry->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -83,7 +83,7 @@ i32 CBootyState::Vslot09(i32) {
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CGruntzMgr* reg = g_gameReg;
-    CSndHost* set = reg->m_world->m_soundRegistry;
+    CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
@@ -114,7 +114,7 @@ i32 CBootyState::FrameSlot28(i32) {
     m_world->m_soundRegistry->m_10.Lookup(
         "BOOTY_LOOP",
         obj
-    ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
+    ); // CDDrawSubMgrLeafScan::m_10 (::CMapStringToPtr @0x1b8438)
     LeafCue* found = static_cast<LeafCue*>(obj);
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
@@ -417,7 +417,7 @@ i32 CBootyState::CheckPerfectBonus() {
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
-        CSndHost* m28 = host->m_soundRegistry;
+        CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
         if (m28->m_emitGate == 0) {
             void* found = 0;
             m28->m_10.Lookup("BOOTY_PERFECT", found); // ::CMapStringToPtr::Lookup @0x1b8438
@@ -498,7 +498,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
     SoundStream* r =
-        m_world->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
+        m_world->m_soundRegistry->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -522,7 +522,7 @@ i32 CMultiBootyState::Vslot09(i32) {
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
-    CSndHost* m28 = host->m_soundRegistry;
+    CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
     if (m28->m_emitGate == 0) {
         void* found = 0;
         m28->m_10.Lookup("BOOTY_LOOP", found); // ::CMapStringToPtr::Lookup @0x1b8438
@@ -548,7 +548,7 @@ i32 CMultiBootyState::FrameSlot28(i32) {
     m_world->m_soundRegistry->m_10.Lookup(
         "BOOTY_LOOP",
         obj
-    ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
+    ); // CDDrawSubMgrLeafScan::m_10 (::CMapStringToPtr @0x1b8438)
     LeafCue* found = static_cast<LeafCue*>(obj);
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
@@ -849,7 +849,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    CImageRegistry* reg = m_world->m_imageRegistry;
+    CDDrawWorkerRegistry* reg = m_world->m_imageRegistry;
     if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }

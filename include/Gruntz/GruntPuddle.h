@@ -9,7 +9,6 @@
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 struct CObjListNode {
     CObjListNode* m_next; // +0x00
@@ -34,7 +33,7 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 
 class CGruntPuddle : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010cc0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPUDDLE;

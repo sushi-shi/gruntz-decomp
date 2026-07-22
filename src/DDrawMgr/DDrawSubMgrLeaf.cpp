@@ -273,7 +273,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
 // ===========================================================================
 // Real polymorphic: cl emits the implicit ??_7CAniElement own-vptr stamp in
 // the ENTRY state (stamp-first, == retail), then DeleteAll, then the member
-// ~CAniRecordArray (trylevel 0) and ~CObject grand-base re-stamp fold in.
+// ~CObArray (trylevel 0) and ~CObject grand-base re-stamp fold in.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
 // The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
 // virtual dtor below - RVA_COMPGEN pairs the retail copy with the base COMDAT).
@@ -281,5 +281,5 @@ RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
 RVA(0x00152e30, 0x53)
 CAniElement::~CAniElement() {
     DeleteAll();
-    // m_records.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
+    // m_records.~CObArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }

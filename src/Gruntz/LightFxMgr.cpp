@@ -84,7 +84,7 @@ void CLightFxMgr::Reset() {
 }
 
 RVA(0x0009dcb0, 0x41)
-i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
+i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, i32 slot) {
     if (!imgSet) {
         return 0;
     }

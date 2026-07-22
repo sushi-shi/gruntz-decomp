@@ -8,8 +8,7 @@
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/MapStringToOb.h>
 
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CDDrawWorkerCache : public CObject {
 public:
@@ -66,7 +65,7 @@ public:
     // so this reverse-lookup is a CDDrawWorkerCache method (was mis-attributed to the +0x10
     // CDDrawWorkerRegistry sibling, which shares the byte-identical map@+0x10 layout).
     CString FindKeyOfValue(CObject* target); // 0x165360  (the m_10 map's
-    // true element base: values are heterogeneous - CImageSet/worker templates AND
+    // true element base: values are heterogeneous - CDDrawWorker/worker templates AND
     // the objects' own AnimWorkerObj records get reverse-looked-up here)
 
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)

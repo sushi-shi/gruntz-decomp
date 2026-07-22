@@ -1,4 +1,4 @@
-// DdCreateArg.h - the CDirectDrawMgr::CreatePoolItem factory-arg views.
+// DdCreateArg.h - the CDDrawPtrCollections::CreatePoolItem factory-arg views.
 //
 // @identity-TODO (honest by-offset + abstract-COM models, no fabricated identity):
 // CreatePoolItem's arg0 is a deeply-nested descriptor whose +0x08 is a COM-style

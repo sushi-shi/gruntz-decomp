@@ -1,12 +1,12 @@
 #include <Gruntz/GruntDataRecord.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <rva.h>
 #include <string.h> // memset / strcpy (inlined to rep stos / rep movs at /O2 /Oi)
 
 #include <Mfc.h> // CString::operator= (the owned name members are CStrings)
 
 RVA(0x00056da0, 0xc7)
-i32 GruntDataRecord::SerializeStrings(CSerialArchive* ar) {
+i32 GruntDataRecord::SerializeStrings(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -27,7 +27,7 @@ i32 GruntDataRecord::SerializeStrings(CSerialArchive* ar) {
 }
 
 RVA(0x00056eb0, 0x94)
-i32 GruntDataRecord::DeserializeStrings(CSerialArchive* ar) {
+i32 GruntDataRecord::DeserializeStrings(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }

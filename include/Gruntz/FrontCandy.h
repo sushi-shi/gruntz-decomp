@@ -8,7 +8,7 @@
 
 class CFrontCandy : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
     RVA(0x0000fa40, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

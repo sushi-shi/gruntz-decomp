@@ -1,7 +1,7 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (== the real CFileMemBase) - the slot-1 arg
+#include <Gruntz/SerialArchive.h> // CFileMemBase (== the real CFileMemBase) - the slot-1 arg
 #include <Ints.h>
 #include <rva.h>
 
@@ -52,7 +52,7 @@ public:
     // Each override tail-chains its base leg with a QUALIFIED call (retail: `call 0x1848`
     // + `neg/sbb/neg` = normalise to 0/1), which is itself the proof that those bodies'
     // `this` is a CStatusBarItem: an unqualified call would be recursion.
-    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b); // 0x10bfc0
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b); // 0x10bfc0
     // vtable slot 2 (0x100660): the base 10-arg setup - bails (returns 0) if the object
     // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
     // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it

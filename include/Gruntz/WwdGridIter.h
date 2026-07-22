@@ -58,5 +58,4 @@ inline CWwdGridIter::CWwdGridIter() {
 }
 inline CWwdGridIter::~CWwdGridIter() {}
 
-
 #endif // GRUNTZ_WWDGRIDITER_H

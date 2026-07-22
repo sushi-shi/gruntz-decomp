@@ -6,7 +6,6 @@
 #include <rva.h>
 #include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
-
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 DATA(0x002bf840)

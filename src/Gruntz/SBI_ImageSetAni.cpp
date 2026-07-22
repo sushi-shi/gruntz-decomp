@@ -3,14 +3,14 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
+#include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (m_world liveness gate)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (Init's map lookup)
 #include <Image/CImage.h>              // the resolved frame record (Render's blit)
@@ -53,7 +53,7 @@ i32 CSBI_ImageSetAni::Init(
         m_rect14.m_c = rc.bottom;
         m_cmd = a2;
         if (key != 0) {
-            CImageSet* tbl = 0;
+            CDDrawWorker* tbl = 0;
             (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(tbl));
             m_34 = tbl;
             if (tbl != 0) {
@@ -89,7 +89,7 @@ i32 CSBI_ImageSetAni::Init(
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_28 > 0) {
-        CImageSet* tbl = m_34;
+        CDDrawWorker* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
             cel = static_cast<CImage*>(tbl->m_items.GetAt(m_38));
@@ -170,7 +170,7 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
 }
 
 RVA(0x000e7cd0, 0xf8)
-i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }

@@ -26,7 +26,6 @@ typedef struct tagRECT CCueRect;
 SIZE_UNKNOWN();
 
 class CGruntSpawnConfig;                  // the +0x60 registry object (one class, three ex-names)
-typedef CGruntSpawnConfig CGruntCueSink; // cue-receiver face: methods live on CGruntSpawnConfig
 
 #include <Gruntz/GameRegistry.h>
 
@@ -161,7 +160,7 @@ struct CGruntListNode {
 };
 SIZE_UNKNOWN();
 
-class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
+class CArchive; // (unused MFC fwd; Save uses CFileMemBase)
 
 class CGruntSub {
 public:
@@ -266,7 +265,7 @@ class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
-    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
         OVERRIDE; // slot 1  @0x53b80
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
@@ -464,7 +463,7 @@ public:
     // (+0x114/+0x118/+0x124 were migrated here last batch as "placement params". That was
     //  WRONG and is reverted: those writes happen on the CreateSprite RESULT - a CGameObject,
     //  not a grunt - and <Gruntz/UserLogic.h>'s CGameObject already models them (m_114 /
-    //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
+    //  m_118 / m_124) with recovered roles. The old CGrunt view conflated the SPRITE with
     //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
     // ---------------------------------------------------------------------
     // +0x150..+0x16f IS THE CWapX SECOND BASE, spelled flat (MI1, 2026-07-17).
@@ -524,7 +523,7 @@ public:
     // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. Its
     // hop chain
     // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
-    // CDDrawSurfaceMgr facet) whose +0x28 is the CSndHost cue registry
+    // CDDrawSurfaceMgr facet) whose +0x28 is the CDDrawSubMgrLeafScan cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
     AnimWorkerObj* m_3c;            // +0x158 (the bound object's worker record)
     CAniElement* m_value; // +0x15c (= m_154->m_1a0.m_14 cache)
@@ -832,14 +831,14 @@ public:
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
     void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
-    i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
+    i32 Save(CFileMemBase* ar);            // @0x53f90 serialize
     // @0x555e0 (4856 B; body in GameStateRecordLoad.cpp) - the game-state-record
     // load counterpart of Save: SerializeMove's mode-7 arm, dispatched on this
     // same grunt.
     // (Load @0xd8060 is CPlay::SyncRead2f7c, the
     //  play-state read serializer; SyncState calls it on the PLAY state. The
     //  CGrunt attribution was a same-offsets overlay; see Play.cpp.)
-    i32 LoadStateRecord(CGruntArchive* ar);
+    i32 LoadStateRecord(CFileMemBase* ar);
     void ClearAllSprites();    // @0x4b240
     i32 CommitArrival();       // @0x4b130
     void ClearSubA();          // @0x57c10
@@ -848,7 +847,7 @@ public:
     void DestroyAnims();       // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
-    GruntTilePos* GetTilePos(GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)
+    Coord* GetTilePos(Coord* out); // 0x31c70 (out-of-line in Grunt.cpp)
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
@@ -1164,17 +1163,14 @@ extern char s_codeN[]; // "N" (0x0060dc04)
 extern char s_codeO[]; // "O" (0x0060dc0c)
 extern char s_codeQ[]; // "Q" (0x0060dc08)
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 extern "C" i32 GameRand(); // 0x51fee0 (__cdecl)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

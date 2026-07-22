@@ -1,8 +1,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Play.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CDDrawSurfaceMgr/CImageRegistry/CDDrawSubMgrPages (m_c->m_imageRegistry/m_24/m_drawTarget)
-#include <Image/ImageSet.h>   // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CDDrawSurfaceMgr/CDDrawWorkerRegistry/CDDrawSubMgrPages (m_c->m_imageRegistry/m_24/m_drawTarget)
+#include <Image/ImageSet.h>   // CDDrawWorker::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
 #include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
@@ -26,7 +26,7 @@ RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
-    CImageSet* set = static_cast<CImageSet*>(set_ob);
+    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
     if (set != 0) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
@@ -55,8 +55,8 @@ i32 CPlay::Vslot23() {
 
     CObject* lookup_ob = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
-    CImageSet* lookup = static_cast<CImageSet*>(lookup_ob);
-    CImageSet* set = lookup;
+    CDDrawWorker* lookup = static_cast<CDDrawWorker*>(lookup_ob);
+    CDDrawWorker* set = lookup;
     if (set == 0) {
         return 0;
     }

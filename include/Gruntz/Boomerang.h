@@ -1,7 +1,7 @@
 #ifndef GRUNTZ_BOOMERANG_H
 #define GRUNTZ_BOOMERANG_H
 
-#include <Gruntz/Projectile.h> // real CProjectile base (pulls CMovingLogic/CUserLogic, CGruntArchive, LogicTypeId)
+#include <Gruntz/Projectile.h> // real CProjectile base (pulls CMovingLogic/CUserLogic, CFileMemBase, LogicTypeId)
 #include <rva.h>
 
 class CBoomerang : public CProjectile {
@@ -10,7 +10,7 @@ public:
     // The five slots CBoomerang overrides over CProjectile's vtable (declared-only
     // unless a body is bound below; their vftable references reloc-mask).
     virtual ~CBoomerang() OVERRIDE; // slot 0  (origin CUserBase)
-    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
         OVERRIDE;                              // slot 1 @0xe15d0
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (origin CUserBase)
     virtual void MovingSlot16() OVERRIDE;      // slot 16 @0xe08b0 - the boomerang motion step

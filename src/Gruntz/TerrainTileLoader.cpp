@@ -63,7 +63,7 @@
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (FindInLists12/DelFromList1)
 #include <Gruntz/TileTriggerLogic.h>     // CTileTriggerLogic (ApplyMove tags the found set)
 #include <Gruntz/UserLogic.h>            // CGameObject (the created Particlez sprite)
-#include <Wwd/WwdFile.h>                 // CPlaneRender - the canonical plane (cell lookup)
+#include <Wwd/WwdFile.h>                 // CDDrawWorkerHost - the canonical plane (cell lookup)
 #include <rva.h>
 
 RVA(0x00075e90, 0x1329)
@@ -82,7 +82,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     CDDrawSurfaceMgr* level = m_world;
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState); // retail reads [g_gameReg+0x2c]
     CGameLevel* grid = level->m_level;
-    CPlaneRender* g = grid->m_mainPlane;
+    CDDrawWorkerHost* g = grid->m_mainPlane;
 
     // clamp the tile coords to the grid (tile-space bounds at +0x28/+0x2c)
     i32 cx = tileX;

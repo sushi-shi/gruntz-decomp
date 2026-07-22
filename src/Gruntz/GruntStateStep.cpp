@@ -9,7 +9,7 @@
 #include <string.h>     // inline strcmp type-name gate
 #include <stdlib.h>     // engine rand (0x11fee0)
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/Brickz.h> // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
+#include <Gruntz/Brickz.h> // canonical CMapMgr == CMapMgr (the board; was the CStepGrid view)
 #include <Gruntz/Grunt.h>  // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
 #include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this`
@@ -73,7 +73,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
     }
     if (state != 2) {
         // ---- fresh: re-query the move grid ----
-        GruntTilePos tp;
+        Coord tp;
         g->GetScreenPos(&tp);
         CGrunt* nb = QueryTile4098(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
         if (nb != 0) {
@@ -81,7 +81,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 STEP_DRAIN(g);
             }
             // board distance nb <-> g
-            GruntTilePos np, gp, np2, gp2;
+            Coord np, gp, np2, gp2;
             nb->GetScreenPos(&np);
             g->GetScreenPos(&gp);
             nb->GetScreenPos(&np2);
@@ -90,12 +90,12 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
             if (dist <= 0xa) {
                 // dirty-rect box around the grunt
-                GruntTilePos b0, b1, b2, b3;
+                Coord b0, b1, b2, b3;
                 g->GetScreenPos(&b0);
                 g->GetScreenPos(&b1);
                 g->GetScreenPos(&b2);
                 g->GetScreenPos(&b3);
-                CBrickzGrid* grid = m_board;
+                CMapMgr* grid = m_board;
                 RECT box;
                 box.left = (b0.m_x >> 5) - 5;
                 box.top = (b1.m_y >> 5) - 5;
@@ -109,7 +109,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
                 grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
             }
-            GruntTilePos p;
+            Coord p;
             nb->GetScreenPos(&p);
             if (g->TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
                 g->m_defenderState = 2;
@@ -159,7 +159,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             goto tail;
         }
         // not arrived: reroute by Euclidean board distance
-        GruntTilePos here, np;
+        Coord here, np;
         g->GetTilePos(&here);
         cur->GetTilePos(&np);
         i32 dx = np.m_x - here.m_x;
@@ -184,19 +184,19 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }
-        GruntTilePos c0, c1, c2, c3;
+        Coord c0, c1, c2, c3;
         cur->GetScreenPos(&c0);
         g->GetScreenPos(&c1);
         cur->GetScreenPos(&c2);
         g->GetScreenPos(&c3);
         i32 dist2 = iabs((c0.m_y >> 5) - (c1.m_y >> 5)) + iabs((c2.m_x >> 5) - (c3.m_x >> 5));
         if (dist2 <= 0xa) {
-            GruntTilePos d0, d1, d2, d3;
+            Coord d0, d1, d2, d3;
             g->GetScreenPos(&d0);
             g->GetScreenPos(&d1);
             g->GetScreenPos(&d2);
             g->GetScreenPos(&d3);
-            CBrickzGrid* grid = m_board;
+            CMapMgr* grid = m_board;
             RECT box;
             box.left = (d0.m_x >> 5) - 5;
             box.top = (d1.m_y >> 5) - 5;
@@ -210,7 +210,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
             grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
         }
-        GruntTilePos cp;
+        Coord cp;
         cur->GetScreenPos(&cp);
         if (!g->TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
             g->m_arrivalCol = -1;

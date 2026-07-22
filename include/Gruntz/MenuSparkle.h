@@ -8,7 +8,7 @@
 
 class CMenuSparkle : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010160, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_MENUSPARKLE;
@@ -34,7 +34,6 @@ SIZE_UNKNOWN();
 
 #include <Gruntz/ActReg.h> // CLogicActTable (extern below)
 extern CLogicActTable g_logicActReg_646010; // 0x00246010
-
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

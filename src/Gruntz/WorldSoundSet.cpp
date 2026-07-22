@@ -21,7 +21,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-
 void SpawnPosSound(PosSoundObj* obj);
 
 // ---------------------------------------------------------------------------
@@ -970,5 +969,4 @@ RVA(0x00085ed0, 0x4a)
 CWorldSoundSet::~CWorldSoundSet() {
     Deactivate();
 }
-
 

@@ -724,7 +724,7 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
 // 40-byte BITMAPINFOHEADER, hand the parsed (width, height, bitcount, a2, a3)
 // to the decode helper that allocates the CRezImage's pixel plane, then Seek to
 // bfOffBits and Read exactly (bitcount/8)*stride*height pixel bytes into the
-// plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFileIO
+// plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFile
 // stack object's dtor runs on every exit -> the C++ EH frame.
 // @early-stop
 // TU-merge regalloc ripple (~98%; was 100% in the pre-merge rezimage TU with the
@@ -1372,7 +1372,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
 // CImagePaletteNode::LoadPcxFile (0x1772e0) - load the trailing palette of a .PCX:
 // seek 0x300 bytes back from EOF, Read the 256*3 RGB triples; on a short read
 // return 0. Expand the triples in place into a 256-entry RGBQUAD table (R,G,B,0)
-// and hand it to BuildPalette(table, arg). The CFileIO stack object forces the
+// and hand it to BuildPalette(table, arg). The CFile stack object forces the
 // /GX EH frame. __thiscall, ret 8.
 // @early-stop
 // 93.9% de-interleave-loop induction-phase wall: the EH frame + open/seek/read +

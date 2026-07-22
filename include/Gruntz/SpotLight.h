@@ -4,11 +4,11 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
-#include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGruntArchive / CGameObject)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (+ CFileMemBase / CGameObject)
 
 class CSpotLight : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in SpotLightCtor.cpp)
     RVA(0x00012ff0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
@@ -48,7 +48,6 @@ struct CSpotActEntry {
     i32 (CUserLogic::*m_fn)();
 };
 SIZE_UNKNOWN();
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

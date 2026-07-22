@@ -7,7 +7,7 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CWarpStonePad : CUserLogic)
 
 class CWarpStonePad : public CUserLogic, public CWapX {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
     RVA(0x00010f00, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

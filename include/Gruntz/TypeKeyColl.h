@@ -51,7 +51,6 @@ extern zDArray g_typeColl;
 
 extern i32 g_typeCounter;
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 g_recCount23;

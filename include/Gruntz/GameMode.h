@@ -11,8 +11,6 @@
 #include <afxwin.h>
 
 #include <Gruntz/AttractActor.h> // AttractActor / AttractActorList / g_actorList
-typedef AttractActor CGMEntity;
-typedef AttractActorList CGMEntityList;
 
 // (CGMSound / CGMSoundEntry / CGMOwner DISSOLVED 2026-07-20: they were phantom views of
 // the CState::m_4 CGruntzMgr. The credits/menu code now reaches the real classes cast-free:
@@ -44,7 +42,7 @@ extern RECT g_levelMsgRectsB[8];
 #include <Gruntz/State.h>
 #include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the CState::m_c holder itself)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CImageRegistry/CDDrawSubMgrLeafScan)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CDDrawWorkerRegistry/CDDrawSubMgrLeafScan)
 
 struct LeafCue;     // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
 class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player

@@ -1,6 +1,6 @@
 #include <Mfc.h>        // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)
@@ -11,7 +11,7 @@
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <stdlib.h>               // abs() / atoi()
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
 #include <Wap32/Object.h>       // CObject - the shared engine grand-base
@@ -21,7 +21,7 @@
 #include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
-#include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
+#include <Gruntz/Sprite.h>                // CDDrawWorker (frame-data), CMapStringToOb, CFrameArray
 #include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
@@ -31,14 +31,14 @@
 #include <Gruntz/GameLevel.h>             // m_0c->m_level->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
-#include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
+#include <Image/ImageSet.h>               // CDDrawWorker (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // OwnerMgr()->m_animRegistry (the +0x2c geometry-source catalog)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
 // userbaselink), the AnimWorkerObj/CLogicRecord record leaves, and the
-// CDDrawWorker/CImageSet frame-collection methods (??_7CDDrawWorker slots 10-16 span
+// CDDrawWorker/CDDrawWorker frame-collection methods (??_7CDDrawWorker slots 10-16 span
 // the whole weave - one class's virtuals across all of them). The file IS that obj;
 // its former 0x15bxxx dtor block lives in src/Wwd/WwdFactoryObject.cpp (block I) and
 // the 0x166xxx render block in src/Wwd/WwdGameObjectRender.cpp (block R).
@@ -48,8 +48,6 @@
 //
 // Fields are typed named members at their retail offsets (matching-neutral); only
 // the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
-
-
 
 static inline void StampWorkerVtbl(AnimWorkerObj* w) {
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
@@ -68,7 +66,7 @@ void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefau
 // m_c->m_imageRegistry, cache it + the caller-supplied frame number/frame ptr.
 // (Role-union note: CGameObject's m_0c/+0x190/+0x194/+0x198/+0x19c are ROLE-UNION -
 // for a WwdFile-loaded object they are world/source-def/layer/stamp; for a
-// CreateSprite'd sprite they are the resource holder / cached CSprite / frame ptr /
+// CreateSprite'd sprite they are the resource holder / cached CDDrawWorker / frame ptr /
 // frame number. The reinterpreting casts are the authentic union access.)
 // ===========================================================================
 // @early-stop
@@ -78,10 +76,10 @@ void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefau
 // wall as the sibling ApplyName (89%). Logic complete.
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
-    CSprite* spr = 0;
+    CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
-    spr = static_cast<CSprite*>(sprOb);
+    spr = static_cast<CDDrawWorker*>(sprOb);
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
@@ -96,10 +94,10 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
 
 RVA(0x00150540, 0x65)
 void CWwdGameObjectA::ApplyName(const char* name) {
-    CSprite* spr = 0;
+    CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
-    spr = static_cast<CSprite*>(sprOb);
+    spr = static_cast<CDDrawWorker*>(sprOb);
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_minIndex;
@@ -114,7 +112,7 @@ void CWwdGameObjectA::ApplyName(const char* name) {
 
 RVA(0x001505b0, 0x5c)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
-    CSprite* spr = 0;
+    CDDrawWorker* spr = 0;
     OwnerMgr()->m_animRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (!spr) {
         return 0;
@@ -137,7 +135,7 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // sinks past the arg pushes. ~73%; logic complete, deferred to the final sweep.
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
-    CSprite* spr = 0;
+    CDDrawWorker* spr = 0;
     OwnerMgr()->m_soundRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
     if (spr != 0) {
         m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
@@ -269,7 +267,7 @@ i32 CWwdGameObjectA::Test() {
     i32 bottom = m_screenY + e->m_anchorY;
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
-        // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
+        // CGameLevel -> +0x5c CDDrawWorkerHost == the former WwdCamHolder->m_5c camera object).
         RECT* r = reinterpret_cast<RECT*>((reinterpret_cast<char*>(OwnerMgr()->m_level->m_mainPlane) + 0x40));
         if (right < r->left) {
             return 0;
@@ -303,7 +301,7 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find(reinterpret_cast<CSerialArchive*>(a1), type, a3, reinterpret_cast<i32>(self)) == 0) {
+    if (m_1a0.Find(reinterpret_cast<CFileMemBase*>(a1), type, a3, reinterpret_cast<i32>(self)) == 0) {
         return 0;
     }
     switch (type) {
@@ -333,7 +331,7 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
 // operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObjectA::ReadState(i32 src) {
-    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
+    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(src);
     if (ar == 0) {
         return 0;
     }
@@ -348,7 +346,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
     char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. SerializeSpriteName's name[0x100])
     memset(tmp, 0, 0x80);
     if (m_sprite != 0) {
-        strcpy(tmp, m_sprite->m_name); // CSprite::m_name IS the +0x24 the raw read used
+        strcpy(tmp, m_sprite->m_name); // CDDrawWorker::m_name IS the +0x24 the raw read used
     }
     ar->Write(tmp, 0x80);
 
@@ -363,7 +361,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
 
 RVA(0x00150c30, 0x130)
 i32 CWwdGameObjectA::SerializeSpriteName(i32 src) {
-    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
+    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(src);
     if (ar == 0) {
         return 0;
     }
@@ -379,11 +377,11 @@ i32 CWwdGameObjectA::SerializeSpriteName(i32 src) {
         // Identical to CGameObject::ApplyLookupSprite (0x1504d0): bounds-check the frame
         // number against the sprite's valid range, then index its frame array. The former
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
-        CSprite* found = 0;
+        CDDrawWorker* found = 0;
         CObject* foundOb = 0;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_imageRegistry->m_10map.Lookup(name, foundOb);
-        found = static_cast<CSprite*>(foundOb);
+        found = static_cast<CDDrawWorker*>(foundOb);
         m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -737,7 +735,7 @@ i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
 
 RVA(0x00151320, 0x454)
 i32 CGameObject::Serialize(i32 arParam) {
-    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
+    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(arParam);
     if (ar == 0) {
         return 0;
     }
@@ -819,7 +817,7 @@ i32 CGameObject::Serialize(i32 arParam) {
 
 RVA(0x00151780, 0x40d)
 i32 CGameObject::SerializeObjectState(i32 arParam) {
-    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
+    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(arParam);
     if (ar == 0) {
         return 0;
     }
@@ -948,7 +946,7 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
 // never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
 RVA(0x00151c00, 0x118)
 i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
-    CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(dst);
+    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(dst);
     if (ar == 0) {
         return 0;
     }
@@ -1091,7 +1089,7 @@ void CDDrawWorker::Unload() {
 }
 
 // ===========================================================================
-// CSprite::InsertFrame @0x151f00 - build and install a frame worker (a CImage,
+// CDDrawWorker::InsertFrame @0x151f00 - build and install a frame worker (a CImage,
 // vftable @0x5eaa2c) at frame number `n` in the sprite's +0x10 frame CObArray.
 // __thiscall, ret 0xc.
 // @early-stop
@@ -1101,7 +1099,7 @@ void CDDrawWorker::Unload() {
 // became a clean ctor). The only residual is the vptr store position (cl 1st vs retail
 // 4th) - same wall as CreateFrame30.
 RVA(0x00151f00, 0xa4)
-CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
+CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != 0) {
         return 0;
     }

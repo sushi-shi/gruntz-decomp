@@ -4,12 +4,12 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>       // CLogicActTable (the slot-4 activation-dispatch table)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/UserLogic.h>    // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
 class CCursorSnapSprite : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011860, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_CURSORSNAPSPRITE;

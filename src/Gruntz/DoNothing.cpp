@@ -1,7 +1,7 @@
 #include <Gruntz/DoNothing.h>
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Ints.h>
 #include <rva.h>
@@ -11,7 +11,7 @@
 VTBL(CDoNothingNormal, 0x001e859c);
 VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
 RVA(0x0000f6d0, 0x47)
-i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CDoNothing::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -31,7 +31,7 @@ i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
 
 RVA(0x0000f800, 0x47)
-i32 CDoNothingNormal::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CDoNothingNormal::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

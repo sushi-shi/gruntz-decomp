@@ -33,7 +33,6 @@ typedef enum DSoundDx5Magic {
     DSBUFFERDESC_SIZE = 0x14,  // retail sizeof(DSBUFFERDESC) (DX6 grew the struct)
 } DSoundDx5Magic;
 
-
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
 VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
@@ -498,7 +497,6 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     }
     return 1;
 }
-
 
 // ---------------------------------------------------------------------------
 // DSoundCloneInst ctor 0x135b10: chain DSoundBaseSub base ctor, init empty clone list,

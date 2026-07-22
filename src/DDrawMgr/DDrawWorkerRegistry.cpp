@@ -33,7 +33,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-
 void operator delete(void*);
 
 // The linker-kept COMDAT pair of CLoadable's (A)-form inline dtor - ??_G
@@ -316,7 +315,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 a2) {
             m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                    total += (static_cast<CImageSet*>(val))->GetMemoryUsage(a2);
+                    total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(a2);
                 }
             }
         } while (pos != 0);
@@ -349,7 +348,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
     POSITION pos = m_10map.GetStartPosition();
     while (pos != 0) {
         m_10map.GetNextAssoc(pos, key, val);
-        if (val != 0 && (static_cast<CImageSet*>(val))->FindFrame(frame, outName, outIndex)) {
+        if (val != 0 && (static_cast<CDDrawWorker*>(val))->FindFrame(frame, outName, outIndex)) {
             return 1;
         }
     }

@@ -19,7 +19,7 @@ VTBL(CPoolItemA88, 0x001efa88);
 VTBL(CPoolItemAB8, 0x001efab8);
 VTBL(CPoolItemAE8, 0x001efae8);
 DATA(0x002bed00)
-CDirectDrawMgr* g_DirectDrawMgr = 0; // 0x6bed00
+CDDrawPtrCollections* g_DirectDrawMgr = 0; // 0x6bed00
 
 DATA(0x00283eb8)
 i32 g_ddLogEnabled = 0; // 0x683eb8
@@ -67,7 +67,7 @@ void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
 }
 
 RVA(0x00141400, 0x835)
-void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
+void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // local_340 - error-code name
     char szMsg[256];  // local_300 - description
     char szLine[512]; // local_200 - formatted output line
@@ -333,7 +333,7 @@ CDDrawPtrCollections::~CDDrawPtrCollections() {
 }
 
 RVA(0x00141dc0, 0x224)
-i32 CDirectDrawMgr::CreateDevice(
+i32 CDDrawPtrCollections::CreateDevice(
     void* a1,
     void* hwnd,
     i32 width,
@@ -349,7 +349,7 @@ i32 CDirectDrawMgr::CreateDevice(
     } else {
         i32 chr = DirectDrawCreate(static_cast<GUID*>(hwnd), &m_dd1, 0);
         if (chr != 0) {
-            CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
+            CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == 0) {
                 m_lastError = 0x3e9;
             }
@@ -357,7 +357,7 @@ i32 CDirectDrawMgr::CreateDevice(
         }
         chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
         if (chr != 0) {
-            CDirectDrawMgr::GetErrorString(0, 0, chr);
+            CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
                 m_lastError = 0x3ef;
             }
@@ -367,7 +367,7 @@ i32 CDirectDrawMgr::CreateDevice(
 
     i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), coopFlags);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
     if (hr != 0) {
         if (m_lastError == 0) {
@@ -395,7 +395,7 @@ i32 CDirectDrawMgr::CreateDevice(
         reinterpret_cast<LPDDCAPS>(m_helCaps)
     );
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
     m_bltCaps = (reinterpret_cast<LPDDCAPS>(m_driverCaps))->dwCaps & 0x8000000;
     SetupCaps();
@@ -403,7 +403,7 @@ i32 CDirectDrawMgr::CreateDevice(
     if (width > 0 && height > 0) {
         hr = SetVideoMode(width, height, bpp, 0, 0);
         if (hr != 0) {
-            CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xc2, hr);
+            CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xc2, hr);
             if (m_lastError == 0) {
                 m_lastError = 0x3ec;
             }
@@ -434,7 +434,7 @@ i32 __stdcall
 CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
 
 RVA(0x00141ff0, 0x6c)
-i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
+i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
     if (factory == 0) {
         return 0;
     }
@@ -442,7 +442,7 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
     i32 hr =
         DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
     }
     return CreateDevice(a1, g_ddCreateCtx, width, height, bpp, coop);
@@ -569,7 +569,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     AddItemA(item);
     return item;
 }
-
 
 // ---------------------------------------------------------------------------
 // CreateRange (0x142630). Build a numbered sequence of a58 pool items named
@@ -823,20 +822,20 @@ CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
 }
 
 // ---------------------------------------------------------------------------
-// LoadPaletteMakeB (0x143150).  Open `path` via CFileIO, seek 0x300 from the end and
+// LoadPaletteMakeB (0x143150).  Open `path` via CFile, seek 0x300 from the end and
 // read the trailing 0x300-byte palette into a stack buffer, then register a pool-B item
-// built from it (MakeB(buf, 0)).  Any failure unwinds the CFileIO + returns 0.  The
+// built from it (MakeB(buf, 0)).  Any failure unwinds the CFile + returns 0.  The
 // second arg slot is reused as the (always-0) MakeB tag.  /GX EH frame.  ret 0x8.
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~98%: logic + offsets + CFG + the CFileIO open/seek/read shapes are byte-faithful.
+// ~98%: logic + offsets + CFG + the CFile open/seek/read shapes are byte-faithful.
 // Residue is (a) the /GX funcinfo state index push (retail `push 0xb` vs the per-TU
 // compiler-generated funcinfo @+0 - the global __ehfuncinfo numbering, not reproducible
 // from one TU; docs/patterns/eh-state-numbering-base.md) and (b) MSVC folds the
 // reloaded-from-param-slot MakeB tag to an immediate 0 where retail reloads it. Deferred.
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
-    CFileIO file;
+    CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
@@ -848,7 +847,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     return MakeB(buf, z); // retail passes the original z tag (not const-folded 0)
 }
 
-
 // @early-stop
 // ~87% - selection-sort induction/spill wall (was 81%: accessing m_poolItems directly
 // instead of a hoisted `arr` alias fixed the this-relative-vs-arr-relative addressing
@@ -857,7 +855,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // offset alongside a separate counter; cl keeps them in registers (0x8 frame). Pure
 // register-pressure induction shape, not source-steerable. No EH frame.
 RVA(0x00143240, 0x143)
-void CDirectDrawMgr::SetupCaps() {
+void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
         ::operator delete(m_poolItems.GetData()[i]);
     }
@@ -870,7 +868,7 @@ void CDirectDrawMgr::SetupCaps() {
         reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback)
     );
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
         m_poolItems.SetAtGrow(m_poolItems.GetSize(), g_modeArray.GetData()[j]);
@@ -905,7 +903,7 @@ i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
 }
 
 RVA(0x001433d0, 0x4f)
-i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
+i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
     CDdMode* a = static_cast<CDdMode*>(pa);
     CDdMode* b = static_cast<CDdMode*>(pb);
     if (a->m_c > b->m_c) {
@@ -933,7 +931,7 @@ i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
 // in the found path, while cl uses immediate stores + an early out-ptr load. Permuter
 // ran (no change); not source-steerable, same as its two siblings.
 RVA(0x00143420, 0x4b)
-void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
+void CDDrawPtrCollections::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
     i32 idx = FindLast(k0, k1, k2);
     if (idx == -1) {
         out->a = -1;
@@ -946,7 +944,7 @@ void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
 }
 
 RVA(0x00143470, 0x47)
-i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
+i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
     for (i32 i = m_poolItems.GetSize() - 1; i >= 0; i--) {
         CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
@@ -958,7 +956,7 @@ i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
 }
 
 RVA(0x001434c0, 0x45)
-i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
+i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
         CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
         if (e->m_c == static_cast<u32>(k0) && e->m_8 == static_cast<u32>(k1) && e->m_54 == k2) {
@@ -974,7 +972,7 @@ i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
 // ecx, while cl swaps them (entry in edx), cascading into the found-path field reads.
 // No source spelling (index/hoisted-base/explicit pointer-walk) flips the pair.
 RVA(0x00143510, 0x71)
-void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+void CDDrawPtrCollections::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx++;
@@ -997,7 +995,7 @@ void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 // ~72.8% regalloc wall: same iterator/entry register swap as FindFwd (mirror,
 // descending scan). Logic complete.
 RVA(0x00143590, 0x7e)
-void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+void CDDrawPtrCollections::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx--;
@@ -1017,7 +1015,7 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 }
 
 // ---------------------------------------------------------------------------
-// CDirectDrawMgr::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
+// CDDrawPtrCollections::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
 // descriptor out of arg0's source object (slot +0x30), reports a failure through
 // GetErrorString, else operator-new's the 0xc0-byte pool item, constructs its
 // +0x94 sub-object + stamps the vtable, runs the item's Init (slot +0x04) and
@@ -1051,13 +1049,13 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 // Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
-void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
+void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, void* arg1) {
     CDdCreateArg* arg0 = static_cast<CDdCreateArg*>(arg0v);
     void* outA = 0;
     void* outB;
     i32 hr = arg0->m_8->Make(&outB, &outA);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
     }
     // The item IS a CDDSurface (base pool item): `new CDDSurface` emits exactly the
@@ -1077,7 +1075,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
 }
 
 RVA(0x00143740, 0x93)
-i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
+i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
     i32 j;
     i32* d = reinterpret_cast<i32*>(&desc);
@@ -1090,7 +1088,7 @@ i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
         *pWidth = 0;
         *pHeight = 0;
         *pBpp = 0;
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6e5, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6e5, hr);
         return 0;
     }
     *pWidth = desc.dwWidth;
@@ -1113,7 +1111,7 @@ i32 RestoreLostSurfaces() {
     return 0;
 }
 
-// CDirectDrawMgr::GetAvailableVidMem (0x143810) - forward to the held device's
+// CDDrawPtrCollections::GetAvailableVidMem (0x143810) - forward to the held device's
 // IDirectDraw2::GetAvailableVidMem (slot 0x5c); `caps` arrives by value and is
 // passed by address as LPDDSCAPS. Returns HRESULT == 0. __thiscall, ret 0xc.
 //
@@ -1126,7 +1124,7 @@ i32 RestoreLostSurfaces() {
 // this header is deliberately ddraw.h-free (widely included) - exposing DDSCAPS
 // by value would pollute every includer for a 43-byte forwarder. Deferred.
 RVA(0x00143810, 0x2b)
-i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
+i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
     return m_device->GetAvailableVidMem(
                reinterpret_cast<LPDDSCAPS>(&caps),
                reinterpret_cast<LPDWORD>(total),
@@ -1136,7 +1134,7 @@ i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
 }
 
 RVA(0x00143840, 0x32)
-i32 CDirectDrawMgr::GetFreeVidMem() {
+i32 CDDrawPtrCollections::GetFreeVidMem() {
     DDSCAPS caps;
     DWORD total;
     DWORD freeMem;
@@ -1160,11 +1158,11 @@ CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(v
 }
 
 RVA(0x001438c0, 0x31)
-IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
+IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
     IDirectDrawSurface* surf = 0;
     i32 hr = m_device->GetGDISurface(&surf);
     if (hr != 0) {
-        DDrawLogLine(const_cast<char*>("CDirectDrawMgr::GetGDISurface()"));
+        DDrawLogLine(const_cast<char*>("CDDrawPtrCollections::GetGDISurface()"));
         return 0;
     }
     return surf;
@@ -1270,7 +1268,7 @@ CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
 // ---------------------------------------------------------------------------
 RVA(0x00143a30, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
-    CFileIO file;
+    CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
@@ -1289,7 +1287,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
     desc.dwSize = 0x6c;
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
         return 0;
     }
 
@@ -1346,7 +1344,7 @@ RVA(0x00143c20, 0x84)
 i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     i32 hr = m_device->SetDisplayMode(a0, a1, a2, a3, a4);
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
+        CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
         if (m_lastError == 0) {
             m_lastError = 0x3ec;
         }

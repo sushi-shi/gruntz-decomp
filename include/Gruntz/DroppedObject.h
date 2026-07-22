@@ -5,11 +5,10 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDroppedObject : CUserLogic)
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CDroppedObject : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012560, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
@@ -44,7 +43,6 @@ extern CSiblingActReg g_dropColl; // 0x0024bed8
 extern CSiblingActReg g_dropperActReg; // 0x0024be90
 
 extern CSiblingActReg g_shadowActReg; // 0x0024bf00
-
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

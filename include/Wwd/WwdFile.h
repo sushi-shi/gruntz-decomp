@@ -1,8 +1,7 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
@@ -55,7 +54,7 @@ private:
 };
 SIZE(0x10); // 16-byte file-stream object (full layout to +0xc)
 
-#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CPlane/CPlaneRender/
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CDDrawWorkerHost/CDDrawWorkerHost/
 
 class CDDSurface;
 struct CPlaneTile;

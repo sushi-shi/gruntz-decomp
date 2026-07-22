@@ -49,7 +49,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + CDDrawGroupNode - the live-object list
 #include <Gruntz/GameLevel.h> // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
 #include <Gruntz/ImageSets.h> // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
-#include <Wwd/WwdFile.h>      // CPlaneRender - the canonical plane (tile grid + transform)
+#include <Wwd/WwdFile.h>      // CDDrawWorkerHost - the canonical plane (tile grid + transform)
 #include <rva.h>
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
@@ -64,7 +64,7 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
 }
 
 static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
-    CPlaneRender* g = level->m_mainPlane; // +0x5c (CLevelPlane == CPlaneRender)
+    CDDrawWorkerHost* g = level->m_mainPlane; // +0x5c (CDDrawWorkerHost == CDDrawWorkerHost)
     if (x < 0) {
         x = 0;
     } else if (x >= g->m_wrapW) {
@@ -523,7 +523,7 @@ i32 CPlay::ValidateLevelTiles() {
             // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
             // a tile-action event with the extent rect (AddToList3 @0x116a40,
             // thunk 0x3580, on m_beginMarker - the ex-"SpawnPuddle" alias).
-            CPlaneRender* pl = m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_168] + obj->m_164];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_beginMarker->AddToList3(

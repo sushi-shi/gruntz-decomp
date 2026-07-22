@@ -8,7 +8,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/AniElement.h>
 #include <rva.h>
 #include <string.h>
@@ -236,7 +236,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
 
         case DEATH_FALL: { // FALL / QUICKFALL by tile attribute
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             i32 attr = ((grid->m_rowInts[m_object->m_screenY >> 5]))[(m_object->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
@@ -264,7 +264,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_FALL2: { // FALL2 / QUICKFALL2 by tile attribute
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             i32 attr = ((grid->m_rowInts[m_object->m_screenY >> 5]))[(m_object->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {

@@ -9,7 +9,6 @@
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
-
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     m_cacheA = static_cast<u8*>(::operator new(0x400));
@@ -25,7 +24,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     if (hr == 0) {
         return 1;
     }
-    CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x4b, hr);
+    CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x4b, hr);
     return 0;
 }
 
@@ -82,13 +81,13 @@ void CDDPalette::Destroy() {
 // the 14-byte BITMAPFILEHEADER then the 0x428-byte info region (BITMAPINFOHEADER
 // + the 256-entry RGBQUAD table) then the 0x400-byte RGBQUAD palette, expand each
 // RGBQUAD (B,G,R) to a PALETTEENTRY (R,G,B,0), and Create. Any short read fails
-// (returns 0). The stack CFileIO forces a /GX EH frame. The CFileIO ctor/Open/
+// (returns 0). The stack CFile forces a /GX EH frame. The CFile ctor/Open/
 // Read/dtor are reloc-masked engine calls.
 // @early-stop
-// big EH frame (0x17e B): logic/CFG/all four CFileIO calls/the RGBQUAD->PALETTEENTRY
+// big EH frame (0x17e B): logic/CFG/all four CFile calls/the RGBQUAD->PALETTEENTRY
 // expand loop/the Create call all reproduced. Residual is the EH stack-slot layout
 // of the 0x848-byte scratch frame (retail's exact [esp+N] slot choices for the read
-// buffers + the EH-state stores) + the reloc-masked CFileIO/EH symbol names.
+// buffers + the EH-state stores) + the reloc-masked CFile/EH symbol names.
 // Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147590, 0x17e)
 i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
@@ -121,11 +120,11 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
 // CDDPalette::LoadPcx (__thiscall, ret 0xc => 3 args). Open the .PCX file, Seek
 // to -0x300 from EOF (the trailing 768-byte VGA palette), read the 0x300 RGB
 // triplets, expand each to a PALETTEENTRY (R,G,B,0), and Create. /GX EH frame for
-// the stack CFileIO.
+// the stack CFile.
 // @early-stop
 // big EH frame (0x122 B): the Open/Seek/Read/Create call chain, the 0x300-triplet
 // expand loop and the Create forward all reproduced. Residual is the EH stack-slot
-// layout of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol
+// layout of the 0x710-byte scratch frame + the reloc-masked CFile/EH symbol
 // names. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147710, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
@@ -182,11 +181,11 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
 
 // CDDPalette::LoadPal (__thiscall, ret 0xc => 3 args). Open the .PAL file, read
 // the 0x300-byte RGB-triplet block, expand each to a PALETTEENTRY (R,G,B,0), and
-// Create. /GX EH frame for the stack CFileIO.
+// Create. /GX EH frame for the stack CFile.
 // @early-stop
 // big EH frame (0x112 B): the Open/Read/Create chain, the 0x300-triplet expand
 // loop and the Create forward all reproduced. Residual is the EH stack-slot layout
-// of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol names.
+// of the 0x710-byte scratch frame + the reloc-masked CFile/EH symbol names.
 // Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x001478c0, 0x112)
 i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
@@ -317,7 +316,7 @@ i32 CDDPalette::GetEntries() {
     }
     i32 hr = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheB));
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
     return 0;
 }
@@ -364,7 +363,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
         reinterpret_cast<LPPALETTEENTRY>((m_cacheA + start * 4))
     );
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
     return hr;
 }
@@ -386,7 +385,7 @@ RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
     u8* snapshot = static_cast<u8*>(::operator new(0x400));
     for (i32 i = 0; i < 0x400; i += 4) {
@@ -430,7 +429,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     }
     i32 err = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (err) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x311, err);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x311, err);
     }
     m_firstColorIndex = start;
     m_colorCount = count;
@@ -458,7 +457,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durati
     }
     i32 err = m_palette->GetEntries(0, 0, 0x100, reinterpret_cast<LPPALETTEENTRY>(m_cacheA));
     if (err) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x34b, err);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x34b, err);
     }
     m_firstColorIndex = start;
     m_colorCount = count;
@@ -622,7 +621,7 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) 
         m_palette
             ->SetEntries(0, start, count, reinterpret_cast<LPPALETTEENTRY>((m_cacheA + start * 4)));
     if (hr != 0) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x406, hr);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x406, hr);
     }
 }
 
@@ -680,7 +679,7 @@ i32 CDDPalette::CaptureSystemPalette() {
     }
     i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<i32*>(dest), 0);
     if (rc != 0) {
-        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x495, rc);
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
         return 0;
     }
     return 1;

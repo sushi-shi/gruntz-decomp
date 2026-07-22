@@ -6,7 +6,7 @@
 
 class CSecretTeleporterTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000109f0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETTELEPORTERTRIGGER;
@@ -42,7 +42,6 @@ SIZE_UNKNOWN();
 
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_secretActReg; // 0x00244598
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

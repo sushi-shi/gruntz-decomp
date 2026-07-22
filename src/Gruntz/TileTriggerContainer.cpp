@@ -1,7 +1,7 @@
 #include <Mfc.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <rva.h>
 #include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82)
 
@@ -11,7 +11,7 @@
 #include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic + the per-id leaves AddLogic news
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerWiring.h>
-#include <Gruntz/GameLevel.h> // CGameLevel/CLevelPlane/CTileImageSet (the id-21 board latch)
+#include <Gruntz/GameLevel.h> // CGameLevel/CDDrawWorkerHost/CTileImageSet (the id-21 board latch)
 
 RVA(0x000c8640, 0x70)
 CTileTriggerContainer::~CTileTriggerContainer() {
@@ -688,7 +688,7 @@ i32 CTileTriggerContainer::DelFromList3(void* data) {
 // list/helper dispatch + count read/write identical.
 // See docs/patterns/rezalloc-placement-new-no-eh-frame.md
 RVA(0x00117280, 0x2ec)
-i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) {
+i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -789,7 +789,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117630, 0x82)
 i32 __stdcall
-SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
+SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
     if (o == 0) {
         return 0;
     }
@@ -823,7 +823,7 @@ SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLog
 // 6-tag switch to a jmp[tbl+(tag-0x15)*4] table, the recompile to a cmp tree.
 // See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117710, 0xa6)
-i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o) {
+i32 __stdcall SerializeApplyB(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o) {
     if (o == 0) {
         return 0;
     }
@@ -847,7 +847,7 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTr
 static void* RegSwitchTail(
     CTileTriggerContainer* self,
     CTileTriggerSwitchLogic* obj,
-    CSerialArchive* reader,
+    CFileMemBase* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -863,7 +863,7 @@ static void* RegSwitchTail(
 static void* RegLogicTail(
     CTileTriggerContainer* self,
     CTileTriggerLogic* obj,
-    CSerialArchive* reader,
+    CFileMemBase* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -885,7 +885,7 @@ static void* RegLogicTail(
 // MSVC tail-merges differently from the helper-factored spelling here) + the differently
 // -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
 RVA(0x00117800, 0x47f)
-void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
+void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 a2, i32 a3) {
     if (reader == 0) {
         return 0;
     }
@@ -932,7 +932,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 x = obj->m_tileX;
             i32 y = obj->m_tileY;
-            CLevelPlane* geo = level->m_mainPlane;
+            CDDrawWorkerHost* geo = level->m_mainPlane;
             if (x < 0) {
                 x = 0;
             } else if (x >= geo->m_gridW) {
@@ -991,7 +991,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
 }
 
 RVA(0x00117e20, 0x36)
-i32 CTileTriggerContainer::TransferFlag74(CSerialArchive* s) {
+i32 CTileTriggerContainer::TransferFlag74(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1003,7 +1003,7 @@ i32 CTileTriggerContainer::TransferFlag74(CSerialArchive* s) {
 }
 
 RVA(0x00117e70, 0x36)
-i32 CTileTriggerContainer::LoadFlag74(CSerialArchive* s) {
+i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }

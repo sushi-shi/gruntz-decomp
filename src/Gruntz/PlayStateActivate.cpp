@@ -7,7 +7,7 @@
 #include <Gruntz/Play.h>
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the VisitVisible chain arg)       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (+0x10 image registrar) + CDDrawSubMgrPages
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawWorkerRegistry (+0x10 image registrar) + CDDrawSubMgrPages
 #include <rva.h>
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)

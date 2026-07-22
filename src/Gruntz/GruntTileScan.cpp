@@ -49,7 +49,7 @@ RVA(0x00032ce0, 0x448)
 i32 CScanMgr::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
         if (g->CoordCount() != 0) {
-            GruntTilePos* c = reinterpret_cast<GruntTilePos*>(g->CoordTail()->m_coord);
+            Coord* c = reinterpret_cast<Coord*>(g->CoordTail()->m_coord);
             i32 col = c->m_x;
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
@@ -75,8 +75,8 @@ i32 CScanMgr::ScanRegion(CGrunt* g) {
         }
         if (g->m_dwell > m_cc && g->CoordCount() == 0) {
             CScanGrid* grid = m_c;
-            GruntTilePos tp;
-            g->GetScreenPos(static_cast<GruntTilePos*>(&tp));
+            Coord tp;
+            g->GetScreenPos(static_cast<Coord*>(&tp));
             i32 cx = tp.m_x >> 5;
             i32 cy = tp.m_y >> 5;
             RECT box;

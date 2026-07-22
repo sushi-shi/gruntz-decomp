@@ -3,7 +3,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/BootyMessages.h> // SecretMsgRow (this TU owns the tables)
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/LeafCue.h> // LeafCue + SoundStream (the CSndHost+0x2c stream) via SoundCue.h
+#include <Gruntz/LeafCue.h> // LeafCue + SoundStream (the CDDrawSubMgrLeafScan+0x2c stream) via SoundCue.h
 #include <Mfc.h>            // CString temps (/GX) + RECT/CopyRect/SetRect
 
 #include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)

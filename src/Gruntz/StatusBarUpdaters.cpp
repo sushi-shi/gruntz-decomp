@@ -10,7 +10,6 @@
 #include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_level) -> m_mainPlane tile grid
 #include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 
-
 // ===========================================================================
 // CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)
 // ===========================================================================
@@ -34,9 +33,9 @@
 // identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
-    CLevelPlane* g = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] + 1;
-    CLevelPlane* g2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
     g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
@@ -44,7 +43,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
@@ -74,9 +73,9 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 // grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
-    CLevelPlane* g = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] - 1;
-    CLevelPlane* g2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
     g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
@@ -84,7 +83,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHUP", spr_ob);

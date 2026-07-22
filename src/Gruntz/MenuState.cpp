@@ -17,12 +17,11 @@
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (LoadGameAssetNamespaces ResolvePath)
 #include <Image/CImage.h>   // g_resourceInstallActive
 #include <Gruntz/ChatBox.h> // canonical CChatBox (m_1b4 menu UI object; Init lives here)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (m_c->m_imageRegistry)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawWorkerRegistry (m_c->m_imageRegistry)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
-
 
 DATA(0x00245574)
 AttractActorList* g_actorList = 0;
@@ -34,7 +33,6 @@ static inline CGruntzMgr* Owner(CState* s) {
 }
 
 void operator delete(void*);
-
 
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
@@ -65,7 +63,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_MENU"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MENU"));
     if (m_2c == 0) {
         return 0;
     }
@@ -234,7 +232,7 @@ i32 CMenuState::FrameSlot28(i32) {
 
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
-    CGMEntityList* L = g_actorList;
+    AttractActorList* L = g_actorList;
 
     // per-entity Update pass (re-reads count each iter, like the target)
     for (i32 i = 0; i < L->m_count; i++) {

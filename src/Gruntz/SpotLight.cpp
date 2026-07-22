@@ -9,7 +9,6 @@
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (+0x68 CTriggerMgr* cmd grid)
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
 
-
 // @early-stop
 // x87 fp-stack scheduling wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
 // the mode gate, the target/anchor fold, the m_gridCol+m_gridRow*15 cell lookup and the

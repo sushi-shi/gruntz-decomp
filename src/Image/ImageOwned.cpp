@@ -3,7 +3,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h> // CDDSurface src arg (Lock/m_width/m_height/m_pitch/m_8)
 #include <ddraw.h>              // IDirectDrawSurface::Unlock (surf->m_8->Unlock inline COM)
-#include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/Close, reloc-masked) + CString
+#include <Io/FileStream.h>      // CFile (Open/Read/GetLength/Close, reloc-masked) + CString
 
 #include <string.h> // memcpy (inlined to rep movs)
 

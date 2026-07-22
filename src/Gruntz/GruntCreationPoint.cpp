@@ -14,7 +14,6 @@ typedef i32 (CUserLogic::*CreationPointHandler)();
 
 VTBL(CGruntCreationPoint, 0x001e81d4);
 
-
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
@@ -76,8 +75,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Gruntz/Play.h> // ChannelSlots_FindFree (ex .cpp extern)
 
@@ -99,7 +97,7 @@ DATA_SYMBOL(0x00244700, 0x0, ?g_creationPointActReg@@3UCActReg@@A)
 // difference, not source-steerable), and it pins `this` in edi vs retail's esi. The
 // ctor @0x3e520 shares the same wall (~80%).
 RVA(0x0003e7a0, 0xd7)
-i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

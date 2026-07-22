@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 struct BattlezRecord {
     i32 m_populated; // +0x00  populated flag (0fcad0 tests, 0fd330 sets to 1)
@@ -48,7 +48,7 @@ public:
     i32 SumGroupField08();                   // 0xfd2e0
     i32 GetRecordValue(i32 b);               // 0xfced0
     void FillRecord(i32 index, i32 phase);   // 0xfd330
-    i32 Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
+    i32 Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
 
     BattlezRecord* m_records; // +0x00
     i32 m_count;              // +0x04

@@ -1,6 +1,6 @@
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <Mfc.h>
 #include <Wap32/Object.h>             // CObject - the shared engine grand-base
@@ -20,7 +20,6 @@
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
 #include <Wwd/WwdObjMgr.h> // ex Globals.h
-
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
@@ -168,7 +167,6 @@ fail:
     return 0;
 }
 
-
 RVA(0x00155f50, 0x10)
 void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
     RelayHwnd(static_cast<i32(__cdecl*)()>(hWnd));
@@ -220,7 +218,6 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
     }
     return 1;
 }
-typedef CFileMemBase CSerialArchive;
 
 RVA(0x00156020, 0x505)
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3) {

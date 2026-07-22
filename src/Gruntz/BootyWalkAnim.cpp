@@ -20,7 +20,6 @@
 DATA(0x001e9068)
 i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 
-
 DATA(0x001e93a8)
 char g_secretChars[] = "WARP"; // "WARP"
 

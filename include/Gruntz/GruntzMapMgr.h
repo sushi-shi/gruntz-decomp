@@ -7,7 +7,6 @@
 #include <rva.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CGruntzMapMgr : public CMapMgr {
 public:
@@ -18,7 +17,7 @@ public:
     // slot 1 (0x082430): stream the node table + m_90 through the archive, then chain
     // the base probe. CGruntzMgr::BroadcastCmd drives it as a 4-arg command dispatch
     // (`mov eax,[ecx]; call [eax+4]`).
-    virtual i32 Visit(CSerialArchive* ar, i32 b, i32 c, i32 d) OVERRIDE;
+    virtual i32 Visit(CFileMemBase* ar, i32 b, i32 c, i32 d) OVERRIDE;
 
     // The level-load terrain parser (0x0810f0): allocates the grid, rolls per-cell
     // brick colours off the "Brickz" bute section, packs the cell flags, then seeds

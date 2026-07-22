@@ -3,7 +3,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_24 config host (real type)
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>
@@ -13,7 +13,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches + the +0x10 name map (Serialize)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections::MakeAndAddB (Serialize mode-8)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable::GetSel (Serialize mode-8)
-#include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h>         // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <string.h>                       // strlen / memset (inline repne-scas / rep-stos)
 
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type
@@ -112,7 +112,7 @@ i32 CSBI_WellGoo::Render() {
 // direct where retail uses ILT thunks + the differently-named folded base leg, and
 // the inline repne-scas/rep-stos scheduling. Not source-steerable; final sweep.
 RVA(0x000e64c0, 0x3e7)
-i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -164,7 +164,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CImageSet* set = 0;
+                CDDrawWorker* set = 0;
                 (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
                     ->Lookup(buf, reinterpret_cast<void*&>(set));
                 if (set != 0) {
@@ -179,7 +179,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CImageSet* set = 0;
+                CDDrawWorker* set = 0;
                 (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
                     ->Lookup(buf, reinterpret_cast<void*&>(set));
                 if (set != 0) {

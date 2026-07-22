@@ -5,16 +5,15 @@
 #include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the image-registry strip m_subPage caches
 
 #include <Gruntz/MenuPage.h>
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_owner) - its m_10 CImageRegistry
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_owner) - its m_10 CDDrawWorkerRegistry
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // CImageRegistry (== CDDrawWorkerRegistry): its m_10map catalog
+#include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // CDDrawWorkerRegistry (== CDDrawWorkerRegistry): its m_10map catalog
 
 inline void* operator new(size_t, void* p) {
     return p;
 }
-
 
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {

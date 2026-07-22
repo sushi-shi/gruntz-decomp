@@ -4,13 +4,13 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CLevelPlane (m_mainPlane +0x5c)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CDDrawWorkerHost (m_mainPlane +0x5c)
 
 // @early-stop
 // ~95%: logic byte-exact except (1) the TileSwitch (0x1640) arg-setup: retail
 // loads ecx=this before the call (a thiscall-shaped dispatch whose body ignores ecx)
 // while the shared free-__stdcall model emits no receiver load - one dead mov; and
-// (2) the on-screen clip-rect check's addressing mode (reading the CLevelPlane
+// (2) the on-screen clip-rect check's addressing mode (reading the CDDrawWorkerHost
 // +0x40 origin/extent fields directly vs a materialized rect pointer). Both accepted
 // regalloc/addressing ripple (structure phase).
 RVA(0x000f7d90, 0x171)
@@ -52,7 +52,7 @@ i32 CGrunt::StepPeerTracking() {
         CGruntzMgr* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
-        CLevelPlane* r = g->m_world->m_level->m_mainPlane;
+        CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
         if (x < r->m_extentX && x >= r->m_originX && y < r->m_extentY && y >= r->m_originY) {
             g->m_cueSink->CueEvent(this, 0x366, -1, 0, -1, -1);
         }

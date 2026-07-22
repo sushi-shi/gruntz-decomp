@@ -62,7 +62,7 @@ void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
 // FreeNodePool::Push @0x311b0 (before) + ddrawsubmgr CQueueDrainHost::Drain @0x31250
 // (after), NOT one reconstructed host both sides. Home hint battlezmapconfig is a
 // scattered god-TU (proximity only). This is one of WwdFile.cpp's 3 far-flung
-// CPlaneRender strays awaiting individual birth-position attribution; leave + flag.)
+// CDDrawWorkerHost strays awaiting individual birth-position attribution; leave + flag.)
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(i32* out, i32 x, i32 y) {
     i32 sx = m_shiftX;
@@ -84,8 +84,8 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
 // keep every completeness typedef after the last function to avoid a reschedule).
 //
 // VTBL skips (logged, none catalogable here):
-//   (the former CPlane / CWwdStream / CPlaneRenderPoly shells are dissolved:
-//    CPlane == CDDrawWorkerHost, CWwdStream == CFileMemBase, and the "poly"
+//   (the former CDDrawWorkerHost / CWwdStream / CPlaneRenderPoly shells are dissolved:
+//    CDDrawWorkerHost == CDDrawWorkerHost, CWwdStream == CFileMemBase, and the "poly"
 //    dispatch view is the canonical class's own slot 5.)
 // ===========================================================================
 // --- WwdFile.h header classes ---

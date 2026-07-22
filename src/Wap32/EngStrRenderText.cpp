@@ -4,7 +4,6 @@
 #include <rva.h>
 #include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
-
 // @early-stop
 // WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds match retail exactly.
 // Retail SPLITS the two by-value rect builds - the shadow pass INLINES a 4-mov copy of the

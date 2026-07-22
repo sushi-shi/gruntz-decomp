@@ -9,8 +9,7 @@ class CShadeTableCache;
 struct CShadeTable;
 struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
 class CDDrawSurfaceMgr; // reg->m_world (+0x30) - the loaded world/resource holder
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CLightFxMgr {
 public:
@@ -24,7 +23,7 @@ public:
     // 0x9dcb0  Push - apply the shade table chosen by `anchor` (clamped to [0,10))
     // to every frame of `imgSet`: re-type the frames (slot) then write the table's
     // resolved format word. __thiscall, 3 args, ret 0xc.
-    i32 Push(CImageSet* imgSet, i32 anchor, i32 slot);
+    i32 Push(CDDrawWorker* imgSet, i32 anchor, i32 slot);
 
     class CGruntzMgr* m_owner; // +0x00  owner (Init arg2 = the manager)
     class CGruntzMgr* m_reg;   // +0x04  the manager (Init arg0)

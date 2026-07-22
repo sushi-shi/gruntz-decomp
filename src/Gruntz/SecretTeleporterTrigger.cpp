@@ -3,7 +3,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
 #include <Gruntz/Trigger.h>           // CTrigger (point-probe result, its m_10 HUD sprite)
 #include <Gruntz/GameRegistry.h>      // the canonical *0x24556c singleton (m_world/m_cmdGrid/
@@ -14,7 +14,7 @@
 #include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
@@ -30,10 +30,8 @@ static inline CActEntry* ActLookup(i32 coord) {
     return reinterpret_cast<CActEntry*>(g_actColl.ResolveEntry(coord));
 }
 
-
-
 RVA(0x00010a10, 0x47)
-i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+i32 CSecretTeleporterTrigger::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
@@ -56,7 +54,7 @@ RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 RVA(0x00010bb0, 0x47)
-i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CSecretLevelTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -261,7 +259,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CLevelPlane* rc = g->m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
             if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
                 && ey >= rc->m_originY) {
                 g->m_cueSink

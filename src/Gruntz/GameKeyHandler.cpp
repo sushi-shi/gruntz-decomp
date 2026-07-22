@@ -11,7 +11,7 @@
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
 #include <Gruntz/GruntzCmdMgr.h> // canonical CGruntzCmdMgr (m_cmdSubMgr: BlitTileMarker @0x23d90)
 #include <Gruntz/FontConfig.h>   // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
-#include <Gruntz/SoundCue.h>     // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
+#include <Gruntz/SoundCue.h>     // CDDrawSubMgrLeafScan (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectA - the TriggerMgr goal camera sprite
@@ -22,7 +22,7 @@ void __stdcall Fn2135(i32 a);                                // 0x2135
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
-        CSndHost* _s = (sndHost);                                                                  \
+        CDDrawSubMgrLeafScan* _s = (sndHost);                                                                  \
         if (_s->m_emitGate == 0) {                                                                 \
             void* found = 0;                                                                       \
             _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
@@ -253,7 +253,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             h->m_frameGate ^= 1;
             self->m_mgr->FinishLevel(h->m_frameGate, 1);
         }
-        CSndHost* s = self->m_mgr->m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* s = self->m_mgr->m_world->m_soundRegistry;
         if (s->m_emitGate == 0) {
             void* found = 0;
             s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
@@ -288,7 +288,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     // Space (cc46d): recorder step / recycle node churn
     if (key == 0x20) {
         if (dev->m_18 & 0x20) {
-            CPlaneRender* obj = self->m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
             i32* slot;
@@ -565,7 +565,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 y1 = r->bottom;
         i32 my = self->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
-            CPlaneRender* g = q->m_mainPlane;
+            CDDrawWorkerHost* g = q->m_mainPlane;
             i32 by = g->m_originY - q->m_planeCtx.top + my;
             i32 bx = g->m_originX - q->m_planeCtx.left + mx;
             host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
@@ -579,7 +579,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         CGruntzMgr* h = self->m_mgr;
         i32 my = self->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
-        CPlaneRender* g = q->m_mainPlane;
+        CDDrawWorkerHost* g = q->m_mainPlane;
         i32 by = ((g->m_originY - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
         i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_originX) & ~0x1f) + 0x10;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);

@@ -2,14 +2,14 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h>       // g_lastNow / g_frameTicks (frame-clock band)
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h>       // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (0x152xxx leaf API incl. the ANI set)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (renderer A: TickKillCues/DestroyChildren_159ef0)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <DDrawMgr/DirectDrawMgr.h>    // CDirectDrawMgr::GetErrorString (cursor-draw fail path)
+#include <DDrawMgr/DirectDrawMgr.h>    // CDDrawPtrCollections::GetErrorString (cursor-draw fail path)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -17,7 +17,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/GameLevel.h>
-#include <Image/ImageSet.h> // the REAL CImageSet (m_grid's SetAllTypes/SetAllFormats frame walkers)
+#include <Image/ImageSet.h> // the REAL CDDrawWorker (m_grid's SetAllTypes/SetAllFormats frame walkers)
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/CheatMgr.h> // CCheatMgr (the m_124 cheat-used latch)
@@ -41,7 +41,7 @@
 #include <Gruntz/SerialArchive.h>    // the shared archive stream (GruntzPlayer::Serialize)
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr + its image/sound/anim registries (m_10/m_28/m_2c)
-#include <Gruntz/SoundCue.h> // CSndHost (m_c->m_soundRegistry) + SoundStream (m_2c; Vslot15 quiesce stop)
+#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan (m_c->m_soundRegistry) + SoundStream (m_2c; Vslot15 quiesce stop)
 #include <DDrawMgr/DDSurface.h>          // the real CDDSurface (render-flip surface: Fill/Restore)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: Serialize/FilterList2)
 #include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
@@ -50,7 +50,7 @@
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/Multi.h>             // CMulti::AckJoinFailure
 #include <Gruntz/CBrickz.h>           // CBrickz::LoadAttributes
-#include <Gruntz/Brickz.h>            // CBrickzGrid::UpdateDiagonals
+#include <Gruntz/Brickz.h>            // CMapMgr::UpdateDiagonals
 #include <Gruntz/ParseSource.h>       // CParseSource::BeginParse/EndParse
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize (the plane/grid-owner)
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
@@ -668,7 +668,7 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 //       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CStatusBarMgr SBI_Image
 //       [ClearTiles/PostMap]);
 //   (b) needs a byte-neutral declared-only method added to its Gruntz header first
-//       (CParseSource CImage.h[BeginParse/EndParse]; CBrickz/CBrickzGrid[LoadAttributes/
+//       (CParseSource CImage.h[BeginParse/EndParse]; CBrickz/CMapMgr[LoadAttributes/
 //       UpdateDiagonals]; CLightFxRender[InstallLightFx/BuildLightShape]; CTimer
 //       [TimerEqSet/TimerReset]; CBattlezData[BattlezInit=Init]);
 //   (c) Teardown-on-savedThis is CMulti::AckJoinFailure (a cross-cast of the CPlay
@@ -718,7 +718,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // tear down the old grid (self->m_c->m_soundRegistry->m_2c) / map / sound sub-objects
-    SoundStream* grid = self->m_world->m_soundRegistry->m_2c; // the CSndHost-held DSound stream
+    SoundStream* grid = self->m_world->m_soundRegistry->m_2c; // the CDDrawSubMgrLeafScan-held DSound stream
     if (grid != 0) {
         grid->Stop();
     }
@@ -929,7 +929,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // m_2c = m_28 (the resolved area descriptor); refresh the host window
     {
-        CResSource* prevTiles = self->m_2c;
+        CSymTab* prevTiles = self->m_2c;
         self->m_2c = (self->m_levelBank);
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
@@ -1107,7 +1107,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             goto fail0;
         }
     }
-    if (!(static_cast<CBrickzGrid*>(self->m_mgr->m_tileGrid))
+    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))
              ->UpdateDiagonals(reinterpret_cast<i32>(self->m_mgr))) {
         goto fail0;
     }
@@ -1498,7 +1498,7 @@ void CPlay::PostSetup(void* dc) {
     }
 
 RVA(0x000d7520, 0x3b9)
-i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }
@@ -1579,7 +1579,7 @@ i32 g_lastLevelNum = -1;
 // CPlay::SyncWrite19fb, SyncState's mode-4 serializer, called `mov ecx,edi; push ar`),
 // its "manager" CArchiveMgr was the CState::m_c holder (the +0x10 registry probe is
 // CDDrawWorkerRegistry::AnyValueMatches - the frame-name reverse lookup over
-// m_gridCurFrame), its "+0x24 inline name" object was CPlay::m_grid (the CImageSet's
+// m_gridCurFrame), its "+0x24 inline name" object was CPlay::m_grid (the CDDrawWorker's
 // config name), the "+0x188 default-int" object was the CursorSnapSprite game object
 // (CGameObject::m_188, the archive-cue id) and the element arrays are the
 // m_startMarkers / m_3a4[4] / m_488 MFC arrays read raw. Body folded below.)
@@ -1592,7 +1592,7 @@ i32 g_lastLevelNum = -1;
 // store positions - the entropy tail the CTriggerLoadRec/CEventLoadRec siblings
 // share; not source-steerable.
 RVA(0x000d79d0, 0x537)
-i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
+i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1732,7 +1732,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
 // m_savedClock@+0x1cc, m_rngSeed@+0x2d8, ... m_514) - one field map, two
 // serializers. The Grunt.h Load-support views (GruntLoadColl/GruntResMgr/
 // GruntLoadStr/g_load612618) die with it: the collections are the real
-// m_startMarkers/m_3a4[4]/m_488 CPtrArrays, the "GruntIdEntry" IS ::CImageSet
+// m_startMarkers/m_3a4[4]/m_488 CPtrArrays, the "GruntIdEntry" IS ::CDDrawWorker
 // (m_14==m_frames, m_64/m_68==m_minIndex/m_maxIndex), the resource manager is
 // the canonical CDDrawSurfaceMgr, "g_load612618" is g_lastLevelNum, and the
 // +0x410 CString is m_cueText.
@@ -1752,7 +1752,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
 // pairing to differently named retail symbols (the whole referent set is
 // external). Final sweep.
 RVA(0x000d8060, 0x6ce)
-i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
+i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1850,7 +1850,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     ar->Read(&g_lastLevelNum, 4);
 
     // resolve the current grid frame by (set name, frame index) through the image
-    // registry's name map: the record IS a ::CImageSet (frames @+0x14, populated
+    // registry's name map: the record IS a ::CDDrawWorker (frames @+0x14, populated
     // range m_minIndex/m_maxIndex) - the inverse of the Write twin's
     // AnyValueMatches reverse lookup.
     g_serialCounter++;
@@ -1861,7 +1861,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     if (strlen(buf80a) == 0) {
         m_gridCurFrame = 0;
     } else {
-        CImageSet* set = 0;
+        CDDrawWorker* set = 0;
         (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))
             ->Lookup(static_cast<const char*>(buf80a), reinterpret_cast<void*&>(set));
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
@@ -1881,7 +1881,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     } else {
         (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))
             ->Lookup(buf80b, gridObj);
-        m_grid = static_cast<CImageSet*>(gridObj);
+        m_grid = static_cast<CDDrawWorker*>(gridObj);
     }
 
     ar->Read(&m_gridDelayBase, 4);
@@ -2251,7 +2251,6 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // masks (retail compares ILT thunk addresses, delinker has no thunk symbols).
 // ===========================================================================
 
-
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
@@ -2302,7 +2301,7 @@ i32 CPlay::NotifyVisibleEntities() {
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
-    CLevelPlane* geom = v->m_mainPlane;
+    CDDrawWorkerHost* geom = v->m_mainPlane;
 
     i32 y = m_cursorY + (geom->m_originY - v->m_planeCtx.top);  // [edx+4]-m_14; +=m_cursorY
     i32 x = geom->m_originX + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
@@ -2353,7 +2352,7 @@ i32 CPlay::StepInputA() {
 
     i32 r = probeTarget->BltFast(edge->m_0, edge->m_4, half, halfPtr, 0x10);
     if (r != 0) {
-        CDirectDrawMgr::GetErrorString(0, 0, r); // 0x141400
+        CDDrawPtrCollections::GetErrorString(0, 0, r); // 0x141400
     }
     return 1;
 }
@@ -2545,7 +2544,6 @@ i32 CPlay::DrawWorldFrames() {
     return steps;
 }
 
-
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
@@ -2686,7 +2684,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
         g->m_goal = 0;
     }
     g->m_armed = 0;
-    CLevelPlane* pg = m_mgr->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
     if ((pg->m_flags & 1) == 0) {
         pg->m_scaledX = static_cast<float>(x) * pg->m_scaleX;
         pg->m_scaledY = static_cast<float>(y) * pg->m_scaleY;
@@ -3062,7 +3060,7 @@ i32 CPlay::ClearPlacedObjects() {
         i32 restart = 0;
         while (i < rec->GetSize()) {
             CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             CGameObject* cellObj = 0;
             if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_height)) {
@@ -3084,7 +3082,7 @@ i32 CPlay::ClearPlacedObjects() {
             }
             if (result == 0) {
                 // cell vacated: clear the cell's occupant + flag bit and unlink.
-                CTileGrid* g = g_gameReg->m_tileGrid;
+                CMapMgr* g = g_gameReg->m_tileGrid;
                 if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_width)
                     && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_height)) {
                     i32 stride = obj->m_0 * 7;
@@ -3382,7 +3380,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 
 RVA(0x000dace0, 0x239)
 i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
-    CSerialArchive* ar = static_cast<CSerialArchive*>(arArg);
+    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
     char tmp[0x80];
     // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
     // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
@@ -3564,7 +3562,7 @@ i32 CPlay::StepGridWalk(i32 dt) {
     m_gridDelayCount = m_gridDelayBase;
     m_gridRow = m_gridRow + 1;
     i32 idx = m_gridRow;
-    CImageSet* g = m_grid;
+    CDDrawWorker* g = m_grid;
     CImage* frame;
     if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
         frame = static_cast<CImage*>(g->m_items.GetAt(idx));
@@ -3637,7 +3635,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
     }
 
     if (m_guts->m_position == 2 && m_guts->HitTestLayer(x, y)) {
-        CSndHost* set = m_mgr->m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
             set->m_10.Lookup(
@@ -3733,11 +3731,11 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (m_world == 0) {
         return 1;
     }
-    CImageSet* grid = 0;
+    CDDrawWorker* grid = 0;
     CObject* gridOb = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
     m_world->m_imageRegistry->m_10map.Lookup(key, gridOb);
-    grid = static_cast<CImageSet*>(gridOb);
+    grid = static_cast<CDDrawWorker*>(gridOb);
     m_grid = grid;
     if (grid == 0) {
         return 1;
@@ -3754,7 +3752,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         m_grid->SetAllTypes(0xa);
         m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
     }
-    CImageSet* g = m_grid;
+    CDDrawWorker* g = m_grid;
     CImage* frame;
     if (index >= g->m_minIndex && index <= g->m_maxIndex) {
         frame = static_cast<CImage*>(g->m_items.GetAt(index));
@@ -4103,7 +4101,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
         }
         CGruntzMgr* w = m_mgr;
         CGameLevel* geom = w->m_world->m_level;
-        CLevelPlane* cam = geom->m_mainPlane;
+        CDDrawWorkerHost* cam = geom->m_mainPlane;
         i32 sx = cam->m_originX - geom->m_planeCtx.left + xr;
         i32 sy = cam->m_originY - geom->m_planeCtx.top + y;
         if (m_dragInhibit1 == 0) {
@@ -4175,7 +4173,7 @@ mode_36c:
         }
         // inside the world rect: place a waypoint through the trigger grid
         CGameLevel* ds = m_world->m_level;
-        CLevelPlane* cam = ds->m_mainPlane;
+        CDDrawWorkerHost* cam = ds->m_mainPlane;
         i32 wx = cam->m_originX - ds->m_planeCtx.left + xr;
         i32 wy = cam->m_originY - ds->m_planeCtx.top + y;
         i32 tok = *reinterpret_cast<char*>(&m_cursorFrame);
@@ -4201,7 +4199,7 @@ mode_36c:
         box.bottom = wy + 0xf;
         i32 out28[2] = {0, 0};
         i32 col = 0;
-        CTmCell* p = g_gameReg->m_cmdGrid
+        CGrunt* p = g_gameReg->m_cmdGrid
                          ->FindGruntAt(wx, wy, reinterpret_cast<RECT*>(out28), &col, &y, &box);
         if (p == 0 || g_curPlayer != p->m_tileOwnerHi) {
             goto waypoint_cancel;
@@ -4309,7 +4307,7 @@ drag_box: {
     // ce191: level-gated curse cue + waypoint queue
     if (m_levelId >= 0xc8) {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
-        CTmCell* slot = 0;
+        CGrunt* slot = 0;
         if (1 == cg->m_recList.GetCount()) { // exactly one record node
             i32* sel = *reinterpret_cast<i32**>(
                 (*reinterpret_cast<char**>(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8)
@@ -4440,7 +4438,7 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
     if (x < ph->m_planeCtx.right && x >= ph->m_planeCtx.left && y < ph->m_planeCtx.bottom
         && y >= ph->m_planeCtx.top) {
         CGameLevel* ds = m_world->m_level;
-        CLevelPlane* geom = ds->m_mainPlane;
+        CDDrawWorkerHost* geom = ds->m_mainPlane;
         i32 rawX = geom->m_originX - ds->m_planeCtx.left + x;
         i32 rawY = geom->m_originY - ds->m_planeCtx.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
@@ -4974,7 +4972,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         (static_cast<double>(w->m_scrollSpeed) * g_scrollSpeedScale * g_scrollSpeedRange
          + g_scrollMinSpeed)
     );
-    CLevelPlane* g = w->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
     i32 sx = g->m_originX;
     i32 sy = g->m_originY;
     i32 extentX = w->m_modeW;
@@ -5567,7 +5565,7 @@ i32 CState::BuildAssetNamespacePrefixes(
         if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
             void* tree = m_gruntzBank->ResolvePath("SOUNDZ_" + name);
             if (tree != 0) {
-                // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
+                // the m_28 cast stays until the CDDrawSubMgrLeafScan/CDDrawSubMgrLeafScan conflation is settled (Fable);
                 // `tree` is the real CSymTab - DirNode was a view of it.
                 m_world->m_soundRegistry
                     ->ScanTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
@@ -5984,7 +5982,7 @@ i32 g_areaPageSize; // owner def (zero-init .bss)
 // CDDrawSurfaceMgr (its m_8 "CDDrawChildGroup" facet is the sprite-factory/renderer
 // conflation, reached by cast), CRtImageReg==CGameLevel (its slot-17 "Teardown"
 // with the FABRICATED 17-filler vtable is the REAL CGameLevel::ReleaseChildren
-// virtual), CRtSoundReg==CSndHost, CRtReg==CGameRegistry, CRtTimeline==CTriggerMgr
+// virtual), CRtSoundReg==CDDrawSubMgrLeafScan, CRtReg==CGameRegistry, CRtTimeline==CTriggerMgr
 // (m_260==m_byteArr - kept behind the retail-proven CPtrArray::SetSize cast, the
 // CByteArray-vs-CPtrArray library ambiguity is a container-identity TODO - m_284,
 // m_2a0==m_pendingFx, Reset1b48a6/OverlayTick), CRtArr==the raw data/count reads
@@ -6257,7 +6255,6 @@ finish:
     m_hudSuppressed = 0;
     return 1;
 }
-
 
 // @early-stop
 // /GX list-walk wall: the registration loop + CString error log are faithful, but
@@ -6648,7 +6645,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
 // registry's embedded CMapStringToOb. __thiscall, no args, ret 1. Self-contained
 // view (an unrolled run of Lookup-then-store).
 // (The CEffDesc/CEffResMgr/CEffMgr/CPlayEff views are GONE - the map is the
-// canonical CSndHost::m_10 (the holder's +0x28 sound-cue host) and the looked-up
+// canonical CDDrawSubMgrLeafScan::m_10 (the holder's +0x28 sound-cue host) and the looked-up
 // descriptor is a LeafCue (LeafCue.h): +0x18 is its interval/display duration.)
 // @early-stop
 // ~67% Lookup out-param zero-init scheduling wall (large unrolled fn): logic is
@@ -6849,7 +6846,6 @@ i32 CPlay::SetEffectSpriteDurations() {
     }
     return 1;
 }
-
 
 // @early-stop
 // 0x0cf0a0 (1.4 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5); a large Play

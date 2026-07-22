@@ -1,19 +1,16 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
-#include <Mfc.h> // the REAL MFC CPtrList (CGruntzCmdList IS CPtrList; see the note below)
+#include <Mfc.h> // the REAL MFC CPtrList (CPtrList IS CPtrList; see the note below)
 #include <rva.h>
 #include <Ints.h>
 
 typedef u32 gz_size_t;
 void* operator new(gz_size_t);
 
-typedef CPtrList CGruntzCmdList;
-
 class CPlay;
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
@@ -42,7 +39,7 @@ class CGruntzCommand {
 public:
     // m_targetIndex/m_targetType are UNSIGNED: CGruntzCmdMgr::RemoveMatchingTarget (0x23b00) compares them
     // against (u8)-cast params and retail emits the ZERO-extending `movzx` - a signed
-    // `char` here makes cl emit `movsx` and drops that fn 100 -> 78.47 (the ex-GzTargetObj
+    // `char` here makes cl emit `movsx` and drops that fn 100 -> 78.47 (the ex-CGruntzCommand
     // view, which matched 100%, declared them u8; the binary is the arbiter).
     u8 m_targetIndex; // +0x04  per-team index byte
     char m_5;         // +0x05
@@ -64,13 +61,13 @@ public:
     // slot 1 - the (de)serialize dispatcher: on mode 4 call Save (slot 2), on
     // mode 7 call Load (slot 3), both through the vtable. The leaves override it
     // (Single 0x0244d0 / Multi 0x0246c0); the base anchor returns 1.
-    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4);
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4);
     // slot 2/3 - the network (de)serializers (via stream Write +0x30 / Read +0x2c):
     // pure in the binary (__purecall), each leaf provides its body. Single writes the
     // +0x10 field as the m_10/m_11 byte pair (0x024520/0x0245f0); Multi as one 16-bit
     // unit (0x024710/0x0247d0). The base anchors are placeholders for vtable emission.
-    virtual i32 Save(CSerialArchive* s); // slot 2
-    virtual i32 Load(CSerialArchive* s); // slot 3
+    virtual i32 Save(CFileMemBase* s); // slot 2
+    virtual i32 Load(CFileMemBase* s); // slot 3
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
@@ -78,7 +75,7 @@ public:
     // slot 6 - the command's type/tag word (the tag byte, int-typed: the queue
     // serializer's retail bytes are `call [vptr+0x18]; and eax,0xff` with NO
     // sign-extension insn, so the compiler saw an int-family return; Pack stores
-    // its low byte first). Was declared char - which forked the GzSerCmd view.
+    // its low byte first). Was declared char - which forked the CGruntzCommand view.
     virtual i32 GetTag();
     // slot 7 - parse a flat command buffer in place; the leaves (Single/Multi)
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
@@ -94,7 +91,7 @@ public:
     // __purecall @0x11fec0), so each leaf provides the body. CGruntzCmdMgr::ScanTargets
     // (0x23a10) dispatches them back-to-back on every queued command: Select is handed
     // the live game STATE (CState*, whose slot-4 Update() the same fn reads for the
-    // 0x11 PLAY id), then Deselect retires it. (The ex-GzTargetObj view - 9 filler slots
+    // 0x11 PLAY id), then Deselect retires it. (The ex-CGruntzCommand view - 9 filler slots
     // + these two - was this class; its m_4/m_6/m_c are m_4 / m_6 / m_submitted.)
     virtual i32 Select(CState* state) = 0; // slot 9  (+0x24)  __purecall in the base; the
     // dispatcher passes m_curState (any CState) - the overrides downcast by protocol
@@ -128,9 +125,9 @@ public:
     // slots 1/2/3 (0x0244d0 / 0x024520 / 0x0245f0) - the serialize dispatcher and
     // the single-target network Save/Load (the base declares them pure; the leaves
     // provide the bodies).
-    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
-    virtual i32 Save(CSerialArchive* s) OVERRIDE;
-    virtual i32 Load(CSerialArchive* s) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Save(CFileMemBase* s) OVERRIDE;
+    virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x24260
     virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
@@ -153,9 +150,9 @@ public:
     // slots 1/2/3 (0x0246c0 / 0x024710 / 0x0247d0) - the multi-target overrides of
     // the serialize dispatcher and the network Save/Load (the +0x10 flag word as a
     // single 16-bit unit vs the base's m_10/m_11 byte pair).
-    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
-    virtual i32 Save(CSerialArchive* s) OVERRIDE;
-    virtual i32 Load(CSerialArchive* s) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Save(CFileMemBase* s) OVERRIDE;
+    virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x243a0
     virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
@@ -172,9 +169,9 @@ public:
 SIZE(0x14);
 
 extern i32 g_singleCmdCount;           // 0x62b5dc - non-empty gate
-extern CGruntzCmdList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
+extern CPtrList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
 extern i32 g_multiCmdCount;            // 0x62b64c
-extern CGruntzCmdList g_multiCmdList;  // 0x62b640
+extern CPtrList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H
 

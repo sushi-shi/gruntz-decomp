@@ -30,7 +30,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h>                // CActReg archetype
 #include <Gruntz/TileTrigger.h>           // CTileTrigger + the 3 leaves (new-sites)
@@ -41,8 +41,8 @@
 #include <Gruntz/CBrickz.h>               // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
 #include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
 #include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (TransitionAct anim sub-object)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h>         // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
 #include <string.h>                       // memset (inlined rep stosd)
 #include <rva.h>
@@ -82,10 +82,6 @@ VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 
 DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
 
-
-
-
-
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
     switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                                      \
@@ -123,11 +119,11 @@ DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
     return 1;
 
 RVA(0x00010f20, 0x47)
-i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // CWarpStonePad::~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor; folds the bare
@@ -139,11 +135,11 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
 RVA(0x00011050, 0x47)
-i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // CTileTriggerSwitch::~CTileTriggerSwitch @0x110f0 - the 0x44 folded CUserLogic teardown.
@@ -157,11 +153,11 @@ RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 
 RVA(0x000111f0, 0x47)
-i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead of
@@ -170,9 +166,8 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // hang an RVA()):
 RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
 
-
 RVA(0x00011320, 0x47)
-i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+i32 CBrickz::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
@@ -225,11 +220,11 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 }
 
 RVA(0x00011750, 0x47)
-i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
         return 0;
     }
-    return Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
 // ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
@@ -674,8 +669,8 @@ i32 CCheckpointTrigger::Act() {
 }
 
 RVA(0x0010f9a0, 0x8f)
-i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
+i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+    CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     if (mode == 4) {
         sa->Write(m_state, 0x3c);
         sa->Write(&m_firstEmpty, 4);
@@ -683,7 +678,7 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;

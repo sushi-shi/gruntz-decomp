@@ -4,7 +4,7 @@
 #include <Mfc.h> // CString (filename arg passed by value) + CFile
 
 #include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit + CImageFrameRebuildDesc (the real class)
-#include <Io/FileStream.h>           // CFileIO == the MFC CFile (destructible stack local -> /GX)
+#include <Io/FileStream.h>           // CFile == the MFC CFile (destructible stack local -> /GX)
 
 // @early-stop
 // ~98% - the /GX frame, gate, block layout, EH-state numbering across the two
@@ -20,7 +20,7 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
         return 0;
     }
 
-    CFileIO file;
+    CFile file;
     if (file.Open(name, 0x9001, 0) == 0) {
         return 0;
     }

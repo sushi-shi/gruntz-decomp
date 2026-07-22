@@ -15,7 +15,7 @@
 #endif
 #include <afxwin.h>
 #include <Wap32/Wap32.h>              // CGameMgr (the base ~CGameMgr tail-calls its Close)
-#include <Bute/ButeMgr.h>             // canonical CButeMgr / CButeStore (one shape)
+#include <Bute/ButeMgr.h>             // canonical CButeMgr / zPTree (one shape)
 #include <Bute/SymParser.h>           // the ONE CSymParser (m_symParser; ParseBuffer/...)
 #include <Gruntz/GruntzMgr.h>         // CGruntzMgr - the class this whole TU implements
 #include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr (m_tileGrid; the 0x94-byte board)
@@ -76,16 +76,11 @@ i32 g_enableTrueColor = 0; // "Enable TrueColor"
 DATA(0x002455e4)
 i32 g_enableEmulation = 0; // "Enable Emulation"
 
-
-
 DATA(0x00245534)
 i32 g_attractStateCount = 0; // 0x645534
 
-
-
 void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
 void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
-
 
 DATA(0x00245210)
 i32 g_appHInstance;

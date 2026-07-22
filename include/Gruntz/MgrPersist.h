@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/String.h>        // MFC CString (SplashParams::text; the loaded caption)
-#include <Gruntz/SerialArchive.h> // CSerialArchive typedef (== CFileMemBase); NEVER fwd-decl
+#include <Gruntz/SerialArchive.h> // CFileMemBase typedef (== CFileMemBase); NEVER fwd-decl
 
 class CDDrawSurfaceMgr; // m_levelData @+0x0c: the world/resource holder (== CState::m_c;
 class CGruntzMgr;       // m_displayMgr @+0x04: the game-manager (== CState::m_4; its
@@ -35,8 +35,8 @@ struct CMgrPersistObj {
     char m_198[0x10];
     i32 m_1a8, m_1ac, m_1b0;
 
-    i32 Save(CSerialArchive* w); // 0x0fb1c0 (+0x2c slot pass)
-    i32 Load(CSerialArchive* s); // 0x0faff0 (+0x30 slot pass; ex SaveRecord::Load)
+    i32 Save(CFileMemBase* w); // 0x0fb1c0 (+0x2c slot pass)
+    i32 Load(CFileMemBase* s); // 0x0faff0 (+0x30 slot pass; ex SaveRecord::Load)
     i32 Init();                  // 0x0face0 (misattributed CState::InputVirtual; SYMBOL'd)
 };
 SIZE_UNKNOWN();

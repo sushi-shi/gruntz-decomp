@@ -91,7 +91,6 @@ RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
-
 VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)

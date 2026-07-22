@@ -3,7 +3,7 @@
 #include <iostream.h>       // the REAL istream the config reader is (operator>> @0x191fe0/0x191f30)
 #include <Bute/ButeTree.h>  // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
 #include <Bute/PTreeNode.h> // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
-#include <Bute/ButeStore.h> // CButeStore / CButeStoreNode (the keyed-store family)
+#include <Bute/ButeStore.h> // zPTree / CButeTreeNode (the keyed-store family)
 #include <Wap32/zBitVec.h>  // zErrHandling / zBitVec + the container-error globals
 #include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
@@ -71,13 +71,11 @@ DATA_SYMBOL(0x0021ad28, 0x0, ?g_defaultProjActSize@@3HA)
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
-
 i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
 DATA_SYMBOL(0x002bf618, 0x4, _g_recCount23)
-
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
@@ -747,7 +745,7 @@ zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 }
 
 RVA(0x0016e070, 0x7b)
-void CButeStore::ClearRecursive(CButeTreeNode* node) {
+void zPTree::ClearRecursive(CButeTreeNode* node) {
     CButeTreeNode* n = node;
     if (n == 0) {
         n = m_root;
@@ -1138,7 +1136,7 @@ i32 TypeCollAtexitDtor(void) {
 // @0x16dfc0 on the masked this+8, then the primary BaseDtor @0x16da60), then
 // ::operator delete when bit0 of the deleting-flag is set; returns this. It is NOT
 // dev source (a compiler ??_G thunk), so it is pinned by mangled name here, not
-// written as a method. (CButeStore==CButeTree, the same 0x2c-byte class.)
+// written as a method. (zPTree==CButeTree, the same 0x2c-byte class.)
 //
 // DEFERRED EMISSION (reloc): this RVA_COMPGEN binds only once cl EMITS ??_GCButeTree in
 // THIS obj, which needs g_buteTree defined (not extern) as a real global CButeTree so
@@ -1147,7 +1145,7 @@ i32 TypeCollAtexitDtor(void) {
 //   * construction (DynInitButeTree 0x16e6a0) stamps ??_7CButeTree     @0x5f04e0 /
 //     ??_7CButeStore@@6BCButeStoreSecond @0x5f04dc   (the CButeTree identity);
 //   * destruction (0x16e9c0 ??_G AND 0x16e6e0 atexit) stamps ??_7zPTree @0x5e94ac /
-//     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/CButeStore identity).
+//     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/zPTree identity).
 // CORRECTION (RTTI-proven): the split is NOT irreducible. It is exactly what
 // `class CButeTree : public zPTree` (now modeled, <Bute/ButeTree.h>) with an EMPTY
 // ~CButeTree produces - the ctor re-stamps CButeTree's most-derived 0x5f04e0/0x5f04dc
@@ -1157,7 +1155,7 @@ i32 TypeCollAtexitDtor(void) {
 // DEFERRED EMISSION (COUPLED, not this pass): binding 0x16e9c0 needs g_buteTree DEFINED so
 // cl emits ??_G/??__E/??__F/the CButeTree vtables. Requires as one atomic unit: (1) an
 // INLINE ~zPTree { ClearRecursive(0); } + ClearRecursive as a zPTree method (0x16e070),
-// which forces CButeStore : zPTree so its Reset/leaf-dtor callers still bind faithfully;
+// which forces zPTree : zPTree so its Reset/leaf-dtor callers still bind faithfully;
 // (2) DATA_SYMBOL on the emitted ??_7CButeTree@@6BCButeNodeEntry@@ @0x5f04dc (the
 // fabricated ??_7CButeStore@@6BCButeStoreSecond@@ name won't auto-match) + butemgr
 // dropping that binding; (3) RVA_COMPGEN pins for the cl-mangled init/atexit thunks. Gate on

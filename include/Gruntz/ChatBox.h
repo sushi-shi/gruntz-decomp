@@ -10,8 +10,8 @@ class CMenuPage;
 
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+
 class CImage; // Image/CImage.h
 
 class CChatBox {
@@ -72,13 +72,13 @@ public:
     CMenuPage* m_activeNode; // +0x40 queued/active node slot (a CMenuPage)
     CString m_row0Key;       // +0x44 row0 font/asset key
     CString m_row1Key;       // +0x48 row1 font/asset key
-    CImageSet* m_row0Anim;   // +0x4c row0 current message/animation record (CImageSet)
+    CDDrawWorker* m_row0Anim;   // +0x4c row0 current message/animation record (CDDrawWorker)
     CImage* m_row0Frame;     // +0x50 row0 current frame drawable (Blit)
     i32 m_row0Period;        // +0x54 row0 frame-advance reload period
     i32 m_row0Timer;         // +0x58 row0 frame-advance countdown
     i32 m_row0Offset;        // +0x5c row0 horizontal draw offset
     i32 m_row0FrameIdx;      // +0x60 row0 index into the frame table
-    CImageSet* m_row1Anim;   // +0x64 row1 current message/animation record (CImageSet)
+    CDDrawWorker* m_row1Anim;   // +0x64 row1 current message/animation record (CDDrawWorker)
     CImage* m_row1Frame;     // +0x68 row1 current frame drawable (Blit)
     i32 m_row1Period;        // +0x6c row1 frame-advance reload period
     i32 m_row1Timer;         // +0x70 row1 frame-advance countdown

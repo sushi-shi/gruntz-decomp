@@ -10,7 +10,7 @@
 
 class CGruntStartingPoint : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000105b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSTARTINGPOINT;
@@ -32,11 +32,9 @@ SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 extern u32 g_zvecErrSentinel; // 0x002bf464
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ActReg4Handler(); // 0x4040a2
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -6,7 +6,6 @@
 
 extern u16 g_sfDeviceId; // 0x0024dd28 (WORD; u16 here - the header precedes windows.h)
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"

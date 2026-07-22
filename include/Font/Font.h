@@ -110,5 +110,4 @@ public:
 };
 SIZE(0x10); // stateful render shim; the ctor inits exactly the four
 
-
 #endif // SRC_FONT_FONT_H

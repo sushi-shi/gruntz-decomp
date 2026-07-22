@@ -11,8 +11,7 @@
 #include <Gruntz/ImageSets.h>            // CImageSet1::GetCollisionAt (slot 8)
 #include <Gruntz/TileTriggerContainer.h> // the m_beginMarker sink (AddLogic/AddToList1)
 #include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
-#include <Gruntz/GameLevel.h>            // CGameLevel + CLevelPlane (the tile grid)
-
+#include <Gruntz/GameLevel.h>            // CGameLevel + CDDrawWorkerHost (the tile grid)
 
 void PlaneType_Rock();    // 0x40137a
 void PlaneType_Covered(); // 0x403d0f
@@ -109,7 +108,7 @@ i32 CPlay::ScanBuildTiles() {
                     y = lim - 1;
                 }
             }
-            CLevelPlane* g = ds->m_mainPlane;
+            CDDrawWorkerHost* g = ds->m_mainPlane;
             i32 shX = g->m_shiftX;
             i32 tileX = x >> shX;
             i32 shY = g->m_shiftY;

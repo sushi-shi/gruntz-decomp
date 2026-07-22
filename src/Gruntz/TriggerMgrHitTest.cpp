@@ -19,17 +19,17 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX profile kept from the parent unit (no EH
 // temps in these leaves; byte-neutral).
-#include <Gruntz/Grunt.h> // CTmCell IS CGrunt (folded) - the cells are dereferenced here
+#include <Gruntz/Grunt.h> // CGrunt IS CGrunt (folded) - the cells are dereferenced here
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
-#include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
+#include <Gruntz/TileGrid.h> // canonical CMapMgr (FindGruntAt's packed owner grid)
 
 #include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
 
 RVA(0x000759e0, 0x18)
-CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
+Coord* CTriggerMgr::GetOriginXY(Coord* out) {
     out->m_x = m_cellFlag[0x16];
     out->m_y = m_cellFlag[0x17];
     return out;
@@ -56,9 +56,9 @@ i32 CGridLookup::Lookup(i32 x, i32 y) {
 }
 // (^ @identity-TODO: called ONLY by this TU's megafn FUN_6f2f0; moved from
 // OrphanMethods.cpp per the interval verdict. The m_8/m_c/m_10 trio + the
-// 0x1c cell stride are the SAME shape as canonical CTileGrid - a likely
-// CTileGrid method; kept as the view pending the megafn's reconstruction,
-// because respelling the [y][x] walk onto CTileGrid's i32* rows changes the
+// 0x1c cell stride are the SAME shape as canonical CMapMgr - a likely
+// CMapMgr method; kept as the view pending the megafn's reconstruction,
+// because respelling the [y][x] walk onto CMapMgr's i32* rows changes the
 // scaled-index instruction selection.)
 
 RVA(0x00075a90, 0x27)
@@ -82,7 +82,7 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 // ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
 RVA(0x00075af0, 0x111)
 i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
-    CTileGrid* plane = g_gameReg->m_tileGrid;
+    CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 ix = x >> 5;
     i32 iy = y >> 5;
     i32 attr;
@@ -96,7 +96,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
     }
     i32 row = (attr >> 8) & 0xff;
     i32 col = attr & 0xff;
-    CTmCell* cell = m_grid[col + row * TM_GRID_COLS];
+    CGrunt* cell = m_grid[col + row * TM_GRID_COLS];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -134,7 +134,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
 // and return the first live cell (m_1fc) whose 15x15 display box hits the rect, with
 // its (col,row) reported via out-params. The sibling of CellHitTest (same m_grid /
 // m_10->m_5c scan). (Re-homed from ApiWrappers; the GruntHitMgr/HitGrunt/HitTileRect/
-// HitGrid views folded onto CTmCell / CTmDisplay / CTileGrid.)
+// HitGrid views folded onto CGrunt / CTmDisplay / CMapMgr.)
 //
 // @early-stop
 // 75% - nested-loop regalloc wall: identical instruction selection/logic, but MSVC5
@@ -143,7 +143,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
 // every [esp+N] stack offset shifts. Not steerable from source (llvm-objdump -dr: same
 // mnemonics, shifted operands).
 RVA(0x00075c60, 0x1ba)
-CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
+CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
     i32 tcol = px >> 5;
     i32 trow = py >> 5;
     RECT rc;
@@ -165,7 +165,7 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                 continue;
             }
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(y) >= static_cast<u32>(grid->m_height)) {
                 continue;
             }
@@ -180,7 +180,7 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             }
             i32 col = val & 0xff;
             i32 row = (val >> 8) & 0xff;
-            CTmCell* g = m_grid[col + row * TM_GRID_COLS];
+            CGrunt* g = m_grid[col + row * TM_GRID_COLS];
             if (!g) {
                 continue;
             }

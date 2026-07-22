@@ -1,7 +1,7 @@
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
-#include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (a typedef now - a fwd decl
+#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 #include <rva.h>
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
@@ -65,7 +65,7 @@ public:
     // ---- run phase, formerly modeled as the two SEPARATE .cpp-local views
     // `CArriveMgr` and `CGruntMover` -----------------------------------------
     // Both were views of THIS object: each names +0x08 the CTriggerMgr, +0x0c the
-    // CBrickzGrid/CMapMgr, +0x14 the cell-record query and +0x18 the band index -
+    // CMapMgr/CMapMgr, +0x14 the cell-record query and +0x18 the band index -
     // the exact head of the run view below. Their methods land here (RVA order), so
     // the `this` casts and the duplicate layouts are gone.
     i32 ResolveArrival(CGrunt* g); // 0x02c690  (was CArriveMgr::ResolveArrival)
@@ -99,7 +99,7 @@ public:
             i32 m_active;                       // +0x000  active gate (methods bail when 0)
             CGruntzMgr* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
             CTriggerMgr* m_triggerMgr;          // +0x008  the level's CTriggerMgr (4x15 grid)
-            CBrickzGrid* m_board;               // +0x00c  the CBrickz pathfinding-grid / tile-map
+            CMapMgr* m_board;               // +0x00c  the CBrickz pathfinding-grid / tile-map
             i32 m_010;                          // +0x010  (untouched by run ctor)
             CTileTriggerContainer* m_cellQuery; // +0x014  the level's tile-trigger container
                                                 //         (LoadConfig-seeded from m_10->m_2e4;
@@ -292,10 +292,8 @@ public:
 };
 SIZE(0x1e8);
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

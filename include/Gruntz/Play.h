@@ -29,7 +29,7 @@ struct CHitMarker {
 SIZE(0x8);
 
 #include <Gruntz/View.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CImageRegistry / CDDrawSubMgrLeafScan)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CDDrawWorkerRegistry / CDDrawSubMgrLeafScan)
 
 #include <Gruntz/State.h>
 
@@ -42,11 +42,10 @@ SIZE_UNKNOWN();
 #include <Gruntz/Timer.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
+
 class CImage;
 
-class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
-typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CPlay : public CState {
 public:
@@ -175,7 +174,7 @@ public:
     // with `mov ecx,esi`). External no-body -> reloc-masked.
     // StepInputA (0x0d11e0): the per-frame CURSOR DRAW - BltFast the selected
     // cursor-half surface at the edge-fed {x,y}, error-logged via
-    // CDirectDrawMgr::GetErrorString (thunk-target proven).
+    // CDDrawPtrCollections::GetErrorString (thunk-target proven).
     i32 StepInputA(); // (THIS TU)
     void StepWorldB();
     // (The PLAY-state keyboard/cheat dispatcher 0xcbcc0 folded onto the slot-12
@@ -433,11 +432,11 @@ public:
     // state's 64-bit timer blocks + three child sync sub-objects (guts / frame
     // marker / begin marker); mode 8 (re)inits the ambient-sound cue. mode 4 =
     // write (archive vtbl[0x30]), mode 7 = read (archive vtbl[0x2c]).
-    i32 SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
+    i32 SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
     // SyncState's own reloc-masked CPlay-thiscall leaves (external, no body):
-    i32 HeaderSerialize(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
-    i32 SyncWrite19fb(CSerialArchive* ar);                             // 0x19fb thunk (mode-4)
-    i32 SyncRead2f7c(CSerialArchive* ar);                              // 0x2f7c thunk (mode-7)
+    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
+    i32 SyncWrite19fb(CFileMemBase* ar);                             // 0x19fb thunk (mode-4)
+    i32 SyncRead2f7c(CFileMemBase* ar);                              // 0x2f7c thunk (mode-7)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
@@ -560,9 +559,9 @@ public:
     i32 m_revealFrame;      // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
-    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (canonical CImageSet)
-    CImageSet* m_grid;      // +0x4cc  level tile/frame grid (canonical CImageSet)
-    CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (a CImageSet row)
+    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (canonical CDDrawWorker)
+    CDDrawWorker* m_grid;      // +0x4cc  level tile/frame grid (canonical CDDrawWorker)
+    CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (a CDDrawWorker row)
     i32 m_gridHasSprite;    // +0x4d4  has-grid-sprite flag
     i32 m_gridDelayBase;    // +0x4d8  step-delay base
     i32 m_gridDelayCount;   // +0x4dc  step-delay countdown
@@ -642,7 +641,6 @@ void ChannelSlots_InitAll();    // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 extern i32 g_areaPageSize; // 0x00245270
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
@@ -675,7 +673,6 @@ extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 // (the Create* registrant addresses are the REAL functions - see
 //  <Gruntz/GameObjectFactory.h>; the old per-TU char[] thunk views are gone)
 
-
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" void PlaneType_Rock();
@@ -686,7 +683,6 @@ extern "C" void PlaneQuadC();
 extern "C" void PlaneQuadD();
 extern "C" void PlaneQuadE();
 extern "C" void PlaneQuadF();
-
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---

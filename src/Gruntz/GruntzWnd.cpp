@@ -211,5 +211,4 @@ i32 CGruntzWnd::Wap32GameWndVfunc0() {
     return 0;
 }
 
-
 VTBL(CGruntzWnd, 0x001ea2d4); // vtable_names -> code (RTTI game class)

@@ -32,7 +32,6 @@ struct TypeKeyRec {
 };
 SIZE_UNKNOWN();
 
-
 struct CButeTreeNode {
     CButeTreeNode* m_child[2]; // +0x00 / +0x04
     i32 m_bit;                 // +0x08  crit-bit index

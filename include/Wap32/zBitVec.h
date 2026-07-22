@@ -51,7 +51,6 @@ public:
 };
 SIZE(0x10);
 
-
 extern void* g_retAddrBreadcrumb;
 extern void* g_projActName;
 #endif // WAP32_ZBITVEC_H

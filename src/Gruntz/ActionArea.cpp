@@ -1,8 +1,8 @@
 #include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/ActionArea.h>
-#include <Image/ImageSet.h> // CImageSet::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
+#include <Image/ImageSet.h> // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
@@ -11,7 +11,7 @@
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
 
@@ -40,7 +40,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-
 // @early-stop
 // 0x7c60 IS the body of _CreateActionArea (PROVEN by xref: GameObjectFactory.cpp
 // registers it as `CreateWorker(CreateActionArea, "ActionArea", 4)`, and its thunk
@@ -67,8 +66,6 @@ i32 ActionAreaWorkerPump(CGameObject* owner) {
 // thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
 // `mov [ecx],offset ??_7CUserBase; ret`. RVA_COMPGEN NAMES the retail copy.
 #include <rva.h>
-
-
 
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
@@ -167,11 +164,11 @@ i32 CActionArea::Tick() {
     if (*phase != 0) {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        (reinterpret_cast<CImageSet*>(m_38->m_194))->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
+        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
     } else {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        (reinterpret_cast<CImageSet*>(m_38->m_194))->SetAllField18(static_cast<i32>((t * 0.1 - (-155.0))));
+        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))->SetAllField18(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }
@@ -182,13 +179,13 @@ i32 CActionArea::ApplyColor(i32 owner) {
         case 1: {
             m_38->ApplyName("GAME_ACTIONAREA_BLUE");
             char* rec = m_38->m_194;
-            (reinterpret_cast<CImageSet*>(rec))->SetAllTypes(8);
+            (reinterpret_cast<CDDrawWorker*>(rec))->SetAllTypes(8);
             break;
         }
         case 2: {
             m_38->ApplyName("GAME_ACTIONAREA_RED");
             char* rec = m_38->m_194;
-            (reinterpret_cast<CImageSet*>(rec))->SetAllTypes(8);
+            (reinterpret_cast<CDDrawWorker*>(rec))->SetAllTypes(8);
             break;
         }
         default:
@@ -199,7 +196,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CActionArea::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }

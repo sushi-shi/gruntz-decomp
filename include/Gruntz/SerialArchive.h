@@ -2,8 +2,6 @@
 #define GRUNTZ_SERIALARCHIVE_H
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

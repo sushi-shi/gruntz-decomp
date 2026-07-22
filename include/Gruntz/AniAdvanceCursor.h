@@ -9,7 +9,6 @@ class CAniRenderCtx; // the sprite-render context (satellite def in AniAdvance.h
 class CAniDesc;      // the animation descriptor (playlist entry; == CAniRecord)
 class CAniElement;   // the descriptor playlist (<Gruntz/AniElement.h>; the ex
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CAniAdvanceCursor : public CLoadable {
 public:
@@ -33,9 +32,9 @@ public:
     void Setup(CAniElement* src);        // 0x15c2d0  bind a resolved geo source
     void Recompute(i32 a1);              // 0x15c320  re-derive from the bound m_14
     i32 SelectCue(void* force);          // 0x157a80  (cue-role: writes m_2c/m_pendingDraw)
-    i32 Serialize(CSerialArchive* ar);   // 0x15c970
-    i32 Deserialize(CSerialArchive* ar); // 0x15ca70
-    i32 Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4); // 0x15c900
+    i32 Serialize(CFileMemBase* ar);   // 0x15c970
+    i32 Deserialize(CFileMemBase* ar); // 0x15ca70
+    i32 Find(CFileMemBase* ar, i32 type, i32 a3, i32 a4); // 0x15c900
     i32 Advance(u32 elapsed);                               // 0x15c360 (advance / set-geo-source)
 
     // (+0x0c is the inherited CLoadable owner slot m_0c: the game object /

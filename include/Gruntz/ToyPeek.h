@@ -8,7 +8,7 @@ class CToyPeek : public CUserLogic, public CWapX {
 public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in ToyPeek.cpp)
     RVA(0x00011bf0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

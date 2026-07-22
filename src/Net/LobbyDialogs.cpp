@@ -12,7 +12,6 @@
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
 #include <stdio.h>       // sprintf (the drop-in banner)
 
-
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 
 namespace NetLobby {

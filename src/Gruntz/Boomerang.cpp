@@ -1,10 +1,10 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
+#include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CFileMemBase
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <rva.h>
-#include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
+#include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
 
 VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
@@ -102,7 +102,7 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
 // ~97%: logic byte-correct; residue is a minor callee-saved register-coloring
 // difference in the field round-trip (same regalloc family as CTimeBomb::SerializeMove).
 RVA(0x000e15d0, 0x155)
-i32 CBoomerang::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }

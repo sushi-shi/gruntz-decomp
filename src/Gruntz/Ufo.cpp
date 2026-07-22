@@ -1,9 +1,9 @@
 #include <Gruntz/Ufo.h> // CUFO : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SpotLight.h>         // CSpotLight - the spawned spotlight's bound logic leaf
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
@@ -62,7 +62,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4c40, 0x4b)
-i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
+i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d) {
     if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
@@ -77,7 +77,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
 
 // (0xb4cb0 - CRainCloud::SerializeMove - moved to its owner RainCloud.cpp.)
 
-static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
+static inline void SerQuadPair(CFileMemBase* s, i32 tag, char* p) {
     if (tag != 4) {
         if (tag == 7) {
             s->Read(p, 8);
@@ -90,13 +90,13 @@ static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
 }
 
 RVA(0x000b4d30, 0x287)
-i32 CPathHazard::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
-    CSerialArchive* s = stream;
+i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
+    CFileMemBase* s = stream;
     char* B = reinterpret_cast<char*>(this);
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (Chain(static_cast<CSerialArchive*>(stream), tag, c, reinterpret_cast<CGameObject*>(d))
+    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, reinterpret_cast<CGameObject*>(d))
         == 0) {
         return 0;
     }

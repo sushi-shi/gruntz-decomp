@@ -2,7 +2,7 @@
 
 #include <Bute/PTreeNode.h>
 #include <Bute/ButeValue.h>
-#include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
+#include <Bute/ButeStore.h> // the canonical zPTree (real bases; INLINE dtor)
 #include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
 
 VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this TU emits it)
@@ -15,7 +15,7 @@ VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this 
 // jump table at 0x174e48 - NOT a datum. The former `g_node174df0Tag` (u8) and
 // `g_nodeDescriptor` (i32) externs were phantoms for this function's ADDRESS, which is
 // the "descriptor" every CButeNode is constructed with (`new CButeNode(&ButeValueTeardown,
-// 2)`). The address lands in the node's +0x0c callback slot; CButeStore::ClearRecursive
+// 2)`). The address lands in the node's +0x0c callback slot; zPTree::ClearRecursive
 // fires it on each node's value and then frees the value cell itself
 // (`m_cb(n->m_val); ::operator delete(n->m_val);`) - which is exactly why this frees
 // only the PAYLOAD (v->pValue) and never `v`.

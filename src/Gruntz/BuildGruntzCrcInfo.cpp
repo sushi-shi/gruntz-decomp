@@ -6,7 +6,7 @@
 #include <Net/NetMgr.h>        // CNetSession (this; m_session)
 #include <Gruntz/Multi.h>      // CMulti (ReportVersionMsg, Mgr())
 #include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_cmdGrid)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CTmCell == CGrunt)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CGrunt == CGrunt)
 #include <Gruntz/Grunt.h>      // CGrunt + CGruntHud (the dumped fields)
 
 // @source: decomp-xref

@@ -7,7 +7,6 @@
 
 // The light-fx rect IS a plain Win32 RECT (same 4 LONG fields; the ex hand-rolled
 // twin forced reinterprets at every MFC-side caller).
-typedef RECT LfxRect;
 
 class CGruntzMgr;        // the game-manager singleton (Init's arg / m_mgr)
 class CTriggerMgr;       // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)
@@ -33,14 +32,14 @@ public:
     // 0x0a3820  (398B) compute the centered effect rect from a source rect +
     // the chosen scale (m_44), blit the work surface to it, then draw the border
     // framing the live world rect through `ctx`.
-    i32 ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src);
+    i32 ComputeRect(CDDrawSurfacePair* ctx, RECT* src);
     // 0x0a3a20  DrawBorderRaw - fill the 4 rect edges of `r` with a 16-bit color
     // directly into an already-locked buffer `base`, on this->m_surface's geometry
     // (m_pitch per row, m_b0 per column). No lock/unlock (the caller holds them).
-    void DrawBorderRaw(LfxRect* r, void* base, i32 color);
+    void DrawBorderRaw(RECT* r, void* base, i32 color);
     // 0x0a3b50  DrawBorder - lock the ctx pair's surface, fill the 4 rect edges
     // with a 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
-    void DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color);
+    void DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color);
     // 0x0a3c90  BuildShape - zero the buffer, dispatch the shape generator.
     i32 BuildShape(i32 shape);
     // The 8 shape generators the switch dispatches to (all in LightFxRender.cpp).

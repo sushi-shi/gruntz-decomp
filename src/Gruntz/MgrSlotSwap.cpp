@@ -3,7 +3,7 @@
 #include <Ints.h>
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CDDrawSurfaceMgr via GameRegistry.h)
 #include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_level (the level; its m_mainPlane)
-#include <Wwd/WwdFile.h>      // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
+#include <Wwd/WwdFile.h>      // CDDrawWorkerHost/CDDrawWorkerHost - the canonical plane (the registry plane)
 #include <Gruntz/SlotHolder.h> // canonical CSlotHolder (the swapping game object)
 #include <rva.h>
 

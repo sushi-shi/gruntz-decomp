@@ -4,7 +4,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
-#include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>     // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <Image/CImage.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
@@ -12,9 +12,9 @@
 #include <Gruntz/Warlord.h>      // CWarlord (the fort-under-attack notify target)
 #include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr (m_8 key table, m_10 image registry) + CDDrawChildGroup
-#include <Gruntz/Sprite.h>                // CSprite (frame-data value) + CMapStringToOb
+#include <Gruntz/Sprite.h>                // CDDrawWorker (frame-data value) + CMapStringToOb
 #include <Gruntz/Timer.h>                 // CTimer + CImage (canonical; def was local here)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches)
 
@@ -22,7 +22,7 @@ RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
-    CSprite* spr = static_cast<CSprite*>(spr_ob);
+    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     if (!spr) {
         return 0;
     }
@@ -62,7 +62,7 @@ RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CObject* spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_TIMER", spr_ob);
-    CSprite* spr = static_cast<CSprite*>(spr_ob);
+    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -203,7 +203,7 @@ i32 CTimer::Tick(i32 dt) {
         d1sec = 10;
     }
 
-    CSprite* spr = m_sprite;
+    CDDrawWorker* spr = m_sprite;
     m_frameMinTens = (spr->m_minIndex <= d10min && d10min <= spr->m_maxIndex)
                          ? static_cast<CImage*>(spr->m_items.GetAt(d10min))
                          : 0;
@@ -303,7 +303,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
 // pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
+i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -357,7 +357,7 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
 // gives `zero` its own slot, shifting every frame-size immediate by 4. Body
 // (vtable Transfer dispatch + inlined memset/strcpy + name lookup) exact.
 RVA(0x0009c2e0, 0x2b6)
-i32 CTimer::Serialize(CSerialArchive* ar) {
+i32 CTimer::Serialize(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }

@@ -9,7 +9,7 @@
 
 class CTileTriggerTransition : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     // NO user-declared dtor: retail 0x117f0 is COMPILER-GENERATED (implicit; pin in

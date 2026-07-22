@@ -1,11 +1,11 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
-#include <Gruntz/Sprite.h> // CSprite - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
 #include <string.h>                      // inline strlen / strcpy / memset over the scratch buffer
 
 // ===========================================================================
@@ -16,11 +16,11 @@
 // Mode 7 (read) resolves each tracked glyph from the stream as a registry ref: a name +
 // an index, Lookup'd to a glyph map, then gated to (CImage*)map->m_items.GetAt(index) (the same
 // name -> Lookup -> [m_minIndex..m_maxIndex] -> frame idiom CSBI_Image::SerializeFields
-// runs against the real CSprite). Mode 4 (write) reverse-looks-up each glyph's name +
+// runs against the real CDDrawWorker). Mode 4 (write) reverse-looks-up each glyph's name +
 // index through the registry (AnyValueMatches) and writes them back. The two
 // glyph MAPS themselves (m_glyphMap/m_timerGlyphMap) round-trip by name only.
 //
-// The stream is the shared WAP32 CSerialArchive: Read at vtable +0x2c (mode 7) and
+// The stream is the shared WAP32 CFileMemBase: Read at vtable +0x2c (mode 7) and
 // Write at +0x30 (mode 4) - both slots off the one type.
 // ===========================================================================
 // @early-stop
@@ -31,7 +31,7 @@
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment + the
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000ea990, 0xa72)
-i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
+i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
         return 0;
     }
@@ -103,7 +103,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
-        CSprite* gm = static_cast<CSprite*>(out);                                                 \
+        CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                                 \
         CImage* r;                                                                                 \
         if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                                  \
             r = static_cast<CImage*>(gm->m_items.GetAt(i));                                                                    \
@@ -120,7 +120,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
-        field = reinterpret_cast<CSprite*>(out);                                                              \
+        field = reinterpret_cast<CDDrawWorker*>(out);                                                              \
     } else {                                                                                       \
         field = 0;                                                                                 \
     }

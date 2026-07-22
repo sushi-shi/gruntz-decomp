@@ -22,7 +22,7 @@
 #include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
@@ -130,7 +130,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
+static __inline void SerRecord(CFileMemBase* ar, i32 mode, char* p) {
     switch (mode) {
         case 4:
             ar->Write(p, 8);
@@ -1060,12 +1060,12 @@ modeDispatch: {
 }
 
 RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
     // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
-    if (CUserLogic::SerializeMove(static_cast<CSerialArchive*>(ar), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(static_cast<CFileMemBase*>(ar), mode, a3, a4) == 0) {
         return 0;
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
@@ -1073,7 +1073,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
-    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(static_cast<CSerialArchive*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
+    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1093,7 +1093,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClock));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchor));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimer));
@@ -1102,12 +1102,12 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
-    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8a0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8b0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8c0)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_278)))->Serialize(static_cast<CSerialArchive*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8a0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8b0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8c0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_278)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
     return 1;
 }
 
@@ -1129,7 +1129,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // ~100 plain field writes; finally a linked-list tail (m_33c) writing each
 // node's +0x8 (size 0x2c). The serialize counter is the global DAT_00629ad0.
 RVA(0x00053f90, 0x11d0)
-i32 CGrunt::Save(CGruntArchive* ar) {
+i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }

@@ -9,7 +9,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (object mgr) + CDDrawGroupNode (live list)
 #include <Gruntz/UserLogic.h>    // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
 #include <Gruntz/GameLevel.h>    // CGameLevel (m_world->m_level; m_mainPlane @+0x5c)
-#include <Wwd/WwdFile.h>         // CPlaneRender - the raw tile-grid facet of the main plane
+#include <Wwd/WwdFile.h>         // CDDrawWorkerHost - the raw tile-grid facet of the main plane
 #include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr @0x6453d8)
 #include <Gruntz/FreeNodePool.h> // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
 
@@ -92,7 +92,7 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 RVA(0x000810f0, 0x8b4)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
-    CPlaneRender* grid = m_attrMgr->m_level->m_mainPlane;
+    CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;
     if (grid == 0) {
         return 0;
     }

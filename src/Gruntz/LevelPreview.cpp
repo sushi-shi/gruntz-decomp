@@ -13,7 +13,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::ScanTree (0x157ee0)
 #include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
 #include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
-#include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
+#include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CDDrawSubMgrLeafScan / LeafCue)
 #include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the typed CState::m_c holder)
 #include <Dsndmgr/DirectSoundMgr.h>       // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Dsndmgr/SoundStream.h>          // SoundStream::Stop (ResetPreview's owned stream)
@@ -37,7 +37,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
     if (m_2c == 0) {
         return 0;
     }
@@ -169,7 +169,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
-        CSndHost* h = m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* p_ob = 0;
             h->m_10.Lookup("GAME_TELEPORTEROPEN", p_ob);

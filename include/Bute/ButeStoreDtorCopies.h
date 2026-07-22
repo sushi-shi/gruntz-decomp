@@ -1,5 +1,5 @@
 // ButeStoreDtorCopies.h - the LAST RVA-binding anchor for a per-obj-file copy of a
-// CButeStore (== zPTree) INLINE member.
+// zPTree (== zPTree) INLINE member.
 //
 // zPTree's ~ and Reset are INLINE members (<Bute/ButeStore.h> -> <Bute/PTreeNode.h>). MSVC5
 // without /Gy emits an inline member per object file (it folds only the vftable COMDAT, not
@@ -29,10 +29,10 @@
 #ifndef SRC_BUTE_BUTESTOREDTORCOPIES_H
 #define SRC_BUTE_BUTESTOREDTORCOPIES_H
 
-#include <Bute/ButeStore.h> // the canonical CButeStore (== zPTree; real bases + inline dtor/Reset)
+#include <Bute/ButeStore.h> // the canonical zPTree (== zPTree; real bases + inline dtor/Reset)
 #include <rva.h>
 
-struct CButeStoreResetCopyClear : public CButeStore {
+struct CButeStoreResetCopyClear : public zPTree {
     void ResetCopy(); // 0x212a0
 };
 SIZE(0x2c);

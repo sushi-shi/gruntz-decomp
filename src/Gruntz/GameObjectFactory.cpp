@@ -4,7 +4,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
 #include <DDrawMgr/DDrawWorkerCache.h> // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
 
-
 // Reloc-fidelity bindings for the factory-fn pointers the registrar pushes.
 // Each `push offset _CreateXxx` (DIR32) relocates in retail to that create-fn's
 // ILT jmp-thunk (a 5-byte `e9 <rel32>` in the <0x7c20 thunk band jumping to the

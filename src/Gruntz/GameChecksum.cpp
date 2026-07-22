@@ -25,7 +25,7 @@ i32 CNetSession::Checksum() {
         i32 cnt = 15;
         do {
             // per-iteration reload of the 3-hop chain (retail re-derefs each time);
-            // the grid cell IS the placed CGrunt (the CTmCell/CGrunt conflation is
+            // the grid cell IS the placed CGrunt (the CGrunt/CGrunt conflation is
             // the grid's own @identity question, not this reader's).
             CGrunt* obj = static_cast<CGrunt*>(m_session->m_mgr->m_cmdGrid->m_grid[idx]);
             if (obj != 0) {

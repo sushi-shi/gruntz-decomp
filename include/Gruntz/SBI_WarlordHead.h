@@ -5,7 +5,7 @@
 #include <rva.h>
 
 #include <Image/CImage.h>        // the canonical frame-record class (CImage::RenderFrame @0x153790)
-#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize external) + CImageSetStream
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize external) + CFileMemBase
 
 struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
 
@@ -31,7 +31,7 @@ public:
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1ead24 thunk 0x3cd8 -> 0xeb970): serialize the head's direction
     // (m_direction), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
-    virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
     virtual i32 Render() OVERRIDE; // slot 5 - 0xeb?? (the Render below moved up)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
@@ -71,7 +71,7 @@ public:
 
     // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
     // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
-    // m_34 (config, the base's CImageSet*), m_38 (state index).
+    // m_34 (config, the base's CDDrawWorker*), m_38 (state index).
     i32 m_direction; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
 SIZE_UNKNOWN();

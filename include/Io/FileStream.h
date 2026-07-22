@@ -4,8 +4,6 @@
 
 #include <Mfc.h> // CObject, CString + <windows.h> (CreateFileA/ReadFile/...) FIRST
 
-typedef CFile CFileIO;
-
 class CFileLog {
 public:
     // Reopen the shared file object (0x646778) around a close: open(path, 0x1000), close,
@@ -16,7 +14,6 @@ public:
     void OpenGruntzLog(); // 0x0bd450
 };
 SIZE_UNKNOWN(); // data-less __thiscall host (never constructed)
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

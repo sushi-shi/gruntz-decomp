@@ -2,7 +2,7 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Io/FileMem.h>        // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>        // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Mfc.h>
 #include <rva.h>
 
@@ -12,7 +12,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileActionEvent.h>
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane
+#include <Wwd/WwdFile.h> // CDDrawWorkerHost - the canonical plane
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/LeafCue.h>
@@ -23,7 +23,7 @@
 
 // TileActionEvent.cpp - the per-tile game-action event record (trace placeholder
 // tomalla-108). Methods in ascending retail-RVA order. The record shape comes from
-// <Gruntz/TileActionEvent.h>; the serializer is the shared CSerialArchive; the game
+// <Gruntz/TileActionEvent.h>; the serializer is the shared CFileMemBase; the game
 // registry singleton (g_gameReg) is modeled here with only the offsets these paths
 // touch. All engine callees are reloc-masked (no body).
 //
@@ -119,7 +119,7 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 }
 
 static i32 PbResolveCell(CGameLevel* level, i32 x, i32 y) {
-    CLevelPlane* plane = level->m_mainPlane;
+    CDDrawWorkerHost* plane = level->m_mainPlane;
     if (x < 0) {
         x = 0;
     } else if (x >= plane->m_gridW) {
@@ -354,7 +354,6 @@ CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
-
 // @early-stop
 // loop-body regalloc wall (~69%): complete + correct reconstruction - the frame
 // (0x14, 5 locals), the PtInRect gate, and ALL of steps 3-5 (the m_cmdGrid Fire, the
@@ -390,7 +389,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             i32 value = *cursor;
             i32 px = i + m_tileX - 1;
             i32 py = j + m_tileY - 1;
-            CPlaneRender* plane = g_gameReg->m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
@@ -433,8 +432,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         || (m_tileY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
-    CSndHost* sreg =
-        gameMgr->m_soundRegistry; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
+    CDDrawSubMgrLeafScan* sreg =
+        gameMgr->m_soundRegistry; // m_28 typed CDDrawSubMgrLeafScan* on the canonical holder (GameRegistry.h)
     if (sreg->m_emitGate != 0) {
         return;
     }
@@ -471,7 +470,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
     if (m_tileToken != 0) {
         CGruntzMgr* reg = g_gameReg;
-        CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
+        CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
         L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = m_tileToken;
         v = m_tileToken;
         (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
@@ -479,23 +478,23 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         switch (verb) {
             case 0x22: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
+                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 v = L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] + 1;
-                CPlaneRender* L2 = reg->m_world->m_level->m_mainPlane;
+                CDDrawWorkerHost* L2 = reg->m_world->m_level->m_mainPlane;
                 L2->m_tileGrid[L2->m_colOffsets[m_tileY] + m_tileX] = v;
                 (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
                 break;
             }
             case 0x1f: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
+                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5b;
                 (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
+                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_tileY] + m_tileX] = 0x5a;
                 (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, 0x5a);
                 break;
@@ -663,9 +662,9 @@ ret1:
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = reg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
-    CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 1;
@@ -681,9 +680,9 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = reg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;
-    CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 0;
@@ -797,7 +796,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CPlaneRender* grid = g_gameReg->m_world->m_level->m_mainPlane;
+        CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
         i32* cell = &grid->m_tileGrid[grid->m_colOffsets[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;
@@ -1179,7 +1178,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
 }
 
 RVA(0x00113860, 0x3b)
-i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
+i32 CTileTriggerSwitchLogic::ValidateByType(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -1199,7 +1198,7 @@ i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3,
 }
 
 RVA(0x001138b0, 0xb4)
-i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
+i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1224,7 +1223,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
 }
 
 RVA(0x001139a0, 0xb4)
-i32 CTileTriggerSwitchLogic::LoadState(CSerialArchive* s) {
+i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1270,12 +1269,12 @@ i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
     }
     switch (type) {
         case 4:
-            if (Serialize(static_cast<CSerialArchive*>(archive)) == 0) {
+            if (Serialize(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (Deserialize(static_cast<CSerialArchive*>(archive)) == 0) {
+            if (Deserialize(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
@@ -1295,7 +1294,7 @@ i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
 // (m_block -> m_block, m_dutyOn kept).
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
-i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
+i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1323,7 +1322,7 @@ i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
 }
 
 RVA(0x00113c10, 0xe8)
-i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
+i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1360,12 +1359,12 @@ i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
     }
     switch (type) {
         case 4:
-            if (SerializeMatrix(static_cast<CSerialArchive*>(archive)) == 0) {
+            if (SerializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (DeserializeMatrix(static_cast<CSerialArchive*>(archive)) == 0) {
+            if (DeserializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
@@ -1388,7 +1387,7 @@ i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
 // stream->edi (pushes all 4 callee regs, then loads args) vs our this->edi /
 // stream->esi (arg load interleaved with the pushes). Reg-pair swap only.
 RVA(0x00113dd0, 0x7b)
-i32 CGiantRockLogic::SerializeMatrix(CSerialArchive* s) {
+i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1416,7 +1415,7 @@ i32 CGiantRockLogic::SerializeMatrix(CSerialArchive* s) {
 // esi/edi regalloc wall (~95%, same as SerializeMatrix): whole body byte-identical;
 // retail pins this->esi / stream->edi vs our this->edi / stream->esi. Reg-pair swap.
 RVA(0x00113e70, 0x7b)
-i32 CGiantRockLogic::DeserializeMatrix(CSerialArchive* s) {
+i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1457,7 +1456,7 @@ i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
 
 RVA(0x00113f60, 0xa2)
 i32 CTileActionEvent::SerializeFields(void* ar) {
-    CSerialArchive* a = static_cast<CSerialArchive*>(ar);
+    CFileMemBase* a = static_cast<CFileMemBase*>(ar);
     if (a == 0) {
         return 0;
     }
@@ -1478,7 +1477,7 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
 
 RVA(0x00114040, 0xa2)
 i32 CTileActionEvent::DeserializeFields(void* ar) {
-    CSerialArchive* a = static_cast<CSerialArchive*>(ar);
+    CFileMemBase* a = static_cast<CFileMemBase*>(ar);
     if (a == 0) {
         return 0;
     }

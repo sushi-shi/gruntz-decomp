@@ -15,7 +15,7 @@
 #include <Gruntz/LightFxMgr.h> // m_78->m_tables (the glitter handle table)            // g_gameReg (GenMenuRandPos Rand/RandRange)
 #include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_childGroup factory)
-#include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
+#include <Gruntz/SoundCue.h> // CSndSubMgr/CDDrawSubMgrLeafScan/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
 #include <Gruntz/BootyMessages.h> // g_levelMsgRectsA (ex .cpp extern)
@@ -306,7 +306,6 @@ i32 g_levelMsgIconPos[16] = {
     0x1a8
 }; // 0x60b8b8
 
-
 // @early-stop
 // /GX branchy megafunction wall (~complete reconstruction): the whole body - the reveal
 // pass (m_hudPhase == 0) slot slide + rectsA/rectsB ShowHudMessage pops + explosion cue,
@@ -359,7 +358,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 if (shown == 0) {
                     // the +0x30 holder cast to its REAL class (this TU's g_gameReg is
                     // the WwdGameReg facet whose m_world is still a glitter-view type)
-                    CSndHost* host = g_gameReg->m_world->m_soundRegistry;
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
@@ -427,7 +426,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= 1;
             m_gokart[i]->m_stateFlags |= 1;
             m_slot++;
-            CSndHost* host = g_gameReg->m_world->m_soundRegistry;
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* cue_ob = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);

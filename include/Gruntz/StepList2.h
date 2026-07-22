@@ -3,5 +3,4 @@
 
 #include <rva.h>
 
-
 #endif // GRUNTZ_GRUNTZ_CSTEPLIST2_H

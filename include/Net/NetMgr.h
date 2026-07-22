@@ -917,7 +917,6 @@ public:
 };
 SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 
-
 // --- NetMgr.cpp's extern surface (C-linkage carriers; the defs inherit it) ---
 // (DirectPlayCreate/Enumerate import decls live in <Net/DPlayImports.h> -
 //  NetMgr.cpp-private, because dplay.h macro-renames DirectPlayEnumerate.)

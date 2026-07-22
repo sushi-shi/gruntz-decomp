@@ -96,5 +96,4 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
 };
 SIZE(0x7c);
 
-
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

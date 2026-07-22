@@ -23,8 +23,8 @@ struct WwdSnapshot {
 };
 SIZE(0xa0); // WriteSnapshot emits ar->Write(&rec, 0xa0)
 
-class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
-typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
+
 class CImage;  // the cached frame element (<Image/CImage.h>; ex CGameObjLayer view)
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)

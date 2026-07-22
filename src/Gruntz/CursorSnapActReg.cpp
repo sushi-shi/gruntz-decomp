@@ -6,8 +6,6 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x0022bfa0, 0x0, ?g_logicActReg_62bfa0@@3UCLogicActTable@@A)
 
-
-
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {

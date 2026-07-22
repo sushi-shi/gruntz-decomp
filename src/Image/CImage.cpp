@@ -580,7 +580,6 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirtyRect.bottom = dbottom;
 }
 
-
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
@@ -649,7 +648,6 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
         this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
     }
 }
-
 
 DATA_SYMBOL(0x002bf228, 0x0, _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863)
 DATA_SYMBOL(0x002bf29c, 0x0, _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865)

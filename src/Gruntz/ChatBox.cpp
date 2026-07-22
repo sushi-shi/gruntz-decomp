@@ -2,17 +2,16 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Image/CImage.h>
-#include <Image/ImageSet.h> // CImageSet - the per-row animation record (m_page->m_10 map value)
+#include <Image/ImageSet.h> // CDDrawWorker - the per-row animation record (m_page->m_10 map value)
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_page->m_drawTarget: front/back/overlay CDDrawSurfacePair
 #include <DDrawMgr/DDrawSurfacePair.h> // each pair's +0x2c CDDSurface + +0x1c src RECT
-#include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CImageRegistry (CMapStringToOb catalog)
-#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_page) + CSndHost + LeafCue
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CDDrawWorkerRegistry (CMapStringToOb catalog)
+#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_page) + CDDrawSubMgrLeafScan + LeafCue
 #include <Gruntz/MenuPage.h>
-
 
 RVA(0x00182ab0, 0x7b)
 i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f) {
@@ -209,7 +208,7 @@ i32 CChatBox::ReplaceNode(void* n) {
 // arg pushes, where retail defers it past them (`mov [esp+0xc],0` after push ecx/edx).
 // Independent-store scheduler choice, not steerable from source. Logic complete.
 // advance row0 to the message keyed by `key`; cache its frame state. The catalog map
-// is a CMapStringToOb (Lookup 0x1b8008); its CObject* value is a CImageSet record.
+// is a CMapStringToOb (Lookup 0x1b8008); its CObject* value is a CDDrawWorker record.
 RVA(0x00182df0, 0x69)
 i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_page) {
@@ -217,7 +216,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     }
     CObject* a_ob = 0;
     m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
-    CImageSet* a = static_cast<CImageSet*>(a_ob);
+    CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row0Anim = a;
     if (!a) {
         return 0;
@@ -242,7 +241,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     }
     CObject* a_ob = 0;
     m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
-    CImageSet* a = static_cast<CImageSet*>(a_ob);
+    CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row1Anim = a;
     if (!a) {
         return 0;
@@ -262,7 +261,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
 // per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
-    CImageSet* a = m_row0Anim;
+    CDDrawWorker* a = m_row0Anim;
     if (a) {
         if (static_cast<u32>(m_row0Timer) > static_cast<u32>(delta)) {
             m_row0Timer -= delta;
@@ -283,7 +282,7 @@ i32 CChatBox::Step(i32 delta) {
             }
         }
     }
-    CImageSet* b = m_row1Anim;
+    CDDrawWorker* b = m_row1Anim;
     if (b) {
         if (static_cast<u32>(m_row1Timer) > static_cast<u32>(delta)) {
             m_row1Timer -= delta;
@@ -348,7 +347,7 @@ i32 CChatBox::ScrollRow0() {
     if (m_row0Key.GetLength() == 0) {
         return 0;
     }
-    CSndHost* roster = m_page->m_soundRegistry;
+    CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
     if (roster->m_emitGate) {
         return 0;
     }
@@ -381,7 +380,7 @@ i32 CChatBox::ScrollRow1() {
     if (m_row1Key.GetLength() == 0) {
         return 0;
     }
-    CSndHost* roster = m_page->m_soundRegistry;
+    CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
     if (roster->m_emitGate) {
         return 0;
     }

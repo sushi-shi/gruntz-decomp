@@ -15,8 +15,6 @@
 #include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
-
-
 #include <Gruntz/PathHazardActReg.h> // g_actReg_646250 (ex .cpp extern)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {

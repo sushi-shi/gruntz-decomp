@@ -1,9 +1,9 @@
 #include <Mfc.h>          // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MapMgr.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <Gruntz/Brickz.h>        // CMapMgr (the pathfinding core homed here)
 #include <Gruntz/GameMode.h> // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
 #include <Rez/RezList.h>     // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
@@ -142,7 +142,7 @@ CMapMgr::~CMapMgr() {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::AllocGrid (0x09ea60) - allocate + initialize the width x height grid:
+// CMapMgr::AllocGrid (0x09ea60) - allocate + initialize the width x height grid:
 // new the flat cell pool (0x1c bytes/cell) + the per-row column table, zero the
 // pool, thread each row pointer, seed the two intrusive node pools (count*5
 // nodes each), record the per-step callback, and compute the grid bounding rect
@@ -154,7 +154,7 @@ CMapMgr::~CMapMgr() {
 // IntersectRect rect build + the m_gridW/m_gridH size compute), but the count*0x1c temp
 // + the rect stack slots spill against retail's slot schedule. Parked for sweep.
 RVA(0x0009ea60, 0x168)
-i32 CBrickzGrid::AllocGrid(i32 width, i32 height, void (*callback)()) {
+i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     i32 count = height * width;
     m_width = width;
     m_height = height;
@@ -224,7 +224,7 @@ void CMapMgr::Reset() {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Search (0x09eca0) - the A*-style grid search driver. Bounds-check the
+// CMapMgr::Search (0x09eca0) - the A*-style grid search driver. Bounds-check the
 // start (x1,y1) and goal (x2,y2) against the grid origin (m_originX,m_originY) / size
 // (m_gridW,m_gridH); reject if the start cell fails the passability masks; reset the
 // per-cell open counts; seed the open list with the start record and expand
@@ -236,7 +236,7 @@ void CMapMgr::Reset() {
 // (retail pins x1 in ebx for the whole fn, reused at m_startX=x1) and the cell-clear
 // loop's reg/zero choice; no source spelling flips MSVC5's allocator here.
 RVA(0x0009eca0, 0x2bd)
-i32 CBrickzGrid::Search(
+i32 CMapMgr::Search(
     i32 x1,
     i32 y1,
     i32 x2,
@@ -362,7 +362,7 @@ reached:
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Expand (0x09f010) - relax one neighbour of `node` in the (dx,dy)
+// CMapMgr::Expand (0x09f010) - relax one neighbour of `node` in the (dx,dy)
 // direction. Bounds-check the target cell, reject it on the passability masks
 // (m_edgeMask / m_maskA&m_maskC), and for a diagonal step (diag) reject corner-cutting via
 // the two orthogonal cells (m_maskB). If the cell is unvisited / improvable, take a
@@ -377,7 +377,7 @@ reached:
 // stack slots; MSVC5 rematerializes into 2) + the redundant open-node re-tests;
 // neither flips with a local-pin here. Parked for the final sweep.
 RVA(0x0009f010, 0x2a1)
-i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
+i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ng = reinterpret_cast<i32>(node->m_8) + cost;
     i32 ncol = node->m_0 + dx;
     i32 nrow = node->m_4 + dy;
@@ -496,7 +496,7 @@ relax:
 }
 
 RVA(0x0009f370, 0x8a)
-i32 CBrickzGrid::Insert(BrickzNode* node) {
+i32 CMapMgr::Insert(BrickzNode* node) {
     BrickzNode* cur = m_openList;
     node->m_18 = 0;
     node->m_14 = 0;
@@ -530,7 +530,7 @@ i32 CBrickzGrid::Insert(BrickzNode* node) {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::PopFront - detach the head of the m_openList list; promote its m_cellCount
+// CMapMgr::PopFront - detach the head of the m_openList list; promote its m_cellCount
 // successor (clearing the successor's back-link) and clear the popped links.
 // Returns the popped head (eax, consumed by Search). The return type does not
 // affect the callee's own bytes - head is already materialized in eax.
@@ -538,7 +538,7 @@ i32 CBrickzGrid::Insert(BrickzNode* node) {
 // regalloc wall: only residual is a head<->next register swap (retail pins head
 // in eax, recompile lands it in edx); logic byte-correct, 97% (no source steer).
 RVA(0x0009f430, 0x2a)
-BrickzNode* CBrickzGrid::PopFront() {
+BrickzNode* CMapMgr::PopFront() {
     BrickzNode* head = m_openList;
     if (head != 0) {
         BrickzNode* next = head->m_14;
@@ -555,14 +555,14 @@ BrickzNode* CBrickzGrid::PopFront() {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::CellPush - allocate a bucket node from the m_40 free list and link it
+// CMapMgr::CellPush - allocate a bucket node from the m_40 free list and link it
 // into the grid cell m_rows[node->m_4][node->m_0]; record the slot in node->m_20.
 // @early-stop
 // regalloc/scheduling wall: branch shape + free-list pop byte-match; only the
 // arg-pointer register (retail defers the `node` load past the 3 pushes -> edi;
 // recompile loads it pre-push -> edx) and the dependent reg chain differ, ~86%.
 RVA(0x0009f470, 0x62)
-void CBrickzGrid::CellPush(BrickzNode* node) {
+void CMapMgr::CellPush(BrickzNode* node) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
     BrickzNode* slot = m_colB.m_block;
     BrickzNode* nx = slot->m_8;
@@ -588,7 +588,7 @@ void CBrickzGrid::CellPush(BrickzNode* node) {
 }
 
 RVA(0x0009f500, 0x24)
-BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
+BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
     BrickzNode* p = m_openList;
     if (p == 0) {
         return 0;
@@ -603,7 +603,7 @@ BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
 }
 
 RVA(0x0009f540, 0x40)
-BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
+BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     BrickzNode* n = m_rows[row][col].m_head;
     while (n != 0) {
         BrickzNode* child = reinterpret_cast<BrickzNode*>(n->m_0);
@@ -616,14 +616,14 @@ BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Drain - move every node off the m_openList list onto the front of the m_30
+// CMapMgr::Drain - move every node off the m_openList list onto the front of the m_30
 // list (re-threaded via m_cellCount/m_openList), then clear the m_openList head.
 // @early-stop
 // regalloc wall: retail materializes &node->m_14 as a base ptr in a callee-saved
 // reg (lea + 3 pushes); recompile uses a direct offset + 2 pushes. Logic
 // byte-correct, ~67% (no source spelling forces the 3rd reg / lea base).
 RVA(0x0009f590, 0x2f)
-void CBrickzGrid::Drain() {
+void CMapMgr::Drain() {
     BrickzNode* p = m_openList;
     if (p != 0) {
         do {
@@ -639,7 +639,7 @@ void CBrickzGrid::Drain() {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Reset - empty every grid cell: each bucket node's child (m_0) is
+// CMapMgr::Reset - empty every grid cell: each bucket node's child (m_0) is
 // pushed onto the m_30 active list and the bucket node itself onto the m_40
 // free list; then the cell head is cleared.
 // @early-stop
@@ -648,7 +648,7 @@ void CBrickzGrid::Drain() {
 // m_height*m_width imul operand order; recompile uses direct offsets. Logic
 // byte-correct (loop structure + unsigned counter match), ~65%.
 RVA(0x0009f5d0, 0x81)
-void CBrickzGrid::ResetCells() {
+void CMapMgr::ResetCells() {
     BrickzCell* cell = m_cellPool;
     for (u32 i = 0; i < m_height * m_width; i++) {
         BrickzNode* node = cell->m_head;
@@ -672,7 +672,7 @@ void CBrickzGrid::ResetCells() {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Unlink - remove node from the m_openList-headed doubly-linked list
+// CMapMgr::Unlink - remove node from the m_openList-headed doubly-linked list
 // (m_cellCount = next, m_openList = prev), repairing the neighbours and the head, then
 // clearing the node's links.
 // @early-stop
@@ -681,7 +681,7 @@ void CBrickzGrid::ResetCells() {
 // regs; with no calls to pin the flag MSVC5 folds the re-tests + uses 1 reg.
 // Logic byte-correct, ~75%.
 RVA(0x0009f690, 0x5d)
-void CBrickzGrid::Unlink(BrickzNode* node) {
+void CMapMgr::Unlink(BrickzNode* node) {
     if (node->m_18 != 0) {
         if (node->m_14 != 0) {
             node->m_18->m_14 = node->m_14;
@@ -704,7 +704,7 @@ void CBrickzGrid::Unlink(BrickzNode* node) {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::CellPop - remove node's bucket slot (node->m_20) from its grid cell's
+// CMapMgr::CellPop - remove node's bucket slot (node->m_20) from its grid cell's
 // doubly-linked bucket list (m_cellPool = prev, m_rows = next), clear node's links, return
 // the slot to the m_40 free list, and (if flag) push node onto the m_30 list.
 // @early-stop
@@ -712,7 +712,7 @@ void CBrickzGrid::Unlink(BrickzNode* node) {
 // redundant `cmp prev,0` re-tests in retail that MSVC5 folds with no call to pin
 // the flag. Logic byte-correct, container shape proven; parked for the sweep.
 RVA(0x0009f710, 0xa7)
-void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
+void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
     BrickzNode* slot = node->m_20;
     if (reinterpret_cast<BrickzNode*>(slot->m_4) != 0) {
@@ -748,7 +748,7 @@ void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
 }
 
 RVA(0x0009f7f0, 0x3b)
-i32 CMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }
@@ -780,7 +780,7 @@ i32 CMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 // `j*m_width`, `m_width*j`, `i+m_width*j`, compound `idx=j;idx*=m_width` + permute - all identical).
 // Not source-steerable; parked for the final sweep.
 RVA(0x0009f840, 0x110)
-i32 CMapMgr::Save(CSerialArchive* ar) {
+i32 CMapMgr::Save(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -812,7 +812,7 @@ i32 CMapMgr::Save(CSerialArchive* ar) {
 // zero-cell index), each a `mov eax,edi;imul eax,[ebp]` vs `mov eax,[ebp];imul eax,edi`
 // byte-swap. Logic byte-faithful; not source-steerable. Parked for the final sweep.
 RVA(0x0009f9a0, 0x12e)
-i32 CMapMgr::Load(CSerialArchive* ar) {
+i32 CMapMgr::Load(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -836,7 +836,6 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     }
     return 1;
 }
-
 
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {

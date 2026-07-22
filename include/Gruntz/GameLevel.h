@@ -4,7 +4,7 @@
 #include <Wap32/WapObj.h> // CWapObj (recognized CObject chain) // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Object.h>
 
-#include <Wwd/WwdFile.h> // CPlane, WwdHeader, operator new, uncompress
+#include <Wwd/WwdFile.h> // CDDrawWorkerHost, WwdHeader, operator new, uncompress
 
 #include <Mfc.h> // CObArray (afxcoll)
 
@@ -34,7 +34,7 @@ static const i32 TILE_CLEAR = -1;
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                                 \
             if (px_ >= pc_->m_wrapW) {                                                             \
                 px_ = pc_->m_wrapW - 1;                                                            \
             }                                                                                      \
@@ -42,12 +42,12 @@ static const i32 TILE_CLEAR = -1;
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                                 \
             if (py_ >= pc_->m_wrapH) {                                                             \
                 py_ = pc_->m_wrapH - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
-        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
+        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                     \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
@@ -191,7 +191,7 @@ public:
     i32 MoveHandlerD(CGameObject* target, i32 a1, i32 a2, i32 a3);
 
     // Finds the plane whose name (plane+0xb4) case-insensitively matches `name`.
-    CPlane* FindPlaneByName(const char* name);
+    CDDrawWorkerHost* FindPlaneByName(const char* name);
 
     // MoveToward: if the requested move (arg1,arg2) is within this level's per-axis
     // step limits (m_maxStepX/m_maxStepY) drive DispatchMove once; otherwise step
@@ -278,16 +278,16 @@ public:
 
 public:
     // ReadObjectPlane (@0x15d9a0, GameLevel.cpp): ReadPlane's object-plane sibling -
-    // `new CPlane(m_0c, count, 0)` driven through the +0x24 object-block reader
+    // `new CDDrawWorkerHost(m_0c, count, 0)` driven through the +0x24 object-block reader
     // virtual; appends/records identically. Public: CGruntzMgr::LoadMonologoSprite
     // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
     // - that WwdFile.h view of THIS class is dissolved.)
-    CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    CDDrawWorkerHost* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
     // plane record). (Ex ?ReadPlane@CGameLevelPlanes@@ - view dissolved.)
-    CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
+    CDDrawWorkerHost* ReadPlane(void* planeData, void* blockBase, void* unused);
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CTileImageSet* ReadImageSet(void* record);
@@ -349,9 +349,9 @@ public:
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
     CObArray m_array20;        // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
     CObArray
-        m_planes; // +0x34  ::CObArray of CLevelPlane* (m_size293550x3c == m_planeCount; EH state 1)
+        m_planes; // +0x34  ::CObArray of CDDrawWorkerHost* (m_size293550x3c == m_planeCount; EH state 1)
     CObArray m_imageSets;          // +0x48  ::CObArray of CTileImageSet* (EH state 2)
-    CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
+    CDDrawWorkerHost* m_mainPlane;      // +0x5C  (typed full plane view; same object as CDDrawWorkerHost)
     i32 m_mainIndex;               // +0x60
     i32 m_maxStepX;                // +0x64  per-frame max move step (MoveToward; 0x40)
     i32 m_maxStepY;                // +0x68
@@ -381,12 +381,10 @@ SIZE(0x6d4);
 
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-// (EditSink is GameLevel.cpp's CSerialArchive typedef; spell the underlying type here)
+// (EditSink is GameLevel.cpp's CFileMemBase typedef; spell the underlying type here)
 extern i32 __stdcall ResolveLevelName(class CFileMemBase* sink, i32 a, i32 b, i32 c);
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

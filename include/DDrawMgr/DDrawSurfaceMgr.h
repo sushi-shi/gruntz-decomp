@@ -81,7 +81,7 @@ public:
     // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
     // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
     class CGameLevel* m_level;             // (ex "m_level" - the canonical CGameLevel)
-    CDDrawSubMgrLeafScan* m_soundRegistry; // +0x28  sound/cue registry (CSndHost typedef;
+    CDDrawSubMgrLeafScan* m_soundRegistry; // +0x28  sound/cue registry (CDDrawSubMgrLeafScan typedef;
                                            //        ex "m_soundRegistry")
     CDDrawSubMgrLeaf*
         m_animRegistry;     // +0x2c  the ANI catalog / anim registry (ex "m_animRegistry";
@@ -94,11 +94,9 @@ public:
 SIZE(0x40);
 SIZE_UNKNOWN();
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -11,7 +11,7 @@
 #include <Gruntz/Explosion.h>
 #include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/UserLogic.h>     // CUserLogic leaves the worker handlers build
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_spriteFactory->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
@@ -35,8 +35,6 @@ DATA_SYMBOL(0x00244870, 0x24, ?g_partColl@@3UCActReg@@A)
 static inline CPartEntry* PartLookup(i32 coord) {
     return reinterpret_cast<CPartEntry*>(g_partColl.ResolveEntry(coord));
 }
-
-
 
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
@@ -75,7 +73,7 @@ static inline i32 RegisterActionName() {
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
 RVA(0x00012cf0, 0x47)
-i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -93,7 +91,7 @@ i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
 RVA(0x00012e20, 0x47)
-i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CExplosion::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
@@ -218,7 +216,7 @@ i32 CFortressFlag::AdvanceAnim() {
 }
 
 RVA(0x00046410, 0x92)
-i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }

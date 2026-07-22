@@ -1,9 +1,8 @@
 #include <Gruntz/ToyPeek.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Bute/ButeTree.h> // g_buteTree
-
 
 // CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype).
@@ -42,7 +41,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 RVA(0x000983e0, 0x98)
-i32 CToyPeek::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }

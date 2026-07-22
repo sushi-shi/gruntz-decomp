@@ -19,8 +19,6 @@ enum {
     NUM_PLAYER_SLOTS = 4
 };
 
-
-
 #include <Gruntz/MpSymItem.h>
 
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)

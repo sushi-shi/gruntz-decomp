@@ -3,7 +3,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_kslimeColl)
@@ -15,11 +15,11 @@
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
-#include <Gruntz/Sprite.h>           // CSprite (frame-data value; the looked-up direction sprite)
+#include <Gruntz/Sprite.h>           // CDDrawWorker (frame-data value; the looked-up direction sprite)
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
-#include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindGruntAt @0x75c60, CellDispatch)
 
@@ -144,7 +144,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
-
 
 // CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
 // the slime class a type-id via the global bute-tree (registering its name on
@@ -292,9 +291,9 @@ i32 CKitchenSlime::Tick() {
 }
 
 RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
+i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
     char* B = reinterpret_cast<char*>(this);
-    CSerialArchive* s = stream;
+    CFileMemBase* s = stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
     // Read; jmp; else: Transfer) - the retail dispatch order.
@@ -360,7 +359,7 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gx = tileX >> 5;
         i32 gy = tileY >> 5;
         i32 tileFlags;
-        CTileGrid* map = g_gameReg->m_tileGrid;
+        CMapMgr* map = g_gameReg->m_tileGrid;
         if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width) || static_cast<u32>(gy) >= static_cast<u32>(map->m_height)) {
             tileFlags = 1;
         } else {
@@ -457,11 +456,11 @@ i32 CKitchenSlime::LoadSprites() {
     m_tileY = tileY;
 
     // The direction sprite + first-frame cache is the CGameObject frame-cache
-    // role-union: +0x194 (m_sprite) is the cached CSprite*, +0x198 (m_layer) doubles
+    // role-union: +0x194 (m_sprite) is the cached CDDrawWorker*, +0x198 (m_layer) doubles
     // as the first-frame pointer - the same union access CGameObject's own ApplyName
     // does.
     CWwdGameObjectA* player = Anim();
-    CSprite* spr = player->m_sprite;
+    CDDrawWorker* spr = player->m_sprite;
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_190 = 1;

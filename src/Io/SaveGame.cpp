@@ -542,7 +542,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
     // Open the level file & extract the embedded preview image. Inverted guards
     // (Open == 0 / Read != full) put the g_previewImage=0 failure store inline
     // after each test (retail's jne-to-success / je-to-success layout).
-    CFileIO f;
+    CFile f;
     if (f.Open(lev->m_path, 0x8000, 0) == 0) {
         g_previewImage = 0;
     } else {
@@ -612,7 +612,7 @@ void CSaveGame::Init() {
 
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
-    CFileIO file;
+    CFile file;
     if (!file.Open(m_name, 0, 0)) {
         return 0;
     }
@@ -634,7 +634,7 @@ i32 CSaveGame::Load() {
 // yet modeled; logic outline below, byte-match deferred to the final sweep.
 RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(i32 a, i32 b) {
-    CFileIO file;
+    CFile file;
     i32 ok = 0;
     if (file.Open(m_name, 0x1000, 0)) {
         file.Close();
@@ -868,7 +868,7 @@ int __stdcall CloseTempFile(SaveSlot* p) {
     if (p == 0) {
         return 0;
     }
-    CFileIO file;
+    CFile file;
     if (file.Open(p->m_savePath, 0, 0)) {
         file.Close();
         CFile::Remove(p->m_savePath);
@@ -933,7 +933,7 @@ void CSaveGame::SetMagic() {
 RVA(0x000e5700, 0x9e)
 int TempFileExists(SaveSlot* p) {
     if (p != 0 && (p->m_type & 1)) {
-        CFileIO file;
+        CFile file;
         if (file.Open(p->m_savePath, 0, 0)) {
             file.Close();
             return 1;

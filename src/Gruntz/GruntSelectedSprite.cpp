@@ -1,10 +1,10 @@
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
@@ -120,8 +120,8 @@ i32 CGruntSelectedSprite::Update() {
 }
 
 RVA(0x0007ea70, 0x6f)
-i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
-    CSerialArchive* sa = static_cast<CSerialArchive*>(arc);
+i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+    CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
     // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.
     if (mode != 4) {
@@ -132,7 +132,7 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
         sa->Write(&m_cellX, 8);
     }
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(arc))),
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
             mode,
             a3,
             a4

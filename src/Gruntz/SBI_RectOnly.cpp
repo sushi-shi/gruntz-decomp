@@ -2,7 +2,7 @@
 #include <Mfc.h>                 // afx-first umbrella (CByteArray/CPtrList consumers below)
 #include <Gruntz/SBI_ImageSet.h> // complete CSBI_ImageSet (slot-12 Notify receivers)
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents
@@ -26,11 +26,11 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Grunt.h>     // real CGrunt (the m_grid cells; ex CSbiTileEntry/CSbiTileSub views)
 #include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world def; +0x28 CSndHost)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world def; +0x28 CDDrawSubMgrLeafScan)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
-#include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/Sprite.h>                 // CDDrawWorker (frame-data value) + CSpriteHashTable
 #include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
 #include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCounter externs
 #include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
@@ -161,7 +161,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    // the grid cell is the real CGrunt (CTmCell typedef); its m_10 HUD carries the
+    // the grid cell is the real CGrunt (CGrunt typedef); its m_10 HUD carries the
     // on-screen origin pair.
     CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
     if (entry == 0) {
@@ -371,7 +371,7 @@ void CStatusBarMgr::NotifyAllSlots() {
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 
 RVA(0x001084d0, 0x96c)
-i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
+i32 CLevelSync::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     if (s == 0) {
         return 0;
     }
@@ -625,7 +625,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
 }
 
 RVA(0x001090a0, 0x38f)
-i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
+i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -733,7 +733,7 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
 // frame-size regalloc choice (plus the free-list induction wall shared with
 // Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
 RVA(0x00109520, 0x44c)
-i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
+i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1325,7 +1325,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         item->m_enabled = one;
         if (m_activeTab == one) {
             m_statObj[idx]->Toggle(m_position, one);
-            CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+            CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
@@ -1379,7 +1379,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = 2;
                 frame = 0x1a;
-                CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+                CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
                 if (h->m_emitGate == 0) {
                     void* spr_ob = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
@@ -1445,7 +1445,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         } else if (m_fallRectB >= 0x1bf) {
             if (m_fallActive != 2) {
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+                    CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
@@ -1519,7 +1519,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     void* spr_ob = 0;
     i32 n = phase + 1;
     g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
-    CSprite* spr = static_cast<CSprite*>(spr_ob);
+    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     CImage* frame = (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex)
                         ? static_cast<CImage*>(spr->m_items.GetAt(n))
                         : 0;
@@ -1565,7 +1565,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     m_xDirection = static_cast<double>(dist2) / dist;
     m_yDirection = static_cast<double>(dxv) / dist;
 
-    CSndHost* h = g_gameReg->m_world->m_soundRegistry;
+    CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
     if (h->m_emitGate == 0) {
         void* fly_ob = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
@@ -2748,7 +2748,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
         mp->m_state = 4;
-        CImageSet* f = mp->m_record;
+        CDDrawWorker* f = mp->m_record;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
             v = static_cast<CImage*>(
@@ -3617,7 +3617,7 @@ RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
     CSBI_ImageSet** notify = m_groupNotify;
-    SbiPhaseSlot* ph = m_groupSlots;
+    CSbiHlRow* ph = m_groupSlots;
     do {
         switch (ph->m_state) {
             case 1:
@@ -3752,9 +3752,9 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // shared-global DIR32 naming (g_gameReg/g_frameTime/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
-    SbiPhaseSlot* pA = &m_machineB;
-    SbiPhaseSlot* pB = &m_machineA;
-    SbiPhaseSlot* g = m_groupSlots;
+    CSbiHlRow* pA = &m_machineB;
+    CSbiHlRow* pB = &m_machineA;
+    CSbiHlRow* g = m_groupSlots;
     if (pA->m_state == 5) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {

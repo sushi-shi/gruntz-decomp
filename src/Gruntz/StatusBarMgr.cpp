@@ -134,9 +134,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                    (static_cast<CDDrawWorker*>((static_cast<CSBI_ImageSet*>(it))->m_34))
                         ->SetAllTypes(10);
-                    (static_cast<CImageSet*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                    (static_cast<CDDrawWorker*>((static_cast<CSBI_ImageSet*>(it))->m_34))
                         ->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;

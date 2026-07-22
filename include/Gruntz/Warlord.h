@@ -41,7 +41,7 @@ extern "C" u32 g_frameTime;
 
 class CWarlord : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000107a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
@@ -145,7 +145,6 @@ SIZE(0xb0);
 
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_actionTable; // 0x00244610
-
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

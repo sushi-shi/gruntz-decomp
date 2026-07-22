@@ -46,8 +46,7 @@ struct CStatzGameReg {
 };
 SIZE_UNKNOWN();
 
-class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
-typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
@@ -93,7 +92,7 @@ public:
     //  4. the view's own shape: `char m_pad00[0x30]` (exactly the CStatusBarItem base
     //     subobject) then 19 fields whose ptr/int pattern matches this class's
     //     m_statusGlyph..m_glyphMap at every single offset.
-    virtual i32 SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
     virtual void Reset() OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xea4b0 (ex Poll: update + conditional vfunc-10 redraw)
     virtual i32 Render() OVERRIDE; // slot 5 - 0xea4e0 (ex Blit: draw the tab background + value glyphs)
@@ -134,10 +133,10 @@ public:
     i32 m_selectValue;               // +0x5c  selection value (tracked)
     i32 m_unitRow;                   // +0x60  unit-table row index (stride 15 records)
     i32 m_unitCol;                   // +0x64  unit-table column index (within the 15-dword record)
-    CSprite* m_timerGlyphMap; // +0x68  timer glyph map (a frame-data CSprite)
+    CDDrawWorker* m_timerGlyphMap; // +0x68  timer glyph map (a frame-data CDDrawWorker)
     CImage* m_timerGlyph;     // +0x6c  timer glyph (resolved by Update)
     i32 m_timerValue;         // +0x70  timer value (tracked)
-    CSprite* m_glyphMap;      // +0x74  glyph map for the first four values (a CSprite)
+    CDDrawWorker* m_glyphMap;      // +0x74  glyph map for the first four values (a CDDrawWorker)
     i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_frameTime at last bump)
     i32 m_timerAnchorHi;             // +0x7c  timer anchor hi
     i32 m_timerWindowLo;             // +0x80  timer window lo

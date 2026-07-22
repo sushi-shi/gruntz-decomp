@@ -11,19 +11,19 @@
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
 #include <Mfc.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <rva.h>
 #include <Ints.h>
 #include <string.h>                  // strcpy/strlen (blit-param label buffer)
 #include <Wwd/WwdGameObjectFamily.h> // the CGameObject/A/F/B/C dtor-family hierarchy
 #include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
-#include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
+#include <Gruntz/Sprite.h>           // CDDrawWorker (GetFrame @0x15cc30 + the Clamp pair)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
 #include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
-#include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
+#include <Gruntz/SerialArchive.h>    // the shared CFileMemBase stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
 #include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
@@ -34,7 +34,6 @@
 namespace Rng {
     i32 Next2();
 }
-
 
 #include <Gruntz/AniElement.h>
 
@@ -428,7 +427,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         switch (d->m_stepMode - 1) {
             case 0: { // advance + wrap-to-first on overrun
                 CAniRenderCtx* c = m_10;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -444,7 +443,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 1: { // wrap-to-last when at first, else step back
                 CAniRenderCtx* c = m_10;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -460,7 +459,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 2: { // jump to an explicit frame (d->m_param)
                 CAniRenderCtx* c = m_10;
                 i32 frame = d->m_param;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -470,7 +469,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 3: { // reset to first
                 CAniRenderCtx* c = m_10;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -481,7 +480,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 4: { // reset to last
                 CAniRenderCtx* c = m_10;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -493,7 +492,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 5: { // advance by d->m_param, clamp-last on overrun
                 CAniRenderCtx* c = m_10;
                 i32 step = d->m_param;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -508,7 +507,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 6: { // retreat by d->m_param, clamp-first on underrun
                 CAniRenderCtx* c = m_10;
                 i32 step = d->m_param;
-                CSprite* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
@@ -667,7 +666,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 2: { // advance only when the cursor reached the seq low frame
                 CAniRenderCtx* c2 = m_10;
-                CSprite* seq = c2->m_frameSeq;
+                CDDrawWorker* seq = c2->m_frameSeq;
                 if (c2->m_frameCursor == seq->m_minIndex) {
                     goto loop_restart;
                 }
@@ -675,7 +674,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 3: { // advance only when the cursor reached the seq high frame
                 CAniRenderCtx* c2 = m_10;
-                CSprite* seq = c2->m_frameSeq;
+                CDDrawWorker* seq = c2->m_frameSeq;
                 if (c2->m_frameCursor == seq->m_maxIndex) {
                     goto loop_restart;
                 }
@@ -683,7 +682,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 4: { // advance one past the seq low frame
                 CAniRenderCtx* c2 = m_10;
-                CSprite* seq = c2->m_frameSeq;
+                CDDrawWorker* seq = c2->m_frameSeq;
                 if (c2->m_frameCursor == seq->m_minIndex + 1) {
                     goto loop_restart;
                 }
@@ -713,7 +712,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             case 5: { // advance only when the cursor reached one before the high frame
                 CAniRenderCtx* c2 = m_10;
-                CSprite* seq = c2->m_frameSeq;
+                CDDrawWorker* seq = c2->m_frameSeq;
                 if (c2->m_frameCursor == seq->m_maxIndex - 1) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
@@ -776,7 +775,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
 // Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
+i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -816,7 +815,7 @@ i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
 // strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
 // returned CString. Entropy tail; no source lever.
 RVA(0x0015c970, 0xfe)
-i32 CAniAdvanceCursor::Serialize(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -854,7 +853,7 @@ i32 CAniAdvanceCursor::Serialize(CSerialArchive* ar) {
 // (frame 0x94) and rotates eax/ebp through the eight reads + the index tail.
 // docs/patterns/pin-local-for-callee-saved-reg.md / zero-register-pinning.md.
 RVA(0x0015ca70, 0x15b)
-i32 CAniAdvanceCursor::Deserialize(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -905,7 +904,7 @@ i32 CAniAdvanceCursor::Deserialize(CSerialArchive* ar) {
 }
 
 RVA(0x0015cc30, 0x1e)
-i32 CSprite::GetFrame(i32 n) {
+i32 CDDrawWorker::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
         return reinterpret_cast<i32>(static_cast<CImage*>(m_items.GetAt(n)));
     }
@@ -922,7 +921,7 @@ i32 CSprite::GetFrame(i32 n) {
 // tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
 void CAniRenderCtx::ClampFirst() {
-    CSprite* seq = m_frameSeq;
+    CDDrawWorker* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }
@@ -939,7 +938,7 @@ void CAniRenderCtx::ClampFirst() {
 // shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
 void CAniRenderCtx::ClampLast() {
-    CSprite* seq = m_frameSeq;
+    CDDrawWorker* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }

@@ -4,7 +4,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // the name registry (m_10 Lookup / KeyOfValue)
 #include <Gruntz/AniElement.h>        // full CAniElement (m_value upcasts to CObject at KeyOfValue)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_7c->m_0c (the world root)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <rva.h>
 
@@ -25,7 +25,7 @@
 // from source under /O2 (function-scope `val` and inner-scope reshapes both
 // regressed). Logic complete; deferred to the final sweep.
 RVA(0x00008c00, 0x152)
-i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
+i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
     char name[0x80];
 
     if (arc == 0) {

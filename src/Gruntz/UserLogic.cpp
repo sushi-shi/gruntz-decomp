@@ -17,7 +17,7 @@
 // depth 2). Isolating the forcer + inline body in its own TU keeps the leaves here
 // calling the out-of-line helper.
 
-i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
+i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, i32) {
     return 1; // retail 0x87d0: mov eax,1; ret 0x10
 }
 LogicTypeId CUserBase::GetTypeTag() {
@@ -92,7 +92,7 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // run on a CGrunt `this` (fields to +0x3f0), and 0x5d210 is CGrunt vtable slot 3
 // (?LoadGruntTuningConstants is data-ref'd at ~??_7CGrunt@@6B@+0xc; it calls 0xee800 =
 // CGrunt::ArrivalReticleScan). Supporting singletons are the canonical classes:
-// CGameRegistry (g_gameReg @0x64556c), CTileGrid (+0x70), g_typeColl (zDArray,
+// CGameRegistry (g_gameReg @0x64556c), CMapMgr (+0x70), g_typeColl (zDArray,
 // tuning), g_resButeMgr (config strings: FadeTransparency/SafeFlashTime/AccelerateFlash/
 // EntranceSafeTime). Both are DEFERRED to the final sweep: they are decompiler-gated
 // mega-methods (MSVC /O2 stack-slot aliasing + a local CByteArray + the tile grid double-

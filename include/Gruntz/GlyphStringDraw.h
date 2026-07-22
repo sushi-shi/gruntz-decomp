@@ -12,7 +12,6 @@ typedef tagRECT RECT;
 void ShowHudMessage(CDDrawSurfaceMgr* sink, RECT* box, CString* text, i32 a, i32 b, i32 c,
                     i32 d, i32 e, i32 f); // 0x1154b0
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void HudMsgPush(

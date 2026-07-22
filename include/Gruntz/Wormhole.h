@@ -6,7 +6,7 @@
 
 class CWormhole : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010930, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WORMHOLE;
@@ -38,7 +38,6 @@ SIZE_UNKNOWN();
 #include <Gruntz/ActReg.h> // CTeleporterActReg (extern below)
 extern CTeleporterActReg g_teleporterActReg; // 0x002446b0
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void TeleporterActB(); // 0x403846 (teleporter "B")
@@ -48,11 +47,10 @@ extern "C" void PuddleActA(); // 0x4021f8 (puddle "A")
 extern i32 WormholeLogic_40181b();
 extern "C" void WormholeTypeMarker();
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
-#include <Gruntz/LogicFnTable.h> // LogicFnTable (for the extern below)
-extern LogicFnTable g_wormholeDispatch;
+#include <Gruntz/LogicFnTable.h> // CLogicActTable (for the extern below)
+extern CLogicActTable g_wormholeDispatch;
 
 #endif // GRUNTZ_CWORMHOLE_H

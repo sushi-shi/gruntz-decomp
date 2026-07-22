@@ -11,10 +11,10 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
-#include <Io/FileStream.h> // CFileIO (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
+#include <Io/FileStream.h> // CFile (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/SoundStream.h> // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
-#include <Gruntz/SoundCue.h> // CSndHost - the REAL m_c->m_soundRegistry (name->cue map + emit gate)
+#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan - the REAL m_c->m_soundRegistry (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_childGroup object manager
@@ -43,7 +43,6 @@
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
-
 
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
 // (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
@@ -156,10 +155,6 @@ enum {
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
 
-
-
-
-
 void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
@@ -189,10 +184,7 @@ enum {
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
 
-
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
-
-
 
 // The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
 // `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
@@ -251,7 +243,6 @@ RVA(0x000b5400, 0xa)
 void ConstructFileIOGlobal() {
     g_obj646778.CFile::CFile();
 }
-
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
@@ -393,7 +384,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     Vslot24(); // slot 36 (+0x90) virtual dispatch, ex "OnReady"
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_MULTI"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
     if (m_2c == 0) {
         return 0;
     }
@@ -780,7 +771,7 @@ i32 CMulti::Render() {
         fin = 1;
     }
     TickStateMgrs(); // slot 38 (+0x98) virtual dispatch (ex the view's "PostRedraw")
-    CLevelPlane* mainPlane = m_world->m_level->m_mainPlane; // the level MAIN plane
+    CDDrawWorkerHost* mainPlane = m_world->m_level->m_mainPlane; // the level MAIN plane
     if (mainPlane) {
         mainPlane->CenterScrollA(); // 0x163300
     }
@@ -893,17 +884,16 @@ i32 CMulti::PumpA() {
         win->TickSubManagers(now); // 0x137ac0
     }
     m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
-    (static_cast<CBrickzGrid*>(Mgr()->m_tileGrid))
+    (static_cast<CMapMgr*>(Mgr()->m_tileGrid))
         ->UpdateDiagonals(
             reinterpret_cast<i32>(Mgr())
-        ); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
+        ); // CMapMgr is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
         PumpAReset();
     }
     Mgr()->AdvanceOptionsCycle();
     return 1;
 }
-
 
 // @early-stop
 // large-body regalloc/scheduling wall (~83%). All branch structure is byte-exact
@@ -1034,9 +1024,9 @@ i32 CMulti::StartTitle() {
     if (!m_netGate) {
         return 0;
     }
-    CResSource* saved = m_2c;
-    CResSource* st =
-        static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
+    CSymTab* saved = m_2c;
+    CSymTab* st =
+        static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
     m_2c = st;
     if (!st) {
         return 0;
@@ -1359,7 +1349,6 @@ i32 CMulti::JoinSession() {
     SendStatFlag(0x3f7, 1);
     return 1;
 }
-
 
 // ---------------------------------------------------------------------------
 // MultiJoinDlgProc (0x0b8020) - the MULTI_JOIN "wait for players" modeless dialog
@@ -2051,8 +2040,6 @@ i32 CMulti::PollSession() {
 i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
-
-
 // @early-stop
 // tail-merge + regalloc wall (~78%): the whole dispatcher is byte-faithful - the
 // /GX prologue, the sender==0 HandleControlMsg forward, the command-slot latency
@@ -2151,7 +2138,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
                 ->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = m_world->m_soundRegistry;
+            CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
             }
@@ -2533,7 +2520,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 AnnounceVersion(reinterpret_cast<i32>(node));
             }
         }
-        CSndHost* host = m_world->m_soundRegistry;
+        CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", out);
@@ -3862,7 +3849,6 @@ i32 CMulti::AutoTuneCmdDelay() {
     m_drainReload = (base > 8 ? 0x1e : 0x14);
     return WriteCmdDelay(0);
 }
-
 
 // ---------------------------------------------------------------------------
 // CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).

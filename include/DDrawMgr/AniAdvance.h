@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Sprite.h> // CSprite - the active frame sequence (m_frameSeq)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the active frame sequence (m_frameSeq)
 
 class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
@@ -26,7 +26,7 @@ public:
     i32 m_screenY;              // +0x60  screen Y
     char m_pad64[0x190 - 0x64]; // +0x64..0x18f
     i32 m_frameCursor;          // +0x190  sequence frame cursor
-    CSprite* m_frameSeq;        // +0x194  active frame sequence
+    CDDrawWorker* m_frameSeq;        // +0x194  active frame sequence
     i32 m_curFrame;             // +0x198  resolved current frame pointer
 };
 SIZE_UNKNOWN();

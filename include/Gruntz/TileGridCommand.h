@@ -3,8 +3,8 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (the active layer)
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane (the active layer)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created InGameText sprite)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
@@ -15,7 +15,7 @@ extern "C" u32 g_frameTime;
 
 struct TgcMap {
     char _pad00[0x5c];
-    CPlaneRender* m_5c; // +0x5c  active layer
+    CDDrawWorkerHost* m_5c; // +0x5c  active layer
 };
 SIZE_UNKNOWN();
 
@@ -29,7 +29,6 @@ SIZE_UNKNOWN();
 
 struct TgcRedraw {};
 SIZE_UNKNOWN();
-
 
 #include <Gruntz/TileTriggerLogic.h>
 

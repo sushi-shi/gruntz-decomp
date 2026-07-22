@@ -81,7 +81,6 @@ static inline CVActEntry* VActLookup(i32 coord) {
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_vtrigActReg; // 0x00251500
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 VTrigLogic_11a700();

@@ -1,7 +1,7 @@
 #include <Gruntz/String.h>        // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
@@ -36,7 +36,7 @@ RVA(0x00039160, 0x46)
 i32 CCreditsState::FrameSlot28(i32 unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
-    m_2c = static_cast<CResSource*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
+    m_2c = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -598,7 +598,7 @@ i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
 // serialize/mode pre-step. SYMBOL exports it under the canonical CPlay name so that
 // call binds; the free-fn Validate_fafa0 view is the recovered-symbol placeholder
 // (body-fold onto CPlay deferred - it touches no members here). The param mangles
-// PAVCFileMemBase (CSerialArchive is a typedef of the class CFileMemBase), matching
+// PAVCFileMemBase (CFileMemBase is a typedef of the class CFileMemBase), matching
 // CPlay::SyncState's emitted HeaderSerialize call - NOT an elaborated struct U.
 SYMBOL(?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@HHH@Z)
 RVA(0x000fafa0, 0x3b)
@@ -622,7 +622,7 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
 }
 
 RVA(0x000faff0, 0x163)
-i32 CMgrPersistObj::Load(CSerialArchive* s) {
+i32 CMgrPersistObj::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
@@ -653,7 +653,7 @@ i32 CMgrPersistObj::Load(CSerialArchive* s) {
 }
 
 RVA(0x000fb1c0, 0x168)
-i32 CMgrPersistObj::Save(CSerialArchive* w) {
+i32 CMgrPersistObj::Save(CFileMemBase* w) {
     if (w == 0) {
         return 0;
     }

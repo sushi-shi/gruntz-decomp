@@ -3,10 +3,10 @@
 #include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>       // canonical CGrunt / CGruntCueSink / CGameRegistry
+#include <Gruntz/Grunt.h>       // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
 #include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle (the live-candidate list element)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CLevelPlane visible rect
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CDDrawWorkerHost visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
 #include <string.h> // inline strcmp of the grunt type name
@@ -24,8 +24,6 @@
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-
-
 
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -232,10 +230,10 @@ i32 CGrunt::ArrivalScanA() {
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c1));
+    GetScreenPos(reinterpret_cast<Coord*>(c1));
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c2));
+    GetScreenPos(reinterpret_cast<Coord*>(c2));
     i32 cy = c2[1] >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -532,7 +530,7 @@ i32 CGrunt::WanderStep() {
                 if (static_cast<u32>(m_dwell) > 0x3e8) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
-                        g->GetScreenPos(reinterpret_cast<GruntTilePos*>(c));
+                        g->GetScreenPos(reinterpret_cast<Coord*>(c));
                         if (TileSwitch(c[0] >> 5, c[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCol = g->m_tileOwnerHi;
@@ -713,7 +711,7 @@ i32 CGrunt::WanderStep() {
             if (clip == 0) {
                 return 1;
             }
-            CTileGrid* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
             if (static_cast<u32>(px) >= static_cast<u32>(grid->m_width)) {
                 return 1;
             }
@@ -784,7 +782,7 @@ i32 CGrunt::ArrivalReticleScan() {
     i32 defTX = m_defenderX >> 5;
     i32 defTY = m_defenderY >> 5;
 
-    GruntTilePos pt;
+    Coord pt;
     GetScreenPos(&pt);
     i32 dTX = abs((pt.m_x >> 5) - defTX);
     GetScreenPos(&pt);
@@ -972,7 +970,7 @@ i32 CGrunt::UpdateArrival() {
                 if (g != 0 && static_cast<u32>(this->m_dwell) > 1000) {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
-                        GetScreenPos(reinterpret_cast<GruntTilePos*>(c));
+                        GetScreenPos(reinterpret_cast<Coord*>(c));
                         if (TileSwitch(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20)
                             != 0) {
                             SetEntrancePos(1, 1);
@@ -1145,10 +1143,10 @@ i32 CGrunt::ArrivalScanB() {
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c1));
+    GetScreenPos(reinterpret_cast<Coord*>(c1));
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c2));
+    GetScreenPos(reinterpret_cast<Coord*>(c2));
     i32 cy = c2[1] >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -1239,7 +1237,7 @@ L_ed006b:
     }
     {
         i32 cc[4];
-        g->GetScreenPos(reinterpret_cast<GruntTilePos*>(cc));
+        g->GetScreenPos(reinterpret_cast<Coord*>(cc));
         if (TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
             if (m_390 != 0) {
                 i32 x = m_object->m_screenX;
@@ -1871,7 +1869,7 @@ i32 CGrunt::StepArrivalDefense() {
                 goto L_f318a;
             }
             {
-                GruntTilePos sp;
+                Coord sp;
                 occ->GetScreenPos(&sp);
                 if (TileSwitch(sp.m_x >> 5, sp.m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_f318a;
@@ -1965,10 +1963,10 @@ i32 CGrunt::ArrivalScanC() {
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c1));
+    GetScreenPos(reinterpret_cast<Coord*>(c1));
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    GetScreenPos(reinterpret_cast<GruntTilePos*>(c2));
+    GetScreenPos(reinterpret_cast<Coord*>(c2));
     i32 cy = c2[1] >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -2176,8 +2174,8 @@ L_tailc:
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
     ::CDWordArray acc;
-    GruntTilePos pa;
-    GruntTilePos pb;
+    Coord pa;
+    Coord pb;
 
     m_358 = 0;
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeF) == 0) {
@@ -2468,14 +2466,14 @@ i32 CGrunt::SeekTarget() {
         // Adjacency probe: read this grunt's HUD center + the slot's, in tile units,
         // and require both axis deltas < 2 (the slot is the immediate neighbor).
         i32 c0[4];
-        GetScreenPos(reinterpret_cast<GruntTilePos*>(c0));
+        GetScreenPos(reinterpret_cast<Coord*>(c0));
         i32 cy = c0[1] >> 5;
         i32 d0[4];
-        GetScreenPos(reinterpret_cast<GruntTilePos*>(d0));
+        GetScreenPos(reinterpret_cast<Coord*>(d0));
         i32 e0[4];
-        GetScreenPos(reinterpret_cast<GruntTilePos*>(e0));
+        GetScreenPos(reinterpret_cast<Coord*>(e0));
         i32 f0[4];
-        GetScreenPos(reinterpret_cast<GruntTilePos*>(f0));
+        GetScreenPos(reinterpret_cast<Coord*>(f0));
         i32 dx = (f0[1] >> 5) - (f0[3] >> 5);
         i32 dy = cy - (e0[3] >> 5);
         if (((dy ^ (dy >> 31)) - (dy >> 31)) < 2 && ((dx ^ (dx >> 31)) - (dx >> 31)) < 2) {

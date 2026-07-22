@@ -7,7 +7,6 @@
 #include <stdio.h>  // sprintf (reloc-masked engine CRT)
 #include <string.h> // inline strcmp / strncmp
 
-
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CAniElement
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)

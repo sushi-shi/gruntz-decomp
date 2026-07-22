@@ -330,7 +330,6 @@ CFaderLight::~CFaderLight() {
 
 DATA_SYMBOL(0x001f0888, 0x8, ?g_faderPowK@@3NB)
 
-
 // CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
 // clip the centre to the surface rect (early-out if outside), fill the per-scanline span
 // tables, resolve the hue-ramp shade table into the base's m_table (m_flag = "we own it",
@@ -867,7 +866,6 @@ i32 CFaderFlat::GetFrameCount() {
     return n + (m_percent * n) / 100;
 }
 
-
 DATA_SYMBOL(0x001f0828, 0x4, ?g_faderHalf@@3MB)
 DATA_SYMBOL(0x001f0830, 0x8, ?g_faderScale@@3NB)
 DATA_SYMBOL(0x001f0838, 0x8, ?g_faderBiasR@@3NB)
@@ -1028,7 +1026,6 @@ CFaderShape::~CFaderShape() {
         operator delete(m_shadeRamp);
     }
 }
-
 
 // @early-stop
 // x87 scheduling wall (~40-50%): the surface resolution, the equal-dimension

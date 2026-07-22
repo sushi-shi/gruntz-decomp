@@ -7,7 +7,7 @@ struct Coord {
     i32 m_x; // +0x00
     i32 m_y; // +0x04
     // 0x75a10 - fill both coords, return this (body in TriggerMgrHitTest.cpp; the
-    // ex-CPairXY/CTrigPoint views' Set - three names, one {x,y} pair, folded here).
+    // ex-CPairXY/Coord views' Set - three names, one {x,y} pair, folded here).
     Coord* Set(i32 x, i32 y);
 };
 SIZE(0x8);

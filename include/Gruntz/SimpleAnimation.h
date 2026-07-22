@@ -6,7 +6,7 @@
 
 class CSimpleAnimation : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x0000f910, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SIMPLEANIMATION;
@@ -22,15 +22,13 @@ public:
 };
 SIZE(0x54);
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 SimpleAnimLogic_4028b0();
 
-
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/LogicFnTable.h> // LogicFnTable (for the extern below)
-extern LogicFnTable g_simpleAnimDispatch;
+#include <Gruntz/LogicFnTable.h> // CLogicActTable (for the extern below)
+extern CLogicActTable g_simpleAnimDispatch;
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

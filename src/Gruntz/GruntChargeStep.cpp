@@ -11,7 +11,6 @@
 #include <Gruntz/GruntSpawnConfig.h> // the m_cueSink voice driver (SpawnVoiceDriver)
 #include <Gruntz/TriggerMgr.h>       // canonical CTriggerMgr (the +0x260 board)
 
-
 // ---------------------------------------------------------------------------
 // @early-stop
 // CRACKED 21%->57.6% (2026-07-05). The state machine is a `switch (m_defenderState)`
@@ -34,7 +33,7 @@ RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    CTmCell* g = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != 0) {
         CGameObject* gp = g->m_object;
@@ -177,8 +176,8 @@ i32 CGrunt::ChargeStep() {
         }
         case 1: {
             // moving to the arrival tile
-            CTmCell* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
-            CTmCell* cur = m_tileMgr->FindNearestEnemy(this);
+            CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+            CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -212,7 +211,7 @@ i32 CGrunt::ChargeStep() {
         case 2: {
             // arrived: re-check target then hold
             if (m_poweredUp != 0) {
-                CTmCell* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+                CGrunt* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = 1;

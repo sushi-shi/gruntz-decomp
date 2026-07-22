@@ -7,7 +7,6 @@
 
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
 
-
 #include <Gruntz/SoundFontPath.h> // g_sfDeviceId (ex .cpp extern)
 #include <Gruntz/SFSelectDevice.h> // own exported globals (ex Globals.h)
 DATA(0x00213dff)

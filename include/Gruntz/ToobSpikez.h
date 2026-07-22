@@ -18,7 +18,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOOBSPIKEZ;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     void Register();                       // 0x1147e0 (reserve the activation range)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
     static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
@@ -28,11 +28,9 @@ public:
 };
 SIZE(0x54);
 
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 ToobLogic_114bc0();
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

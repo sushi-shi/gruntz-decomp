@@ -4,11 +4,11 @@
 #include <Gruntz/Grunt.h>             // canonical CGrunt (this) + CGruntHud + CDDrawChildGroup
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (the name map host, holder +0x2c)
 #include <Wwd/WwdGameObjectFamily.h>  // CGameObject::GetClassId (the ==5 probe)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c)
 #include <Mfc.h>                  // CPtrList (CRecPtrList fold)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
@@ -75,7 +75,7 @@ void* operator new(u32 n); // 0x1b9b46
 // effect). The documented large-function regalloc/frame-layout wall; reconstructed
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
-i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
+i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     char* p = reinterpret_cast<char*>(this);
     if (ar == 0) {
         return 0;

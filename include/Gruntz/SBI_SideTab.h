@@ -24,7 +24,7 @@ public:
     // slot 1 (vtbl 0x1eae3c thunk 0x1ef1 -> 0xe9a30): the side-tab serialize leg,
     // tail-chaining CStatusBarItem::SerializeFields. 4 args, proven by `ret 0x10` + the
     // body's `mov esi,[esp+0x9c]` archive read / `[esp+0xa4]` kind switch (case 4/7).
-    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe9a30
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe9a30
     virtual void Reset() OVERRIDE; // slot 3 - 0xe9800 (out-of-line)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xe9820 (rebuild the +0x58 draw gate)
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe99c0 (draw the two side frames)

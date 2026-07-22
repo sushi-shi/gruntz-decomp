@@ -1,15 +1,15 @@
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/SerialArchive.h>      // CSerialArchive (== CFileMemBase; the EditDispatch stream)
+#include <Gruntz/SerialArchive.h>      // CFileMemBase (== CFileMemBase; the EditDispatch stream)
 #include <Io/FileMem.h>                // CFileMemBase complete type (Read/Write dispatch)
 #include <Wap32/Object.h>              // CObject grand-base (slots 0-4) for the CImageSetN variants
 #include <Gruntz/ParseSource.h>        // canonical CParseSource (BeginParse/EndParse)
 #include <Gruntz/UserLogic.h>          // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the m_0c world root (the chain owner)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup/CDDrawGroupNode (the object chain)
-#include <Io/FileStream.h>             // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Io/FileStream.h>             // CFile (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>          // CImageSet1/2/3 variant records + RezAlloc/RezFree
-#include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CPlane == CDDrawWorkerHost)
+#include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CDDrawWorkerHost == CDDrawWorkerHost)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -185,7 +185,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     {
         i32 startX = hdr->startX;
         i32 startY = hdr->startY;
-        CLevelPlane* mp = m_mainPlane;
+        CDDrawWorkerHost* mp = m_mainPlane;
         if (mp->m_flags & 1) {
             mp->m_scaledX = static_cast<float>(startX);
             mp->m_scaledY = static_cast<float>(startY);
@@ -202,7 +202,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
-                CLevelPlane* p = static_cast<CLevelPlane*>(m_planes[i2]);
+                CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
                 if (p->m_flags & 1) {
                     p->m_scaledX = static_cast<float>(ox);
                     p->m_scaledY = static_cast<float>(oy);
@@ -277,7 +277,7 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
 
 RVA(0x0015d500, 0x127)
 i32 CGameLevel::LoadFromFile(const char* path) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -331,7 +331,7 @@ RVA(0x0015d1f0, 0x87)
 void CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* child = static_cast<CLevelPlane*>(m_planes.GetData()[i]);
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
         if (child) {
             delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
@@ -354,7 +354,7 @@ RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* child = static_cast<CLevelPlane*>(m_planes.GetData()[i]);
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
         if (child) {
             delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
@@ -441,8 +441,8 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 }
 
 RVA(0x0015d8d0, 0xc3)
-CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
-    CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
+CDDrawWorkerHost* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(m_0c, m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
         if (plane) {
@@ -463,8 +463,8 @@ CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/
 }
 
 RVA(0x0015d9a0, 0xdc)
-CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
+CDDrawWorkerHost* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(m_0c, m_planes.GetSize(), 0);
 
     if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
         == 0) {
@@ -493,7 +493,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (px < 0) {
         px = 0;
     } else {
-        CLevelPlane* pc = m_mainPlane;
+        CDDrawWorkerHost* pc = m_mainPlane;
         if (px >= pc->m_wrapW) {
             px = pc->m_wrapW - 1;
         }
@@ -502,12 +502,12 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (py < 0) {
         py = 0;
     } else {
-        CLevelPlane* pc = m_mainPlane;
+        CDDrawWorkerHost* pc = m_mainPlane;
         if (py >= pc->m_wrapH) {
             py = pc->m_wrapH - 1;
         }
     }
-    CLevelPlane* pl = m_mainPlane;
+    CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = px >> pl->m_shiftX;
     i32 qy = py >> pl->m_shiftY;
     i32 col = qx;
@@ -522,8 +522,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-typedef CSerialArchive EditSink;
-
+typedef CFileMemBase EditSink;
 
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
@@ -535,7 +534,7 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 
 RVA(0x00082600, 0x73)
 i32 CGameLevel::LookupTile(i32 x, i32 y) {
-    CLevelPlane* mp;
+    CDDrawWorkerHost* mp;
     if (x < 0) {
         x = 0;
     } else {
@@ -575,7 +574,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
         *errOut = 0;
     }
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        if ((static_cast<CPlaneRender*>(m_planes[i]))->ValidateTiles(errOut) == 0) { // 0x163510
+        if ((static_cast<CDDrawWorkerHost*>(m_planes[i]))->ValidateTiles(errOut) == 0) { // 0x163510
             ok = 0;
         }
     }
@@ -586,7 +585,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (static_cast<CLevelPlane*>(m_planes[i]))->Build(coords);
+        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->Build(coords);
     }
 }
 
@@ -627,7 +626,7 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (static_cast<CLevelPlane*>(m_planes.GetData()[i]))->Build(&rect);
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Build(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -639,7 +638,7 @@ void CGameLevel::SyncToMainIndex(void* visitor) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
                 ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
             ++i;
         } while (i <= m_mainIndex);
@@ -651,7 +650,7 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            (static_cast<CPlaneRender*>(m_planes.GetData()[i]))
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
                 ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
             ++i;
         } while (i < m_planes.GetSize());
@@ -750,12 +749,12 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
 }
 
 RVA(0x0015dde0, 0x5c)
-CPlane* CGameLevel::FindPlaneByName(const char* name) {
+CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* p =
-            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[i]) : 0;
+        CDDrawWorkerHost* p =
+            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : 0;
         if (_strcmpi(name, p->m_name) == 0) {
-            return static_cast<CPlane*>(p);
+            return static_cast<CDDrawWorkerHost*>(p);
         }
     }
     return 0;
@@ -781,15 +780,15 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     CObList* chain = &ctx->m_list;
 
     if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
-        (static_cast<CLevelPlane*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
+        (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
             ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
         CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(chain->GetHeadPosition());
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CLevelPlane* p = (i >= 0 && i < m_planes.GetSize())
-                                     ? static_cast<CLevelPlane*>(m_planes.GetData()[i])
+                CDDrawWorkerHost* p = (i >= 0 && i < m_planes.GetSize())
+                                     ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
                                      : 0;
                 i32 zBound = p->m_zBound;
                 i32 blocked = 0;
@@ -804,7 +803,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                         blocked = 1;
                     }
                 }
-                (static_cast<CLevelPlane*>(m_planes.GetData()[i]))
+                (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
                     ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
                 ++i;
             } while (i < m_planes.GetSize());
@@ -822,7 +821,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CLevelPlane*>(m_planes.GetData()[idx]))
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[idx]))
                 ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
             ++idx;
         } while (idx <= m_mainIndex);
@@ -831,7 +830,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            (static_cast<CLevelPlane*>(m_planes.GetData()[j]))
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[j]))
                 ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
             ++j;
         } while (j < m_planes.GetSize());
@@ -841,7 +840,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (static_cast<CPlaneRender*>(m_planes[i]))->ResolveColorKey(); // 0x163670
+        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->ResolveColorKey(); // 0x163670
     }
 }
 
@@ -1640,7 +1639,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
         x = 0;
     } else {
-        CLevelPlane* pc = m_mainPlane;
+        CDDrawWorkerHost* pc = m_mainPlane;
         if (x >= pc->m_wrapW) {
             x = pc->m_wrapW - 1;
         }
@@ -1648,12 +1647,12 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (y < 0) {
         y = 0;
     } else {
-        CLevelPlane* pc = m_mainPlane;
+        CDDrawWorkerHost* pc = m_mainPlane;
         if (y >= pc->m_wrapH) {
             y = pc->m_wrapH - 1;
         }
     }
-    CLevelPlane* pl = m_mainPlane;
+    CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = x >> pl->m_shiftX;
     i32 alignedX = qx << pl->m_shiftX;
     i32 qy = y >> pl->m_shiftY;
@@ -1697,7 +1696,7 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
         return 0;
     }
 
-    CFileIO stream; // the WWD file stream IS a CFileIO (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
+    CFile stream; // the WWD file stream IS a CFile (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
 
     if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
@@ -1725,7 +1724,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    CFileIO stream; // the WWD file stream IS a CFileIO (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
+    CFile stream; // the WWD file stream IS a CFile (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
 
     if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
@@ -1922,8 +1921,8 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
-    CLevelPlane* p =
-        (index >= 0 && index < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[index]) : 0;
+    CDDrawWorkerHost* p =
+        (index >= 0 && index < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[index]) : 0;
     if (p == 0) {
         return 0;
     }
@@ -1932,14 +1931,14 @@ i32 CGameLevel::RemovePlane(i32 index) {
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
         i32 last = m_planes.GetSize() - 1;
-        CLevelPlane* lp = (last >= 0 && last < m_planes.GetSize())
-                              ? static_cast<CLevelPlane*>(m_planes[last])
+        CDDrawWorkerHost* lp = (last >= 0 && last < m_planes.GetSize())
+                              ? static_cast<CDDrawWorkerHost*>(m_planes[last])
                               : 0;
         if (lp != 0) {
             m_mainIndex = -1;
             m_mainPlane = 0;
             for (i32 i = 0; i < m_planes.GetSize(); i++) {
-                (static_cast<CLevelPlane*>(m_planes[i]))->m_flags &= ~1;
+                (static_cast<CDDrawWorkerHost*>(m_planes[i]))->m_flags &= ~1;
             }
             m_mainIndex = last;
             m_mainPlane = lp;
@@ -1955,8 +1954,8 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         if (from == to) {
             return 1;
         }
-        CLevelPlane* el =
-            (from < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[from]) : 0;
+        CDDrawWorkerHost* el =
+            (from < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[from]) : 0;
         if (el != 0) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, static_cast<CObject*>(el), 1);

@@ -33,9 +33,9 @@
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (CPlay::m_beginMarker; FindChild)
 #include <Gruntz/TileTriggerSwitchLogic.h> // the 0x8c switch element (SwitchDown/m_key1)
 #include <Gruntz/TileTriggerLogic.h>       // the 0x9c logic child (FindIndexByKey/RecordMove)
-#include <Gruntz/TileGrid.h>               // canonical CTileGrid (the registry's +0x70 tile grid)
+#include <Gruntz/TileGrid.h>               // canonical CMapMgr (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>                  // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h>                   // CPlaneRender - the canonical plane (dims here)
+#include <Wwd/WwdFile.h>                   // CDDrawWorkerHost - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
@@ -124,10 +124,10 @@ i32 CTriggerMgr::PlaceObject(
         return -1;
     }
     // find the first free grid column of row `row`
-    CTmCell** rowBase = &m_grid[row * TM_GRID_COLS];
+    CGrunt** rowBase = &m_grid[row * TM_GRID_COLS];
     i32 free = 0;
     if (*rowBase != 0) {
-        CTmCell** p = rowBase;
+        CGrunt** p = rowBase;
         while (free < 15 && *p != 0) {
             p++;
             free++;
@@ -156,7 +156,7 @@ i32 CTriggerMgr::PlaceObject(
 }
 
 RVA(0x0006bc20, 0x6f)
-i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg) {
+i32 CTriggerMgr::DispatchCellForObject(CGrunt* obj, i32 startRow, i32 kind, i32 arg) {
     i32 last;
     if (startRow == 5) {
         startRow = 0;
@@ -165,7 +165,7 @@ i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32
         last = startRow;
     }
     for (i32 row = startRow; row <= last; row++) {
-        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
+        CGrunt** cell = &m_grid[row * TM_GRID_COLS];
         for (i32 col = 0; col < 15; col++) {
             if (cell[col] == obj) {
                 return CellDispatch(row, col, kind, arg);
@@ -177,7 +177,7 @@ i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32
 
 RVA(0x0006bcb0, 0x6a)
 i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
-    CTmCell* cell = m_grid[row * TM_GRID_COLS + col];
+    CGrunt* cell = m_grid[row * TM_GRID_COLS + col];
     if (cell == 0) {
         return 0;
     }
@@ -187,7 +187,7 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     }
     // The grid cell is a real CGrunt (m_grid holds "Grunt" sprites); route it via the
     // real CGrunt methods so the calls bind (ExitGrid==BuildGruntExitAnimation @0x641b0,
-    // Route==LoadGruntDeathAnimations @0x60150). The m_grid CTmCell*->CGrunt* retype is
+    // Route==LoadGruntDeathAnimations @0x60150). The m_grid CGrunt*->CGrunt* retype is
     // deferred cross-lane (FindGruntAt's return type ripples into Play.cpp et al.).
     if (kind == 0xd) {
         (static_cast<CGrunt*>(cell))->BuildGruntExitAnimation();
@@ -220,13 +220,13 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     ResetAll();
     if (row <= last) {
         i32 n = last - row + 1;
-        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
+        CGrunt** cell = &m_grid[row * TM_GRID_COLS];
         i32* perRow = m_rowStateB + row;
         i32 g2 = row * TM_GRID_COLS;
         do {
             i32 col = 0;
             do {
-                CTmCell* c = *cell;
+                CGrunt* c = *cell;
                 if (c != 0) {
                     c->m_38->m_flags |= 0x10000;
                     *cell = 0;
@@ -283,9 +283,9 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         row = startRow;
     }
     while (row <= last) {
-        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
+        CGrunt** cell = &m_grid[row * TM_GRID_COLS];
         for (i32 col = 0; col < 15; col++) {
-            CTmCell* g = cell[col];
+            CGrunt* g = cell[col];
             if (g != 0 && g->m_entranceCommitted != 0) {
                 CWwdGameObjectA* o = g->m_object;
                 if (o->m_layer != 0) {
@@ -319,7 +319,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     i32 idx = col * TM_GRID_COLS + row;
-    CTmCell* cell = m_grid[idx];
+    CGrunt* cell = m_grid[idx];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -380,7 +380,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     // Inlined LookupTileType(m_level->m_level, x, y): clamp (x,y) to the main plane,
     // resolve the tile cell, ask its image set the collision kind at (subX, subY).
     CGameLevel* level = m_world->m_level;
-    CPlaneRender* plane = level->m_mainPlane;
+    CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cx = x;
     i32 cy = y;
     if (cx < 0) {
@@ -488,7 +488,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             y = h - 1;
         }
     }
-    CLevelPlane* scroll = view->m_mainPlane;
+    CDDrawWorkerHost* scroll = view->m_mainPlane;
     i32 sh = scroll->m_shiftX;
     i32 sw = scroll->m_shiftY;
     i32 tx = x >> sh;
@@ -545,7 +545,7 @@ void __stdcall GridAction7(i32 a, i32 b) {
 // regalloc diverges across the many branches. topic:wall.
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
-    CTmCell* cell = m_grid[col * TM_GRID_COLS + row];
+    CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -560,7 +560,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
         k = cell->m_19c;
     }
     if (k == 0x13) {
-        CTmCell* tc = cell;
+        CGrunt* tc = cell;
         if (tc->Type13Check() != 0) {
             tc->Apply13(row, a28 + 1);
             return 1;
@@ -581,7 +581,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
 // + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
-    CTmCell* cell = m_grid[col * TM_GRID_COLS + row];
+    CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
@@ -618,7 +618,7 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
 RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     i32 idx = col * TM_GRID_COLS + row;
-    CTmCell* cell = m_grid[idx];
+    CGrunt* cell = m_grid[idx];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -665,7 +665,7 @@ RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     i32 outRow = 0;
     i32 outCol = 0;
-    CTmCell* cell = this->Hit(kind, y, y, &outRow, &outCol);
+    CGrunt* cell = this->Hit(kind, y, y, &outRow, &outCol);
     if (cell == 0 || outCol != g_curPlayer) {
         return;
     }

@@ -12,7 +12,6 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x002445c0, 0x0, ?g_exitTriggerActReg@@3UCActReg@@A)
 
-
 RVA(0x0003f210, 0x15)
 void CExitTrigger::InitActReg() {
     g_exitTriggerActReg.Construct(2000, 2010);

@@ -5,7 +5,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the front pair's held surface (Render's busy probe)
 #include <DDrawMgr/DDSurface.h>
 
-#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CResSource
+#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CSymTab
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
 #include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
@@ -37,7 +37,7 @@ i32 CHelpState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     }
     while (ShowCursor(0) >= 0)
         ;
-    m_2c = static_cast<CResSource*>(m_symParser->ResolvePath("STATEZ_HELP"));
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_HELP"));
     if (!m_2c) {
         return 0;
     }

@@ -10,7 +10,6 @@
 DATA(0x002bf224)
 PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
-
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
 inline CShadeTableArray::CShadeTableArray() {
@@ -935,7 +934,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
         arc.Read(m_pData, m_nSize * 4);
     }
 }
-
 
 // CShadeTableArray::SetSizeGrow (0x150040) - the out-of-line MFC CArray::SetSize over
 // the 4-byte CShadeTable* element (its 6 callers are all CShadeTableCache table

@@ -6,8 +6,8 @@
 #include <Mfc.h> // MFC (afx brings windows.h the controlled way) - MUST precede <ddraw.h> (ChatBoxOwner.h is an MFC header)
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (m_18->m_imageRegistry) + its m_10map
-#include <Gruntz/Sprite.h>            // the "GAME_CHATBOX" map value IS the canonical CSprite
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawWorkerRegistry (m_18->m_imageRegistry) + its m_10map
+#include <Gruntz/Sprite.h>            // the "GAME_CHATBOX" map value IS the canonical CDDrawWorker
 #include <Image/CImage.h>             // CImage::RenderFrame (0x153790) - the looked-up frame blit
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
@@ -140,7 +140,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 //   [esp+0x3c] = CButeMgr (ctor ??0CButeMgr 0x170210; ParseGroup 0x171580;
 //                GetIntDef 0x171aa0 / Exists 0x171a60 / GetStringDef 0x173180; Init 0x170330)
 //   ebx        = CParseSource (m_34->LoadBute 0x13bff0; BeginParse 0x139960 / EndParse 0x1399d0)
-//   [esp+0x54/0x84/0xb0] = 3 scratch CButeStore locals (ctor/Clear 0x16e070; MI dtor
+//   [esp+0x54/0x84/0xb0] = 3 scratch zPTree locals (ctor/Clear 0x16e070; MI dtor
 //                restamps ??_7zPTree@0x5e94ac / ??_7CButeStore@0x5e949c + 0x16dfc0 + 0x16da60)
 //   the two `new`(0x5c/0x58) heap objects are CRT strstreams (both ctors are
 //                manual-crt-reclass in config/library_labels.csv): the 0x58 is an
@@ -210,10 +210,10 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         return 0;
     }
 
-    CSprite* spr = 0;
+    CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
     self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", sprOb);
-    spr = static_cast<CSprite*>(sprOb);
+    spr = static_cast<CDDrawWorker*>(sprOb);
     if (!spr) {
         return 0;
     }

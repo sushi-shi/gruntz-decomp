@@ -5,11 +5,10 @@
 #include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
 
 class CDroppedObjectShadow : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012620, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECTSHADOW;
@@ -20,7 +19,7 @@ public:
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CDroppedObject::Serialize).
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40
+    i32 Serialize(CFileMemBase* ar, i32 tag, i32 c, i32 d); // 0xc7b40
     // The activation-registry facet (ex ActRegSiblings.cpp's "CSiblingActorB" -
     // identity recovered: its registry construct 0xc76d0 sits right after this
     // class's ctor, and its per-frame Advance spawns the "DroppedObject" sprite
