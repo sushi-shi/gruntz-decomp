@@ -27,6 +27,7 @@ Defaults are tuned for layout study, not a shippable binary:
 Run inside `nix develop`.
 """
 
+import re
 import argparse
 import os
 import shutil
@@ -192,10 +193,14 @@ def main() -> None:
     # /FORCE means unresolved externals are EXPECTED (partial reconstruction);
     # surface the counts but treat the produced EXE as success.
     warns = sum(1 for ln in output.splitlines() if "LNK4006" in ln)
-    unres = sum(1 for ln in output.splitlines() if "LNK2001" in ln)
+    unres_syms = sorted({m.group(1) for ln in output.splitlines()
+                         if (m := re.search(r'unresolved external symbol (\S+)', ln))})
+    # save the unresolved-externals punch-list (the drive-to-linkable worklist).
+    unf = out.parent / (out.stem + ".unresolved.txt")
+    unf.write_text("\n".join(unres_syms) + "\n")
     print(f"[link] {len(objs)} objs -> {out} ({out.stat().st_size} B) + {mapf.name}")
-    print(f"[link] {unres} unresolved externals, {warns} dup-symbol warnings "
-          f"(expected: partial reconstruction, /FORCE)")
+    print(f"[link] {len(unres_syms)} unresolved externals -> {unf.name}, "
+          f"{warns} dup-symbol warnings (expected: partial reconstruction, /FORCE)")
 
 
 if __name__ == "__main__":
