@@ -73,7 +73,6 @@ public:
     // cluster - the sibling states' slot bodies use them too.)
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).
-    char m_pad1a8[0x1b4 - 0x1a8];
     u32 m_idleTimer;        // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
     struct LeafCue* m_host; // +0x1b8  the looked-up sound cue (ex the CAttractHost view)
     i32 m_activeFlag;       // +0x1bc  attract-active flag

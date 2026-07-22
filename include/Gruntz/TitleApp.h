@@ -7,7 +7,7 @@
 // to +0x1b8 where Attract.h models a CAttractHost* sound/host sub-object - a real
 // layout conflict. So deriving CState is proven + sufficient to bind the base symbol;
 // resolve the +0x1b8 conflict + the obj placement in a dedicated CAttract pass before
-// binding the leaf. The +0x1b8 timer sits past the CState base (ends at +0x1a8),
+// binding the leaf. The +0x1b8 timer sits past the CState base (ends at +0x1b4),
 // exactly as CPreviewState's own m_1b8 does.
 //
 // Only offsets + code bytes are load-bearing; names are placeholders.
@@ -19,7 +19,7 @@
 
 class CTitleApp : public CState {
 public:
-    char m_pad1a8[0x1b8 - 0x1a8];
+    char m_pad1b4[0x1b8 - 0x1b4];
     int m_1b8; // +0x1b8 timer
 };
 SIZE_UNKNOWN();

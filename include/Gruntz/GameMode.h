@@ -103,7 +103,6 @@ public:
     // (The ex "LoadAssets" decl is GONE - it IS the slot-1 override above; its body
     // chains the base default via the qualified CState::LoadGameAssetNamespaces().)
 
-    char m_pad1a8[0x1b4 - 0x1a8];
     CChatBox* m_1b4; // +0x1b4 the menu UI object the scans drive (the real CChatBox)
     i32 m_1b8;       // +0x1b8 fade/poll duration
     LeafCue*
@@ -187,7 +186,6 @@ public:
     void LoadCreditzAssets();
 
     // --- CCreditsState members the Render path pins (placeholders) ---
-    char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_musicStarted; // +0x1b4 CREDITZ music one-shot latch
     i32 m_flashColor; // +0x1b8 packed random RGB flash color
     i32 m_flashTimer; // +0x1bc flash re-roll timer
@@ -360,7 +358,6 @@ public:
     // doubles as the overlay/animation state
     // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
     // The +0xc HUD sink the booty toasts read IS the inherited CState::m_c holder.
-    char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_initGate;   // +0x1b4  init/step gate (armed flag)
     i32 m_1b8;        // +0x1b8  cleared by the slot-1 loader before the build chain
     i32 m_activation; // +0x1bc  activation / overlay-animation state id
@@ -499,7 +496,6 @@ public:
     // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the
     // same letter set from different bases) - accessed by offset in the bodies, not
     // declared as fields here. Only the directly-stored scalars are named.
-    char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
     i32 m_1b8; // +0x1b8 Render's one-shot battle-stats latch (0x64 -> draws once -> 0xc7)
     char m_pad1bc[0x1d8 - 0x1bc];

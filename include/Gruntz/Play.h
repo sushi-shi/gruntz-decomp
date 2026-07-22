@@ -433,15 +433,16 @@ public:
     // marker / begin marker); mode 8 (re)inits the ambient-sound cue. mode 4 =
     // write (archive vtbl[0x30]), mode 7 = read (archive vtbl[0x2c]).
     i32 SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
-    // SyncState's own reloc-masked CPlay-thiscall leaves (external, no body):
-    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
+    // The header serialize/mode pre-step SyncState runs first (thunk 0x4016;
+    // body @0x0fafa0 in Attract.cpp, the 0xfa.. state-serialize band - it
+    // dispatches mode 4/7 into the CState HeaderWrite/HeaderRead passes).
+    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x0fafa0
     i32 SyncWrite19fb(CFileMemBase* ar);                             // 0x19fb thunk (mode-4)
     i32 SyncRead2f7c(CFileMemBase* ar);                              // 0x2f7c thunk (mode-7)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
-    i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
-    i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
-    i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
+    // (m_inputWarmup1/2 + m_inputHalfSel @+0x1a8..+0x1b0 are CState base fields:
+    // the slot-8 base body seeds them, HeaderWrite/HeaderRead serialize them.)
     // +0x1b4: the first of five destructible MFC members ~CPlay tears down (reverse
     // decl order); typed here so the dtor's /GX member fold falls out (GruntzMgr.cpp).
     CString m_1b4;                // +0x1b4

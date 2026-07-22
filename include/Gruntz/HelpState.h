@@ -27,17 +27,12 @@ public:
     // The TRUE object is 0x1b8: CGruntzMgr::TransitionState (0x8b960) does `push 0x1b8;
     // call ??2` @0x8be4c, then the inline `mov [esi],??_7CHelpState@@6B@` (0x5e9dfc) stamp.
     //
-    // This pad used to be written `[0x1b8 - 0x1b4]` on the claim that the CState spine is
-    // 0x1b4. That is wrong, and it silently made sizeof(CHelpState) 0x1ac - so every
-    // `new CHelpState` in GruntzMgr.cpp pushed 0x1ac where retail pushes 0x1b8. CState
-    // actually ends at 0x1a8, corroborated independently: CAttract (a CState leaf) lands
-    // EXACTLY on its retail 0x1c0 on top of this same 0x1a8 base, which it could not do if
-    // the base were 0x1b4.
-    //
-    // ROLE UNRECOVERED for these 0x10 bytes: neither reconstructed CHelpState method
-    // (LoadAssets 0x95090, ~CHelpState 0x8cf30) touches +0x1a8..+0x1b7. The SIZE is proven
-    // from the allocation; the field roles are not. Do not invent them.
-    char m_pad1a8[0x1b8 - 0x1a8];
+    // The CState base ends at +0x1b4 (its +0x1a8..+0x1b0 input latches are base fields:
+    // the slot-8 base body @0xface0 seeds them, HeaderWrite/HeaderRead serialize them).
+    // ROLE UNRECOVERED for the remaining 4 bytes: neither reconstructed CHelpState method
+    // (LoadAssets 0x95090, ~CHelpState 0x8cf30) touches +0x1b4..+0x1b7. The SIZE is proven
+    // from the allocation; the field role is not. Do not invent it.
+    char m_pad1b4[0x1b8 - 0x1b4];
 };
 SIZE(0x1b8);
 

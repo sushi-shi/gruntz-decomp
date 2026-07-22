@@ -33,7 +33,6 @@ public:
     // (The ex "LoadSounds" decl is GONE - it IS the slot-1 override above; its body
     // chains the base default via the qualified CState::LoadGameAssetNamespaces().)
 
-    char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 zeroed by the ctor (the state's own one-shot gate)
     i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)
     // ENDS AT 0x1bc - the allocation-proven size (TransitionState: `push 0x1bc`).

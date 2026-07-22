@@ -555,6 +555,13 @@ def cmd_build(args) -> None:
     _gate("gruntz.cleanliness.view_debt", ["--fatal"],
           "view-debt: a fake view regressed - fold the phantom onto its real class "
           "(python -m gruntz.cleanliness.view_debt --fatal)", "full")
+    # FULL tier - declarations without definitions (the alias ratchet): a symbol some
+    # base obj references that nothing defines and retail's namespace never names is a
+    # fabricated alias / phantom extern. Set-ratcheted vs config/declared-only-baseline.tsv.
+    _gate("gruntz.cleanliness.declared_only", ["--fatal"],
+          "declared-only: a NEW declaration without a definition (alias hack) - rename the "
+          "decl to the real symbol or define the owner "
+          "(python -m gruntz.cleanliness.declared_only --list)", "full")
 
     _record_build_time(tier, time.monotonic() - build_start, ninja_s,
                        time.monotonic() - gates_t0)

@@ -514,7 +514,7 @@ i32 CDDrawChildGroup::IsReady() {
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache dtor (0x157720; ??_G pin 0x157700).
 // Scalar-deleting destructor: run the real member-teardown ~, then operator
-// delete this if the low flag bit is set. SYMBOL() pins the ??_G mangling.
+// delete this if the low flag bit is set. RVA_COMPGEN pins the ??_G mangling.
 RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 
 // The real member-teardown destructor (0x157720, /GX): cl stamps

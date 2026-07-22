@@ -933,8 +933,8 @@ flags = "base"
 
 [[unit]]
 # The attract state-services interval [0x0fa1f0..0x0fb328]: woven CAttract title/
-# fade + CSoundFxEmitter + CState helpers + CMgrPersistObj serialize (one obj). eh:
-# CMgrPersistObj::Init's CString splash + the CState draw temps carry the /GX frame.
+# fade + CSoundFxEmitter + CState helpers + the CState header serialize (one obj).
+# eh: CState::InputVirtual's CString splash + the draw temps carry the /GX frame.
 unit = "attract"
 source = "src/Gruntz/Attract.cpp"
 flags = "eh"

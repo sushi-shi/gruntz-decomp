@@ -24,7 +24,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag); //
 RVA(0x000cb800, 0x191)
 i32 CPlay::InputVirtual() {
     if (!CState::
-            InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
+            InputVirtual()) { // 0xface0 CState slot-8 base image-load gate
         return 0;
     }
     while (ShowCursor(FALSE) >= 0)

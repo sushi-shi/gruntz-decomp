@@ -21,8 +21,8 @@ public:
     i32 RefadeVirtual();                             // 0x0de340
     i32 OnKey(i32 key, i32 param);                   // 0x0de3c0
 
-    // CPreviewState-specific fields, past the CState base (which ends at +0x1a8):
-    char m_pad1a8[0x1b8 - 0x1a8];
+    // CPreviewState-specific fields, past the CState base (which ends at +0x1b4):
+    char m_pad1b4[0x1b8 - 0x1b4];
     u32 m_1b8;     // +0x1b8  countdown timer
     CString m_1bc; // +0x1bc  scratch screen-name string (PREVIEW%i / \SCREENZ\%s)
     i32 m_1c0;     // +0x1c0  preview counter

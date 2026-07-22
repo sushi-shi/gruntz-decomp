@@ -17,9 +17,10 @@
 #include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
 #include <Gruntz/SoundFxEmitter.h>     // CSoundFxEmitter (the screen-transition emitters)
 #include <Gruntz/Fader.h>              // CFaderMgr / CFader / CFxModeT2/T3
-#include <Bute/SymParser.h>            // CSymParser (CMgrPersistObj::m_rezLocator ResolvePath)
+#include <Bute/SymParser.h>            // CSymParser (m_symParser->ResolvePath)
 #include <Gruntz/SerialArchive.h>      // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
-#include <Gruntz/MgrPersist.h>         // CMgrPersistObj / SplashParams (the persisted settings obj)
+#include <Gruntz/SplashParams.h>       // the "loading imagez" splash-caption params
+#include <Gruntz/Play.h>               // CPlay (HeaderSerialize 0xfafa0 is DEFINED here - retail TU placement)
 #include <Wap32/EngStr.h>              // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <rva.h>
 
@@ -507,44 +508,34 @@ i32 g_playActive;
 // the transient arg-push area, where this cl reserves the whole block (`sub esp,
 // 0x1c`), shifting every esp-relative displacement by 8; plus the EH scope-table
 // symbol is named/represented differently by the delinker.  Logic is complete.
-// CMgrPersistObj::Init: hide the cursor, gate on the level being ready,
-// draw the "loading imagez" splash (once), resolve the GAME_IMAGEZ rez and load it
-// into the image-set, then mark the object started.
-// reloc-fidelity: 0xface0 IS CState's slot-8 base virtual (data-ref @0x1ea23c ==
-// ??_7CState@@6B@+0x20; called on state `this` as the base image-load gate by
-// CBootyState/CMultiBootyState/CImageState/CPlay slot-8 overrides). SYMBOL exports it
-// under the canonical CState::InputVirtual name so those overrides' base calls bind;
-// the CMgrPersistObj member VIEW is a fake facet of CState (m_levelData@+0x0c ==
-// CState::m_c) - its body-shape fold onto CState is deferred.
-// LOAD-BEARING: 0xface0 IS CState's slot-8 base virtual (??_7CState@@6B@+0x20),
-// base-called by CBootyState/CMultiBootyState/CImageState/CPlay's slot-8 overrides,
-// so it MUST carry the CState::InputVirtual name (vtable_slot_binding requires the
-// slot wired to a real virtual). The clean fold - CMgrPersistObj facet -> CState -
-// is BLOCKED: InputVirtual writes m_1a8/m_1ac/m_1b0, and adding those to CState shifts
-// the whole CState family's derived layouts (measured: -100 exact). A family-wide
-// re-base, deferred; until then this SYMBOL names the base virtual.
-SYMBOL(?InputVirtual@CState@@UAEHXZ)
+// CState's slot-8 base virtual (data-ref @0x1ea23c == ??_7CState@@6B@+0x20;
+// base-called by the CBootyState/CMultiBootyState/CImageState/CPlay slot-8
+// overrides): hide the cursor, gate on the level being ready, draw the "loading
+// imagez" splash (once), resolve the GAME_IMAGEZ rez and load it into the
+// image-set, then seed the input latches. (Ex the CMgrPersistObj fake facet's
+// "Init" + a SYMBOL name override - both DISSOLVED by the +0x1a8..+0x1b0
+// family re-base.)
 RVA(0x000face0, 0x17c)
-i32 CMgrPersistObj::Init() {
-    if (m_levelData == 0) {
+i32 CState::InputVirtual() {
+    if (m_world == 0) {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
     // slot in a reg.
     while (ShowCursor(0) >= 0)
         ;
-    if (m_levelData->m_drawTarget->PagesReady() == 0) {
+    if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
     if (g_playActive == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.m_08 = m_displayMgr->m_modeW;
-        sp.m_0c = m_displayMgr->m_modeH;
+        sp.m_08 = m_mgr->m_modeW;
+        sp.m_0c = m_mgr->m_modeH;
         sp.m_10 = 0;
         sp.m_14 = 0;
         EngStr_DrawText(
-            m_levelData,
+            m_world,
             reinterpret_cast<i32>(&sp),
             reinterpret_cast<i32>(&sp.m_04),
             0x78,
@@ -558,16 +549,16 @@ i32 CMgrPersistObj::Init() {
     while (ShowCursor(0) >= 0)
         ;
     g_playActive = 0;
-    char* path = static_cast<char*>(m_rezLocator->ResolvePath("GAME_IMAGEZ"));
+    char* path = static_cast<char*>(m_symParser->ResolvePath("GAME_IMAGEZ"));
     if (path == 0) {
         return 0;
     }
-    if (m_levelData->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
-    m_1a8 = 0;
-    m_1ac = 1;
-    m_1b0 = 0;
+    m_inputWarmup1 = 0;
+    m_inputWarmup2 = 1;
+    m_inputHalfSel = 0;
     return 1;
 }
 
@@ -593,35 +584,24 @@ i32 CState::ShadeScreen(i32 pct) {
     return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
 }
 
-i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
-i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): the switch body (cmp 4 je / cmp 7
-// jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
-// a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
-// xor eax, and the push/cmp register encodings shift. Not source-steerable. ~93.3%.
-// reloc-fidelity: 0xfafa0 IS CPlay::HeaderSerialize - CPlay::SyncState (0xd7520,
-// play) calls it __thiscall (mov ecx,edi=this; push ar/mode/a2/a3) as the header
-// serialize/mode pre-step. SYMBOL exports it under the canonical CPlay name so that
-// call binds; the free-fn Validate_fafa0 view is the recovered-symbol placeholder
-// (body-fold onto CPlay deferred - it touches no members here). The param mangles
-// PAVCFileMemBase (CFileMemBase is a typedef of the class CFileMemBase), matching
-// CPlay::SyncState's emitted HeaderSerialize call - NOT an elaborated struct U.
-// retail identity: ?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@HHH@Z (byte-matched as the
-// __stdcall leaf Validate_fafa0, which ignores ecx; the fold onto CPlay is deferred)
+// The state-header serialize/mode pre-step (CPlay::SyncState 0xd7520 calls it
+// `mov ecx,edi; push ar/mode/a2/a3`): mode 4 -> the HeaderWrite pass, mode 7 ->
+// HeaderRead. The body reads no members, so entry `this` rides ecx untouched
+// into the __thiscall CState callees (ex the __stdcall Validate_fafa0 view +
+// its Check4_2ce8/Check7_36bb alias decls - all dissolved).
 RVA(0x000fafa0, 0x3b)
-i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
-    if (a0 == 0) {
+i32 CPlay::HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
+    if (ar == 0) {
         return 0;
     }
-    switch (kind) {
+    switch (mode) {
         case 4:
-            if (Check4_2ce8(a0) == 0) {
+            if (HeaderWrite(ar) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (Check7_36bb(a0) == 0) {
+            if (HeaderRead(ar) == 0) {
                 return 0;
             }
             break;
@@ -629,66 +609,70 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     return 1;
 }
 
+// The kind-4 state-header WRITE pass (HeaderSerialize @0xfafa0 dispatches here):
+// stream the CState header block out via the archive's vtbl+0x30 Write.
 RVA(0x000faff0, 0x163)
-i32 CMgrPersistObj::Load(CFileMemBase* s) {
-    if (!s) {
+i32 CState::HeaderWrite(CFileMemBase* ar) {
+    if (!ar) {
         return 0;
     }
-    if (!m_levelData) {
+    if (!m_world) {
         return 0;
     }
-    s->Write(&m_1c, 4);
-    s->Write(&m_20, 4);
-    s->Write(&m_24, 4);
-    s->Write(&m_38, 4);
-    s->Write(&m_3c, 4);
-    s->Write(&m_40, 4);
-    s->Write(&m_44, 4);
-    s->Write(&m_48, 4);
-    s->Write(m_4c, 0x100);
-    s->Write(&m_14c, 4);
-    s->Write(&m_150, 4);
-    s->Write(&m_154, 4);
-    s->Write(&m_158, 4);
-    s->Write(&m_15c, 4);
-    s->Write(m_168, 0x10);
-    s->Write(m_178, 0x10);
-    s->Write(m_188, 0x10);
-    s->Write(m_198, 0x10);
-    s->Write(&m_1a8, 4);
-    s->Write(&m_1ac, 4);
+    ar->Write(&m_levelIndex, 4);
+    ar->Write(&m_levelType, 4);
+    ar->Write(&m_24, 4);
+    ar->Write(&m_38, 4);
+    ar->Write(&m_ready, 4);
+    ar->Write(&m_notifyLatch, 4);
+    ar->Write(&m_44, 4);
+    ar->Write(&m_48, 4);
+    ar->Write(m_versionString, 0x100);
+    ar->Write(&m_14c, 4);
+    ar->Write(&m_cursorX, 4);
+    ar->Write(&m_cursorY, 4);
+    ar->Write(&m_snapOriginX, 4);
+    ar->Write(&m_snapOriginY, 4);
+    ar->Write(&m_168, 0x10);
+    ar->Write(&m_178, 0x10);
+    ar->Write(&m_188, 0x10);
+    ar->Write(&m_198, 0x10);
+    ar->Write(&m_inputWarmup1, 4);
+    ar->Write(&m_inputWarmup2, 4);
     return 1;
 }
 
+// The kind-7 state-header READ pass (HeaderSerialize's other arm; the symmetric
+// vtbl+0x2c Read, plus the m_inputHalfSel tail dword HeaderWrite never streams).
 RVA(0x000fb1c0, 0x168)
-i32 CMgrPersistObj::Save(CFileMemBase* w) {
-    if (w == 0) {
+i32 CState::HeaderRead(CFileMemBase* ar) {
+    if (ar == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    w->Read(&m_1c, 4);
-    w->Read(&m_20, 4);
-    w->Read(&m_24, 4);
-    w->Read(&m_38, 4);
-    w->Read(&m_3c, 4);
-    w->Read(&m_40, 4);
-    w->Read(&m_44, 4);
-    w->Read(&m_48, 4);
-    w->Read(m_4c, 0x100);
-    w->Read(&m_14c, 4);
-    w->Read(&m_150, 4);
-    w->Read(&m_154, 4);
-    w->Read(&m_158, 4);
-    w->Read(&m_15c, 4);
-    w->Read(m_168, 0x10);
-    w->Read(m_178, 0x10);
-    w->Read(m_188, 0x10);
-    w->Read(m_198, 0x10);
-    w->Read(&m_1a8, 4);
-    w->Read(&m_1ac, 4);
-    w->Read(&m_1b0, 4);
+    ar->Read(&m_levelIndex, 4);
+    ar->Read(&m_levelType, 4);
+    ar->Read(&m_24, 4);
+    ar->Read(&m_38, 4);
+    ar->Read(&m_ready, 4);
+    ar->Read(&m_notifyLatch, 4);
+    ar->Read(&m_44, 4);
+    ar->Read(&m_48, 4);
+    ar->Read(m_versionString, 0x100);
+    ar->Read(&m_14c, 4);
+    ar->Read(&m_cursorX, 4);
+    ar->Read(&m_cursorY, 4);
+    ar->Read(&m_snapOriginX, 4);
+    ar->Read(&m_snapOriginY, 4);
+    ar->Read(&m_168, 0x10);
+    ar->Read(&m_178, 0x10);
+    ar->Read(&m_188, 0x10);
+    ar->Read(&m_198, 0x10);
+    ar->Read(&m_inputWarmup1, 4);
+    ar->Read(&m_inputWarmup2, 4);
+    ar->Read(&m_inputHalfSel, 4);
     return 1;
 }
 

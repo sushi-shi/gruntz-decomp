@@ -11,6 +11,7 @@ class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (D
 class CSymTab;
 
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
+class CFileMemBase;      // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
 class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
@@ -60,6 +61,12 @@ public:
         return 0;
     } // slot 6  (+0x18)  activation-ready poll
     virtual i32 Vslot07();        // slot 7  (+0x1c)  lobby-host-ready poll
+    // slot 8 (+0x20) - per-frame input poll. Base body @0x0face0 (Attract.cpp;
+    // ??_7CState@@6B@+0x20): the shared image-load gate - hide the cursor, gate on
+    // the level being ready, draw the "loading imagez" splash, load GAME_IMAGEZ,
+    // then seed the input latches (m_inputWarmup1/2, m_inputHalfSel). Leaf slot-8
+    // overrides (CBootyState/CMultiBootyState/CImageState/CPlay) chain back via the
+    // qualified CState::InputVirtual() base call.
     virtual i32 InputVirtual();   // slot 8  (+0x20)  per-frame input poll
     virtual i32 Vslot09(i32);     // slot 9  (+0x24)  notify w/ state id
     virtual i32 FrameSlot28(i32); // slot 10 (+0x28)  per-frame poll (leaf override)
@@ -132,6 +139,15 @@ public:
 
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
     void NotifyExit(i32 code);
+
+    // The state-header serialize passes (defined in Attract.cpp, the 0xfa.. CState
+    // band). CPlay::HeaderSerialize (0xfafa0) dispatches: kind 4 -> HeaderWrite
+    // (streams the m_levelIndex..m_inputWarmup2 header block out via ar vtbl+0x30),
+    // kind 7 -> HeaderRead (the symmetric vtbl+0x2c read pass, plus m_inputHalfSel).
+    // (Ex the CMgrPersistObj fake facet's Load/Save - the view had the directions
+    // inverted; it is DISSOLVED into this class.)
+    i32 HeaderWrite(CFileMemBase* ar); // 0x0faff0
+    i32 HeaderRead(CFileMemBase* ar);  // 0x0fb1c0
 
     // ShadeScreen (0x0fa6b0's sibling @0x0faf50): the once-suppressed screen dim. On the
     // first call after the g_suppress latch is armed it consumes the latch (returns it);
@@ -245,8 +261,8 @@ public:
     i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)
     i32 m_48;              // +0x48  (LoadGameAssetNamespaces seeds -1; role unrecovered)
     // +0x4c..+0x14b  the version-string buffer LoadGameAssetNamespaces sprintf's
-    // ("Alpha Version, Build %i, ..."); the state save serializers stream it raw as a
-    // 0x100 block (the MgrPersist view's m_4c[0x100]).
+    // ("Alpha Version, Build %i, ..."); HeaderWrite/HeaderRead stream it raw as a
+    // 0x100 block.
     char m_versionString[0x100];
     i32 m_14c;         // +0x14c  (LoadGameAssetNamespaces clears; role unrecovered)
     i32 m_cursorX;     // +0x150 live cursor X (ResetForMode GetCursorPos); BeginFrameClear arg
@@ -277,6 +293,13 @@ public:
     i32 m_19c;
     i32 m_1a0;
     i32 m_1a4;
+    // +0x1a8..+0x1b0: the StepInputA input latches. The slot-8 base body
+    // (InputVirtual @0xface0) seeds them (0/1/0) and HeaderWrite/HeaderRead
+    // serialize them, so they are CState fields, not CPlay's (which proved their
+    // roles): every leaf's first own member starts at +0x1b4.
+    i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
+    i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
+    i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
 
     // BuildWarpStoneGlitterAnimation (0x19540) is a CMultiBootyState method (GameMode.h).
     //
