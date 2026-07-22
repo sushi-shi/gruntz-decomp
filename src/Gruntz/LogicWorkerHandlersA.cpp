@@ -68,7 +68,7 @@ RVA(0x000aa5a0, 0xf1)
 i32 HandlerAA5A0(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandyAni)}
 
 RVA(0x000aa6e0, 0xf1)
-i32 Handler0aa6e0(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
+i32 EyeCandyWorkerPump(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
 
 RVA(0x000aa820, 0xf1)
 i32 HandlerAA820(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandyAni)}

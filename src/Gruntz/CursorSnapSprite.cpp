@@ -1,7 +1,7 @@
 #include <Gruntz/CursorSnapSprite.h>
 #include <Bute/ButeTree.h>          // g_buteTree
 
-#include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)
+#include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (CursorSnapWorkerPump)
 #include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
 
 RVA(0x00011880, 0x47)
@@ -26,7 +26,7 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
-i32 Handler03a200(CGameObject* owner) {
+i32 CursorSnapWorkerPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
