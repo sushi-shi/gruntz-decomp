@@ -49,7 +49,8 @@ i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
 // class while cl 5.0 emits `P` (?s_rb@@3PBDB), so a DATA() label's clang mangledName
 // would miss the base obj's undefined external. The DATA_SYMBOL name is the exact
 // cl mangling and is authority-checked against the base obj.
-DATA_SYMBOL(0x0020b668, 0x0, ?s_rb@@3PBDB)
+DATA(0x0020b668)
+const char s_rb[] = "rb";
 
 // ---------------------------------------------------------------------------
 // VolumeToAttenuation (static __cdecl, x87): 0..100 volume -> centi-dB attenuation.

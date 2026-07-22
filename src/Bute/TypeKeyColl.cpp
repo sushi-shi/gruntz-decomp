@@ -66,7 +66,8 @@ void* g_projActName2; // 0x6bf45c
 // g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
 // default/HH zBitVec ctors size to.
 DATA_SYMBOL(0x002bf408, 0x0, ?g_containerName@@3PADA)
-DATA_SYMBOL(0x0021ad28, 0x0, ?g_defaultProjActSize@@3HA)
+DATA(0x0021ad28)
+i32 g_defaultProjActSize;
 
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>

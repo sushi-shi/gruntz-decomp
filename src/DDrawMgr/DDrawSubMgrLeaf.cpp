@@ -27,7 +27,8 @@ VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10
 // DATA_SYMBOL, not DATA: clang mangles the const-char[] extern with a `Q` storage
 // class while cl 5.0 emits `P` (?g_fmtPathJoin@@3PBDB), so a DATA() label's clang
 // mangledName never matches the cl reloc (was also a VA-typo: 0x61ab18 -> 0x21ab18).
-DATA_SYMBOL(0x0021ab18, 0x0, ?g_fmtPathJoin@@3PBDB)
+DATA(0x0021ab18)
+const char g_fmtPathJoin[] = "%s%s%s";
 
 void* operator new(u32 n);
 void operator delete(void*);

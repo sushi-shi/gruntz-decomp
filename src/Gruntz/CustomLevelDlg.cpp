@@ -8,7 +8,8 @@
 #include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
 #include <Gruntz/CustomLevelDlg.h> // ex Globals.h
 
-DATA_SYMBOL(0x001e8e98, 0x4, ?g_battlezCustomMsgMap@@3PAXA)
+DATA(0x001e8e98)
+void* g_battlezCustomMsgMap;
 
 // @early-stop
 // stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList

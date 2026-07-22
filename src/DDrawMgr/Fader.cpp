@@ -256,7 +256,8 @@ static __inline i32 FxRand(i32 range) {
     return ((static_cast<i32>(g_fxRandSeed) >> 16) & 0x7fff) % range;
 }
 
-DATA_SYMBOL(0x001f085c, 0x4, ?g_faderScale_5f085c@@3MB)
+DATA(0x001f085c)
+extern const float g_faderScale_5f085c = 0.01f;
 void ScatterSamples(i32* arr, i32, i32, i32);   // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
@@ -328,7 +329,8 @@ CFaderLight::~CFaderLight() {
     SubFree();
 }
 
-DATA_SYMBOL(0x001f0888, 0x8, ?g_faderPowK@@3NB)
+DATA(0x001f0888)
+extern const double g_faderPowK = 2.0;
 
 // CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
 // clip the centre to the surface rect (early-out if outside), fill the per-scanline span
@@ -866,11 +868,16 @@ i32 CFaderFlat::GetFrameCount() {
     return n + (m_percent * n) / 100;
 }
 
-DATA_SYMBOL(0x001f0828, 0x4, ?g_faderHalf@@3MB)
-DATA_SYMBOL(0x001f0830, 0x8, ?g_faderScale@@3NB)
-DATA_SYMBOL(0x001f0838, 0x8, ?g_faderBiasR@@3NB)
-DATA_SYMBOL(0x001f0840, 0x4, ?g_faderBiasFade@@3MB)
-DATA_SYMBOL(0x001f0844, 0x4, ?g_faderOne@@3MB)
+DATA(0x001f0828)
+extern const float g_faderHalf = 0.5f;
+DATA(0x001f0830)
+extern const double g_faderScale = 10000.0;
+DATA(0x001f0838)
+extern const double g_faderBiasR = -1.0;
+DATA(0x001f0840)
+extern const float g_faderBiasFade = -1.0f;
+DATA(0x001f0844)
+extern const float g_faderOne = 1.0f;
 
 // @early-stop
 // Re-reconstructed 61.64%->73.70% by fixing three structural bugs the prior model

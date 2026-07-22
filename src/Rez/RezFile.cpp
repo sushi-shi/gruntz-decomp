@@ -9,8 +9,10 @@
 // which a DATA() label (clang's `Q` mangledName) misses; DATA_SYMBOL names the exact
 // cl mangling and is authority-checked against rezfile.obj's undefined externals.
 // (s_rb @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
-DATA_SYMBOL(0x0021a0a4, 0x0, ?s_rPlusB@@3PBDB)
-DATA_SYMBOL(0x0021a0a8, 0x0, ?s_wPlusB@@3PBDB)
+DATA(0x0021a0a4)
+const char s_rPlusB[] = "r+b";
+DATA(0x0021a0a8)
+const char s_wPlusB[] = "w+b";
 
 VTBL(CRezDir, 0x001ef7a8);
 VTBL(CRezList, 0x001ef7c8);

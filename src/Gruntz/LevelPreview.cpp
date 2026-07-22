@@ -25,7 +25,8 @@
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/LevelPreview.h> // ex Globals.h
 
-DATA_SYMBOL(0x00104358, 0x4, ?g_screenTag@@3HA)
+DATA(0x00104358)
+i32 g_screenTag;
 
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
