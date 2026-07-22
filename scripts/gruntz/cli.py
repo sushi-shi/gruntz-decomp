@@ -562,6 +562,22 @@ def cmd_build(args) -> None:
         out_do = (rdo.stdout + rdo.stderr).strip()
         if out_do:
             log(out_do.splitlines()[-1])
+    # Single-view ratchet: every global has ONE view - its real extern. A datum
+    # declared with two (type, linkage) signatures is a split view (a placeholder /
+    # cross-class reinterpret / stale linkage that emits a symbol the real image
+    # lacks, so a candidate link leaves it unresolved). Backlog frozen in
+    # config/single-view-baseline.tsv; FATAL for any NEW split.
+    rsv = subprocess.run([sys.executable, "-m", "gruntz.audit.single_view", "--ratchet"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rsv.returncode != 0:
+        for ln in (rsv.stdout + rsv.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("single-view ratchet violated - a global is declared with two types/"
+            "linkages (python -m gruntz.audit.single_view)")
+    else:
+        out_sv = (rsv.stdout + rsv.stderr).strip()
+        if out_sv:
+            log(out_sv.splitlines()[-1])
     # Label-style ratchet: every label macro canonical (8-digit addr, unpadded hex
     # size, one line), comment @markers restricted to the blessed vocabulary
     # (docs/comment-markers.md) - reached 0 at introduction 2026-07-22, FATAL.

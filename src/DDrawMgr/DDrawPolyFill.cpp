@@ -3,7 +3,7 @@
 #include <Win32.h>           // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>           // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <rva.h>
-#include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
+#include <DDrawMgr/DDrawPolyFill.h> // ClipVtx (this TU owns the tables)
 
 #include <Image/WarpTextureBlit.h> // g_rasterDestPtr/Scale/ScaleNeg (ex .cpp externs; bound at their defs)
 DATA_SYMBOL(0x002856f8, 0x0, _g_rasterEdgeR)
@@ -32,7 +32,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
         do {
             if (static_cast<i32>(prev->y) != static_cast<i32>(cur->y)) {
                 ClipVtx* top = prev;
-                FillEdgeRow* table;
+                ClipVtx* table;
                 ClipVtx* bottom;
                 if (prev->y > cur->y) {
                     bottom = cur;
@@ -46,7 +46,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                 i32 topYi = static_cast<i32>((top->y * g_rasterScale));
                 i32 botYi = static_cast<i32>((bottom->y * g_rasterScale));
                 i32 topRow = topYi >> 0xe;
-                FillEdgeRow* entry = &table[topRow];
+                ClipVtx* entry = &table[topRow];
                 i32 botRow = botYi >> 0xe;
                 i32 height = botRow - topRow;
                 i32 botX = static_cast<i32>((bottom->x * g_rasterScaleNeg));
@@ -77,8 +77,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
-        FillEdgeRow* pDesc = &g_rasterEdgeL[minYi];
-        FillEdgeRow* pAsc = &g_rasterEdgeR[minYi];
+        ClipVtx* pDesc = &g_rasterEdgeL[minYi];
+        ClipVtx* pAsc = &g_rasterEdgeR[minYi];
         do {
             i32 xB = pAsc->fx >> 0xe;
             i32 xA = pDesc->fx >> 0xe;

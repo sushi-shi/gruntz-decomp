@@ -1,0 +1,8 @@
+# single-view baseline: globals declared with >1 (type, linkage) - a
+# datum wearing two types. Frozen backlog; recover the real extern and
+# delete the view (docs/cleanup-plan.md). Regenerate: python -m
+# gruntz.audit.single_view --write-baseline
+# name	signature (linkage:type | ...)
+g_gameReg	C:CGruntzMgr*|C:CStatzGameReg*
+g_inputMgr	C:DirectInputMgr2*|C:void*
+g_spawnConfig	C:CGruntSpawnConfig*|cpp:StateMgrBZ*

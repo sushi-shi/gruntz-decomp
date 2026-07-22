@@ -628,11 +628,11 @@ SIZE_UNKNOWN();
 extern "C" {
     extern i32 g_lastNow;    // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
     extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
-    extern u32 g_frameTime;  // 0x245588 (the running game clock)
+    extern "C" u32 g_frameTime;  // 0x245588 (the running game clock)
     extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;       // a default cue/message wParam
-    extern u32 g_killCueClock;        // draw-clock mirror
-    extern u32 g_engineFrameDelta;    // draw-delta mirror
+    extern "C" u32 g_killCueClock;        // draw-clock mirror
+    extern "C" u32 g_engineFrameDelta;    // draw-delta mirror
 }
 
 // The channel-slot pool helpers (defs in Play.cpp, C++ linkage - the old

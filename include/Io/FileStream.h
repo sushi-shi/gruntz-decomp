@@ -20,6 +20,6 @@ SIZE_UNKNOWN(); // data-less __thiscall host (never constructed)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CFileIO g_obj646778;
+extern CFile g_obj646778;
 
 #endif // SRC_IO_FILESTREAM_H

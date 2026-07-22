@@ -9,6 +9,6 @@ extern float g_sndPanScale; // 0x001eff2c (0.01f; def in DDrawSubMgr.cpp)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern char g_emptyString[]; // 0x2293f4
+extern "C" char g_emptyString[]; // 0x2293f4
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGR_H
