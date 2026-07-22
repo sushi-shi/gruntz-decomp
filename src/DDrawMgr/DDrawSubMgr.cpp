@@ -373,15 +373,14 @@ i32 CDDrawWorkerB::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 }
 
 RVA(0x00157310, 0x1a)
-i32 CDDrawWorkerBase::Unload() {
-    // retail returns the 0x80000000 sentinel residue in eax (the store source
-    // register doubles as the return value; the dev body was likely return-less).
+void CDDrawWorkerBase::Unload() {
+    // void per the CLoadable slot; retail's eax residue is the INT_MIN the
+    // stores materialize.
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_screenX = v;
     m_dirtyRect.left = v;
     m_dirtyArmed = -1;
-    return v;
 }
 
 RVA(0x00157330, 0xa5)
@@ -520,9 +519,10 @@ i32 CDDrawChildGroup::IsReady() {
 RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 
 // The real member-teardown destructor (0x157720, /GX): cl stamps
-// ??_7CDDrawWorkerCache (masks 0x5efd00) at entry, runs the map teardown (the
-// shared DestroyAll @0x165210), then destructs the CMapStringToPtr member and the
-// grand-base. /GX member-teardown frame from the destructible map.
+// ??_7CDDrawWorkerCache (masks 0x5efd00) at entry, runs the class's own slot-7
+// DestroyAll (@0x165210, devirtualized in the dtor to `call 0x165210` - the
+// binary-proven single call site), then destructs the CMapStringToPtr member and
+// the grand-base. /GX member-teardown frame from the destructible map.
 // @early-stop
 // vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION + the
@@ -647,10 +647,9 @@ i32 CAniAdvanceCursor::SelectCue(void* force) {
 }
 
 RVA(0x00157ae0, 0x11)
-i32 CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clears the map)
-    i32 r = ClearMap();              // eax = ClearMap's residue -> this slot's i32
-    m_2c = 0;                        // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
-    return r;
+void CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clears the map)
+    ClearMap();
+    m_2c = 0; // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
 }
 
 // ===========================================================================
@@ -1098,26 +1097,18 @@ i32 LeafCue::Configure(CParseSource* src) {
 // 0x1587c0: LeafCue::Unload (vtable slot 7 - the CLoadable-scheme release hook; the
 // ex "Release_1587c0"). When a buffer is held and the owner's SoundDevice is still
 // up, remove the buffer through the device (reaps voices + releases + unlinks +
-// scalar-deletes), then clear the held pointer. Declared i32 per the slot signature;
-// retail's return value is the call residue / the m_10 load (the dev body was
-// return-less).
-// @early-stop
-// return-carrier residual (~76%): retail's dev body was RETURN-LESS (eax = the
-// RemoveBuffer residue / the m_10 null-test load) - VC5 hard-errors (C2561) on a
-// return-less i32 body, and no C++ spelling returns a void callee's residue; the
-// named `r` must survive the call, so cl homes it in edi (push/pop + mov eax,edi).
-// Logic byte-faithful otherwise.
+// scalar-deletes), then clear the held pointer. VOID per the CLoadable slot -
+// the old i32 model was the documented "return-carrier residual" wall (~76%):
+// spelling `return r` forced edi homing + mov eax,edi that retail never had.
 RVA(0x001587c0, 0x23)
-i32 LeafCue::Unload() {
-    i32 r = reinterpret_cast<i32>(m_10);
-    if (r != 0) {
+void LeafCue::Unload() {
+    if (m_10 != 0) {
         SoundDevice* dev = OwnerMgr()->m_soundStream;
         if (dev != 0) {
             dev->RemoveBuffer(m_10);
             m_10 = 0;
         }
     }
-    return r;
 }
 
 // ---------------------------------------------------------------------------
@@ -1502,12 +1493,15 @@ RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
 RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 
 // 0x158fd0 (slot 9): SetGeometry - cache the {w,h,bpp} pixel geometry and a
-// {0,0,w,h} src rect. Shared body (ICF) with CDrawSubWorker slot 9.
+// {0,0,w,h} src rect. ONE body, CDrawSubWorker's own: CDDrawSurfacePair INHERITS
+// it (both vtables' slot 9 hold this RVA - no ICF in MSVC5, so a shared slot
+// target can only be an inherited method; the old "shared body (ICF)" note was
+// the mis-model the 2026-07-22 rebase dissolved).
 // @early-stop
 // 83.86% - regalloc coin-flip: retail materializes bpp up-front into edi; the
 // /O2 scheduler on identical source keeps bpp in eax and loads it lazily.
 RVA(0x00158fd0, 0x41)
-i32 CDDrawSurfacePair::SetGeometry(i32 w, i32 h, i32 bpp) {
+i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -1546,7 +1540,7 @@ inline void* operator new(u32, void* p) {
 
 RVA(0x00159090, 0x24)
 i32 CDDrawSurfacePair::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_mgr != 0 && m_status != -1) {
+    if (m_surface != 0 && m_width > 0 && m_0c != 0 && m_04 != -1) {
         return 1;
     }
     return 0;
@@ -1554,13 +1548,10 @@ i32 CDDrawSurfacePair::IsLoaded() {
 
 RVA(0x001590f0, 0x56)
 CDDrawSurfacePair::~CDDrawSurfacePair() {
-    TeardownSurface();
-    m_width = 0;
-    // base fields, moved out of ~CSurfacePairBase so they precede the grand-stamp:
-    m_flags = 0;
-    m_mgr = 0;
-    m_status = -1;
-    // empty ~CSurfacePairBase() folds the implicit grand-base re-stamp here, last.
+    Unload(); // devirtualized in the dtor (slot-7 body @0x163e20)
+    // ~CDrawSubWorker (m_width=0) + ~CLoadable (m_04=-1, m_flags=0, m_0c=0) fold
+    // the base-field resets here, then the grand-base re-stamp - the stores the
+    // old flat model spelled by hand.
 }
 
 RVA(0x00159150, 0x24)

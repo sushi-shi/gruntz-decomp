@@ -93,11 +93,10 @@ i32 CDDrawWorkerRegistry::IsReady() {
 }
 
 RVA(0x00154ac0, 0x12)
-i32 CDDrawWorkerRegistry::Unload() {
+void CDDrawWorkerRegistry::Unload() {
     MapTeardown();
     g_resourceInstallActive = 0;
     g_surfaceColorKey = 0;
-    return 0;
 }
 
 RVA(0x00154ae0, 0xfc)
@@ -390,10 +389,10 @@ i32 CDDrawWorker::GetClassId() {
 }
 
 // ===========================================================================
-// 0x1557a0 - ~CDDrawWorker: stamp own vtable, run DeleteAll (the slot-7 Unload,
-// devirtualized in the dtor to a direct call - the body lives in the S1 obj as
-// CDDrawWorker::DeleteAll, reloc-masked), then the array member destructs and
-// ~CLoadable folds in. /GX frame from the destructible base+member.
+// 0x1557a0 - ~CDDrawWorker: stamp own vtable, run the slot-7 Unload
+// (devirtualized in the dtor to a direct call - the body lives in the S1 obj,
+// reloc-masked), then the array member destructs and ~CLoadable folds in.
+// /GX frame from the destructible base+member.
 // ===========================================================================
 // 100%: re-basing onto the canonical CLoadable : CWapObj : CObject resolved the
 // grand-base vptr-stamp-position wall - the real CObject grand-base sinks the
@@ -403,7 +402,9 @@ i32 CDDrawWorker::GetClassId() {
 RVA_COMPGEN(0x00155780, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
-    DeleteAll(); // retail's devirtualized slot-7 call == CDDrawWorker::DeleteAll (0x151eb0)
+    // retail: a DIRECT call - cl devirtualizes virtual calls in a dtor (proven
+    // by ~CDDrawWorkerCache's plain DestroyAll() compiling to `call 0x165210`).
+    Unload(); // slot-7 body @0x151eb0
     // m_items.~::CObArray() (trylevel 0) + ~CLoadable() (field resets +
     // grand-base vtable stamp) fold here.
 }

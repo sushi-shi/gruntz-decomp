@@ -1787,11 +1787,6 @@ source = "src/Gruntz/GruntStateRec.cpp"
 flags = "base"
 
 [[unit]]
-unit = "projloadrec"
-source = "src/Gruntz/ProjLoadRec.cpp"
-flags = "base"
-
-[[unit]]
 unit = "statedispatch"
 source = "src/Gruntz/StateDispatch.cpp"
 flags = "eh"

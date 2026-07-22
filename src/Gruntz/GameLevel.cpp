@@ -328,7 +328,7 @@ CGameLevel::~CGameLevel() {
 }
 
 RVA(0x0015d1f0, 0x87)
-i32 CGameLevel::Unload() {
+void CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
         CLevelPlane* child = static_cast<CLevelPlane*>(m_planes.GetData()[i]);
@@ -348,7 +348,6 @@ i32 CGameLevel::Unload() {
     m_mainPlane = 0;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
-    return 0;
 }
 
 RVA(0x0015d680, 0x71)

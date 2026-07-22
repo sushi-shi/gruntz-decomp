@@ -503,8 +503,8 @@ def cmd_build(args) -> None:
     # dangles onto a symbol that is not the override. That is a real wrong-dispatch bug
     # (GO1's 4 Fader RenderFrames). This gate does the per-slot join: retail slot ->
     # chase_thunk -> the symbol src emits there -> must be a virtual of the class or a
-    # base. FATAL for any violation NOT in config/vtable-slot-binding-baseline.tsv (the
-    # frozen backlog), so no NEW wiring defect can land while the known set drains to 0.
+    # base. PURE fail-closed since 2026-07-22: the 259-row frozen backlog drained to 0
+    # and the baseline file was deleted - ANY violation is FATAL, fix the modeling.
     rb = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_slot_binding"],
                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     if rb.returncode != 0:

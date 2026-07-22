@@ -20,7 +20,7 @@ VTBL_ABSENT(CDDrawWorkerBase);
 class CDDrawWorkerBase : public CResolveNode {
 public:
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x157200 (family-shared body)
-    virtual i32 Unload() OVERRIDE;     // [7] 0x157310 (family-shared body)
+    virtual void Unload() OVERRIDE;    // [7] 0x157310 (family-shared body)
     virtual i32 GetClassId() OVERRIDE; // [8] 0x157210 (family-shared body)
     // [9] 0x157080: the worker re-arm override; the Vfunc* bodies call the BASE
     // 0x164790 directly (qualified CResolveNode::SetPosition - retail's rel32).

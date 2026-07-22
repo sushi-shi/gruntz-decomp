@@ -21,7 +21,7 @@ public:
     // CLoadable (same body RVAs; audit: redeclare-nothing).
     // slot 7 - clear the bound source refs (m_10/m_14/m_element). The ex
     // "CDDrawBlitParam::Reset_15c2c0" - the body IS the Unload override.
-    virtual i32 Unload() OVERRIDE; // slot 7  0x15c2c0
+    virtual void Unload() OVERRIDE; // slot 7  0x15c2c0
 
     // --- the runtime/serialize method set (ex-CDDrawBlitParam; bodies in
     // WwdFactoryObject.cpp / DDrawSubMgr.cpp) ---

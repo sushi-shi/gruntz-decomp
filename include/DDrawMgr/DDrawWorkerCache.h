@@ -38,8 +38,11 @@ public:
     virtual i32 IsReady() {
         return 1;
     }
-    virtual void
-    DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)
+    // [7] 0x165210 (body in DDrawSurfacePair.cpp): delete every m_10 map value,
+    // RemoveAll. Proven THIS class's slot body by exhaustive binary xref (one call
+    // site = this class's dtor, one data ref = this vtable's slot 7); was
+    // mis-attributed to CDDrawWorkerRegistry (whose real teardown is MapTeardown).
+    virtual void DestroyAll();
     RVA(0x001576f0, 0x6)
     virtual StateId GetStateId() {
         return STATE_WORKERCACHE; // 0x13

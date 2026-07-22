@@ -1071,8 +1071,12 @@ void AnimWorkerObj::Clear() {
     m_target = 0;
 }
 
+// The slot-7 Unload override (vtable 0x1efbe8 [7] -> this body; ex the duplicate
+// non-virtual "DeleteAll" decl): delete every owned frame, RemoveAll, seed the
+// [min,max] sentinels. i32 per the CLoadable slot signature; retail sets no
+// return value (falls off - no eax store), so neither do we.
 RVA(0x00151eb0, 0x43)
-void CDDrawWorker::DeleteAll() {
+void CDDrawWorker::Unload() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
         CImage* el = static_cast<CImage*>(m_items.GetAt(i));
         if (el != 0) {

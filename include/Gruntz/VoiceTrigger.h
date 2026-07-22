@@ -11,9 +11,9 @@ public:
 public:
     CVoiceTrigger();                 // 0x013470 (no-arg ctor; body in UserLogic.cpp)
     CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
-    // 0x000133b0 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
-    RVA(0x000133b0, 0x6)
+    // GetTypeTag (0x13550, ??_7CVoiceTrigger slot 2 -> this body; returns 0x42b).
+    // 0x133b0 (the old binding) is CUFO's copy - it returns 0x426.
+    RVA(0x00013550, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_VOICETRIGGER;
     }

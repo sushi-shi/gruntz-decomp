@@ -6,7 +6,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-#include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase) - CPulseHighlight::Serialize
+#include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase) - SerializeMove
 
 class CActionArea : public CUserLogic, public CWapX {
 public:
@@ -29,14 +29,20 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ACTIONAREA;
     }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1 @0x8600 (ex "CPulseHighlight::Serialize" - the binary holds exactly
+    // ONE reference to that body: ??_7CActionArea+0x4, this slot; the
+    // "pulse-highlight leaf" WAS this class): CUserLogic chain + CWapX Chain +
+    // the raw +0x54..+0x67 pulse-block byte stream.
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE;
+    // 0x8440 (ex "CPulseHighlight::Tick"): per-frame brightness ramp over the
+    // bound sprite's image set. UNREFERENCED in retail (no /OPT:REF keeps it);
+    // its ILT thunk 0x3517 has no referent either.
+    i32 Tick();
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    i32 m_54; // +0x54
-    i32 m_58; // +0x58
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-    i32 m_64; // +0x64
+    i32 m_phase;     // +0x54  pulse phase flag (toggles every m_duration ms)
+    i64 m_timestamp; // +0x58  last-toggle game clock
+    i64 m_duration;  // +0x60  current interval (ms)
 };
 SIZE_UNKNOWN();
 
@@ -46,27 +52,5 @@ struct CActionAreaActEntry {
 };
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
-// CPulseHighlight : CUserLogic - the pulse-highlight sprite leaf (ex pulsehighlight
-// unit, merged into ActionArea.cpp): a per-frame brightness ramp (Tick 0x8440) +
-// serialize round-trip (0x8600). Was defined .cpp-local in ActionArea.cpp.
-// The CWapX second base is BEHAVIOURALLY proven here (no RTTI COL carries this
-// name): retail Serialize @0x8600 runs the shared CWapX::Chain on this+0x34, and
-// this class's own fields start at +0x54 = 0x34 (CUserLogic) + 0x20 (CWapX) exactly.
-// @identity-TODO: no `.?AVCPulseHighlight@@` TypeDescriptor exists - the name is a
-// placeholder for a real RTTI-65 leaf whose vtable holds the 0x3512/0x1235 thunks
-// (Tick 0x8440 / Serialize 0x8600); chase via vtable_scan when that family is audited.
-class CPulseHighlight : public CUserLogic, public CWapX {
-public:
-    i32 Tick();                                               // 0x8440
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x8600
-
-    // Leaf pulse-timer fields past the CUserLogic base. Serialize transfers them
-    // as a raw byte stream (the +0x54..+0x67 block, kept as documented offset
-    // access); Tick reads them as scalars, so they are named here.
-    i32 m_phase;               // +0x54 pulse phase flag (toggles every m_duration ms)
-    i64 m_timestamp;           // +0x58 last-toggle game clock
-    i64 m_duration;            // +0x60 current interval (ms)
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CACTIONAREA_H

@@ -14,14 +14,15 @@ class CDDrawWorker : public CLoadable {
 public:
     virtual ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
     // slots 5/7/8: CDDrawWorker's own overrides of the CLoadable defaults (ground
-    // truth = the retail 0x1efbe8 vtable): IsLoaded @0x155750, Unload -> the frame
-    // teardown (retail slot fn 0x151eb0 == the non-virtual DeleteAll below, bound
-    // in wwdgameobject; declared-only here so the slot reloc masks it), GetClassId
+    // truth = the retail 0x1efbe8 vtable): IsLoaded @0x155750, Unload @0x151eb0 =
+    // the frame teardown (defined in WwdGameObject.cpp; was ALSO declared here as a
+    // duplicate non-virtual "DeleteAll" - one body, one name now), GetClassId
     // @0x155770 -> CLASSID_WORKER. Slot 6 IsReady stays inherited (0x001c08).
     virtual i32 IsLoaded() OVERRIDE; // [5] @0x155750  m_0c && m_04 != -1
     // slot 6 IsReady (0x001c08) is INHERITED from CLoadable (same body RVA;
     // audit: redeclare-nothing).
-    virtual i32 Unload() OVERRIDE;     // [7] @0x151eb0  == DeleteAll (declared-only)
+    // [7] @0x151eb0: delete every owned frame, RemoveAll, seed [min,max] sentinels.
+    virtual void Unload() OVERRIDE;
     virtual i32 GetClassId() OVERRIDE; // [8] @0x155770  -> CLASSID_WORKER
     // slots 9-16: the 8 new virtuals CDDrawWorker adds over CLoadable's 9-slot base.
     // Declared-only => cl emits the full 17-slot ??_7CDDrawWorker @0x1efbe8 (this
@@ -85,16 +86,14 @@ public:
     void SetOwner(CImageParent* p) {
         m_0c = reinterpret_cast<i32>(p);
     }
-    void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
     ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
     char m_name[0x40];   // +0x24  registry key buffer (SetKey strncpy's it,
                         //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
-    i32 m_minIndex;           // +0x64  cached-index sentinel (DeleteAll seeds 99999)
+    i32 m_minIndex;           // +0x64  cached-index sentinel (Unload seeds 99999)
     i32 m_maxIndex;           // +0x68
 };
 SIZE(0x6c);
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CDDRAWWORKER_H

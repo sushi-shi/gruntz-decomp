@@ -25,8 +25,12 @@ enum LogicTypeId {
         0x41d, // CSpotLight::GetTypeTag              @0x12ff0 (vtable 0x1e75bc, slot 2)
     LOGIC_WAYPOINT = 0x420,     // CWayPoint::GetTypeTag               @0x10220
     LOGIC_ACTIONAREA = 0x423,   // CActionArea::GetTypeTag             @0x07f80
-    LOGIC_PATHHAZARD = 0x425,   // CPathHazard::GetTypeTag             @0x132f0
-    LOGIC_VOICETRIGGER = 0x426, // CVoiceTrigger::GetTypeTag           @0x133b0
+    // The 0x424..0x426 trio was UNTANGLED 2026-07-22 by dumping the four raw
+    // vtables' slot 2: the old labels came from misbound bodies.
+    LOGIC_PATHHAZARD = 0x424,   // CPathHazard::GetTypeTag             @0x13210
+    LOGIC_RAINCLOUD = 0x425,    // CRainCloud::GetTypeTag              @0x132f0 (vtable 0x1e7324 slot 2)
+    LOGIC_UFO = 0x426,          // CUFO::GetTypeTag                    @0x133b0 (vtable 0x1e72b4 slot 2)
+    LOGIC_VOICETRIGGER = 0x42b, // CVoiceTrigger::GetTypeTag           @0x13550 (vtable 0x1e885c slot 2)
     LOGIC_FORTRESSFLAG = 0x427, // CFortressFlag::GetTypeTag           @0x10e40
     LOGIC_TOYPEEK = 0x428, // CToyPeek::GetTypeTag                @0x11bf0 (vtable 0x1e7204, slot 2)
     LOGIC_WARPSTONEPAD =

@@ -9,8 +9,8 @@ per concern (all run in the `gruntz build` gate tail; each also `python -m`):
     vtable_bans.py         hard-fail: the four manual-vtable idioms
     vtable_coverage.py     every vtable in GRUNTZ.EXE must be covered
     vtable_virtuality.py   every vtable's slots must be real virtuals
-    vtable_slot_binding.py every slot wired to a real virtual (frozen backlog
-                           in config/vtable-slot-binding-baseline.tsv)
+    vtable_slot_binding.py every slot wired to a real virtual (pure fail-closed;
+                           the frozen backlog drained to 0 and was deleted)
     class_sizes.py         every class carries a correct SIZE/SIZE_UNKNOWN
     class_vtables.py       every virtual-owning class carries its VTBL()
 

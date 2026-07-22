@@ -51,10 +51,10 @@ public:
     CPathHazard(); // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
-    // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
-    // 0x000132f0 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
-    RVA(0x000132f0, 0x6)
+    // GetTypeTag (0x13210, ??_7CPathHazard slot 2 -> this body): the 6-byte
+    // per-class logic-type id accessor (0x424). 0x132f0 (the old binding) is
+    // CRainCloud's - the derived vtables each hold their OWN 6-byte copy.
+    RVA(0x00013210, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PATHHAZARD;
     }
@@ -63,17 +63,22 @@ public:
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
     virtual i32 Tick();        // slot 16 (body 0xb4020): the per-frame driver.
     virtual i32 SiblingTick(); // slot 17 (body 0xb43f0 - the timed strike driver)
-    // Arm the strike-window timer (deadline = now, window = the RainCloudFlashTime bute),
-    // fire the cue gate + the positional kill sound. Non-virtual. (Was the duplicate
-    // CLightningHazard view's method.)
-    i32 ArmStrike(i32 a, i32 b); // 0x0b4640
+    // (The 0xb4640 strike-arm body that used to be declared here as a non-virtual
+    //  "ArmStrike" is CRainCloud's slot-20 HitTest override - ??_7CRainCloud[20]
+    //  is its only referent; see RainCloud.cpp.)
     // Arrive (slot 18, body 0xb47a0): advance to the next waypoint, wrapping the
     // index back to 0 once the path is exhausted. Returns 1.
     virtual i32 Arrive(); // slot 18
     // BeginLeg (slot 19, body 0xb47e0): compute the unit vector toward the current
     // waypoint (m_f8) and seed the movement state. Returns 1.
     virtual i32 BeginLeg();        // slot 19
-    virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
+    // slot 20 (0x13230, ??_7CPathHazard[20] -> this body): the per-coord hit
+    // probe's base default - `return 1`. CUFO inherits it; CRainCloud overrides
+    // it with the strike-arm body @0xb4640.
+    RVA(0x00013230, 0x8)
+    virtual i32 HitTest(i32, i32) {
+        return 1;
+    }
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
     void ForwardTick(); // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)

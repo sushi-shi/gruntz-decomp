@@ -209,7 +209,9 @@ public:
     virtual i32 DestroyWindow() OVERRIDE; // slot 24 (own override @0x00218a, origin CWnd)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog
-    virtual void OnOK() OVERRIDE;                             // slot 51  OnOK
+    // 0xc4c00 (ex "VerifyCustomLevel"): confirm every player has the same custom
+    // level; on success accept via CDialog::OnOK(), else re-enable + error modal.
+    virtual void OnOK() OVERRIDE; // slot 51
 
     // BuildSlotList (0xc1e60): allocate the player-slot list, derive the player
     // count from the game-registry snapshot, and seed the list. Returns 1 (tested
@@ -296,8 +298,7 @@ public:
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
     i32 EnableControls();     // 0xc4120  re-enable the four player-config controls
-    void VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level
-    void ConnectStep();       // 0xc2a20  one connect step: reconcile slot 1 then Drive
+    void ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive
     // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
     // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
@@ -307,8 +308,8 @@ public:
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
-    // (CDialog::OnOK @0x1bacc3 is the inherited protected virtual slot-51 above;
-    //  VerifyCustomLevel reaches it as CDialog::OnOK() - no separate non-virtual decl.)
+    // (CDialog::OnOK @0x1bacc3 is the base body the slot-51 override above chains
+    //  on success - reached as CDialog::OnOK(), no separate non-virtual decl.)
     void M1bab37(i32); // 0x1bab37 (NAFXCW forwarder; the Watchdog abort/reshow)
 
     // Watchdog (0xc46b0): the per-timer multiplayer-session watchdog (body in

@@ -20,7 +20,7 @@ public:
     virtual ~CDDrawWorkerRegistry() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;   // [ 5] 0x156dc0 (Ghidra size-0 gap; declared-only)
     virtual i32 IsReady() OVERRIDE;    // [ 6] 0x154aa0 (re-seeds the 25-dword blt-fx scratch)
-    virtual i32 Unload() OVERRIDE;     // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
+    virtual void Unload() OVERRIDE;    // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
     virtual i32 GetClassId() OVERRIDE; // [ 8] 0x156de0 (STATE_WORKERREGISTRY = 0x12)
     virtual i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5); // [ 9] 0x154df0
     virtual i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [10] 0x154f60
@@ -48,7 +48,8 @@ public:
     CMapStringToOb m_10map; // +0x10  the name -> worker/sprite hash table
 
     // Non-virtual map-scan helpers (direct-called from the worker code region).
-    void DestroyAll();
+    // (DestroyAll @0x165210 moved to CDDrawWorkerCache - its true owner: the only
+    //  call site is that class's dtor and the only data ref its vtable slot 7.)
     i32 RemoveKeysEqual(const char* base, const char* str);
     i32 SumSizesEqual(const char* str, i32 a2);
     i32 HasKeyEqual(const char* str);

@@ -45,8 +45,8 @@ i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;
 }
 RVA(0x00152650, 0x5)
-i32 CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override)
-    return FreeAll();     // tail-jmp to FreeAll (whose eax residue IS this slot's i32)
+void CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override; void per the scheme)
+    FreeAll(); // tail-jmp to FreeAll (retail 0x152650 IS the 5-byte e9)
 }
 
 // ---------------------------------------------------------------------------

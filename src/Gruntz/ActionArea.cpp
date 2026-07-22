@@ -77,10 +77,8 @@ i32 Gap_007c60(void) {
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_58 = 0;
-    m_60 = 0;
-    m_5c = 0;
-    m_64 = 0;
+    m_timestamp = 0;
+    m_duration = 0;
     m_38->ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -88,9 +86,8 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 6;
         m_object->m_flags |= 0x20000;
     }
-    m_54 = 1;
-    m_60 = 0;
-    m_64 = 0;
+    m_phase = 1;
+    m_duration = 0; // retail re-zeroes the interval here (calls intervene - not elided)
     m_38->m_stateFlags |= 1;
 }
 
@@ -158,7 +155,7 @@ void CProjActObj::RegisterType() {
 }
 
 RVA(0x00008440, 0xfe)
-i32 CPulseHighlight::Tick() {
+i32 CActionArea::Tick() {
     i64* ts = &m_timestamp;
     i32* phase = &m_phase;
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts >= m_duration) {
@@ -201,11 +198,11 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CActionArea::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), tag, c, d)) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {

@@ -75,20 +75,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
     return 1;
 }
 
-RVA(0x000b4cb0, 0x56)
-i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
-    if (!CPathHazard::SerializeMove(static_cast<CGruntArchive*>(stream), tag, c, d)) {
-        return 0;
-    }
-    if (tag == 8) {
-        CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
-        CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = 7;
-        o->m_drawFillArg = reinterpret_cast<i32>(x);
-    }
-    return 1;
-}
+// (0xb4cb0 - CRainCloud::SerializeMove - moved to its owner RainCloud.cpp.)
 
 static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
     if (tag != 4) {

@@ -32,7 +32,7 @@ public:
     }
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0); not
     // redeclared (the old "IsValidImage" was a phantom own-decl of that shared body).
-    virtual i32 Unload()
+    virtual void Unload()
         OVERRIDE; // [7] 0x157ae0 (overrides CLoadable::Unload; clears the map; def in DDrawSubMgr.cpp)
     // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
     // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).

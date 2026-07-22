@@ -948,7 +948,7 @@ i32 CMultiStartDlg::GetSlotIndex() {
 // before the match starts, confirm every player has the same custom
 // level; otherwise re-enable the dialog and pop the appropriate error modal.
 RVA(0x000c4c00, 0x190)
-void CMultiStartDlg::VerifyCustomLevel() {
+void CMultiStartDlg::OnOK() {
     CMulti* mgr = g_multiState;
     if (mgr->m_isHost == 0) {
         return;

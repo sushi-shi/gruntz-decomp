@@ -14,7 +14,7 @@
 #include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (Plot/helpers here)
 #include <DDrawMgr/DDrawWorkerCtx.h>      // shared CDDrawWorkerCtx (the +0x0c owner context)
 #include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (CreateWorker here)
-#include <DDrawMgr/DDrawWorker.h>   // CDDrawWorker (the registry map values, DestroyAll's delete)
+#include <DDrawMgr/DDrawWorker.h>   // CDDrawWorker (the cache/registry map values, DestroyAll's delete)
 #include <DDrawMgr/AnimWorkerObj.h> // AnimWorkerObj (the 0x17c worker CreateWorker news)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSurfaceChildA (SetGeom_1646b0 here)
 #include <Io/FileMem.h>                // CFileMem/CFileMemBase (the runtime core here)
@@ -26,14 +26,14 @@
 #include <Gruntz/ResolveNode.h>           // canonical CResolveNode (Init here, 0x1647e0)
 #include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue's target)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (m_mgr / m_0c parent)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
 // its held IDirectDrawSurface (m_8 @+0x08, for Unlock). No facet view needed.
 //
-// The parent manager m_mgr (pair +0x0c) / m_0c (child +0x0c) points at IS the
+// The parent manager OwnerMgr() (pair +0x0c) / m_0c (child +0x0c) points at IS the
 // canonical CDDrawSurfaceMgr; its surface pool IS m_ptrColl (+0x1c,
 // CDDrawPtrCollections). The former per-TU views (CDDrawSurfaceMgrT / CDDrawSurfacePool
 // onto them (2026-07-14): pool +0x1c = m_ptrColl, caps +0x34 = m_flags, hWnd/device
@@ -99,15 +99,15 @@ void CDDrawWorkerList::ClearWorkers() {
 // ---------------------------------------------------------------------------
 // 0x163c90: Create(w, h, bpp, flags) - cache the {w,h,bpp} geometry + the
 // {0,0,w,h} source rect, then acquire a held surface from the parent manager's
-// pool: when m_status == 1 via AcquireA(pixel-format token, 4); otherwise via
+// pool: when m_04 == 1 via AcquireA(pixel-format token, 4); otherwise via
 // MakeAndAddB/CreateB (selected by the 0x10000 flag bit). On any failure record a
 // last-error code (0xfa1/0xfa2/0xfa3/0xfa4) in the manager (only if still 0) and
 // return 0; on success flag the surface as owned (m_ownsSurface=1) and return 1. The
-// two m_status paths are TWO sequential ifs (if m_status==1 {...} if m_status!=1 {...}), which
-// is why the success merge re-tests m_status. __thiscall, 4 stack args (ret 0x10).
+// two m_04 paths are TWO sequential ifs (if m_04==1 {...} if m_04!=1 {...}), which
+// is why the success merge re-tests m_04. __thiscall, 4 stack args (ret 0x10).
 // @early-stop
 // 96.02% - logic/CFG/offsets/calls/error-codes all reproduced. The lone residual is
-// a 1-instruction regalloc coin-flip in the w<=0 error path: retail loads m_status into
+// a 1-instruction regalloc coin-flip in the w<=0 error path: retail loads m_04 into
 // eax (mov eax,[esi+4]; cmp $1,eax) so it can reuse esi for the manager, we emit the
 // shorter direct compare (cmp $1,[esi+4]). Same values, same branch. Not source-
 // steerable; docs/patterns/zero-register-pinning.md family.
@@ -115,8 +115,8 @@ RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_flags = a3;
     if (w <= 0 || h <= 0) {
-        i32 k = m_status;
-        CDDrawSurfaceMgr* mgr = m_mgr;
+        i32 k = m_04;
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
         if (k == 1) {
             if (mgr->m_lastError == 0) {
                 mgr->m_lastError = 0xfa1;
@@ -136,27 +136,27 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[1] = 0;
     rect[2] = w;
     rect[3] = h;
-    if (m_status == 1) {
-        CDDrawSurfaceMgr* mgr = m_mgr;
+    if (m_04 == 1) {
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface =
             static_cast<CDDSurface*>(mgr->m_ptrColl
                 ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
         if (m_surface == 0) {
-            if (m_mgr->m_lastError == 0) {
-                m_mgr->m_lastError = 0xfa3;
+            if (OwnerMgr()->m_lastError == 0) {
+                OwnerMgr()->m_lastError = 0xfa3;
             }
             return 0;
         }
     }
-    if (m_status != 1) {
+    if (m_04 != 1) {
         if (m_flags & 0x10000) {
-            m_surface = m_mgr->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
+            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
         } else {
-            m_surface = m_mgr->m_ptrColl->CreateB(w, h, 0, 0, -1);
+            m_surface = OwnerMgr()->m_ptrColl->CreateB(w, h, 0, 0, -1);
         }
         if (m_surface == 0) {
-            if (m_mgr->m_lastError == 0) {
-                m_mgr->m_lastError = 0xfa4;
+            if (OwnerMgr()->m_lastError == 0) {
+                OwnerMgr()->m_lastError = 0xfa4;
             }
             return 0;
         }
@@ -168,7 +168,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
 // ---------------------------------------------------------------------------
 // 0x163db0 (slot 11): adopt an existing (already-created) surface - cache its
 // geometry (w/h from the surface desc, bpp from its raw bit depth) + a {0,0,w,h}
-// src rect, mark active (m_status=0x63), latch the surface (not owned). Rejects a
+// src rect, mark active (m_04=0x63), latch the surface (not owned). Rejects a
 // null surface or non-positive geometry. __thiscall, 1 arg (ret 4).
 // @early-stop
 // ~77.7% - logic/CFG/offsets/store-order all byte-faithful. Residual is the mirror-
@@ -190,7 +190,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
             m_srcRect[0] = 0;
             m_srcRect[1] = 0;
             m_srcRect[3] = h;
-            m_status = 0x63;
+            m_04 = 0x63;
             m_surface = src;
             m_ownsSurface = 0;
             return 1;
@@ -199,10 +199,13 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     return 0;
 }
 
+// The slot-7 Unload override (ex "TeardownSurface"): release the owned surface
+// back to the pool, clear the geometry latch. i32 per the CLoadable slot
+// signature; retail sets no return value (falls off), so neither do we.
 RVA(0x00163e20, 0x2d)
-void CDDrawSurfacePair::TeardownSurface() {
+void CDDrawSurfacePair::Unload() {
     if (m_surface != 0 && m_ownsSurface != 0) {
-        CDDrawPtrCollections* pool = m_mgr->m_ptrColl;
+        CDDrawPtrCollections* pool = OwnerMgr()->m_ptrColl;
         pool->RemoveItemA(m_surface);
         m_surface = 0;
     }
@@ -232,7 +235,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     if (buf == 0) {
         return 0;
     }
-    i32 r = m_surface->Resolve(static_cast<void*>(m_mgr->m_ptrColl), reinterpret_cast<void*>(buf), type, src->m_length, 0);
+    i32 r = m_surface->Resolve(static_cast<void*>(OwnerMgr()->m_ptrColl), reinterpret_cast<void*>(buf), type, src->m_length, 0);
     src->EndParse();
     return r;
 }
@@ -409,9 +412,9 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // ---------------------------------------------------------------------------
 // 0x164250 (vtable slot 10): re-set the surface geometry to {w,h,bpp}. If the
 // cached geometry already matches, do nothing (return 1). Otherwise, when the
-// surface is in the "attached" state (m_status==2) probe whether the held surface
+// surface is in the "attached" state (m_04==2) probe whether the held surface
 // lives in system memory (GetCaps & DDSCAPS_SYSTEMMEMORY); drop the current surface
-// from the pool, then re-acquire one: via CreatePoolItem when m_status==1, else via
+// from the pool, then re-acquire one: via CreatePoolItem when m_04==1, else via
 // MakeAndAddB (system-memory) / CreateB (video). Cache the new geometry + a {0,0,w,h}
 // src rect and return 1 on a valid {w>0,h>0,bpp in {8,16,24,32}}. __thiscall, 3 args.
 // @early-stop
@@ -427,7 +430,7 @@ RVA(0x00164250, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
-        if (m_status == 2) {
+        if (m_04 == 2) {
             DDSCAPS caps;
             if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
                 sysmem = 0x800 & caps.dwCaps;
@@ -435,10 +438,10 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
                 sysmem = 0;
             }
         }
-        m_mgr->m_ptrColl->RemoveItemA(m_surface);
+        OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
         m_surface = 0;
-        if (m_status == 1) {
-            CDDrawSurfaceMgr* mgr = m_mgr;
+        if (m_04 == 1) {
+            CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface =
                 static_cast<CDDSurface*>(mgr->m_ptrColl
                     ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
@@ -446,11 +449,11 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
                 return 0;
             }
         }
-        if (m_status != 1) {
+        if (m_04 != 1) {
             if (sysmem != 0) {
-                m_surface = m_mgr->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
             } else {
-                m_surface = m_mgr->m_ptrColl->CreateB(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->m_ptrColl->CreateB(w, h, bpp, 0, -1);
             }
             if (m_surface == 0) {
                 return 0;
@@ -725,20 +728,25 @@ i32 CResolveNode::Init(
     return 1;
 }
 
+// CDDrawWorkerCache::DestroyAll (the [7] slot body). PROVEN owner by exhaustive
+// binary xref: 0x165210 has NO ILT thunk, ONE call site (0x15774b, inside
+// ~CDDrawWorkerCache 0x157720) and ONE data ref (??_7CDDrawWorkerCache 0x1efd00
+// slot 7 @0x1efd1c) - CDDrawWorkerRegistry (the former attribution) never
+// touches it; its own map teardown is the [22] MapTeardown @0x1552b0.
 RVA(0x00165210, 0xa2)
-void CDDrawWorkerRegistry::DestroyAll() {
+void CDDrawWorkerCache::DestroyAll() {
     ::CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_10map.GetCount() != 0 ? -1 : 0));
+    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
-            m_10map.GetNextAssoc(pos, key, val);
+            m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 delete (static_cast<CDDrawWorker*>(val)); // the map values ARE the keyed workers
             }
         } while (pos != 0);
     }
-    m_10map.RemoveAll();
+    m_10.RemoveAll();
 }
 
 static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {

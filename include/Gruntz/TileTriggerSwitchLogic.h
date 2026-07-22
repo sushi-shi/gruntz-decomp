@@ -56,12 +56,6 @@ public:
     // the CHILD it then scans at child+0x3c, which pins the child to the 0x9c family.
     i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
     i32 VerifyBlockLinks();  // 0x112c70
-    // Broadcast (0x112080): walk the m_block key array; for each key resolve the
-    // sibling (m_owner->FindChild(key, 4)) and run every m_list1 logic child that
-    // claims it. Was the .cpp-local `CGroupBroadcast` view in GroupOps.cpp (same
-    // layout field-for-field: m_10=m_key1, m_14=m_linkGate, m_24=m_owner,
-    // m_2c[24]=m_block; its RVA sits inside THIS TU's interval).
-    i32 Broadcast(); // 0x112080
 
     // GetFlag74 / RemoveByKeys / FindChild / FindByField0C / ScanNeighborhood /
     // TransferFlag74 / LoadFlag74 are NOT members - they are CTileTriggerContainer
@@ -123,7 +117,14 @@ SIZE(0x8c);
 VTBL(CTileMultiTriggerSwitchLogic, 0x001eaeb4);
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 SwitchDown() OVERRIDE; // slot 2
+    // slot 2 (0x112080, ex base "Broadcast"): chain the base SwitchDown, then walk
+    // this switch's m_block key array; each key must resolve (m_owner->FindChild(key,
+    // 4), acking 0x44f on a miss) to a sibling switch; a resolved, link-gated sibling
+    // that is not THIS switch is switched up + every m_list1 logic child that claims
+    // it is Ticked (0x450 if none does). Was the .cpp-local `CGroupBroadcast` view in
+    // GroupOps.cpp (same layout field-for-field: m_10=m_key1, m_14=m_linkGate,
+    // m_24=m_owner, m_2c[24]=m_block).
+    virtual i32 SwitchDown() OVERRIDE; // slot 2 -> 0x112080
 public:
     CTileExclusiveTriggerSwitchLogic(); // 0x112050
 };

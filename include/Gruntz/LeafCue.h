@@ -17,7 +17,7 @@ struct LeafCue : public CLoadable {
     }
     // [7] 0x1587c0 (DDrawSubMgr.cpp): release the acquired buffer through the owner's
     // SoundDevice (reaps voices + releases + unlinks + deletes), clear the slot.
-    virtual i32 Unload() OVERRIDE;
+    virtual void Unload() OVERRIDE;
     // [1] ??1 @0x158680 (DDrawSubMgr.cpp): Unload (devirt direct 0x1587c0) + the
     // ~CLoadable field resets + grand-base re-stamp. cl-??_G @0x158660.
     virtual ~LeafCue() OVERRIDE;

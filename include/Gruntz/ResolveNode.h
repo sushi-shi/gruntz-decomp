@@ -14,7 +14,7 @@ public:
     // redeclare-nothing now that CLoadable's own vtable 0x1efc30 is bound).
     // SetPosition (slot 9) is the node's own new virtual.
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x154a10  (checks m_04!=-1 && m_0c)
-    virtual i32 Unload() OVERRIDE;   // [7] 0x154a80  disarm the dirty-rect sentinels
+    virtual void Unload() OVERRIDE;  // [7] 0x154a80  disarm the dirty-rect sentinels
     // slot 9 (new): set position + reset the draw state (x->m_5c, y->m_60, zero
     // the clip/plot fields, reseed m_48=0x32/m_50=1, cache owner->m_24). Body
     // 0x164790 (T obj); shared by the whole wide-object family (never overridden).

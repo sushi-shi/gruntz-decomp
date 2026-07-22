@@ -11,7 +11,12 @@ class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buf
 
 class CProjectile : public CMovingLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1 @0xe0d40 (body below, ex the CProjLoadRec::Load view - the fold the
+    // ProjLoadRec header deferred): dual-mode (4=write/7=read) serialize of the
+    // trajectory block, the 7 sprite frames by registry key, the shadow by object
+    // id, the hit list via the coord pool, then the CMovingLogic chain + the CWapX
+    // record tail.
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE;
     RVA(0x00012960, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
@@ -64,12 +69,12 @@ public:
     i32 m_curX, m_curY;           // +0x1d0/+0x1d4  current screen pos (init = owner muzzle)
     i32 m_isArcing;               // +0x1d8  arced trajectory (per-type; drives 5-tier sprites)
     i32 m_arrived;                // +0x1dc  one-shot arrival latch (gates LoadProjectileEffects)
-    CAniElement* m_frame1;        // +0x1e0  sprite frame "<base>1" (resolved geometry)
-    CAniElement* m_frame2;        // +0x1e4  sprite frame "<base>2"
-    CAniElement* m_frame3;        // +0x1e8  sprite frame "<base>3"
-    CAniElement *m_frame4, *m_frame5; // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
-    CAniElement* m_impactSprite;      // +0x1f4  "<base>IMPACT" sprite
-    CAniElement* m_fallSprite;        // +0x1f8  "<base>FALL" sprite
+    // +0x1e0..+0x1f8  the 7 sprite frames, an ARRAY (SerializeMove round-trips
+    // them in one 7-iteration registry-key loop - retail's loop proves the array):
+    // [0..4] = "<base>1".."<base>5" (the 5-tier arc sprites), [PF_IMPACT] =
+    // "<base>IMPACT", [PF_FALL] = "<base>FALL".
+    enum { PF_IMPACT = 5, PF_FALL = 6 };
+    CAniElement* m_frames[7];
     CWwdGameObjectA* m_shadow;            // +0x1fc  LightFx shadow render companion (A-kind)
     DirectSoundMgr* m_sound;          // +0x200  launch sound sample (pooled DirectSound buffer)
     CPtrList m_hitList;               // +0x204  tracked-hit list (block size 10)

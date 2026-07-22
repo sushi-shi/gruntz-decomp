@@ -362,53 +362,8 @@ i32 CPathHazard::SiblingTick() {
     return 0;
 }
 
-// CPathHazard::ArmStrike @0x0b4640 - arm the strike-window timer (deadline =
-// now, window = bute RainCloudFlashTime), fire the cue gate, and play the
-// "LEVEL_CLOUDHAZARDKILL" positional sound on the bound object when it is on-screen
-// and the per-emitter cooldown has elapsed.  Integer-only; returns 1.  __thiscall,
-// 2 args.
-// @early-stop
-// ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
-// SiblingTick carries (the obj names g_gameReg as _g_mgrSettings and
-// g_strikeClock as _g_645588). Logic byte-for-byte correct.
-// @interleaver CPathHazard::ArmStrike emitted-in <boundary: PathHazardActReg.cpp
-// RegisterActs_646250 @0xb3cc0 (before) + Ufo.cpp Method_b4cb0 @0xb4cb0 (after)>. A /Gy
-// first-use COMDAT the linker scattered between OTHER units, not this TU's body run.
-RVA(0x000b4640, 0x104)
-i32 CPathHazard::ArmStrike(i32 a, i32 b) {
-    m_strikeArmed = 1;
-    m_strikeWindow = static_cast<i64>(
-        static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0))
-    );
-    m_strikeDeadline = static_cast<i64>(static_cast<u32>(g_frameTime));
-    g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
-
-    CWwdGameObjectA* obj = m_object;
-    CGruntzMgr* reg = g_gameReg;
-    i32 y = obj->m_screenY;
-    i32 x = obj->m_screenX;
-    if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB
-        && y >= reg->m_viewOriginT) {
-        CSndHost* host = reg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            void* out_ob = 0;
-            host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
-            LeafCue* out = static_cast<LeafCue*>(out_ob);
-            if (out != 0) {
-                i32 enabled = g_sndEnabled;
-                i32 tag = g_sndCueTag;
-                if (enabled != 0) {
-                    u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - out->m_14)) >= out->m_18) {
-                        out->m_14 = now;
-                        out->m_10->ConfigureItem(tag, 0, 0, 0);
-                    }
-                }
-            }
-        }
-    }
-    return 1;
-}
+// (0xb4640 - CRainCloud::HitTest, the slot-20 strike-arm override - moved to
+// its owner RainCloud.cpp.)
 
 RVA(0x000b47a0, 0x27)
 i32 CPathHazard::Arrive() {

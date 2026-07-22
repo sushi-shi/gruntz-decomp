@@ -286,11 +286,13 @@ RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::Broadcast (0x112080) - walk this switch's m_block key
-// array; each key must resolve (owner->FindChild(key, 4), acking 0x44f on a miss)
-// to a sibling switch; for a resolved sibling that is not THIS switch and is
-// link-gated, run its slot-3 virtual, then Tick every m_list1 logic child that
-// claims it (FindIndexByKey), acking 0x450 if none does.
+// CTileExclusiveTriggerSwitchLogic::SwitchDown (0x112080; the class's slot-2
+// override, vtable 0x1eaecc slot 2 -> this body) - chain the base SwitchDown,
+// then walk this switch's m_block key array; each key must resolve
+// (owner->FindChild(key, 4), acking 0x44f on a miss) to a sibling switch; for a
+// resolved sibling that is not THIS switch and is link-gated, run its slot-3
+// virtual, then Tick every m_list1 logic child that claims it (FindIndexByKey),
+// acking 0x450 if none does.
 // RE-HOMED from GroupOps.cpp (the whole `CGroupBroadcast`/`CFindNode`/
 // classes: same layout field-for-field, and this RVA sits inside THIS TU's
 // interval 0x110430..0x1140e2 - first-link contiguity says it was defined here).
@@ -300,9 +302,9 @@ CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 // inner match/destroy list loop and both diagnostic exits are byte-faithful; the
 // residual is loop-induction / counter register colouring.  No EH frame.
 RVA(0x00112080, 0x138)
-i32 CTileTriggerSwitchLogic::Broadcast() {
-    // retail: a DIRECT `call 0x2e0f` (the slot-2 body's ILT thunk) - a qualified,
-    // devirtualized call, so spell it qualified.
+i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
+    // retail: a DIRECT `call 0x2e0f` (the base slot-2 body's ILT thunk) - the
+    // qualified base chain.
     CTileTriggerSwitchLogic::SwitchDown();
     i32 counter = 0;
     i32* p = &m_block[0];

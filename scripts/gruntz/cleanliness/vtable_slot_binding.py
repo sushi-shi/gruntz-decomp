@@ -52,23 +52,18 @@ CLASSIFICATION
 Library vtables (config/library_vtables.csv) are exempt, as in the sibling gates.
 Pure-virtual slots (``__purecall``) are correct-by-construction and pass.
 
-THE RATCHET (why this is not simply fail-closed today)
-------------------------------------------------------
-The first run found 259 pre-existing violations, so a bare fail-closed gate would brick
-the build for everyone rather than protect anything. Instead the known backlog is frozen
-in ``config/vtable-slot-binding-baseline.tsv`` and the gate is fail-closed on ANYTHING
-NOT IN IT - so no NEW wiring defect can ever land, while the backlog drains. When the
-baseline reaches 0 rows it is a pure fail-closed gate with no special case, exactly as
-briefed.
+THE RATCHET (RETIRED 2026-07-22 - the gate is now PURE fail-closed)
+-------------------------------------------------------------------
+The first run found 259 pre-existing violations, frozen in
+``config/vtable-slot-binding-baseline.tsv`` so the gate could fail-closed on
+anything NEW while the backlog drained. The backlog reached 0 (every one of the
+259 was a mis-model dissolved by real inheritance/virtuals - fake views, wrong
+owners, non-virtual duplicates) and the baseline file was DELETED. Any
+violation now fails the build outright: FIX the modeling, never re-create the
+baseline (load_baseline() treats the absent file as the empty set, which is the
+permanent state).
 
-The baseline is a SET, not a count (the campaign's "measure SETS, not counts" rule): it
-is keyed on (vtable_rva, slot, symbol), so fixing one defect and introducing another
-cannot net out to "still 259" and slip through - the new row simply is not in the set.
-Fixing a defect makes its row stale, which ``--update`` prunes and the gate reports.
-
-    python -m gruntz.cleanliness.vtable_slot_binding           # the gate (fail-closed vs baseline)
-    python -m gruntz.cleanliness.vtable_slot_binding --strict  # ignore the baseline: ALL violations
-    python -m gruntz.cleanliness.vtable_slot_binding --update  # bless the current set as baseline
+    python -m gruntz.cleanliness.vtable_slot_binding           # the gate (fail-closed)
     python -m gruntz.cleanliness.vtable_slot_binding --list    # every slot, every vtable
     python -m gruntz.cleanliness.vtable_slot_binding --info    # ... plus the (c) UNBOUND table
 """

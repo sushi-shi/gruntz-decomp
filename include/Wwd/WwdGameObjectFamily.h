@@ -37,7 +37,7 @@ public:
     // (retail ~A/~F/~C inline it; deep contexts spill to `call 0x15b5d0`).
     // The out-of-line copy (the vtable slot) lands at 0x15b5d0.
     RVA(0x0015b5d0, 0x7c)
-    virtual i32 Unload() OVERRIDE {
+    virtual void Unload() OVERRIDE {
         WORKER_FREE(m_7c);
         WORKER_FREE(m_80);
         WORKER_FREE(m_88);
@@ -47,8 +47,8 @@ public:
         m_screenX = static_cast<i32>(0x80000000);
         m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;
-        // retail leaves eax = the INT_MIN it just materialized for the stores
-        return static_cast<i32>(0x80000000);
+        // (void per the CLoadable slot; retail's eax residue is the INT_MIN the
+        // stores materialize)
     }
     // slots 8 (GetClassId @0x154a00) and 9 (SetPosition @0x164790) INHERITED.
     // slot 10 - the factories' 4-arg build dispatch (the flat model's Setup
@@ -191,13 +191,12 @@ public:
     // INLINE so ~A folds it (retail ~A = { Unload(); } + folds); the out-of-line
     // copy (the vtable slot) lands at 0x15b980.
     RVA(0x0015b980, 0x96)
-    virtual i32 Unload() OVERRIDE {
+    virtual void Unload() OVERRIDE {
         m_18c = -1;
         m_190 = -1;
         m_layer = 0;
         m_194 = 0;
-        // the E pass (0x15b5d0 content); its INT_MIN residue is the return
-        return CGameObject::Unload();
+        CGameObject::Unload(); // the E pass (0x15b5d0 content)
     }
     virtual i32 GetClassId() OVERRIDE;                            // slot 8  @0x15b760 (0x1c)
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
@@ -252,15 +251,14 @@ public:
     // slot 7 override: destroy the child list, then the A/E release pass.
     // INLINE so ~B folds it; the out-of-line copy lands at 0x15bf00.
     RVA(0x0015bf00, 0xa1)
-    virtual i32 Unload() OVERRIDE {
+    virtual void Unload() OVERRIDE {
         Clear(); // 0x166810 destroy the m_1dc children + RemoveAll
         m_1f8 = 0;
         m_18c = -1;
         m_190 = -1;
         m_layer = 0;
         m_194 = 0;
-        // the E pass (deep contexts spill to `call 0x15b5d0`); INT_MIN residue return
-        return CGameObject::Unload();
+        CGameObject::Unload(); // the E pass (deep contexts spill to `call 0x15b5d0`)
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
@@ -296,8 +294,8 @@ public:
     // slot 7 override: the E release pass (a full inline copy in retail).
     // INLINE so ~F folds it; the out-of-line copy lands at 0x15bc50.
     RVA(0x0015bc50, 0x7c)
-    virtual i32 Unload() OVERRIDE {
-        return CGameObject::Unload(); // a full inline copy of the E pass in retail
+    virtual void Unload() OVERRIDE {
+        CGameObject::Unload(); // a full inline copy of the E pass in retail
     }
     virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15ba60 (0x16)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x15ba70 (ret 4 - empty)
@@ -319,9 +317,9 @@ public:
     // slot 7 override: clear the dot-color byte then the E release pass.
     // INLINE so ~C folds it; the out-of-line copy lands at 0x15c200.
     RVA(0x0015c200, 0x82)
-    virtual i32 Unload() OVERRIDE {
+    virtual void Unload() OVERRIDE {
         m_dotColor = 0;
-        return CGameObject::Unload();
+        CGameObject::Unload();
     }
     virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15c020 (6)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x1660f0 (RenderDot)

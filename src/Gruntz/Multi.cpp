@@ -1838,7 +1838,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 // now-dead arg slots, while cl folds the EH state into the arg-overlap area and
 // omits the sub - an 8-byte frame-size delta that cascades through every
 // stack-relative offset. Same CString-EH residue family as the dialog sibling
-// CMultiStartDlg::VerifyCustomLevel (0xc4c00, parked ~55%); not source-steerable.
+// CMultiStartDlg::OnOK (0xc4c00, parked ~55%); not source-steerable.
 // See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
 RVA(0x000b8fc0, 0x151)
 i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {

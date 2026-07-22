@@ -323,11 +323,10 @@ void CAniAdvanceCursor::Construct(void* srcv) {
 }
 
 RVA(0x0015c2c0, 0xc)
-i32 CAniAdvanceCursor::Unload() {
+void CAniAdvanceCursor::Unload() {
     m_10 = 0;
     m_14 = 0;
     m_element = 0;
-    return 0;
 }
 
 RVA(0x0015c2d0, 0x45)

@@ -117,7 +117,8 @@ public:
     virtual i32 IsLoaded() OVERRIDE; // [5]  +0x14  0x161190 (overrides CWapObj)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
-    virtual i32 Unload(); // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    virtual void Unload(); // [7]  +0x1c  0x15d1f0  full unload (+ header zero; void -
+                           // retail's ret leaves no eax, same as the CLoadable scheme)
     RVA(0x001611b0, 0x6)
     virtual i32 GetClassId() {
         return CLASSID_GAMELEVEL;

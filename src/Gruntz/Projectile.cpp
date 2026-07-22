@@ -37,6 +37,8 @@
 
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
+#include <Gruntz/AniElement.h> // CAniElement complete type (KeyOfValue's CObject* upcast)
 
 
 VTBL(CTimeBomb, 0x001e771c);
@@ -191,7 +193,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         m_object->m_sortKey = 0xcf850;
         m_object->m_flags |= 0x20000;
     }
-    memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
+    memset(&m_frames[0], 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
     m_sound = 0;
     m_shadow = 0;
 }
@@ -332,31 +334,31 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
-    m_frame1 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
-    if (m_frame1 == 0) {
+    m_frames[0] = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    if (m_frames[0] == 0) {
         return 0;
     }
     out = 0;
     map.Lookup(key + "2", out);
-    m_frame2 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[1] = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "3", out);
-    m_frame3 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[2] = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "4", out);
-    m_frame4 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[3] = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "5", out);
-    m_frame5 = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
+    m_frames[4] = static_cast<CAniElement*>(out); // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "IMPACT", out);
-    m_impactSprite = static_cast<CAniElement*>(out);
+    m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
     out = 0;
     map.Lookup(key + "FALL", out);
-    m_fallSprite = static_cast<CAniElement*>(out);
+    m_frames[PF_FALL] = static_cast<CAniElement*>(out);
 
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_frame1);
+    m_38->m_1a0.Setup(m_frames[0]);
     m_38->ApplyName(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
@@ -564,51 +566,51 @@ void CProjectile::MovingSlot16() {
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_38->m_1a0.m_14 != m_frame1) {
+                if (m_38->m_1a0.m_14 != m_frames[0]) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup(m_frame1);
+                    m_38->m_1a0.Setup(m_frames[0]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frame1);
+                        m_shadow->m_1a0.Setup(m_frames[0]);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_38->m_1a0.m_14 != m_frame2) {
+                if (m_38->m_1a0.m_14 != m_frames[1]) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup(m_frame2);
+                    m_38->m_1a0.Setup(m_frames[1]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frame2);
+                        m_shadow->m_1a0.Setup(m_frames[1]);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_38->m_1a0.m_14 != m_frame3) {
+                if (m_38->m_1a0.m_14 != m_frames[2]) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup(m_frame3);
+                    m_38->m_1a0.Setup(m_frames[2]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frame3);
+                        m_shadow->m_1a0.Setup(m_frames[2]);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_38->m_1a0.m_14 != m_frame4) {
+                if (m_38->m_1a0.m_14 != m_frames[3]) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup(m_frame4);
+                    m_38->m_1a0.Setup(m_frames[3]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frame4);
+                        m_shadow->m_1a0.Setup(m_frames[3]);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_38->m_1a0.m_14 != m_frame5) {
+                if (m_38->m_1a0.m_14 != m_frames[4]) {
                     m_value = m_38->m_1a0.m_14;
-                    m_38->m_1a0.Setup(m_frame5);
+                    m_38->m_1a0.Setup(m_frames[4]);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup(m_frame5);
+                        m_shadow->m_1a0.Setup(m_frames[4]);
                     }
                 }
             }
@@ -696,7 +698,7 @@ void CProjectile::MovingSlot16() {
             }
         }
     }
-    CAniElement* sprite = (tier != 0) ? m_fallSprite : m_impactSprite;
+    CAniElement* sprite = (tier != 0) ? m_frames[PF_FALL] : m_frames[PF_IMPACT];
     if (sprite == 0) {
         m_38->m_flags |= 0x10000;
         return;
@@ -874,6 +876,191 @@ void CProjectile::ScanTargets(i32 impact) {
         rowBase += 0x3c;
         tileY++;
     } while (rowBase < 0x10c);
+}
+
+// ---------------------------------------------------------------------------
+// 0xe0d40 - CProjectile::SerializeMove (slot 1; the vtable 0x1e798c[1] body).
+// FOLDED from the CProjLoadRec view (its own header carried the proof:
+// vtable_hierarchy resolves slot 1's ILT thunk 0x0034b3 here, and the view's
+// layout mirrored this class field-for-field). Dual-mode: 7 = read the
+// trajectory block + the 7 sprite frames by registry key + the shadow by object
+// id + the hit list via the coord pool; 4 = the write mirror. Then the
+// CMovingLogic base chain (the view's fabricated "ChainLoad") + the CWapX
+// record tail (m_34/m_38/m_3c/m_value/m_blob).
+// a4 carries the bound CGameObject* through the family's i32 slot-1 arg -
+// reinterpreted at use exactly like CUserLogic::SerializeMove does.
+// ---------------------------------------------------------------------------
+// @early-stop
+// scratch-slot scheduling tail (same family as CTriggerLoadRec/CEventLoadRec/
+// CGruntStateRec): the dual-mode switch, every Read/Write field+size, the
+// 7-entry name-ref loop, the type-code-gated map lookup, the g_coordPool
+// m_freeHead splice + AddTail, the inline strlen/strcpy KeyOfValue temps, the
+// g_serialCounter bumps, the base tail-chain and the embedded CWapX record are
+// byte-faithful; residual is the MSVC5 scratch-buffer slot assignment +
+// outparam zero-init store positions. Not source-steerable.
+RVA(0x000e0d40, 0x6c2)
+i32 CProjectile::SerializeMove(CGruntArchive* s, i32 mode, i32 a2, i32 a4) {
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    if (reg == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+
+    switch (mode) {
+        case 7: {
+            m_sound = 0;
+            s->Read(&m_kind, 4);
+            s->Read(&m_srcRow, 4);
+            s->Read(&m_srcCol, 4);
+            s->Read(&m_targetX, 4);
+            s->Read(&m_targetY, 4);
+            s->Read(&m_flightDist, 8);
+            s->Read(&m_timePerTile, 4);
+            s->Read(&m_velScale, 8);
+            s->Read(&m_posX, 8);
+            s->Read(&m_posY, 8);
+            s->Read(&m_velX, 8);
+            s->Read(&m_velY, 8);
+            s->Read(&m_roundXLo, 8);
+            s->Read(&m_roundYLo, 8);
+            s->Read(&m_curX, 4);
+            s->Read(&m_curY, 4);
+            s->Read(&m_isArcing, 4);
+            s->Read(&m_arrived, 4);
+            s->Read(&m_targetId, 4);
+            s->Read(&m_ownerId, 4);
+
+            for (i32 ni = 0; ni < 7; ni++) {
+                g_serialCounter++;
+                s->Read(buf, 0x80);
+                if (strlen(buf) != 0) {
+                    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+                    reg->m_animRegistry->m_10.Lookup(buf, out);
+                    m_frames[ni] = static_cast<CAniElement*>(out);
+                } else {
+                    m_frames[ni] = 0;
+                }
+            }
+
+            g_serialCounter++;
+            i32 key;
+            s->Read(&key, 4);
+            CGameObject* found = 0;
+            i32 r;
+            if (reg->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found)) == 0) {
+                r = 0;
+            } else if (found == 0) {
+                r = 0;
+            } else {
+                r = (found->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(found) : 0;
+            }
+            m_shadow = reinterpret_cast<CWwdGameObjectA*>(r);
+            if (m_shadow == 0 && key != 0) {
+                return 0;
+            }
+
+            i32 cnt;
+            s->Read(&cnt, 4);
+            for (i32 ci = 0; ci < cnt; ci++) {
+                CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
+                void* payload = 0;
+                if (node->m_next != 0) {
+                    g_coordPool.m_freeHead = node->m_next;
+                    payload = &node->m_coord;
+                }
+                s->Read(payload, 8);
+                m_hitList.AddTail(payload);
+            }
+            break;
+        }
+
+        case 4: {
+            s->Write(&m_kind, 4);
+            s->Write(&m_srcRow, 4);
+            s->Write(&m_srcCol, 4);
+            s->Write(&m_targetX, 4);
+            s->Write(&m_targetY, 4);
+            s->Write(&m_flightDist, 8);
+            s->Write(&m_timePerTile, 4);
+            s->Write(&m_velScale, 8);
+            s->Write(&m_posX, 8);
+            s->Write(&m_posY, 8);
+            s->Write(&m_velX, 8);
+            s->Write(&m_velY, 8);
+            s->Write(&m_roundXLo, 8);
+            s->Write(&m_roundYLo, 8);
+            s->Write(&m_curX, 4);
+            s->Write(&m_curY, 4);
+            s->Write(&m_isArcing, 4);
+            s->Write(&m_arrived, 4);
+            s->Write(&m_targetId, 4);
+            s->Write(&m_ownerId, 4);
+
+            for (i32 wi = 0; wi < 7; wi++) {
+                g_serialCounter++;
+                memset(buf, 0, sizeof(buf));
+                if (m_frames[wi] != 0) {
+                    CString nm = reg->m_animRegistry->KeyOfValue(m_frames[wi]);
+                    strcpy(buf, nm);
+                }
+                s->Write(buf, 0x80);
+            }
+
+            g_serialCounter++;
+            i32 v = 0;
+            if (m_shadow != 0) {
+                v = m_shadow->m_188;
+            }
+            s->Write(&v, 4);
+
+            i32 v2 = m_hitList.GetCount();
+            s->Write(&v2, 4);
+
+            for (CoordNode* n = reinterpret_cast<CoordNode*>(m_hitList.GetHeadPosition()); n != 0;
+                 n = n->m_next) {
+                s->Write(n->m_coord, 8);
+            }
+            break;
+        }
+    }
+
+    if (CMovingLogic::SerializeMove(s, mode, a2, a4) == 0) {
+        return 0;
+    }
+    if (s == 0) {
+        return 0;
+    }
+
+    if (mode == 4) {
+        char blob[0x80];
+        memset(blob, 0, sizeof(blob));
+        if (m_value != 0) {
+            CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue(m_value);
+            strcpy(blob, nm);
+        }
+        s->Write(blob, 0x80);
+        s->Write(m_blob, 0x10);
+        return 1;
+    }
+    if (mode != 7) {
+        return 1;
+    }
+
+    s->Read(buf, 0x80);
+    s->Read(m_blob, 0x10);
+    CGameObject* obj = reinterpret_cast<CGameObject*>(a4);
+    m_34 = obj;
+    m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
+    m_3c = obj->m_7c;
+    if (strlen(buf) == 0) {
+        m_value = 0;
+        return 1;
+    }
+    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+    m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
+    m_value = static_cast<CAniElement*>(out);
+    return 1;
 }
 
 DATA(0x0024c780)

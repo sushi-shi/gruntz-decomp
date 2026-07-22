@@ -29,9 +29,9 @@ and let the tool re-roll; never hand-pick a whole file.
 - **`tu-order-baseline.tsv`** — frozen backlog of linker-order violations
   (`gruntz.audit.tu_order_check --gate`): per-TU intra counts + the
   interleave-pair total. Any rise fails the build; improvements auto-roll down.
-- **`vtable-slot-binding-baseline.tsv`** — frozen backlog of known slot-wiring
-  violations (`gruntz.cleanliness.vtable_slot_binding`); new defects are FATAL,
-  the known set drains to 0.
+- (`vtable-slot-binding-baseline.tsv` is GONE: the 259-row backlog drained to 0
+  on 2026-07-22 and `gruntz.cleanliness.vtable_slot_binding` is now purely
+  fail-closed — any violation is FATAL, never re-baselined.)
 
 ## Recovered-fact records (regenerate/extend with their tool; merge per ROW)
 

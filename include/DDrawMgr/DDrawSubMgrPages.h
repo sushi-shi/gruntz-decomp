@@ -67,10 +67,9 @@ SIZE_UNKNOWN();
 // CreateChildren inlines the derived ctor: `call 0x158f30; mov [edi],0x5eff70;
 // mov [edi+0x2c],0`) AND - by the shared slot-9 body 0x158fd0 in BOTH raw
 // vtables (0x1eff30[9] == 0x1effa0[9]; MSVC5 has no ICF, so a shared slot IS
-// inheritance) - of CDDrawSurfacePair, whose flat model keeps its own slot-9
-// claim for now (pair re-base pass TODO; its inline ctor's `call 0x156cb0` +
-// m_width=0 is the base ctor per-site re-inlined by /Ob2). The class name is
-// scaffolding (@identity-TODO - no RTTI names this family).
+// inheritance) - of CDDrawSurfacePair (REBASED 2026-07-22; it inherits slot 9
+// and overrides 5/7/8/10). The class name is scaffolding (@identity-TODO - no
+// RTTI names this family).
 // ---------------------------------------------------------------------------
 class CDrawSubWorker : public CLoadable {
 public:
@@ -78,11 +77,11 @@ public:
     // CResolveNode(i32,i32,i32) precedent in Loadable.h) + m_width = 0.
     CDrawSubWorker(i32 a1, i32 a2, i32 a3);
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x158f60 (declared-only, unreconstructed)
-    virtual i32 Unload() OVERRIDE;     // [7] 0x159080 (declared-only, unreconstructed)
+    virtual void Unload() OVERRIDE;    // [7] 0x159080 (declared-only, unreconstructed)
     virtual i32 GetClassId() OVERRIDE; // [8] 0x158f80 (declared-only, unreconstructed)
-    // [9] 0x158fd0: cache the {w,h,bpp} geometry + src rect. The BODY is bound as
-    // CDDrawSurfacePair::SetGeometry until the pair re-bases here (one
-    // claim per rva); this base decl + ChildA's override reloc-mask.
+    // [9] 0x158fd0 (body in DDrawSubMgr.cpp): cache the {w,h,bpp} geometry + src
+    // rect. CDDrawSurfacePair inherits this slot (its vtable's [9] holds the same
+    // RVA - the rebase the old note waited for); CDDrawSurfaceChildA overrides it.
     virtual i32 SetGeometry(i32 w, i32 h, i32 bpp); // [9] 0x158fd0
     // [10] 0x159020: SetGeometry with bpp-in-{8,16,24,32} validation (G obj def).
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp); // [10] 0x159020
@@ -114,7 +113,7 @@ public:
     // ~CLoadable.
     virtual ~CDDrawSurfaceChildA() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x159150 (G obj def)
-    virtual i32 Unload() OVERRIDE;     // [7] 0x1591d0 (declared-only)
+    virtual void Unload() OVERRIDE;    // [7] 0x1591d0 (declared-only)
     virtual i32 GetClassId() OVERRIDE; // [8] 0x159180 (declared-only)
     // [9] 0x1644a0 (T obj def): create the display-mode surface + set geometry
     // (the ex "CreateModeSurface_1644a0"; it IS the SetGeometry override).
