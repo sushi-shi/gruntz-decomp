@@ -345,14 +345,16 @@ def cmd_build(args) -> None:
         die("no objdiff report - the build did not produce build/objdiff/report.json.")
 
     # Gate tiers (measured wall-times in docs/build-system.md):
-    #   fast   ~2s  the sub-second honest ratchets an edit trips every time
-    #               (label/tu-order/compgen/data-rva/single-view/view-typedef) - the
-    #               matcher inner loop, replacing the old skip-everything --fast.
-    #   normal ~10s fast + the vtable / class-metadata family (the DEFAULT, per commit).
-    #   full   ~19s everything, incl. the 3 slowest (view_debt, class_sizes,
-    #               vtable_owner) - run from time to time, not on every commit.
+    #   fast   the honest ratchets an edit trips itself: label_style, tu_order,
+    #          compgen_order, data_tu_order, single_view - the matcher inner loop.
+    #   normal fast + the structural-uniqueness (verify_*) + %-regression checks +
+    #          view_typedef (a trivial orchestrator fixup) - the DEFAULT, per commit.
+    #   full   normal + the class/vtable modelling audits + structs regen (the vtable
+    #          family is at 0 and stable, so it only needs re-checking when a class/
+    #          vtable actually changes - run --full before committing such a change)
+    #          + the 3 slowest (view_debt, class_sizes, vtable_owner).
     tier = "full" if getattr(args, "full", False) else (
-        "fast" if getattr(args, "fast", False) else getattr(args, "tier", "normal"))
+        "fast" if getattr(args, "fast", False) else getattr(args, "tier", "full"))
     _ORD = {"fast": 0, "normal": 1, "full": 2}
     req = _ORD[tier]
     gates_t0 = time.monotonic()
@@ -382,8 +384,8 @@ def cmd_build(args) -> None:
     run([sys.executable, "-m", "gruntz.match.gate_selftest"])
     summarize(json.loads(REPORT.read_text()), write=True)  # the ONE writer of the baselines
 
-    # FAST tier - the sub-second honest ratchets an edit trips (label / linker-order /
-    # data-rva / single-view / view-typedef). Run in EVERY tier.
+    # FAST tier - the honest ratchets an edit trips itself (label / linker-order /
+    # data-rva / single-view). Run in EVERY tier. (view_typedef is NORMAL - below.)
     _gate("gruntz.audit.tu_order_check", ["--gate"],
           "tu-order ratchet violated - a function move broke the linker-order "
           "invariant (python -m gruntz.audit.tu_order_check --tu <name>)", "fast")
@@ -396,9 +398,12 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.single_view", ["--ratchet"],
           "single-view ratchet violated - a global is declared with two types/"
           "linkages (python -m gruntz.audit.single_view)", "fast")
+    # view_typedef is NORMAL not fast: a re-introduced alias typedef is a trivial
+    # orchestrator-level fixup (rename to the real class), not something a matcher's
+    # inner loop should carry.
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
-          "class name (python -m gruntz.audit.view_typedef)", "fast")
+          "class name (python -m gruntz.audit.view_typedef)", "normal")
     _gate("gruntz.audit.label_style", ["--gate"],
           "label-style ratchet violated - spell the label canonically "
           "(python -m gruntz.audit.label_style)", "fast")
@@ -445,11 +450,14 @@ def cmd_build(args) -> None:
     # answer at all. This keeps the gates running on every full build (a no-op build must
     # still verify the source invariants) without paying 4.5 min to recompute a file that
     # cannot have changed.
-    from gruntz.cleanliness.class_sizes import _stale_sources
-    if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
-        cmd_structs(argparse.Namespace(tu=[]))
-    else:
-        log("structs.json is current (no source newer) - skipping the layout regen.")
+    # Only the FULL-tier class/vtable gates read structs.json, so regen it only there
+    # (the ~4.5-min-when-stale clang layout dump must not land in a normal commit build).
+    if req >= _ORD["full"]:
+        from gruntz.cleanliness.class_sizes import _stale_sources
+        if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
+            cmd_structs(argparse.Namespace(tu=[]))
+        else:
+            log("structs.json is current (no source newer) - skipping the layout regen.")
 
     # Class-metadata invariants. Every vtable-bearing class should carry a
     # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
@@ -466,30 +474,30 @@ def cmd_build(args) -> None:
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
     _gate("gruntz.cleanliness.vtable_bans", [],
           "vtable-bans: a banned manual-vtable idiom reappeared - model it as real "
-          "virtuals (python -m gruntz.cleanliness.vtable_bans)", "normal")
+          "virtuals (python -m gruntz.cleanliness.vtable_bans)", "full")
     # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
     # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
     # vtable modelling can never drift from the binary. `python -m gruntz.core.vtable_hierarchy --audit`.
     _gate("gruntz.core.vtable_hierarchy", ["--audit"],
           "vtable-audit: source vtable hierarchy does not match the binary - drive "
           "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
-          "(python -m gruntz.core.vtable_hierarchy --audit)", "normal")
+          "(python -m gruntz.core.vtable_hierarchy --audit)", "full")
     # VTBL(name, rva) UNIQUENESS - a HARD bijection assert: every vtable rva is bound by
     # exactly one VTBL() annotation (a multiply-bound rva is a duplicate or a mis-catalog).
     _gate("gruntz.cleanliness.class_vtables", ["--assert-unique"],
           "class-vtables: a vtable rva is bound by more than one VTBL() "
-          "(python -m gruntz.cleanliness.class_vtables --assert-unique)", "normal")
+          "(python -m gruntz.cleanliness.class_vtables --assert-unique)", "full")
     # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
     _gate("gruntz.cleanliness.class_vtables", [],
           "class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
           "DATA_SYMBOL(), dissolve the view, or prove VTBL_ABSENT "
-          "(python -m gruntz.cleanliness.class_vtables)", "normal")
+          "(python -m gruntz.cleanliness.class_vtables)", "full")
     # Vtable COVERAGE: every vtable our analysis finds must be bound in source or catalogued
     # as MFC/CRT in config/library_vtables.csv.
     _gate("gruntz.cleanliness.vtable_coverage", [],
           "vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
           "or add MFC/CRT to config/library_vtables.csv "
-          "(python -m gruntz.cleanliness.vtable_coverage --list)", "normal")
+          "(python -m gruntz.cleanliness.vtable_coverage --list)", "full")
     # Vtable OWNERSHIP: re-derive every VTBL() binding from the image (the ??_7 slot ->
     # scalar-deleting dtor -> ??1 chain). Slowest of the vtable gates -> full.
     _gate("gruntz.cleanliness.vtable_owner", ["--audit"],
@@ -499,7 +507,7 @@ def cmd_build(args) -> None:
     _gate("gruntz.cleanliness.vtable_virtuality", [],
           "vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
           "must be defined and declare a virtual for each slot "
-          "(python -m gruntz.cleanliness.vtable_virtuality --list)", "normal")
+          "(python -m gruntz.cleanliness.vtable_virtuality --list)", "full")
     # Vtable SLOT BINDING: coverage says the vtable is bound; virtuality says the class
     # declares ENOUGH virtuals. Neither joins a SLOT to the body our source puts at its
     # rva - so a body bound under a NON-virtual name (a free fn / Gap_*, or a non-virtual
@@ -512,7 +520,7 @@ def cmd_build(args) -> None:
     _gate("gruntz.cleanliness.vtable_slot_binding", [],
           "vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
           "wrong-class name - wire it to the class's declared virtual "
-          "(python -m gruntz.cleanliness.vtable_slot_binding)", "normal")
+          "(python -m gruntz.cleanliness.vtable_slot_binding)", "full")
     # (the fast tu-order / compgen / data-rva / single-view / view-typedef / label-style
     #  ratchets ran up top - they are in EVERY tier.)
 

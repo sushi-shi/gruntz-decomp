@@ -409,17 +409,19 @@ tier by its measured cost and by how likely a routine edit is to trip it:
 
 | tier | ~wall | what runs | when |
 | --- | --- | --- | --- |
-| **fast** (`--fast`) | ~11s | `gate_selftest` + the sub-second honest ratchets an edit trips every time: `label_style`, `tu_order_check`, `compgen_order`, `data_tu_order`, `single_view`, `view_typedef` | the matcher inner loop |
-| **normal** (default) | ~21s | fast + `verify_*` + the `vtable_*` / `class_vtables` / `class-metadata` family + `structs` regen | per commit |
-| **full** (`--full`) | ~31s | normal + the three slowest: `class_sizes`, `vtable_owner`, `view_debt` | from time to time |
+| **fast** (`--fast`) | ~12s | `gate_selftest` + the honest ratchets an edit trips itself: `label_style`, `tu_order_check`, `compgen_order`, `data_tu_order`, `single_view` | the matcher inner loop |
+| **normal** (default) | ~12s | fast + `verify_*` (structural uniqueness) + the %-regression check + `view_typedef` | per commit |
+| **full** (`--full`) | ~31s | normal + the class/vtable modelling audits (`class_sizes`, `vtable_*`, `class_vtables`) + `structs` regen + `view_debt` | before a class/vtable/view change |
 
 The wall-times are startup-dominated — each gate is a fresh `python -m gruntz.<gate>`
-(~0.7s interpreter+package import); the *work* is sub-second for the ratchets. Fast
-is deliberately the honest ratchets only (a mis-homed function/DATA def, a split view,
-a re-introduced view typedef, a mal-formed label) so a bad edit is caught in the inner
-loop, not at commit. Run `--full` before a commit that touched class layout / vtables /
-views; `view_debt` and `class_sizes` (the ungameable fake-view + size gates) live in
-full because they are the slowest, so a class/view change should be full-verified.
+(~0.7s interpreter+package import); the *work* is sub-second for the ratchets. Fast is
+the ratchets a matcher's own edit can break (a mis-homed function/DATA def, a split
+view, a mal-formed label). `view_typedef` is normal not fast — a re-introduced alias
+typedef is a trivial orchestrator-level rename, not the agent's concern. The whole
+**vtable/class-metadata family is full**, not normal: it reached 0 and is stable, so it
+only needs re-checking when a class or vtable *actually changes* — run `--full` before
+committing such a change. (`structs.json` regen lives in full too, since only those
+gates read it.)
 
 **Build timing.** Every `gruntz build` records its wall-clock — printed as
 `[gruntz] build timing: total Ns (ninja Xs, gates Ys) [tier]` and appended to
