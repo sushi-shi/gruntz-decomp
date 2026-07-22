@@ -47,7 +47,10 @@ public:
     void*
     Dispatch(AmbSoundMapHolder* a1, const char* key, i32 a3, i32 a4, AmbientBox* box, i32 a6);
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
-    virtual void Update(i32 playFlag, i32 pos, i32 kind) OVERRIDE; // slot 3 (0x00c2a0)
+    // 0x00c2a0 is NOT the slot-3 virtual (no retail vtable holds it) - a plain
+    // random-cue driver, self-called qualified from the Update override.
+    void PlayRandom(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
+    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 - 0xcb30 (ex Step)
     // The positional variant's entry points (same CAmbientSound base layout, but
     // m_40/m_44 hold an anchor position instead of the interval roller):
     void
@@ -60,12 +63,10 @@ public:
         i32 a5
     );
     i32 SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5);
-    void UpdateAt(i32 x, i32 y, i32 force); // 0x00c5b0  position-driven volume/pan
     void StopPos(i32 obj);                  // 0x00c9d0  request stop via slot 2
     i32 TickObj(i32 obj);                   // 0x00ca00  per-object placement tick
 
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
-    void Step(i32 x, i32 y, i32 force); // 0x00cb30
     // Inline leaf dtor: inlines the (inline) base ~CAmbientSound, collapsing to the
     // same bytes as ~CAmbientSound/~CAmbientPosSound (stamp ??_7CUserBase, clear
     // m_voice/m_listNode). The OOL COMDAT is at 0xbb40 (Ghidra-mislabeled as the ??0

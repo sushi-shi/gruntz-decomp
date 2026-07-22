@@ -5,8 +5,6 @@
 # with `python -m gruntz.cleanliness.vtable_slot_binding --update`.
 kind	vtable_rva	class	slot	body_rva	symbol	unit
 WIRING	0x1e7004	CActionArea	1	0x008600	?Serialize@CPulseHighlight@@QAEHPAVCFileMemBase@@HHH@Z	actionarea
-WIRING	0x1e7124	CAmbientPosSound	3	0x00c5b0	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	worldsoundset
-WIRING	0x1e713c	CRandomAmbientSound	3	0x00cb30	?Step@CRandomAmbientSound@@QAEXHHH@Z	worldsoundset
 MISBOUND	0x1e72b4	CUFO	2	0x0133b0	?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeId@@XZ	gruntvoice
 WIRING	0x1e7324	CRainCloud	1	0x0b4cb0	?Method_b4cb0@CUFO@@QAEHPAXHHH@Z	ufo
 WIRING	0x1e7324	CRainCloud	20	0x0b4640	?ArmStrike@CPathHazard@@QAEHHH@Z	pathhazard

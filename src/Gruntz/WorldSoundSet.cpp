@@ -512,7 +512,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 }
 
 // ---------------------------------------------------------------------------
-// CRandomAmbientSound::Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind):
+// CRandomAmbientSound::PlayRandom (0x00c2a0, __thiscall, 3 args playFlag/pos/kind):
 // the play/stop driver. Gated on the mgr handle, the playing flag, and the active
 // level (g_gameReg->m_soundEnabled and g_gameReg->m_inputState->m_active). On play it
 // reseeds the voice (ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA
@@ -530,7 +530,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // (the /100 magic-division family); no source spelling flips the ebp pin. See
 // zero-register-pinning.md.
 RVA(0x0000c2a0, 0x19e)
-void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
+void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
     if (m_voice == 0) {
         return;
     }
@@ -655,7 +655,7 @@ i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPo
 }
 
 // ---------------------------------------------------------------------------
-// UpdateAt (0x00c5b0, __thiscall, 3 args x/y/force): the positional play driver.
+// CAmbientPosSound::Update (0x00c5b0, slot 3; ex UpdateAt): the positional play driver.
 // Compute the listener->anchor distance (|m_40-x|, |m_44-y|); if either axis is
 // past 0x280 stop the voice. Otherwise derive a falloff volume (100 - dist/12,
 // clamped) and a pan (dx/4, clamped, signed by which side of m_40 the listener
@@ -663,7 +663,7 @@ i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPo
 // already playing (and the active level is live) reseed and re-set the volume,
 // marking the voice playing.
 RVA(0x0000c5b0, 0x1df)
-void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
+void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     i32 dx = abs(m_40 - x); // branchless cdq/xor/sub (MSVC abs intrinsic), not jns/neg
     i32 dy = abs(m_44 - y);
     i32 dist2 = dx * dx + dy * dy;
@@ -883,7 +883,7 @@ void SpawnPosSound(PosSoundObj* obj) {
 }
 
 // ---------------------------------------------------------------------------
-// CRandomAmbientSound::Step (0x00cb30, __thiscall, 3 args x/y/force): test the
+// CRandomAmbientSound::Update (0x00cb30, slot 3; ex Step): test the
 // listener position against the two visibility boxes; if it left both (and we are
 // playing) stop the voice. Otherwise drain the rolled countdown by the frame
 // delta, and on expiry flip the roller phase, roll a fresh interval over the
@@ -897,7 +897,7 @@ void SpawnPosSound(PosSoundObj* obj) {
 // arms computing span=hi-lo+1 via `lea ebx,[eax+1]; test` (retail, span kept in a fresh
 // reg for the lo:hi coin-flip) vs cl's `inc edi` - pure register-pressure/scheduling.
 RVA(0x0000cb30, 0x168)
-void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
+void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     i32 inBox = 0;
     i32 b1 = m_box1.left;
     if (b1 == static_cast<i32>(0x80000000)) {
@@ -912,7 +912,7 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
 
     if (inBox == 0) {
         if (m_isPlaying != 0 && m_voice != 0) {
-            CRandomAmbientSound::Update(0, 0x3e8, 1); // qualified -> direct (non-virtual) call
+            PlayRandom(0, 0x3e8, 1); // direct (non-virtual) call
             m_isPlaying = 0;
         }
         m_phase = 0;

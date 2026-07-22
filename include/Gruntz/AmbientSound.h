@@ -99,7 +99,7 @@ public:
     // COMDAT (0xb940) is pinned by RVA_COMPGEN in WorldSoundSet.cpp. m_40/m_44 are
     // plain ints (no cleanup).
     virtual ~CAmbientPosSound() OVERRIDE {}               // slot 0
-    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
+    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 - 0xc5b0 (ex CRandomAmbientSound::UpdateAt; position-driven volume/pan)
 
     i32 m_40; // +0x40  anchor position x (seeded by Init6/Init5; role by analogy
     i32 m_44; // +0x44  anchor position y  with CRandomAmbientSound's +0x40/+0x44)
