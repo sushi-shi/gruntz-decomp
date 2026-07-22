@@ -9,9 +9,6 @@ MISBOUND	0x1e72b4	CUFO	2	0x0133b0	?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeId@
 WIRING	0x1e7324	CRainCloud	1	0x0b4cb0	?Method_b4cb0@CUFO@@QAEHPAXHHH@Z	ufo
 WIRING	0x1e7324	CRainCloud	20	0x0b4640	?ArmStrike@CPathHazard@@QAEHHH@Z	pathhazard
 WIRING	0x1e798c	CProjectile	1	0x0e0d40	?Load@CProjLoadRec@@QAEHPAVCFileMemBase@@HHPAUCGameObject@@@Z	projloadrec
-WIRING	0x1e9f0c	CDemo	42	0x03c0e0	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	demo
-WIRING	0x1e9fe4	CMulti	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
-WIRING	0x1ea0bc	CPlay	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
 WIRING	0x1ea8ec	CMultiStartDlg	51	0x0c4c00	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 WIRING	0x1eaecc	CTileExclusiveTriggerSwitchLogic	2	0x112080	?Broadcast@CTileTriggerSwitchLogic@@QAEHXZ	tileswitchlogic
 WIRING	0x1efbe8	CDDrawWorker	7	0x151eb0	?DeleteAll@CDDrawWorker@@QAEXXZ	wwdgameobject

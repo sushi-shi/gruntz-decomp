@@ -142,7 +142,7 @@ public:
     virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20
     virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
-    virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
+    virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) - 0xdbc80, defined in WorldLevelPath.cpp
 
     // (the m_4w() CWorld-cast accessor is GONE - CState::m_4 is the typed
     // CGruntzMgr* already; consumers deref it directly.)

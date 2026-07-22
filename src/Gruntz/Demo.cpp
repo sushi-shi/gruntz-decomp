@@ -15,7 +15,8 @@
 #include <Gruntz/SerialRecords.h>     // CTriRecord
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
-#include <Gruntz/WorldState.h>        // canonical CWorldState + LevelMgr
+#include <Gruntz/GameLevel.h>         // m_world->m_level (CGameLevel; ex-CWorldState view dissolved)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Globals.h>
 #include <Ints.h>
 #include <stdlib.h> // rand (0x11fee0, the engine LCG)
@@ -62,19 +63,19 @@ i32 CDemoSetup::SetupDemoActors() {
 class CParseSource;
 
 RVA(0x0003c0e0, 0xfb)
-i32 CWorldState::BuildWorldLevelKey(i32 unused) {
-    m_0c->m_24->ReleaseChildren();
+i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldLevelKey)
+    m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    CParseSource* node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+    CParseSource* node = m_levelBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
     if (node == 0) {
         return 0;
     }
-    if (m_0c->m_24->LoadFromSource(node) == 0) {
+    if (m_world->m_level->LoadFromSource(node) == 0) {
         return 0;
     }
-    m_0c->m_24->NotifyAllPlanes();
-    m_0c->m_24->m_08 |= 4;
+    m_world->m_level->NotifyAllPlanes();
+    m_world->m_level->m_08 |= 4;
     return 1;
 }
 

@@ -7,40 +7,43 @@
 
 #include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/16/17 + non-virtuals)
-#include <Gruntz/WorldState.h> // canonical CWorldState + LevelMgr
+#include <Gruntz/Play.h>            // CPlay - slot-42 owner (the ex-CWorldState view is dissolved)
+#include <Gruntz/GameLevel.h>       // m_world->m_level (CGameLevel)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/GruntzMgr.h>       // m_mgr fields (world file, battlez/multi gates)
 
 class CParseSource;
 
 RVA(0x000dbc80, 0x309)
-i32 CWorldState::BuildWorldLevelPath(i32 unused) {
-    m_0c->m_24->ReleaseChildren();
-    if (m_4->m_strWorldFile.GetLength() != 0) {
-        if (m_4->m_128 != 0) {
-            CString key = "BATTLEZ\\" + m_4->GetWorldFileName();
-            CParseSource* node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+i32 CPlay::BuildWorldLevelPath(i32 unused) {
+    m_world->m_level->ReleaseChildren();
+    if (m_mgr->m_strWorldFile.GetLength() != 0) {
+        if (m_mgr->m_128 != 0) {
+            CString key = "BATTLEZ\\" + m_mgr->GetWorldFileName();
+            CParseSource* node = m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadFromSource(node) == 0) {
+            if (m_world->m_level->LoadFromSource(node) == 0) {
                 return 0;
             }
-        } else if (m_4->m_12c != 0) {
-            CString key = "MULTI\\" + m_4->GetWorldFileName();
-            CParseSource* node = m_34->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+        } else if (m_mgr->m_12c != 0) {
+            CString key = "MULTI\\" + m_mgr->GetWorldFileName();
+            CParseSource* node = m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadFromSource(node) == 0) {
+            if (m_world->m_level->LoadFromSource(node) == 0) {
                 return 0;
             }
         } else {
-            if (m_0c->m_24->LoadFromFile(m_4->GetWorldFileName()) == 0) {
+            if (m_world->m_level->LoadFromFile(m_mgr->GetWorldFileName()) == 0) {
                 return 0;
             }
         }
     } else {
         CString key;
-        i32 sel = m_1c;
+        i32 sel = m_levelIndex;
         if (g_levelBias100 != 0) {
             sel += 0x64;
         }
@@ -49,16 +52,16 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        CParseSource* node = m_28->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+        CParseSource* node = m_levelBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
         if (node == 0) {
             return 0;
         }
-        if (m_0c->m_24->LoadFromSource(node) == 0) {
+        if (m_world->m_level->LoadFromSource(node) == 0) {
             return 0;
         }
     }
-    m_0c->m_24->NotifyAllPlanes();
-    m_0c->m_24->m_08 |= 4;
-    g_backView = m_0c->m_24->FindPlaneByName("BACK");
+    m_world->m_level->NotifyAllPlanes();
+    m_world->m_level->m_08 |= 4;
+    g_backView = m_world->m_level->FindPlaneByName("BACK");
     return 1;
 }
