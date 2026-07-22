@@ -5,7 +5,6 @@
 ??0CDDSurface@@QAE@XZ
 ??0CDDrawSurfacePair@@QAE@HHH@Z
 ??0CGruntCellRec@@QAE@XZ
-??0CLevelSyncChild@@QAE@XZ
 ??0CStringArray@@QAE@XZ
 ??0RezElem40@@QAE@XZ
 ??1CBattlezDlgColors@@UAE@XZ
@@ -56,7 +55,6 @@
 ?Check@CInGameIcon@@QAEHXZ
 ?CheckExePath@@YAHPADHPAX@Z
 ?CheckLevelActive@CGruntzMgr@@QAEHXZ
-?ChildSync@CLevelSync@@QAEHPAVCFileMemBase@@HHH@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?ChipGrinderFinishStep@CStatusBarMgr@@QAEXXZ
 ?ChipNotify27f7@CStatusBarMgr@@QAEXXZ
@@ -125,7 +123,7 @@
 ?FallItemTick@CStatusBarMgr@@QAEHXZ
 ?Feed@StreamFeeder@@UAEHPAXIPAI0I1@Z
 ?FileExists@@YAHPBD@Z
-?Finalize@CLevelSync@@QAEXXZ
+?Finalize@CStatusBarMgr@@QAEXXZ
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
 ?FinishAttackPowered@CGrunt@@QAEXXZ
 ?FinishReset16ea@CStatusBarMgr@@QAEXXZ
@@ -346,12 +344,12 @@
 ?PlaneLoadVia@@YGHPAX@Z
 ?PlaneSaveVia@@YGHPAX@Z
 ?PlaySound3_136550@@YGHHHH@Z
-?PostBlockFixup@CLevelSync@@QAEXXZ
+?PostBlockFixup@CStatusBarMgr@@QAEXXZ
 ?PostCellCommand6@CTriggerMgr@@QAEXHH@Z
 ?PostCellCommand7@CTriggerMgr@@QAEXHH@Z
 ?PostHud@CPlay@@QAEXH@Z
-?PreReadValidate@CLevelSync@@QAEHPAVCFileMemBase@@@Z
-?PreWriteValidate@CLevelSync@@QAEHPAVCFileMemBase@@@Z
+?PreReadValidate@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z
+?PreWriteValidate@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z
 ?PrepCmd4@CGruntzMgr@@QAEHH@Z
 ?PrepCmd7@CGruntzMgr@@QAEHH@Z
 ?PrepMultiReset@CStatusBarMgr@@QAEXXZ
@@ -491,13 +489,14 @@
 ?Sub1@CCreditsState@@QAEXXZ
 ?Sub2@CCreditsState@@QAEXXZ
 ?Sub3@CCreditsState@@QAEXXZ
-?SubResetA@CLevelSync@@QAEXXZ
-?SubResetB@CLevelSync@@QAEXXZ
+?SubResetA@CStatusBarMgr@@QAEXXZ
+?SubResetB@CStatusBarMgr@@QAEXXZ
 ?SymBindRecord@@YAXPAXPADH@Z
 ?SymBuildLeaf@@YAXPAVCSymParser@@PAX1@Z
 ?Sync16db@CMultiStartDlg@@QAEHH@Z
 ?Sync227a@CMultiStartDlg@@QAEXXZ
 ?Sync38d2@CMultiStartDlg@@QAEHXZ
+?Sync@CWarpStoneFly@@QAEHPAVCFileMemBase@@HHH@Z
 ?SyncColour3a5d@CMultiStartDlg@@QAEXHH@Z
 ?TBombLogic_e1e60@@YAHXZ
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
@@ -510,7 +509,6 @@
 ?Tick@CGruntSpawnConfig@@QAEXXZ
 ?TickStateMgrs@CMulti@@UAEXXZ
 ?Tm_DestroyArray@@YAXPAXHH0@Z
-?Toggle@CStatusBarMgr@@QAEXHH@Z
 ?ToobLogic_114bc0@@YAHXZ
 ?Trigger@CBrickz@@QAEHXZ
 ?Type13Check@CGrunt@@QAEHXZ

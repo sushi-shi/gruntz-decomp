@@ -327,7 +327,7 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if ((reinterpret_cast<CFixedPtrArray32*>(node))->FillFrom(reinterpret_cast<void**>(count), a2, a3) == 0) {
+    if ((reinterpret_cast<CFixedPtrArray32*>(node))->FillFrom(reinterpret_cast<CInputDevBase**>(count), a2, a3) == 0) {
         if (node != 0) {
             (reinterpret_cast<CFixedPtrArray32*>(node))->Clear();
             operator delete(node);
@@ -1123,7 +1123,7 @@ i32 CDeviceConfigC::Poll() {
 // (reloaded each iter). Not flipped by pointer-walk / src[i] indexing / cnt-pin /
 // do-while variants. ~85%; Clear + Add are 100%.
 RVA(0x00134be0, 0x7e)
-i32 CFixedPtrArray32::FillFrom(void** src, i32 n, i32 unused) {
+i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     i32 i = 0;
     if (!src) {
         return 0;
@@ -1136,7 +1136,7 @@ i32 CFixedPtrArray32::FillFrom(void** src, i32 n, i32 unused) {
     for (i32 j = 0; j < 32; j++) {
         m_items[j] = 0;
     }
-    void** p = src;
+    CInputDevBase** p = src;
     for (; i < n; i++, p++) {
         if (*p) {
             if (!Add(*p)) {
@@ -1156,7 +1156,7 @@ void CFixedPtrArray32::Clear() {
 }
 
 RVA(0x00134c80, 0x24)
-i32 CFixedPtrArray32::Add(void* item) {
+i32 CFixedPtrArray32::Add(CInputDevBase* item) {
     if (m_count >= 32) {
         return 0;
     }

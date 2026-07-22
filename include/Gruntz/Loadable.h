@@ -10,19 +10,27 @@ enum LoadableClassId {
     CLASSID_WORKERNODE = 8,   // CDDrawWorkerBase::GetClassId @0x157210 (mov eax,8)
     CLASSID_IMAGE = 10,       // CImage::GetClassId @0xd5de0 (mov eax,0xa)
     CLASSID_WORKER = 14,      // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
+    // The DDraw sub-manager kinds (<Gruntz/StateId.h> still spells the not-yet-
+    // rebased holdouts' ids in the SAME one retail id space - slot 8 is
+    // GetClassId family-wide).
+    CLASSID_WORKERLIST = 0x11, // CDDrawWorkerList::GetClassId @0x156f20 (ex STATE_WORKERLIST)
     CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
-    // Id 5 = the serialize-map REFERENT kind: the serialize Read probes
+    // Id 5 = CWwdGameObjectA's OWN class id (the CreateSprite kind): its slot 8
+    // @0x15b760 is `mov eax,5; ret` (byte-proven). The serialize Read probes
     // (CSpotLight::SerializeMove focus resolve, CPlay::SerializeMove cell-entry
-    // resolve) keep a deserialized id->object only when GetClassId()==5. Named by
-    // role - the owning CWwdGameObject* kind is not yet recovered, but the value +
-    // role are proven by both probe sites (matching-neutral: same immediate).
+    // resolve, CStatusBarMgr::Deserialize) keep a deserialized id->object only
+    // when GetClassId()==5 - i.e. only A-kind sprites.
     CLASSID_SERIALREF = 5,
     // The wide game-object kinds (CWwdGameObject* family; slot-8 bodies are
     // `mov eax,<id>; ret` at the cited RVAs).
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
     CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObject::GetClassId @0x15bce0
-    CLASSID_WWDOBJ_A = 0x1c, // CWwdGameObjectA::GetClassId @0x15b760 (the CreateSprite kind)
+    // 0x1c: NO slot-8 body anywhere returns 0x1c (exhaustive .text scan) - the
+    // old "CLASSID_WWDOBJ_A = 0x1c" claim was a doc bug (A's id IS 5, above).
+    // The one retail compare (WriteSnapshot @0x151c4e, `cmp eax,0x1c`) can never
+    // be true for family receivers - a shipped dead branch; keep the immediate.
+    CLASSID_SNAPSHOT_STALE = 0x1c,
 };
 
 class CLoadable : public CWapObj {

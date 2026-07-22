@@ -8,7 +8,8 @@
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
-#include <Gruntz/GameMode.h>     // AttractActor/AttractActorList/g_actorList/GM_SimpleAnim (Render spine)
+#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/GameMode.h>     // g_actorList (poll list) + GM_SimpleAnim (Render spine)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the m_c holder)
@@ -112,18 +113,18 @@ i32 CSplashState::Render() {
     }
 
     {
-        AttractActorList* L = g_actorList;
+        CFixedPtrArray32* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
-            L->m_data[i]->Update();
+            L->m_items[i]->Poll();
         }
     }
 
     {
-        AttractActorList* L = g_actorList;
+        CFixedPtrArray32* L = g_actorList;
         i32 n = L->m_count;
         i32 j;
         for (j = 0; j < n; j++) {
-            if (L->m_data[j]->m_2ac & 1) {
+            if (L->m_items[j]->m_currentKeys & 1) {
                 goto post;
             }
         }

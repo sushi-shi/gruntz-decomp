@@ -198,7 +198,7 @@ public:
         m_194 = 0;
         CGameObject::Unload(); // the E pass (0x15b5d0 content)
     }
-    virtual i32 GetClassId() OVERRIDE;                            // slot 8  @0x15b760 (0x1c)
+    virtual i32 GetClassId() OVERRIDE; // slot 8  @0x15b760 (5 = CLASSID_SERIALREF)
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660

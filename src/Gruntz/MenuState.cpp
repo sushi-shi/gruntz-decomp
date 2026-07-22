@@ -1,4 +1,5 @@
 #include <Gruntz/MenuState.h> // C-linkage decls for the ex-wrapped defs
+#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
 #include <Gruntz/GameMode.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/MenuVersion.h> // g_versionMajor/Mid/Minor (owner-only decl header)
@@ -24,7 +25,7 @@
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 DATA(0x00245574)
-AttractActorList* g_actorList = 0;
+CFixedPtrArray32* g_actorList = 0;
 DATA(0x00245cc8)
 CGMVerRect g_versionRect; // .bss - zero at load
 
@@ -232,11 +233,11 @@ i32 CMenuState::FrameSlot28(i32) {
 
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
-    AttractActorList* L = g_actorList;
+    CFixedPtrArray32* L = g_actorList;
 
     // per-entity Update pass (re-reads count each iter, like the target)
     for (i32 i = 0; i < L->m_count; i++) {
-        L->m_data[i]->Update();
+        L->m_items[i]->Poll();
     }
 
     // six prioritized entity-flag scans, each firing a distinct UI handler
@@ -244,37 +245,37 @@ i32 CMenuState::Render() {
     L = g_actorList;
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x80000000) {
+        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x80000000) {
             m_1b4->OnFlag80000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x40000000) {
+        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x40000000) {
             m_1b4->OnFlag40000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x20000000) {
+        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x20000000) {
             m_1b4->OnFlag20000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x10000000) {
+        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x10000000) {
             m_1b4->OnFlag10000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_data[c]->m_2ac & 0x3) {
+        if (L->m_items[c]->m_currentKeys & 0x3) {
             m_1b4->OnFlag00000003();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_data[c]->m_2ac & 0x100) {
+        if (L->m_items[c]->m_currentKeys & 0x100) {
             if (!m_1b4->OnFlag00000100()) {
                 PostMessageA(Owner(this)->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
             }

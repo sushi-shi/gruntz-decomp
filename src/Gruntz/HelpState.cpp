@@ -13,7 +13,8 @@
 #include <Gruntz/Attract.h>      // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Gruntz/AttractActor.h> // the shared AttractActor/AttractActorList + g_actorList
+#include <Gruntz/FixedPtrArray32.h>     // the game-controller poll list (g_actorList)
+#include <DinMgr2/DirectInputMgr2.h>    // CInputDevBase (Poll/m_currentKeys press-edge flags)
 #include <rva.h>
 
 DATA(0x002111b0)
@@ -89,15 +90,15 @@ i32 CHelpState::Render() {
         res->PurgeVoiceList(-1);
     }
 
-    AttractActorList* list = g_actorList;
+    CFixedPtrArray32* list = g_actorList;
     i32 i;
     for (i = 0; i < list->m_count; i++) {
-        list->m_data[i]->Update();
+        list->m_items[i]->Poll();
     }
 
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
-        if (g_actorList->m_data[i]->m_2ac & 0xffffff) {
+        if (g_actorList->m_items[i]->m_currentKeys & 0xffffff) {
             PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
             m_mgr->m_owner->m_running = 0;
             return 1;

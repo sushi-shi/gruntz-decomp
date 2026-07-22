@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
+#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
 #include <Gruntz/GameMode.h>              // CCreditsState : CState (ex CGMOwner/CGMSound views dissolved to CGruntzMgr/CGruntzSoundZ)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
 #include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
@@ -151,18 +152,18 @@ i32 CCreditsState::Render() {
 
     // per-entity Update pass
     {
-        AttractActorList* L = g_actorList;
+        CFixedPtrArray32* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
-            L->m_data[i]->Update();
+            L->m_items[i]->Poll();
         }
     }
 
     // message scan: first flagged entity posts a WM_COMMAND
     {
-        AttractActorList* L = g_actorList;
+        CFixedPtrArray32* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_data[j]->m_2ac & 0xffffff) {
+            if (L->m_items[j]->m_currentKeys & 0xffffff) {
                 // wParam = (m_24==5) ? 0x8023 : 0x8027. The init+conditional-override
                 // keeps the cmp+jne branch (docs body comment in the credits Render).
                 u32 wp = 0x8027;

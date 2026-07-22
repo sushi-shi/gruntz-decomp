@@ -7,7 +7,8 @@
 #include <Gruntz/Attract.h>
 #include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / g_gameReg (+ SoundCue chain: DirectSoundMgr/SoundDevice/SoundStream)
-#include <Gruntz/AttractActor.h>       // the shared per-frame g_actorList view
+#include <Gruntz/FixedPtrArray32.h>    // the game-controller poll list (g_actorList)
+#include <DinMgr2/DirectInputMgr2.h>   // CInputDevBase (Poll/ResetState/m_currentKeys)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Vslot09 BlitPage)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
@@ -141,9 +142,9 @@ i32 CAttract::Vslot09(i32 arg) {
         m_idleTimer = 0x1f40;
     }
 
-    AttractActorList* list = g_actorList;
+    CFixedPtrArray32* list = g_actorList;
     for (i32 i = 0; i < list->m_count; i++) {
-        list->m_data[i]->Vslot05();
+        list->m_items[i]->ResetState();
     }
     return 1;
 }
@@ -212,15 +213,15 @@ i32 CAttract::Render() {
         m_idleTimer -= g_frameDelta;
     }
 
-    AttractActorList* list = g_actorList;
+    CFixedPtrArray32* list = g_actorList;
     i32 i;
     for (i = 0; i < list->m_count; i++) {
-        list->m_data[i]->Update();
+        list->m_items[i]->Poll();
     }
 
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
-        if (g_actorList->m_data[i]->m_2ac & 0x100) {
+        if (g_actorList->m_items[i]->m_currentKeys & 0x100) {
             ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             return 1;
         }

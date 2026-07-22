@@ -44,7 +44,6 @@
 #include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan (m_c->m_soundRegistry) + SoundStream (m_2c; Vslot15 quiesce stop)
 #include <DDrawMgr/DDSurface.h>          // the real CDDSurface (render-flip surface: Fill/Restore)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: Serialize/FilterList2)
-#include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
 #include <Gruntz/UserLogic.h>            // CGameObject/AnimWorkerObj
 
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -1543,8 +1542,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     i32* p;
     p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!(reinterpret_cast<CLevelSync*>(m_guts))
-             ->Sync(ar, mode, a2, a3)) { // guts child-sync @0x1084d0
+    if (!m_guts->Sync(ar, mode, a2, a3)) { // the status-bar sync driver @0x1084d0
         return 0;
     }
     if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry

@@ -4,7 +4,7 @@
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
-#include <Image/Image.h>                  // CFileImageElement / CFileImageSrc
+#include <Image/Image.h>                  // CFileImageSurface / the image-source classes
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>
@@ -139,8 +139,12 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
+    // m_elements holds owned child CDDSurface wrappers of the attached-surface
+    // chain (born in EnumSurfacesCallback 0x13e9a0, installed by ReloadImageCache
+    // 0x13e8f0 - each is new(0xc0) + the ??_7CDDSurface stamp). Polymorphic
+    // delete = the same slot-0 ??_G dispatch (ex the CFileImageElement facet).
     for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
-        CFileImageElement* e = static_cast<CFileImageElement*>(m_elements[i]);
+        CDDSurface* e = static_cast<CDDSurface*>(m_elements[i]);
         delete e;
     }
     m_elements.SetSize(0, -1);

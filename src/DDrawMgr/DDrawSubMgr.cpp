@@ -211,11 +211,11 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
 }
 
 RVA(0x00156f00, 0x16)
-i32 CDDrawWorkerList::IsReady() {
-    if (m_pSurfaceMgr == 0) {
+i32 CDDrawWorkerList::IsLoaded() {
+    if (m_0c == 0) {
         goto fail;
     }
-    if (m_status != -1) {
+    if (m_04 != -1) {
         return 1;
     }
 
@@ -224,24 +224,24 @@ fail:
 }
 
 RVA(0x00156f20, 0x6)
-StateId CDDrawWorkerList::GetStateId() {
-    return STATE_WORKERLIST; // 0x11
+i32 CDDrawWorkerList::GetClassId() {
+    return CLASSID_WORKERLIST; // 0x11
 }
 
 RVA(0x00156f50, 0x68)
 CDDrawWorkerList::~CDDrawWorkerList() {
-    DestroyWorkers();
-    // implicit: ~m_workers (CObList) then ~WorkerListSibBase (field resets + base restamp).
+    Unload();
+    // implicit: ~m_workers (CObList) then ~CLoadable (field resets + base restamp).
 }
 
 RVA(0x00156fc0, 0x6)
-i32 CDDrawWorkerList::IsReadyPredicate() {
+i32 CDDrawWorkerList::IsReady() {
     return 1;
 }
 
 RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
-    CDDrawWorkerA* w = new CDDrawWorkerA(m_pSurfaceMgr);
+    CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -297,7 +297,7 @@ i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x00157150, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
+    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceBound(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
@@ -384,7 +384,7 @@ void CDDrawWorkerBase::Unload() {
 
 RVA(0x00157330, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4, i32 addHead) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
+    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceFrame(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
@@ -401,7 +401,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4
 
 RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
+    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             delete w;

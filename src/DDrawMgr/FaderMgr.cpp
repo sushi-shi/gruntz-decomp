@@ -34,10 +34,10 @@ CFaderMgr::~CFaderMgr() {
 }
 
 RVA(0x0017d980, 0x1f)
-i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
+i32 CFaderMgr::SetConfig(i32 a, i32 b, CDDrawPtrCollections* pool) {
     m_timerArgA = a;
     m_timerArgB = b;
-    m_sharedSet2cArg = c;
+    m_sharedPtrColl = pool;
     m_active = 1;
     return 1;
 }
@@ -51,7 +51,7 @@ void CFaderMgr::FreeAll() {
 // ===========================================================================
 // 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's type-id
 // against nFaderType, allocate the concrete subtype, prime it (SetTimers from
-// m_timerArgA/m_timerArgB, Set2c from m_sharedSet2cArg), default- or copy-init it, validate, and append it
+// m_timerArgA/m_timerArgB, Set2c from m_sharedPtrColl), default- or copy-init it, validate, and append it
 // to the array - tracing + deleting the fader on any failure. /GX EH frame; the
 // SetAtGrow(GetSize(), pNew) append is inlined.
 // @early-stop
@@ -71,7 +71,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderShape* f = new CFaderShape;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT1 init;
                 if (!f->ApplyInit(&init)) {
@@ -91,7 +91,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderLight* f = new CFaderLight;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT2 init;
                 if (!f->ApplyInit(&init)) {
@@ -111,7 +111,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderSine* f = new CFaderSine;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT3 init;
                 if (!f->ApplyInit(&init)) {
@@ -131,7 +131,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderRadial* f = new CFaderRadial;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT4 init;
                 if (!f->ApplyInit(&init)) {
@@ -151,7 +151,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderFlat* f = new CFaderFlat;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT5 init;
                 if (!f->ApplyInit(&init)) {
@@ -171,7 +171,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
             CFaderMesh* f = new CFaderMesh;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedSet2cArg);
+            f->Set2c(m_sharedPtrColl);
             if (!pInit) {
                 CFxModeT6 init;
                 if (!f->ApplyInit(&init)) {

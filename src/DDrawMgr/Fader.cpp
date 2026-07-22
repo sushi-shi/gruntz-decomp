@@ -3,7 +3,6 @@
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
-#include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
 #include <Ints.h>
 #include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
 #include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
@@ -52,8 +51,8 @@ void CFader::SetTimers(i32 a, i32 b) {
 }
 
 RVA(0x0017e780, 0xa)
-void CFader::Set2c(i32 v) {
-    m_set2cArg = v;
+void CFader::Set2c(CDDrawPtrCollections* pool) {
+    m_ptrColl = pool;
 }
 
 RVA(0x0017e7b0, 0x9)
@@ -469,8 +468,7 @@ i32 CFaderLight::GetFrameCount() {
 RVA(0x00181660, 0x40)
 void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_lightGate != 0) {
-        CDDrawPtrCollections* pool = reinterpret_cast<CDDrawPtrCollections*>(m_set2cArg); // +0x2c dual-role pool slot
-        CDDSurface* h = pool->MakeAndAddB(m_surfWidth, m_surfHeight, 0, 0, -1);
+        CDDSurface* h = m_ptrColl->MakeAndAddB(m_surfWidth, m_surfHeight, 0, 0, -1);
         m_overlay = h;
         h->Blt(m_surface);
     }
@@ -479,8 +477,7 @@ void CFaderLight::BeginFade() {
 RVA(0x001816a0, 0x1c)
 void CFaderLight::EndFade() {
     if (m_overlay) {
-        CDDrawPtrCollections* pool = reinterpret_cast<CDDrawPtrCollections*>(m_set2cArg);
-        pool->RemoveItemA(m_overlay);
+        m_ptrColl->RemoveItemA(m_overlay);
         m_overlay = 0;
     }
 }
@@ -517,10 +514,10 @@ CFaderShape::CFaderShape() {
 }
 
 // ===========================================================================
-// 0x17e540 - CFader::RunFadeStepped(step, lead, notify): the stepped counterpart
+// 0x17e540 - CFader::RunFadeStepped(step, lead, vsync): the stepped counterpart
 // of RunFade. Primes frame 0, busy-waits the lead-in, then renders every `step`-th
 // frame from 1..count back-to-back (no elapsed/duration mapping), poking the
-// m_set2cArg fade sink + RenderFrame(frame) each step. Finalizes RenderFrame(count)/EndFade() and records
+// optional vsync gate + RenderFrame(frame) each step. Finalizes RenderFrame(count)/EndFade() and records
 // the achieved frame rate in m_34. NON-EH (base /O2) frame.
 // ===========================================================================
 // @early-stop
@@ -533,7 +530,7 @@ CFaderShape::CFaderShape() {
 // all guards, and the m_34 frame-rate store are byte-exact; the reg-swap + fp-spill
 // schedule are not source-steerable (docs/patterns/x87-fp-stack-schedule.md).
 RVA(0x0017e540, 0xd8)
-void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
+void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();
     if (count < 1) {
         return;
@@ -546,9 +543,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
     i32 frame = 1;
     if (count >= 1) {
         do {
-            if (notify && m_set2cArg) {
-                IFadeSink* o = *reinterpret_cast<IFadeSink**>(m_set2cArg);
-                o->FadeNotify(1, 0);
+            if (vsync && m_ptrColl) {
+                m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
             }
             RenderFrame(frame);
             loops++;
@@ -575,7 +571,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
 // ordering of the three float decls pins the fxch batching. Loop body, guards, sink
 // COM-call and the m_34 frame-rate store (0.001f const) are byte-exact.
 RVA(0x0017e620, 0x13b)
-void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
+void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 prev = 0;
     i32 frame = 0;
     i32 count = GetFrameCount();
@@ -594,9 +590,8 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
         do {
             frame = static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
-                if (notify && m_set2cArg) {
-                    IFadeSink* o = *reinterpret_cast<IFadeSink**>(m_set2cArg);
-                    o->FadeNotify(1, 0);
+                if (vsync && m_ptrColl) {
+                    m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
                 }
                 RenderFrame(frame);
                 loops++;

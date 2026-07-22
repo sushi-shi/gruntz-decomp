@@ -5,7 +5,8 @@
 #include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
-#include <Gruntz/LevelSync.h>           // CLevelSync + its referents
+#include <Gruntz/SBI_ImageSetAni.h>     // CSBI_StatzTabArrow (m_statObj; SetDirection/Alt)
+#include <Gruntz/SBI_WarlordHead.h>     // CSBI_WarlordHead (m_warlordHead)
 #include <DDrawMgr/DDrawChildGroup.h>   // real CDDrawChildGroup::CreateSprite (0x1597b0); 0x104dd0
 #include <DDrawMgr/DDrawWorker.h>       // CDDrawWorker - the main-bar strip (ex CSbiMainBarCfg)
 #include <Image/CImage.h>               // CImage - the strip rows (anchors)
@@ -372,7 +373,7 @@ void CStatusBarMgr::NotifyAllSlots() {
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 
 RVA(0x001084d0, 0x96c)
-i32 CLevelSync::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
+i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     if (s == 0) {
         return 0;
     }
@@ -386,22 +387,22 @@ i32 CLevelSync::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
         }
     } else if (op == 8) {
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
-        if (m[0] == 0) {
+        if (m_position == 0) {
             SubResetA();
             SubResetB();
         }
     }
 
-    if (m[0x153] == 0) {
+    if (m_retabNotify == 0) {
         i32 tmp = 0;
         if (op == 4) {
             s->Write(&tmp, 4);
         } else if (op == 7) {
             s->Read(&tmp, 4);
             if (tmp != 0) {
-                CLevelSyncChild* c = new CLevelSyncChild();
-                m[0x153] = reinterpret_cast<i32>(c);
-                c->m_3c = this;
+                CWarpStoneFly* c = new CWarpStoneFly();
+                m_retabNotify = c;
+                c->m_owner = this;
             }
         }
     } else {
@@ -411,167 +412,148 @@ i32 CLevelSync::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
         }
     }
 
-    if (m[0x153] != 0) {
-        if ((reinterpret_cast<CLevelSync*>(m[0x153]))->ChildSync(s, op, p4, p5) == 0) {
+    if (m_retabNotify != 0) {
+        if (m_retabNotify->Sync(s, op, p4, p5) == 0) {
             return 0;
         }
     }
 
     if (op == 4) {
-        s->Write(&m[0x134], 8);
-        s->Write(&m[0x136], 8);
+        s->Write(&m_beltLast, 8);
+        s->Write(&m_beltInterval, 8);
     } else if (op == 7) {
-        s->Read(&m[0x134], 8);
-        s->Read(&m[0x136], 8);
+        s->Read(&m_beltLast, 8);
+        s->Read(&m_beltInterval, 8);
     }
     if (op == 4) {
-        s->Write(&m[0x13c], 8);
-        s->Write(&m[0x13e], 8);
+        s->Write(&m_fallLast, 8);
+        s->Write(&m_fallDelay, 8);
     } else if (op == 7) {
-        s->Read(&m[0x13c], 8);
-        s->Read(&m[0x13e], 8);
+        s->Read(&m_fallLast, 8);
+        s->Read(&m_fallDelay, 8);
     }
     if (op == 4) {
-        s->Write(&m[200], 8);
-        s->Write(&m[0xca], 8);
+        s->Write(&m_machineB.m_last, 8);
+        s->Write(&m_machineB.m_interval, 8);
     } else if (op == 7) {
-        s->Read(&m[200], 8);
-        s->Read(&m[0xca], 8);
+        s->Read(&m_machineB.m_last, 8);
+        s->Read(&m_machineB.m_interval, 8);
     }
     if (op == 4) {
-        s->Write(&m[0xce], 8);
-        s->Write(&m[0xd0], 8);
+        s->Write(&m_machineA.m_last, 8);
+        s->Write(&m_machineA.m_interval, 8);
     } else if (op == 7) {
-        s->Read(&m[0xce], 8);
-        s->Read(&m[0xd0], 8);
+        s->Read(&m_machineA.m_last, 8);
+        s->Read(&m_machineA.m_interval, 8);
     }
     if (op == 4) {
-        s->Write(&m[0x158], 8);
-        s->Write(&m[0x15a], 8);
+        s->Write(&m_destructWarnLast, 8);
+        s->Write(&m_destructWarnDelay, 8);
     } else if (op == 7) {
-        s->Read(&m[0x158], 8);
-        s->Read(&m[0x15a], 8);
+        s->Read(&m_destructWarnLast, 8);
+        s->Read(&m_destructWarnDelay, 8);
     }
 
-    i32* p = &m[0x8a];
+    CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
         if (op == 4) {
-            s->Write(p, 8);
-            s->Write(p + 2, 8);
+            s->Write(&p->m_8, 8);
+            s->Write(&p->m_10, 8);
         } else if (op == 7) {
-            s->Read(p, 8);
-            s->Read(p + 2, 8);
+            s->Read(&p->m_8, 8);
+            s->Read(&p->m_10, 8);
         }
-        p += 6;
+        p++;
         n--;
     } while (n != 0);
 
     n = 3;
-    p = &m[0xb2];
+    CSbiHlRow* r = m_groupSlots;
     do {
         if (op == 4) {
-            s->Write(p, 8);
-            s->Write(p + 2, 8);
+            s->Write(&r->m_last, 8);
+            s->Write(&r->m_interval, 8);
         } else if (op == 7) {
-            s->Read(p, 8);
-            s->Read(p + 2, 8);
+            s->Read(&r->m_last, 8);
+            s->Read(&r->m_interval, 8);
         }
-        p += 6;
+        r++;
         n--;
     } while (n != 0);
 
     i32 outer = 3;
-    p = &m[0xe0];
+    r = m_hlGrid;
     do {
         n = 4;
         do {
             if (op == 4) {
-                s->Write(p, 8);
-                s->Write(p + 2, 8);
+                s->Write(&r->m_last, 8);
+                s->Write(&r->m_interval, 8);
             } else if (op == 7) {
-                s->Read(p, 8);
-                s->Read(p + 2, 8);
+                s->Read(&r->m_last, 8);
+                s->Read(&r->m_interval, 8);
             }
-            p += 6;
+            r++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
     if (op == 4) {
-        s->Write(&m[0xa8], 8);
-        s->Write(&m[0xaa], 8);
+        s->Write(&m_2a0, 8);
+        s->Write(&m_2a8, 8);
     } else if (op == 7) {
-        s->Read(&m[0xa8], 8);
-        s->Read(&m[0xaa], 8);
+        s->Read(&m_2a0, 8);
+        s->Read(&m_2a8, 8);
     }
-    if (op == 7 && m[0] != 2) {
+    if (op == 7 && m_position != 2) {
         PostBlockFixup();
     }
 
-#define SER(idx)                                                                                   \
-    if (SyncSub* _o = reinterpret_cast<SyncSub*>(m[idx])) {                                        \
-        if (_o->Serialize(s, op, p4, p5) == 0)                                                     \
+// SerializeFields (CStatusBarItem slot 1) every owned widget, op-driven.
+#define SER(field)                                                                                 \
+    if (field) {                                                                                   \
+        if ((field)->SerializeFields(s, op, p4, p5) == 0)                                          \
             return 0;                                                                              \
     }
 
     {
         i32 i = 0;
-        i32* q = &m[99];
+        CSBI_StatzTabArrow** q = m_statObj;
         do {
-            if (SyncSub* a = reinterpret_cast<SyncSub*>(q[-0xf])) {
-                if (a->Serialize(s, op, p4, p5) == 0) {
-                    return 0;
-                }
-            }
-            if (SyncSub* b = reinterpret_cast<SyncSub*>(*q)) {
-                if (b->Serialize(s, op, p4, p5) == 0) {
-                    return 0;
-                }
-            }
+            SER(m_hitRects[i])
+            SER(*q)
             i++;
             q++;
         } while (i < 0xf);
     }
     {
         i32 i = 0;
-        i32* q = &m[0x81];
+        CSBI_ImageSet** q = m_slotNotify;
         do {
-            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
-                if (a->Serialize(s, op, p4, p5) == 0) {
-                    return 0;
-                }
-            }
+            SER(*q)
             i++;
             q++;
         } while (i < 5);
     }
     {
         i32 i = 0;
-        i32* q = &m[0xc2];
+        CSBI_ImageSet** q = m_groupNotify;
         do {
-            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
-                if (a->Serialize(s, op, p4, p5) == 0) {
-                    return 0;
-                }
-            }
+            SER(*q)
             i++;
             q++;
         } while (i < 3);
     }
     {
         i32 row = 0;
-        i32* base = &m[0x126];
+        CSBI_ImageSet** base = m_hlNotify;
         do {
             i32 i = 0;
-            i32* q = base;
+            CSBI_ImageSet** q = base;
             do {
-                if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
-                    if (a->Serialize(s, op, p4, p5) == 0) {
-                        return 0;
-                    }
-                }
+                SER(*q)
                 i++;
                 q++;
             } while (i < 4);
@@ -581,44 +563,40 @@ i32 CLevelSync::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     }
     {
         i32 i = 0;
-        i32* q = &m[0x187];
+        CSBI_WarlordHead** q = m_warlordHead;
         do {
-            if (SyncSub* a = reinterpret_cast<SyncSub*>(*q)) {
-                if (a->Serialize(s, op, p4, p5) == 0) {
-                    return 0;
-                }
-            }
+            SER(*q)
             i++;
             q++;
         } while (i < 4);
     }
 
-    SER(0x72)
-    SER(0x73)
-    SER(0x74)
-    SER(0x75)
-    SER(0x76)
-    SER(0x77)
-    SER(0x78)
-    SER(0x79)
-    SER(0x7a)
-    SER(0x7b)
-    SER(0x7c)
-    SER(0x7c)
-    SER(0x7d)
-    SER(0x7e)
-    SER(0x7f)
-    SER(0x80)
-    SER(0x86)
-    SER(0x87)
-    SER(0xd2)
-    SER(0xd9)
-    SER(0xda)
-    SER(0xdb)
-    SER(0xdc)
-    SER(0x138)
-    SER(0x140)
-    SER(0x15c)
+    SER(m_tabSprite0)
+    SER(m_tabSprite1)
+    SER(m_tabSprite2)
+    SER(m_tabSprite3)
+    SER(m_tabSprite4)
+    SER(m_tabSprite5)
+    SER(m_tabSprite6)
+    SER(m_tabSprite7)
+    SER(m_tabSprite8)
+    SER(m_tabSprite9)
+    SER(m_tabSprite10)
+    SER(m_tabSprite10) // retail's shipped duplicate: #10 serialized twice
+    SER(m_tabSprite11)
+    SER(m_tabSprite12)
+    SER(m_tabSprite13)
+    SER(m_tabSprite14)
+    SER(m_gaugeNotify)
+    SER(m_gaugeSink)
+    SER(m_machineDisplay)
+    SER(m_notify0)
+    SER(m_notify1)
+    SER(m_notify2)
+    SER(m_notify3)
+    SER(m_extraNotify0)
+    SER(m_extraNotify1)
+    SER(m_modeNotify)
 #undef SER
 
     Finalize();
@@ -753,14 +731,14 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     i32 seq = 0;
     s->Read(&seq, 4);
 
+    // Resolve the serialized object id through the child group's serialize map
+    // (m_map48: id -> CGameObject*, the same map GruntVoice/Play deserializers
+    // consult); keep it only when GetClassId proves the CreateSprite kind.
     void* obj = 0;
-    CMapPtrToPtr* map = reinterpret_cast<CMapPtrToPtr*>(
-        (*reinterpret_cast<char**>(reinterpret_cast<char*>(gm) + 8) + 0x48)
-    );
     CWwdGameObjectA* m8 = 0;
-    if (map->Lookup(reinterpret_cast<void*>(seq), obj)) {
+    if (gm->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(seq), obj)) {
         if (obj != 0) {
-            m8 = ((static_cast<CSbiSeqObj*>(obj))->TypeTag() == 5)
+            m8 = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF)
                      ? reinterpret_cast<CWwdGameObjectA*>(obj)
                      : 0;
         }
@@ -1194,9 +1172,9 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     }
     POSITION n = m_tabLists[5].GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(m_tabLists[5].GetNext(n));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[5].GetNext(n));
         if (cur) {
-            cur->Notify(1);
+            delete cur;
         }
     }
     m_tabLists[5].RemoveAll();
@@ -1325,7 +1303,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         item->m_sampleMode = value;
         item->m_enabled = one;
         if (m_activeTab == one) {
-            m_statObj[idx]->Toggle(m_position, one);
+            m_statObj[idx]->SetDirectionAlt(m_position, one);
             CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
@@ -1796,10 +1774,10 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i32 outer = 8; outer != 0; outer--) {
         POSITION n = (reinterpret_cast<CPtrList*>(list))->GetHeadPosition();
         while (n) {
-            CSbiNotifyTarget* cur =
-                static_cast<CSbiNotifyTarget*>((reinterpret_cast<CPtrList*>(list))->GetNext(n));
+            CStatusBarItem* cur =
+                static_cast<CStatusBarItem*>((reinterpret_cast<CPtrList*>(list))->GetNext(n));
             if (cur) {
-                cur->Notify(1);
+                delete cur;
             }
         }
         (reinterpret_cast<CPtrList*>(list))->RemoveAll();
@@ -1849,7 +1827,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i = 0; i < 12; i++) {
         m_hlNotify[i] = 0;
     }
-    i32* tp = m_61c;
+    CSBI_WarlordHead** tp = m_warlordHead;
     tp[0] = 0;
     tp[1] = 0;
     tp[2] = 0;
@@ -1874,9 +1852,9 @@ void CStatusBarMgr::ExitMode() {
     }
     POSITION n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(m_tabLists[6].GetNext(n));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (cur) {
-            cur->Notify(1);
+            delete cur;
         }
     }
     m_tabLists[6].RemoveAll();
@@ -1921,9 +1899,9 @@ void CStatusBarMgr::ClearTabGroup() {
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION n = tab.GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(tab.GetNext(n));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (cur) {
-            cur->Notify(1);
+            delete cur;
         }
     }
     (reinterpret_cast<CPtrList*>((B + m_activeTab * 0x1c + 0x2c)))->RemoveAll();
@@ -1944,7 +1922,7 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 3: {
-            i32* p = m_61c;
+            CSBI_WarlordHead** p = m_warlordHead;
             p[0] = 0;
             p[1] = 0;
             p[2] = 0;
@@ -2230,7 +2208,9 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_sampleMode = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            m_statObj[idx]->ResetGroupA();
+            // retail @0x104fc2: `push 1; push m_position; call SetDirection` - the
+            // old ResetGroupA attribution was byte-wrong (0-arg vs 2-arg).
+            m_statObj[idx]->SetDirection(m_position, 1);
             CDDrawSubMgrLeafScan* host =
                 g_gameReg->m_world
                     ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
@@ -3070,7 +3050,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 //
 // AND IT IS NOW BACK AT 95.64 - the leak was never a wall, it was a TU-COMPOSITION
 // READOUT. Finishing the un-merge restored it: CWarpStoneFly / CMgrSettings /
-// CStatzTabBuilder carved out to their own TUs, CLevelSync::Sync RE-MERGED in (the binary
+// CStatzTabBuilder carved out to their own TUs, CStatusBarMgr::Sync RE-MERGED in (the binary
 // wants it here - see its note). No source change to this function in any of it. So this
 // function is effectively a sensor for "is this TU's content right?", and it reads
 // correct only when the TU holds exactly the objs retail compiled together. Nothing to

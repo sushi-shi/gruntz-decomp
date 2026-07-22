@@ -7,7 +7,6 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameMode.h> // CMenuState + CCreditsState: their slot overrides are DEFINED here (retail TU placement)
 #include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
-#include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view (also used by CDemo/CHelpState)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)

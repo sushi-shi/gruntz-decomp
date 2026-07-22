@@ -19,18 +19,20 @@ public:
 
     void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
     void SetTimers(i32 a, i32 b); // 0x17e760
-    void Set2c(i32 v);            // 0x17e780
+    void Set2c(class CDDrawPtrCollections* pool); // 0x17e780
     // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
     // lead-in, then render every `step`-th frame from 1..GetFrameCount() back-to-back (no timing;
-    // poke the fade sink + RenderFrame(frame) each step), then finalize RenderFrame(count)/EndFade() and record
+    // optional per-frame vsync gate + RenderFrame(frame) each step), then finalize
+    // RenderFrame(count)/EndFade() and record
     // the achieved frame rate in m_34. Used for the non-timed / max-speed transition.
-    void RunFadeStepped(i32 step, i32 lead, i32 notify); // 0x17e540
+    void RunFadeStepped(i32 step, i32 lead, i32 vsync); // 0x17e540
 
     // 0x17e620 - drive the whole timed fade: prime frame 0, busy-wait the lead-in,
-    // then map elapsed/duration onto the [0..GetFrameCount()] frame index, poking the m_set2cArg
-    // fade sink + RenderFrame(frame) per newly-reached frame; records the achieved frame rate
+    // then map elapsed/duration onto the [0..GetFrameCount()] frame index, with an optional
+    // per-frame vsync gate (m_ptrColl->m_device->WaitForVerticalBlank) + RenderFrame(frame)
+    // per newly-reached frame; records the achieved frame rate
     // in m_34 and finalizes via EndFade(). (Was the standalone FaderRun view - dissolved.)
-    void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
+    void RunFade(u32 dur, i32 lead, i32 vsync); // 0x17e620
 
     // implicit vptr        // +0x00
     CShadeTableCache m_cache; // +0x04 (0x18 bytes)
@@ -38,7 +40,12 @@ public:
     i32 m_20;                 // +0x20  base field (left uninitialized by the base ctor)
     i32 m_timerA;             // +0x24  timer A (set by SetTimers)
     i32 m_timerB;             // +0x28  timer B (set by SetTimers)
-    i32 m_set2cArg;           // +0x2c  value set by Set2c (RunFade reads it as an IFadeSink**)
+    // +0x2c  the DirectDraw manager Set2c binds (retail always binds 0 - the vsync
+    // path is dev-only, kept alive by no /OPT:REF): RunFade's per-frame gate is
+    // m_ptrColl->m_device->WaitForVerticalBlank, and CFaderLight's Begin/EndFade
+    // use the same slot as the overlay surface pool. (Ex the i32 "m_set2cArg" the
+    // fake IFadeSink interface read through.)
+    class CDDrawPtrCollections* m_ptrColl;
     i32 m_flag;               // +0x30  teardown gate (=1 in the base ctor)
     i32 m_34;                 // +0x34  RunFade's measured frame rate
 };

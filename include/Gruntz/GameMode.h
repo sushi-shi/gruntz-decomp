@@ -10,7 +10,7 @@
 #endif
 #include <afxwin.h>
 
-#include <Gruntz/AttractActor.h> // AttractActor / AttractActorList / g_actorList
+#include <Gruntz/FixedPtrArray32.h> // the game-controller poll list (g_actorList)
 
 // (CGMSound / CGMSoundEntry / CGMOwner DISSOLVED 2026-07-20: they were phantom views of
 // the CState::m_4 CGruntzMgr. The credits/menu code now reaches the real classes cast-free:

@@ -959,7 +959,9 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     }
 
     i32 ebx = 0;
-    if (this->GetClassId() == CLASSID_WWDOBJ_A) {
+    // Shipped DEAD branch: no family GetClassId ever returns 0x1c (A's real id
+    // is CLASSID_SERIALREF=5), so the OOB slot-16 quirk below never fires.
+    if (this->GetClassId() == CLASSID_SNAPSHOT_STALE) {
         // the OOB slot-16 quirk - retail's shipped bug (see WwdGameObject.h)
         ebx = reinterpret_cast<WwdRetailSlot16Facet*>(this)->GetSnapshotSubId();
     }

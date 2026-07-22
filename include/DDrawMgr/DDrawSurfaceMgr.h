@@ -19,7 +19,7 @@ class CDDrawWorkerCache;    // +0x14 the string-keyed worker cache (its +0x10 ma
 class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
 class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
 class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 map)
-struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
+class CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);

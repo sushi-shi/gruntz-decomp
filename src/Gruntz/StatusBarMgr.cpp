@@ -652,7 +652,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            // 4 player HEAD slots (CSBI_WarlordHead, y steps 0x43; cached m_61c..m_628).
+            // 4 player HEAD slots (CSBI_WarlordHead, y steps 0x43; cached m_warlordHead[0..3]).
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0xcf;
@@ -674,7 +674,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[0] = reinterpret_cast<i32>(it);
+            m_warlordHead[0] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x112;
@@ -696,7 +696,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[1] = reinterpret_cast<i32>(it);
+            m_warlordHead[1] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x155;
@@ -718,7 +718,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[2] = reinterpret_cast<i32>(it);
+            m_warlordHead[2] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x197;
@@ -740,11 +740,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[4].AddTail(it);
-            m_61c[3] = reinterpret_cast<i32>(it);
+            m_warlordHead[3] = static_cast<CSBI_WarlordHead*>(it);
             // HEAD loop: for each active player slot (g_gameReg per-player block, stride
             // 0x238) set the head sprite (GetSel) + SetState/ShowFrames on the cached slot.
             {
-                i32* slot = m_61c; // +0x61c
+                CSBI_WarlordHead** slot = m_warlordHead; // +0x61c
                 i32 pi = 0;
                 GruntzPlayer* p =
                     g_gameReg->m_options; // pointer-inducted (== retail's off += 0x238)
@@ -753,17 +753,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(p->m_008, 0);
                         if (pi == m_tabCycle) {
-                            (reinterpret_cast<CSBI_WarlordHead*>(*slot))->SetState(1);
+                            (*slot)->SetState(1);
                         }
                     } else {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
-                        (reinterpret_cast<CSBI_WarlordHead*>(*slot))->SetState(2);
+                        (*slot)->SetState(2);
                     }
-                    // The cached m_61c slots ARE the four CSBI_WarlordHead items created
+                    // The cached m_warlordHead slots ARE the four CSBI_WarlordHead items created
                     // just above; SetState/ShowFrames are that class's own helpers
                     // (0xeb830 / 0xeb740), not the fabricated base's.
-                    (reinterpret_cast<CSBI_WarlordHead*>(*slot))
-                        ->ShowFrames(0xa, reinterpret_cast<ShadeDescr*>(sel));
+                    (*slot)->ShowFrames(0xa, reinterpret_cast<ShadeDescr*>(sel));
                     slot++;
                     pi++;
                     p++;

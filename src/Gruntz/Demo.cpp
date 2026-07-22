@@ -2,7 +2,8 @@
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
-#include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
+#include <Gruntz/FixedPtrArray32.h>  // the game-controller poll list (g_actorList)
+#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (m_currentKeys press-edge flags)
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
 #include <string.h>  // strlen (inline repne scas in the editor dialog proc)
 #include <rva.h>
@@ -92,10 +93,10 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldL
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();
-    AttractActorList* list = g_actorList;
+    CFixedPtrArray32* list = g_actorList;
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
-        if (list->m_data[i]->m_2ac & 0x100) {
+        if (list->m_items[i]->m_currentKeys & 0x100) {
             PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             break;
         }

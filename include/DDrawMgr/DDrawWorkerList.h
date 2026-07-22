@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
+#include <Gruntz/Loadable.h> // CLoadable - the real base (ctor 0x156cb0, vtbl 0x1efc30)
 #include <Gruntz/ObList.h>
 #include <DDrawMgr/DDrawWorkerNode.h>  // CDDrawWorkerBase/A/B (the spawned elements)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair - PruneWorkers' two render targets
@@ -11,47 +11,26 @@
 class
     CDDrawWorker; // the frame-source (ex CDDrawFrameSource view) // the frame table view (def rides the workers G section)
 
-// The intermediate base: owns the +0x04/+0x08/+0x0c header fields and the inline
-// dtor that resets them (byte-proven from ~CDDrawWorkerList @0x156f50: after
-// ~CObList the retail dtor stores m_status=-1, m_08=0, m_pSurfaceMgr=0, then
-// restamps ??_7CObject @0x5e8cb4 - an inlined intermediate-base dtor over the
-// CObject grand-base; the intermediate's own stamp is dead-store-eliminated, no
-// call/ctor intervenes before the CObject stamp). Its ctor is 0x156cb0 (stores
-// parent/a2/a3 at +0xc/+4/+8, stamps 0x5efc30).
-// @identity-TODO: WorkerListSibBase IS CLoadable (<Gruntz/Loadable.h>, the ex
-// "CDDrawSubMgr" - same ctor 0x156cb0, same vtable 0x1efc30, same reset dtor).
-// The fold is blocked by the family slot-name/signature flip it forces: the list's
-// slots 5-8 (IsReady/IsReadyPredicate/DestroyWorkers/GetStateId, StateId-typed)
-// would have to become overrides of CLoadable's IsLoaded/IsReady/Unload/GetClassId
-// (i32-typed) - the whole-family rebase Loadable.h defers to the (B)-form flip.
-// VTBL_ABSENT: never-emitted base shell. @identity-TODO (above): IS CLoadable -
-// the fold is written but blocked on the family-wide slot-signature (B)-form flip.
-VTBL_ABSENT(WorkerListSibBase);
-class WorkerListSibBase : public CObject {
-public:
-    virtual ~WorkerListSibBase() OVERRIDE; // slot 1 (deleting dtor -> cl-emitted ??_G)
-    i32 m_status;                          // +0x04  initialized to -1 when inactive
-    i32 m_08;                              // +0x08
-    class CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c  the owning surface mgr (copied into worker m_ctx)
-    WorkerListSibBase() {}
-};
-SIZE(0x10);
-inline WorkerListSibBase::~WorkerListSibBase() {
-    m_status = -1;
-    m_08 = 0;
-    m_pSurfaceMgr = 0;
-}
-
-class CDDrawWorkerList : public WorkerListSibBase {
+// (The "WorkerListSibBase" intermediate shell is DISSOLVED - it WAS CLoadable:
+// CDDrawSurfaceMgr::Init constructs the list with the CLoadable 3-arg base ctor
+// 0x156cb0 (stores parent/a2/a3 at +0xc/+4/+8, stamps ??_7CLoadable 0x5efc30)
+// before the derived 0x5efd88 stamp, and ~CDDrawWorkerList @0x156f50 ends with
+// the same m_04=-1/m_flags=0/m_0c=0 reset trio ~CLoadable inlines. The slot
+// quartet [5..8] below is the CLoadable scheme.)
+class CDDrawWorkerList : public CLoadable {
 public:
     // slot 1 - real dtor body @0x156f50 (G obj, DDrawSubMgr.cpp); ??_G @0x156f30.
     virtual ~CDDrawWorkerList() OVERRIDE;
-    virtual i32 IsReady();          // slot 5  0x156f00 (G obj)
-    virtual i32 IsReadyPredicate(); // slot 6  0x156fc0 (G obj)
-    // slot 7 - the virtual teardown broadcast (0x163bc0, T obj): byte-identical
-    // twin of the non-virtual ClearWorkers (same source body, compiled twice).
-    virtual void DestroyWorkers();
-    virtual StateId GetStateId(); // slot 8  0x156f20 (G obj; 0x11)
+    // [5] 0x156f00 (G obj) - loaded iff the +0x0c owner is bound and the +0x04
+    // status latch isn't -1 (ex "IsReady"; the scheme's slot-5 predicate).
+    virtual i32 IsLoaded() OVERRIDE; // [5] 0x156f00
+    // [6] 0x156fc0 (G obj) - the scheme's IsReady (ex "IsReadyPredicate").
+    virtual i32 IsReady() OVERRIDE; // [6] 0x156fc0
+    // [7] 0x163bc0 (T obj) - the virtual teardown broadcast (ex "DestroyWorkers"):
+    // byte-identical twin of the non-virtual ClearWorkers (same source body,
+    // compiled twice); overrides CLoadable's reset/unload hook.
+    virtual void Unload() OVERRIDE; // [7] 0x163bc0
+    virtual i32 GetClassId() OVERRIDE; // [8] 0x156f20 -> CLASSID_WORKERLIST (0x11)
     // slots 9-12 - the worker factories (G obj bodies; NO direct retail callers:
     // reached only through these slots).
     virtual void* CreateWorkerA(i32 a1, i32 a2, i32 a3);                // slot 9  0x156fd0

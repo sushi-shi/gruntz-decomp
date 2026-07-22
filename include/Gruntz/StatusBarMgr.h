@@ -60,27 +60,23 @@ SIZE(0x18);
 // The machine-phase readers walk the SAME 0x18 record under this name.
 
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
+class CSBI_StatzTabArrow;  // <Gruntz/SBI_ImageSetAni.h> - the m_statObj element
+class CSBI_WarlordHead;    // <Gruntz/SBI_WarlordHead.h> - the m_warlordHead element
+class CWarpStoneFly;       // <Gruntz/WarpStoneFly.h> - the +0x54c retab-fly child
 
-// (CSbiStatObj DISSOLVED 2026-07-20: m_statObj holds CStatusBarMgr sub-managers - the
-// SetState clear path already casts m_statObj[idx] to CStatusBarMgr for ResetGroupA, and
-// its Toggle notifier (FUN_004ea170, unreconstructed) is that same class's method. Both
-// call sites now agree on CStatusBarMgr; Toggle is declared on it below.)
+// (CSbiStatObj DISSOLVED; m_statObj IDENTITY CORRECTED 2026-07-22: the elements
+// are the CSBI_StatzTabArrow toggle-arrow widgets (LoadTabSprites ctor stamp
+// 0x5eac94 @0x103a10, stored via the m_statFlags p[0x1e] walk). The clear-path
+// calls are SetDirection @0xea0f0 (`push 1; push m_position`) and the toggle
+// notifier 0xea170 IS SetDirectionAlt - the old "CStatusBarMgr sub-manager +
+// Toggle" reading was byte-wrong.)
 
-// VTBL_ABSENT: never-constructed 1-slot notify facet over the tab-list entries.
-// @identity-TODO: the entries are CStatusBarItem-family items - fold onto the real
-// base once slot 0's signature is byte-proven against ??_7CStatusBarItem's slot 0.
-VTBL_ABSENT(CSbiNotifyTarget);
-class CSbiNotifyTarget {
-public:
-    virtual void Notify(i32 on); // slot 0 (__thiscall void(int))
-};
-SIZE_UNKNOWN();
-struct CSbiNotifyNode {
-    CSbiNotifyNode* m_next; // +0
-    char m_pad4[0x8 - 0x4];
-    CSbiNotifyTarget* m_payload; // +8
-};
-SIZE_UNKNOWN();
+// (CSbiNotifyTarget + CSbiNotifyNode DISSOLVED 2026-07-22: slot 0 of the whole
+// family is the scalar-deleting dtor ??_G - "Notify(1)" was `delete` in
+// disguise (byte-proven: ??_7CStatusBarItem@@6B@ slot 0 -> ILT 0x1c3f ->
+// ??_GCStatusBarItem 0x100620, __thiscall ret 4, flag arg 1 = free). The four
+// tab-list walks in SBI_RectOnly.cpp delete CStatusBarItem* directly; the node
+// was literally MFC CPtrList::CNode.)
 
 // (CSbiNotifyPayload DISSOLVED 2026-07-22: it was a never-constructed dispatch view
 // of the CStatusBarItem-family slot scheme - its 11 slots aligned one-to-one with
@@ -205,9 +201,20 @@ public:
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
     void ResetGroupA();
-    // 0xea170 (FUN_004ea170, unreconstructed): the per-stat (stateId, on) toggle notifier
-    // fired on the m_statObj sub-managers (ex the CSbiStatObj view). Reloc-masked.
-    void Toggle(i32 stateId, i32 on);
+    // (The "Toggle" decl is GONE - 0xea170 IS CSBI_StatzTabArrow::SetDirectionAlt,
+    // already reconstructed in StatusBarTabBuilders.cpp.)
+
+    // The state-sync serialize driver (0x1084d0, SBI_RectOnly.cpp): op 4 = write,
+    // 7 = read, 8 = reset - streams the timer/slot blocks and SerializeFields()-walks
+    // every owned widget. Ex the "CLevelSync" fake view of this manager (m_guts).
+    i32 Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5); // 0x1084d0
+    // Sync's reloc-masked engine helpers (ILT thunk VAs; bodies unreconstructed):
+    i32 PreWriteValidate(CFileMemBase* s); // ILT 0x4016b8
+    i32 PreReadValidate(CFileMemBase* s);  // ILT 0x402b53
+    void SubResetA();                      // ILT 0x402b8a
+    void SubResetB();                      // ILT 0x402d5b
+    void PostBlockFixup();                 // ILT 0x403a08
+    void Finalize();                       // ILT 0x40125d
     // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -
     // m_extraNotifyArg0 / m_ptrPool active cell).
     i32 GetActiveValue();
@@ -329,8 +336,11 @@ public:
     i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSBI_SideTab* m_hitRects[15]; // +0x150  the statz side-tab widgets (hit-test targets)
-    CStatusBarMgr* m_statObj
-        [15]; // +0x18c  per-stat sub-manager array (notified on clear; ex CSbiStatObj view)
+    // +0x18c  the per-stat toggle-arrow widgets (LoadTabSprites news each
+    // CSBI_StatzTabArrow, stamp @0x103a10, and stores it here via the m_statFlags
+    // pointer walk p[0x1e]). Ex the "CStatusBarMgr sub-manager" reading - the
+    // clear path's real calls are SetDirection/SetDirectionAlt (0xea0f0/0xea170).
+    CSBI_StatzTabArrow* m_statObj[15];
     CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
     CSBI_MenuItem* m_tabSprite1;  // +0x1cc  ClearTabSprites in declaration order)
     CSBI_MenuItem* m_tabSprite2;  // +0x1d0
@@ -439,7 +449,9 @@ public:
     i32 m_barFrameGate;           // +0x614  main-status-bar frame gate
     DirectSoundMgr*
         m_destructButton; // +0x618  destruct-button warning voice (ApplyAndPlay/StopAndRewind)
-    i32 m_61c[4];         // +0x61c  trailing dword block (cleared on reset)
+    // +0x61c  the four multiplayer player-HEAD widgets (BuildMultiplayerTab news
+    // each CSBI_WarlordHead and caches it here; SetState/ShowFrames drive them).
+    CSBI_WarlordHead* m_warlordHead[4];
     i32 m_tabCycle;       // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 SIZE(0x630);
@@ -449,26 +461,11 @@ SIZE(0x630);
 // last-clock/interval; the SBI_RectOnly cue-throttle blocks are LeafCue::PlayIfElapsed
 // inlined, and CPlay::Vslot10 already uses the canonical LeafCue on this same map.)
 
-struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
-SIZE_UNKNOWN();
-
-// VTBL_ABSENT: never-constructed dispatch view of the seq-map values.
-// @identity-TODO: slot-8 TypeTag()==5 gates a CWwdGameObjectA cast - the values
-// may be GAME OBJECTS, not status-bar items; prove before folding.
-VTBL_ABSENT(CSbiSeqObj);
-class CSbiSeqObj {
-public:
-    virtual void Destroy();     // slot 0  scalar-deleting dtor
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll();        // slot 4
-    virtual void Tick();        // slot 5
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual i32 TypeTag();      // +0x20 (slot 8)
-};
-SIZE_UNKNOWN();
+// (CSbiSeqMap + CSbiSeqObj DISSOLVED 2026-07-22: the "seq map" IS the child
+// group's serialize map (g_gameReg->m_world->m_childGroup->m_map48, id ->
+// CGameObject*), and "TypeTag()==5" IS CGameObject::GetClassId() ==
+// CLASSID_SERIALREF - byte-proven as CWwdGameObjectA's own class id
+// (slot 8 @0x15b760: mov eax,5). Deserialize consults it directly.)
 
 struct CSbiResetHost {
     char m_pad0[0x8];
@@ -579,10 +576,10 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_groupNotify[0] = 0;                          // +0x308 x3 (individual stores)
     m_groupNotify[1] = 0;
     m_groupNotify[2] = 0;
-    m_61c[0] = 0; // +0x61c x4 (individual stores)
-    m_61c[1] = 0;
-    m_61c[2] = 0;
-    m_61c[3] = 0;
+    m_warlordHead[0] = 0; // +0x61c x4 (individual stores)
+    m_warlordHead[1] = 0;
+    m_warlordHead[2] = 0;
+    m_warlordHead[3] = 0;
     m_notify0 = 0; // +0x364..+0x370, in retail's 364/36c/370/368 order
     m_notify2 = 0;
     m_notify3 = 0;

@@ -55,8 +55,10 @@ CObject* CAniElement::AtChecked(i32 i) const {
     return 0;
 }
 
+// The virtual teardown broadcast (CLoadable's [7] Unload hook; ex
+// "DestroyWorkers") - byte-identical twin of the non-virtual ClearWorkers.
 RVA(0x00163bc0, 0x2c)
-void CDDrawWorkerList::DestroyWorkers() {
+void CDDrawWorkerList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
