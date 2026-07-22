@@ -41,7 +41,7 @@ enum ImageFormatTag {
 //       contiguous among themselves -> unsplittable into one clean obj;
 //   (3) GetClassId/Slot16/Slot17 are CImage inline virtuals declared polymorphic in
 //       CImage.h (cl COMDAT-emits them); IsLoaded is CWapObj's base inline virtual
-//       (CImage its sole non-overriding user); Gap_0d5c10 is a CImage-family loader
+//       (CImage its sole non-overriding user); LoadImageHelper is a CImage-family loader
 //       helper (xref: calls CImage::Resolve/FreeAll/RenderFrame + CSymTab/sprintf);
 //       0xd5d70 is the linker-kept ??1CLoadable COMDAT (bound in DDrawWorkerRegistry.cpp).
 // Splitting any of these into a foreign RVA-named .cpp would MISATTRIBUTE CImage's
@@ -55,7 +55,7 @@ enum ImageFormatTag {
 // confirmed: calls CImage::Resolve/FreeAll/RenderFrame, CSymTab::ResolveQualified,
 // sprintf); homed pending leaf-first reconstruction (its exact identity is TBD).
 RVA(0x000d5c10, 0x10d)
-i32 Gap_0d5c10(void) {
+i32 LoadImageHelper(void) {
     return 0;
 }
 

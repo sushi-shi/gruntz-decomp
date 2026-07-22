@@ -38,7 +38,7 @@ RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 // existing object (and CWwdGrid being abstract - the pure OnFound - forbids placement
 // new) is not expressible in MSVC5 C++, so the delegating call cannot be regenerated.
 RVA(0x00191770, 0x8d)
-i32 Gap_191770(void) {
+i32 ReinitWwdGrid(void) {
     return 0;
 }
 

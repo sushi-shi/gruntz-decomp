@@ -5,17 +5,23 @@ call/jmp-graph xrefs).
 Scans GRUNTZ.EXE's .text for direct `call`/`jmp rel32` (E8/E9) sites whose
 target is the queried RVA and reports each caller resolved to its containing
 function + unit (size-bounded attribution: a site past a fn's body rolls up to
-the unrecovered gap, never a phantom edge). --callees is the forward view,
---tree the caller ancestry (chases THROUGH ILT/thunk forwarders, expands
-through matched callers, stops on unmatched frontier fns). Targets: RVAs,
-exact mangled names, `CClass::Member`, or bare `Member` (ambiguity prints the
-candidate list). Runs in-process over gruntz.core (one EXE/symbol load).
+the unrecovered gap, never a phantom edge).
 
-    python3 -m gruntz.sema.xref 0x136180 0x139bf0
+--tree is the DEFAULT (caller ancestry): it chases THROUGH ILT/thunk forwarders,
+expands through matched callers, stops on unmatched frontier fns, AND surfaces
+data/.text references - fn-ptr tables, vtable slots, and `push offset fn` /
+`mov [slot], offset fn` ADDRESS-TAKINGS in code (the registration idiom, e.g.
+CreateActionArea pushed into RegisterGameObjectTypes' worker table). A fn with
+"no rel32 caller" is usually reached this way, so the flat scan misses it -
+prefer the default. --flat opts back into the direct-caller-only scan; --callees
+is the forward view. Targets: RVAs, exact mangled names, `CClass::Member`, or
+bare `Member`. Runs in-process over gruntz.core (one EXE/symbol load).
+
+    python3 -m gruntz.sema.xref 0x136180 0x139bf0     # tree (default)
     python3 -m gruntz.sema.xref CGameApp::CloseResources
     python3 -m gruntz.sema.xref --callees 0x136180
-    python3 -m gruntz.sema.xref --raw 0x136180
-    python3 -m gruntz.sema.xref --tree [--depth N] 0x0e35f0
+    python3 -m gruntz.sema.xref --flat 0x136180       # direct callers only
+    python3 -m gruntz.sema.xref [--depth N] 0x0e35f0
 """
 import bisect
 import struct
@@ -26,37 +32,55 @@ from gruntz.core.pe import ILT_HI, ILT_LO, IMAGEBASE
 
 
 def data_refs(ctx, target):
-    """Data words (in non-.text sections) whose value is the VA of `target` OR of
-    an ILT thunk to it: fn-ptr tables / vtable slots / command tables. Returns
-    [(data_rva, via_thunk_rva_or_None, section)]."""
+    """EVERY 4-byte occurrence of the VA of `target` (or of an ILT thunk to it),
+    byte-granular, across ALL sections - the fn-ptr tables / vtable slots / command
+    tables in data AND the address-takings in .text (`push offset fn` / `mov [slot],
+    offset fn` that register a fn into a runtime table; the reason a fn with no
+    rel32 caller is still reachable). Returns [(addr, via_thunk_rva_or_None, section)].
+    A 4-aligned-only or non-.text-only scan misses exactly the registration idiom
+    (e.g. CreateActionArea, pushed into RegisterGameObjectTypes' worker table)."""
     pe = ctx.pe
-    wanted = {target + IMAGEBASE: None}
+    wanted = {struct.pack("<I", target + IMAGEBASE): None}
     for th in pe.thunks_to(target):
-        wanted[th + IMAGEBASE] = th
+        wanted[struct.pack("<I", th + IMAGEBASE)] = th
     hits = []
     for (name, va, vsz, rp, rsz) in pe.secs:
-        if name == ".text":
-            continue
         blob = pe.data[rp:rp + rsz]
-        for i in range(0, len(blob) - 3, 4):
-            w = struct.unpack_from("<I", blob, i)[0]
-            if w in wanted:
-                hits.append((va + i, wanted[w], name))
+        for pat, via in wanted.items():
+            s = 0
+            while True:
+                i = blob.find(pat, s)
+                if i < 0:
+                    break
+                hits.append((va + i, via, name))
+                s = i + 1
     return hits
 
 
 def _print_data_refs(ctx, target, indent="  "):
-    drefs = data_refs(ctx, target)
+    drefs = sorted(data_refs(ctx, target))
     if not drefs:
         return
-    names = ctx.symbols.names
-    print(f"{indent}-- referenced as data (fn-ptr table / vtable slot / command table):")
+    db = ctx.symbols
+    names = db.names
+    print(f"{indent}-- referenced as data / address-taken (fn-ptr table / vtable slot "
+          f"/ command table / registration):")
     for draddr, via, sec in drefs[:16]:
         vs = f"  (via thunk 0x{via:x})" if via is not None else ""
-        owner = ""                     # a nearby named symbol (the table start)
-        for o in sorted((a for a in names if a <= draddr), reverse=True)[:1]:
-            if draddr - o < 0x400:
-                owner = f"  ~{names[o][0]}+0x{draddr - o:x}"
+        if sec == ".text":
+            # an address-taking inside code: attribute to its containing fn - THAT
+            # fn is the effective caller (it registers/stores this fn's address).
+            o = db.owner(draddr)
+            if o is not None:
+                nm, unit = db.name_of(o)
+                owner = f"  address-taken in {nm} [{unit}] (+0x{draddr - o:x})"
+            else:
+                owner = f"  address-taken in (unrecovered fn ~0x{db.gap_start(draddr):08x})"
+        else:
+            owner = ""                 # a nearby named symbol (the table start)
+            for a in sorted((a for a in names if a <= draddr), reverse=True)[:1]:
+                if draddr - a < 0x400:
+                    owner = f"  ~{names[a][0]}+0x{draddr - a:x}"
         print(f"{indent}   @0x{draddr:08x} [{sec}]{vs}{owner}")
     if len(drefs) > 16:
         print(f"{indent}   ... (+{len(drefs) - 16} more)")
@@ -197,9 +221,13 @@ def query(ctx, targets, mode="callers", raw=False, depth=4):
 
 
 def run(args) -> None:
-    query(get_context(), args.target,
-          mode=("callees" if args.callees else "tree" if args.tree else "callers"),
-          raw=args.raw, depth=args.depth)
+    # --tree (recursive, thunk-chasing, data/.text-ref-surfacing) is the DEFAULT:
+    # the flat direct-caller scan repeatedly missed fns reachable only through a
+    # thunk or an address-taking registration. --flat opts back into it.
+    mode = ("callees" if args.callees
+            else "callers" if getattr(args, "flat", False)
+            else "tree")
+    query(get_context(), args.target, mode=mode, raw=args.raw, depth=args.depth)
     sys.exit(0)
 
 
@@ -208,7 +236,7 @@ def main():
     if not args or "-h" in args or "--help" in args:
         print(__doc__)
         return
-    mode, raw, depth, rest = "callers", False, 4, []
+    mode, raw, depth, rest = "tree", False, 4, []   # --tree is the DEFAULT
     it = iter(args)
     for a in it:
         if a == "--callees":
@@ -216,7 +244,9 @@ def main():
         elif a == "--raw":
             raw = True
         elif a == "--tree":
-            mode = "tree"
+            mode = "tree"               # accepted for back-compat (now the default)
+        elif a == "--flat":
+            mode = "callers"            # opt back into the flat direct-caller scan
         elif a == "--depth":
             depth = int(next(it, "4"))
         else:

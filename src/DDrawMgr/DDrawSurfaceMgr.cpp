@@ -395,6 +395,6 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
 // && size) Read(buf2, size); Ready(); dtor; return 1. Byte-match BLOCKED on the inlined
 // CFileMem ctor (retail re-inits all fields via a Reset()-body ctor).
 RVA(0x00156ad0, 0x1d2)
-i32 Gap_156ad0(void) {
+i32 LoadRecordFile(void) {
     return 0;
 }

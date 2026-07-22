@@ -1168,8 +1168,10 @@ def _add_sema(sub) -> None:
     sx.add_argument("--callees", action="store_true", help="forward: its call targets")
     sx.add_argument("--raw", action="store_true", help="every call site (no dedup)")
     sx.add_argument("--tree", action="store_true",
-                    help="caller ancestry tree - expands callers-of-callers, chasing ILT "
-                         "jmp-thunks automatically (attribution in one shot)")
+                    help="(DEFAULT) caller ancestry tree - expands callers-of-callers, "
+                         "chasing ILT jmp-thunks + surfacing data/.text address-takings")
+    sx.add_argument("--flat", action="store_true",
+                    help="opt out of --tree: only direct rel32 callers (the old default)")
     sx.add_argument("--depth", type=int, default=4, metavar="N",
                     help="--tree expansion cap (default 4; 0 = unlimited, can be huge)")
     sx.set_defaults(func=cmd_sema_xref)

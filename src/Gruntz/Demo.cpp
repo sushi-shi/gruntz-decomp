@@ -373,7 +373,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 // 0x3cdd0 ("dwrects.txt" editor) - twin of 0x3c990 (0x4000-byte edit buffer variant);
 // same CString/ResButeMgr + /GX-trylevel blocker.
 RVA(0x0003cdd0, 0x19f)
-i32 Gap_03cdd0(void) {
+i32 EditDwRectsTxt(void) {
     return 0;
 }
 

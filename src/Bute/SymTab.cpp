@@ -162,7 +162,7 @@ i32 CParseSource::GetEntryTag() {
 // unrecoverable and NOT CParseSource/CSymTab (their +0x10 roles are disproven). Homed as a
 // stub rather than fabricate a per-TU view of an un-xref-able receiver (no-fake-view rule).
 RVA(0x00139810, 0x140)
-i32 Gap_139810(void) {
+i32 BuildQualifiedScopePath(void) {
     return 0;
 }
 
@@ -170,7 +170,7 @@ i32 Gap_139810(void) {
 // (mov eax,[ecx+0x10]; mov eax,[eax]; ret) - the current scope's (CSymTab) name. Same
 // unrecoverable receiver as 0x139810; homed as a stub, no fabricated view.
 RVA(0x00139950, 0x6)
-i32 Gap_139950(void) {
+i32 CurrentScopeName(void) {
     return 0;
 }
 

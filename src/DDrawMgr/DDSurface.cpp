@@ -302,7 +302,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // GapFunctions.cpp (matcher-5); lives in the DIRSURF block (DDSurface.cpp) by RVA.
 // Homed pending the owning class (m_8 vtable + m_94 array) + the Build PMF push modelled.
 RVA(0x0013e8f0, 0xb0)
-i32 Gap_13e8f0(void) {
+i32 ReloadImageCache(void) {
     return 0;
 }
 
@@ -1761,7 +1761,7 @@ i32 CDDSurface::RotateBlit(
 // (RotateRasterize). Homed from GapFunctions.cpp (matcher-5) by RVA neighbourhood.
 // Homed pending reconstruction (x87 fld/fxch scheduling wall; sibling of ImageRotateBlit).
 RVA(0x00141080, 0x174)
-i32 Gap_141080(void) {
+i32 BuildRotateBlitTransform(void) {
     return 0;
 }
 

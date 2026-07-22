@@ -2142,6 +2142,6 @@ i32 Gap_171640(void) {
 // NOT a merge. Homed pending leaf-first reconstruction (>512 B; owner class a CButeMgr/
 // CProjActMap loader, TBD).
 RVA(0x00173dd0, 0x38f)
-i32 Gap_173dd0(void) {
+i32 LoadProjActMap(void) {
     return 0;
 }

@@ -63,7 +63,7 @@ CHashElement* CHashElement::Next() {
 // receiver (no-fake-view rule); the CHashBase::Insert/Last SIB coin-flip wall applies once
 // the real iterator class surfaces.
 RVA(0x00184900, 0x43)
-i32 Gap_184900(void) {
+i32 FirstBucketElement(void) {
     return 0;
 }
 

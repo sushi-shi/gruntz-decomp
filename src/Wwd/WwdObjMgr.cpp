@@ -803,7 +803,7 @@ i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
 // back to "???" @0x1f0a94). Draws gated by g_dbg61ab28/2c/30. Held pending
 // reconstruction (>512 B, novel per-object geometry).
 RVA(0x0015a210, 0x432)
-i32 Gap_15a210(void) {
+i32 DrawObjectDebugGeometry(void) {
     return 0;
 }
 

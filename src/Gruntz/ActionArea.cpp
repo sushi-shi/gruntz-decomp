@@ -43,17 +43,21 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 
 
 // @early-stop
-// 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj), /GX;
-// homed from src/Stub/GapFunctions.cpp, matcher-5). Switches on obj->m_7c->m_1c (a
-// callback-state slot @+0x1c, active CActionArea record @+0x18): tag 0 -> new
-// CActionArea(obj) (RezAlloc 0x68, nothrow; ctor thunk 0x2478->0x7da0), rec->Slot06(),
-// m_7c->m_18 = rec; tag 0x1d->Slot11; 0x1e->Slot10; 0x50->Slot14; 0x51->Slot13;
-// 0x52->Slot12; 0x53->Slot15; 0x3e8->no-op; default->ProjTypeXfer((CXferArchive*)
-// m_7c->m_18) [0x16e4f0]. ret 1. BLOCKER: canonical CUserLogic (UserLogic.h) declares
-// only slots 00..09; dispatching inherited slots 10-15 needs those 6 virtuals added to
-// the shared CUserLogic base (a base-vtable reshape) before a cast-free reconstruction.
+// 0x7c60 IS the body of _CreateActionArea (PROVEN by xref: GameObjectFactory.cpp
+// registers it as `CreateWorker(CreateActionArea, "ActionArea", 4)`, and its thunk
+// 0x349a is address-taken in RegisterGameObjectTypes @0xa523 - the DATA_SYMBOL(0x349a,
+// _CreateActionArea) binding names the thunk, so the body carries its behavioral
+// name here, matching the sibling worker-pump family). The ActionArea worker pump /
+// Create<X> game-object notify handler: switches
+// on obj->m_7c->m_1c (callback-state @+0x1c, active CActionArea record @+0x18): tag 0
+// -> new CActionArea(obj) (RezAlloc 0x68, nothrow; ctor thunk 0x2478->0x7da0),
+// rec->Slot06(), m_7c->m_18 = rec; tag 0x1d->Slot11; 0x1e->Slot10; 0x50->Slot14;
+// 0x51->Slot13; 0x52->Slot12; 0x53->Slot15; 0x3e8->no-op; default->ProjTypeXfer
+// ((CXferArchive*)m_7c->m_18) [0x16e4f0]. ret 1. BLOCKER (body match, not identity):
+// canonical CUserLogic declares only slots 00..09; dispatching inherited slots 10-15
+// needs those 6 virtuals added to the shared CUserLogic base (a base-vtable reshape).
 RVA(0x00007c60, 0xf1)
-i32 Gap_007c60(void) {
+i32 ActionAreaWorkerPump(CGameObject* owner) {
     return 0;
 }
 
