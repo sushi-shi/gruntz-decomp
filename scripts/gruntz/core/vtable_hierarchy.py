@@ -81,20 +81,30 @@ SYM = load_symbol_names()
 SYM_BY_NAME = load_symbol_name_to_rva()
 
 
+_GHIDRA_PLACEHOLDER = re.compile(r"^(?:thunk_)?(?:FUN_|DAT_|LAB_|SUB_)[0-9a-fA-F]+$")
+
+
 def slot_name(idx, fn_rva):
     """Best readable name for a slot's function; unknown -> Slot<NN>_<rva>.
     Slots point at ILT jmp-thunks, so on a direct miss we chase the thunk to the
     body and name THAT - functions.csv (readable: FreeAll, ~CFader, __purecall)
-    then symbol_names.csv (the reconstructed src name)."""
+    then symbol_names.csv (the reconstructed src name). A GENERIC Ghidra
+    placeholder (FUN_<rva>/thunk_FUN_<rva>/...) is NOT authoritative - our own
+    symbol_names.csv label wins over it (else a Ghidra recarve that regresses a
+    dtor body from `scalar_deleting_destructor` to `FUN_<rva>` would hide the
+    ??_G dtor slot from the implicit-dtor credit; measured on CActionArea)."""
+    placeholder = None
     for r in (fn_rva, vs.chase_thunk(fn_rva)):
         if r is None:
             continue
         fn = vs.FN.get(r)
-        if fn:
+        if fn and not _GHIDRA_PLACEHOLDER.match(fn[0]):
             return fn[0]
         if r in SYM:
             return SYM[r]
-    return "Slot%02d_%06x" % (idx, fn_rva)
+        if fn and placeholder is None:
+            placeholder = fn[0]
+    return placeholder or "Slot%02d_%06x" % (idx, fn_rva)
 
 
 # ---------------------------------------------------------------------------
