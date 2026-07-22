@@ -90,8 +90,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    if (!m_world->m_drawTarget->Method_158d20()) {
-        if (!m_world->m_drawTarget->Method_158cb0(0, 0x30000)) {
+    if (!m_world->m_drawTarget->HasOverlay()) {
+        if (!m_world->m_drawTarget->CreateOverlay(0, 0x30000)) {
             return 0;
         }
     }
@@ -289,9 +289,9 @@ RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CDDrawSurfaceMgr* root = m_world;
     if (m_videoPlaying != 0) {
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158dc0();
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->PresentBackPage();
         (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->Method_158d50(0);
+        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->ClearAllPages(0);
         root->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         return 1;
     }

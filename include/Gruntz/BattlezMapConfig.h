@@ -23,35 +23,35 @@ public:
     CBattlezMapConfig();
     ~CBattlezMapConfig();
     void FreeArrays();
-    i32 Method_025c20();
+    i32 StepAllRowSpawns();
     void Clear(); // 0x02ade0
-    i32 Method_02c0a0(i32, i32);
-    i32 Method_030530(i32);
-    i32 Method_0305b0(i32, i32, i32);
-    i32 Method_02bfc0(i32, void*, i32, i32);
-    i32 Method_02ed90(i32); // 0x02ed90
+    i32 EnterDefenderMode(i32, i32);
+    i32 PathCrossesMarkedTile(i32);
+    i32 IsCoordOccupied(i32, i32, i32);
+    i32 SerializeState(i32, void*, i32, i32);
+    i32 PathToNearbyUnit(i32); // 0x02ed90
     i32 Serialize(void*);
     i32 Deserialize(void*);
-    i32 Method_030730(i32, i32, i32, i32);
-    i32 Method_030990(i32, i32);
-    i32 Method_0350d0(i32);
-    i32 Method_035210(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
-    i32 Method_035550(i32);      // 0x035550  spend-reserve forced place
-    void* Method_030f20(void*, i32, i32);
-    i32 Method_0300c0(i32, i32, i32, i32, i32, i32);
-    i32 Method_0302c0(i32, i32, i32, i32, i32);
-    i32 Method_026470(i32);
-    i32 Method_034460(i32);
-    i32 Method_025d90();
-    i32 Method_02f620(i32);
-    i32 Method_029b40(i32);
-    i32 Method_02d800(i32, i32, i32, i32);
-    i32 Method_02edb0(i32, i32, i32, i32);
-    i32 Method_030b20(i32, i32, i32);
-    void* Method_02ad40(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
-    i32 Method_02c080(i32);   // 0x02c080
-    i32 Method_034c70(i32);   // 0x034c70  board-tile spawn check for a queued unit
-    i32 Method_0358a0(i32);   // 0x0358a0  idle-unit retarget / despawn / near-band keep
+    i32 ClaimCellFromRow(i32, i32, i32, i32);
+    i32 TrySeedSpawnAt(i32, i32);
+    i32 RepathToFreeCell(i32);
+    i32 ProbeUnoccupiedAt(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
+    i32 ForcePlaceFromReserve(i32);      // 0x035550  spend-reserve forced place
+    void* PickSpawnCoord(void*, i32, i32);
+    i32 RouteUnitTo(i32, i32, i32, i32, i32, i32);
+    i32 RouteUnitToGoal(i32, i32, i32, i32, i32);
+    i32 StepRowSpawn(i32);
+    i32 CanPlaySpecialAnim(i32);
+    i32 StepBoard();
+    i32 ChooseIdleBehavior(i32);
+    i32 ValidateUnitPath(i32);
+    i32 ClaimTilesAround(i32, i32, i32, i32);
+    i32 PathToNearestCandidate(i32, i32, i32, i32);
+    i32 PathToNearestGoal(i32, i32, i32);
+    void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
+    i32 AcceptAlways(i32);   // 0x02c080
+    i32 CheckQueuedSpawnTile(i32);   // 0x034c70  board-tile spawn check for a queued unit
+    i32 RetargetIdleUnit(i32);   // 0x0358a0  idle-unit retarget / despawn / near-band keep
     i32 winapi_0267c0_IntersectRect_PtInRect();
     i32 winapi_02a570_IntersectRect(i32);
     i32 winapi_02ab80_PtInRect(i32, i32, i32, i32);

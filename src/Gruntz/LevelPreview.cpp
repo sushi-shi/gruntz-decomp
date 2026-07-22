@@ -5,7 +5,7 @@
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (Mfc.h above supplies windows.h)
 #include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40 @0x158b40)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (LoadPageImage @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -194,10 +194,10 @@ void CPreviewState::LoadLevelPreviewScreen() {
 // @early-stop
 // 96.39% - pointer-chain scratch-register + arg-eval-order wall (docs/patterns/
 // pin-local-for-callee-saved-reg.md: "inner-split hurts 2-arg"): the m_0c->m_04
-// object base for the 2-arg Method_158b40 call is hoisted before the arg pushes by
+// object base for the 2-arg LoadPageImage call is hoisted before the arg pushes by
 // retail (cl emits it after), and the m_0c->m_04->m_frontPair->m_surface Flip chain picks edx/
 // eax where cl picks ecx/edx - ~6 register-field bytes. Logic + control flow + all
-// externs (sprintf, g_screenTag, ResolveQualified, Method_158b40, Flip) byte-exact.
+// externs (sprintf, g_screenTag, ResolveQualified, LoadPageImage, Flip) byte-exact.
 // Final sweep.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
@@ -216,7 +216,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     if (sym == 0) {
         return 0;
     }
-    if (m_world->m_drawTarget->Method_158b40(sym, 1) == 0) {
+    if (m_world->m_drawTarget->LoadPageImage(sym, 1) == 0) {
         return 0;
     }
     if (doFlip != 0) {

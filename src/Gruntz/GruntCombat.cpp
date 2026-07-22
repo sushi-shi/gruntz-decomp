@@ -98,8 +98,8 @@ static inline void GruntScratchTeardown();
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
 // reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
 //
-// These are the CGrunt analogues of CBattlezMapConfig::Method_025d90 /
-// Method_02f620 (the documented large-state-machine + grid-regalloc walls). Each is
+// These are the CGrunt analogues of CBattlezMapConfig::StepBoard /
+// ChooseIdleBehavior (the documented large-state-machine + grid-regalloc walls). Each is
 // reconstructed complete in shape/order; all carry @early-stop on those walls.
 // Raw-offset member access (the campaign style used by the cluster above) keeps the
 // giant ~0x46c layout tractable.

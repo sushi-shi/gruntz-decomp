@@ -3427,7 +3427,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_comboSel, 4);
     }
     return (static_cast<CBattlezMapConfig*>(&m_038))
-               ->Method_02bfc0(reinterpret_cast<i32>(ar), reinterpret_cast<void*>(kind), a3, a4)
+               ->SerializeState(reinterpret_cast<i32>(ar), reinterpret_cast<void*>(kind), a3, a4)
            != 0;
 }
 
@@ -4642,7 +4642,7 @@ i32 CPlay::QuitToMenu() {
     // It clears the manager's world-file name - CGruntzMgr::m_strWorldFile @+0xc8.
     m_mgr->m_strWorldFile.Empty();
     if (m_1c0 != 0) {
-        if (m_world->m_drawTarget->Method_158d20() != 0) {
+        if (m_world->m_drawTarget->HasOverlay() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
         m_mgr->ChangeState(3);
@@ -5928,7 +5928,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_options[i].m_038.Method_025c20();
+        g_gameReg->m_options[i].m_038.StepAllRowSpawns();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
@@ -6214,10 +6214,10 @@ i32 CPlay::EnterMode(i32 mode) {
         m_guts->Deactivate();
         m_guts->LoadMainStatusBarSprite();
         if (mode == 9) {
-            if (m_world->m_drawTarget->Method_158d20() != 0) {
+            if (m_world->m_drawTarget->HasOverlay() != 0) {
                 goto finish;
             }
-            if (m_world->m_drawTarget->Method_158cb0(0, 0x30000) != 0) {
+            if (m_world->m_drawTarget->CreateOverlay(0, 0x30000) != 0) {
                 goto finish;
             }
             return 0;

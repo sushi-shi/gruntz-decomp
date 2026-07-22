@@ -2004,7 +2004,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_038.Method_030990(g->m_tileX, g->m_tileY) != 0) {
+            } else if (cfg->m_038.TrySeedSpawnAt(g->m_tileX, g->m_tileY) != 0) {
                 ok = 1;
             }
         }

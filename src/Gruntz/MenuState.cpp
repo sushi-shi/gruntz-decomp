@@ -88,8 +88,8 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "MENU", "_");
     }
 
-    if (!m_world->m_drawTarget->Method_158d20()) {
-        if (!m_world->m_drawTarget->Method_158cb0(0, 0x30000)) {
+    if (!m_world->m_drawTarget->HasOverlay()) {
+        if (!m_world->m_drawTarget->CreateOverlay(0, 0x30000)) {
             return 0;
         }
     }

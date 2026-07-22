@@ -62,7 +62,6 @@ public:
     CMapStringToPtr m_10; // +0x10  m_map
 };
 SIZE_UNKNOWN();
-SIZE_UNKNOWN();
 
 
 

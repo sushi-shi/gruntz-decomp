@@ -28,22 +28,22 @@ public:
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
-    i32 Method_158b10(
+    i32 ResolvePageImage(
         struct CParseSource* src,
         i32 arg2
     ); // 0x158b10 (ResolveImage the page from the parse record)
-    i32 Method_158b40(
+    i32 LoadPageImage(
         struct CParseSource* src,
         i32 arg2
     );                    // 0x158b40 (LoadImage the page from the parse record)
-    void Method_158b90(); // 0x158b90
+    void FlipAndNotify(); // 0x158b90
     i32 PagesReady();     // 0x158bc0
-    i32 Method_158bf0(i32 a1, i32 a2, i32 a3); // 0x158bf0
-    i32 Method_158cb0(i32 a1, i32 a2);         // 0x158cb0
-    void Method_158d50(i32 a1);                // 0x158d50
+    i32 ResizePages(i32 a1, i32 a2, i32 a3); // 0x158bf0
+    i32 CreateOverlay(i32 a1, i32 a2);         // 0x158cb0
+    void ClearAllPages(i32 a1);                // 0x158d50
     i32 BlitPage(CDDrawSurfacePair* dst);      // 0x158c70
-    i32 Method_158d20();                       // 0x158d20
-    i32 Method_158dc0();                       // 0x158dc0
+    i32 HasOverlay();                       // 0x158d20
+    i32 PresentBackPage();                       // 0x158dc0
     i32 TransEnter();                          // 0x158e40
     i32 TransTitle();                          // 0x158e90
     i32 TransExit();                           // 0x158ee0
@@ -57,7 +57,6 @@ public:
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
 SIZE(0x1c);
-SIZE_UNKNOWN();
 
 // ---------------------------------------------------------------------------
 // CDrawSubWorker - the 0x30 surface-holder BASE (vtable ??_7 @0x5effa0; ctor

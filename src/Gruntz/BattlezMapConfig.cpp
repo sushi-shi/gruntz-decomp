@@ -326,11 +326,11 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 }
 
 RVA(0x00025c20, 0x55)
-i32 CBattlezMapConfig::Method_025c20() {
+i32 CBattlezMapConfig::StepAllRowSpawns() {
     if (g_gameReg->m_options[m_curCell].m_014 == 0
         && g_gameReg->m_options[m_curCell].m_liveGate != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
-            this->Method_026470(0); // @0x26470 (the per-element refresh sibling)
+            this->StepRowSpawn(0); // @0x26470 (the per-element refresh sibling)
         }
     }
     return 1;
@@ -362,9 +362,9 @@ void CBattlezMapConfig::FreeArrays() {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_025d90  @0x025d90
+// CBattlezMapConfig::StepBoard  @0x025d90
 // The per-tick board step. Run the two timers (claim/spawn budget via
-// Method_026470, and a periodic re-pick), level off mode-3 units' countdowns,
+// StepRowSpawn, and a periodic re-pick), level off mode-3 units' countdowns,
 // then scan the current cell-row for the one eligible unit (passes the cached-
 // cell + clear-flags guards and is NOT one of the I/G/L/P/J/C/R type codes) whose
 // countdown reached 0, transition it (state 0/5 + SetState), and on a 0x12/0x16
@@ -373,13 +373,13 @@ void CBattlezMapConfig::FreeArrays() {
 // ===========================================================================
 // @early-stop
 // large-state-machine plateau: the timer/budget head, the I/G/L/P/J/C/R anim-name
-// dispatch (shared with Method_034460), the eligibility guards, the state
+// dispatch (shared with CanPlaySpecialAnim), the eligibility guards, the state
 // transition + g_coordPool.m_freeHead recycle, and the post-loop countdown decrement are all
 // reconstructed. Residual is the regalloc across the three 15-slot scans + the
 // chosen-unit override local, and the foreign unit/level chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00025d90, 0x580)
-i32 CBattlezMapConfig::Method_025d90() {
+i32 CBattlezMapConfig::StepBoard() {
     if (m_active == 0) {
         return 1;
     }
@@ -387,7 +387,7 @@ i32 CBattlezMapConfig::Method_025d90() {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_spawnInterval) {
-        Method_026470(1);
+        StepRowSpawn(1);
         m_spawnLastFire = m_spawnTimer;
     }
     // Level off the mode-3 countdowns: find the minimum, subtract it from each.
@@ -426,7 +426,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 i32 r2 = rand() % 15;
                 CGrunt* u2 = m_triggerMgr->m_grid[m_curCell * 15 + r2];
                 if (u2 != 0) {
-                    Method_02f620(reinterpret_cast<i32>(u2));
+                    ChooseIdleBehavior(reinterpret_cast<i32>(u2));
                 }
             }
         }
@@ -530,7 +530,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 }
                 // Eligible: transition + (mode 0x12/0x16) recycle its coord nodes.
                 i32 mode = unit->m_2e4;
-                if (Method_030530(reinterpret_cast<i32>(unit)) != 0) {
+                if (PathCrossesMarkedTile(reinterpret_cast<i32>(unit)) != 0) {
                     unit->m_defenderState = 5;
                 } else {
                     unit->m_defenderState = 0;
@@ -562,7 +562,7 @@ i32 CBattlezMapConfig::Method_025d90() {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_026470  @0x026470
+// CBattlezMapConfig::StepRowSpawn  @0x026470
 // Spawn/claim decision for the current cell-row: if the row is already at/over
 // its per-level unit budget (rec->m_378) return early; otherwise scan the first
 // CPtrArray (m_candArray) of candidate coords, skip ones whose tile carries the
@@ -579,7 +579,7 @@ i32 CBattlezMapConfig::Method_025d90() {
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
 // level chains (m_ctx->m_world->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
-i32 CBattlezMapConfig::Method_026470(i32) {
+i32 CBattlezMapConfig::StepRowSpawn(i32) {
     CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
@@ -707,7 +707,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //
 // STRUCTURE (mapped from the retail disasm; reconstructable, just very large): the
 // master per-unit AI dispatch tick. `esi` is the CGrunt (the same CGrunt-family
-// object Method_029b40 drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
+// object ValidateUnitPath drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
 // m_objAux->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
 //   * head (0x267c0..0x2690b): a screen-rect / board-rect intersect + PtInRect-style
 //     geometry gate (the IntersectRect/PtInRect winapi imports at PTR_..006c4568/6c
@@ -726,13 +726,13 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (zDArray, x52),
 //   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
 //   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion,
-//   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
+//   PathCrossesMarkedTile/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
 //   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
 // ===========================================================================
 // @early-stop
 // deferred - SIZE wall, not an idiom/regalloc wall. A faithful reconstruction is
 // tractable (the arm pattern is regular; every callee + type is already modeled - the
-// CGrunt/g_typeColl/CBrickzGrid views used by Method_029b40 above cover it), but at
+// CGrunt/g_typeColl/CBrickzGrid views used by ValidateUnitPath above cover it), but at
 // 10269 B it is a dedicated multi-session leaf-first job, not a single-matcher batch.
 // objdiff scores the WHOLE function's alignment, so any sub-complete partial (even a
 // 1-2 KB faithful head) still scores ~0 and diverges its own regalloc - reconstructing
@@ -786,7 +786,7 @@ i32 CUserLogic::IsAtSavedScreenPos() {
 // one screen probe and y from the other); (3) the head keeps this in [esp+0x8] pre-
 // push where MSVC5 sinks it post-push; (4) deep arm regalloc. Final sweep / permuter.
 RVA(0x00029b40, 0x813)
-i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
+i32 CBattlezMapConfig::ValidateUnitPath(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     CPtrList* coordList = &unit->m_31c;
     if (unit->CoordCount() == 0) {
@@ -943,7 +943,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
         }
         // --- 0x8000 arms: scratchB 0x8000 clears an in-progress state-3; scratchA
-        //     0x8000 gates a commit (mode 0xa) or a Method_030530 hand-off. ---
+        //     0x8000 gates a commit (mode 0xa) or a PathCrossesMarkedTile hand-off. ---
         if ((scratchB.m_0 & 0x8000) && unit->m_defenderState == 3) {
             unit->m_defenderState = 0;
         }
@@ -970,7 +970,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 }
                 return 0;
             }
-            if (Method_030530(reinterpret_cast<i32>(unit)) == 0 && unit->m_defenderState == 7) {
+            if (PathCrossesMarkedTile(reinterpret_cast<i32>(unit)) == 0 && unit->m_defenderState == 7) {
                 GruntCoordNode* head = unit->CoordHead();
                 if (head != 0) {
                     GruntCoordNode* n = head->m_next;
@@ -1028,7 +1028,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     return 1;
                 }
             }
-            if (Method_030b20(reinterpret_cast<i32>(unit), cx, cy) != 0) {
+            if (PathToNearestGoal(reinterpret_cast<i32>(unit), cx, cy) != 0) {
                 return 1;
             }
             i32 sB = scratchB.m_0;
@@ -1037,13 +1037,13 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
             if (hi && unit->m_defenderState != 3) {
                 i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
-                Method_02c0a0(reinterpret_cast<i32>(unit), pick);
+                EnterDefenderMode(reinterpret_cast<i32>(unit), pick);
             }
             if (lo2) {
                 if (unit->m_defenderState == 3) {
                     return 0;
                 }
-                Method_02c0a0(reinterpret_cast<i32>(unit), 0x16);
+                EnterDefenderMode(reinterpret_cast<i32>(unit), 0x16);
             }
             return 0;
         }
@@ -1052,7 +1052,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             if (unit->m_defenderState == 3) {
                 return 0;
             }
-            Method_02c0a0(reinterpret_cast<i32>(unit), 5);
+            EnterDefenderMode(reinterpret_cast<i32>(unit), 5);
             return 0;
         }
         if (sA & 0x40) {
@@ -1067,7 +1067,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 if (unit->m_defenderState == 3) {
                     return 0;
                 }
-                Method_02c0a0(reinterpret_cast<i32>(unit), 0xd);
+                EnterDefenderMode(reinterpret_cast<i32>(unit), 0xd);
                 return 0;
             }
         }
@@ -1162,7 +1162,7 @@ recycleBail:
 // EH-frame + FindPath reroute plateau: the 13x13 box clamp, the 3-node blocked-tile
 // scan, the 0x12/0x16/0xe FindPath-flag build, CPtrList(10)/FindPath, the g_coordPool.m_freeHead +
 // g_coordPool recycles, the AddTail path-swap, and both dirty-rect re-clamps are
-// reconstructed in shape + order (same family as Method_030b20 / Method_0302c0).
+// reconstructed in shape + order (same family as PathToNearestGoal / RouteUnitToGoal).
 // Residual is the /GX cond-temp EH state machine (shared `je <unwind>` cleanup vs
 // cl's per-return duplication), the deep-loop regalloc across the CPtrList walks, and
 // the dead maybe-null box branch retail emits (shared with winapi_02c140/02dfa0).
@@ -1381,7 +1381,7 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_02ad40  @0x02ad40
+// CBattlezMapConfig::PickRandomIdleUnit  @0x02ad40
 // Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
 // (avoiding the current cell index m_curCell by bumping past it), a random start cell
 // [0..14], then scan the band's 15 units from there (cell index wrapping mod 15),
@@ -1397,7 +1397,7 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
 // counter), and the swap cascades through the small body. Logic + offsets correct;
 // the residual reg-swap is not source-steerable (permuter-confirmed). Final sweep.
 RVA(0x0002ad40, 0x71)
-void* CBattlezMapConfig::Method_02ad40(i32) {
+void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
     if (m_curCell == band) {
         band++;
@@ -1429,14 +1429,14 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
 // (m_198==0x1e) or unit's coord and return. Otherwise commit the neighbour
 // (CommitNeighbor) and, when tgt's prim anim is 0x11, clamp the board dirty-rect to
 // an 11x11 box around tgt (IntersectRect copy-back) and re-path tgt to a random
-// nearby cell (Method_0300c0, flags 0x20000d87). Returns 1 (0 on the eligibility rejects).
+// nearby cell (RouteUnitTo, flags 0x20000d87). Returns 1 (0 on the eligibility rejects).
 // ===========================================================================
 // @early-stop
 // string-dispatch + box-clamp plateau: the five inline-strcmp J/C/R/G/L rejects (the
 // bool-local setcc form, docs/patterns/strcmp-eq-bool-local-setcc.md), the rand()%4
 // gate, all three reloc-masked helper calls (RectContainsGated / ApplyTriggerB /
 // CommitNeighbor), the prim==0x11 gate, and the box build + IntersectRect clamp +
-// Method_0300c0 re-path are reconstructed in shape + order. Residual is the box-tail
+// RouteUnitTo re-path are reconstructed in shape + order. Residual is the box-tail
 // stack-slot schedule (the rand-offset dest coords + the dead maybe-null box branch
 // retail emits, shared with winapi_02c140/02dfa0) and the foreign unit/level chains
 // modeled by raw offset. Deferred to the final sweep.
@@ -1546,7 +1546,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-    Method_0300c0(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
+    RouteUnitTo(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
     board->Clip(static_cast<const RECT*>(0));
     return 1;
 }
@@ -1791,7 +1791,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
+i32 CBattlezMapConfig::SerializeState(i32 objArg, void* kindArg, i32, i32) {
     CSerialArchive* obj = reinterpret_cast<CSerialArchive*>(objArg);
     i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {
@@ -1823,12 +1823,12 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
 }
 
 RVA(0x0002c080, 0x8)
-i32 CBattlezMapConfig::Method_02c080(i32) {
+i32 CBattlezMapConfig::AcceptAlways(i32) {
     return 1;
 }
 
 RVA(0x0002c0a0, 0x78)
-i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
+i32 CBattlezMapConfig::EnterDefenderMode(i32 unitArg, i32 value) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->m_defenderState == 3) {
         return 1;
@@ -1855,14 +1855,14 @@ i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
 // box centered on the unit (four GetCoord corner reads + the IntersectRect copy-back
 // idiom), then iterate the scene collection (m_ctx->m_world->m_childGroup) for a kind-matching
 // (m_7c handler == 0x40288d), non-flagged (m_40&1), in-box unit; on the first such
-// unit re-path this unit toward it (Method_0300c0, flags 0x2000098b), re-clamp the
+// unit re-path this unit toward it (RouteUnitTo, flags 0x2000098b), re-clamp the
 // dirty-rect, and return 1. Exhausting the collection tails into board Clip + return 0.
 // ===========================================================================
 // @early-stop
 // iterator + reloc + stack-slot plateau: the box build, the IntersectRect clamp, the
 // PtInRect gate, the all-same-target anim switch (0x33..0x40 jump table - table data is
 // a delinker scoring artifact, docs/patterns/switch-jumptable-separate-comdat.md), the
-// class-identity handler compare (reloc-masked immediate), both Method_0300c0 arms + the
+// class-identity handler compare (reloc-masked immediate), both RouteUnitTo arms + the
 // two re-clamp variants are reconstructed in shape + order. Two residuals: (1) the
 // loop back-edge - retail inlines the FIRST GetNext pop + tail-calls the helper where a
 // natural call re-emits it; (2) the dead maybe-null box branch retail emits (shared with
@@ -1940,7 +1940,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             wpt.y = gy;
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == 0) {
-                    if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
+                    if (RouteUnitTo(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CBrickzGrid* bd = m_board;
                         RECT mb;
                         mb.left = 0;
@@ -1968,7 +1968,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         p2 = unit->m_19c;
                     }
                     if (p2 == 0) {
-                        if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
+                        if (RouteUnitTo(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CBrickzGrid* bd = m_board;
                             RECT r1;
                             static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
@@ -2395,7 +2395,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 // offsets shift +0x20 (frame 0x40 vs 0x60) and every reg operand diverges. Not
 // source-steerable; a permuter target for the final sweep.
 RVA(0x0002d800, 0x605)
-i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
+i32 CBattlezMapConfig::ClaimTilesAround(i32 a4, i32 col, i32 row, i32 a5) {
     if (g_stepRun == 0) {
         return 0;
     }
@@ -2539,7 +2539,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cm, row, a5);
+                ClaimTilesAround(a4, cm, row, a5);
             }
         }
         b = m_board;
@@ -2548,7 +2548,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[row]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cp, row, a5);
+                ClaimTilesAround(a4, cp, row, a5);
             }
         }
         b = m_board;
@@ -2557,7 +2557,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((col * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, col, rm, a5);
+                ClaimTilesAround(a4, col, rm, a5);
             }
         }
         b = m_board;
@@ -2566,7 +2566,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((col * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, col, rp, a5);
+                ClaimTilesAround(a4, col, rp, a5);
             }
         }
         b = m_board;
@@ -2575,7 +2575,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cp, rm, a5);
+                ClaimTilesAround(a4, cp, rm, a5);
             }
         }
         b = m_board;
@@ -2584,7 +2584,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((cp * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cp, rp, a5);
+                ClaimTilesAround(a4, cp, rp, a5);
             }
         }
         b = m_board;
@@ -2593,7 +2593,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rp]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cm, rp, a5);
+                ClaimTilesAround(a4, cm, rp, a5);
             }
         }
         b = m_board;
@@ -2602,7 +2602,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             nt = reinterpret_cast<i32*>((reinterpret_cast<char*>(b->m_rows[rm]) + ((cm * 7) << 2)));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
-                Method_02d800(a4, cm, rm, a5);
+                ClaimTilesAround(a4, cm, rm, a5);
             }
         }
         if (g_stepRun == 0) {
@@ -2617,7 +2617,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 // The flood-fill launcher. Arm g_stepRun, build a 17x17 box around the unit's
 // (>>5) coord (three GetCoord reads for the corners), clamp the board dirty-rect
 // to that box intersected with the board bounds (the IntersectRect copy-back
-// idiom), then run the recursive flood-fill (Method_02d800). If it committed
+// idiom), then run the recursive flood-fill (ClaimTilesAround). If it committed
 // (g_stepRun cleared), read the tile under the unit (and, when it has a live coord
 // list, the tile under its tail coord); when a blocked (bit 0x4) tile is seen,
 // stamp the unit's packed coord and place it at the committed cell (Method_4b320,
@@ -2626,7 +2626,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 // ===========================================================================
 // @early-stop
 // flood-fill-driver stack-slot plateau: logic + every call (the three GetCoords,
-// IntersectRect x2, Method_02d800, Method_4b320) is reconstructed in shape + order,
+// IntersectRect x2, ClaimTilesAround, Method_4b320) is reconstructed in shape + order,
 // and the box/clamp/tile-read/clear-loop arithmetic is byte-shaped. Residual is the
 // documented overlapping stack-slot schedule of the box + the two dirty-rect
 // clamps (shared with GruntPathScan's SCAN_BOUNDS + 031ca0) and the dead
@@ -2661,7 +2661,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-    Method_02d800(unitArg, a1, a2, a3);
+    ClaimTilesAround(unitArg, a1, a2, a3);
     if (g_stepRun == 0) {
         i32 savedX = unit->m_entrancePxX;
         i32 savedY = unit->m_entrancePxY;
@@ -2740,7 +2740,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
 // grid coord is inside the box, keeping the manhattan-distance-squared nearest.
 // If one is found (and the arg unit's m_dwell cooldown > 0x64), clamp the board
 // dirty-rect to that box, build the FindPath flag word from the unit's 0x12/0x16/
-// 0xe anim modes, and re-path the unit toward it (Method_0300c0, flags 0x1000d8f).
+// 0xe anim modes, and re-path the unit toward it (RouteUnitTo, flags 0x1000d8f).
 // On a route, debounce the m_390 latch (a g_frameTime window against m_scratch78..m_084,
 // firing the scene hit when the unit's level coord is on-screen), re-clamp the
 // board dirty-rect, and return 1. No candidate latches m_390 and returns 0.
@@ -2750,7 +2750,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
 // 4-corner box build, the band scan with the five inline-strcmp C/R/J/G/L rejects
 // (setne bool form) + PtInRect + dist^2 min-keep, the box clamp with the dead
 // maybe-null branch retail emits, the 0x12/0x16/0xe FindPath-flag build, the
-// Method_0300c0 re-path, the m_390 64-bit-timer debounce + scene-hit, and both
+// RouteUnitTo re-path, the m_390 64-bit-timer debounce + scene-hit, and both
 // dirty-rect re-clamps are reconstructed in shape + order. Residual is the
 // compiler's stack colouring of the 6 transient Coord/box slots (the >>5 corners
 // alias the later dist temporaries) + the /GX cond-temp EH state; foreign
@@ -2912,7 +2912,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     Coord bc;
     (static_cast<CUserLogic*>(best))->GetScreenPos((&bc));
-    if (Method_0300c0(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1)
+    if (RouteUnitTo(reinterpret_cast<i32>(unit), bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1)
         == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
@@ -2981,11 +2981,11 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_02edb0  @0x02edb0  (/GX EH frame)
+// CBattlezMapConfig::PathToNearestCandidate  @0x02edb0  (/GX EH frame)
 // Reroute a unit toward a target cell. The target is (arg2,arg3) when `useArg` is
 // set, else the first of the unit's occupied coords that lands on a blocked (bit
-// 0x4) tile. If the unit already collides there (Method_0305b0) recycle its path +
-// clear state; if its path is blocked (Method_030530) honour the reserved-tile
+// 0x4) tile. If the unit already collides there (IsCoordOccupied) recycle its path +
+// clear state; if its path is blocked (PathCrossesMarkedTile) honour the reserved-tile
 // bit. Otherwise scan the current cell-row for the nearest eligible unit (passing
 // the cached-cell + clear-flag guards and NOT an I/G/L/P/J/C/R type code) within
 // distance 0x190, build the FindPath flags from its 0x16/0x12 anim modes, ask
@@ -2993,21 +2993,21 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 // coords onto g_coordPool, AddTail the new, set state 5). Returns 1 on a reroute.
 // ===========================================================================
 // @early-stop
-// resolver + EH + regalloc plateau: the coord-scan head, the Method_0305b0 collision
-// + Method_030530 block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
+// resolver + EH + regalloc plateau: the coord-scan head, the IsCoordOccupied collision
+// + PathCrossesMarkedTile block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
 // (docs/patterns/strcmp-eq-bool-local-setcc.md), the distance<=0x190 best scan, the
 // 0x16/0x12 flag build, CPtrList(10)/GetCoord/FindPath, and the g_coordPool/g_coordPool.m_freeHead
 // path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
-// Method_02ed90 (0x2ed90) - always returns 0.
+// PathToNearbyUnit (0x2ed90) - always returns 0.
 RVA(0x0002ed90, 0x5)
-i32 CBattlezMapConfig::Method_02ed90(i32) {
+i32 CBattlezMapConfig::PathToNearbyUnit(i32) {
     return 0;
 }
 
 RVA(0x0002edb0, 0x6b4)
-i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
+i32 CBattlezMapConfig::PathToNearestCandidate(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->CoordCount() == 0) {
         return 0;
@@ -3046,7 +3046,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     if (found == 0) {
         return 0;
     }
-    if (Method_0305b0(unitArg, tx, ty) != 0) {
+    if (IsCoordOccupied(unitArg, tx, ty) != 0) {
         // Already colliding there: recycle the unit's path + reset state.
         if (unit->CoordCount() != 0) {
             GruntCoordNode* n = unit->CoordHead();
@@ -3067,7 +3067,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     if (found == 0) {
         return 0;
     }
-    if (Method_030530(unitArg) != 0) {
+    if (PathCrossesMarkedTile(unitArg) != 0) {
         // Path is blocked: a reserved-tile bit on the first path coord aborts.
         if (unit->CoordCount() != 0) {
             GruntCoordNode* p = unit->CoordHead();
@@ -3088,7 +3088,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
             return 1;
         }
     }
-    if (Method_0305b0(unitArg, tx, ty) != 0) {
+    if (IsCoordOccupied(unitArg, tx, ty) != 0) {
         return 0;
     }
     // Scan the current cell-row from a random start for the nearest eligible unit.
@@ -3211,7 +3211,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_02f620  @0x02f620
+// CBattlezMapConfig::ChooseIdleBehavior  @0x02f620
 // The grunt idle-behaviour chooser (the cluster's largest method). Gate the unit
 // on the four clear-flag guards, then reject the I/G/L/P/J/C/R type codes (I via
 // GetRecord, the rest via the scratch-teardown GetRecords). For an eligible unit,
@@ -3231,10 +3231,10 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
 // CString teardown loop - retail copies the count, decrements, tests the original,
 // and recovers the trip via `lea edi,[eax+1]` where MSVC5 here just `mov edi,eax`s
 // the count (a loop-strength-reduction idiom no source spelling reproduces, shared
-// with Method_034460); (2) the threshold-cascade regalloc (retail pins the rolled
+// with CanPlaySpecialAnim); (2) the threshold-cascade regalloc (retail pins the rolled
 // value in edx, the band divisors in esi). Deferred to the final sweep.
 RVA(0x0002f620, 0x871)
-i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
+i32 CBattlezMapConfig::ChooseIdleBehavior(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->m_entranceCommitted == 0) {
         return 0;
@@ -3561,7 +3561,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)
+// CBattlezMapConfig::RouteUnitTo  @0x0300c0  (/GX EH frame)
 // Re-path `unit` to (gx,gy): if it is already there (its level geometry's
 // (>>5) coord equals the goal) succeed trivially; otherwise ask the board's
 // A* (FindPath) for a route into a local CPtrList, then swap the unit's path:
@@ -3579,7 +3579,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 // the ~CPtrList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
-i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
+i32 CBattlezMapConfig::RouteUnitTo(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
     CPtrList list(10);
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     CGameObject* lvl = unit->m_object;
@@ -3632,8 +3632,8 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0302c0  @0x0302c0  (/GX EH frame)
-// Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
+// CBattlezMapConfig::RouteUnitToGoal  @0x0302c0  (/GX EH frame)
+// Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of RouteUnitTo. If the
 // unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
 // for a node already on the goal; ask the board's A* (FindPath) for a route into a
 // local CPtrList; recycle the route's head + (when the goal was already queued) the
@@ -3644,12 +3644,12 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 // EH-frame + regalloc plateau: logic + every call (the two GetCoords, FindPath,
 // RemoveHead, the g_coordPool.m_freeHead recycles, AddTail, the ~CPtrList unwind) is reconstructed
 // in shape + order. Two walls: (1) the /GX cond-temp EH state machine (shared
-// `je <unwind>` cleanup vs cl's per-return duplication, same as Method_0300c0); (2)
+// `je <unwind>` cleanup vs cl's per-return duplication, same as RouteUnitTo); (2)
 // the matched-node g_coordPool.m_freeHead recycle in the middle compiles to a degenerate
 // loop-invariant `do/while` in retail (the path-segment recycle) that no source
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
+i32 CBattlezMapConfig::RouteUnitToGoal(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
     CPtrList list(10);
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     Coord cur;
@@ -3724,7 +3724,7 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 }
 
 RVA(0x00030530, 0x56)
-i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
+i32 CBattlezMapConfig::PathCrossesMarkedTile(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->CoordCount() == 0) {
         return 0;
@@ -3748,7 +3748,7 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0305b0  @0x0305b0
+// CBattlezMapConfig::IsCoordOccupied  @0x0305b0
 // Scan the current cell-row for any OTHER unit that occupies coordinate
 // (arg1, arg2): either via a "blocked tile" hit on the unit's occupied-coord
 // list, via the unit's own packed coord (m_entrancePxX/m_entrancePxY >> 5), or via its level
@@ -3762,7 +3762,7 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
 // ebx. The divergence cascades through every register operand. No steerable
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
-i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
+i32 CBattlezMapConfig::IsCoordOccupied(i32 selfUnit, i32 qx, i32 qy) {
     CGrunt** units = m_triggerMgr->m_grid + m_curCell * 15;
     for (i32 i = 0; i < 15; i++) {
         CGrunt* unit = units[i];
@@ -3808,7 +3808,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_030730  @0x030730
+// CBattlezMapConfig::ClaimCellFromRow  @0x030730
 // Cell-claim scan: for the (cellX,cellY) source unit, walk the 15 unit slots of
 // the CURRENT cell-row (m_curCell) and, for each candidate whose mode is 3 (or a
 // 2/3-of-the-time random pick) and whose per-level record lands within distance
@@ -3823,7 +3823,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
 // locals (no spill slot) vs retail's 0xc. Cascades through the cellX/cellY
 // reg-vs-memory operand choice. No steerable spelling found; final sweep.
 RVA(0x00030730, 0x1da)
-i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
+i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (m_active == 0) {
         return 0;
     }
@@ -3894,7 +3894,7 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_030990  @0x030990
+// CBattlezMapConfig::TrySeedSpawnAt  @0x030990
 // Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
 // current cell-row; if that count is at/over the per-level record's budget
 // (rec->m_378) bail. Otherwise probe the screen cell mapped from (arg1,arg2) via the
@@ -3912,7 +3912,7 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
 // reschedules the -1 block. No source lever forces the pinning under /O2 (see
 // docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
 RVA(0x00030990, 0x11b)
-i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
+i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
@@ -3964,10 +3964,10 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_030b20  @0x030b20  (/GX EH frame)
+// CBattlezMapConfig::PathToNearestGoal  @0x030b20  (/GX EH frame)
 // Best-fit reroute: locate the cell record for (col,row) - directly when its tile
 // dword[4] == 0x67, else via m_ctx->QueryA - then scan its 24-entry sub-cell
-// pointer block for the candidate, not colliding with `unit` (Method_0305b0),
+// pointer block for the candidate, not colliding with `unit` (IsCoordOccupied),
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
 // ask CBrickzGrid::FindPath for a route into a local CPtrList, then swap the unit's path
@@ -3976,14 +3976,14 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau (~69%): logic + every call (QueryA/QueryB,
-// Method_0305b0, the 0x16/0x12 flag build, CPtrList(10)/FindPath, the g_coordPool.m_freeHead
+// IsCoordOccupied, the 0x16/0x12 flag build, CPtrList(10)/FindPath, the g_coordPool.m_freeHead
 // recycle + AddTail path-swap, ~CPtrList) is reconstructed in shape + order. Residual
 // is the head's instruction scheduling (retail interleaves the goalX/goalY >>5 with
 // the tile lookup and pins the cell base in edi where MSVC5 here computes the goal
 // upfront and spills) plus the /GX cleanup epilogue funnel; the foreign cell/level
 // chains are modeled by raw offset. Deferred to the final sweep.
 RVA(0x00030b20, 0x328)
-i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
+i32 CBattlezMapConfig::PathToNearestGoal(i32 unitArg, i32 col, i32 row) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     CGameObject* lvl = unit->m_object;
     i32 goalX = lvl->m_screenX >> 5;
@@ -4013,7 +4013,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
                 if (rec != 0) {
                     i32 cx = rec->m_08;    // the record's tile coords (the m_tileX/m_tileY
                     i32 cy = rec->m_key0c; // slots of the logic-record family)
-                    if (Method_0305b0(unitArg, cx, cy) != 0) {
+                    if (IsCoordOccupied(unitArg, cx, cy) != 0) {
                         return 1;
                     }
                 }
@@ -4044,7 +4044,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (bestDist == 0x7fffffff) {
         return 0;
     }
-    if (Method_0305b0(unitArg, bestX, bestY) != 0) {
+    if (IsCoordOccupied(unitArg, bestX, bestY) != 0) {
         return 0;
     }
     CPtrList list(10);
@@ -4078,7 +4078,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         )
         == 0) {
         // No route: hand off to the sibling coord state machine and bail.
-        Method_02edb0(unitArg, 1, bestX, bestY);
+        PathToNearestCandidate(unitArg, 1, bestX, bestY);
         return 0;
     }
     if (list.GetCount() == 0) {
@@ -4122,7 +4122,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_030f20  @0x030f20
+// CBattlezMapConfig::PickSpawnCoord  @0x030f20
 // Pick a spawn coordinate for `unit` from the per-level record's candidate list
 // (index `kind`, 0..3): start at a random candidate and walk forward (mod count)
 // looking for one not already occupied by any unit in the current cell-row; on
@@ -4137,7 +4137,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
 // collision loop's register operands (load-then-test vs memory-compare on
 // u->CoordCount(), cand coord regs). No steerable spelling found; final sweep.
 RVA(0x00030f20, 0x16d)
-void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
+void* CBattlezMapConfig::PickSpawnCoord(void* out, i32 unitArg, i32 kind) {
     Coord* o = static_cast<Coord*>(out);
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (kind < 0 || kind >= 4) {
@@ -4531,7 +4531,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
 // band m_curCell, requiring the record's +0x170 ready / +0x174 clear) when unset, or
 // re-validate the stored one (recycling the unit's coords + resetting on an invalid
 // record). Then, for a unit that holds no coords (m_coordCount == 0), dispatch on m_defenderState:
-//   0 -> seed the goal (m_defenderX/m_defenderY) from the band record or a Method_030f20 re-route,
+//   0 -> seed the goal (m_defenderX/m_defenderY) from the band record or a PickSpawnCoord re-route,
 //        keeping the nearer of the current vs stored goal, and advance to mode 6;
 //   6 -> if the idle timer (m_dwell) exceeds m_moveBudget, measure the distance to the goal:
 //        arrive (mode 7) within 4 tiles, else re-place toward it (GridUnitSpawn::Place,
@@ -4549,7 +4549,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
 // all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_coordPool.m_freeHead inline) are
 // reconstructed in shape + order. Residual is the register-relative record-address regalloc
 // (cl strength-reduces the band*0x238 lea-chain + folds the +0x170/+0x188/+0x258 sub-offsets
-// differently per arm, the documented Method_0358a0 record-address wall) + the box-stack-slot
+// differently per arm, the documented RetargetIdleUnit record-address wall) + the box-stack-slot
 // schedule; foreign board/record chains modeled by raw offset. Not source-steerable.
 RVA(0x00032060, 0x7bd)
 i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
@@ -4661,7 +4661,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             if (*reinterpret_cast<i32*>((edge + 0xf8)) != 0) {
                 Coord out;
                 Coord* r =
-                    static_cast<Coord*>(Method_030f20(&out, reinterpret_cast<i32>(unit), band));
+                    static_cast<Coord*>(PickSpawnCoord(&out, reinterpret_cast<i32>(unit), band));
                 x = r->m_x;
                 y = r->m_y;
             } else {
@@ -4862,7 +4862,7 @@ void CGrunt::RecycleCoords() {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_034460  @0x034460
+// CBattlezMapConfig::CanPlaySpecialAnim  @0x034460
 // Anim-name gate: a unit is eligible for a "special" anim only when it sits on
 // its cached cell (lvl coord == m_lastTilePxX/m_lastTilePxY) and a block of state flags is clear.
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
@@ -4878,7 +4878,7 @@ void CGrunt::RecycleCoords() {
 // reconstructed but its global-scratch regalloc and the imul/bounds arithmetic
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
-i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
+i32 CBattlezMapConfig::CanPlaySpecialAnim(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit == 0) {
         return 0;
@@ -5005,7 +5005,7 @@ void zErrHandling::Report(i32 sentinel, i32 code) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_034c70  @0x034c70
+// CBattlezMapConfig::CheckQueuedSpawnTile  @0x034c70
 // The queued-unit board-tile resolver. For a unit with no live coord list
 // (m_coordCount==0): look up its target tile (board->m_rows[m_arrivalRow][m_arrivalCol]); if the tile
 // carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
@@ -5024,7 +5024,7 @@ void zErrHandling::Report(i32 sentinel, i32 code) {
 // pin) and the tile-index math (m_arrivalCol*7) spills to different stack slots than
 // MSVC5 here. Foreign unit/board chains modeled by raw offset. Deferred to final sweep.
 RVA(0x00034c70, 0x133)
-i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
+i32 CBattlezMapConfig::CheckQueuedSpawnTile(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->CoordCount() != 0) {
         return 1;
@@ -5076,13 +5076,13 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0350d0  @0x0350d0
+// CBattlezMapConfig::RepathToFreeCell  @0x0350d0
 // Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
 // unit's m_dwell timer exceeding the bundle's m_repathBudget budget; otherwise walk the grid
 // object's candidate list (head at m_triggerMgr->m_4), and among the unoccupied candidates
 // (sub->m_occupied == 0, and not already exactly on the unit's level coord) keep the one
 // nearest (min squared distance) to the unit's level (>>5) coordinate. If one is
-// found, re-path the unit to it via Method_0300c0 (flags 0xd87). Clear m_dwell and
+// found, re-path the unit to it via RouteUnitTo (flags 0xd87). Clear m_dwell and
 // return 1.
 // ===========================================================================
 // @early-stop
@@ -5094,7 +5094,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // spill-pressure choice. No source lever forces the spill under /O2; the divergence
 // cascades through every loop register operand. Final sweep.
 RVA(0x000350d0, 0xfa)
-i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
+i32 CBattlezMapConfig::RepathToFreeCell(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
         CGruntPuddle* best = 0;
@@ -5120,7 +5120,7 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
             }
         }
         if (best != 0) {
-            Method_0300c0(unitArg, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
+            RouteUnitTo(unitArg, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
         }
         unit->m_dwell = 0;
     }
@@ -5128,7 +5128,7 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
 }
 
 RVA(0x00035210, 0x4f)
-i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
+i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     CPtrList& lst = m_ctx->m_cmdGrid->m_baseList;
     POSITION pos = lst.GetHeadPosition();
     while (pos != 0) {
@@ -5141,7 +5141,7 @@ i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
 }
 
 RVA(0x00035550, 0x52)
-i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
+i32 CBattlezMapConfig::ForcePlaceFromReserve(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     if (unit->CoordCount() != 0) {
         return 1;
@@ -5162,7 +5162,7 @@ i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 CGrunt* arg)
+// CBattlezMapConfig::RetargetIdleUnit  @0x0358a0  (__thiscall ret 4 => 1 CGrunt* arg)
 // The idle-unit policy step: when the unit holds no occupied coords it either
 // retargets to a random band (m_arrivalCol == -1, idle timer past m_moveBudget) or re-places at its
 // band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
@@ -5181,7 +5181,7 @@ i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
 // wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
 // differently across the four arms) and the dead saved-m_arrivalCol reload; logic complete.
 RVA(0x000358a0, 0x2d6)
-i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
+i32 CBattlezMapConfig::RetargetIdleUnit(i32 unitArg) {
     CGrunt* unit = reinterpret_cast<CGrunt*>(unitArg);
     char* recA = 0;
     char* recB0 = 0;
@@ -5213,7 +5213,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_arrivalCol = band;
                 unit->m_arrivalRow = 0;
-                Method_02c080(reinterpret_cast<i32>(unit));
+                AcceptAlways(reinterpret_cast<i32>(unit));
             }
             unit->m_dwell = 0;
             return 1;

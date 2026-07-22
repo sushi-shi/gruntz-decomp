@@ -1239,7 +1239,7 @@ void CDDrawSubMgrPages::DestroyChildren() {
 }
 
 RVA(0x00158b10, 0x2c)
-i32 CDDrawSubMgrPages::Method_158b10(CParseSource* src, i32 arg2) {
+i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_overlayPair;
@@ -1256,7 +1256,7 @@ i32 CDDrawSubMgrPages::Method_158b10(CParseSource* src, i32 arg2) {
 }
 
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::Method_158b40(CParseSource* src, i32 arg2) {
+i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_overlayPair;
@@ -1273,7 +1273,7 @@ i32 CDDrawSubMgrPages::Method_158b40(CParseSource* src, i32 arg2) {
 }
 
 RVA(0x00158b90, 0x28)
-void CDDrawSubMgrPages::Method_158b90() {
+void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontPair->m_surface->Flip(0);
     CDDrawSurfaceMgr* n = m_0c;
     CDDrawChildGroup* c = n->m_childGroup;
@@ -1296,7 +1296,7 @@ i32 CDDrawSubMgrPages::PagesReady() {
 }
 
 RVA(0x00158bf0, 0x7f)
-i32 CDDrawSubMgrPages::Method_158bf0(i32 a1, i32 a2, i32 a3) {
+i32 CDDrawSubMgrPages::ResizePages(i32 a1, i32 a2, i32 a3) {
     CDDrawSurfacePair* p = m_frontPair;
     if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
         if (!m_frontPair->SetGeom(a1, a2, a3)) {
@@ -1332,7 +1332,7 @@ i32 CDDrawSubMgrPages::BlitPage(CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00158cb0, 0x6a)
-i32 CDDrawSubMgrPages::Method_158cb0(i32 a1, i32 a2) {
+i32 CDDrawSubMgrPages::CreateOverlay(i32 a1, i32 a2) {
     if (m_overlayPair->IsLoaded()) {
         return 0;
     }
@@ -1347,7 +1347,7 @@ i32 CDDrawSubMgrPages::Method_158cb0(i32 a1, i32 a2) {
 }
 
 RVA(0x00158d20, 0x16)
-i32 CDDrawSubMgrPages::Method_158d20() {
+i32 CDDrawSubMgrPages::HasOverlay() {
     if (!m_overlayPair) {
         return 0;
     }
@@ -1355,7 +1355,7 @@ i32 CDDrawSubMgrPages::Method_158d20() {
 }
 
 RVA(0x00158d50, 0x61)
-void CDDrawSubMgrPages::Method_158d50(i32 a1) {
+void CDDrawSubMgrPages::ClearAllPages(i32 a1) {
     m_backPair->m_surface->Fill(a1);
     m_frontPair->m_surface->Flip(0);
     m_backPair->m_surface->Fill(a1);
@@ -1377,7 +1377,7 @@ void CDDrawSubMgrPages::Method_158d50(i32 a1) {
 // prologue - a regalloc/branch-layout coin-flip (flat &&-else regressed to 68%).
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00158dc0, 0x7d)
-i32 CDDrawSubMgrPages::Method_158dc0() {
+i32 CDDrawSubMgrPages::PresentBackPage() {
     CDDrawSurfacePair* p10 = m_frontPair;
     i32 ok = 0;
     if (p10 && p10->m_surface) {

@@ -316,7 +316,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     world->SetHwnd(static_cast<void*>(&cb_403193));
     world->m_level->m_maxStepX = 0xe;
     world->m_level->m_maxStepY = 0xe;
-    world->m_drawTarget->Method_158cb0(0, 0x30000);
+    world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
     RegisterGameObjectTypes(world); // 0xa3b0 (the ctx IS this world holder)
     if (!MakeRezPath()) {           // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)

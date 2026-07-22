@@ -30,7 +30,7 @@ class CActionOptionsMenuBar;
 
 // The ELEMENT type of the base object list (m_baseList, +0x000): the battlez spawn
 // machine's "grid candidate" - a grid (x,y) at +0x54/+0x58 and an occupied flag at
-// +0x5c. Retail proof (Method_035210 @0x35210, byte-exact): `[[this+4]+0x68]` (the
+// +0x5c. Retail proof (ProbeUnoccupiedAt @0x35210, byte-exact): `[[this+4]+0x68]` (the
 // level's trigger mgr) `-> [+0x4]` (the list's head slot) then, per node, `[node+8]`
 // and `cmp [elem+0x54],x / cmp [elem+0x58],y / mov [elem+0x5c]`.
 // @identity-TODO: the RTTI class is NOT recovered - the element carries no vptr store

@@ -11,7 +11,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (LoadPageImage)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
 #include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
@@ -187,13 +187,13 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
         return 0;
     }
     CDDrawSubMgrPages* w = menuRoot()->m_drawTarget;
-    if (w->Method_158b40(page, e != 0 ? 2 : 1) != 0) {
+    if (w->LoadPageImage(page, e != 0 ? 2 : 1) != 0) {
         return 1;
     }
     if (e == 0) {
         return 1;
     }
-    if (w->Method_158b40(page, 1) != 0) {
+    if (w->LoadPageImage(page, 1) != 0) {
         return 1;
     }
     return 0;
@@ -394,7 +394,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
 }
 
 // CState::RetireScene(a1,a2,a3,a4) (0xfa8f0): two-channel type-3 screen-transition
-// emitter; channel B chosen via a4 + CDDrawWorkerMgr::Method_158d20. No bank-stop
+// emitter; channel B chosen via a4 + CDDrawWorkerMgr::HasOverlay. No bank-stop
 // bracketing on this variant. On CState:
 // the retail caller graph shows every screen state (CPreviewState/CAttract/CBootyState/
 // CCreditsState/CMulti/CPlay/...) invokes it on its OWN `this`, and the body reads only
@@ -418,7 +418,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
         return 0;
     }
     CDDrawSurfacePair* holderB;
-    if (a4 != 0 && fxRes()->m_worker->Method_158d20() != 0) {
+    if (a4 != 0 && fxRes()->m_worker->HasOverlay() != 0) {
         holderB = fxRes()->m_worker->m_overlayPair;
     } else {
         holderB = fxRes()->m_worker->m_backPair;

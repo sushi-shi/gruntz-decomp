@@ -47,9 +47,9 @@ RVA(0x00095140, 0x6e)
 i32 CHelpState::Vslot09(i32 arg) {
     m_mgr->RestoreVideoMode(0);
     // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
-    // the Method_158d20 call - a caching local would pin it in edi and mismatch).
-    if (m_world->m_drawTarget->Method_158d20() == 0
-        && m_world->m_drawTarget->Method_158cb0(0, 0x30000) == 0) {
+    // the HasOverlay call - a caching local would pin it in edi and mismatch).
+    if (m_world->m_drawTarget->HasOverlay() == 0
+        && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
         return 0;
     }
     if (FadeInTitle(reinterpret_cast<const char*>(&g_titleBuf), 0, 0, 0, 0, 1) == 0) {

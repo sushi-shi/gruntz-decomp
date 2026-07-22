@@ -2853,7 +2853,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
         GruntzPlayer* slot = &m_options[i];
         if (cursor == i && slot->m_014 == 0 && slot->m_liveGate != 0) {
-            slot->m_038.Method_025d90();
+            slot->m_038.StepBoard();
             cursor = g_optionsCursor;
         }
     }

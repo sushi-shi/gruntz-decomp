@@ -1046,8 +1046,8 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
-    // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
-    m_world->m_drawTarget->Method_158dc0();
+    // PresentBackPage); retail loads the VALUE at [m_c+4], not its address.
+    m_world->m_drawTarget->PresentBackPage();
     // The +0x1c chain is m_ptrColl->m_device (the held DirectDraw device); slot +0x28
     // with no args is FlipToGDISurface - flip to GDI before the ShowCursor loop below.
     m_world->m_ptrColl->m_device->FlipToGDISurface();
@@ -1127,7 +1127,7 @@ i32 CMulti::Open() {
         return 0;
     }
     RunTitleSeq("BACKGND", 0, 0, 1, 0);            // 0xfa350 (CState base)
-    m_world->m_drawTarget->Method_158dc0();        // m_c->m_4
+    m_world->m_drawTarget->PresentBackPage();        // m_c->m_4
     InterfaceObject* descriptor = SetupServices(); // 0xb78b0 (the selected provider node)
     if (!descriptor) {
         return 0;
