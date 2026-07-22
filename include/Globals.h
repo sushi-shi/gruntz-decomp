@@ -259,4 +259,25 @@ extern "C" {
     extern i32 g_profAccB;
 }
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern char g_typeDesc1[];
+extern i32 g_screenTag;
+extern void* g_battlezCustomMsgMap;
+extern const double c_volScale;
+extern const double c_volNum;
+extern const double c_powExp;
+extern const double c_acosNorm;
+extern const double g_motionNegHalf;
+extern "C" i32 g_areaHazardParam;
+extern "C" i32 g_levelBias100;
+extern "C" i32 g_activePlayerCount;
+    // g_opt_22bd64..g_opt_22bdd4 (the options-dialog staging cells, 0x22bd64..0x22bdd4)
+    // are DEFINED in their owning TU src/Gruntz/VideoConfig.cpp (videoconfig.obj's .bss);
+    // the reference externs stay in <Globals.h>.
+    // The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in src/Rez/RezSync.cpp
+    // (its owner: Init loads all twelve from the .bute keys that name them).
+    // g_profAccA/g_profAccB DEFINED in src/Gruntz/Play.cpp (owner TU).
+
 #endif // GRUNTZ_GLOBALS_H

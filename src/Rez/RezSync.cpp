@@ -1,3 +1,4 @@
+#include <Rez/RezSync.h> // own extern surface
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (ex .cpp extern)
 #include <Net/NetMgr.h>           // g_localVersion (ex .cpp extern; def in Multi.cpp)
@@ -73,40 +74,18 @@ extern "C" {
     i32 g_enableEmulation = 0; // "Enable Emulation"
 }
 
-extern i32 g_dlgVal_6451a4, g_dlgVal_645268, g_dlgVal_64526c, g_dlgVal_6452a8;
-extern i32 g_dlgVal_6452d0, g_dlgVal_6452d4, g_dlgVal_645538, g_dlgVal_645558;
-extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 
-extern "C" {
-    // @identity-TODO: 0x645570 has TWO readings and they contradict - here it is the
-    // CSpawnOwner* handed to CGruntSpawnConfig::Init, in GruntzMgr it is read as a
-    // DirectInputMgr2* ("attract host"). Typing it either way would be a guess, so it
-    // stays void* and the `(CSpawnOwner*)` cast at the call site STAYS: the cast is
-    // telling the truth - the type above it is still unresolved. Settle the conflation
-    // (one object, two class names) and the cast falls out on its own.
-    extern void* g_inputMgr;
-    // 0x645578 IS the CGruntSpawnConfig singleton - PROVEN in this very function:
-    // RezAlloc(0x28) (its exact size), then ->Init(CSpawnOwner*), then RezFree on the
-    // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
-    extern CGruntSpawnConfig* g_spawnConfig;
-}
 
 DATA(0x00245534)
 extern "C" {
     i32 g_attractStateCount = 0; // 0x645534
 }
 
-extern "C" char* StrUpr(char*); // 0x18d330
 
-extern "C" void cb_403193();
-extern "C" void cb_401bc2();
-extern char g_lab504358[]; // 0x504358
-extern char g_lab545854[]; // 0x545854
 
 void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
 void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 
-extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree74
 
 DATA(0x00245210)
 i32 g_appHInstance;

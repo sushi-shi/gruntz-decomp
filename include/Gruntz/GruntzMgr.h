@@ -491,4 +491,19 @@ extern "C" CGruntzMgr* g_gameReg;
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
 extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
+
+// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
+// VAs are reloc-masked at use) ---
+extern "C" u32 g_gruntDestruction; // "Grunt destruction"
+extern "C" u32 g_gruntCreation;    // "Grunt creation"
+extern "C" u32 g_gooPuddlez;       // "Goo puddlez"
+extern "C" i32 g_monologoShown;    // the MONOLITH logo is on screen (LoadMonologoSprite)
+extern "C" i32 g_cdPromptResult;
+extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
+extern "C" u32 g_explosionz;    // "Explosionz"
+extern i32 g_isHost_648cf0;
+extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
+extern CString g_brickText1;
+extern CString g_brickText2;
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H
