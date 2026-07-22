@@ -356,4 +356,6 @@ extern CMulti* g_multiState;
 extern CString g_sessionName;
 extern "C" i32 g_optionsCursor;
 
+extern CNetMgr* g_groupEnumMgr; // 0x00248cf4
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

@@ -38,4 +38,9 @@ struct CDropEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CSiblingActReg (extern below)
+extern CSiblingActReg g_dropColl; // 0x0024bed8
+
+extern CSiblingActReg g_dropperActReg; // 0x0024be90
+
 #endif // GRUNTZ_CDROPPEDOBJECT_H

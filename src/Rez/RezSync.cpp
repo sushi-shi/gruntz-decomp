@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (ex .cpp extern)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
@@ -44,7 +45,6 @@
 void* operator new(unsigned int);
 void operator delete(void*);
 
-extern "C" void* g_gameReg;    // 0x64556c (typed CGruntzMgr* in its owner TU)
 extern "C" i32 g_localVersion; // 0x60fa70
 extern "C" {
     DATA(0x002455b4)

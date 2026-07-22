@@ -2,8 +2,8 @@
 #include <Io/FileStream.h>          // CFileIO - the engine KERNEL32 file reader (0x1befd7..)
 #include <Ints.h>
 #include <rva.h>
+#include <Image/ImagePool.h> // g_hResModule (ex .cpp extern)
 
-extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 
 namespace ApiCallerStubs {
 

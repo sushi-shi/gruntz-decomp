@@ -56,7 +56,6 @@
 
 DATA(0x001e9a68)
 double s_fpZero = 0.0;        // 0x5e9a68
-extern const char k_60df94[]; // 0x60df94
 
 static void GruntPosScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
@@ -128,6 +127,7 @@ static void GruntScratchTeardown() {
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 
 #include <Gruntz/GruntBehaviorLeaf.h>
+#include <Globals.h> // k_60df94 (ex .cpp extern)
 // ---------------------------------------------------------------------------
 // CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
 // @early-stop

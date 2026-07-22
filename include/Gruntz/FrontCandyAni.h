@@ -39,4 +39,7 @@ struct CFrontCandyActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_frontCandyActReg; // 0x002460b0
+
 #endif // GRUNTZ_CFRONTCANDYANI_H

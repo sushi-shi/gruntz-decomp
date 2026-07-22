@@ -47,6 +47,10 @@ static const char s_keyF[] = "F";
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 #include <Wap32/ZVec.h>
 
+// g_actionTable (0x00244610): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244610, 0x0, ?g_actionTable@@3UCActReg@@A)
+
 // ===========================================================================
 // RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
 // ===========================================================================
@@ -325,8 +329,6 @@ i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 }
 
 VTBL(CWarlord, 0x001e7404);
-DATA(0x00244610)
-extern CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
 
 RVA(0x000445c0, 0x15)
 void CWarlord::InitActReg() {

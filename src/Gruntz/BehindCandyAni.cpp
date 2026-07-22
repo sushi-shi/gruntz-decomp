@@ -9,8 +9,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CBehindCandyAni, 0x001e838c);
-DATA(0x00245f98)
-extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 
 
 RVA(0x00010050, 0x47)
@@ -113,3 +111,7 @@ i32 CBehindCandyAni::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+
+// g_behindCandyActReg (0x00245f98): CBehindCandyActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00245f98, 0x0, ?g_behindCandyActReg@@3UCBehindCandyActReg@@A)

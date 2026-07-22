@@ -635,4 +635,11 @@ extern "C" {
     extern u32 g_engineFrameDelta;    // draw-delta mirror
 }
 
+// The channel-slot pool helpers (defs in Play.cpp, C++ linkage - the old
+// consumer-side `extern "C"` decls were wrong about the defs' linkage).
+i32 ChannelSlots_FindFree();    // 0xdb280
+void ChannelSlots_InitAll();    // 0x2da1 (thunk) - no `this` (stale-ecx callee)
+
+extern i32 g_areaPageSize; // 0x00245270
+
 #endif // SRC_GRUNTZ_CPLAY_H

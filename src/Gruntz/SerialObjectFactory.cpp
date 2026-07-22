@@ -5,8 +5,8 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry (mgr->m_world)
 
 #include <rva.h>
+#include <Io/GameSave.h> // g_saveBuf (ex .cpp extern)
 
-extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
 extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
 extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)
 int __stdcall Parse156530(void* table, char* s, int z); // 0x156530

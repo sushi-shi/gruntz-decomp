@@ -910,7 +910,6 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
     }
 }
 
-extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 RVA(0x0013f960, 0x22)
 i32 CDDSurface::RestoreLost() {
     if (m_b8 != 0) {

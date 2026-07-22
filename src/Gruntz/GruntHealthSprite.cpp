@@ -11,8 +11,6 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
 VTBL(CGruntHealthSprite, 0x001e7ba4);
-DATA(0x00244d80)
-extern CIndicatorActReg g_healthActReg; // 0x644d80
 
 RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
@@ -22,6 +20,10 @@ CGruntHealthSprite::CGruntHealthSprite() {}
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+
+// g_healthActReg (0x00244d80): CIndicatorActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244d80, 0x0, ?g_healthActReg@@3UCIndicatorActReg@@A)
 RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
 RVA(0x0007eb00, 0x170)

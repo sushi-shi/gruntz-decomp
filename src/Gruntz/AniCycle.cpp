@@ -5,8 +5,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CAniCycle, 0x001e86a4);
-DATA(0x00246088)
-extern CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
 
 RVA(0x0000f470, 0x47)
 i32 CAniCycle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
@@ -83,3 +81,7 @@ void CAniCycle::RegisterActs() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+
+// g_aniCycleActReg (0x00246088): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00246088, 0x0, ?g_aniCycleActReg@@3UCActReg@@A)

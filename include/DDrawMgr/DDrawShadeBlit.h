@@ -127,4 +127,6 @@ public:
 };
 SIZE(0x3c);
 
+extern ShadeDescr* g_blendDescr; // 0x002bf218
+
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

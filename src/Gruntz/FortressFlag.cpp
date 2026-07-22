@@ -30,8 +30,6 @@
 VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
 VTBL(CExplosion, 0x001e766c);
-DATA(0x00244638)
-extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
 
 DATA(0x00244870)
 extern CActReg g_partColl;
@@ -473,6 +471,10 @@ void RegisterXLogic_6447f8() {
 }
 
 #include <rva.h>
+
+// g_fortressFlagActReg (0x00244638): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244638, 0x0, ?g_fortressFlagActReg@@3UCActReg@@A)
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
 //  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).

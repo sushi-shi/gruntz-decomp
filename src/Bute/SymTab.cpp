@@ -17,6 +17,7 @@
 #include <Bute/SymParser.h>     // full CSymParser + CSymTab/CSymRec via SymTab.h
 #include <Gruntz/ParseSource.h> // canonical CParseSource (the 0x3c parse-slot record)
 #include <Rez/RezMgr.h>         // CRezDirNode/CRezDir/RezSrc (the two stray fns)
+#include <Rez/RezFile.h> // g_wildcard (ex .cpp extern)
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -1215,7 +1216,6 @@ VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor st
 VTBL(CParserObjList, 0x001ef75c);
 DATA(0x0020cff0)
 const char g_sepSlash[] = "\\"; // decl in <Bute/SymTab.h>
-extern "C" const char g_wildcard[];
 extern char g_dot[];    // 0x5ee8ec  "." (def: Dsndmgr/SoundBankLoad.cpp)
 extern char g_dotDot[]; // 0x60cf90  ".."
 

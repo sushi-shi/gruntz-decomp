@@ -45,4 +45,7 @@ struct CAniCycleActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_aniCycleActReg; // 0x00246088
+
 #endif // GRUNTZ_CANICYCLE_H

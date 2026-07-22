@@ -57,4 +57,6 @@ public:
 };
 SIZE_UNKNOWN();
 
+extern "C" HINSTANCE g_hResModule; // 0x002bf6e0 (C linkage - the owner def's wrapper)
+
 #endif // SRC_IMAGE_IMAGEPOOL_H

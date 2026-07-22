@@ -35,10 +35,6 @@ const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
 DATA(0x001eaa00)
 double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
 
-DATA(0x0024be90)
-extern CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
-DATA(0x0024bed8)
-extern CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fields
 DATA(0x0024bf00)
 extern CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
 
@@ -845,3 +841,11 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
 }
 
 #include <rva.h>
+
+// g_dropperActReg (0x0024be90): CSiblingActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x0024be90, 0x0, ?g_dropperActReg@@3UCSiblingActReg@@A)
+
+// g_dropColl (0x0024bed8): CSiblingActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x0024bed8, 0x0, ?g_dropColl@@3UCSiblingActReg@@A)

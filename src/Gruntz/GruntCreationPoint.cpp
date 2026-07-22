@@ -13,8 +13,6 @@
 typedef i32 (CUserLogic::*CreationPointHandler)();
 
 VTBL(CGruntCreationPoint, 0x001e81d4);
-DATA(0x00244700)
-extern CActReg g_creationPointActReg; // 0x644700
 
 
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
@@ -78,10 +76,14 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-extern "C" i32 ChannelSlots_FindFree();
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/Play.h> // ChannelSlots_FindFree (ex .cpp extern)
+
+// g_creationPointActReg (0x00244700): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244700, 0x0, ?g_creationPointActReg@@3UCActReg@@A)
 
 // CGruntCreationPoint::Serialize @0x03e7a0 - chain the shared CUserLogic serialize
 // helper, then the +0x34 sub-object's chain; on the post-load tag (tag == 8),

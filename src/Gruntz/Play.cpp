@@ -56,6 +56,7 @@
 #include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
 #include <Globals.h>
 
+#include <Gruntz/GameText.h> // g_brickText1 (ex .cpp extern)
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -666,8 +667,6 @@ extern "C" {
     u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 }
 
-DATA(0x00245270)
-extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 extern "C" i32 g_playActive;   // DAT_0064e35c
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;
@@ -2571,7 +2570,6 @@ i32 CPlay::DrawWorldFrames() {
     return steps;
 }
 
-extern CString g_brickText1; // 0x645524 (def: GameText.cpp)
 extern "C" {
     // The variadic profiler logger (cdecl). 0x1b2cf5.
     void ProfLog(void* sink, const char* fmt, ...);
@@ -6013,6 +6011,9 @@ i32 CPlay::ResetPlayState() {
 }
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+
+DATA(0x00245270)
+i32 g_areaPageSize; // owner def (zero-init .bss)
 
 // (The 9 CRt* views are GONE - CRtThis==CPlay, CRtWorld==CWorld, CRtResMgr==
 // CDDrawSurfaceMgr (its m_8 "CDDrawChildGroup" facet is the sprite-factory/renderer

@@ -18,6 +18,7 @@
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
+#include <Gruntz/BootyMessages.h> // g_levelMsgRectsA (ex .cpp extern)
 
 // ===========================================================================
 // CBootyState::GenMenuRandPos (0x19cd0): a MEMBER whose body never touches `this` (so the
@@ -284,7 +285,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
     return 1;
 }
 
-extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
 DATA(0x0020b8b8)
 i32 g_levelMsgIconPos[16] = {
     0xea,

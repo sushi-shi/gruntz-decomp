@@ -51,4 +51,6 @@ struct CHealthActEntry {
 };
 SIZE_UNKNOWN();
 
+extern CIndicatorActReg g_healthActReg; // 0x00244d80
+
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

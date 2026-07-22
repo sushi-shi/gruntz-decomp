@@ -167,7 +167,6 @@ extern "C" void ServicesDispatchCb(); // 0x401a19
 
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
-extern "C" CNetMgr* g_groupEnumMgr;                                   // 0x648cf4
 extern "C" CMulti* g_connectRptMgr;                                   // 0x648cf8
 
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
@@ -184,6 +183,10 @@ extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
 void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
+#include <Gruntz/Play.h> // ChannelSlots_InitAll (ex .cpp extern)
+
+DATA(0x00248cf4)
+CNetMgr* g_groupEnumMgr; // owner def (zero-init .bss)
 DATA(0x00248cf0)
 i32 g_isHost_648cf0;
 
@@ -261,7 +264,6 @@ void ConstructFileIOGlobal() {
     g_obj646778.CFile::CFile();
 }
 
-extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
@@ -2060,7 +2062,6 @@ i32 CMulti::PollSession() {
 }
 
 i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
-i32 ChannelSlots_FindFree();         // 0xdb280
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
 extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940

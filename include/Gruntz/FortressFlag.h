@@ -39,4 +39,7 @@ struct CFortressFlagActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+extern CActReg g_fortressFlagActReg; // 0x00244638
+
 #endif // GRUNTZ_CFORTRESSFLAG_H

@@ -16,8 +16,8 @@ DATA_SYMBOL(0x000024e6, 0x0, ?SaveRunCallback@@YAHPAX0HHH@Z)
 extern i32 __cdecl
 SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
 
-DATA(0x00229930) // extern "C": C++ array-global mangling diverges clang vs MSVC5 (as g_mapCurve)
-extern "C" i32 g_saveBuf[0x24]; // 0x229930
+DATA(0x00229930) // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
+i32 g_saveBuf[0x24]; // the OWNER DEFINITION (zero-init, matching the retail datum)
 
 RVA(0x0000d170, 0x74)
 i32 SaveGame(CGameSaveHost* host, char* name) {

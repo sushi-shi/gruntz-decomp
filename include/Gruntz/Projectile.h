@@ -90,4 +90,8 @@ struct CProjActEntry {
 };
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
+extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
+
+
+
 #endif // GRUNTZ_PROJECTILE_H

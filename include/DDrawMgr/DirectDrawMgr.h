@@ -129,4 +129,6 @@ SIZE_UNKNOWN();
 
 class CMoviePlayer;
 typedef CMoviePlayer CDDPageMgr;
+extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
+
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

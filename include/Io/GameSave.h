@@ -14,4 +14,8 @@ SIZE_UNKNOWN();
 
 i32 SaveGame(CGameSaveHost* host, char* name);
 
+// C linkage: the C++ array-global mangling diverges clang vs MSVC5 (the
+// data-binding gotcha); the owner def in GameSave.cpp inherits it from here.
+extern "C" i32 g_saveBuf[0x24]; // 0x229930  the 0x90-byte save header scratch
+
 #endif // GRUNTZ_IO_GAMESAVE_H

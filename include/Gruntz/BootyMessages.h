@@ -8,4 +8,6 @@ struct SecretMsgRow {
 };
 SIZE_UNKNOWN();
 
+extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
+
 #endif // GRUNTZ_GRUNTZ_BOOTYMESSAGES_H

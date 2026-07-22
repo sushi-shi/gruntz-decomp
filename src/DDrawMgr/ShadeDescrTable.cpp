@@ -12,7 +12,6 @@ DATA(0x002bf210)
 ShadeDescr* g_shadeDescr210 = 0;
 DATA(0x002bf214)
 ShadeDescr* g_shadeDescr214 = 0;
-extern ShadeDescr* g_blendDescr; // 0x6bf218
 DATA(0x002bf21c)
 ShadeDescr* g_shadeDescr21c = 0;
 DATA(0x002bf220)

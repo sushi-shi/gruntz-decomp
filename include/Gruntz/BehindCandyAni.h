@@ -38,4 +38,7 @@ struct CBehindCandyActEntry {
 };
 SIZE_UNKNOWN();
 
+#include <Gruntz/ActReg.h> // CBehindCandyActReg (extern below)
+extern CBehindCandyActReg g_behindCandyActReg; // 0x00245f98
+
 #endif // GRUNTZ_CBEHINDCANDYANI_H
