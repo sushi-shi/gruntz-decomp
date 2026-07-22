@@ -10,7 +10,7 @@
 #include <Gruntz/ImageState.h> // canonical CImageState (CState leaf, MENU image loader)
 
 RVA(0x000a09a0, 0x6a)
-i32 CImageState::LoadStateImages() {
+i32 CMenuState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }

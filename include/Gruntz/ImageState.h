@@ -6,7 +6,6 @@
 
 class CImageState : public CState {
 public:
-    i32 LoadStateImages(); // 0xa09a0
 };
 SIZE_UNKNOWN();
 

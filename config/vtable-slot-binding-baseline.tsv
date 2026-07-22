@@ -13,13 +13,6 @@ WIRING	0x1e7324	CRainCloud	20	0x0b4640	?ArmStrike@CPathHazard@@QAEHHH@Z	pathhaza
 WIRING	0x1e798c	CProjectile	1	0x0e0d40	?Load@CProjLoadRec@@QAEHPAVCFileMemBase@@HHPAUCGameObject@@@Z	projloadrec
 WIRING	0x1e9634	CGruntzSingleCommand	9	0x024140	?ApplyOne@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr
 WIRING	0x1e96b4	CGruntzMultiCommand	9	0x024190	?ApplyMask@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr
-WIRING	0x1e9c64	CCreditsState	10	0x039160	?RefreshTitle@CAttract@@QAEHH@Z	attract
-WIRING	0x1e9cec	CBootyState	7	0x01ce30	?ReadyAndPaint@CMultiBootyState@@QAEHXZ	bootystateactivate
-WIRING	0x1e9d74	CSplashState	9	0x0f9880	?OnStart@CTitleApp@@QAEHH@Z	titleappstart
-WIRING	0x1e9e84	CMenuState	6	0x0a0a30	?Activate@CAttract@@QAEHXZ	attract
-WIRING	0x1e9e84	CMenuState	7	0x0a0d40	?ReadyGate@CMenuState@@QAEHXZ	menustate
-WIRING	0x1e9e84	CMenuState	8	0x0a09a0	?LoadStateImages@CImageState@@QAEHXZ	stateimages
-WIRING	0x1e9e84	CMenuState	9	0x0a03f0	?LoadTitleConfig@CAttract@@QAEHH@Z	attract
 WIRING	0x1e9f0c	CDemo	42	0x03c0e0	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	demo
 WIRING	0x1e9fe4	CMulti	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
 WIRING	0x1ea0bc	CPlay	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath

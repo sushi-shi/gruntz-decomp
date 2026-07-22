@@ -19,7 +19,6 @@
 
 class CTitleApp : public CState {
 public:
-    int OnStart(int unused); // 0xf9880
     char m_pad1a8[0x1b8 - 0x1a8];
     int m_1b8; // +0x1b8 timer
 };

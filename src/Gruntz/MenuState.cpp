@@ -333,7 +333,7 @@ i32 CMenuState::Vslot10(i32 arg1, i32 arg2, i32 arg3) {
 }
 
 RVA(0x000a0d40, 0x24)
-i32 CMenuState::ReadyGate() {
+i32 CMenuState::Vslot07() {
     i32 r = IsActive();
     if (r == 0) {
         return r;

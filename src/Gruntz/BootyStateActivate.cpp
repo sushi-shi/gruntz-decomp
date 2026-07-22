@@ -454,7 +454,7 @@ i32 CBootyState::Vslot06() {
 }
 
 RVA(0x0001ce30, 0x1d)
-i32 CMultiBootyState::ReadyAndPaint() {
+i32 CBootyState::Vslot07() {
     if (IsActive() == 0) {
         return 0;
     }

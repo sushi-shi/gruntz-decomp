@@ -17,9 +17,10 @@
 
 #include <Gruntz/AssetRoot.h>
 #include <Gruntz/TitleApp.h> // canonical CTitleApp (CState leaf; identity @identity-TODO)
+#include <Gruntz/SplashState.h> // CSplashState: its slot-9 override is DEFINED here (retail TU placement)
 
 RVA(0x000f9880, 0x43)
-int CTitleApp::OnStart(int) {
+i32 CSplashState::Vslot09(i32) {
     int(WINAPI * sc)(BOOL) = ::ShowCursor;
     while (sc(0) >= 0) {
     }

@@ -5,6 +5,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
+#include <Gruntz/GameMode.h> // CMenuState + CCreditsState: their slot overrides are DEFINED here (retail TU placement)
 #include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view (also used by CDemo/CHelpState)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
@@ -32,7 +33,7 @@ DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
 
 RVA(0x00039160, 0x46)
-i32 CAttract::RefreshTitle(i32 unused) {
+i32 CCreditsState::FrameSlot28(i32 unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
     m_2c = static_cast<CResSource*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
@@ -46,7 +47,7 @@ i32 CAttract::RefreshTitle(i32 unused) {
 // body byte-exact; retail emits a separate inline `xor eax,eax` for the FadeInTitle
 // fail return-0, the recompile reuses the already-zero eax. Not steerable by source.
 RVA(0x000a03f0, 0x14b)
-i32 CAttract::LoadTitleConfig(i32 mode) {
+i32 CMenuState::Vslot09(i32 mode) {
     char stateName[0x20];
     char titleName[0x20];
 
@@ -94,7 +95,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         do {
         } while (ShowCursor(1) < 0);
     }
-    CommitStage();
+    StartMusic(); // 0xa05a0 (ex the phantom CAttract::CommitStage alias)
     return 1;
 }
 
@@ -109,7 +110,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 // `xor eax,eax` (return 0) while the recompile reuses the already-zero FadeInTitle
 // result in eax. Same non-steerable wall as the sibling LoadTitleConfig.
 RVA(0x000a0a30, 0x110)
-i32 CAttract::Activate() {
+i32 CMenuState::Vslot06() {
     char stateName[0x20];
     char titleName[0x20];
 

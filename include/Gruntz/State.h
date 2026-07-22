@@ -175,6 +175,15 @@ public:
     CDDrawSurfaceMgr* menuRoot() {
         return m_world;
     }
+    CSymParser* stateMgr() {
+        return static_cast<CSymParser*>(m_symParser);
+    }
+    CGruntzMgr* owner() {
+        return static_cast<CGruntzMgr*>(m_mgr);
+    }
+    CSymTab* attractState() {
+        return (m_2c);
+    }
 
     // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three
     // resource registries (m_c->m_imageRegistry/m_28/m_animRegistry) from the m_gruntzBank symbol

@@ -58,30 +58,19 @@ public:
     // "EnterAttractMode" decl is GONE - it IS the slot-1 LoadGameAssetNamespaces
     // override above, RTTI+ILT-proven; the old "signature differs" note was stale,
     // both are __thiscall (i32,i32,i32) ret 0xc.)
-    i32 RefreshTitle(i32 unused);  // 0x39160
-    i32 LoadTitleConfig(i32 mode); // 0xa03f0
-    i32 Activate();                // 0xa0a30
 
     // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 / RetireScene 0xfa8f0
     //  are CState-base title-roll/transition methods now - declared in <Gruntz/State.h>,
     //  inherited here. The former fake CAttract::BuildMenuPage @0xfa8f0 view is dissolved.)
     // engine tail helpers (__thiscall, reached via ILT thunks).
-    void CommitStage(); // FUN_004a05a0
 
     // Typed views of the inherited CState slots re-typed to the attract facets that
     // share them (the object at each slot IS that facet in the attract state; the
     // base declares them generically because other states put other types there).
     // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
     // (menuRoot() moved to CState with the title-roll cluster.)
-    CSymParser* stateMgr() {
-        return static_cast<CSymParser*>(m_symParser);
-    }
-    CGruntzMgr* owner() {
-        return static_cast<CGruntzMgr*>(m_mgr);
-    }
-    CSymTab* attractState() {
-        return (m_2c);
-    }
+    // (stateMgr()/owner()/attractState() moved to CState with the slot re-owning
+    // cluster - the sibling states' slot bodies use them too.)
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).
     char m_pad1a8[0x1b4 - 0x1a8];

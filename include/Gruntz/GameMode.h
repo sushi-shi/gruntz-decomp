@@ -57,16 +57,16 @@ public:
     CMenuState() {
         m_1b4 = 0;
     }
-    virtual i32 Vslot06() OVERRIDE; // slot 6
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x0a0a30 (ex CAttract::Activate; defined in Attract.cpp)
     // slot 1  0x09fe50 (MenuStateAssets.cpp; retail ??_7CMenuState slot 1 = ILT
     // 0x32ec -> 0x9fe50, ex "LoadAssets") - the MENU asset loader: registers the
     // MENU IMAGEZ/SOUNDZ namespaces through the m_c (CDDrawSurfaceMgr) resource
     // facet, primes the state core, then builds the menu HUD object + wires its
     // keys/sound cues.
     virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE;              // slot 7
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0a0d40 (ex ReadyGate: the &&-chained ready/transition probe - IsActive() && CommitState() ? Vslot06())
+    virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x0a09a0 (ex CImageState::LoadStateImages; defined in StateImages.cpp)
+    virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x0a03f0 (ex CAttract::LoadTitleConfig; defined in Attract.cpp)
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
     virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
@@ -93,9 +93,6 @@ public:
     void StartMusic();     // 0xa05a0 - music start gate
     void StopMusicChain(); // 0xa0640 - stop + cue chain
 
-    // ReadyGate (0xa0d40): the &&-chained ready/transition probe -
-    // IsActive() (slot 3) && CommitState() (the 0x1136 thunk) ? Vslot06() (slot 6).
-    i32 ReadyGate();
     // CommitState (reached via the 0x1136 ILT thunk; external no-body ->
     // reloc-masked). Returns nonzero when the pending state commit succeeds.
     i32 CommitState();
@@ -166,7 +163,7 @@ public:
     virtual i32 InputVirtual()
         OVERRIDE;                      // slot 8  (+0x20) 0x0393b0 per-frame input poll (title gate)
     virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x039120 (declared-only)
-    virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x039160 (declared-only; shared body)
+    virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x039160 (ex CAttract::RefreshTitle; defined in Attract.cpp)
     virtual i32 Vslot0c(i32, i32)
         OVERRIDE; // slot 12 (+0x30) 0x039440 (declared-only: ESC/SPC/ENTER cmd)
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x0394b0 (declared-only)
@@ -284,7 +281,7 @@ public:
     }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x01c210 per-frame booty draw (stub)
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x01ce10 (declared-only)
-    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (declared-only; sib ReadyAndPaint)
+    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (ex ReadyAndPaint: ready-gate + per-frame paint; defined in BootyStateActivate.cpp)
     virtual i32 InputVirtual() OVERRIDE;   // slot 8  (+0x20) 0x01c8a0 (declared-only; StateImages)
     virtual i32 Vslot09(i32) OVERRIDE;     // slot 9  (+0x24) 0x018d30 (declared-only; vfunc_9)
     virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x018e40 (declared-only)
@@ -489,9 +486,6 @@ public:
     // not a CMultiBootyState-local BaseOnActivate alias; see StateImages / Attract.cpp.)
     void OnActivated(); // 0x1ed30
 
-    // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
-    // run the per-frame paint and return its normalized result, else 0.
-    i32 ReadyAndPaint(); // 0x1ce30
     // 0x1d420 is CBootyState::Vslot0c (vtable slot 12), homed out-of-line (matcher-5);
     // this non-virtual CMultiBootyState alias is kept decl-only (no RVA) for callers.
     i32 ForwardIdleAnim(i32 a, i32 b);
