@@ -344,17 +344,33 @@ def cmd_build(args) -> None:
     if not REPORT.exists():
         die("no objdiff report - the build did not produce build/objdiff/report.json.")
 
-    # Fast inner loop: show the objdiff %% and stop. The structural gates below
-    # (verify_stubs / class_sizes / vtable_* / uniqueness, ~20s of fresh-interpreter
-    # analysis) validate the ANNOTATION/vtable/class-size invariants - none of which
-    # a pure function-body edit can change. Matchers iterate with --fast and run one
-    # full `gruntz build` (all gates) before committing.
-    if getattr(args, "fast", False):
-        summarize(json.loads(REPORT.read_text()), full=False)
-        log("fast build: skipped structural gates - run a full `gruntz build` before committing.")
-        _record_build_time("fast", time.monotonic() - build_start, ninja_s, 0.0)
-        return
-    gates_t0 = time.monotonic()   # gate-tail start (full build only)
+    # Gate tiers (measured wall-times in docs/build-system.md):
+    #   fast   ~2s  the sub-second honest ratchets an edit trips every time
+    #               (label/tu-order/compgen/data-rva/single-view/view-typedef) - the
+    #               matcher inner loop, replacing the old skip-everything --fast.
+    #   normal ~10s fast + the vtable / class-metadata family (the DEFAULT, per commit).
+    #   full   ~19s everything, incl. the 3 slowest (view_debt, class_sizes,
+    #               vtable_owner) - run from time to time, not on every commit.
+    tier = "full" if getattr(args, "full", False) else (
+        "fast" if getattr(args, "fast", False) else getattr(args, "tier", "normal"))
+    _ORD = {"fast": 0, "normal": 1, "full": 2}
+    req = _ORD[tier]
+    gates_t0 = time.monotonic()
+
+    def _gate(mod, gargs, die_msg, gtier):
+        """Run a fatal source-gate iff its tier is within the requested tier;
+        print all output + die() on failure, else log the summary line."""
+        if req < _ORD[gtier]:
+            return
+        r = subprocess.run([sys.executable, "-m", mod, *gargs],
+                           cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+        if r.returncode != 0:
+            for ln in (r.stdout + r.stderr).splitlines():
+                print(ln, file=sys.stderr)
+            die(die_msg)
+        out = (r.stdout + r.stderr).strip()
+        if out:
+            log(out.splitlines()[-1])
 
     # Gate 0: the gates' own NEGATIVE CONTROLS (~0.01s, hermetic - no build artifacts).
     # Every gate below reports a number, and a gate nobody has watched FAIL reports it
@@ -364,22 +380,44 @@ def cmd_build(args) -> None:
     # forever. Each of those is now a test that fails against the code that shipped it.
     # This runs FIRST: if the checks are broken, their verdicts below are worthless.
     run([sys.executable, "-m", "gruntz.match.gate_selftest"])
-    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
-    # so this is the only check on its address uniqueness + format.
-    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
-    # Gate: no retail RVA may be double-claimed by a src RVA() reconstruction AND a
-    # config/library_labels.csv carve-out row (game body vs library body must be
-    # mutually exclusive). FATAL, no allowlist. See gruntz.match.verify_library_overlap.
-    run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
-    # One mangled fn name = one RVA (MSVC5 keeps one COMDAT copy per name, so a
-    # duplicate across units contradicts the binary). FATAL. See
-    # gruntz.match.verify_unique_names.
-    run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
     summarize(json.loads(REPORT.read_text()), write=True)  # the ONE writer of the baselines
 
-    # Non-fatal extras: per-function source fingerprints (so regression checks can
-    # tell an edited function from a collateral drop), the README score block, and
-    # regressions vs the committed best-% baseline. See gruntz.match.status.
+    # FAST tier - the sub-second honest ratchets an edit trips (label / linker-order /
+    # data-rva / single-view / view-typedef). Run in EVERY tier.
+    _gate("gruntz.audit.tu_order_check", ["--gate"],
+          "tu-order ratchet violated - a function move broke the linker-order "
+          "invariant (python -m gruntz.audit.tu_order_check --tu <name>)", "fast")
+    _gate("gruntz.audit.compgen_order", ["--gate"],
+          "compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
+          "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "fast")
+    _gate("gruntz.audit.data_tu_order", ["--ratchet"],
+          "data-tu-order ratchet violated - a DATA def lands inside another TU's "
+          "same-storage band (python -m gruntz.audit.data_tu_order)", "fast")
+    _gate("gruntz.audit.single_view", ["--ratchet"],
+          "single-view ratchet violated - a global is declared with two types/"
+          "linkages (python -m gruntz.audit.single_view)", "fast")
+    _gate("gruntz.audit.view_typedef", ["--ratchet"],
+          "view-typedef ratchet violated - delete the alias typedef and use the real "
+          "class name (python -m gruntz.audit.view_typedef)", "fast")
+    _gate("gruntz.audit.label_style", ["--gate"],
+          "label-style ratchet violated - spell the label canonically "
+          "(python -m gruntz.audit.label_style)", "fast")
+
+    if req == 0:  # fast tier: the ratchets ran; the vtable/class-metadata family is normal+
+        log("fast tier: ran the sub-second ratchets; run `gruntz build` (normal) or "
+            "`--full` before committing.")
+        _record_build_time("fast", time.monotonic() - build_start, ninja_s,
+                           time.monotonic() - gates_t0)
+        return
+
+    # NORMAL tier - structural uniqueness invariants (low per-edit violation, so out of
+    # the fast inner loop): the @stub-backlog address format, the game-body/library-body
+    # exclusivity, and one-mangled-name-per-RVA. All FATAL, no allowlist.
+    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
+    run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
+    run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
+
+    # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
         subprocess.run([sys.executable, "-m", "gruntz.match.fingerprints"],
                        cwd=str(REPO), env=_pkg_env())
@@ -421,81 +459,47 @@ def cmd_build(args) -> None:
     # a class that DECLARES SIZE(C,N) but does not COMPUTE N, and is `new`ed, emits the
     # wrong `push <size>` immediate into operator new - a real byte defect that nothing
     # checked before (SIZE() was effectively a comment).
-    run([sys.executable, "-m", "gruntz.cleanliness.class_sizes"])
+    _gate("gruntz.cleanliness.class_sizes", [],
+          "class-sizes: a class lacks SIZE()/SIZE_UNKNOWN or its computed size is "
+          "wrong (python -m gruntz.cleanliness.class_sizes)", "full")
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
-    run([sys.executable, "-m", "gruntz.cleanliness.vtable_bans"])
+    _gate("gruntz.cleanliness.vtable_bans", [],
+          "vtable-bans: a banned manual-vtable idiom reappeared - model it as real "
+          "virtuals (python -m gruntz.cleanliness.vtable_bans)", "normal")
     # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
     # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
     # vtable modelling can never drift from the binary. `python -m gruntz.core.vtable_hierarchy --audit`.
-    ra = subprocess.run([sys.executable, "-m", "gruntz.core.vtable_hierarchy", "--audit"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if ra.returncode != 0:
-        for ln in (ra.stdout + ra.stderr).splitlines():
-            if (ln.startswith("#") or "ERROR" in ln
-                    or ln.strip().split(":", 1)[0].strip() in
-                    ("inherit", "rename", "redeclare", "override", "missing")):
-                print(ln, file=sys.stderr)
-        die("vtable-audit: source vtable hierarchy does not match the binary - drive "
-            "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
-            "(python -m gruntz.core.vtable_hierarchy --audit)")
-    # VTBL(name, rva) UNIQUENESS - a HARD bijection assert (its own gate, run() raises on
-    # nonzero): every vtable rva is bound by exactly one VTBL() annotation. A vtable datum has
-    # one ??_7 name, so a multiply-bound rva is either a redundant duplicate (delete one) or a
-    # mis-catalog aliasing one vtable under many names (collapse the fake views). It must never
-    # regress, independent of the catalog-completeness backlog below.
-    run([sys.executable, "-m", "gruntz.cleanliness.class_vtables", "--assert-unique"])
-    # Catalog completeness: reached 0 (2026-07-21; every vtable-bearing class is
-    # positively bound or VTBL_ABSENT-proven) - FATAL so it can never regress.
-    rvt = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.class_vtables"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rvt.returncode != 0:
-        for ln in (rvt.stdout + rvt.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
-            "DATA_SYMBOL(), dissolve the view, or prove VTBL_ABSENT "
-            "(python -m gruntz.cleanliness.class_vtables)")
-    else:
-        log((rvt.stdout + rvt.stderr).strip().splitlines()[-1])
-    # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
-    # function pointers) finds must be bound in source (symbol_names) or catalogued as
-    # MFC/CRT in config/library_vtables.csv. FATAL gate - a vtable can never go uncovered.
-    rc = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_coverage"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rc.returncode != 0:
-        for ln in (rc.stdout + rc.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
-            "or add MFC/CRT to config/library_vtables.csv "
-            "(python -m gruntz.cleanliness.vtable_coverage --list)")
-    else:
-        log((rc.stdout + rc.stderr).strip().splitlines()[-1])
-    # Vtable OWNERSHIP: for every class with an RVA()-bound destructor, the BINARY says which
-    # vtable dispatches to it (??_7 slot -> ILT thunk -> scalar-deleting dtor -> the ??1). If
-    # src's VTBL() names a different rva, that binding is a wrong-dispatch bug - and neither
-    # VTBL-uniqueness nor vtable-coverage can see it, because both are satisfied by any
-    # self-consistent lie. This gate re-derives every binding from the image. FATAL.
-    ro = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_owner", "--audit"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if ro.returncode != 0:
-        for ln in (ro.stdout + ro.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("vtable-owner: a VTBL() binding contradicts the vtable that actually dispatches "
-            "to the class's destructor (python -m gruntz.cleanliness.vtable_owner --audit)")
-    else:
-        log((ro.stdout + ro.stderr).strip().splitlines()[-1])
-    # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
-    # the vtable's slots (not a fabricated name, not a de-virtualized shell). FATAL gate.
-    rv = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_virtuality"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rv.returncode != 0:
-        for ln in (rv.stdout + rv.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
-            "must be defined and declare a virtual for each slot "
-            "(python -m gruntz.cleanliness.vtable_virtuality --list)")
-    else:
-        log((rv.stdout + rv.stderr).strip().splitlines()[-1])
+    _gate("gruntz.core.vtable_hierarchy", ["--audit"],
+          "vtable-audit: source vtable hierarchy does not match the binary - drive "
+          "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
+          "(python -m gruntz.core.vtable_hierarchy --audit)", "normal")
+    # VTBL(name, rva) UNIQUENESS - a HARD bijection assert: every vtable rva is bound by
+    # exactly one VTBL() annotation (a multiply-bound rva is a duplicate or a mis-catalog).
+    _gate("gruntz.cleanliness.class_vtables", ["--assert-unique"],
+          "class-vtables: a vtable rva is bound by more than one VTBL() "
+          "(python -m gruntz.cleanliness.class_vtables --assert-unique)", "normal")
+    # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
+    _gate("gruntz.cleanliness.class_vtables", [],
+          "class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
+          "DATA_SYMBOL(), dissolve the view, or prove VTBL_ABSENT "
+          "(python -m gruntz.cleanliness.class_vtables)", "normal")
+    # Vtable COVERAGE: every vtable our analysis finds must be bound in source or catalogued
+    # as MFC/CRT in config/library_vtables.csv.
+    _gate("gruntz.cleanliness.vtable_coverage", [],
+          "vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
+          "or add MFC/CRT to config/library_vtables.csv "
+          "(python -m gruntz.cleanliness.vtable_coverage --list)", "normal")
+    # Vtable OWNERSHIP: re-derive every VTBL() binding from the image (the ??_7 slot ->
+    # scalar-deleting dtor -> ??1 chain). Slowest of the vtable gates -> full.
+    _gate("gruntz.cleanliness.vtable_owner", ["--audit"],
+          "vtable-owner: a VTBL() binding contradicts the vtable that actually dispatches "
+          "to the class's destructor (python -m gruntz.cleanliness.vtable_owner --audit)", "full")
+    # Vtable VIRTUALITY: every VTBL(Name,rva) binds a REAL class whose virtuals model the slots.
+    _gate("gruntz.cleanliness.vtable_virtuality", [],
+          "vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
+          "must be defined and declare a virtual for each slot "
+          "(python -m gruntz.cleanliness.vtable_virtuality --list)", "normal")
     # Vtable SLOT BINDING: coverage says the vtable is bound; virtuality says the class
     # declares ENOUGH virtuals. Neither joins a SLOT to the body our source puts at its
     # rva - so a body bound under a NON-virtual name (a free fn / Gap_*, or a non-virtual
@@ -505,111 +509,19 @@ def cmd_build(args) -> None:
     # chase_thunk -> the symbol src emits there -> must be a virtual of the class or a
     # base. PURE fail-closed since 2026-07-22: the 259-row frozen backlog drained to 0
     # and the baseline file was deleted - ANY violation is FATAL, fix the modeling.
-    rb = subprocess.run([sys.executable, "-m", "gruntz.cleanliness.vtable_slot_binding"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rb.returncode != 0:
-        for ln in (rb.stdout + rb.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
-            "wrong-class name - wire it to the class's declared virtual "
-            "(python -m gruntz.cleanliness.vtable_slot_binding)")
-    else:
-        out_sb = (rb.stdout + rb.stderr).strip()
-        if out_sb:
-            log(out_sb.splitlines()[-1])
-    # TU linker-order ratchet: each .cpp==.obj must be strictly-ascending in file
-    # order + one contiguous .text block (docs/tu-partition-brief.md). The backlog is
-    # FROZEN in config/tu-order-baseline.tsv (down-only roll); FATAL for any RISE -
-    # a re-home/move that breaks the layout invariant is caught here, not carried.
-    rt = subprocess.run([sys.executable, "-m", "gruntz.audit.tu_order_check", "--gate"],
-                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rt.returncode != 0:
-        for ln in (rt.stdout + rt.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("tu-order ratchet violated - a function move broke the linker-order "
-            "invariant (python -m gruntz.audit.tu_order_check --tu <name>)")
-    else:
-        out_to = (rt.stdout + rt.stderr).strip()
-        if out_to:
-            log(out_to.splitlines()[-1])
-    # RVA_COMPGEN placement ratchet: every compiler-generated pin sits in RVA order
-    # among its TU's RVA() functions (reached 0 at introduction 2026-07-22) - FATAL
-    # so it can never regress.
-    rcg = subprocess.run([sys.executable, "-m", "gruntz.audit.compgen_order", "--gate"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rcg.returncode != 0:
-        for ln in (rcg.stdout + rcg.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
-            "RVA-sorted slot (python -m gruntz.audit.compgen_order)")
-    else:
-        out_cg = (rcg.stdout + rcg.stderr).strip()
-        if out_cg:
-            log(out_cg.splitlines()[-1])
-    # DATA-rva band ratchet: the .data/.rdata/.bss analog of tu-order. Every ORDINARY
-    # (non-COMDAT) global a .cpp defines must fall in that TU's own contiguous
-    # same-storage run; a def landing strictly inside ANOTHER TU's band is a misplaced
-    # home. The known scattered-singleton backlog is FROZEN in
-    # config/data-tu-order-baseline.tsv; FATAL for any NEW interleave.
-    rdo = subprocess.run([sys.executable, "-m", "gruntz.audit.data_tu_order", "--ratchet"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rdo.returncode != 0:
-        for ln in (rdo.stdout + rdo.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("data-tu-order ratchet violated - a DATA def lands inside another TU's "
-            "same-storage band (python -m gruntz.audit.data_tu_order)")
-    else:
-        out_do = (rdo.stdout + rdo.stderr).strip()
-        if out_do:
-            log(out_do.splitlines()[-1])
-    # Single-view ratchet: every global has ONE view - its real extern. A datum
-    # declared with two (type, linkage) signatures is a split view (a placeholder /
-    # cross-class reinterpret / stale linkage that emits a symbol the real image
-    # lacks, so a candidate link leaves it unresolved). Backlog frozen in
-    # config/single-view-baseline.tsv; FATAL for any NEW split.
-    rsv = subprocess.run([sys.executable, "-m", "gruntz.audit.single_view", "--ratchet"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rsv.returncode != 0:
-        for ln in (rsv.stdout + rsv.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("single-view ratchet violated - a global is declared with two types/"
-            "linkages (python -m gruntz.audit.single_view)")
-    else:
-        out_sv = (rsv.stdout + rsv.stderr).strip()
-        if out_sv:
-            log(out_sv.splitlines()[-1])
-    # View-typedef ratchet: no `typedef RealClass ViewName;` alias relics (a folded
-    # view's second name). Reached 0 at introduction (2026-07-22); FATAL.
-    rvt = subprocess.run([sys.executable, "-m", "gruntz.audit.view_typedef", "--ratchet"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rvt.returncode != 0:
-        for ln in (rvt.stdout + rvt.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("view-typedef ratchet violated - delete the alias typedef and use the real "
-            "class name (python -m gruntz.audit.view_typedef)")
-    else:
-        out_vt = (rvt.stdout + rvt.stderr).strip()
-        if out_vt:
-            log(out_vt.splitlines()[-1])
-    # Label-style ratchet: every label macro canonical (8-digit addr, unpadded hex
-    # size, one line), comment @markers restricted to the blessed vocabulary
-    # (docs/comment-markers.md) - reached 0 at introduction 2026-07-22, FATAL.
-    rls = subprocess.run([sys.executable, "-m", "gruntz.audit.label_style", "--gate"],
-                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    if rls.returncode != 0:
-        for ln in (rls.stdout + rls.stderr).splitlines():
-            print(ln, file=sys.stderr)
-        die("label-style ratchet violated - spell the label canonically "
-            "(python -m gruntz.audit.label_style)")
-    else:
-        out_ls = (rls.stdout + rls.stderr).strip()
-        if out_ls:
-            log(out_ls.splitlines()[-1])
-    # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
-    # phantom view folded onto its real class) - FATAL so it can never regress.
-    run([sys.executable, "-m", "gruntz.cleanliness.view_debt", "--fatal"])
+    _gate("gruntz.cleanliness.vtable_slot_binding", [],
+          "vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
+          "wrong-class name - wire it to the class's declared virtual "
+          "(python -m gruntz.cleanliness.vtable_slot_binding)", "normal")
+    # (the fast tu-order / compgen / data-rva / single-view / view-typedef / label-style
+    #  ratchets ran up top - they are in EVERY tier.)
 
-    _record_build_time("full", time.monotonic() - build_start, ninja_s,
+    # FULL tier - the UNGAMEABLE fake-view metric (slowest gate; reached 0 2026-07-21).
+    _gate("gruntz.cleanliness.view_debt", ["--fatal"],
+          "view-debt: a fake view regressed - fold the phantom onto its real class "
+          "(python -m gruntz.cleanliness.view_debt --fatal)", "full")
+
+    _record_build_time(tier, time.monotonic() - build_start, ninja_s,
                        time.monotonic() - gates_t0)
 
 
@@ -1316,10 +1228,18 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     b = sub.add_parser("build", help="compile -> labels -> delink -> objdiff")
+    # Gate tiers (measured wall-times in docs/build-system.md): fast ~2s = the cheap
+    # honest ratchets agents trip every edit (label/order/data/single-view/typedef);
+    # normal ~10s = fast + the vtable/class-metadata family (the default, run per
+    # commit); full ~19s = everything incl. the three slowest (view_debt, class_sizes,
+    # vtable_owner) - run from time to time, not every commit.
+    b.add_argument("--tier", choices=("fast", "normal", "full"), default="normal",
+                   help="which structural gate tier to run (default: normal).")
     b.add_argument("--fast", action="store_true",
-                   help="matcher inner loop: compile + delink + objdiff %% only, "
-                        "SKIP the structural gate tail (verify/vtable/class-size, "
-                        "~20s). Run a full `gruntz build` before committing.")
+                   help="alias for --tier fast: the sub-second honest ratchets only "
+                        "(matcher inner loop). Run --tier full before committing.")
+    b.add_argument("--full", action="store_true",
+                   help="alias for --tier full: every gate, incl. the 3 slowest.")
     b.add_argument("--force-delink", action="store_true",
                    help="re-delink the target objs even if symbol_names.csv is "
                         "unchanged (removes the delink stamp).")
