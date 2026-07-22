@@ -96,15 +96,14 @@ public:
     // the live game STATE (CState*, whose slot-4 Update() the same fn reads for the
     // 0x11 PLAY id), then Deselect retires it. (The ex-GzTargetObj view - 9 filler slots
     // + these two - was this class; its m_4/m_6/m_c are m_4 / m_6 / m_submitted.)
-    virtual void Select(CState* state); // slot 9  (+0x24)  __purecall in the base
+    virtual i32 Select(CState* state) = 0; // slot 9  (+0x24)  __purecall in the base; the
+    // dispatcher passes m_curState (any CState) - the overrides downcast by protocol
     virtual void Deselect();            // slot 10 (+0x28)  __purecall in the base
 
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
     i32 SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count,
                         u8* buf); // 0x023ed0
-    i32 ApplyOne(CPlay* p);       // 0x024140
-    i32 ApplyMask(CPlay* p);      // 0x024190
 
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
     // `mov [this],&??_7CGruntzCommand; ret` (void __thiscall, no eax-return, no
@@ -140,7 +139,7 @@ public:
     // the number of bytes written. WAS declared twice: as the `Vfunc8` placeholder here
     // and as a non-virtual `Pack` below - one body, two names.
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
-    virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
+    virtual i32 Select(CState* state) OVERRIDE; // slot 9 - 0x024140 (ex ApplyOne: run via CPlay::ExecCommand)
     virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
     CGruntzSingleCommand() {}                    // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
@@ -164,7 +163,7 @@ public:
     // five scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
     // of bytes written. Same one-body-two-names shadow as the Single twin.
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
-    virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
+    virtual i32 Select(CState* state) OVERRIDE; // slot 9 - 0x024190 (ex ApplyMask)
     virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();

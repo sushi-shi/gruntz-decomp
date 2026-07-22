@@ -5,7 +5,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/State.h>         // CState::Update (slot 4) - the live state's id tag
-#include <Gruntz/Play.h>          // CPlay::ExecCommand - the ApplyOne/ApplyMask target
+#include <Gruntz/Play.h>          // CPlay::ExecCommand - the Select overrides' target
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
@@ -330,7 +330,8 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
 }
 
 RVA(0x00024140, 0x35)
-i32 CGruntzCommand::ApplyOne(CPlay* p) {
+i32 CGruntzSingleCommand::Select(CState* state) {
+    CPlay* p = static_cast<CPlay*>(state); // protocol: commands run against the play state
     if (!p) {
         return 0;
     }
@@ -340,7 +341,8 @@ i32 CGruntzCommand::ApplyOne(CPlay* p) {
 }
 
 RVA(0x00024190, 0x6c)
-i32 CGruntzCommand::ApplyMask(CPlay* p) {
+i32 CGruntzMultiCommand::Select(CState* state) {
+    CPlay* p = static_cast<CPlay*>(state); // protocol: commands run against the play state
     if (!p) {
         return 0;
     }
