@@ -43,7 +43,7 @@ public:
     // no `call ??1CBattlezDlg` anywhere) - which cl only does for an implicit dtor. Two
     // definitions, two byte-shapes, ONE mangled name: an ODR landmine that the implicit
     // dtor removes. The out-of-line COMDAT is still emitted (the vtable slot needs its
-    // address) and is bound to 0x14c90 by @rva-symbol in src/Gruntz/Dialogs.cpp.
+    // address) and is bound to 0x14c90 by RVA_COMPGEN in src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog (0x160d0)
@@ -157,7 +157,7 @@ public:
     // (0x17140) destroys m_customName and chains ~CDialog with NO vptr re-stamp at entry, and
     // so does the copy CBattlezDlg::ShowCustomDlg inlines at its stack local. cl emits that
     // stamp for a user-written body only, so the dtor is compiler-generated. The COMDAT is
-    // still emitted (the vtable slot takes its address) and bound by @rva-symbol in
+    // still emitted (the vtable slot takes its address) and bound by RVA_COMPGEN in
     // src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (0x183d0; OrphanLeaves.cpp)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
@@ -201,7 +201,7 @@ public:
     // but always emits it for a user-declared one, even an empty `{}` (MEASURED
     // both ways, cl 5.0 /O2 /GX) - declaring it purely to hang an RVA() on was the
     // mis-model behind the old "unreachable restamp" wall. Still virtual (CDialog's
-    // is). cl auto-emits the COMDAT in every using obj; it is @rva-symbol-bound in
+    // is). cl auto-emits the COMDAT in every using obj; it is RVA_COMPGEN-bound in
     // src/Gruntz/Multi.cpp, whose CMulti::ShowMultiStartDlg (0xb86c0) stack-
     // constructs the dialog - which is exactly why retail emitted the COMDAT there.
     // docs/patterns/eh-dtor-vptr-restamp-presence.md

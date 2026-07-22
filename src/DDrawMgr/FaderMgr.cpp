@@ -316,7 +316,7 @@ void __stdcall Fader_TraceStr(CString s) {
 // INLINE (retail ~CFaderMgr @0x17d910 inlines this member teardown - no call at that
 // offset in its reloc table), and an out-of-line definition here would break that. cl
 // ALREADY emits `??1CFaderArray@@UAE@XZ` into this obj for the vtable slot; the label
-// just has to NAME it, which is exactly what @rva-symbol is for. Naming it binds the
+// just has to NAME it, which is exactly what RVA_COMPGEN is for. Naming it binds the
 // two vptr stores to the real ??_7CFaderArray / ??_7CObject rvas (zero UNBOUND relocs)
 // with no source-level duplicate and no change to the inline teardown.
 RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)

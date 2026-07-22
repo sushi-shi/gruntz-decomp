@@ -22,7 +22,7 @@ public:
 public:
     CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // Construct the class's activation-coordinate registry (g_rollingBallActReg
     // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.

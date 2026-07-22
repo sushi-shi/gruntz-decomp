@@ -110,7 +110,7 @@ extern "C" void Act_F(); // 0x402725
 // re-stamp ??_7CWarlord at entry, and cl 5.0 only elides that store for an
 // IMPLICIT dtor - a user-declared one, even `~CWarlord() {}`, always emits it
 // (MEASURED both ways with cl 5.0 /O2 /GX). Declaring the dtor purely to hang an
-// RVA() on was the mis-model; the label moves to the @rva-symbol pin below.
+// RVA() on was the mis-model; the label moves to the RVA_COMPGEN pin below.
 // This TU's ctor emits ??_7CWarlord -> ??_GCWarlord -> ??1CWarlord, so the
 // implicit body is a COMDAT in this obj and the pin resolves against it.
 // docs/patterns/eh-dtor-vptr-restamp-presence.md
@@ -324,7 +324,7 @@ i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 0;
 }
 
-VTBL(CWarlord, 0x1e7404);
+VTBL(CWarlord, 0x001e7404);
 DATA(0x00244610)
 extern CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
 

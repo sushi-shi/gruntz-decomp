@@ -42,7 +42,7 @@ void operator delete(void*);
 // so cl auto-emits BOTH as byte-identical COMDATs (verified llvm-objdump -dr:
 // ??1 = xor eax,eax; m_04=-1; m_08/m_0c=0; the ??_7CObject re-stamp; ??_G = the
 // standard call-~/test-flag/operator-delete shell). They are bound below by
-// @rva-symbol - no source spelling is possible (the canonical dtor is inline in
+// RVA_COMPGEN - no source spelling is possible (the canonical dtor is inline in
 // <Gruntz/Loadable.h>; one-definition rule). Was the CDDrawSubMgrFar scaffold
 // class (hand-written ScalarDtor + a second fabricated view in CImage.cpp) -
 // dissolved onto the real ??1CLoadable/??_GCLoadable identities.
@@ -368,7 +368,7 @@ i32 CLoadable::IsLoaded() {
     return 0;
 }
 
-// (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, @rva-symbol-bound at the
+// (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, RVA_COMPGEN-bound at the
 // file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
 // (CLoadable::Unload @0x155740 is a bare `ret` = i32-slot no-op; MSVC5 rejects an
 //  empty-body non-void fn (C2561) and the slot can't be void (derived overrides
@@ -399,7 +399,7 @@ i32 CDDrawWorker::GetClassId() {
 // grand-base vptr-stamp-position wall - the real CObject grand-base sinks the
 // 0x5e8cb4 re-stamp after the m_04/m_08/m_0c resets exactly as retail.
 // The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
-// virtual dtor below - @rva-symbol pairs the retail copy with the base COMDAT).
+// virtual dtor below - RVA_COMPGEN pairs the retail copy with the base COMDAT).
 RVA_COMPGEN(0x00155780, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {

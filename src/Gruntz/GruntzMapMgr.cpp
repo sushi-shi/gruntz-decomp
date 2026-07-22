@@ -103,8 +103,8 @@ i32 CGruntzMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 // then shrink the array to empty (SetSize(0, -1)) and chain the base grid cleanup.
 //
 // (Was ?FreeNodes@CMapLogic@@QAEXXZ. The tail `Reset()` was a declared-only
-// CMapLogic::Reset ALIAS whose RVA had to be pinned to the ILT thunk 0x1a91 by hand -
-// `@data-symbol: ?Reset@CMapLogic@@QAEXXZ 0x00001a91` - because 0x9ec30 already
+// CMapLogic::Reset ALIAS whose RVA had to be hand-pinned as a data-symbol row
+// (?Reset@CMapLogic@@QAEXXZ at the ILT thunk 0x00001a91) - because 0x9ec30 already
 // carried CMapMgr::Reset's label and the dup-RVA guard rejects a second. With the
 // true inheritance that whole workaround dissolves: it is a qualified base call, the
 // same one ~CGruntzMapMgr below already makes.)

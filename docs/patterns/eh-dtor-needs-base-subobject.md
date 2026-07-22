@@ -45,6 +45,6 @@ member dtor 0x137cf0 91%→100 — the /GX frame, the 1→0→-1 trylevel machin
 vptr stamps all fall out of the language. (2) The DinMgr2 device chain: the
 standalone base-dtor copies at 0x133370/0x1333b0 are cl's own out-of-line COMDAT
 emissions of the header-inline `~CInputDevRoot`/`~CInputDevBase` (the leaf dtors'
-EH funclets take their addresses) — bind them with `@rva-symbol`, never a
+EH funclets take their addresses) — bind them with `RVA_COMPGEN`, never a
 placeholder view; both 100. If you are staring at this wall, model the real base:
 the frame is not hand-reachable but it is compiler-trivial.

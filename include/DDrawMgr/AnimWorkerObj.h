@@ -106,7 +106,6 @@ struct AnimWorkerObj : public CWapObj {
     u32 m_payloadSize;          // +0x178  payload byte count for the m_payload block
 }; // size = 0x17c
 SIZE(0x17c);
-VTBL(AnimWorkerObj,
-     0x001efb80); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c worker/record)
+VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c worker/record)
 
 #endif // GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H

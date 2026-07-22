@@ -29,7 +29,7 @@
 
 VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
-VTBL(CExplosion, 0x1e766c);
+VTBL(CExplosion, 0x001e766c);
 DATA(0x00244638)
 extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
 

@@ -13,7 +13,7 @@ every base teardown into the leaf and — because each base subobject is now
 non-trivial — emits the full `/GX` frame + the per-level vptr re-stamps. The
 catalog auto-namer (`config/vtable_names.csv`, `gruntz.core.vtable_scan`) names
 every `??_7CSBI_*@@6B@` on the target, so the stamps reloc-mask with NO manual
-`@rva-symbol` pin and NO `DATA(&g_vtbl_*)` extern.
+`RVA_COMPGEN` pin and NO `DATA(&g_vtbl_*)` extern.
 
 ```cpp
 struct CStatusBarItem { virtual ~CStatusBarItem(); /*+10 virtuals*/ void DtorStatus(); };

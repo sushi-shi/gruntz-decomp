@@ -201,7 +201,7 @@ public:
         m_3c = obj->m_7c;
     }
     ~CWapX() {} // EMPTY INLINE (see the 0x8be0 evidence above); out-of-line COMDAT
-                // pinned by @rva-symbol in ActionArea.cpp
+                // pinned by RVA_COMPGEN in ActionArea.cpp
     // Serialize the referenced object by its registry key name (read/write per mode).
     i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
 
@@ -250,7 +250,7 @@ public:
     // elides the leaf-vptr restamp a user `{}` would emit now that the CWapX base EH
     // state blocks the old dead-store elision; eh-dtor-vptr-restamp CAUSE B). It stays
     // implicitly-inline, so the three sub-leaf dtors (0x11540/0x11600/0x116c0) still
-    // FOLD it; the out-of-line COMDAT (called by ??_G) is labeled via the @rva-symbol
+    // FOLD it; the out-of-line COMDAT (called by ??_G) is labeled via the RVA_COMPGEN
     // pin in src/Gruntz/UserLogic.cpp.
 };
 SIZE(0x54);

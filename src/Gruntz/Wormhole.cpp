@@ -62,8 +62,8 @@
 
 extern "C" void WormholeTypeMarker();
 
-VTBL(CGruntPuddle, 0x1e8124);
-VTBL(CWormhole, 0x1e817c);
+VTBL(CGruntPuddle, 0x001e8124);
+VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 

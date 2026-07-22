@@ -55,7 +55,7 @@ public:
     // the old "unreachable restamp" wall. The implicit dtor still destroys the
     // CString m_54 + chains the base teardown, and is still virtual (CUserBase's is);
     // Warlord.cpp's ctor emits the vtable -> ??_GCWarlord -> ??1CWarlord, so the
-    // body lands in this obj and is pinned by @rva-symbol there.
+    // body lands in this obj and is pinned by RVA_COMPGEN there.
     // docs/patterns/eh-dtor-vptr-restamp-presence.md
 
     // construct the file-static per-action handler table (g_actionTable @0x644610)

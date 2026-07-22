@@ -16,7 +16,7 @@ public:
 public:
     CMenuSparkle(CGameObject* obj); // 0x0adbe0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // Dispatch (0x0ade60) IS this class's vtable slot 4 (??_7CMenuSparkle@@6B@+0x10 ->
     // 0xade60 via ILT thunk 0x19b0; vtable_hierarchy: slot 4 `override`, origin
     // CUserLogic). It is a plain method, not the OVERRIDE, because the CUserLogic base

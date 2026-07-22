@@ -25,7 +25,7 @@ public:
                                        //  no this, called this-less by the game-object factory)
     i32 Tick();                        // 0x11a700
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
                                        //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
 SIZE(0x54);

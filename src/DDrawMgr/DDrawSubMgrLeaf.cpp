@@ -24,10 +24,10 @@
 
 VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
-// @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
+// DATA_SYMBOL, not DATA: clang mangles the const-char[] extern with a `Q` storage
 // class while cl 5.0 emits `P` (?g_fmtPathJoin@@3PBDB), so a DATA() label's clang
 // mangledName never matches the cl reloc (was also a VA-typo: 0x61ab18 -> 0x21ab18).
-// @data-symbol: ?g_fmtPathJoin@@3PBDB 0x0021ab18
+DATA_SYMBOL(0x0021ab18, 0x0, ?g_fmtPathJoin@@3PBDB)
 extern const char g_fmtPathJoin[];
 
 void* operator new(u32 n);
@@ -277,7 +277,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
 // ~CAniRecordArray (trylevel 0) and ~CObject grand-base re-stamp fold in.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
 // The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
-// virtual dtor below - @rva-symbol pairs the retail copy with the base COMDAT).
+// virtual dtor below - RVA_COMPGEN pairs the retail copy with the base COMDAT).
 RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
 RVA(0x00152e30, 0x53)
 CAniElement::~CAniElement() {

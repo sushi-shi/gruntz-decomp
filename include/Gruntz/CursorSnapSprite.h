@@ -25,7 +25,7 @@ public:
     // archetype as CTeleporter::FireActivation (double ResolveEntry + PMF dispatch).
     virtual void FireActivation(i32 id) OVERRIDE;
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE(0x54);
 

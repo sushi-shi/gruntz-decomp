@@ -313,7 +313,7 @@ INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
 
 // The two 0x14-byte fns at 0x3cbc0/0x3cbf0 are the compiler-generated
 // ??_Difstream@@QAEXXZ / ??_Dofstream@@QAEXXZ vbase destructors the dialog proc's
-// unwind funclets make cl emit (COMDATs; bound below by @rva-symbol). The old
+// unwind funclets make cl emit (COMDATs; bound below by RVA_COMPGEN). The old
 // hand-written COwnerWithSubs::DtorSubC/DtorSub8 bodies - and their banned
 // this+0xc/+0x8 vbase-offset casts - are GONE: no dev ever wrote that code.
 RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)

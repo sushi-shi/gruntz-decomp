@@ -4,7 +4,7 @@
 // grab-bag (the old RectHost_08c380/RectHost_115b30 per-fn views were CRect).
 // (The former ~CHolder8c400 @0x8c400 is GONE from this TU: RTTI at its vtable
 // 0x1ea2a4 names .?AVCRgn@@ - the body is the MFC ??1CRgn COMDAT, now pinned by
-// @rva-symbol in src/Gruntz/CreditsState.cpp whose obj really emits it. The
+// RVA_COMPGEN in src/Gruntz/CreditsState.cpp whose obj really emits it. The
 // "CImageList::DeleteImageList" story was the FID AMBIG GDI/ImageList twin; the
 // callee 0x1c6a5c is CGdiObject::DeleteObject.)
 #include <Wap32/Rect.h>

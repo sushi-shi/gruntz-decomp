@@ -92,4 +92,4 @@ void CCursorSnapSprite::FireActivation(i32 id) {
 
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-VTBL(CCursorSnapSprite, 0x1e8074);
+VTBL(CCursorSnapSprite, 0x001e8074);

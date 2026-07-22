@@ -126,7 +126,7 @@ public:
     // The first four offsets carry BOTH spellings (a name alias at the same offset, zero
     // layout change): the semantic names come from the CBrickzGrid model, the m_<hex>
     // placeholders are what ~20 TUs already read through the CTileGrid spelling.
-    // @fold-TODO: converge those consumers onto the semantic names (needs a TYPED sweep -
+    // DEFERRED FOLD: converge those consumers onto the semantic names (needs a TYPED sweep -
     // a blind rename would hit the identically-named members of other classes), then drop
     // the placeholder halves.
     BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells; Reset frees it)

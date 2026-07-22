@@ -69,7 +69,7 @@ public:
     // re-stamp (masks 0x5e8cb4) folds into ~CImage as its last store. CImage keeps
     // CWapObj's slot 5 (IsLoaded @0x0013b6) and slot 6 (IsReady @0x001c08) defaults
     // unchanged - it is the only member of the family that overrides neither.
-    // @name-conflict (+0x04): this header calls it m_status ("-1 inactive"), while BOTH of
+    // NAME CONFLICT (+0x04): this header calls it m_status ("-1 inactive"), while BOTH of
     // the hand-rolled stand-ins that WERE this class (WwdGameObject.cpp's CFrameWorker and
     // <Image/ImageFrame.h>'s CImageFrame) called it the frame index/number - and
     // CSprite::InsertFrame stores `n` (the frame index) straight into it. Kept as m_status

@@ -1,6 +1,6 @@
 # ILT: retail is linked `/INCREMENTAL`, so a vtable slot holds a `jmp` thunk, not the body
 tags: asm:jmp | topic:delinker topic:scoring-artifact topic:reloc-fidelity
-symptoms: a vtable slot's delinked reloc names an unrelated class (`~CTriggerMgr`, `GroupAllScored`, `SetupImage`, `WaitForOtherPlayers`), or `thunk_FUN_...`; an `@rva-symbol`/`RVA()` pin whose address is `0x1005..0x44a8` and whose body is only 5 bytes; `.rdata` section stuck below 100% with correct-looking code
+symptoms: a vtable slot's delinked reloc names an unrelated class (`~CTriggerMgr`, `GroupAllScored`, `SetupImage`, `WaitForOtherPlayers`), or `thunk_FUN_...`; an `RVA_COMPGEN`/`RVA()` pin whose address is `0x1005..0x44a8` and whose body is only 5 bytes; `.rdata` section stuck below 100% with correct-looking code
 confidence: 10/10
 
 Retail `GRUNTZ.EXE` was linked **`/INCREMENTAL`**. link.exe therefore emits an
@@ -38,7 +38,7 @@ Two consequences, both load-bearing:
   symbol sits exactly there, so an unnamed destination is left alone).
 
 - **Never pin a symbol to a slot's stored VALUE.** Reading a vtable slot and binding
-  `@rva-symbol`/`RVA()` to what it contains pins the symbol onto a 5-byte `jmp`,
+  `RVA_COMPGEN`/`RVA()` to what it contains pins the symbol onto a 5-byte `jmp`,
   claiming the thunk IS the function. `src/Gruntz/UserLogic.cpp` had exactly this for
   14 `CUserLogic`/`CUserBase` virtuals (`0x1361`, `0x242d`, …); the real bodies are the
   contiguous `0x87d0..0x89f0` cluster of tiny defaults (`ret`, `mov eax,1; ret`).

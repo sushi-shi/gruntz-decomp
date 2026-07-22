@@ -60,7 +60,7 @@ directly where `const char*` is expected, no cast (and no helper).
 |---|---|---|---|
 | SIZE missing | `python -m gruntz.cleanliness.class_sizes` | 0 | **FATAL** (enforced) |
 | VTBL missing | `python -m gruntz.cleanliness.class_vtables` | 333 | reporting → fatal at 0 |
-| src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | 0 | **FATAL** (enforced, no allowlist) — FULL generated symbol set: rva-macro + @rva-symbol + DATA (vendored zlib excluded by source, not allowlist) |
+| src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | 0 | **FATAL** (enforced, no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
 | stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | 0 | **FATAL** (enforced) |
 
 ## Match (the binary-matching goal)

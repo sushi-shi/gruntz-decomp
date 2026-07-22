@@ -18,7 +18,7 @@ public:
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
 };

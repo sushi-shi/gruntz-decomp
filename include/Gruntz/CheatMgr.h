@@ -35,9 +35,9 @@ SIZE_UNKNOWN();
 // ---------------------------------------------------------------------------
 // The 19 built-in cheat-code strings (obfuscated byte buffers in .data). Each is
 // passed to AddCheat by address as the map key - reloc-masked DIR32 references.
-// These are bound to their real .data RVAs via `// @data-symbol:` in CheatMgr.cpp
+// These are bound to their real .data RVAs via DATA_SYMBOL(..) rows in CheatMgr.cpp
 // (a DATA() macro in a header is not seen by labels.py's per-.cpp text scan, and
-// the char[] array mangling diverges clang-vs-cl5, so @data-symbol names the exact
+// the char[] array mangling diverges clang-vs-cl5, so DATA_SYMBOL names the exact
 // cl5 symbol `?s_cheat_<rva>@@3PADA`).
 // ---------------------------------------------------------------------------
 extern char s_cheat_20c920[];

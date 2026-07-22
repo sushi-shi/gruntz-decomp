@@ -27,8 +27,8 @@ extern "C" {}
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
 
-VTBL(CInGameText, 0x1e7cac);
-VTBL(CInGameIcon, 0x1e7d04);
+VTBL(CInGameText, 0x001e7cac);
+VTBL(CInGameIcon, 0x001e7d04);
 DATA(0x002458b0)
 extern LogicFnTable g_iconActionTable;
 DATA(0x00245928)

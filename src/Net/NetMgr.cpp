@@ -1004,12 +1004,12 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 // EXTERNAL linkage (`extern const`) so cl emits a STABLE mangled name (internal `const`
 // gets a non-deterministic $S-suffixed local name that shifts every build). clang mangles
 // the const-array storage class as `Q` where cl5 uses `P`, so DATA() would miss; bind by
-// the exact cl name via @data-symbol (authority-checked against netmgr.obj).
-// @data-symbol: ?g_guid1@@3PBEB 0x00224d58
-// @data-symbol: ?g_guid2@@3PBEB 0x00224d68
-// @data-symbol: ?g_guid3@@3PBEB 0x00224d78
-// @data-symbol: ?g_guid4@@3PBEB 0x00224d88
-// @data-symbol: ?g_guid5@@3PBEB 0x00224d98
+// the exact cl name via DATA_SYMBOL (authority-checked against netmgr.obj).
+DATA_SYMBOL(0x00224d58, 0x0, ?g_guid1@@3PBEB)
+DATA_SYMBOL(0x00224d68, 0x0, ?g_guid2@@3PBEB)
+DATA_SYMBOL(0x00224d78, 0x0, ?g_guid3@@3PBEB)
+DATA_SYMBOL(0x00224d88, 0x0, ?g_guid4@@3PBEB)
+DATA_SYMBOL(0x00224d98, 0x0, ?g_guid5@@3PBEB)
 // clang-format off
 // decls in <Net/NetGuids.h> (owner-only) - definitions drop the `extern` keyword.
 const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,

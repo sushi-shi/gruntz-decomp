@@ -7,7 +7,7 @@
 #include <rva.h>
 
 extern "C" {
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.
     extern char g_syncErrMsgBuf[];

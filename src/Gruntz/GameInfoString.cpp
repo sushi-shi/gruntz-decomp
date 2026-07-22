@@ -29,7 +29,7 @@ i32 ValidateGameTime(CGameInfoTime* t) {
 // month = tm_mon+1, day = tm_mday, year = tm_year+1900. Fails (0) if out is null.
 // __cdecl, 1 stack arg. The out record's +0xc/+0x10/+0x14 IS CGameInfoTime's
 // Month/Day/Year, so it is typed there.
-// @orphan: only caller is a boundarylowermethods placeholder (C1181d0::Update).
+// ORPHAN: only caller is a boundarylowermethods placeholder (C1181d0::Update).
 // @early-stop
 // regalloc/scheduling wall (~92%): the logic + the reloc-masked GetCurrentTime/
 // GetLocalTm calls are byte-faithful, but retail keeps each tm field in eax (reusing

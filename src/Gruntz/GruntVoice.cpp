@@ -26,7 +26,7 @@
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
 VTBL(CVoiceTrigger, 0x001e885c);
-VTBL(CGruntVoice, 0x1eaf6c);
+VTBL(CGruntVoice, 0x001eaf6c);
 DATA(0x00251500)
 extern CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 
@@ -53,7 +53,7 @@ static inline char* ActNameLookup(i32 id) {
 extern i32 VTrigLogic_11a700();
 
 // @early-stop
-// @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
+// MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
 // ~CUFO, but retail's /O2 collapsed the CUFO:CPathHazard:CUserLogic dtor chain to a
 // ~CUFO @0x13400 (ex the L_13400 flat-leaf shell): retail's dtor stamps ONLY the
 // CUserBase vtable - the intermediate CUFO/CPathHazard stamps are dead-store-

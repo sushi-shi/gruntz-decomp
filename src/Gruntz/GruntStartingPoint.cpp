@@ -49,7 +49,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_38->m_stateFlags |= 1;
 }
 
-VTBL(CGruntStartingPoint, 0x1e8284);
+VTBL(CGruntStartingPoint, 0x001e8284);
 DATA(0x002446d8)
 extern CActReg g_actReg4;
 

@@ -66,7 +66,7 @@ SIZE(0x2c); // measured: new(0x2c) -> ctor 0x16dff0
 // zPTree's two most-derived vtables. RTTI names 0x1e94ac `zPTree`; 0x1e949c is its
 // CButeNodeEntry-base secondary. cl spells them through the ultimate polymorphic base, so
 // the pins carry the through-base names (they live in src/Bute/ButeNode.cpp - labels.py
-// reads @data-symbol from the .cpp only).
+// reads DATA_SYMBOL from the .cpp only).
 
 class CButeNode : public zPTree {
 public:
@@ -78,7 +78,7 @@ public:
     CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
 SIZE(0x2c); // new CButeNode(0x2c); zPTree provides the full layout
-// (The two through-base ??_7CButeNode @data-symbol pins live in src/Bute/ButeNode.cpp -
-//  labels.py reads @data-symbol out of the TU's .cpp only, never a header.)
+// (The two through-base ??_7CButeNode DATA_SYMBOL pins live in src/Bute/ButeNode.cpp -
+//  labels.py reads DATA_SYMBOL out of the TU's .cpp only, never a header.)
 
 #endif // SRC_BUTE_PTREENODE_H

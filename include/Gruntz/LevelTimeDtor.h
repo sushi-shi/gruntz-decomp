@@ -14,7 +14,7 @@ public:
 public:
     CLevelTime(CGameObject* obj);   // 0x9b8b0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // +0x40..+0x53: the level-timer state tail. NOT initialized by the ctor
     // (0x9b8b0 writes nothing past +0x3c - lazily-used fields); their existence +

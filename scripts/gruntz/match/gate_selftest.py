@@ -218,7 +218,7 @@ class TestClaimExtents(unittest.TestCase):
         self.assertEqual(rc, 0)
 
     def test_unsized_rows_are_skipped_not_guessed(self):
-        """A missing size is not evidence of an overlap - an @rva-symbol pin has none."""
+        """A missing size is not evidence of an overlap - an RVA_COMPGEN pin may have none."""
         rc, out = self._run(["0x001000,?A@@,u,,func\n", "0x001000,?B@@,u,,func\n"])
         self.assertEqual(rc, 0)
         self.assertIn("2 unsized", out)

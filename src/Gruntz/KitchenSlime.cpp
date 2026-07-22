@@ -27,7 +27,7 @@
 #include <Gruntz/Grunt.h>
 #include <Rez/FrameClock.h> // g_frameDelta/g_engineFrameDelta (frame-clock band)
 
-VTBL(CKitchenSlime, 0x1e750c);
+VTBL(CKitchenSlime, 0x001e750c);
 DATA(0x001ea400)
 const double g_slimeZero = 0.0;
 

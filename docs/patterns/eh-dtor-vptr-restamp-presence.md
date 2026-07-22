@@ -20,7 +20,7 @@ vtable scan FIRST; it tells you which cause you have:
 | `gruntz.core.vtable_scan` says | cause | fix |
 |---|---|---|
 | **no vtable / no RTTI** for the class | **CAUSE A** — retail's class isn't polymorphic; you declared it so | de-inherit: the "base" is really a MEMBER at +0x00 |
-| **a real RTTI-backed vtable** exists | **CAUSE B** — the class IS polymorphic, but retail's dtor is **compiler-generated**; yours is user-declared | delete the destructor declaration; pin the body with `@rva-symbol` |
+| **a real RTTI-backed vtable** exists | **CAUSE B** — the class IS polymorphic, but retail's dtor is **compiler-generated**; yours is user-declared | delete the destructor declaration; pin the body with `RVA_COMPGEN` |
 
 Cause B is the common one for MFC dialog / engine leaf classes, and the vtable scan alone
 distinguishes them in one command. **Do not stop at "it has a vtable, so the wall stands."**
@@ -88,13 +88,13 @@ struct Derived : Base { Str m_54; };                       // NO declared dtor -
 **FIX: delete the destructor declaration.** It is still virtual (the base's is), still destroys
 the members, still emits. Since there is then no source body to hang `RVA()` on, pin it with a
 self-contained label — cl emits the COMDAT in **every using obj**, so put the pin in a TU whose
-base obj actually emits it (the `@rva-symbol` authority check is nm membership):
+base obj actually emits it (the `RVA_COMPGEN` authority check is nm membership):
 
 ```cpp
 // in the class header: NO `virtual ~CFoo() OVERRIDE;` at all
 // in a .cpp whose obj emits it (defines the ctor -> vtable -> ??_G -> ??1, or
 // stack-constructs a CFoo):
-// @rva-symbol: ??1CFoo@@UAE@XZ 0x000b8960 0x59
+RVA_COMPGEN(0x000b8960, 0x59, ??1CFoo@@UAE@XZ)
 ```
 
 **Where the COMDAT lands is evidence, not an accident.** Retail emitted `~CMultiStartDlg` at

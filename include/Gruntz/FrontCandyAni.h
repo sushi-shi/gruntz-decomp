@@ -15,7 +15,7 @@ public:
 public:
     CFrontCandyAni(CGameObject* obj);   // 0x0acf40
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The vtable slot-1 two-chain body (0xfdf0): the shared CUserLogic serialize
     // helper on `this`, then the +0x34 sub-object's chain. (0xfa60 was mis-attributed
     // here; the vtable read proves it is CFrontCandy::Serialize.)

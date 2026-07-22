@@ -11,7 +11,7 @@ public:
 public:
     CBrickz(CGameObject* obj);   // 0x10e800 (1-arg ctor)
     // NO user-declared dtor: retail 0x113c0 is COMPILER-GENERATED (implicit; the
-    // vtable-owner-probe proof is in <Gruntz/MapLogic.h>; @rva-symbol pin in
+    // vtable-owner-probe proof is in <Gruntz/MapLogic.h>; RVA_COMPGEN pin in
     // TileLogicPump.cpp).
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).

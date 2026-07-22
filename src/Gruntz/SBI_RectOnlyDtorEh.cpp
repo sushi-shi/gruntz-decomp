@@ -13,7 +13,7 @@
 // body is an orphan/library-carveout empty stub (unreconstructed), so bind the alias to
 // the THUNK the call literally targets; reloc_fidelity thunk-resolves both sides to
 // 0xe8760 -> CORRECT (a future pass may home the empty 0xe8760 body proper).
-// @data-symbol: ?DtorRect@CSBI_RectOnly@@QAEXXZ 0x00001bd1
+DATA_SYMBOL(0x00001bd1, 0x0, ?DtorRect@CSBI_RectOnly@@QAEXXZ)
 RVA(0x00100700, 0x55)
 CSBI_RectOnly::~CSBI_RectOnly() {
     DtorRect();

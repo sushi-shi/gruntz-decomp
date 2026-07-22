@@ -24,7 +24,7 @@ public:
     static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE(0x54);
 

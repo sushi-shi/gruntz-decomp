@@ -12,7 +12,7 @@
 
 typedef i32 (CUserLogic::*CreationPointHandler)();
 
-VTBL(CGruntCreationPoint, 0x1e81d4);
+VTBL(CGruntCreationPoint, 0x001e81d4);
 DATA(0x00244700)
 extern CActReg g_creationPointActReg; // 0x644700
 

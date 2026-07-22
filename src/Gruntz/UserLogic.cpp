@@ -10,7 +10,7 @@
 #include <Gruntz/TypeKeyColl.h>
 
 // The two out-of-line base-ctor COMDATs (CUserLogic() @0x138d0 / CUserLogic(obj)
-// @0x58cd0) are emitted + @rva-symbol pinned in a SEPARATE unit,
+// @0x58cd0) are emitted + RVA_COMPGEN pinned in a SEPARATE unit,
 // src/Gruntz/UserLogicCtorEmit.cpp. They must NOT be forced here: the 1-arg copy
 // needs an inline (Lookup-based) BuildLogicTypeTable body to match retail's
 // inlined registration, and that body, if visible in THIS TU, folds into every
@@ -65,20 +65,20 @@ void CUserLogic::UserLogicVfuncD() {} // retail 0x89f0: bare ret
 // addresses below are the thunks' destinations - the contiguous 0x87d0..0x89f0 cluster
 // of tiny CUserLogic virtuals (sizes 1-8B) that the slots actually reach.
 // See docs/patterns/ilt-thunk-indirection.md.
-RVA_COMPGEN(0x000087d0, 0, ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z)
-RVA_COMPGEN(0x000087f0, 0, ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x000088d0, 0, ?Activate@CUserLogic@@UAEHXZ)
-RVA_COMPGEN(0x000088f0, 0, ?UserLogicVfunc5@CUserLogic@@UAEHXZ)
-RVA_COMPGEN(0x00008910, 0, ?UserLogicVfunc6@CUserLogic@@UAEHXZ)
-RVA_COMPGEN(0x00008930, 0, ?StepAttackFire@CUserLogic@@UAEHXZ)
-RVA_COMPGEN(0x00008950, 0, ?UserLogicVfunc8@CUserLogic@@UAEXXZ)
-RVA_COMPGEN(0x00008970, 0, ?UserLogicVfunc9@CUserLogic@@UAEHXZ)
-RVA_COMPGEN(0x00008990, 0, ?UserLogicVfuncA@CUserLogic@@UAEXXZ)
-RVA_COMPGEN(0x000089b0, 0, ?UserLogicVfuncB@CUserLogic@@UAEXXZ)
-RVA_COMPGEN(0x000089d0, 0, ?UserLogicVfuncC@CUserLogic@@UAEXXZ)
-RVA_COMPGEN(0x000089f0, 0, ?UserLogicVfuncD@CUserLogic@@UAEXXZ)
-RVA_COMPGEN(0x00008b50, 0, ?XferName@CUserLogic@@UAEXPAD@Z)
-RVA_COMPGEN(0x00008b70, 0, ?FireActivation@CUserLogic@@UAEXH@Z)
+RVA_COMPGEN(0x000087d0, 0x0, ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z)
+RVA_COMPGEN(0x000087f0, 0x0, ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x000088d0, 0x0, ?Activate@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x000088f0, 0x0, ?UserLogicVfunc5@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008910, 0x0, ?UserLogicVfunc6@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008930, 0x0, ?StepAttackFire@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008950, 0x0, ?UserLogicVfunc8@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x00008970, 0x0, ?UserLogicVfunc9@CUserLogic@@UAEHXZ)
+RVA_COMPGEN(0x00008990, 0x0, ?UserLogicVfuncA@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089b0, 0x0, ?UserLogicVfuncB@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089d0, 0x0, ?UserLogicVfuncC@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x000089f0, 0x0, ?UserLogicVfuncD@CUserLogic@@UAEXXZ)
+RVA_COMPGEN(0x00008b50, 0x0, ?XferName@CUserLogic@@UAEXPAD@Z)
+RVA_COMPGEN(0x00008b70, 0x0, ?FireActivation@CUserLogic@@UAEXH@Z)
 
 // @confidence: low
 // @source: winapi:CopyRect

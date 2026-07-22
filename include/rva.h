@@ -24,6 +24,15 @@
 //                         both compilers; the label pass reads the invocation
 //                         from source text. Keep invocations in RVA order among
 //                         the TU's other RVA() functions.
+//   DATA_SYMBOL(addr, size, symbol)
+//                       - the DATA analog of RVA_COMPGEN: a compiler-emitted
+//                         DATUM with no source VarDecl to hang DATA() on (an
+//                         MI-decorated `??_7<C>@@6B<Base>@@@` secondary vftable,
+//                         a `$S<n>`-pooled local static, a Q/P-mangled const
+//                         array clang cannot reproduce). Binds the verbatim
+//                         mangled `symbol` at retail RVA `addr`; `size` is the
+//                         byte extent (0x0 = unknown). Same shape and ordering
+//                         rule as the TU's other data labels.
 //   SIZE(bytes)         - DIRECTLY UNDER the closing `};` of a class definition
 //                         (`struct Hello { u64 a; }; SIZE(0x8);`), record its
 //                         retail byte size. POSITIONAL: the class is the nearest
@@ -51,8 +60,8 @@
 // includers' /O2 codegen; they are now MSVC-empty, so they are matching-neutral
 // wherever placed - in particular directly atop a class in a hot header.)
 //
-// IR caveat (MEASURED): clang only emits an annotation into
-// @llvm.global.annotations for a DEFINED, live global. (1) An `extern`
+// IR caveat (MEASURED): clang only emits an annotation
+// into @llvm.global.annotations for a DEFINED, live global. (1) An `extern`
 // declaration's annotation is dropped even when the global is referenced, and
 // `used` does NOT rescue a declaration - so DATA labels are NOT read from IR;
 // labels.py scans the DATA(...) macro in source text and binds it to the clang-AST
@@ -94,7 +103,7 @@
 // NAME is reloc-masked in objdiff, so this is matching-neutral TRACKING, not a
 // match lever. Only simple global-namespace class names lower cleanly to
 // ??_7<type>@@6B@ - templated/namespaced vtables keep using config/vtable_names.csv
-// or a `// @data-symbol:` label. (The carrier's annotate also reaches the IR, so a
+// or a DATA_SYMBOL(..) row. (The carrier's annotate also reaches the IR, so a
 // future sweep could read VTBL from @llvm.global.annotations; the text scan is
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
@@ -115,6 +124,14 @@
 // on cl 5.0 and clang). Keep invocations in RVA order among the TU's RVA() fns.
 #define RVA_COMPGEN(addr, size, symbol)
 
+// DATA_SYMBOL(addr, size, symbol) - bind a compiler-emitted DATUM (no source
+// VarDecl for DATA() to ride: MI-decorated ??_7 secondary vftables, $S<n>-pooled
+// local statics - `$S*` binds by prefix and survives pool renumbering - and
+// Q/P-mangled const arrays) to its retail address under the verbatim mangled
+// symbol. size 0x0 = unknown. Text-scanned by labels.py; expands to nothing for
+// BOTH compilers, exactly like RVA_COMPGEN.
+#define DATA_SYMBOL(addr, size, symbol)
+
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
@@ -127,6 +144,7 @@
 #define VTBL(type, addr)
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)
+#define DATA_SYMBOL(addr, size, symbol)
 
 #endif
 

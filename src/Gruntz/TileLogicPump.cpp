@@ -52,11 +52,11 @@
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 VTBL(CBrickz, 0x001e7c54);
 VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
-VTBL(CTileTriggerTransition, 0x1e7db4);
+VTBL(CTileTriggerTransition, 0x001e7db4);
 VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
-VTBL(CCheckpointTrigger, 0x1e7ebc);
-VTBL(CTileTrigger, 0x1e7f14);
+VTBL(CCheckpointTrigger, 0x001e7ebc);
+VTBL(CTileTrigger, 0x001e7f14);
 VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 DATA(0x0024e6a0)
 extern CActReg g_warpStonePadActReg; // 0x64e6a0
@@ -207,7 +207,7 @@ RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 // --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
 // --- ~CTileTriggerTransition is IMPLICIT (retail is COMPILER-GENERATED - a user `{}`
 // would emit the leaf-vptr restamp now that the CWapX base EH state blocks the old
-// dead-store elision). Its out-of-line COMDAT is the 0x117f0 @rva-symbol pin below.
+// dead-store elision). Its out-of-line COMDAT is the 0x117f0 RVA_COMPGEN pin below.
 
 RVA(0x00011730, 0x6)
 LogicTypeId CTileTriggerTransition::GetTypeTag() {

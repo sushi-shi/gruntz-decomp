@@ -26,7 +26,7 @@ public:
     static void RegisterActs();     // 0x046e90
     i32 Update();                   // 0x047090 (advance anim + on-screen latch; ret 0)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE_UNKNOWN();
 

@@ -14,7 +14,7 @@ public:
     // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
     // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
     // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
-    // the target via deterministic @data-symbol/@rva-symbol in the .cpp.
+    // the target via deterministic DATA_SYMBOL/RVA_COMPGEN in the .cpp.
     // slot 0 (thunk 0x1749) - the one-shot Setup virtual, body @0x1104f0. Its 8-arg
     // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
     // arg0 is the owning CONTAINER (Setup stamps it into m_owner - the same object

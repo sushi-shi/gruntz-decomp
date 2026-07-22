@@ -41,7 +41,7 @@ public:
     // virtuals), so the most-derived vptr store is dead-eliminated and only the
     // folded CUserLogic teardown remains (the 0x44 leaf-dtor archetype).
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // ----- leaf layout over CUserLogic(0x40) (offsets load-bearing)
     i32 m_anchorA; // +0x54  latched anchor A

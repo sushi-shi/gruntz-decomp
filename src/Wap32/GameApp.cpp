@@ -498,7 +498,7 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
 // (through the game-owned timeGetTime fn-ptr ::timeGetTime, above). __cdecl, two
 // stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
 // fn-ptr (::GetAsyncKeyState @0x6c4500).
-// @orphan: no .text caller (a free __cdecl busy-wait); no owning class.
+// ORPHAN: no .text caller (a free __cdecl busy-wait); no owning class.
 // @early-stop
 // regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
 // cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,

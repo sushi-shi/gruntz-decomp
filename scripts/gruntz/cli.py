@@ -453,7 +453,7 @@ def cmd_build(args) -> None:
         for ln in (rvt.stdout + rvt.stderr).splitlines():
             print(ln, file=sys.stderr)
         die("class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
-            "@data-symbol, dissolve the view, or prove VTBL_ABSENT "
+            "DATA_SYMBOL(), dissolve the view, or prove VTBL_ABSENT "
             "(python -m gruntz.cleanliness.class_vtables)")
     else:
         log((rvt.stdout + rvt.stderr).strip().splitlines()[-1])
@@ -546,6 +546,20 @@ def cmd_build(args) -> None:
         out_cg = (rcg.stdout + rcg.stderr).strip()
         if out_cg:
             log(out_cg.splitlines()[-1])
+    # Label-style ratchet: every label macro canonical (8-digit addr, unpadded hex
+    # size, one line), comment @markers restricted to the blessed vocabulary
+    # (docs/comment-markers.md) - reached 0 at introduction 2026-07-22, FATAL.
+    rls = subprocess.run([sys.executable, "-m", "gruntz.audit.label_style", "--gate"],
+                         cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rls.returncode != 0:
+        for ln in (rls.stdout + rls.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("label-style ratchet violated - spell the label canonically "
+            "(python -m gruntz.audit.label_style)")
+    else:
+        out_ls = (rls.stdout + rls.stderr).strip()
+        if out_ls:
+            log(out_ls.splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric - reached 0 (2026-07-21, every
     # phantom view folded onto its real class) - FATAL so it can never regress.
     run([sys.executable, "-m", "gruntz.cleanliness.view_debt", "--fatal"])

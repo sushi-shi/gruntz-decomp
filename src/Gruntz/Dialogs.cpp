@@ -950,4 +950,4 @@ void CBattlezDlg::OnOkCommand() {
 // CGdiObject/CBrush/CRgn - the real MFC GDI family, whose ??1/??_G/??_7 COMDATs
 // this TU (and the rect/creditz TUs for CRgn) first-instantiated. The ??_7 datums
 // auto-name from config/vtable_names.csv when this obj emits the real COMDATs, and
-// the function COMDATs are pinned by the @rva-symbol block above.)
+// the function COMDATs are pinned by the RVA_COMPGEN block above.)

@@ -14,7 +14,7 @@ public:
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // Construct the class's activation-coordinate registry (g_actColl @0x644688)
     // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
     static void InitActReg(); // 0x0420d0

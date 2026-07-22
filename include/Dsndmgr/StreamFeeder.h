@@ -75,7 +75,7 @@ SIZE(0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
 // Overrides (bodies in SoundStream.cpp): slot 0 Feed = CopyWindow (0x137380);
 // slot 1 FeedData = window rewind (0x137490); slot 2 OnDrain = no-op (0x1374b0).
 // Its cl-generated IMPLICIT dtor (a bare tail-jmp to ~StreamFeeder, no vptr
-// re-stamp) is the retail 0x1376c0 copy, @rva-symbol-bound in SoundStream.cpp.
+// re-stamp) is the retail 0x1376c0 copy, RVA_COMPGEN-bound in SoundStream.cpp.
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {} // empty: base ctor stamps 0x5ef6f0, cl then stamps 0x5ef6e0
     virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2)

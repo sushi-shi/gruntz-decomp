@@ -37,29 +37,29 @@ i32 g_dinputThirdEnabled; // 0x653ab0
 
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
 // (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
-// @data-symbol (not DATA): clang mangles the const-u8[] extern with a `Q` storage
+// DATA_SYMBOL (not DATA): clang mangles the const-u8[] extern with a `Q` storage
 // class while cl 5.0 emits `P` (?g_X@@3PBEB), so a DATA() label's mangling misses
 // the base obj's undefined external (leaving the push-by-address reloc UNBOUND).
-// @data-symbol: ?g_keyboardDataFormat@@3PBEB 0x00190aa0
+DATA_SYMBOL(0x00190aa0, 0x0, ?g_keyboardDataFormat@@3PBEB)
 extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 
 // The mouse DIDATAFORMAT (c_dfDIMouse, 0x10-byte DIMOUSESTATE) the device-B
 // bring-up (CDeviceConfigB::CreateDev) passes to SetDataFormat; reloc-masked DIR32.
-// @data-symbol: ?g_mouseDataFormat@@3PBEB 0x00190b30
+DATA_SYMBOL(0x00190b30, 0x0, ?g_mouseDataFormat@@3PBEB)
 extern const u8 g_mouseDataFormat[]; // 0x590b30
 
 // The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
 // bring-up (CDeviceConfigC::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
-// @data-symbol: ?g_joystickDataFormat@@3PBEB 0x00191590
+DATA_SYMBOL(0x00191590, 0x0, ?g_joystickDataFormat@@3PBEB)
 extern const u8 g_joystickDataFormat[]; // 0x591590
 
 // The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
-// by address (reloc-masked DIR32 operand). @data-symbol (not DATA): same const-u8[]
+// by address (reloc-masked DIR32 operand). DATA_SYMBOL (not DATA): same const-u8[]
 // P-vs-Q mangling drop as the DIDATAFORMAT externs above.
-// @data-symbol: ?g_deviceConfigA@@3PBEB 0x001ef548
+DATA_SYMBOL(0x001ef548, 0x0, ?g_deviceConfigA@@3PBEB)
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 
-// @data-symbol: ?g_deviceConfigB@@3PBEB 0x001ef538
+DATA_SYMBOL(0x001ef538, 0x0, ?g_deviceConfigB@@3PBEB)
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
@@ -371,7 +371,7 @@ i32 CInputDevBase::ResetState() {
 // into every leaf's /GX destructor. cl ALSO emits standalone out-of-line copies of
 // both inline dtors into this obj - the leaf dtors' EH unwind funclets take their
 // addresses - and retail keeps those copies at 0x133370 / 0x1333b0; they are bound
-// below by @rva-symbol, exactly like the auto-emitted ??_G scalar-deleting dtors.)
+// below by RVA_COMPGEN, exactly like the auto-emitted ??_G scalar-deleting dtors.)
 
 // The four leaf/middle ??_G scalar-deleting destructors cl auto-emits for the
 // vtable slot-0s (each `push esi; call ~T; test [esp+8],1; conditional operator
@@ -399,7 +399,7 @@ RVA_COMPGEN(0x00133370, 0xb, ??1CInputDevRoot@@UAE@XZ)
 // into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
 // same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
 // after). It has no source definition to hang RVA() on, so it is named verbatim - which
-// is what @rva-symbol is for. The `deviceConfigRootTable` global is really
+// is what RVA_COMPGEN is for. The `deviceConfigRootTable` global is really
 // ??_7CInputDevRoot@@6B@ @0x1ef670 (bound just above).
 RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 

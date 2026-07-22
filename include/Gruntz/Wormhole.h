@@ -24,7 +24,7 @@ public:
     void LoadColors();                            // 0x0411f0
     i32 ReapplyConfig();                          // 0x0412c0 (per-partner config re-run)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // CWormhole's own data begins at +0x40 (CUserLogic base ends at +0x40). Only
     // the offsets the matched methods write are modeled; +0x54/+0x68 are config

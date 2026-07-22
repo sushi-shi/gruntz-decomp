@@ -16,7 +16,7 @@ public:
     } // slot 2
     CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     static void InitActReg(); // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
     virtual void FireActivation(i32 id)

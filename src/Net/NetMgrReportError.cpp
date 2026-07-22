@@ -18,10 +18,10 @@ extern "C" {
     i32 g_hr = 0; // the raw HRESULT, saved at entry
     DATA(0x002bf6fc)
     i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // UNDEFINED DATA: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.
 }

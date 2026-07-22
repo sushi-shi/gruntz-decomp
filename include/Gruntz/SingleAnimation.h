@@ -21,7 +21,7 @@ public:
     // is declared only - RegisterActs takes its address as a reloc-masked operand.
     i32 AdvanceAnim();
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // No own data: the two bases already span the whole object -
     // CUserLogic (0x34) + CWapX (0x20) == 0x54 == SIZE (sizeof corroborated by
     // `new CSingleAnimation` @0xaaaa0). The ex `m_pad40[0x54-0x40]` was the CWapX

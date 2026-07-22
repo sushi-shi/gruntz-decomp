@@ -12,27 +12,27 @@
 // bytes at each rva; de-obfuscated (byte-0x3d) plaintext shown in each comment.
 // Defined here (not extern-only) so the bytes land in cheatmgr.obj; the array
 // storage class is `char[]` (mutable), so cl5 mangles `?s_cheat_<rva>@@3PADA`
-// which a header DATA() (clang's mangledName) would miss - @data-symbol names the
+// which a header DATA() (clang's mangledName) would miss - DATA_SYMBOL names the
 // exact cl5 symbol and is authority-checked against the base obj.
-// @data-symbol: ?s_cheat_20c920@@3PADA 0x0020c920
-// @data-symbol: ?s_cheat_20c918@@3PADA 0x0020c918
-// @data-symbol: ?s_cheat_20c90c@@3PADA 0x0020c90c
-// @data-symbol: ?s_cheat_20c900@@3PADA 0x0020c900
-// @data-symbol: ?s_cheat_20c8f0@@3PADA 0x0020c8f0
-// @data-symbol: ?s_cheat_20c8e0@@3PADA 0x0020c8e0
-// @data-symbol: ?s_cheat_20c8d4@@3PADA 0x0020c8d4
-// @data-symbol: ?s_cheat_20c8c4@@3PADA 0x0020c8c4
-// @data-symbol: ?s_cheat_20c8b8@@3PADA 0x0020c8b8
-// @data-symbol: ?s_cheat_20c8ac@@3PADA 0x0020c8ac
-// @data-symbol: ?s_cheat_20c8a4@@3PADA 0x0020c8a4
-// @data-symbol: ?s_cheat_20c89c@@3PADA 0x0020c89c
-// @data-symbol: ?s_cheat_20c894@@3PADA 0x0020c894
-// @data-symbol: ?s_cheat_20c884@@3PADA 0x0020c884
-// @data-symbol: ?s_cheat_20c878@@3PADA 0x0020c878
-// @data-symbol: ?s_cheat_20c868@@3PADA 0x0020c868
-// @data-symbol: ?s_cheat_20c85c@@3PADA 0x0020c85c
-// @data-symbol: ?s_cheat_20c84c@@3PADA 0x0020c84c
-// @data-symbol: ?s_cheat_20c838@@3PADA 0x0020c838
+DATA_SYMBOL(0x0020c920, 0x0, ?s_cheat_20c920@@3PADA)
+DATA_SYMBOL(0x0020c918, 0x0, ?s_cheat_20c918@@3PADA)
+DATA_SYMBOL(0x0020c90c, 0x0, ?s_cheat_20c90c@@3PADA)
+DATA_SYMBOL(0x0020c900, 0x0, ?s_cheat_20c900@@3PADA)
+DATA_SYMBOL(0x0020c8f0, 0x0, ?s_cheat_20c8f0@@3PADA)
+DATA_SYMBOL(0x0020c8e0, 0x0, ?s_cheat_20c8e0@@3PADA)
+DATA_SYMBOL(0x0020c8d4, 0x0, ?s_cheat_20c8d4@@3PADA)
+DATA_SYMBOL(0x0020c8c4, 0x0, ?s_cheat_20c8c4@@3PADA)
+DATA_SYMBOL(0x0020c8b8, 0x0, ?s_cheat_20c8b8@@3PADA)
+DATA_SYMBOL(0x0020c8ac, 0x0, ?s_cheat_20c8ac@@3PADA)
+DATA_SYMBOL(0x0020c8a4, 0x0, ?s_cheat_20c8a4@@3PADA)
+DATA_SYMBOL(0x0020c89c, 0x0, ?s_cheat_20c89c@@3PADA)
+DATA_SYMBOL(0x0020c894, 0x0, ?s_cheat_20c894@@3PADA)
+DATA_SYMBOL(0x0020c884, 0x0, ?s_cheat_20c884@@3PADA)
+DATA_SYMBOL(0x0020c878, 0x0, ?s_cheat_20c878@@3PADA)
+DATA_SYMBOL(0x0020c868, 0x0, ?s_cheat_20c868@@3PADA)
+DATA_SYMBOL(0x0020c85c, 0x0, ?s_cheat_20c85c@@3PADA)
+DATA_SYMBOL(0x0020c84c, 0x0, ?s_cheat_20c84c@@3PADA)
+DATA_SYMBOL(0x0020c838, 0x0, ?s_cheat_20c838@@3PADA)
 //
 // Definitions in ascending-rva order (the retail .data layout). The explicit array
 // size = the retail symbol stride; the string literal's implicit NUL + zero-fill

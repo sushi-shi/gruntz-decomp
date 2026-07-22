@@ -23,7 +23,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
 // so the DIR32 stored is 0x305d, not the body 0x3b600. Bind the address-taken symbol to
 // the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8) so have==want.
-// @data-symbol: _CustomWorldInfoDlgProcThunk@16 0x0000305d
+DATA_SYMBOL(0x0000305d, 0x0, _CustomWorldInfoDlgProcThunk@16)
 extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg

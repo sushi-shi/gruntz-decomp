@@ -225,7 +225,7 @@ void DebugSetCursorXY(i32 a, i32 b) {
     DebugSetCursor(0, a, b);
 }
 
-RVA(0x00184fd0, 1)
+RVA(0x00184fd0, 0x1)
 void DebugSetCursor(i32, i32, i32) {}
 
 RVA(0x00185000, 0x1a6)

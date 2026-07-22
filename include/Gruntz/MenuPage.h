@@ -39,7 +39,7 @@ public:
     // then the member teardown at descending states, then operator delete) and
     // keeps the out-of-line COMDAT copy at 0x183250 for the non-EH-framed
     // caller CChatBox::Clear (`call 0x183250`); that standalone copy is pinned
-    // by @rva-symbol in ChatBox.cpp (an inline dtor cannot carry RVA()).
+    // by RVA_COMPGEN in ChatBox.cpp (an inline dtor cannot carry RVA()).
     ~CMenuPage() {
         InitDefaults();
     }

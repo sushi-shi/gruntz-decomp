@@ -28,7 +28,7 @@ public:
     SoundDevice();          // 0x136440  /GX EH base ctor (init lists, BuildVolumeTable, zero)
     virtual ~SoundDevice(); // 0x136500  /GX EH dtor (vtable 0x5ef6c4) -> Shutdown; cl emits
                             // ??_7SoundDevice@@6B@ + the ??_G scalar-deleting thunk (0x1364c0,
-                            // labelled by @rva-symbol in SoundDevice.cpp).
+                            // labelled by RVA_COMPGEN in SoundDevice.cpp).
     void Shutdown();        // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(DirectSoundMgr* node); // 0x136d80  reap voices + release + unlink one buffer
     void StopAll();                          // 0x136de0  StopAndRewind+StopAllClones over the list

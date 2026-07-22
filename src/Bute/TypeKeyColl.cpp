@@ -49,12 +49,12 @@ DATA(0x002bf45c)
 void* g_projActName2; // 0x6bf45c
 
 // g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the zErrHandling base-ctor
-// name arg the zBitVec ctors pass. Bound via @data-symbol (the char[] extern mangles
+// name arg the zBitVec ctors pass. Bound via DATA_SYMBOL (the char[] extern mangles
 // `?g_containerName@@3PADA` under cl; scanned per-.cpp so it lives here, not the header).
 // g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
 // default/HH zBitVec ctors size to.
-// @data-symbol: ?g_containerName@@3PADA 0x002bf408
-// @data-symbol: ?g_defaultProjActSize@@3HA 0x0021ad28
+DATA_SYMBOL(0x002bf408, 0x0, ?g_containerName@@3PADA)
+DATA_SYMBOL(0x0021ad28, 0x0, ?g_defaultProjActSize@@3HA)
 
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
@@ -721,7 +721,7 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
     m_nodeCount = 0;
 }
 
-RVA(0x0016dfc0, 7)
+RVA(0x0016dfc0, 0x7)
 CButeNodeEntry::~CButeNodeEntry() {}
 
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
@@ -763,7 +763,7 @@ void CButeStore::ClearRecursive(CButeTreeNode* node) {
     ::operator delete(n);
 }
 
-RVA(0x0016e0f0, 4)
+RVA(0x0016e0f0, 0x4)
 __declspec(naked) void* GetCallerRetAddr() {
     __asm {
         mov eax, [ebp + 4]
@@ -1133,7 +1133,7 @@ i32 Gap_16e7a0(void) {
 // dev source (a compiler ??_G thunk), so it is pinned by mangled name here, not
 // written as a method. (CButeStore==CButeTree, the same 0x2c-byte class.)
 //
-// @reloc-TODO / emission: this @rva-symbol binds only once cl EMITS ??_GCButeTree in
+// DEFERRED EMISSION (reloc): this RVA_COMPGEN binds only once cl EMITS ??_GCButeTree in
 // THIS obj, which needs g_buteTree defined (not extern) as a real global CButeTree so
 // its compiler-generated ctor/dtor/vtable emit here. That is BLOCKED by a dual-vtable
 // identity (the butenode-dual-model, OUT OF SCOPE for this pass), PROVEN by disasm:
@@ -1147,13 +1147,13 @@ i32 Gap_16e7a0(void) {
 // after the zPTree base ctor; the empty derived dtor elides its protective re-stamp so
 // ??_G goes straight to ~zPTree (which stamps zPTree's 0x5e94ac/0x5e949c). Real classes
 // are zErrHandling(@0), zPtrColl(fabricated "CButeNodeEntry", @8), zPTree : those.
-// @emission-TODO (COUPLED, not this pass): binding 0x16e9c0 needs g_buteTree DEFINED so
+// DEFERRED EMISSION (COUPLED, not this pass): binding 0x16e9c0 needs g_buteTree DEFINED so
 // cl emits ??_G/??__E/??__F/the CButeTree vtables. Requires as one atomic unit: (1) an
 // INLINE ~zPTree { ClearRecursive(0); } + ClearRecursive as a zPTree method (0x16e070),
 // which forces CButeStore : zPTree so its Reset/leaf-dtor callers still bind faithfully;
-// (2) @data-symbol on the emitted ??_7CButeTree@@6BCButeNodeEntry@@ @0x5f04dc (the
+// (2) DATA_SYMBOL on the emitted ??_7CButeTree@@6BCButeNodeEntry@@ @0x5f04dc (the
 // fabricated ??_7CButeStore@@6BCButeStoreSecond@@ name won't auto-match) + butemgr
-// dropping that binding; (3) @rva-symbols for the cl-mangled init/atexit thunks. Gate on
+// dropping that binding; (3) RVA_COMPGEN pins for the cl-mangled init/atexit thunks. Gate on
 // ClearRecursive/~CButeMgr staying byte-exact (the +0x10 store-flag is a BYTE read;
 // zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
 RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)

@@ -341,7 +341,7 @@ extern const double g_faderPowK = 2.0; // 2.0
 // 92% - /O2 regalloc entropy tail: the descriptor field loads + the m_3c/m_surface
 // conditional reuse eax in retail but the recompile distributes them across ecx/edx/eax;
 // same instruction selection + scheduling, only the register names differ. Final sweep.
-RVA(0x0001804a0, 0x182)
+RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc); // fader type 1 -> the id-2 mode record
     m_20 = 0;

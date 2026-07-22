@@ -15,7 +15,7 @@ COMDAT — you must force it and pin it:
   `#pragma inline_depth(0)` to emit the standalone COMDAT. A big ctor is emitted
   standalone once it overflows the caller's inline budget — call `new B(o)` a few
   times in the forcer at DEFAULT depth (so its OWN inlinable callees still fold).
-- **Pin by name** with `// @rva-symbol: ??0B@@QAE@…@Z <rva> <size>` (an inline ctor
+- **Pin by name** with `RVA_COMPGEN(<rva>, <size>, ??0B@@QAE@…@Z)` (an inline ctor
   can't hang `RVA()`).
 - **Depth-dependent callee (the trap).** If the standalone ctor must INLINE a helper
   (e.g. a Lookup-based registrar) that the leaf copies keep as a CALL, the helper
@@ -33,8 +33,8 @@ COMDAT — you must force it and pin it:
 #define USERLOGIC_STANDALONE_CTOR          // drop leaf-only fields for the standalone
 #include <Gruntz/UserLogic.h>
 inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* o) { /*…Lookup-based…*/ }
-// @rva-symbol: ??0CUserLogic@@QAE@XZ 0x000138d0 0x4b
-// @rva-symbol: ??0CUserLogic@@QAE@PAUCGameObject@@@Z 0x00058cd0 0x195
+RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
+RVA_COMPGEN(0x00058cd0, 0x195, ??0CUserLogic@@QAE@PAUCGameObject@@@Z)
 #pragma inline_depth(0)
 void ForceNoArg() { g_sink = new CUserLogic(); }        // small -> depth-0 forces it out
 #pragma inline_depth()

@@ -205,16 +205,16 @@ extern void ActiveWait(i32 phase);
 // `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
 // (that body is Gap_0b8020 @0xb8020); bind the thunk rva to the referenced symbol so
 // the delinked datum name pairs (R66/GruntzApp _ErrorDialogProcThunk idiom).
-// @data-symbol: ?MultiJoinHandler@@YAXXZ 0x0000222f
+DATA_SYMBOL(0x0000222f, 0x0, ?MultiJoinHandler@@YAXXZ)
 extern void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
 // The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
 // OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to
-// the referenced symbol (@data-symbol is text-scanned from this .cpp, so it lives here).
-// @data-symbol: _MultiPauseCallback 0x0000113b
-// @data-symbol: _MultiOptionzCallback 0x000027fc
-// @data-symbol: _MultiOutOfSyncCallback 0x0000301c
-// @data-symbol: _MultiDropPlayerCallback 0x00003387
+// the referenced symbol (DATA_SYMBOL is text-scanned from this .cpp, so it lives here).
+DATA_SYMBOL(0x0000113b, 0x0, _MultiPauseCallback)
+DATA_SYMBOL(0x000027fc, 0x0, _MultiOptionzCallback)
+DATA_SYMBOL(0x0000301c, 0x0, _MultiOutOfSyncCallback)
+DATA_SYMBOL(0x00003387, 0x0, _MultiDropPlayerCallback)
 
 // ===========================================================================
 // CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs the slot-2

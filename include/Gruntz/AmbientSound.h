@@ -36,7 +36,7 @@ public:
     // Inline leaf dtor: clears m_voice/m_listNode then folds the inline ~CUserBase
     // (final ??_7CUserBase vptr store). Being inline lets ~CAmbientPosSound inline it
     // (collapsing to byte-identical bytes) instead of tail-jmp'ing. The out-of-line
-    // COMDAT copy (0xb790) is pinned by @rva-symbol in WorldSoundSet.cpp.
+    // COMDAT copy (0xb790) is pinned by RVA_COMPGEN in WorldSoundSet.cpp.
     virtual ~CAmbientSound() OVERRIDE {
         m_voice = 0;
         m_listNode = 0;
@@ -96,7 +96,7 @@ public:
 
     // Inline leaf dtor: inlines the (now inline) base ~CAmbientSound, collapsing to
     // the same bytes (stamp ??_7CUserBase, clear m_voice/m_listNode). Its own OOL
-    // COMDAT (0xb940) is pinned by @rva-symbol in WorldSoundSet.cpp. m_40/m_44 are
+    // COMDAT (0xb940) is pinned by RVA_COMPGEN in WorldSoundSet.cpp. m_40/m_44 are
     // plain ints (no cleanup).
     virtual ~CAmbientPosSound() OVERRIDE {}               // slot 0
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override

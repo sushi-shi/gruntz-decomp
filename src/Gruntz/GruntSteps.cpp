@@ -276,22 +276,22 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
 // The 8 compass grunt-voice records (CGruntVoiceRec, runtime-filled .bss) +
 // PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
 // definitions bound to their retail .bss RVAs so each `mov ds:addr` reloc-checks
-// against the real target (array mangling -> @data-symbol names the exact cl sym).
-// @data-symbol: ?g_voiceN@@3UCGruntVoiceRec@@A 0x002448e8
+// against the real target (array mangling -> DATA_SYMBOL names the exact cl sym).
+DATA_SYMBOL(0x002448e8, 0x0, ?g_voiceN@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceN;
-// @data-symbol: ?g_voiceS@@3UCGruntVoiceRec@@A 0x002448d8
+DATA_SYMBOL(0x002448d8, 0x0, ?g_voiceS@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceS;
-// @data-symbol: ?g_voiceE@@3UCGruntVoiceRec@@A 0x002448c8
+DATA_SYMBOL(0x002448c8, 0x0, ?g_voiceE@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceE;
-// @data-symbol: ?g_voiceW@@3UCGruntVoiceRec@@A 0x002448f8
+DATA_SYMBOL(0x002448f8, 0x0, ?g_voiceW@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceW;
-// @data-symbol: ?g_voiceSE@@3UCGruntVoiceRec@@A 0x00244928
+DATA_SYMBOL(0x00244928, 0x0, ?g_voiceSE@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceSE;
-// @data-symbol: ?g_voiceNW@@3UCGruntVoiceRec@@A 0x00244918
+DATA_SYMBOL(0x00244918, 0x0, ?g_voiceNW@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceNW;
-// @data-symbol: ?g_voiceNE@@3UCGruntVoiceRec@@A 0x00244908
+DATA_SYMBOL(0x00244908, 0x0, ?g_voiceNE@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceNE;
-// @data-symbol: ?g_voiceSW@@3UCGruntVoiceRec@@A 0x00244948
+DATA_SYMBOL(0x00244948, 0x0, ?g_voiceSW@@3UCGruntVoiceRec@@A)
 CGruntVoiceRec g_voiceSW;
 
 RVA(0x000511b0, 0x246)

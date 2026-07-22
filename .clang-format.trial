@@ -66,12 +66,7 @@ SortIncludes: Never
 
 # --- project macros (include/rva.h) ----------------------------------------
 StatementMacros:
-  - RVA
-  - DATA
-  - VTBL
-  - VTBL_ABSENT
-  - SIZE
-  - SIZE_UNKNOWN
+  - GRUNTZ_NONE_
 # The mangled-symbol carriers are whitespace-sensitive ONLY (one canonical
 # spelling, gated by gruntz.audit.label_style): clang-format must never re-space
 # or wrap their args - it splits stdcall decorations (`_WinMain@16` ->
@@ -79,7 +74,13 @@ StatementMacros:
 # WhitespaceSensitiveMacros (measured, clang-format 21), so these three must NOT
 # be listed above.
 WhitespaceSensitiveMacros:
+  - RVA
   - SYMBOL
+  - DATA
+  - VTBL
+  - VTBL_ABSENT
+  - SIZE
+  - SIZE_UNKNOWN
   - RVA_COMPGEN
   - DATA_SYMBOL
 AttributeMacros:

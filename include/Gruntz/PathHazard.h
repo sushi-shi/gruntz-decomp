@@ -81,7 +81,7 @@ public:
     // elides the leaf-vptr restamp a user `{}` would emit now that the CWapX base EH
     // state blocks the old dead-store elision). Still implicitly-inline, so the derived
     // leaves (CRainCloud/CUFO) FOLD the teardown; the out-of-line COMDAT keeps its
-    // @rva-symbol pin in PathHazard.cpp.
+    // RVA_COMPGEN pin in PathHazard.cpp.
     char m_pad54[0x58 - 0x54];
     double m_speed;         // +0x58  per-frame speed (1 / (m_bc / 32))
     double m_posX;          // +0x60  sub-pixel X position accumulator

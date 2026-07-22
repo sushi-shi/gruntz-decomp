@@ -24,14 +24,14 @@ step - so the FULL generated symbol set is the authoritative claim set, not just
 the RVA() macros the first cut of this guard parsed:
 
   * rva-macro   RVA(0x.., 0x..)                  - a reconstructed body
-  * rva-symbol  // @rva-symbol: <mangled> <rva>  - a self-contained fn label
+  * rva-symbol  RVA_COMPGEN(rva, size, mangled)  - a self-contained fn label
                                                     (e.g. a ??_G deleting-dtor
                                                     thunk the compiler synthesizes)
-  * data        DATA(0x..) / // @data-symbol:     - a named game global / vtable
+  * data        DATA(0x..) / DATA_SYMBOL(..)      - a named game global / vtable
 
 The FID matcher is fuzzy, so it emits false positives (a real function has ONE
 address, yet ??_G__non_rtti_object recurred at ~189 RVAs, __fpclear at ~45): an
-@rva-symbol thunk or a DATA() global landing on such a row is the recurring
+RVA_COMPGEN thunk or a DATA() global landing on such a row is the recurring
 defect this widened guard exists to catch - which the RVA()-macro-only cut could
 not see (macro-only overlap was already 0 while the full set overlapped at 45).
 
@@ -76,13 +76,11 @@ VENDORED_CONFIG = REPO / "config" / "zlib_labels.csv"
 
 # rva-macro: RVA(0x.., 0x..) - a reconstructed body's retail address.
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*\)")
-# rva-symbol: `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained fn label.
-RSYM_RE = re.compile(r"@rva-symbol:\s*\S+\s+(0x[0-9a-fA-F]+)")
-# RVA_COMPGEN(<rva>, <size>, <mangled>) - the macro form (rva.h).
+# rva-symbol: RVA_COMPGEN(<rva>, <size>, <mangled>) - a self-contained fn label (rva.h).
 RCG_RE = re.compile(r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)")
-# data: DATA(0x..) and `// @data-symbol: <mangled> <rva> [<size>]` - a named global.
+# data: DATA(0x..) and DATA_SYMBOL(<rva>, <size>, <mangled>) - a named global.
 DATA_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
-DSYM_RE = re.compile(r"@data-symbol:\s*\S+\s+(0x[0-9a-fA-F]+)")
+DSYM_RE = re.compile(r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)")
 
 
 def norm_addr(value: str) -> str:
@@ -122,8 +120,6 @@ def src_claims() -> dict:
         for i, line in enumerate(text.splitlines()):
             for m in RVA_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-macro", f"{path.relative_to(REPO)}:{i + 1}"))
-            for m in RSYM_RE.finditer(line):
-                claims.setdefault(norm_addr(m.group(1)), ("rva-symbol", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in RCG_RE.finditer(line):
                 claims.setdefault(norm_addr(m.group(1)), ("rva-symbol", f"{path.relative_to(REPO)}:{i + 1}"))
             for m in DATA_RE.finditer(line):
@@ -136,7 +132,7 @@ def src_claims() -> dict:
 def generated_claims() -> dict:
     """rva -> (claim-kind, location, name) for the FULL src-authored claim set,
     MINUS the vendored table. Primary source: the generated build/gen/symbol_names.csv
-    (authoritative - every RVA() body, RVA_COMPGEN pin, DATA()/@data-symbol
+    (authoritative - every RVA() body, RVA_COMPGEN pin, DATA()/DATA_SYMBOL
     and ??_7 vtable folded in by the labels step). Augmented with a direct src parse
     so a stale/absent generated file cannot make the gate pass vacuously and so
     every offending row carries its claim kind + src location."""

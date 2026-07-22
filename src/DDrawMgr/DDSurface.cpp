@@ -1837,12 +1837,12 @@ i32 CDDSurface::IsValid() {
     return 0;
 }
 
-RVA(0x00141310, 4)
+RVA(0x00141310, 0x4)
 i32 CDDSurface::GetWidth() {
     return m_width;
 }
 
-RVA(0x00141320, 4)
+RVA(0x00141320, 0x4)
 i32 CDDSurface::GetHeight() {
     return m_height;
 }

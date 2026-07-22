@@ -69,8 +69,10 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Win32/MFC types & functions come from the real headers** (`<Mfc.h>` for MFC TUs,
   `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
   `docs/patterns/win32-import-decl-stdcall.md`.
-- **Addresses are zero-padded to 8 hex digits** in every `RVA()`/`DATA()` macro and
-  in `config/match-queue.md` (`0x00xxxxxx`); the RVA size arg stays unpadded.
+- **Label macros have ONE canonical spelling** (gated FATAL, `gruntz.audit.label_style`):
+  addresses zero-padded to 8 hex digits (`0x00xxxxxx`, also in `config/match-queue.md`),
+  size args unpadded lowercase hex (`0x0` = unknown), one line per invocation. No label
+  ever lives in a comment (`RVA_COMPGEN`/`DATA_SYMBOL` are the compiler-generated pins).
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
@@ -89,8 +91,9 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `reinterpret_cast`/`const_cast`/`dynamic_cast` otherwise) so the C-style-pattern metrics slide to 0;
   **offset-casts `(char*)x + N` are BANNED outright** (named member `&x->m_field`, never even a C++
   cast). `m_<hex>` naming is last.
-- **Function-state markers (comments, ignored by tooling):** `// @stub` = an empty, not-yet-
+- **Function-state markers (comments):** `// @stub` = an empty, not-yet-
   reconstructed body; `// @early-stop` (reason on the next line) = a complete reconstruction
   parked below 100% match; `// @identity-TODO` = an unproven class/owner identity — leave it,
   never fabricate. A reconstructed method is either ~100% (unmarked) or `@early-stop`; the
-  final-sweep worklist is `rg '@early-stop' src`.
+  final-sweep worklist is `rg '@early-stop' src`. The full (closed, gated) marker
+  vocabulary: `docs/comment-markers.md`.

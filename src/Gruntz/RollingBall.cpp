@@ -53,7 +53,7 @@
 #include <Rez/FrameClock.h>    // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
 
-VTBL(CRollingBall, 0x1e86fc);
+VTBL(CRollingBall, 0x001e86fc);
 DATA(0x002461b0)
 extern CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 

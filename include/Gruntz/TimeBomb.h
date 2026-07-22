@@ -18,7 +18,7 @@ public:
                                    //  no this, called this-less by the game-object factory)
     i32 LoadAttributes();          // 0x0e1e60 (per-frame timer/detonate step)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     i32 m_fastPhase; // +0x54  0 = slow phase (re-arms to fast on expiry), 1 = fast phase (detonates)
     i64 m_startTime; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
     i64 m_duration;  // +0x60  phase duration (lo dword of the i64)

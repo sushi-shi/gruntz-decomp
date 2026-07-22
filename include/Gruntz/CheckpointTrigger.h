@@ -11,7 +11,7 @@ public:
 public:
     CCheckpointTrigger(CGameObject* obj);   // 0x10ee20 (1-arg leaf ctor)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // Act cluster RE-ATTRIBUTED (the shift-by-one): this class owns the 0x10f160/
     // 0x10f1e0/0x10f340 cluster (RTTI: its slot 4 override -> ILT 0x001366 -> jmp
     // 0x10f1e0); the 0x10ea00.. cluster it used to claim is CBrickz's. Bodies in

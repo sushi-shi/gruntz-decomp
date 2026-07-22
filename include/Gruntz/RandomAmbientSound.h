@@ -70,7 +70,7 @@ public:
     // same bytes as ~CAmbientSound/~CAmbientPosSound (stamp ??_7CUserBase, clear
     // m_voice/m_listNode). The OOL COMDAT is at 0xbb40 (Ghidra-mislabeled as the ??0
     // ctor; it is really ??1, called by the scalar-deleting-dtor 0xbb10 = vtable slot
-    // 0) and is pinned by @rva-symbol in WorldSoundSet.cpp.
+    // 0) and is pinned by RVA_COMPGEN in WorldSoundSet.cpp.
     virtual ~CRandomAmbientSound() OVERRIDE {}
     // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the box factory
     // (CWorldSoundSet::CreateRandomBox; unreconstructed, reloc-masked).

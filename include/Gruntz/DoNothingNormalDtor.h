@@ -21,7 +21,7 @@ public:
     } // slot 2
 public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE(0x54); // new-site push 0x54: CUserLogic 0x34 + CWapX 0x20 EXACTLY
 

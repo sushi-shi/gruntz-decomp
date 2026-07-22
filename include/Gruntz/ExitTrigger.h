@@ -27,7 +27,7 @@ public:
     static void RegisterActs(); // 0x03f3f0 (binds the "A" activation handler)
     i32 AdvanceAnim();          // 0x03f5f0 (the per-frame handler PMF; declared-only)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)
     i32 m_resolved;             // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
 };

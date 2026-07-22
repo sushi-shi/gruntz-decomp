@@ -66,7 +66,7 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32)
         OVERRIDE;                    // slot 1 (body: Serialize 0x41350)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     i32 m_armed; // +0x54  armed flag (a resolved target id)
     // The armed-at running-clock snapshot (m_58) and the bound object's per-tile-time
     // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so

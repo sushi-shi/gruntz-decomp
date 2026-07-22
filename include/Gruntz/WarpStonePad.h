@@ -18,7 +18,7 @@ public:
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     static void InitActReg();                     // 0x10d840
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10d8c0 (vtable slot 4)
     static void RegisterActs();                   // 0x10da20

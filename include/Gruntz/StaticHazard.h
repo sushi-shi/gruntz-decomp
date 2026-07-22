@@ -24,7 +24,7 @@ public:
     i32 LoadAttributes();                         // 0x0fc1a0 (periodic tick/update)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x0fbbf0 (vtable slot 4)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).
     u32 m_pulseEpoch;   // +0x54  pulse epoch (latched g_frameTime at construction)

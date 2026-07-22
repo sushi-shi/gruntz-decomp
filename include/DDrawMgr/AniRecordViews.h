@@ -26,6 +26,6 @@
 
 // (CAniStrArray is GONE - 0x168e70 IS the real ?GetAt@CStringArray COMDAT; MSVC5
 // emits it out-of-line naturally (by-value CString return), so the "cannot re-emit
-// the real MFC method" wall was false. Direct tokens.GetAt(i) + @rva-symbol pin.)
+// the real MFC method" wall was false. Direct tokens.GetAt(i) + RVA_COMPGEN pin.)
 
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDVIEWS_H

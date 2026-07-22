@@ -20,7 +20,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x042760 (per-coord PMF dispatcher)
     i32 Tick();                                   // 0x042ac0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
                                //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
 SIZE(0x54);

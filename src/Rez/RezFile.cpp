@@ -6,11 +6,11 @@
 
 // The two private fopen-mode literals referenced ONLY by Open@CRezItm + OpenFile@
 // CRezFile. cl mangles the `extern const char[]` reference with a `P` storage class,
-// which a DATA() label (clang's `Q` mangledName) misses; @data-symbol names the exact
+// which a DATA() label (clang's `Q` mangledName) misses; DATA_SYMBOL names the exact
 // cl mangling and is authority-checked against rezfile.obj's undefined externals.
 // (s_rb @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
-// @data-symbol: ?s_rPlusB@@3PBDB 0x0021a0a4
-// @data-symbol: ?s_wPlusB@@3PBDB 0x0021a0a8
+DATA_SYMBOL(0x0021a0a4, 0x0, ?s_rPlusB@@3PBDB)
+DATA_SYMBOL(0x0021a0a8, 0x0, ?s_wPlusB@@3PBDB)
 
 VTBL(CRezDir, 0x001ef7a8);
 VTBL(CRezList, 0x001ef7c8);
@@ -33,7 +33,7 @@ CRezItmBase::CRezItmBase(void* parent) {
 
 // The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
 // compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
-// so @rva-symbol pairs the retail copies with the auto-emitted base COMDATs).
+// so RVA_COMPGEN pairs the retail copies with the auto-emitted base COMDATs).
 RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
 
 RVA(0x0013c520, 0xe)

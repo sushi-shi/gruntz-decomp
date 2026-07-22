@@ -97,79 +97,79 @@ extern "C" {
 // also used as placed-object type markers in Play.cpp (GiantRock/CoveredPowerup/
 // InGameIcon/GruntStartingPoint) are bound here ONCE; Play.cpp references the
 // same `_CreateXxx` symbol (its old `g_objIdThunk_<rva>` view was the same thunk).
-// @data-symbol: _CreateAniCycle 0x00001f19
-// @data-symbol: _CreateDoNothingNormal 0x00003dc8
-// @data-symbol: _CreateDoNothing 0x000019d3
-// @data-symbol: _CreateSimpleAnimation 0x00001a37
-// @data-symbol: _CreateMenuSparkle 0x00003f3a
-// @data-symbol: _CreateFrontCandy 0x000013c0
-// @data-symbol: _CreateBehindCandy 0x000018bb
-// @data-symbol: _CreateFrontCandyAni 0x00001f91
-// @data-symbol: _CreateBehindCandyAni 0x00003c65
-// @data-symbol: _CreateEyeCandy 0x00001aaa
-// @data-symbol: _CreateEyeCandyAni 0x00002f27
-// @data-symbol: _CreateGrunt 0x00002d2e
-// @data-symbol: _CreateGlobalAmbientSound 0x00002d15
-// @data-symbol: _CreateAmbientSound 0x00002158
-// @data-symbol: _CreateAmbientPosSound 0x00001217
-// @data-symbol: _CreateSpotAmbientSound 0x00002851
-// @data-symbol: _CreateActionArea 0x0000349a
-// @data-symbol: _CreateStatusBarSprite 0x000027c0
-// @data-symbol: _CreateParticlez 0x00002e1e
-// @data-symbol: _CreateExplosion 0x00003468
-// @data-symbol: _CreateGruntSelectedSprite 0x00003da0
-// @data-symbol: _CreateGruntHealthSprite 0x000037b5
-// @data-symbol: _CreateGruntStaminaSprite 0x000025d1
-// @data-symbol: _CreateGruntToySprite 0x00001910
-// @data-symbol: _CreateGruntToyTimeSprite 0x00001bae
-// @data-symbol: _CreateGruntWingzTimeSprite 0x00002d24
-// @data-symbol: _CreateGruntPowerupSprite 0x000027cf
-// @data-symbol: _CreateToyPeek 0x00001e1f
-// @data-symbol: _CreateTileTriggerSwitch 0x00001799
-// @data-symbol: _CreateTileTrigger 0x00003bfc
-// @data-symbol: _CreateTileSecretTrigger 0x000037b0
-// @data-symbol: _CreateBrickz 0x000019bf
-// @data-symbol: _CreateTileTriggerTransition 0x00001d43
-// @data-symbol: _CreateGruntStartingPoint 0x000024a5
-// @data-symbol: _CreateGruntCreationPoint 0x000017e4
-// @data-symbol: _CreateFortressFlag 0x00003148
-// @data-symbol: _CreateExitTrigger 0x0000192e
-// @data-symbol: _CreateGiantRock 0x0000137a
-// @data-symbol: _CreateCoveredPowerup 0x00003d0f
-// @data-symbol: _CreateInGameIcon 0x0000288d
-// @data-symbol: _CreateInGameText 0x00002bad
-// @data-symbol: _CreateWormhole 0x0000191a
-// @data-symbol: _CreateGruntPuddle 0x00002a68
-// @data-symbol: _CreateRollingBall 0x0000191f
-// @data-symbol: _CreateObjectDropper 0x00002d79
-// @data-symbol: _CreateDroppedObject 0x00001e24
-// @data-symbol: _CreateDroppedObjectShadow 0x000011b8
-// @data-symbol: _CreateCheckpointTrigger 0x00001794
-// @data-symbol: _CreateTeleporter 0x000039b3
-// @data-symbol: _CreateSecretTeleporterTrigger 0x000015af
-// @data-symbol: _CreateSecretLevelTrigger 0x00001bf4
-// @data-symbol: _CreateProjectile 0x000030f8
-// @data-symbol: _CreateBoomerang 0x0000158c
-// @data-symbol: _CreateStaticHazard 0x00003ca6
-// @data-symbol: _CreateToobSpikez 0x0000182a
-// @data-symbol: _CreateTimeBomb 0x000016c7
-// @data-symbol: _CreateSpotLight 0x00001a8c
-// @data-symbol: _CreateKitchenSlime 0x000015f0
-// @data-symbol: _CreateSingleAnimation 0x00002702
-// @data-symbol: _CreateWayPoint 0x00001087
-// @data-symbol: _CreateWarlord 0x00004354
-// @data-symbol: _CreatePathHazard 0x00003814
-// @data-symbol: _CreateRainCloud 0x00001e5b
-// @data-symbol: _CreateUFO 0x00002d7e
-// @data-symbol: _CreateGruntVoice 0x00001f32
-// @data-symbol: _CreateWarpStonePad 0x00001f0a
-// @data-symbol: _CreateGuardPoint 0x0000164f
-// @data-symbol: _CreateVoiceTrigger 0x00002cf2
-// @data-symbol: _CreateLevelTime 0x00001b09
-// @data-symbol: _CreateCursorSnapSprite 0x00002bbc
-// @data-symbol: _CreateLightFx 0x00002bdf
-// @data-symbol: _CreateDemoMover 0x00002eb9
-// @data-symbol: _CreateDemoSign 0x0000448a
+DATA_SYMBOL(0x00001f19, 0x0, _CreateAniCycle)
+DATA_SYMBOL(0x00003dc8, 0x0, _CreateDoNothingNormal)
+DATA_SYMBOL(0x000019d3, 0x0, _CreateDoNothing)
+DATA_SYMBOL(0x00001a37, 0x0, _CreateSimpleAnimation)
+DATA_SYMBOL(0x00003f3a, 0x0, _CreateMenuSparkle)
+DATA_SYMBOL(0x000013c0, 0x0, _CreateFrontCandy)
+DATA_SYMBOL(0x000018bb, 0x0, _CreateBehindCandy)
+DATA_SYMBOL(0x00001f91, 0x0, _CreateFrontCandyAni)
+DATA_SYMBOL(0x00003c65, 0x0, _CreateBehindCandyAni)
+DATA_SYMBOL(0x00001aaa, 0x0, _CreateEyeCandy)
+DATA_SYMBOL(0x00002f27, 0x0, _CreateEyeCandyAni)
+DATA_SYMBOL(0x00002d2e, 0x0, _CreateGrunt)
+DATA_SYMBOL(0x00002d15, 0x0, _CreateGlobalAmbientSound)
+DATA_SYMBOL(0x00002158, 0x0, _CreateAmbientSound)
+DATA_SYMBOL(0x00001217, 0x0, _CreateAmbientPosSound)
+DATA_SYMBOL(0x00002851, 0x0, _CreateSpotAmbientSound)
+DATA_SYMBOL(0x0000349a, 0x0, _CreateActionArea)
+DATA_SYMBOL(0x000027c0, 0x0, _CreateStatusBarSprite)
+DATA_SYMBOL(0x00002e1e, 0x0, _CreateParticlez)
+DATA_SYMBOL(0x00003468, 0x0, _CreateExplosion)
+DATA_SYMBOL(0x00003da0, 0x0, _CreateGruntSelectedSprite)
+DATA_SYMBOL(0x000037b5, 0x0, _CreateGruntHealthSprite)
+DATA_SYMBOL(0x000025d1, 0x0, _CreateGruntStaminaSprite)
+DATA_SYMBOL(0x00001910, 0x0, _CreateGruntToySprite)
+DATA_SYMBOL(0x00001bae, 0x0, _CreateGruntToyTimeSprite)
+DATA_SYMBOL(0x00002d24, 0x0, _CreateGruntWingzTimeSprite)
+DATA_SYMBOL(0x000027cf, 0x0, _CreateGruntPowerupSprite)
+DATA_SYMBOL(0x00001e1f, 0x0, _CreateToyPeek)
+DATA_SYMBOL(0x00001799, 0x0, _CreateTileTriggerSwitch)
+DATA_SYMBOL(0x00003bfc, 0x0, _CreateTileTrigger)
+DATA_SYMBOL(0x000037b0, 0x0, _CreateTileSecretTrigger)
+DATA_SYMBOL(0x000019bf, 0x0, _CreateBrickz)
+DATA_SYMBOL(0x00001d43, 0x0, _CreateTileTriggerTransition)
+DATA_SYMBOL(0x000024a5, 0x0, _CreateGruntStartingPoint)
+DATA_SYMBOL(0x000017e4, 0x0, _CreateGruntCreationPoint)
+DATA_SYMBOL(0x00003148, 0x0, _CreateFortressFlag)
+DATA_SYMBOL(0x0000192e, 0x0, _CreateExitTrigger)
+DATA_SYMBOL(0x0000137a, 0x0, _CreateGiantRock)
+DATA_SYMBOL(0x00003d0f, 0x0, _CreateCoveredPowerup)
+DATA_SYMBOL(0x0000288d, 0x0, _CreateInGameIcon)
+DATA_SYMBOL(0x00002bad, 0x0, _CreateInGameText)
+DATA_SYMBOL(0x0000191a, 0x0, _CreateWormhole)
+DATA_SYMBOL(0x00002a68, 0x0, _CreateGruntPuddle)
+DATA_SYMBOL(0x0000191f, 0x0, _CreateRollingBall)
+DATA_SYMBOL(0x00002d79, 0x0, _CreateObjectDropper)
+DATA_SYMBOL(0x00001e24, 0x0, _CreateDroppedObject)
+DATA_SYMBOL(0x000011b8, 0x0, _CreateDroppedObjectShadow)
+DATA_SYMBOL(0x00001794, 0x0, _CreateCheckpointTrigger)
+DATA_SYMBOL(0x000039b3, 0x0, _CreateTeleporter)
+DATA_SYMBOL(0x000015af, 0x0, _CreateSecretTeleporterTrigger)
+DATA_SYMBOL(0x00001bf4, 0x0, _CreateSecretLevelTrigger)
+DATA_SYMBOL(0x000030f8, 0x0, _CreateProjectile)
+DATA_SYMBOL(0x0000158c, 0x0, _CreateBoomerang)
+DATA_SYMBOL(0x00003ca6, 0x0, _CreateStaticHazard)
+DATA_SYMBOL(0x0000182a, 0x0, _CreateToobSpikez)
+DATA_SYMBOL(0x000016c7, 0x0, _CreateTimeBomb)
+DATA_SYMBOL(0x00001a8c, 0x0, _CreateSpotLight)
+DATA_SYMBOL(0x000015f0, 0x0, _CreateKitchenSlime)
+DATA_SYMBOL(0x00002702, 0x0, _CreateSingleAnimation)
+DATA_SYMBOL(0x00001087, 0x0, _CreateWayPoint)
+DATA_SYMBOL(0x00004354, 0x0, _CreateWarlord)
+DATA_SYMBOL(0x00003814, 0x0, _CreatePathHazard)
+DATA_SYMBOL(0x00001e5b, 0x0, _CreateRainCloud)
+DATA_SYMBOL(0x00002d7e, 0x0, _CreateUFO)
+DATA_SYMBOL(0x00001f32, 0x0, _CreateGruntVoice)
+DATA_SYMBOL(0x00001f0a, 0x0, _CreateWarpStonePad)
+DATA_SYMBOL(0x0000164f, 0x0, _CreateGuardPoint)
+DATA_SYMBOL(0x00002cf2, 0x0, _CreateVoiceTrigger)
+DATA_SYMBOL(0x00001b09, 0x0, _CreateLevelTime)
+DATA_SYMBOL(0x00002bbc, 0x0, _CreateCursorSnapSprite)
+DATA_SYMBOL(0x00002bdf, 0x0, _CreateLightFx)
+DATA_SYMBOL(0x00002eb9, 0x0, _CreateDemoMover)
+DATA_SYMBOL(0x0000448a, 0x0, _CreateDemoSign)
 //
 // The five former RegHelper CALL sites are now real static-member calls
 // (CProjActObj::RegisterType / C{TileTriggerTransition,ToobSpikez,TimeBomb,

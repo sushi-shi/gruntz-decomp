@@ -39,8 +39,8 @@
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 
-VTBL(CTimeBomb, 0x1e771c);
-VTBL(CProjectile, 0x1e798c);
+VTBL(CTimeBomb, 0x001e771c);
+VTBL(CProjectile, 0x001e798c);
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)

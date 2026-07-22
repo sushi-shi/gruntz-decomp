@@ -14,9 +14,9 @@ typedef enum AdvancedOptionsDlgId {
 // File-scope globals. The reloc that names them is masked in objdiff; only the
 // address-load bytes are load-bearing. Bound to their retail DATA rvas by exact
 // base-obj symbol name (MSVC internal-linkage $S mangling; clang mangles differently
-// so @data-symbol pins the exact name the reloc uses).
-// @data-symbol: _g_registryHelper$S17358 0x002295d8
-// @data-symbol: _g_hInstance$S17373 0x00251618
+// so DATA_SYMBOL pins the exact name the reloc uses).
+DATA_SYMBOL(0x002295d8, 0x0, _g_registryHelper$S17358)
+DATA_SYMBOL(0x00251618, 0x0, _g_hInstance$S17373)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
 

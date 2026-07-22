@@ -17,7 +17,7 @@ public:
         return LOGIC_GRUNTSTAMINASPRITE;
     }
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 SIZE(0x64); // recovered from operator-new sites (gruntz.analysis.news)

@@ -89,7 +89,7 @@ public:
     // slot-1 dtor: INLINE so the derived dtors fold these very resets (retail
     // ~CDDrawSurfaceChildA @0x1591b0 is m_04/m_width/m_08/m_0c inline, no base
     // call); the linker-kept out-of-line COMDAT copy is the retail ??1 @0x158fb0
-    // (bound by @rva-symbol in DDrawSubMgr.cpp).
+    // (bound by RVA_COMPGEN in DDrawSubMgr.cpp).
     virtual ~CDrawSubWorker() OVERRIDE {
         m_width = 0;
     }

@@ -21,7 +21,7 @@ public:
     i32 LoadSprites();
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // The bound CGameObject IS the slime's level/anim data (inherited m_object == m_38,
     // the same object). The two accessors keep the two distinct base-member loads

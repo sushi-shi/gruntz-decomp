@@ -21,7 +21,7 @@
 // a3->m_7c->OwnerMgr()->m_animRegistry is the registry leaf; the canonical types give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
 // +0x0c. Reuse CGameObject for a3; view its name-holder's +0x0c through AnimWorkerObj.
-// @identity-recovered: CProjLoadRec IS CProjectile, and Load @0x0e0d40 IS
+// IDENTITY RECOVERED: CProjLoadRec IS CProjectile, and Load @0x0e0d40 IS
 // CProjectile::SerializeMove (vtable slot 1). PROOF: vtable_hierarchy --class
 // CProjectile resolves slot 1 (ILT thunk 0x0034b3) to this RVA under the src name
 // "Load"; the field layout mirrors CProjectile exactly (m_1e0[7] = the seven frame

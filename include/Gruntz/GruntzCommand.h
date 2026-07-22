@@ -23,7 +23,7 @@ typedef CFileMemBase CSerialArchive;
 // deleting dtor (??_G shape, reached through the vtable's incremental-link
 // thunk): restore the vftable and, if the low bit of the hidden flags arg is
 // set, operator delete(this). Modeled as `virtual ~CGruntzCommand() {}` so MSVC
-// synthesizes the deleting thunk; its mangled symbol is pinned by @rva-symbol in
+// synthesizes the deleting thunk; its mangled symbol is pinned by RVA_COMPGEN in
 // the .cpp.
 //
 // Layout (offsets pinned by the setters/getters; names are placeholders):

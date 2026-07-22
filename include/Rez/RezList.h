@@ -36,7 +36,7 @@ struct CRezList : public CObjList {
     virtual void V0() OVERRIDE; // [0] 0x13c4d0 (empty body; RezFile.cpp)
     // NON-virtual inline dtor: embedding dtors (~CRezDir) inline the chain; the
     // EH-funclet-referenced standalone COMDAT copy is retail 0x13ca30 (bound by
-    // RezFile.cpp's @rva-symbol).
+    // RezFile.cpp's RVA_COMPGEN).
     ~CRezList() {}
     void AddHead(CRezListNode* node); // 0x1851e0
     void AddTail(CRezListNode* node); // 0x185210

@@ -39,9 +39,10 @@ How the map is built per TU:
   4. unit comes from config/units.toml via the source path.
 
 A compiler-generated thunk with no source body (a `??_G` scalar-deleting dtor)
-cannot hang an RVA() attribute, so it is pinned with a self-contained comment
-`// @rva-symbol: <mangled> <rva> [<size>]` (read in every TU - the name is given
-verbatim, so no join and no IR).
+cannot hang an RVA() attribute, so it is pinned with a self-contained
+`RVA_COMPGEN(<rva>, <size>, <mangled>)` invocation - and a compiler-emitted datum
+with no VarDecl with `DATA_SYMBOL(<rva>, <size>, <mangled>)` (text-scanned - the
+name is given verbatim, so no join and no IR).
 
 VENDORED PATH: vendored C TUs (vendor/zlib-1.0.4/*.c) keep their source PRISTINE -
 no labels in the source at all. They are mostly `static`/`local` K&R functions
@@ -95,25 +96,22 @@ DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # it yet). Only simple global-namespace class names lower cleanly here;
 # templated/namespaced vtables stay in vtable_names.csv.
 VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
-# `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained function label for
-# a compiler-generated thunk that has NO source definition to hang an RVA()
-# attribute on (a `??_G` scalar-deleting destructor). The mangled name is given
-# verbatim, so there is no join and no IR - it is read in every TU.
-RVA_SYMBOL_RE = re.compile(
-    r"@rva-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
-# `RVA_COMPGEN(<rva>, <size>, <mangled>)` - the macro form of @rva-symbol (rva.h;
-# expands to nothing under both compilers, read here from source text). size 0 =
-# unknown. Keep invocations in RVA order among the TU's RVA() functions.
+# `RVA_COMPGEN(<rva>, <size>, <mangled>)` - a self-contained function label for a
+# compiler-generated body that has NO source definition to hang an RVA() attribute
+# on (a `??_G` scalar-deleting destructor, a `??_D` vbase dtor, an `_$E` funclet).
+# The mangled name is given verbatim, so there is no join and no IR (rva.h; expands
+# to nothing under both compilers, read here from source text). size 0 = unknown.
+# Keep invocations in RVA order among the TU's RVA() functions.
 RVA_COMPGEN_RE = re.compile(
     r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
-# `// @data-symbol: <mangled> <rva> [<size>]` - the DATA analog of @rva-symbol: a
+# `DATA_SYMBOL(<rva>, <size>, <mangled>)` - the DATA analog of RVA_COMPGEN: a
 # compiler-emitted DATUM with no source VarDecl to hang DATA() on (a `??_7`
 # vftable or `??_R*` RTTI record). The EXE carries no debug symbols, so the
 # delinked datum's name is ours to assign - this names it to match what cl emits
 # for the real polymorphic class, so the ctor's `mov [this],offset ??_7...` reloc
 # pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
 DATA_SYMBOL_RE = re.compile(
-    r"@data-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
+    r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
 
 
 def resolve_pool_id(sym, all_syms):
@@ -135,14 +133,13 @@ def resolve_pool_id(sym, all_syms):
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # Macro annotation markers (presence of any -> a migrated TU; functions/SYMBOL
-# come from IR for these). A TU with none falls back to the legacy comment path.
-# A TU "carries labels" if it invokes an rva.h macro OR carries standalone
-# `// @rva-symbol:` / `// @data-symbol:` pins - a pin-only TU (e.g. an explicit
-# template-instantiation host whose every function is a compiler-emitted COMDAT,
-# like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>) has no macro to invoke,
-# and without this alternation it silently fell through to the vendored-C path
-# and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN)\s*\(|@(?:rva|data)-symbol:")
+# come from IR for these). A TU with none is a vendored C TU (config-table path).
+# A TU "carries labels" if it invokes ANY rva.h label macro - a pin-only TU (e.g.
+# an explicit template-instantiation host whose every function is a
+# compiler-emitted COMDAT, like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>)
+# carries only RVA_COMPGEN/DATA_SYMBOL rows, and without those alternatives it
+# silently fell through to the vendored-C path and contributed ZERO rows.
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN|DATA_SYMBOL)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -1072,7 +1069,9 @@ def main():
     no_ir = []         # TUs whose label pass produced NO IR at all      -> FATAL
     no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
     for i, tu in enumerate(args.tu):
-        text = Path(tu).read_text()
+        # Comments are BLANKED before any text scan: a doc comment quoting an
+        # RVA_COMPGEN(..)/DATA_SYMBOL(..) invocation must never become a live pin.
+        text = blank_comments(Path(tu).read_text())
         if args.unit:
             unit = args.unit[i]
         else:
@@ -1142,12 +1141,13 @@ def main():
             else:
                 misses.append((rva, name, unit, "candidate not in base obj"))
 
-        # --- standalone `// @rva-symbol:` thunks (no source body for an RVA()) ---
-        for m in RVA_SYMBOL_RE.finditer(text):
-            sym, rva_s, size_s = m.group(1), m.group(2), m.group(3)
+        # --- RVA_COMPGEN(<rva>, <size>, <mangled>): compiler-generated function
+        # pins (no source body for an RVA() to ride) ---
+        for m in RVA_COMPGEN_RE.finditer(text):
+            rva_s, size_s, sym = m.group(1), m.group(2), m.group(3)
             rva = int(rva_s, 16)
-            size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
-                    else int(size_s) if size_s else None)
+            size = (int(size_s, 16) if size_s.lower().startswith("0x")
+                    else int(size_s)) or None  # 0 = size unknown
             addr_sites.setdefault(rva, []).append((tu, sym))
             # No source body -> no AST param names; undname still gives the
             # (typed, unnamed) signature for functions.json.
@@ -1155,34 +1155,22 @@ def main():
             if obj_syms is None or sym in obj_syms:
                 rows.append((rva, sym, unit, size, "func"))
             else:
-                misses.append((rva, sym, unit, "@rva-symbol not in base obj"))
+                misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
 
-        # --- RVA_COMPGEN(<rva>, <size>, <mangled>): the macro form (rva.h) ---
-        for m in RVA_COMPGEN_RE.finditer(text):
+        # --- DATA_SYMBOL(<rva>, <size>, <mangled>): compiler-emitted data (a
+        # `??_7` vtable / `??_R*` RTTI datum cl emits for a real polymorphic
+        # class; name is deterministic from the class). Authority-checked
+        # against the base obj's DATA symbols. ---
+        for m in DATA_SYMBOL_RE.finditer(text):
             rva_s, size_s, sym = m.group(1), m.group(2), m.group(3)
             rva = int(rva_s, 16)
             size = (int(size_s, 16) if size_s.lower().startswith("0x")
                     else int(size_s)) or None  # 0 = size unknown
-            addr_sites.setdefault(rva, []).append((tu, sym))
-            func_meta[rva] = {"ir_sym": sym, "names": None}
-            if obj_syms is None or sym in obj_syms:
-                rows.append((rva, sym, unit, size, "func"))
-            else:
-                misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
-
-        # --- standalone `// @data-symbol:` data (a `??_7` vtable / `??_R*` RTTI
-        # datum cl emits for a real polymorphic class; name is deterministic from
-        # the class). Authority-checked against the base obj's DATA symbols. ---
-        for m in DATA_SYMBOL_RE.finditer(text):
-            sym, rva_s, size_s = m.group(1), m.group(2), m.group(3)
-            rva = int(rva_s, 16)
-            size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
-                    else int(size_s) if size_s else None)
             sym = resolve_pool_id(sym, all_syms)  # `...$S*` -> the emitted `...$S<n>`
             if all_syms is None or sym in all_syms:
                 rows.append((rva, sym, unit, size, "data"))
             else:
-                misses.append((rva, sym, unit, "@data-symbol not in base obj"))
+                misses.append((rva, sym, unit, "DATA_SYMBOL not in base obj"))
 
         # --- AUTO deterministic vtable names: name ??_7<Class>@@6B@ on the target
         # whenever THIS TU's base obj emits it (the class is real-polymorphic in

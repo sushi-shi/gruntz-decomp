@@ -16,7 +16,7 @@ typedef enum GruntzAppResId {
 // The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
 // via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
 // per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
-// so a `@data-symbol: _g_errorText$S<n>` bind silently goes UNBOUND on the next pool
+// so a `DATA_SYMBOL(.., .., _g_errorText$S<n>)` bind silently goes UNBOUND on the next pool
 // churn. `extern "C"` gives the fixed, renumber-proof `_g_errorText`; DATA() pins it to
 // 0x244ea0. The buffer is only address-taken here (no init/sizeof), so a definition-free
 // extern is sufficient - the DIR32 loads/stores stay reloc-masked (byte-neutral).
@@ -85,7 +85,7 @@ CGruntzApp::~CGruntzApp() {
 // its thunk. Modeled as an extern-C thunk symbol bound to 0x33c8 (the same idiom as
 // GameObjectFactory's _CreateXxx thunks); ShowMessage takes the SAME proc's address
 // (both dialogs share ErrorDialogProc), so it pushes the same thunk.
-// @data-symbol: _ErrorDialogProcThunk@16 0x000033c8
+DATA_SYMBOL(0x000033c8, 0x0, _ErrorDialogProcThunk@16)
 extern "C" INT_PTR CALLBACK ErrorDialogProcThunk(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {

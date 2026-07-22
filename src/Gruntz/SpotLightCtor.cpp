@@ -19,7 +19,7 @@
 #include <math.h>         // sin / cos (the Tick rotation)
 #include <rva.h>
 
-VTBL(CSpotLight, 0x1e75bc);
+VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
 DATA(0x001ea3f8)

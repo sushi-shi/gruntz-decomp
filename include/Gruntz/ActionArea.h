@@ -31,7 +31,7 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     i32 m_54; // +0x54
     i32 m_58; // +0x58
     i32 m_5c; // +0x5c

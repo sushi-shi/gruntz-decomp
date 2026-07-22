@@ -40,7 +40,7 @@ public:
 public:
     CInGameIcon(CGameObject* obj); // 0x095b10  (the HUD-icon builder ctor)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     // Configure the icon's sprite/animation for a category ("GAME_TREASURE" /
     // "GAME_POWERUP" / "GAME_CURSE"; 0 for the initial reset). Reached through an

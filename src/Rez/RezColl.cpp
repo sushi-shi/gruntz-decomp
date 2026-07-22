@@ -96,7 +96,7 @@ CHashBase* CHashBase::Construct(i32 count) {
     // symbols (Tm_ConstructArray / CHashSlot_Ctor / CHashSlot_Dtor), none of which anything
     // defines. The old @early-stop said this could not be regenerated without "homing
     // CHashSlot's rollback dtor at 0x584a30" - that is now done (CHashSlot has its real
-    // ~CHashSlot, @rva-symbol'd below), so the construct IS expressible.
+    // ~CHashSlot, RVA_COMPGEN-pinned below), so the construct IS expressible.
     m_buckets = new CHashSlot[count];
     return this;
 }
@@ -122,7 +122,7 @@ CHashSlot::CHashSlot() {
     m_chain.m_tail = 0;
 }
 
-RVA(0x00184a30, 1)
+RVA(0x00184a30, 0x1)
 CHashSlot::~CHashSlot() {}
 
 RVA(0x00184a40, 0x27)

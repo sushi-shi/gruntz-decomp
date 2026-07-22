@@ -86,7 +86,7 @@ PR #56 landed the infra + the one *flat* conversion (`CTileTriggerSwitchLogic`).
 Recipe (proven): declare the class's real virtuals (declared-only is fine — the
 bodies live in engine TUs), delete the `extern …g_xVtbl` + `DATA()` + the
 `*(void**)this = &g_xVtbl` stamp; the `??_7` name **auto-derives** for RTTI
-classes (config/vtable_names.csv), or add one `// @data-symbol:` line for
+classes (config/vtable_names.csv), or add one `DATA_SYMBOL(..)` row for
 non-RTTI. Then `gruntz build` and confirm byte-exact + no regressions.
 
 Everything left is a base-hierarchy *family* — convert per family (model the

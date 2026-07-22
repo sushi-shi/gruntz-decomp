@@ -20,7 +20,7 @@ struct CBSecStream : zPTree {
 };
 SIZE(0x2c); // adds nothing to zPTree (m_tree +0x18 .. m_pNode +0x44)
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
-// base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
+// base); the DATA_SYMBOL pins binding both retail datums live in ButeSectionCtor.cpp.
 
 struct CButeTail {
     char m_00;   // +0x00

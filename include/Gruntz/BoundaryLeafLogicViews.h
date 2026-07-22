@@ -11,11 +11,11 @@
 // (??_7CUserLogic @0x1e705c slot 0 -> ILT thunk 0x3cfb -> sdd 0x8a10 -> 0x8860).
 // The old emitter-blocker is dead: after the CWapX conversion the leaf ctor/dtor
 // funclets odr-use ~CUserLogic out-of-line, so the COMDAT is emitted and the body
-// is pinned by @rva-symbol in src/Gruntz/ActionArea.cpp.)
+// is pinned by RVA_COMPGEN in src/Gruntz/ActionArea.cpp.)
 
 // (L_13400 is GONE - the audit's own verdict stood: it IS CUFO (RTTI names 0x1e72b4
 // ??_7CUFO). The dtor is CUFO's IMPLICIT compiler-generated one (the elision that
 // matches retail's flat CUserBase-only stamp), force-emitted by the RealizeCUFO
-// device + @rva-symbol pin in GruntVoice.cpp.)
+// device + RVA_COMPGEN pin in GruntVoice.cpp.)
 
 #endif // GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H

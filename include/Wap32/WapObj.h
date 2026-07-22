@@ -19,6 +19,6 @@ public:
     // rest of the family (CImage, CResolveNode, the workers, ...) keep it.
     virtual i32 IsReady();
 };
-SIZE(0x04);
+SIZE(0x4);
 
 #endif // WAP32_CWAPOBJ_H

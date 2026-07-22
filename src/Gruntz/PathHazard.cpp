@@ -38,7 +38,7 @@ CPathHazard::CPathHazard() {
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
 // (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the
-// TU that constructs it - so its @rva-symbol pin lives in RainCloud.cpp, not here.)
+// TU that constructs it - so its RVA_COMPGEN pin lives in RainCloud.cpp, not here.)
 
 // CPathHazard::CPathHazard @0xb35a0 - fold the shared CUserLogic(obj) init, then
 // build the hazard's waypoint path: snap the bound object's screen position to the

@@ -39,5 +39,5 @@ i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i
     return 1;
 }
 
-RVA(0x000e8760, 1)
+RVA(0x000e8760, 0x1)
 void CSBI_RectOnly::DtorRect() {}

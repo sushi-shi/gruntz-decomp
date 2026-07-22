@@ -17,7 +17,7 @@ public:
 public:
     CDroppedObjectShadow(CGameObject* obj);   // 0xc7490 (1-arg leaf ctor)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CDroppedObject::Serialize).
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40

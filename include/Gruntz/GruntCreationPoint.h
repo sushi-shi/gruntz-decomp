@@ -28,7 +28,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x03e960
     i32 AdvanceAnim(); // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE(0x54);
 

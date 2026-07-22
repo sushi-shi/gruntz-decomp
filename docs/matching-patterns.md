@@ -224,7 +224,7 @@ sides, so objdiff won't score it "exact". **Confirm by direct byte-compare**
 
 **FIXED + SCOPED (2026-07, measured):** the DIR32 fix is DONE — the pinned
 `vostok-delinker` types absolute `.text→data` stores as DIR32, and vtables/globals/
-pooled strings are named (`config/vtable_names.csv`, `labels.py` `@data-symbol`, the
+pooled strings are named (`config/vtable_names.csv`, `labels.py` `DATA_SYMBOL`, the
 `coff_oracle` string oracle). So a **named** DIR32 data referent now scores exact; an
 **unnamed** one is fixed simply by naming it (DATA()/vtable_names). CRUCIALLY, objdiff
 **MASKS `REL32` call/branch reloc target-names and `call [disp32]` import operands**

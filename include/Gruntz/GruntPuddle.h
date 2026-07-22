@@ -42,7 +42,7 @@ public:
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
     i32 Remove();                              // 0x040d20

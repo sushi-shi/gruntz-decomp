@@ -19,8 +19,8 @@
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-VTBL(CSecretTeleporterTrigger, 0x1e7564);
-VTBL(CSecretLevelTrigger, 0x1e8804);
+VTBL(CSecretTeleporterTrigger, 0x001e7564);
+VTBL(CSecretLevelTrigger, 0x001e8804);
 DATA(0x00244688)
 extern CActReg g_actColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 

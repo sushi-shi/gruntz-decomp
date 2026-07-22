@@ -35,7 +35,7 @@ public:
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     static void InitActReg(); // 0x119dc0 (construct g_vactColl over [2000,2010])
     virtual void FireActivation(i32 id) OVERRIDE;    // 0x119e40

@@ -3,7 +3,7 @@
 // <Io/MoviePlayer.h> CMoviePlaylist) is the REAL MFC template - RTTI-proven by the
 // COL at its vtable 0x1e971c (.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@). The
 // explicit instantiation below makes THIS obj emit the full member COMDAT family
-// under the exact retail mangled names, and the @rva-symbol pins bind the
+// under the exact retail mangled names, and the RVA_COMPGEN pins bind the
 // retail-kept copies:
 //   ??1  @0x39f20 (0x51)  - the /GX dtor (`if (m_pData) delete[]` + inline ~CObject;
 //                           formerly the fake `CWorker39f20` dtor in CreditzAssets.cpp)
@@ -21,7 +21,7 @@
 RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
 RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
 RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
-RVA_COMPGEN(0x00094340, 0, ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ)
+RVA_COMPGEN(0x00094340, 0x0, ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ)
 #include <Ints.h>
 #include <rva.h>
 

@@ -15,7 +15,7 @@ public:
     } // slot 2
     CGruntSelectedSprite(CGameObject* obj);   // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     static void InitActReg(); // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
     virtual void FireActivation(i32 id)

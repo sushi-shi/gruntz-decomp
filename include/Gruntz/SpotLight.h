@@ -17,7 +17,7 @@ public:
 public:
     CSpotLight(CGameObject* obj); // 0xb1200
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b1630);
     // a plain method - the base placeholder blocks the int-arg OVERRIDE spelling.
     virtual void FireActivation(i32 id) OVERRIDE;

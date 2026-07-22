@@ -11,9 +11,9 @@ A class "has a vtable" when ANY of:
 
 It is "catalogued" (NOT a violator) when ANY of:
   * it carries a ``VTBL(Name, 0x..)`` annotation (the preferred single source), OR
-  * its ``??_7<Name>@@6B..`` datum is named through a ``// @data-symbol:`` /
-    ``// @rva-symbol:`` label (the escape hatch for the MI-decorated
-    ``??_7<Name>@@6B<Base>@@@`` name a plain ``VTBL()`` cannot spell), OR
+  * its ``??_7<Name>@@6B..`` datum is named through a ``DATA_SYMBOL(..)`` row
+    (the escape hatch for the MI-decorated ``??_7<Name>@@6B<Base>@@@`` name a
+    plain ``VTBL()`` cannot spell), OR
   * it uses a manual ``&...Vtbl`` stamp - the vtable datum is already named through
     the older ``DATA(g_*Vtbl)`` global binding (a VTBL there would just collide on
     that rva; the sweep migrates these, it does not double-bind them), OR
@@ -46,12 +46,13 @@ from gruntz.core.class_meta import (
     vtbl_annotated_names,
     vtbl_annotations,
 )
-# A ??_7<Class>@@6B... datum named via a `// @data-symbol:` / `// @rva-symbol:` label
-# (the escape hatch for the MI-decorated ??_7<Class>@@6B<Base>@@@ names a plain
-# VTBL()'s ??_7<Class>@@6B@ cannot express - e.g. zPTree @0x1e94ac). The datum IS
-# named for the delinker, so the class IS catalogued.
+# A ??_7<Class>@@6B... datum named via a DATA_SYMBOL(..) row (the escape hatch
+# for the MI-decorated ??_7<Class>@@6B<Base>@@@ names a plain VTBL()'s
+# ??_7<Class>@@6B@ cannot express - e.g. zPTree @0x1e94ac). The datum IS named
+# for the delinker, so the class IS catalogued.
 _DATA_SYM_VTBL_RE = re.compile(
-    r"@(?:data|rva)-symbol:\s*\?\?_7([A-Za-z_]\w*)@@6B")
+    r"\bDATA_SYMBOL\s*\(\s*0x[0-9a-fA-F]+\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*,"
+    r"\s*\?\?_7([A-Za-z_]\w*)@@6B")
 
 
 def present_rvas():
@@ -72,9 +73,9 @@ def present_rvas():
 
 def data_symbol_vtable_classes():
     """{class_name} for every ??_7<Class>@@6B... datum named through a
-    `// @data-symbol:` / `// @rva-symbol:` label tree-wide. Captures the plain and
-    the MI-decorated (??_7<Class>@@6B<Base>@@@) forms alike - both name the class's
-    vtable datum for the delinker, so the class is catalogued."""
+    DATA_SYMBOL(..) row tree-wide. Captures the plain and the MI-decorated
+    (??_7<Class>@@6B<Base>@@@) forms alike - both name the class's vtable datum
+    for the delinker, so the class is catalogued."""
     out = set()
     for path in source_files():
         for m in _DATA_SYM_VTBL_RE.finditer(path.read_text(errors="ignore")):

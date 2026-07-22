@@ -59,12 +59,12 @@ void operator delete(void*);
 // CLoadable base ctor is defined below at its retail RVA.
 // 0x155720 is CLoadable's ??_G scalar-deleting-dtor COMDAT copy (member-teardown ~ at
 // 0xd5d70, the CImage-band pool) - both are cl auto-emitted, byte-identical to
-// retail, and @rva-symbol-bound as the REAL ??_GCLoadable/??1CLoadable in
+// retail, and RVA_COMPGEN-bound as the REAL ??_GCLoadable/??1CLoadable in
 // DDrawWorkerRegistry.cpp.
 
 VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
-VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
+VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7 (9-slot, LeafScanBase-derived)
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
 VTBL(CDDrawWorkerCache, 0x001efd00);
 VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)

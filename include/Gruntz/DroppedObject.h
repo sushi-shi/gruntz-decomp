@@ -22,7 +22,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x0c6bd0
     i32 ActA();                                   // 0x0c7090 (per-frame "A" activation handler)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CRollingBall::Serialize).
     char m_pad54[0x58 - 0x54];

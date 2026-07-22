@@ -9,7 +9,7 @@
 // fns - the no-arg by the serial-parse loop @0xd2xx, the 1-arg by
 // CProjectile/CDoNothingNormal/Grunt through the 0x3828 ILT thunk). An inline ctor
 // can't hang RVA() directly, so the standalone copies are pinned by mangled name
-// via @rva-symbol; the non-inlined references below force MSVC to emit them.
+// via RVA_COMPGEN; the non-inlined references below force MSVC to emit them.
 //
 // WHY ITS OWN UNIT: the 1-arg standalone ctor INLINES the built-in logic-type
 // registration (the 0x8a40 BuildLogicTypeTable body, Lookup/0x1b8008 based),

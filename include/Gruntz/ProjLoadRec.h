@@ -1,7 +1,7 @@
 // ProjLoadRec.h - CProjLoadRec, the CProjectile/CTimeBomb-family dual-mode record
 // loader (Load @0x0e0d40).
 //
-// @identity-recovered / FOLD DEFERRED: CProjLoadRec IS CProjectile, and Load @0x0e0d40
+// IDENTITY RECOVERED (fold deferred): CProjLoadRec IS CProjectile, and Load @0x0e0d40
 // IS CProjectile::SerializeMove (vtable slot 1). PROOF: vtable_hierarchy --class
 // CProjectile resolves slot 1 (ILT thunk 0x0034b3) to this RVA under "Load"; the field
 // layout mirrors CProjectile exactly (m_1e0[7] = the seven frame sprites, m_1fc =

@@ -669,5 +669,5 @@ CString CGruntzMgr::GetRezPath() {
 // COMDAT copy of Wap32.h's inline `~CGameMgr() { Close(); }` that the emitted
 // ??_G/vtable machinery references) - vptr restamp (0x5e9b8c) + devirtualized Close
 // tail-call, 0xb bytes. No dtor-emitter scaffold is needed; the compiler copy is
-// emitted (and @rva-symbol-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries
+// emitted (and RVA_COMPGEN-pinned) in src/Gruntz/GruntzMgr.cpp, whose obj carries
 // the COMDAT.

@@ -876,7 +876,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   F's; fold deferred); WwdSpatialMgr.cpp keeps the 0x163a40 dtor (co-located with FreeGrids);
   DDrawWorkerHost.cpp keeps 0x163af0; AniRecord.cpp keeps the 0x1657a0/0x165dd0 dtor pair;
   Random.cpp keeps Rng::Next2@0x15cbe0 (foreign inline-COMDAT exile hole in I's span).
-* **0x155720 (`??_GCDDrawSubMgr`, E span):** the @rva-symbol row must stay in DDrawSubMgr.cpp -
+* **0x155720 (`??_GCDDrawSubMgr`, E span):** the RVA_COMPGEN row must stay in DDrawSubMgr.cpp -
   labels.py's authority check requires the base obj that actually emits the COMDAT ??_G (only G's
   local CDDrawSubMgr does). Retail-span home in E is a deferred identity-pass item.
 * **Recovered in verification:** four previously-100% fns dropped by the shuffle were restored

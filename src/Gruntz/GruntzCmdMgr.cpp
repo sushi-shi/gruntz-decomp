@@ -638,11 +638,11 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
 }
 
 // The 1<<i bit table (0x5e9608 = RVA 0x1e9608) the mask builder/scanner indexes.
-// Bound via @data-symbol (not DATA): this const u16[] is DEFINED here, and clang
+// Bound via DATA_SYMBOL (not DATA): this const u16[] is DEFINED here, and clang
 // mangles a const array with the `Q` storage class while cl5's reloc/definition
-// uses `?g_cmdBitTable@@3PBGB` (PB) - @data-symbol names the exact cl5 symbol so the
+// uses `?g_cmdBitTable@@3PBGB` (PB) - DATA_SYMBOL names the exact cl5 symbol so the
 // three DIR32 mask-loop operands reloc-pair.
-// @data-symbol: ?g_cmdBitTable@@3PBGB 0x001e9608
+DATA_SYMBOL(0x001e9608, 0x0, ?g_cmdBitTable@@3PBGB)
 const u16 g_cmdBitTable[16] = {
     1,
     2,

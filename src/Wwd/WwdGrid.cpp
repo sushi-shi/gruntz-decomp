@@ -28,7 +28,7 @@ CWwdGrid::~CWwdGrid() {
 // 0x191720 = BucketHead's `vector deleting destructor' (??_E): the COMPILER-GENERATED
 // vector deleting destructor for BucketHead, emitted from the `new BucketHead[m_cellCount]`
 // in the ctor above (the array-cookie alloc + ehvec ctor/dtor pair). Not a hand-written
-// method: cl auto-emits ??_EBucketHead@@QAEPAXI@Z; @rva-symbol names it at this RVA so the
+// method: cl auto-emits ??_EBucketHead@@QAEPAXI@Z; RVA_COMPGEN names it at this RVA so the
 // delinker pairs the retail orphan (a zero-ref COMDAT; FreeBuckets inlines its own ehvec).
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
@@ -280,7 +280,7 @@ walk:
     goto top;
 }
 
-RVA(0x00191d10, 1)
+RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}
 
 // ===========================================================================

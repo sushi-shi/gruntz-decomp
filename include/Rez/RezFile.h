@@ -19,10 +19,10 @@ extern "C" i32 Eng_fflush(void* fp);                            // 0x125b50
 //   s_rb     "rb"  (read-only:  m_write==0 && m_readonly!=0)  - shared w/ SoundDevice
 //   s_rPlusB "r+b" (read/write: m_write==0 && m_readonly==0)
 //   s_wPlusB "w+b" (write:      m_write!=0 && m_readonly==0)
-// Bound via @data-symbol (not DATA): clang mangles the const-char[] extern with a
+// Bound via DATA_SYMBOL (not DATA): clang mangles the const-char[] extern with a
 // `Q` storage class while cl 5.0 emits `P` (?s_X@@3PBDB), so a DATA() label's clang
 // mangledName misses the base obj's undefined external ([[data-binding-mangling-gotchas]]).
-// @data-symbol is scanned per-.cpp, so the P-mangled bindings live in RezFile.cpp
+// DATA_SYMBOL is scanned per-.cpp, so the P-mangled bindings live in RezFile.cpp
 // (s_rb is also bound by DirectSoundMgr.cpp, which shares the datum).
 extern const char s_rb[];
 extern const char s_rPlusB[];

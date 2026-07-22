@@ -782,14 +782,14 @@ static const double s_doubleErr = DBL_MIN;
 // ButeMgr.cpp gains or loses ANY symbol. Pinning a literal id rots on the next edit (it
 // did, twice), so these pins are WILDCARD: `$S*` is resolved by prefix against
 // butemgr.obj's actual symbols at label time. Nothing to re-pin when this TU changes.
-// @data-symbol: _s_fmtBadSymbol$S* 0x002240a8
-// @data-symbol: _s_fmtFormatError$S* 0x002240d0
-// @data-symbol: _s_fmtDupTag$S* 0x002241d4
-// @data-symbol: _s_fmtTypeMismatch$S* 0x00224204
-// @data-symbol: _s_fmtInvalidTag$S* 0x00224228
-// @data-symbol: _s_fmtNotFound$S* 0x00224250
-// @data-symbol: _s_floatErr$S* 0x001f0520
-// @data-symbol: _s_doubleErr$S* 0x001f0528
+DATA_SYMBOL(0x002240a8, 0x0, _s_fmtBadSymbol$S*)
+DATA_SYMBOL(0x002240d0, 0x0, _s_fmtFormatError$S*)
+DATA_SYMBOL(0x002241d4, 0x0, _s_fmtDupTag$S*)
+DATA_SYMBOL(0x00224204, 0x0, _s_fmtTypeMismatch$S*)
+DATA_SYMBOL(0x00224228, 0x0, _s_fmtInvalidTag$S*)
+DATA_SYMBOL(0x00224250, 0x0, _s_fmtNotFound$S*)
+DATA_SYMBOL(0x001f0520, 0x0, _s_floatErr$S*)
+DATA_SYMBOL(0x001f0528, 0x0, _s_doubleErr$S*)
 
 static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
 static const char s_strDword[] = "(DWORD)";
@@ -813,7 +813,7 @@ static const char s_strRBrack[] = "]";
 // dispatches to it, so it really is plain ~zPTree as emitted in butemgr (MSVC5
 // without /Gy emits an inline member per obj while folding the vftable COMDAT).
 // Our cl emits the same ??1zPTree/??_GzPTree/??_EzPTree trio in this obj on its
-// own (the TU deletes stores); the @rva-symbol pins below just NAME the retail
+// own (the TU deletes stores); the RVA_COMPGEN pins below just NAME the retail
 // copies for the delink carve (no anchor is needed for compiler-emitted copies).
 // Its two ex-siblings were never copies at all: 0x174d70 is the real
 // ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - byte-identical
@@ -824,7 +824,7 @@ static const char s_strRBrack[] = "]";
 // 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
 // second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
 // ===========================================================================
-RVA_COMPGEN(0x000212e0, 0, ??_GzPTree@@UAEPAXI@Z)
+RVA_COMPGEN(0x000212e0, 0x0, ??_GzPTree@@UAEPAXI@Z)
 RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
 
 // ---------------------------------------------------------------------------
@@ -858,11 +858,11 @@ CButeMgr::~CButeMgr() {}
 // was compiler-generated: ~CButeMgr INLINES its expansion, and a user out-of-line
 // def would be CALLED there instead - measured, 100 -> 41). cl then emits this
 // linker-kept COMDAT copy of it in THIS obj on its own (MSVC5 no-/Gy inline-member
-// emission); the @rva-symbol pin below only NAMES that compiler-emitted copy for
+// emission); the RVA_COMPGEN pin below only NAMES that compiler-emitted copy for
 // the delink carve - no source body exists for it, and none must.
 RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
 
-RVA_COMPGEN(0x00021600, 0, ??_EzPTree@@W7AEPAXI@Z)
+RVA_COMPGEN(0x00021600, 0x0, ??_EzPTree@@W7AEPAXI@Z)
 
 RVA(0x001706c0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {
@@ -1230,9 +1230,9 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
 // (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
 // pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
 // set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-// @data-symbol: _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S* 0x002bf688
-// @data-symbol: _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S* 0x002bf6d0
-RVA_COMPGEN(0x00173840, 0, _$E48)
+DATA_SYMBOL(0x002bf688, 0x0, _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S*)
+DATA_SYMBOL(0x002bf6d0, 0x0, _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S*)
+RVA_COMPGEN(0x00173840, 0x0, _$E48)
 
 RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
@@ -1249,9 +1249,9 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     return def;
 }
 
-// @data-symbol: _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S* 0x002bf67c
-// @data-symbol: _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S* 0x002bf690
-RVA_COMPGEN(0x00173dc0, 0, _$E50)
+DATA_SYMBOL(0x002bf67c, 0x0, _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S*)
+DATA_SYMBOL(0x002bf690, 0x0, _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S*)
+RVA_COMPGEN(0x00173dc0, 0x0, _$E50)
 
 // CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
 // `this` with `type`, op-new an 8-byte CButeValue, copy `src`'s {type, pValue}

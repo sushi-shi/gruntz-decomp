@@ -179,8 +179,8 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 VTBL(CEyeCandyAni, 0x001e8334);
-VTBL(CFrontCandyAni, 0x1e83e4);
-VTBL(CFrontCandy, 0x1e84ec);
+VTBL(CFrontCandyAni, 0x001e83e4);
+VTBL(CFrontCandy, 0x001e84ec);
 DATA(0x002460b0)
 extern CActReg g_frontCandyActReg; // 0x6460b0
 

@@ -28,7 +28,7 @@ void SpawnPosSound(PosSoundObj* obj);
 
 // ---------------------------------------------------------------------------
 // 0x87b0 IS ??1CUserBase@@UAE@XZ - the out-of-line COMDAT copy of the INLINE
-// ~CUserBase (<Gruntz/UserLogic.h>), now bound by @rva-symbol in ActionArea.cpp
+// ~CUserBase (<Gruntz/UserLogic.h>), now bound by RVA_COMPGEN in ActionArea.cpp
 // (RVA-adjacent; its obj emits the COMDAT). The former placeholder here
 // (`CUserBase87b0`, VTBL'd at 0x1e70fc) was a CONFLATION built on a broken thunk
 // chase: 0x1e70fc's slot-0 sdd (0x8780) calls thunk 0x2ea5 -> 0x8750 (the _zdvec
@@ -43,7 +43,7 @@ void SpawnPosSound(PosSoundObj* obj);
 // ??_7CUserLogic @0x1e705c slot 0 -> ILT thunk 0x3cfb -> sdd 0x8a10 -> 0x8860; it is
 // ALSO ~CWarlord unwind action(0) target. The old emitter-blocker died with the CWapX
 // conversion (leaf ctor/dtor funclets now odr-use the out-of-line COMDAT); the body is
-// pinned by @rva-symbol in src/Gruntz/ActionArea.cpp beside ??1CUserBase.)
+// pinned by RVA_COMPGEN in src/Gruntz/ActionArea.cpp beside ??1CUserBase.)
 
 RVA(0x0000b5e0, 0x29)
 i32 CWorldSoundSet::Init(void* world, i32 a2) {
@@ -97,7 +97,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i3
 
 // 0xb790 - ??1CAmbientSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CAmbientSound (<Gruntz/AmbientSound.h>). Clears m_voice/m_listNode, folds the
-// inline ~CUserBase (stamp ??_7CUserBase). @rva-symbol NAMES the retail copy.
+// inline ~CUserBase (stamp ??_7CUserBase). RVA_COMPGEN NAMES the retail copy.
 RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)

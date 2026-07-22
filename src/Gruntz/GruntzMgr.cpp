@@ -77,8 +77,8 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 
 extern "C" {
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
-VTBL(CSplashState, 0x001e9d74); // real class binds its own vtable (was placeholder CEngObj_1e9d74)
-VTBL(CMenuState, 0x1e9e84);
+VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
+VTBL(CMenuState, 0x001e9e84);
     DATA(0x00248ce8)
     i32 g_scoreTimeBase;
 }
@@ -95,11 +95,11 @@ void ChannelSlots_InitAll(); // 0xdb1d0
 // through its <0x7c20 thunk), so the DIR32 references bind to the THUNK rva - not the
 // proc body. The bodies live in their own TUs (LoadGameMenu / AppDialogs). Modeled as
 // extern-C thunk symbols bound to the thunk rvas (the GameObjectFactory _CreateXxx idiom).
-// @data-symbol: _GruntzLoadGameDlgProc 0x00002167
-// @data-symbol: _GruntzDebugGruntTypeProc 0x000021e9
-// @data-symbol: _GruntzSaveGameDlgProc 0x00001041
-// @data-symbol: _GruntzSaveMsgDlgProc 0x000011d1
-// @data-symbol: _LevelNumberDialogProcThunk 0x00002ab8
+DATA_SYMBOL(0x00002167, 0x0, _GruntzLoadGameDlgProc)
+DATA_SYMBOL(0x000021e9, 0x0, _GruntzDebugGruntTypeProc)
+DATA_SYMBOL(0x00001041, 0x0, _GruntzSaveGameDlgProc)
+DATA_SYMBOL(0x000011d1, 0x0, _GruntzSaveMsgDlgProc)
+DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
 extern "C" void GruntzLoadGameDlgProc();      // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
 extern "C" void GruntzDebugGruntTypeProc();   // thunk 0x21e9
 extern "C" void GruntzSaveGameDlgProc();      // thunk 0x1041 (GAME_SAVE)
@@ -176,7 +176,7 @@ extern "C" {
 // iterators through the retail /INCREMENTAL ILT thunks 0x2a7c (ctor) / 0x1465 (dtor).
 // Those thunks chase to 0x0da790 / 0x083260 == GruntzPlayer's default ctor + dtor, which
 // are DEFINED in src/Gruntz/GruntSpawnLevel.cpp under their real names - so the two
-// @data-symbol lines that used to bind the thunk rvas to the invented
+// DATA_SYMBOL lines that used to bind the thunk rvas to the invented
 // ??0CGruntzMgrOptions / ??1CGruntzMgrOptions mangled names are gone with the class.
 // (Neither name was ever referenced by any obj; they were a fake identity, not a
 // binding.)
@@ -198,7 +198,7 @@ RVA_COMPGEN(0x00083330, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
 // The CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
-// cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
+// cl auto-emits it from CGameMgr's virtual dtor; RVA_COMPGEN names the auto-emitted thunk
 // at this RVA (homed by matcher-5, unmatched sweep).
 RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
@@ -1913,7 +1913,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 // 0x08e880 - when in the PLAY state, register the DEBUG_SETSKILL cheat command.
 // The DEBUG_SETSKILL dialog proc, address-taken through its ILT thunk (0x1947);
 // bound to the thunk rva (the reference is a reloc-masked DIR32 push).
-// @data-symbol: ?Lab401947@@YAXXZ 0x00001947
+DATA_SYMBOL(0x00001947, 0x0, ?Lab401947@@YAXXZ)
 extern void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {

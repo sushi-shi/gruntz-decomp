@@ -22,7 +22,7 @@ public:
 public:
     CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
-    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
+    // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     static void InitActReg();                     // 0x0993e0
     virtual void FireActivation(i32 id) OVERRIDE; // 0x099460

@@ -64,7 +64,7 @@ i32 Gap_007c60(void) {
 // TU's block. cl auto-emits it here (this obj's /GX ctors need it for the
 // partial-unwind funclets - retail shows ~150 unwind funclets calling it via
 // thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
-// `mov [ecx],offset ??_7CUserBase; ret`. @rva-symbol NAMES the retail copy.
+// `mov [ecx],offset ??_7CUserBase; ret`. RVA_COMPGEN NAMES the retail copy.
 #include <rva.h>
 
 
