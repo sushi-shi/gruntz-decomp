@@ -374,11 +374,11 @@ void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
 }
 
 RVA(0x000173e0, 0x1)
-void CBattlezDlg::Sub0173e0() {}
+void CBattlezDlg::RefreshOptionState() {}
 RVA(0x00015de0, 0x5f)
 void CBattlezDlg::ApplyOption0() {
     ToggleRow(0);
-    Sub0173e0();
+    RefreshOptionState();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -389,7 +389,7 @@ void CBattlezDlg::ApplyOption0() {
 RVA(0x00015e60, 0x5f)
 void CBattlezDlg::ApplyOption1() {
     ToggleRow(1);
-    Sub0173e0();
+    RefreshOptionState();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -400,7 +400,7 @@ void CBattlezDlg::ApplyOption1() {
 RVA(0x00015ee0, 0x5f)
 void CBattlezDlg::ApplyOption2() {
     ToggleRow(2);
-    Sub0173e0();
+    RefreshOptionState();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -411,7 +411,7 @@ void CBattlezDlg::ApplyOption2() {
 RVA(0x00015f60, 0x5f)
 void CBattlezDlg::ApplyOption3() {
     ToggleRow(3);
-    Sub0173e0();
+    RefreshOptionState();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -422,9 +422,9 @@ void CBattlezDlg::ApplyOption3() {
 // -------------------------------------------------------------------------
 // Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): pop the modal
 // CBattlezDlgColors picker for slot N (a0=m_slots, a1=N), and on IDOK store the
-// picked value (dlg.m_pickedColor) into slot N, refresh (Sub0173e0), then invalidate the
+// picked value (dlg.m_pickedColor) into slot N, refresh (RefreshOptionState), then invalidate the
 // swatch control (0x501 + 2*N). The /GX EH frame unwinds the local dialog; the
-// ctor/DoModal/dtor + SetSlotValue/Sub0173e0/GetDlgItem chain + InvalidateRect
+// ctor/DoModal/dtor + SetSlotValue/RefreshOptionState/GetDlgItem chain + InvalidateRect
 // import all reloc-mask. The four bodies differ only in N (the a1 arg, the
 // SetSlotValue index, and the control ID).
 // -------------------------------------------------------------------------
@@ -443,7 +443,7 @@ void CBattlezDlg::ApplyColorSlot0() {
     CBattlezDlgColors dlg(m_slots, 0, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(0, dlg.m_pickedColor)) {
-            Sub0173e0();
+            RefreshOptionState();
             GetDlgItem(0x501)->InvalidateRect(0, 1);
         }
     }
@@ -454,7 +454,7 @@ void CBattlezDlg::ApplyColorSlot1() {
     CBattlezDlgColors dlg(m_slots, 1, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(1, dlg.m_pickedColor)) {
-            Sub0173e0();
+            RefreshOptionState();
             GetDlgItem(0x503)->InvalidateRect(0, 1);
         }
     }
@@ -465,7 +465,7 @@ void CBattlezDlg::ApplyColorSlot2() {
     CBattlezDlgColors dlg(m_slots, 2, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(2, dlg.m_pickedColor)) {
-            Sub0173e0();
+            RefreshOptionState();
             GetDlgItem(0x505)->InvalidateRect(0, 1);
         }
     }
@@ -476,7 +476,7 @@ void CBattlezDlg::ApplyColorSlot3() {
     CBattlezDlgColors dlg(m_slots, 3, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(3, dlg.m_pickedColor)) {
-            Sub0173e0();
+            RefreshOptionState();
             GetDlgItem(0x507)->InvalidateRect(0, 1);
         }
     }

@@ -91,11 +91,11 @@ public:
 
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
-    // reloc-mask). ToggleRow sets the active option N; Sub0173e0 refreshes.
+    // reloc-mask). ToggleRow sets the active option N; RefreshOptionState refreshes.
     i32 ToggleRow(
         i32 option
     );                // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
-    void Sub0173e0(); // 0x0173e0
+    void RefreshOptionState(); // 0x0173e0
 
     // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
     // refresh, then enable IDOK when any of slots 1..3 is occupied.
@@ -226,9 +226,9 @@ public:
     // SetupWorldCombo (0xc1840): fill the 0x4ff world combo from the GAME_MULTI
     // registry path, read-only its edit child, and subclass its wndproc.
     i32 SetupWorldCombo();
-    // Sub_c3e30 (0xc3e30): post-setup self-call - commit the selected world/host
+    // CommitWorldHost (0xc3e30): post-setup self-call - commit the selected world/host
     // name into the CMulti game-state (defined in MultiStartDlgWorld.cpp).
-    void Sub_c3e30();
+    void CommitWorldHost();
 
     // --- Multiplayer roster refresh cluster (bodies in MultiStartDlgRoster.cpp) ---
     // The whole 0xc2000-0xc5000 method band drives ONE dialog (this class); the

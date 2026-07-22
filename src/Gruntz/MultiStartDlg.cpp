@@ -72,7 +72,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     HWND__* h = child->m_hWnd;
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
     SetWindowLongA(h, GWL_WNDPROC, reinterpret_cast<i32>(WndProc_c1a10));
-    Sub_c3e30();
+    CommitWorldHost();
     return 1;
 }
 

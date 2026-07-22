@@ -313,7 +313,7 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
             }
             break;
         case 7:
-            if (Sub150c30(a1) == 0) {
+            if (SerializeSpriteName(a1) == 0) {
                 return 0;
             }
             break;
@@ -327,7 +327,7 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
 // ---------------------------------------------------------------------------
 // @early-stop
 // frame-slot-coloring wall (99.39%): buffer corrected to char[0x100] (frame now the
-// retail sub esp,0x108, cf. read-twin Sub150c30), body byte-identical, but MSVC5 colors
+// retail sub esp,0x108, cf. read-twin SerializeSpriteName), body byte-identical, but MSVC5 colors
 // the two 4-byte scalars (flag / CStringVal str) into the swapped esp slots vs retail
 // (base str@[esp+0x10]/flag@[esp+0x14]; retail flag@0x10/str@0x14) - one `lea ecx`
 // operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
@@ -345,7 +345,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
     }
     ar->Write(&flag, 4);
 
-    char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. Sub150c30's name[0x100])
+    char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. SerializeSpriteName's name[0x100])
     memset(tmp, 0, 0x80);
     if (m_sprite != 0) {
         strcpy(tmp, m_sprite->m_name); // CSprite::m_name IS the +0x24 the raw read used
@@ -362,7 +362,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
 }
 
 RVA(0x00150c30, 0x130)
-i32 CWwdGameObjectA::Sub150c30(i32 src) {
+i32 CWwdGameObjectA::SerializeSpriteName(i32 src) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(src);
     if (ar == 0) {
         return 0;
@@ -689,7 +689,7 @@ i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
             break;
         }
         case 7: {
-            if (Sub151780(a1) == 0) {
+            if (SerializeObjectState(a1) == 0) {
                 return 0;
             }
             w = m_7c;
@@ -818,7 +818,7 @@ i32 CGameObject::Serialize(i32 arParam) {
 }
 
 RVA(0x00151780, 0x40d)
-i32 CGameObject::Sub151780(i32 arParam) {
+i32 CGameObject::SerializeObjectState(i32 arParam) {
     CSerialArchive* ar = reinterpret_cast<CSerialArchive*>(arParam);
     if (ar == 0) {
         return 0;
@@ -905,7 +905,7 @@ i32 CGameObject::Sub151780(i32 arParam) {
 }
 
 // ---------------------------------------------------------------------------
-// Sub151b90 (0x151b90): cache the linked object (m_98) resolved from the
+// ResolveLinkedObject (0x151b90): cache the linked object (m_98) resolved from the
 // serialized key handle (m_184) through the manager's kill-cue map
 // (OwnerMgr()->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
 // caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
@@ -919,7 +919,7 @@ i32 CGameObject::Sub151780(i32 arParam) {
 // change). Not source-steerable.
 // ---------------------------------------------------------------------------
 RVA(0x00151b90, 0x70)
-i32 CGameObject::Sub151b90(i32 gate) {
+i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
         return 0;
     }

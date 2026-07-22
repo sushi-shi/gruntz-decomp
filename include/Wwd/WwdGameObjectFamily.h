@@ -78,8 +78,8 @@ public:
     // CGameObject/CWwdGameObject models' methods, homed at their field level.
     i32 Serialize(i32 ar);                       // 0x151320
     i32 WriteSnapshot(i32 dst, i32 unused);      // 0x151c00 (ret 8; 2nd arg unused)
-    i32 Sub151780(i32 a1);                       // 0x151780  resolve deserialized worker names
-    i32 Sub151b90(i32 gate);                     // 0x151b90  cache the linked object
+    i32 SerializeObjectState(i32 a1);                       // 0x151780  resolve deserialized worker names
+    i32 ResolveLinkedObject(i32 gate);                     // 0x151b90  cache the linked object
                                                  //   (m_carrier) from the key m_184
     i32 EnsureWorker80(CGameObject* src);    // 0x150eb0  lazy worker @+0x80 (Hit)
     i32 EnsureWorker88(CGameObject* src);    // 0x150f90  lazy worker @+0x88 (Attack)
@@ -109,7 +109,7 @@ public:
                                  //        object; StepAxisAlt stores it + sets flags
                                  //        bit4; CMovingLogic::Update then advances
                                  //        m_screenX/Y by the carrier's m_deltaX/Y).
-                                 //        Also the serialized linked object (Sub151b90
+                                 //        Also the serialized linked object (ResolveLinkedObject
                                  //        resolves it from the key m_184).
     WwdRegion m_region;          // +0x9c..+0xb7  the embedded spatial-grid region
                                  //        node: m_x/m_y (+0xac/+0xb0) are the position
@@ -178,7 +178,7 @@ public:
     i32 m_deltaY;       // +0x178  per-frame movement delta Y
     i32 m_17c;          // +0x17c
     i32 m_180;          // +0x180
-    i32 m_184;          // +0x184  serialized linked-object key (Sub151b90 -> m_carrier)
+    i32 m_184;          // +0x184  serialized linked-object key (ResolveLinkedObject -> m_carrier)
     i32 m_188;          // +0x188  object id (the manager's CMapPtrToPtr key -
                         //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
@@ -208,7 +208,7 @@ public:
         OVERRIDE; // slot 14 @0x1508a0
     virtual i32 Play(i32 ar, i32 mode, i32 a3, void* self)
         OVERRIDE; // slot 15 @0x150a70 (Dispatch: route by mode - 4 -> ReadState,
-                  // 7 -> Sub150c30 - then the base Play body)
+                  // 7 -> SerializeSpriteName - then the base Play body)
 
     // The created-sprite frame-cache method set (this kind's +0x194/+0x198 tail).
     void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
@@ -217,7 +217,7 @@ public:
     i32 LookupAnimSprite(const char* name);             // 0x150610
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60
     i32 Test();             // 0x1509c0  on-screen visibility cull (the m_198 extent)
-    i32 Sub150c30(i32 a1);  // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
+    i32 SerializeSpriteName(i32 a1);  // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
     i32 ReadState(i32 src); // 0x150b00
 
     i32 m_18c; // +0x18c  (WwdFile stamp -1; the C kind reads its low byte as dot color)

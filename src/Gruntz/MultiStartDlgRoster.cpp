@@ -17,7 +17,7 @@ DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
-void __stdcall Func1d70(i32 flag);              // 0x01d70
+void __stdcall RefreshRosterRow(i32 flag);              // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
 
@@ -619,7 +619,7 @@ void CMultiStartDlg::OnCustomWorld() {
 }
 
 RVA(0x000c3e30, 0xfe)
-void CMultiStartDlg::Sub_c3e30() {
+void CMultiStartDlg::CommitWorldHost() {
     if (g_multiState->m_isHost != 0) {
         CWnd* item = GetDlgItem(0x4ff);
         if (item != 0) {
@@ -1059,7 +1059,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         slot->m_readyFlag = 0;
     }
     if (g_multiState->m_isHost) {
-        Func1d70(0);
+        RefreshRosterRow(0);
         Sync16db(1);
         Sync227a();
         UpdateColorItems();
