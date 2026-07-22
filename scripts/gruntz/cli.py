@@ -345,14 +345,15 @@ def cmd_build(args) -> None:
         die("no objdiff report - the build did not produce build/objdiff/report.json.")
 
     # Gate tiers (measured wall-times in docs/build-system.md):
-    #   fast   the honest ratchets an edit trips itself: label_style, tu_order,
-    #          compgen_order, data_tu_order, single_view - the matcher inner loop.
-    #   normal fast + the structural-uniqueness (verify_*) + %-regression checks +
-    #          view_typedef (a trivial orchestrator fixup) - the DEFAULT, per commit.
+    #   fast   gate_selftest + the ratchets a %-grind edit can trip: compgen_order,
+    #          data_tu_order, single_view - the matcher inner loop.
+    #   normal fast + verify_* (uniqueness) + %-regression + the rare/orchestrator
+    #          ratchets: tu_order (a TU move is rare now), label_style, view_typedef -
+    #          the DEFAULT, per commit.
     #   full   normal + the class/vtable modelling audits + structs regen (the vtable
     #          family is at 0 and stable, so it only needs re-checking when a class/
     #          vtable actually changes - run --full before committing such a change)
-    #          + the 3 slowest (view_debt, class_sizes, vtable_owner).
+    #          + view_debt / class_sizes.
     tier = "full" if getattr(args, "full", False) else (
         "fast" if getattr(args, "fast", False) else getattr(args, "tier", "full"))
     _ORD = {"fast": 0, "normal": 1, "full": 2}
@@ -384,11 +385,11 @@ def cmd_build(args) -> None:
     run([sys.executable, "-m", "gruntz.match.gate_selftest"])
     summarize(json.loads(REPORT.read_text()), write=True)  # the ONE writer of the baselines
 
-    # FAST tier - the honest ratchets an edit trips itself (label / linker-order /
-    # data-rva / single-view). Run in EVERY tier. (view_typedef is NORMAL - below.)
-    _gate("gruntz.audit.tu_order_check", ["--gate"],
-          "tu-order ratchet violated - a function move broke the linker-order "
-          "invariant (python -m gruntz.audit.tu_order_check --tu <name>)", "fast")
+    # FAST tier - what a matcher's own %-grind edit can break: an annotation it just
+    # added (a compgen pin, a moved DATA def) or an extern decl it changed. Run in
+    # EVERY tier. (tu_order / label_style / view_typedef are NORMAL - see below: a TU
+    # move is rare and label/typedef slips are trivial orchestrator fixups, none of
+    # which the %-grind inner loop should carry.)
     _gate("gruntz.audit.compgen_order", ["--gate"],
           "compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
           "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "fast")
@@ -398,15 +399,6 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.single_view", ["--ratchet"],
           "single-view ratchet violated - a global is declared with two types/"
           "linkages (python -m gruntz.audit.single_view)", "fast")
-    # view_typedef is NORMAL not fast: a re-introduced alias typedef is a trivial
-    # orchestrator-level fixup (rename to the real class), not something a matcher's
-    # inner loop should carry.
-    _gate("gruntz.audit.view_typedef", ["--ratchet"],
-          "view-typedef ratchet violated - delete the alias typedef and use the real "
-          "class name (python -m gruntz.audit.view_typedef)", "normal")
-    _gate("gruntz.audit.label_style", ["--gate"],
-          "label-style ratchet violated - spell the label canonically "
-          "(python -m gruntz.audit.label_style)", "fast")
 
     if req == 0:  # fast tier: the ratchets ran; the vtable/class-metadata family is normal+
         log("fast tier: ran the sub-second ratchets; run `gruntz build` (normal) or "
@@ -421,6 +413,19 @@ def cmd_build(args) -> None:
     run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
     run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
+
+    # NORMAL ratchets - rare-during-%-grind + trivial orchestrator fixups, so out of the
+    # fast loop: a TU move (tu_order), a mal-formed label (label_style), a re-introduced
+    # alias typedef (view_typedef).
+    _gate("gruntz.audit.tu_order_check", ["--gate"],
+          "tu-order ratchet violated - a function move broke the linker-order "
+          "invariant (python -m gruntz.audit.tu_order_check --tu <name>)", "normal")
+    _gate("gruntz.audit.label_style", ["--gate"],
+          "label-style ratchet violated - spell the label canonically "
+          "(python -m gruntz.audit.label_style)", "normal")
+    _gate("gruntz.audit.view_typedef", ["--ratchet"],
+          "view-typedef ratchet violated - delete the alias typedef and use the real "
+          "class name (python -m gruntz.audit.view_typedef)", "normal")
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
