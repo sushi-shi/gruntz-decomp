@@ -734,6 +734,29 @@ def plain_dtor_symbol(candidate, obj_syms):
     return hits[0] if len(hits) == 1 else None
 
 
+def ms_c_symbol(candidate, obj_syms):
+    """MS x86 C-linkage decoration of a bare `extern "C"` name.
+
+    clang names an `extern "C"` function's IR GlobalValue by its PLAIN source
+    identifier (`RezAssertFail`, `WinMain`) - the leading `_` (cdecl) or `_..@<n>`
+    (stdcall) decoration the x86 object file carries is applied by the target's
+    data-layout at emission, NOT in the GlobalValue name the annotation references.
+    The CL base obj (and retail) carry the decorated symbol, so `@llvm...annotations`
+    hands us `RezAssertFail` while the obj has `_RezAssertFail`.
+
+    Resolve the bare IR name to the decorated obj symbol so an `extern "C"` function
+    needs no SYMBOL() override. Only fires for a bare identifier (no `?` C++ mangling,
+    no already-`_`/`@`-decorated form). Returns the obj symbol or None."""
+    if not candidate or candidate[0] in "?_@.$" or not obj_syms:
+        return None
+    cand = "_" + candidate
+    if cand in obj_syms:                              # cdecl: `_name`
+        return cand
+    pat = re.compile(r"^_" + re.escape(candidate) + r"@\d+$")  # stdcall: `_name@N`
+    hits = [s for s in obj_syms if pat.match(s)]
+    return hits[0] if len(hits) == 1 else None
+
+
 def units_from_toml(path):
     """source-path (repo-relative) -> unit stem."""
     import tomllib
@@ -1137,6 +1160,10 @@ def main():
                 continue
             if name in obj_syms:                  # candidate confirmed in base obj
                 rows.append((rva, name, unit, size, "func"))
+                continue
+            c_sym = ms_c_symbol(name, obj_syms)   # extern "C": clang drops the x86 `_`/`@n`
+            if c_sym:
+                rows.append((rva, c_sym, unit, size, "func"))
                 continue
             if override:                          # trust explicit SYMBOL
                 rows.append((rva, name, unit, size, "func"))
