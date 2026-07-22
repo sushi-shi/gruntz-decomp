@@ -44,7 +44,11 @@ def _rva(s):
 
 
 def real_vtables():
-    """[(rva, size, conf, rtti_class)] - the analysis' real vtable set."""
+    """[(rva, size, conf, rtti_class, base_off)] - the analysis' real vtable set.
+    base_off>0 marks a SECONDARY (multiple-inheritance) vtable - a non-primary
+    polymorphic base sub-object's vftable, the exact kind that can be silently
+    'missed'. It is a real vtable rva like any other, so requiring it COVERED here
+    is what makes 'no secondary can be missed' an image-authoritative guarantee."""
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
         out = tf.name
     try:
@@ -55,7 +59,8 @@ def real_vtables():
             if r.get("confidence") in REAL_CONF:
                 rva = _rva(r.get("start_rva"))
                 if rva is not None:
-                    rows.append((rva, int(r.get("size", 0)), r["confidence"], r.get("rtti_class") or ""))
+                    rows.append((rva, int(r.get("size", 0)), r["confidence"],
+                                 r.get("rtti_class") or "", int(r.get("base_off") or 0)))
         return rows
     finally:
         try:
@@ -96,24 +101,29 @@ def main() -> int:
     vts = real_vtables()
     named, lib = covered_rvas()
     gaps = []
-    for rva, size, conf, cls in vts:
+    for rva, size, conf, cls, boff in vts:
         if rva in named or rva in lib:
             continue
-        gaps.append((rva, size, conf, cls))
+        gaps.append((rva, size, conf, cls, boff))
     if "--list" in sys.argv:
-        for rva, size, conf, cls in sorted(vts):
+        for rva, size, conf, cls, boff in sorted(vts):
             where = "symbol_names" if rva in named else ("library.csv" if rva in lib else "UNCOVERED")
-            print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {where:<12} {cls}")
+            sec = f" +{boff}" if boff else ""
+            print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {where:<12} {cls}{sec}")
     if gaps:
+        n_sec = sum(1 for g in gaps if g[4])
         print(f"vtable-coverage: {len(gaps)} of {len(vts)} analysed vtable(s) UNCOVERED "
-              f"(bind in source via VTBL()/DATA(), or add MFC/CRT to config/library_vtables.csv):",
-              file=sys.stderr)
-        for rva, size, conf, cls in sorted(gaps):
-            print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {cls or '(non-rtti)'}", file=sys.stderr)
+              f"({n_sec} secondary/MI; bind in source via VTBL()/VTBL2()/DATA(), or add "
+              f"MFC/CRT to config/library_vtables.csv):", file=sys.stderr)
+        for rva, size, conf, cls, boff in sorted(gaps):
+            sec = f" +{boff} (SECONDARY)" if boff else ""
+            print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {cls or '(non-rtti)'}{sec}", file=sys.stderr)
         return 1
+    n_lib = sum(1 for v in vts if v[0] in lib)
+    n_sec = sum(1 for v in vts if v[4])
     print(f"vtable-coverage: all {len(vts)} analysed vtables covered "
-          f"({len(vts) - sum(1 for v in vts if v[0] in lib)} in source, "
-          f"{sum(1 for v in vts if v[0] in lib)} in library catalog)")
+          f"({len(vts) - n_lib} in source, {n_lib} in library catalog; "
+          f"{n_sec} are secondary/MI vtables - none missed)")
     return 0
 
 

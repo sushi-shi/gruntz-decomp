@@ -439,6 +439,15 @@ def cmd_build(args) -> None:
           "data-symbol ratchet violated - a POD/scalar/const global is bound by a "
           "storage-less DATA_SYMBOL; write a real DATA(rva) type name; def "
           "(python -m gruntz.audit.data_symbol)", "normal")
+    # SECONDARY (MI) vtable coverage: every through-base ??_7<C>@@6B<Base>@@@ name a
+    # VTBL2 binds must stay bound. A dropped VTBL2 that shares its rva with a plain VTBL
+    # (a through-base primary alias) keeps the rva covered, so vtable_coverage can't see
+    # the NAME regress - this census (config/secondary-vtables.tsv) locks it. Source-only,
+    # sub-second (no binary scan), so it runs at normal tier alongside the other ratchets.
+    _gate("gruntz.cleanliness.vtable_secondary", [],
+          "secondary-vtable coverage violated - a VTBL2 through-base vtable name was "
+          "dropped/renamed or is unbound; if intended, re-baseline "
+          "(python -m gruntz.cleanliness.vtable_secondary --write-baseline)", "normal")
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():

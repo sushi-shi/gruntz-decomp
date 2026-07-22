@@ -1,0 +1,20 @@
+# secondary (multiple-inheritance) vtable census - the FROZEN complete set of
+# through-base ??_7<Class>@@6B<Base>@@@ vtable names our source binds via VTBL2.
+#
+# WHY a frozen census (not just re-derived from source): a source scan cannot
+# detect a DELETED VTBL2 line. vtable_coverage catches a dropped secondary only
+# when its rva goes uncovered - but a through-base PRIMARY alias (a VTBL2 that
+# shares its rva with a plain VTBL, e.g. CButeNode/CBSecStream @+0x00) keeps the
+# rva covered by the plain VTBL, so the correct through-base NAME silently
+# vanishes from symbol_names.csv with no gate firing. This census locks each name:
+# gruntz.cleanliness.vtable_secondary FATALs if any listed name is no longer bound.
+#
+# Regenerate deliberately (after modeling a NEW MI class's secondary) with:
+#   python -m gruntz.cleanliness.vtable_secondary --write-baseline
+# Columns: rva<TAB>name
+0x1e949c	??_7zPTree@@6BCButeNodeEntry@@@
+0x1e94ac	??_7zPTree@@6BzErrHandling@@@
+0x1f0510	??_7CBSecStream@@6BCContainerErr@@@
+0x1f0514	??_7CBSecStream@@6BCButeNodeEntry@@@
+0x1f0518	??_7CButeNode@@6BCButeNodeEntry@@@
+0x1f051c	??_7CButeNode@@6BCContainerErr@@@
