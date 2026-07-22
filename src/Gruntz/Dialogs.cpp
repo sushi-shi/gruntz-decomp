@@ -90,6 +90,9 @@ RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 
+VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
 

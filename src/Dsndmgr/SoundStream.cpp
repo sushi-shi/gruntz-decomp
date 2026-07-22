@@ -13,6 +13,10 @@
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
 extern "C" {
+VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630)
+VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
+VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
+VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
     DATA(0x00253c4c)
     i32 g_ssLogEnabled; // 0x653c4c -> OutputDebugStringA
     DATA(0x00253c50)

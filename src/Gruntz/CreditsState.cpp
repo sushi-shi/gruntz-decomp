@@ -34,6 +34,7 @@ void operator delete(void*);
 
 extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 
+VTBL(CCreditsState, 0x001e9c64);
 DATA(0x0022bf74)
 extern "C" i32 g_clipRegionEnabled; // 0x62bf74 - gates the credits CRgn clip
 

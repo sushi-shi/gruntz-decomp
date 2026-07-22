@@ -24,7 +24,6 @@ struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
 };
 SIZE(0x1c); // == the +0x9c..+0xb7 embedded m_region span
 
-VTBL(CWwdGridIter, 0x001f02a8);
 class CWwdGridIter : public CObject {
 public:
     // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from

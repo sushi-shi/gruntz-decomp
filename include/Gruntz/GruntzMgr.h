@@ -48,7 +48,6 @@ class CTriggerMgr;
 class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
-VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
 class CGruntzMgr : public CGameMgr {
 public:
     CGruntzMgr();

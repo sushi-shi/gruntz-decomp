@@ -10,7 +10,6 @@
 // not the ex-DATA `void* const CTypeCollRuntime_vtbl` global). The real dtor below (the
 // only member the devs wrote) makes this the vtable's key TU, so cl emits the ??_7 + the
 // `??_G' scalar-deleting destructor (0x16ea20) here and auto-stamps the vptr.
-VTBL(CTypeCollRuntime, 0x001f04e4);
 class CTypeCollRuntime : public _zdvec {
 public:
     virtual ~CTypeCollRuntime() OVERRIDE;

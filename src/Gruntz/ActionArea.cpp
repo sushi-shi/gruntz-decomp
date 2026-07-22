@@ -16,6 +16,9 @@
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
 
+VTBL(CActionArea, 0x001e7004);
+VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
+VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
 DATA(0x00229388)
 extern CCoordColl g_projReg;
 

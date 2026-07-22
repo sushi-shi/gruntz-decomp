@@ -32,7 +32,6 @@ public:
     i32 AdvanceAnim();          // 0x0ad510 (re-target bound anim to the draw-delta; ret 0)
 };
 SIZE_UNKNOWN();
-VTBL(CFrontCandyAni, 0x1e83e4);
 
 typedef i32 (CUserLogic::*FrontCandyHandler)();
 struct CFrontCandyActEntry {

@@ -75,7 +75,6 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     // +0x78 byte frame = the base union's m_78b.
 };
 SIZE(0x7c);
-VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
 struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (compiler ??_G @0x157220; ~ @0x157240)
@@ -97,6 +96,5 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
 };
 SIZE(0x7c);
 
-VTBL(CDDrawWorkerB, 0x001efed0);
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

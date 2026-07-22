@@ -15,6 +15,7 @@
 #include <Gruntz/SbiConfig.h>          // canonical config-host family (Init's map lookup)
 #include <Image/CImage.h>              // the resolved frame record (Tick's blit)
 
+VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)
 // ===========================================================================
 // CSBI_ImageSetAni::Init (0xe7980, vtable slot 13): seed the item from a config
 // host + rect + record key (14 args; the caller passes the host as BOTH arg0 and

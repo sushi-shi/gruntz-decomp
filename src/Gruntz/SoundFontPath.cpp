@@ -12,11 +12,9 @@ DATA(0x0024dacc)
 WORD g_sfCfgA0 = 0; // config block A +0 (runtime =1)
 DATA(0x0024dace)
 WORD g_sfCfgA2 = 0; // config block A +2 (runtime =0)
-DATA(0x0024dd28)
-WORD g_sfDeviceId;
-
 DATA(0x0024dad0)
 u32 g_sfCfgB0 = 0; // config block B +0 (runtime =0x80)
+
 DATA(0x0024dad4)
 char* g_sfCurPath = 0; // the path currently being tried
 DATA(0x0024dadc)
@@ -25,6 +23,8 @@ DATA(0x0024dae0)
 extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
 DATA(0x0024dc28)
 extern char g_sfLocal4[]; // "<cwd>\Gruntz4.SF2"
+DATA(0x0024dd28)
+WORD g_sfDeviceId;
 DATA(0x0024dd30)
 extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
 DATA(0x0024de30)

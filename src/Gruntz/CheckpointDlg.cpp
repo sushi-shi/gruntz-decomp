@@ -5,6 +5,7 @@
 #include <rva.h>
 #include <Globals.h> // g_msgmap_CCheckpointDlg
 
+VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 

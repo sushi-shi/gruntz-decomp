@@ -27,7 +27,6 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CExplosion, 0x1e766c);
 
 extern CLogicActTable g_logicActReg_6447f8;
 

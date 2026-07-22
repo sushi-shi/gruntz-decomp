@@ -372,10 +372,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CGameObject, 0x001f0020); // ??_7 (base, 16 slots)
-VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (16 slots)
-VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
-VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
-VTBL(CWwdGameObject, 0x001f00e8); // ??_7 (16 slots; B : A)
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H

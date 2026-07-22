@@ -39,7 +39,6 @@ public:
     i32 m_64; // +0x64
 };
 SIZE_UNKNOWN();
-VTBL(CActionArea, 0x001e7004);
 
 typedef void (CUserLogic::*ProjActHandler)();
 struct CActionAreaActEntry {

@@ -73,7 +73,6 @@ public:
                       //         it, the resurrect passes it through as PlaceObject a6)
 };
 SIZE_UNKNOWN();
-VTBL(CGruntPuddle, 0x1e8124);
 
 extern CLogicActTable g_logicDispatch_6445e8;
 

@@ -58,7 +58,6 @@ public:
 };
 SIZE(0x1c);
 SIZE_UNKNOWN();
-VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 
 // ---------------------------------------------------------------------------
 // CDrawSubWorker - the 0x30 surface-holder BASE (vtable ??_7 @0x5effa0; ctor
@@ -102,7 +101,6 @@ public:
     CDDSurface* m_surface; // +0x2c  held surface slot (the derived ctors zero it)
 }; // 0x30
 SIZE(0x30);
-VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
 class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
@@ -124,6 +122,5 @@ public:
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE; // [10] 0x1646b0 (T obj def)
 }; // 0x30 (no own fields)
 SIZE(0x30);
-VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

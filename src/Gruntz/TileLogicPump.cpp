@@ -49,23 +49,32 @@
 #include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
+VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
+VTBL(CBrickz, 0x001e7c54);
+VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
+VTBL(CTileTriggerTransition, 0x1e7db4);
+VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
+VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
+VTBL(CCheckpointTrigger, 0x1e7ebc);
+VTBL(CTileTrigger, 0x1e7f14);
+VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 DATA(0x0024e6a0)
 extern CActReg g_warpStonePadActReg; // 0x64e6a0
+
+DATA(0x0024e720)
+extern CActReg g_tileActReg;
 
 DATA(0x0024e798)
 extern CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
 DATA(0x0024e7c0)
 extern CActReg g_brickzActReg; // 0x64e7c0 (ex "g_checkpointActReg" - the act clusters here
-
-DATA(0x0024e810)
-extern CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
 extern CActReg g_checkpointActReg; // 0x64e7e8 (ex "g_tileSecretTriggerActReg" - the shift)
 
 
-DATA(0x0024e720)
-extern CActReg g_tileActReg;
+DATA(0x0024e810)
+extern CActReg g_tileTriggerActReg; // 0x64e810
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \

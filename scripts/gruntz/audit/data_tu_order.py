@@ -34,6 +34,9 @@ import os
 import re
 
 DATA_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
+# VTBL(name, rva) rows live beside DATA() in the owning TU and join the
+# within-file ordering audit (they are .rdata data rows).
+VTBL_ORD_RE = re.compile(r"\bVTBL\s*\(\s*\w+\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # strip // and /* */ comments crudely for classification (not for line tracking)
 IDENT_RE = re.compile(r"([A-Za-z_]\w*)\s*(\[|;|=|\()")
 
@@ -129,6 +132,8 @@ def parse_file(path):
                 break
             line_wo = line_wo[:s] + line_wo[e + 2:]
         code = strip_line_comment(line_wo)
+        for m in VTBL_ORD_RE.finditer(code):
+            blocks.append(Block(int(m.group(1), 16), i + 1, True, "??_7", code.strip()[:80]))
         for m in DATA_RE.finditer(code):
             rva = int(m.group(1), 16)
             # gather the declaration text starting just after this macro

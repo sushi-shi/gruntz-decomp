@@ -74,6 +74,7 @@ static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60
 static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
 static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
+VTBL(CMovingLogic, 0x1e87ac);
 DATA(0x002455b0)
 i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it too (LNK2005),
 

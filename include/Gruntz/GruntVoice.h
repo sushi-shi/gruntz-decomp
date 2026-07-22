@@ -57,7 +57,6 @@ public:
                                //         `new CGruntVoice` = operator new(0x78))
 };
 SIZE(0x78);
-VTBL(CGruntVoice, 0x1eaf6c);
 
 typedef void (CUserLogic::*VActHandler)();
 struct CVActEntry {

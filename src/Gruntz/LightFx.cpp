@@ -21,6 +21,7 @@
 #include <Wap32/ZVec.h>
 
 
+VTBL(CLightFx, 0x1e7af4);
 DATA(0x00245ad0)
 extern CActReg g_lightFxActReg; // 0x645ad0
 

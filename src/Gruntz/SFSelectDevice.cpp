@@ -41,12 +41,12 @@ DATA(0x0024e0a4)
 u16 g_sfDeviceCount = 0; // SFMAN32 device count
 DATA(0x0024e0a8)
 void* g_sfDll = 0; // SFMAN32.DLL handle
+DATA(0x0024e0ac)
+SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-fnptr)
 DATA(0x0024e0b0)
 SFMANL101API* g_sfDevice = 0; // SFMAN32 device interface
 DATA(0x0024e0b8)
 void* g_sfReady = 0; // device-selected flag (1 = ready)
-DATA(0x0024e0ac)
-SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-fnptr)
 DATA(0x0024e0c0)
 u8 g_ratings_64e0c0[344] = {0}; // per-device rating bytes
 

@@ -117,6 +117,5 @@ public:
     // touches +0x94, and every m_instanceHead use in the tree was in SoundStream.cpp.
 };
 SIZE(0x94); // device base; SoundStream's own list starts at +0x94
-VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
 
 #endif // DSNDMGR_SOUNDDEVICE_H

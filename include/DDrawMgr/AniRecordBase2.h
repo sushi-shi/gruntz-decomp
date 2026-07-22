@@ -51,6 +51,5 @@ struct CAniRecordBase2 : public CWapObj {
     virtual i32 PushPalette();                               // [13] 0x168fd0
 };
 SIZE(0x14); // standalone map-worker allocation size (`new` 0x14)
-VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H

@@ -16,7 +16,6 @@ class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fad
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
 class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
-VTBL(CState, 0x001ea21c);
 class CState {
 public:
     CState();

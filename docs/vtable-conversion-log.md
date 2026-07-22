@@ -424,7 +424,7 @@ divergence + % regressions; only hard bar is `gruntz build` GREEN.
 Scope: `src/Gruntz/` Wwd*/WwdGameObject*/CWwdObjMgr*/WwdSpatialMgr/GameLevel* +
 headers. Mandate: drive the cluster's vtables to zero, irregardless of %,
 regressions accepted, only hard bar `gruntz build` GREEN. Coordinator addendum:
-`SIZE(Class,0xNN)` + `VTBL(Class,0x<rva>)` atop every realized/retrofit virtual
+`SIZE(0xNN)` (positional, under the class) + `VTBL(Class,0x<rva>)` (in the owning TU) for every realized/retrofit virtual
 class; use the exact factory/ctor `RezAlloc(0xNN)`/`new(0xNN)` size where known.
 
 Net: **1 fresh REALIZE (CWwdGridIter) + 1 paired retrofit (CWwdGrid) + 3 catalog

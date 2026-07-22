@@ -48,6 +48,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
+VTBL(CGruntStaminaSprite, 0x001e7a44); // vtable_names -> code (RTTI game class)
 RVA(0x0007fbb0, 0xd)
 i32 CGruntStaminaSprite::Vslot16(CGrunt* grunt) {
     return grunt->m_stamina;

@@ -4,7 +4,6 @@
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
 
-VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
 class CGruntzApp : public CGameApp {
 public:
     CGruntzApp();                                      // ctor

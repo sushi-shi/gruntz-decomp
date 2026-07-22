@@ -54,7 +54,6 @@ public:
 };
 SIZE(0x3c);
 
-VTBL(CSBI_ImageSet, 0x001eac4c);
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESET_DTOR)
 inline CSBI_ImageSet::~CSBI_ImageSet() {

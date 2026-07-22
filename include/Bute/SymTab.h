@@ -24,7 +24,6 @@ struct CSymTabNode : public CHashElement {
     }
 };
 SIZE(0x18); // no new fields over CHashElement
-VTBL(CSymTabNode, 0x001ef748);
 
 u32 __stdcall PackTag(const char* s);         // 0x13b910
 void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
@@ -42,7 +41,6 @@ struct CSymRecNode : public CHashElement {
     }
 };
 SIZE(0x18); // no new fields over CHashElement
-VTBL(CSymRecNode, 0x001ef744);
 
 class CSymRec {
 public:

@@ -28,7 +28,6 @@ public:
     i32 SpawnTeleporter(); // 0x042b80
 };
 SIZE(0x54);
-VTBL(CSecretTeleporterTrigger, 0x1e7564);
 
 typedef void (CUserLogic::*ActHandler)();
 struct CActEntry {

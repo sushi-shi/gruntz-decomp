@@ -51,7 +51,5 @@ public:
 };
 SIZE(0x10);
 
-VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
-VTBL(zBitVec, 0x001f04c8);
 
 #endif // WAP32_ZBITVEC_H

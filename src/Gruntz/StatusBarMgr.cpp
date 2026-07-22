@@ -14,6 +14,7 @@
 
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ByteTableHas)
 
+VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250
 // ===========================================================================

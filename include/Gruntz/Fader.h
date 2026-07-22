@@ -44,6 +44,5 @@ public:
 };
 SIZE(0x38);
 
-VTBL(CFader, 0x001f07a8);
 
 #endif // GRUNTZ_GRUNTZ_CFADER_H

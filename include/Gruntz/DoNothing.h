@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
-VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
 class CDoNothing : public CUserLogic, public CWapX {
 public:
 public:

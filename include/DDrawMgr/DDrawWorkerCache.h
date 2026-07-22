@@ -69,6 +69,5 @@ public:
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 SIZE_UNKNOWN();
-VTBL(CDDrawWorkerCache, 0x001efd00);
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERCACHE_H

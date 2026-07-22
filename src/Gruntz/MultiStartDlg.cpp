@@ -25,6 +25,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 #include <Gruntz/MpSymItem.h>
 
+VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 DATA(0x0024bdb0)
 CString g_gruntNames[4];
 DATA(0x0024bdc0)

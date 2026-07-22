@@ -10,6 +10,7 @@
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
+VTBL(CStatusBarSprite, 0x1e7fc4);
 DATA(0x0024e670)
 extern CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 

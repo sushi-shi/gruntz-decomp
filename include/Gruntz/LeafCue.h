@@ -51,6 +51,5 @@ inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_14 = 0;
 }
 
-VTBL(LeafCue, 0x001eff08); // ??_7LeafCue (9-slot CLoadable leaf; was g_leafElemVtbl)
 
 #endif // GRUNTZ_GRUNTZ_LEAFCUE_H

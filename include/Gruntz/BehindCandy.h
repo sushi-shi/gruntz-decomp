@@ -21,6 +21,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CBehindCandy, 0x001e8494);
 
 #endif // GRUNTZ_CBEHINDCANDY_H

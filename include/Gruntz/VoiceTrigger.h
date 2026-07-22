@@ -29,7 +29,6 @@ public:
                                        //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
 SIZE(0x54);
-VTBL(CVoiceTrigger, 0x001e885c);
 
 typedef void (CUserLogic::*VTrigHandler)();
 struct CVTrigEntry {

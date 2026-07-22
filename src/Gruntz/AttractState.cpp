@@ -17,6 +17,8 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
+VTBL(CAttract, 0x001ea194);
+VTBL(CState, 0x001ea21c);
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
 extern char g_emptyString[];

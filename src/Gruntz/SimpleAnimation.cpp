@@ -35,6 +35,7 @@ i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 #include <rva.h>
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
+VTBL(CSimpleAnimation, 0x1e8544);
 DATA(0x00246038)
 extern LogicFnTable g_simpleAnimDispatch;
 

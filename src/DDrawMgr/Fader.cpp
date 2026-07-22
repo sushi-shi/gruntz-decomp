@@ -16,6 +16,9 @@
 #include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
+VTBL(CFader, 0x001f07a8);
+VTBL(CFaderMesh, 0x001f07c0);
+VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
 DATA(0x001f07ec)
 float g_fxBias = -50.0f; // 0x5f07ec
 DATA(0x001f07f4)
@@ -231,6 +234,11 @@ CFaderSine::CFaderSine() {
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
+VTBL(CFaderFlat, 0x001f07f8);
+VTBL(CFaderRadial, 0x001f0810);
+VTBL(CFaderSine, 0x001f0848);
+VTBL(CFaderLight, 0x001f0870);
+VTBL(CFaderShape, 0x001f0890);
 DATA(0x002c279c)
 u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
 DATA(0x002c27a8)

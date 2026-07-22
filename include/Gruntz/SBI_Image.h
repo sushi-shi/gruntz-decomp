@@ -38,7 +38,6 @@ public:
     // split - this thin sub-widget never had them.)
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
 inline CSBI_RectOnly::~CSBI_RectOnly() {
@@ -97,7 +96,6 @@ public:
     CImage* m_frame; // +0x30  latched/resolved frame (the config value; ex i32)
 };
 SIZE(0x34);
-VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
 inline CSBI_Image::~CSBI_Image() {

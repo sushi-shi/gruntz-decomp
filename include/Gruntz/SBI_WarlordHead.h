@@ -76,7 +76,6 @@ public:
     i32 m_direction; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 
 void WhShowItem(i32 handle, i32 flag);
 

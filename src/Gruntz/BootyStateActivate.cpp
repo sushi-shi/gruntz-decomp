@@ -617,6 +617,8 @@ RECT g_labelRects[7] = {
     {0, 370, 172, 430},
     {38, 413, 172, 473}
 };
+VTBL(CMultiBootyState, 0x001e9bdc);
+VTBL(CBootyState, 0x001e9cec);
 
 static __inline i32 sumRun(CBattlezData* base, i32 off, i32 n) {
     i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(base) + off));

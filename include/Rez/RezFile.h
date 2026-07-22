@@ -28,7 +28,6 @@ extern const char s_rb[];
 extern const char s_rPlusB[];
 extern const char s_wPlusB[];
 
-VTBL(CRezFile, 0x001ef7d0);
 class CRezFile : public CRezItmBase {
 public:
     // 0x13cac0: base-ctor CRezItmBase(parent), record the owning dir, heap-copy

@@ -12,7 +12,6 @@ struct CParseSource;    // LoadImage arg (the 0x139xxx byte-reader)
 // (CSurfacePairBase DELETED: dead scaffolding - nothing derived it and nothing
 // constructed it; CDDrawSurfacePair derives CWapObj directly and owns the fields.)
 
-VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair : public CWapObj {
 public:
     virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate

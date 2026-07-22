@@ -122,7 +122,6 @@ public:
     };
 };
 SIZE_UNKNOWN();
-VTBL(CMovingLogic, 0x1e87ac);
 
 #ifndef CMOVINGLOGIC_STANDALONE_CTOR
 inline CMovingLogic::CMovingLogic() {

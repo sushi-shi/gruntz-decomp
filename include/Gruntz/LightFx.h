@@ -48,7 +48,6 @@ public:
     i32 m_anchorB; // +0x58  latched anchor B
 };
 SIZE(0x5c);
-VTBL(CLightFx, 0x1e7af4);
 
 typedef i32 (CUserLogic::*LightFxHandler)();
 struct CLightFxActEntry {

@@ -28,7 +28,6 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CCursorSnapSprite, 0x1e8074);
 
 extern CLogicActTable g_logicActReg_62bfa0;
 

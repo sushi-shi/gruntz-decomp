@@ -43,7 +43,6 @@ public:
     // was named m_own, not m_pad40. Removing it makes the body compute 0x54 exactly.
 };
 SIZE(0x54); // CUserLogic (0x34) + CWapX (0x20)
-VTBL(CBrickz, 0x001e7c54);
 
 typedef i32 (CUserLogic::*BrickzHandler)();
 struct CBrickzActEntry {

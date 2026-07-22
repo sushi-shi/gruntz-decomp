@@ -92,6 +92,5 @@ public:
     CImageSet* m_record;
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 
 #endif // SBI_MENUITEM_H

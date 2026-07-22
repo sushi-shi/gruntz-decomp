@@ -6,6 +6,7 @@
 #include <Mfc.h>
 #include <string.h> // memcpy/memset -> rep movs/stos in the inlined SetSize
 
+VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
 
 static inline i32 InitTypeId(CFxModeDesc* pInit) {

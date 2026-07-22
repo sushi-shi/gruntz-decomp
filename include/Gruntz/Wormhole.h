@@ -34,6 +34,5 @@ public:
     i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
 SIZE_UNKNOWN();
-VTBL(CWormhole, 0x1e817c);
 
 #endif // GRUNTZ_CWORMHOLE_H

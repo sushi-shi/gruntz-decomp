@@ -54,6 +54,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
+VTBL(CMenuSparkle, 0x1e82dc);
 DATA(0x00246010)
 extern CLogicActTable g_logicActReg_646010; // 0x646010
 

@@ -96,6 +96,5 @@ public:
 };
 SIZE(0x6c);
 SIZE_UNKNOWN();
-VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 
 #endif // GRUNTZ_CDDRAWWORKER_H

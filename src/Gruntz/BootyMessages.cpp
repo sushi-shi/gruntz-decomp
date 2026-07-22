@@ -22,8 +22,6 @@ BzGeomPair g_idleGeom[4] = {
 DATA(0x001e93b0)
 float g_secretRatioScale = 100.0f; // 0x5e93b0
 
-DATA(0x00229ef8)
-CString g_levelMsgStrings[8]; // 0x629ef8
 DATA(0x0020b838)
 RECT g_levelMsgRectsA[8] = {
     {105, 106, 190, 155},
@@ -46,6 +44,8 @@ RECT g_levelMsgRectsB[8] = {
     {245, 351, 417, 421},
     {245, 392, 417, 462}
 };
+DATA(0x00229ef8)
+CString g_levelMsgStrings[8]; // 0x629ef8
 
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)

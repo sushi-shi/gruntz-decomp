@@ -24,7 +24,6 @@ public:
                                //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
 SIZE(0x54);
-VTBL(CSecretLevelTrigger, 0x1e8804);
 
 typedef i32 (CUserLogic::*SecretActHandler)();
 struct CSecretActEntry {

@@ -55,7 +55,6 @@ public:
     i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
 };
 SIZE(0xa0);
-VTBL(CRollingBall, 0x1e86fc);
 
 typedef i32 (CUserLogic::*RollingBallHandler)();
 struct CRollingBallActEntry {

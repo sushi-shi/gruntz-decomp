@@ -16,6 +16,7 @@
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
 #include <Image/CImage.h>        // the resolved frame record (TickRenderFrame's blit)
 
+VTBL(CSBI_ImageSet, 0x001eac4c);
 // ---------------------------------------------------------------------------
 // CSBI_ImageSet::SetupImage (0xe72f0, vtable slot 11 - the CSBI_Image::SetupImage
 // override): validate + latch the config descriptor (subtype, command, the four

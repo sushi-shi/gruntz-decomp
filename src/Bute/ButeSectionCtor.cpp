@@ -1,5 +1,6 @@
 #include <Bute/ButeMgr.h> // the one CButeMgr (+ CBSecStream / CButeTail), shared
 
+VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The CBSecStream +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the
 // CButeNodeEntry base). Bound here in the emitting TU (labels.py scans @data-symbol
 // comments per-.cpp, not through headers).

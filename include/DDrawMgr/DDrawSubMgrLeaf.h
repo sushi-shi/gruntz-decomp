@@ -64,6 +64,5 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H

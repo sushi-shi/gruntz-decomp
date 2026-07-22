@@ -87,7 +87,6 @@ public:
     DirectSoundMgr* m_reacquireOwner; // +0x54  device/owner used to reacquire a lost buffer
 };
 SIZE(0x58); // per-buffer wrapper base (fields end at +0x58)
-VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 
 typedef DSoundList CloneList;
 
@@ -104,7 +103,6 @@ public:
     virtual ~DSoundBaseSub() OVERRIDE; // 0x136260  base-subobject dtor (vptr reset + chain)
 };
 SIZE(0x58); // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
-VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 
 class DSoundCloneInst : public DSoundBaseSub {
 public:
@@ -129,6 +127,5 @@ public:
     CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
 };
 SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
-VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

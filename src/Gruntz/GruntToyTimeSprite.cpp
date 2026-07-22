@@ -44,3 +44,4 @@ i32 CGruntToyTimeSprite::Vslot16(CGrunt* grunt) {
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+VTBL(CGruntToyTimeSprite, 0x001e79ec);

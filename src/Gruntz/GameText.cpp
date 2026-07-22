@@ -33,6 +33,7 @@ static CString g_worldName[8] = {
 };
 
 #include <Gruntz/ActReg.h> // CActReg - the shared registry-cell archetype
+VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 DATA(0x002451a8)
 extern CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)

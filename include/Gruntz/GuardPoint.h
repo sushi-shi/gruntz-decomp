@@ -29,6 +29,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CGuardPoint, 0x001e7154);
 
 #endif // GRUNTZ_CGUARDPOINT_H

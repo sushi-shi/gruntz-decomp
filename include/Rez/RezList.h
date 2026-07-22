@@ -28,7 +28,6 @@ struct CObjList : public CObjListBase {
     void Remove(CObjNode* node); // 0x1852e0
 };
 
-VTBL(CRezList, 0x001ef7c8);
 struct CRezList : public CObjList {
     CRezList() {
         m_head = 0;

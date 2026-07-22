@@ -32,7 +32,6 @@ struct AmbSoundRecord {
 };
 SIZE_UNKNOWN();
 
-VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
 public:
     // Inline: the Create* factories inline the vptr stamp (??_7CRandomAmbientSound)

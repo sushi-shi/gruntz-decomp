@@ -662,14 +662,17 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-DATA(0x0022b5dc)
-i32 g_singleCmdCount;
+VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzCommand, 0x001e9674);
+VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 DATA(0x0022b5d0)
 extern CGruntzCmdList g_singleCmdList;
-DATA(0x0022b64c)
-i32 g_multiCmdCount;
+DATA(0x0022b5dc)
+i32 g_singleCmdCount;
 DATA(0x0022b640)
 extern CGruntzCmdList g_multiCmdList;
+DATA(0x0022b64c)
+i32 g_multiCmdCount;
 
 DATA(0x002451a4)
 i32 g_dlgVal_6451a4;

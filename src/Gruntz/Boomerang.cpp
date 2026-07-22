@@ -7,6 +7,7 @@
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
 
+VTBL(CBoomerang, 0x1e792c);
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 

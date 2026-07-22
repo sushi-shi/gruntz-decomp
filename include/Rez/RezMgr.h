@@ -106,7 +106,6 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 
 #include <Rez/RezList.h>
 
-VTBL(CRezDir, 0x001ef7a8);
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void* parent, i32 maxOpen);

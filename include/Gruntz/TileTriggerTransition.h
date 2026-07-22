@@ -29,7 +29,6 @@ public:
     // +0x1b4 animation descriptor.
 };
 SIZE_UNKNOWN();
-VTBL(CTileTriggerTransition, 0x1e7db4);
 
 typedef i32 (CUserLogic::*TileActHandler)();
 struct TileActEntry {

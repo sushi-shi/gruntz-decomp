@@ -22,6 +22,5 @@ public:
     // before operator new, then the bare `call ??0CLevelTime` thunk 0x404d).
 };
 SIZE(0x54); // `new CLevelTime` @0x9b77f pushes 0x54
-VTBL(CLevelTime, 0x1e801c);
 
 #endif // GRUNTZ_CLEVELTIMEDTOR_H

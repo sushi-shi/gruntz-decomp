@@ -12,6 +12,9 @@
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
+VTBL(CAmbientSound, 0x001e710c);
+VTBL(CAmbientPosSound, 0x001e7124);
+VTBL(CRandomAmbientSound, 0x001e713c);
 DATA(0x0022990c)
 i32 g_posSoundReq; // 0x62990c
 

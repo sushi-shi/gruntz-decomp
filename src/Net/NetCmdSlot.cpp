@@ -38,13 +38,13 @@ DATA(0x0024a8b6)
 unsigned char gA_e08; // 0x24a8b6
 DATA(0x0024a8b7)
 unsigned char gA_data; // 0x24a8b7
-DATA(0x0024b6a0)
-char g_idScratch[0x10]; // 0x24b6a0
-DATA(0x0024b6b0)
-char g_idListBuf[0x40]; // 0x24b6b0
-
 DATA(0x0024aca8)
 extern CPtrList g_pool; // 0x64aca8
+DATA(0x0024b6a0)
+char g_idScratch[0x10]; // 0x24b6a0
+
+DATA(0x0024b6b0)
+char g_idListBuf[0x40]; // 0x24b6b0
 
 void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 

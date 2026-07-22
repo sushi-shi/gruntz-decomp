@@ -5,6 +5,8 @@
 #include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
 #include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
 
+VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this TU emits it)
+
 // ===========================================================================
 // ButeValueTeardown (0x174df0) - the keyed store's __cdecl per-value teardown
 // callback.

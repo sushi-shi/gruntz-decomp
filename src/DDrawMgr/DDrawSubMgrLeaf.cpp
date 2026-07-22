@@ -22,6 +22,7 @@
 #include <stdio.h>                    // sprintf (the %s%s%s path-join, 0x11f890)
 #include <string.h>                   // strcpy inline CRT (rep movs / repnz scas)
 
+VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
 // @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
 // class while cl 5.0 emits `P` (?g_fmtPathJoin@@3PBDB), so a DATA() label's clang

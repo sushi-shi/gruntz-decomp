@@ -66,7 +66,6 @@ public:
     char* m_loadBuffer;    // +0x5c  owned load buffer (operator new; SoundBankLoad::Load)
 };
 SIZE(0x60); // allocated 0x60 bytes (inner sound object)
-VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
 
 class CGruntzSoundZ {
 public:

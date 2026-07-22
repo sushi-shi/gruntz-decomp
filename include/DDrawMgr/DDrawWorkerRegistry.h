@@ -62,6 +62,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H

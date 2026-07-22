@@ -18,15 +18,6 @@ extern "C" {
     void RecomputePlaneCoords(void); // 0x161c90
 }
 
-DATA(0x0024cfc0)
-u32 g_scrollClock;
-DATA(0x0024cfb0)
-i64 g_scrollAccum;
-DATA(0x0024cfd0)
-i32 g_lastScrollX; // 0x64cfd0
-DATA(0x0024cfd4)
-i32 g_lastScrollY; // 0x64cfd4
-
 DATA(0x002452a4)
 i32 g_jitterX;
 DATA(0x002452cc)
@@ -35,10 +26,15 @@ DATA(0x00245508)
 i32 g_panMinX;
 DATA(0x0024550c)
 i32 g_panMaxX;
+
 DATA(0x0024c27c)
 CLevelPlane* g_backView;
+DATA(0x0024cfb0)
+i64 g_scrollAccum;
 DATA(0x0024cfb8)
 i64 g_scrollLimit;
+DATA(0x0024cfc0)
+u32 g_scrollClock;
 DATA(0x0024cfc4)
 u32 g_scrollTimer;
 // Serializer-only dwords (MapSerializeCurve is their ONLY reader/writer - the xref
@@ -47,6 +43,10 @@ DATA(0x0024cfc8)
 i32 g_scrollSave18;
 DATA(0x0024cfcc)
 i32 g_scrollSave1c;
+DATA(0x0024cfd0)
+i32 g_lastScrollX; // 0x64cfd0
+DATA(0x0024cfd4)
+i32 g_lastScrollY; // 0x64cfd4
 
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;

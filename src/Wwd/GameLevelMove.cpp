@@ -30,6 +30,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <rva.h>
 
+VTBL(CWwdGridShell, 0x001f0310); // ??_7CWwdGridShell (was g_subVtbl_5f0310)
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // Placement new for the two-phase grid construction (Init runs ??0CWwdGrid over

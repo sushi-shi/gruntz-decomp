@@ -31,7 +31,6 @@ public:
     i32 Advance();             // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
 };
 SIZE(0x54);
-VTBL(CDroppedObjectShadow, 0x1e787c);
 
 struct CShadowActEntry {
     i32 (CUserLogic::*m_fn)();

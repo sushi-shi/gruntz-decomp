@@ -32,7 +32,6 @@ public:
     i32 m_resolved;             // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
 };
 SIZE(0x5c);
-VTBL(CExitTrigger, 0x001e822c);
 
 typedef i32 (CUserLogic::*ExitTriggerHandler)();
 struct CExitActEntry {

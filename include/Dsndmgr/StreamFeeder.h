@@ -67,7 +67,6 @@ struct StreamFeeder {
     i32 TickPump(i32 now);
 };
 SIZE(0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
-VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
 
 // The DERIVED per-voice feeder (retail vtable 0x5ef6e0) embedded at StreamVoice+0x6c.
 // ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
@@ -85,6 +84,5 @@ struct StreamVoiceFeeder : StreamFeeder {
     virtual void OnDrain() OVERRIDE; // [2] 0x1374b0
 };
 SIZE(0x44); // derived feeder; no added fields
-VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
 
 #endif // DSNDMGR_STREAMFEEDER_H

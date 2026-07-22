@@ -83,6 +83,5 @@ public:
     CObList m_workers;
 };
 SIZE(0x2c); // new(0x2c) in CDDrawSurfaceMgr::Init @0x1559d1
-VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H

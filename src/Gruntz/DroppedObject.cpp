@@ -27,6 +27,9 @@
 #include <string.h> // inline strcmp for the direction-name match
 
 
+VTBL(CDroppedObjectShadow, 0x1e787c);
+VTBL(CDroppedObject, 0x1e78d4);
+VTBL(CObjectDropper, 0x001e7a9c);
 DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
 DATA(0x001eaa00)

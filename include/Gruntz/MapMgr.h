@@ -42,7 +42,6 @@ struct MapCell {
 };
 SIZE_UNKNOWN();
 
-VTBL(CMapMgr, 0x001ea3b4); // vtable_names -> code (RTTI game class)
 class CMapMgr {
 public:
     CMapMgr();

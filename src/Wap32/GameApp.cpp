@@ -360,6 +360,7 @@ CGameMgr::CGameMgr() {
     InitializeTimeGlobal();
 }
 
+VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
 DATA(0x00253c6c)
 i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
 DATA(0x00253c70)

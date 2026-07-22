@@ -20,6 +20,5 @@ struct CWwdGridShell : public CWwdGrid {
     }
 };
 SIZE(0x44);
-VTBL(CWwdGridShell, 0x001f0310); // ??_7CWwdGridShell (was g_subVtbl_5f0310)
 
 #endif // GRUNTZ_WWD_WWDGRIDSHELL_H

@@ -62,8 +62,25 @@ void operator delete(void*);
 // retail, and @rva-symbol-bound as the REAL ??_GCLoadable/??1CLoadable in
 // DDrawWorkerRegistry.cpp.
 
+VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
+VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
+VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
+VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
+VTBL(CDDrawWorkerCache, 0x001efd00);
+VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)
+VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
+VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
+VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
+VTBL(CFileMem, 0x001efe30);
+VTBL(CFileMemBase, 0x001efe68);
+VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
+VTBL(CDDrawWorkerB, 0x001efed0);
+VTBL(LeafCue, 0x001eff08); // ??_7LeafCue (9-slot CLoadable leaf; was g_leafElemVtbl)
 DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
+VTBL(CDDrawSurfacePair, 0x001eff30);
+VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
+VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
 extern char g_emptyString[]; // 0x2293f4
 

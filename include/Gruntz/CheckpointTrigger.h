@@ -25,7 +25,6 @@ public:
     i32 m_firstEmpty;          // +0x90  first-empty index
 };
 SIZE(0x94);
-VTBL(CCheckpointTrigger, 0x1e7ebc);
 
 struct CCheckpointActEntry {
     i32 (CUserLogic::*m_fn)();

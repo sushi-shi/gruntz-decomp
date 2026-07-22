@@ -50,6 +50,5 @@ public:
     DSoundList m_voices; // +0x94  owned per-stream voice list
 };
 SIZE(0x9c); // 0x94 SoundDevice base + DSoundList m_voices (8 B)
-VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
 
 #endif // DSNDMGR_SOUNDSTREAM_H

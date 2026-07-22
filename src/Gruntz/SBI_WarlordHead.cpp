@@ -13,6 +13,7 @@
 #include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)           // CDDrawSubMgrPages (m_world->m_drawTarget->m_backPair)
 
+VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 // vtable slot 11 (0xeb6b0): forward all 11 setup args to the ImageSet base setup
 // (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
 // on the caller stack exactly as retail does); on success latch the initial state

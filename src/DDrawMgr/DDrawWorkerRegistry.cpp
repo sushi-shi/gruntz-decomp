@@ -28,6 +28,7 @@
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
 
+VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 inline void* operator new(u32, void* p) {
     return p;
 }

@@ -24,7 +24,6 @@ public:
     i64 m_duration;  // +0x60  phase duration (lo dword of the i64)
 };
 SIZE(0x68);
-VTBL(CTimeBomb, 0x1e771c);
 
 typedef void (CUserLogic::*TBombHandler)();
 struct CTBombEntry {

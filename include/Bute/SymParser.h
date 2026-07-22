@@ -14,7 +14,6 @@ class CRezItmBase;
 #include <Bute/ObjListBase.h>
 
 #include <Rez/RezList.h>
-VTBL(CParserObjList, 0x001ef75c);
 struct CParserObjList : public CObjList {
     virtual void V0() OVERRIDE; // [0] 0x13c4c0 (empty body; declared-only, reloc-masked)
     ~CParserObjList() {}
@@ -44,7 +43,6 @@ struct CParserHash : public CHashBase {
 };
 SIZE(0x8); // derives CHashBase (no new fields)
 
-VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
 class CSymParser {
 public:
     // The three primary slots. Retail's bodies are inert defaults (the parser's

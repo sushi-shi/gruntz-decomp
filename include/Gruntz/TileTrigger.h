@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CTileTrigger base (CUserLogic hierarchy + CGameObject)
 
-VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 class CTileSecretTrigger : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
@@ -19,7 +18,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 class CGiantRock : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
@@ -29,7 +27,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 class CCoveredPowerup : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2

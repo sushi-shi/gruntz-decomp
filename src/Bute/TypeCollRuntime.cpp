@@ -4,6 +4,7 @@
 
 #include <Mfc.h> // CString (element type; ~CString @0x1b9cde)
 
+VTBL(CTypeCollRuntime, 0x001f04e4);
 // The real destructor (~CTypeCollRuntime, ??1) - the one member the devs wrote: cl
 // stamps the ??_7CTypeCollRuntime vptr, destructs the m_base CString array, then
 // auto-chains ~_zdvec (0x16df40). Defining it here makes this the vtable's key TU, so

@@ -21,6 +21,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CSimpleAnimation, 0x1e8544);
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

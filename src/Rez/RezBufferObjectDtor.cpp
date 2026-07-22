@@ -86,4 +86,3 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         ar.Read(m_pData, m_nSize * sizeof(RezElem40));
     }
 }
-VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)

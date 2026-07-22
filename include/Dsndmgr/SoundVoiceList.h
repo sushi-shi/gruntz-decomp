@@ -32,7 +32,6 @@ SIZE(0x4); // one vptr (abstract element base)
 inline void PureSoundElem::operator delete(void* p) {
     RezFree(p);
 }
-VTBL(PureSoundElem, 0x001ef6c8); // 2 __purecall slots (Tick/Stop); the reap-teardown
 
 struct DSoundElem : public PureSoundElem {
     // vptr @ +0x00 (inherited from PureSoundElem)

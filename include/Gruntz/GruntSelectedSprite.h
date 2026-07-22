@@ -28,7 +28,6 @@ public:
     i32 m_cellY; // +0x58  grunt cell y
 };
 SIZE_UNKNOWN();
-VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class)
 
 typedef i32 (CUserLogic::*SelectedActHandler)();
 struct CSelectedActEntry {

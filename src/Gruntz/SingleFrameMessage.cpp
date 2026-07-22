@@ -37,6 +37,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
     m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }
 
+VTBL(CSingleFrameMessage, 0x1e864c);
 DATA(0x00245ef0)
 extern CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 

@@ -5,6 +5,7 @@
 #include <stdio.h>  // sprintf - the "MIDI%i" auto-name (0x11f890, _sprintf)
 #include <string.h> // strcpy/memcpy (inline rep movs / repne scas under /O2)
 
+VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
 DATA(0x00253c5c)
 HMDIDRIVER g_ailMidiDriver = 0; // 0x653c5c  AIL/digital MIDI driver handle (0 = none open)
 DATA(0x00253c60)

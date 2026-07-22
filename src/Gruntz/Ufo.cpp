@@ -8,6 +8,7 @@
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
 
+VTBL(CUFO, 0x001e72b4); // vtable_names -> code (RTTI game class)
 RVA(0x000b4330, 0x8)
 i32 CUFO::Tick() {
     CPathHazard::Tick();

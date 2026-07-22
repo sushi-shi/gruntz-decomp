@@ -21,7 +21,6 @@ struct AmbientBox {
 };
 SIZE_UNKNOWN();
 
-VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
     // Inline ctor: the CWorldSoundSet::Create* factories use `new CAmbientSound`
@@ -89,7 +88,6 @@ public:
 };
 SIZE(0x40);
 
-VTBL(CAmbientPosSound, 0x001e7124);
 class CAmbientPosSound : public CAmbientSound {
 public:
     // Inline: the CWorldSoundSet::CreatePos* factories inline the vptr stamp

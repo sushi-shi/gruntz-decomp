@@ -9,7 +9,6 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 class CGruntzMapMgr : public CMapMgr {
 public:
     ~CGruntzMapMgr(); // 0x85d10 (CMapMgr's dtor is non-virtual, so is this)

@@ -15,26 +15,30 @@
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
 extern "C" {
+VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
+VTBL(CPoolItemA88, 0x001efa88);
+VTBL(CPoolItemAB8, 0x001efab8);
+VTBL(CPoolItemAE8, 0x001efae8);
     DATA(0x002bed00)
     CDirectDrawMgr* g_DirectDrawMgr = 0; // 0x6bed00
 }
 
 extern "C" {
-    DATA(0x00283ec0)
-    i32 g_ddBeepEnabled = 0; // 0x683ec0
     DATA(0x00283eb8)
     i32 g_ddLogEnabled = 0; // 0x683eb8
     DATA(0x00283ebc)
     i32 g_ddMsgBoxEnabled = 0; // 0x683ebc
+    DATA(0x00283ec0)
+    i32 g_ddBeepEnabled = 0; // 0x683ec0
     DATA(0x00283ec4)
     i32 g_ddThirdEnabled = 0; // 0x683ec4
 }
 
-DATA(0x00283edc)
-i32 (*g_restoreHandler)() = 0; // 0x683edc
-
 DATA(0x001ef848)
 extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
+
+DATA(0x00283edc)
+i32 (*g_restoreHandler)() = 0; // 0x683edc
 
 extern "C" {
     DATA(0x00283ee8)

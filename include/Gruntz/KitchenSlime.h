@@ -47,7 +47,6 @@ public:
     i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
 };
 SIZE(0x90);
-VTBL(CKitchenSlime, 0x1e750c);
 
 // The activation-registry entry record: its first dword is a PMF of CKitchenSlime
 // (single inheritance -> a 4-byte code pointer). FireActivation dispatches it on

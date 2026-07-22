@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CWarpStonePad : CUserLogic)
 
-VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 class CWarpStonePad : public CUserLogic, public CWapX {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)

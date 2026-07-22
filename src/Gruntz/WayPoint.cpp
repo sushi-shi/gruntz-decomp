@@ -21,6 +21,7 @@ i32 CWayPoint::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 RVA_COMPGEN(0x000102e0, 0x44, ??1CWayPoint@@UAE@XZ)
+VTBL(CWayPoint, 0x001e74b4);
 
 // CWayPoint::CWayPoint (0xae3f0) - fold the shared CUserLogic(obj) init (with the
 // built-in logic types inlined-registered), then flag the sub-object (+0x40 bit 1).

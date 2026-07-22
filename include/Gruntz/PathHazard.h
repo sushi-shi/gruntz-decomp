@@ -106,7 +106,6 @@ public:
     i64 m_strikeWindow;   // +0x128 strike window duration
 };
 SIZE(0x130);
-VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 
 struct CPathHazardActEntry {
     i32 (CUserLogic::*m_fn)();

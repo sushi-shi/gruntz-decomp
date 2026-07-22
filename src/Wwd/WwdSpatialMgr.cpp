@@ -7,6 +7,7 @@
 #include <Mfc.h>
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
 
+VTBL(CWwdGridIter, 0x001f02a8);
 RVA(0x00163a40, 0x41)
 CWwdSpatialMgr::~CWwdSpatialMgr() {
     FreeGrids();

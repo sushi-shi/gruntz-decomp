@@ -14,6 +14,8 @@
 #include <string.h>                  // strlen (inline repnz scas)
 #include <Globals.h>
 
+VTBL(CAniRecordView, 0x001f02c0);
+VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 DATA(0x002bf3c4)
 i32 g_aniParsedNameLen = 0; // 0x6bf3c4
 

@@ -5,6 +5,7 @@
 #include <Wwd/WwdGridShell.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
 #include <Gruntz/WwdGridIter.h>  // CWwdGridIter cursor - Start/Init/GetNext bodies live
 
+VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 void operator delete(void* p);
 extern "C" double log(double);
 extern "C" double pow(double, double);

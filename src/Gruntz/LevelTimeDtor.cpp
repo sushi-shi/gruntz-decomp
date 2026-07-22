@@ -13,6 +13,7 @@
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
+VTBL(CLevelTime, 0x1e801c);
 RVA(0x000119b0, 0x47)
 i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove(reinterpret_cast<CSerialArchive*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {

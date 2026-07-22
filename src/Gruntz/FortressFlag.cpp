@@ -27,6 +27,9 @@
 // carry 2 more fields at +4/+8 that no code in this TU touches - @identity-TODO; the
 // stride is a runtime DATA value so the 4-byte model stays byte-exact here.)
 
+VTBL(CFortressFlag, 0x001e725c);
+VTBL(CParticlez, 0x001e7614);
+VTBL(CExplosion, 0x1e766c);
 DATA(0x00244638)
 extern CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
 

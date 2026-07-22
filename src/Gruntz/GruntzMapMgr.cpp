@@ -4,6 +4,7 @@
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
+VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 // ===========================================================================
 // CGruntzMapMgr::Visit  (0x082430) - vtable slot 1, __thiscall
 // ===========================================================================

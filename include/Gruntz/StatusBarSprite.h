@@ -21,7 +21,6 @@ public:
     i32 AdvanceAnim();          // 0x10c810 (the per-frame handler PMF; body in the stub TU)
 };
 SIZE(0x54);
-VTBL(CStatusBarSprite, 0x1e7fc4);
 
 typedef i32 (CUserLogic::*StatusBarSpriteHandler)();
 struct CStatusBarSpriteActEntry {

@@ -119,7 +119,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
 class CFileImageSurface : public CDDSurface {
 public:
     virtual ~CFileImageSurface() OVERRIDE; // slot 0  0x142360

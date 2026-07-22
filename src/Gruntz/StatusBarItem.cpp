@@ -29,7 +29,6 @@ CStatusBarItem::CStatusBarItem() {
 // and forces the COMDAT out in this TU.)
 RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
-VTBL(CStatusBarItem, 0x001eabcc);
 
 // ---------------------------------------------------------------------------
 // CStatusBarItem::Setup (0x100660, vtable slot 2): the base 10-arg config setter -

@@ -12,6 +12,9 @@
 // @data-symbol: ?s_rPlusB@@3PBDB 0x0021a0a4
 // @data-symbol: ?s_wPlusB@@3PBDB 0x0021a0a8
 
+VTBL(CRezDir, 0x001ef7a8);
+VTBL(CRezList, 0x001ef7c8);
+VTBL(CRezFile, 0x001ef7d0);
 DATA(0x0021a0a0)
 const char g_wildcard[] = "*.*"; // decl in RezFile.h
 

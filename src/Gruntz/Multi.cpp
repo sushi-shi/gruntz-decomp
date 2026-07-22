@@ -38,6 +38,7 @@
 #include <stdlib.h>                   // srand (reloc-masked)
 #include <Globals.h>
 
+VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
 
@@ -121,6 +122,10 @@ DATA(0x00246fdc)
 i32 g_chanStat422_id; // 0x246fdc
 DATA(0x00246fe0)
 i32 g_chanStat422_val; // 0x246fe0
+DATA(0x00248ce0)
+extern "C" {
+    i32 g_sharedFlag = 0; // 0x248ce0
+}
 DATA(0x00248d04)
 i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
 DATA(0x00248d08)
@@ -131,11 +136,6 @@ DATA(0x00248d10)
 i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
 DATA(0x00248d14)
 u32 g_ackThrottleDeadline; // 0x248d14  drop-throttle deadline
-
-DATA(0x00248ce0)
-extern "C" {
-    i32 g_sharedFlag = 0; // 0x248ce0
-}
 
 enum {
     DISPATCH_RESYNC = 0x4cc,     // post the resync WM_COMMAND

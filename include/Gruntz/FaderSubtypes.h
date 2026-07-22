@@ -27,7 +27,6 @@ struct CFaderRadialCell {
 };
 SIZE(0x10);
 
-VTBL(CFaderMesh, 0x001f07c0);
 class CFaderMesh : public CFader {
 public:
     virtual ~CFaderMesh() OVERRIDE;
@@ -60,7 +59,6 @@ public:
 };
 SIZE(0x6c);
 
-VTBL(CFaderSine, 0x001f0848);
 class CFaderSine : public CFader {
 public:
     CFaderSine();                             // 0x17fdb0
@@ -91,7 +89,6 @@ public:
 };
 SIZE(0x7d5c);
 
-VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
 public:
     virtual ~CFaderFlat() OVERRIDE;
@@ -117,7 +114,6 @@ public:
 };
 SIZE(0x50);
 
-VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
     virtual void BeginFade() OVERRIDE; // slot 3
@@ -165,7 +161,6 @@ public:
 };
 SIZE(0x206c);
 
-VTBL(CFaderRadial, 0x001f0810);
 class CFaderRadial : public CFader {
 public:
     virtual ~CFaderRadial() OVERRIDE;
@@ -200,7 +195,6 @@ public:
 };
 SIZE(0x5c);
 
-VTBL(CFaderShape, 0x001f0890);
 class CFaderShape : public CFader {
 public:
     CFaderShape();                            // 0x1816c0

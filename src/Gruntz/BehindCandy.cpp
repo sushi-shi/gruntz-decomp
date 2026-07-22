@@ -44,3 +44,4 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 #include <rva.h>
+VTBL(CBehindCandy, 0x001e8494);

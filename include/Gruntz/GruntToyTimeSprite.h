@@ -20,6 +20,5 @@ public:
     virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 SIZE(0x64); // recovered from operator-new sites (gruntz.analysis.news)
-VTBL(CGruntToyTimeSprite, 0x001e79ec);
 
 #endif // GRUNTZ_CGRUNTTOYTIMESPRITE_H

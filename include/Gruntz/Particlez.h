@@ -29,7 +29,6 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE_UNKNOWN();
-VTBL(CParticlez, 0x001e7614);
 
 typedef void (CUserLogic::*PartHandler)();
 struct CPartEntry {

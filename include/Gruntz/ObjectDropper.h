@@ -50,7 +50,6 @@ public:
     i64 m_dropInterval; // +0x90  drop interval (64-bit)
 };
 SIZE(0x98);
-VTBL(CObjectDropper, 0x001e7a9c);
 
 struct CDropperActEntry {
     i32 (CUserLogic::*m_fn)();

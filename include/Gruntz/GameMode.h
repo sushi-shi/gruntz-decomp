@@ -122,7 +122,6 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-VTBL(CMenuState, 0x1e9e84);
 
 void CreditsRectSet(void* rect, i32 l, i32 t, i32 r, i32 b); // 0x08c380
 
@@ -237,7 +236,6 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-VTBL(CCreditsState, 0x001e9c64);
 
 class CBootyState : public CState {
 public:
@@ -430,7 +428,6 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-VTBL(CBootyState, 0x001e9cec);
 
 class CMultiBootyState : public CState {
 public:
@@ -534,6 +531,5 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-VTBL(CMultiBootyState, 0x001e9bdc);
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

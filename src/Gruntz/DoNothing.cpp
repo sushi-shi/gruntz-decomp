@@ -8,6 +8,8 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
+VTBL(CDoNothingNormal, 0x1e859c);
+VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
 RVA(0x0000f6d0, 0x47)
 i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {

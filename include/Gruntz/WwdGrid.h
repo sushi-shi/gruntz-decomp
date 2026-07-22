@@ -22,7 +22,6 @@ struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherite
 };
 SIZE_UNKNOWN();
 
-VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 class CWwdGrid : public CObject {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.

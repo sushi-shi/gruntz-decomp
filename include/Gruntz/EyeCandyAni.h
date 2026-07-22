@@ -31,7 +31,6 @@ public:
     i32 AdvanceAnim(); // 0x0acf10
 };
 SIZE(0x54);
-VTBL(CEyeCandyAni, 0x001e8334);
 
 typedef i32 (CUserLogic::*EyeCandyHandler)();
 struct CEyeCandyActEntry {

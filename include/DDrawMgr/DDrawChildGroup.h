@@ -166,6 +166,5 @@ struct WwdObjDesc {
 };
 SIZE_UNKNOWN();
 
-VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

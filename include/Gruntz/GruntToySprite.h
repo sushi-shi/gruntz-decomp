@@ -6,7 +6,6 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
-VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:
 public:

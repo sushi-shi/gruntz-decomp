@@ -148,6 +148,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 
 #endif // SBI_STATZTABGRUNTBAR_H

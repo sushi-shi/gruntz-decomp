@@ -23,7 +23,6 @@ public:
         OVERRIDE; // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
 };
 SIZE(0x54);
-VTBL(CGruntStartingPoint, 0x1e8284);
 
 typedef i32 (CUserLogic::*StartActHandler)();
 struct StartActEntry {

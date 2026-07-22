@@ -448,7 +448,6 @@ public:
     char* GroupName(); // 0xb76a0
 };
 SIZE(0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
-VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 
 class CNetSessionNode : public CObject {
 public:
@@ -917,6 +916,5 @@ public:
     // run on this=g_curMulti. The orphan alias decl that sat here is gone.)
 };
 SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
-VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 
 #endif // NET_NETMGR_H

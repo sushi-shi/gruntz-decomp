@@ -73,7 +73,6 @@ public:
     CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
 };
 SIZE_UNKNOWN();
-VTBL(CInGameIcon, 0x1e7d04);
 
 typedef i32 (CUserLogic::*IconActHandler)();
 

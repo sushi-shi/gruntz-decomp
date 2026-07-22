@@ -46,6 +46,5 @@ SIZE_UNKNOWN();
 // COL, so the retail class name is UNRECOVERABLE: neither "CAniRecordView" nor the guessed
 // "CAniRecordPrimary" is provable, so the reconstruction name CAniRecordView stands (not
 // renamed - unprovable). @identity-TODO: real retail class name unrecoverable (no RTTI).
-VTBL(CAniRecordView, 0x001f02c0);
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

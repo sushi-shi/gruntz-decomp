@@ -324,6 +324,7 @@ i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 0;
 }
 
+VTBL(CWarlord, 0x1e7404);
 DATA(0x00244610)
 extern CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
 

@@ -91,6 +91,5 @@ SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
 
-VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

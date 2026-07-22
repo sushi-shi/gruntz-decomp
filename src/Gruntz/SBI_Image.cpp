@@ -18,6 +18,9 @@
 #include <Image/CImage.h>              // the resolved frame record (TickRenderCurrent's blit)
 #include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
 
+VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
+VTBL(CStatusBarItem, 0x001eabcc);
+VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 // vtable slot 11 (0xe6c80): store the live config args into the base-region
 // fields, then (if a key is supplied) look up the config record through the host
 // map and latch its value into m_30. Returns whether a non-zero value was latched.

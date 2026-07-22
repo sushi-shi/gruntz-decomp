@@ -4,6 +4,7 @@
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
+VTBL(CAniCycle, 0x001e86a4);
 DATA(0x00246088)
 extern CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
 

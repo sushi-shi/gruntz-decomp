@@ -75,7 +75,6 @@ public:
 SIZE(0x10);
 
     class CGameMgr;
-VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
 class CGameMgr {
     public:
         CGameMgr();

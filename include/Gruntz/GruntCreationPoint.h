@@ -31,6 +31,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CGruntCreationPoint, 0x1e81d4);
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

@@ -9,6 +9,8 @@ extern "C" i32 __stdcall DirectPlayCreate(void* lpGUID, void* lplpDP, void* pUnk
 extern "C" i32 __stdcall DirectPlayEnumerate(void* lpEnumCallback, void* lpContext);
 
 extern "C" {
+VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
+VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
     DATA(0x002bf840)
     i32 g_spEnumValidated = 0; // 0x6bf840  (owner-TU definition, C linkage _g_spEnumValidated)
 }

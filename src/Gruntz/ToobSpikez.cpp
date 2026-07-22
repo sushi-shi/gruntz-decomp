@@ -47,6 +47,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
     return 1;
 }
 
+VTBL(CToobSpikez, 0x001e7774);
 DATA(0x0024e978)
 extern CActReg g_toobColl;
 

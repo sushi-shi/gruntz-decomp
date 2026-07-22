@@ -91,6 +91,5 @@ public:
 };
 SIZE(0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE(0x1c0); // retail operator-new size (TransitionState 0x8bacf)
-VTBL(CAttract, 0x001ea194);
 
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

@@ -42,6 +42,5 @@ struct StreamVoice : public DSoundCloneInst {
     StreamVoiceFeeder m_feeder;
 };
 SIZE(0xb0); // 0x60 DSoundCloneInst base + 0xc flags + 0x44 feeder
-VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630)
 
 #endif // DSNDMGR_STREAMVOICE_H

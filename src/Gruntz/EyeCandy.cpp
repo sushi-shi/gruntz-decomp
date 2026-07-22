@@ -49,3 +49,4 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 #include <rva.h>
+VTBL(CEyeCandy, 0x001e843c);

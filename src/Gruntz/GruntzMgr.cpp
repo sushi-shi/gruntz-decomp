@@ -76,6 +76,9 @@ void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
 extern "C" {
+VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
+VTBL(CSplashState, 0x001e9d74); // real class binds its own vtable (was placeholder CEngObj_1e9d74)
+VTBL(CMenuState, 0x1e9e84);
     DATA(0x00248ce8)
     i32 g_scoreTimeBase;
 }

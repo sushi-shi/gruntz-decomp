@@ -30,6 +30,7 @@ RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
 #include <Gruntz/TriggerMgr.h>
 
+VTBL(CExitTrigger, 0x001e822c);
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the

@@ -43,7 +43,6 @@ public:
     i32 m_a4;             // +0xa4
 };
 SIZE(0xa8);
-VTBL(CSpotLight, 0x1e75bc);
 
 struct CSpotActEntry {
     i32 (CUserLogic::*m_fn)();

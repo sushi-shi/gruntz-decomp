@@ -25,6 +25,8 @@
 
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
+VTBL(CVoiceTrigger, 0x001e885c);
+VTBL(CGruntVoice, 0x1eaf6c);
 DATA(0x00251500)
 extern CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 

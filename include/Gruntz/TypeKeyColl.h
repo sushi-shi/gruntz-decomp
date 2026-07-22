@@ -12,7 +12,6 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 class zDArray : public _zdvec {
 public:
     zDArray(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0

@@ -123,7 +123,6 @@ SIZE(0x14);
 
 extern const u16 g_cmdBitTable[16]; // 0x1e9608
 
-VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzSingleCommand() OVERRIDE;
@@ -149,7 +148,6 @@ public:
 };
 SIZE(0x14);
 
-VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzMultiCommand() OVERRIDE;
@@ -181,4 +179,3 @@ extern CGruntzCmdList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H
 
-VTBL(CGruntzCommand, 0x001e9674);

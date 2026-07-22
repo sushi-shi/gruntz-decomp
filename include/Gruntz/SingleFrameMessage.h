@@ -30,7 +30,6 @@ public:
     // SingleFrameMessage.cpp).
 };
 SIZE(0x54);
-VTBL(CSingleFrameMessage, 0x1e864c);
 
 typedef i32 (CUserLogic::*SingleFrameHandler)();
 struct CSingleFrameActEntry {

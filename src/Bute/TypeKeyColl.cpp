@@ -23,8 +23,11 @@
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 
+VTBL(zBitVec, 0x001f04c8);
+VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 VTBL(_zdvec, 0x001f04d4); // ~_zdvec-entry vtable (0x5f04d4)
 
+VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 DATA(0x002bf468)
 u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.

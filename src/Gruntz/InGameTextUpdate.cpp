@@ -12,12 +12,12 @@
 
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance)
 #include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
+DATA(0x0020d7f8)
+char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
-DATA(0x0020d7f8)
-char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 
 // @early-stop
 // regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-

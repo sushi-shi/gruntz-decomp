@@ -27,6 +27,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CToobSpikez, 0x001e7774);
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

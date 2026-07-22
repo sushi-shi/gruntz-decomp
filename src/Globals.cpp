@@ -52,8 +52,6 @@ DATA(0x001ef6a8)
 extern const double c_powExp = 10.0; // 0x5ef6a8  pow() exponent
 DATA(0x001ef6b0)
 extern const double c_acosNorm = 2.0; // 0x5ef6b0  acos() normalizer arg
-DATA(0x002bf428)
-void* g_retAddrBreadcrumb;
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
@@ -84,10 +82,12 @@ DATA(0x00248cec)
 extern "C" i32 g_activePlayerCount = 0;
 DATA(0x0024acb4)
 i32 g_poolCount;
-DATA(0x002bf454)
-void* g_projActName;
 DATA(0x002bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
+DATA(0x002bf428)
+void* g_retAddrBreadcrumb;
+DATA(0x002bf454)
+void* g_projActName;
 
 extern "C" {
     // g_opt_22bd64..g_opt_22bdd4 (the options-dialog staging cells, 0x22bd64..0x22bdd4)

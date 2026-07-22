@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTileTriggerSwitch : CUserLogic)
 
-VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:

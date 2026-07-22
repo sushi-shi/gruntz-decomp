@@ -31,7 +31,6 @@ public:
     i32 m_landY;          // +0x68  landing row (pre-offset screen Y)
 };
 SIZE_UNKNOWN();
-VTBL(CDroppedObject, 0x1e78d4);
 
 typedef void (CUserLogic::*DropHandler)();
 struct CDropEntry {

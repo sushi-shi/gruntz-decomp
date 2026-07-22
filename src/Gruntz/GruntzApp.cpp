@@ -24,6 +24,7 @@ typedef enum GruntzAppResId {
 // The extern "C" block keeps the fixed, renumber-proof symbol while the def line itself
 // carries no `extern` keyword (a real, initialized definition).
 extern "C" {
+VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
     DATA(0x00244ea0)
     char g_errorText[0x100] = {0};
 }

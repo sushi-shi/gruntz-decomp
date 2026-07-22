@@ -24,6 +24,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54); // new-site push 0x54: CUserLogic 0x34 + CWapX 0x20 EXACTLY
-VTBL(CDoNothingNormal, 0x1e859c);
 
 #endif // GRUNTZ_CDONOTHINGNORMALDTOR_H

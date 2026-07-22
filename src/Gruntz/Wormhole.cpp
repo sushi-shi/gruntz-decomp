@@ -62,14 +62,16 @@
 
 extern "C" void WormholeTypeMarker();
 
+VTBL(CGruntPuddle, 0x1e8124);
+VTBL(CWormhole, 0x1e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-DATA(0x00244660)
-extern LogicFnTable g_wormholeDispatch;
-
 DATA(0x002445e8)
 extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
+
+DATA(0x00244660)
+extern LogicFnTable g_wormholeDispatch;
 
 DATA(0x002446b0)
 extern CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte

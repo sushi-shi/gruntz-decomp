@@ -35,7 +35,6 @@ public:
     i32 m_tileRow;      // +0x68  tile row    (bound object screen-Y >> 5)
 };
 SIZE_UNKNOWN();
-VTBL(CStaticHazard, 0x001e7824);
 
 // ONE entry type: the registered handlers (LoadAttributes/LoadAttributes2) return
 // i32; the dispatcher ignores the result. (The ex-CHaznEntry2 void-return twin was

@@ -41,6 +41,12 @@ extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
 
+VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
+VTBL(CGameObject, 0x001f0020); // ??_7 (base, 16 slots)
+VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
+VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (16 slots)
+VTBL(CWwdGameObject, 0x001f00e8); // ??_7 (16 slots; B : A)
+VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 // ---------------------------------------------------------------------------
 // 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
 // @early-stop

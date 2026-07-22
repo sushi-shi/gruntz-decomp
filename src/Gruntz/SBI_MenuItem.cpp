@@ -19,6 +19,7 @@
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
 
+VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::InitItem - configure the menu entry from its config record,

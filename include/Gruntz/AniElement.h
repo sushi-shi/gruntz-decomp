@@ -44,6 +44,5 @@ public:
     i32 m_total;               // +0x24
 }; // size = 0x28
 SIZE(0x28);
-VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 
 #endif // GRUNTZ_CANIELEMENT_H

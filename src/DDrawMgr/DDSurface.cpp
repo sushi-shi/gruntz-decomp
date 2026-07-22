@@ -14,6 +14,13 @@
 
 void* operator new(u32); // engine allocator (reloc-masked rel32)
 
+VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
+DATA(0x00253c88)
+CPtrArray g_imageCache;
+DATA(0x00253c90)
+i32 g_imageCacheIndex = 0; // 0x653c90
+DATA(0x00253c9e)
+u8 g_clut[0x30000]; // 0x653c9e
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
 DATA(0x00283ea0)
@@ -22,19 +29,13 @@ DATA(0x00283ea4)
 i32 g_gUp; // 0x683ea4  (== ex g_gUp)
 DATA(0x00283ea8)
 i32 g_bUp; // 0x683ea8
+
 DATA(0x00283eac)
 i32 g_rDown; // 0x683eac  (== ex g_rDown)
 DATA(0x00283eb0)
 i32 g_gDown; // 0x683eb0  (== ex g_gDown)
 DATA(0x00283eb4)
 i32 g_bDown; // 0x683eb4  (== ex g_bDown)
-
-DATA(0x00253c88)
-CPtrArray g_imageCache;
-DATA(0x00253c90)
-i32 g_imageCacheIndex = 0; // 0x653c90
-DATA(0x00253c9e)
-u8 g_clut[0x30000]; // 0x653c9e
 
 RVA(0x0013e070, 0xa)
 void ClearImageCache() {

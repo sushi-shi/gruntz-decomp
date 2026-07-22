@@ -30,7 +30,6 @@ struct CParseSlotHashNode : public CHashElement {
     virtual u32 Hash() OVERRIDE;
 };
 SIZE(0x18);
-VTBL(CParseSlotHashNode, 0x001ef740);
 
 struct CParseSource {
     // Ghidra placeholder-named these two "CParseSource::BeginParse/EndParse"

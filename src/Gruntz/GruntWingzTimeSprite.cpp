@@ -43,6 +43,7 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
+VTBL(CGruntWingzTimeSprite, 0x001e77cc); // vtable_names -> code (RTTI game class)
 RVA(0x0007fd90, 0xd)
 i32 CGruntWingzTimeSprite::Vslot16(CGrunt* grunt) {
     return grunt->m_wingzTime;

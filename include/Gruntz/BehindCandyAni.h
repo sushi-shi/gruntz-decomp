@@ -31,7 +31,6 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CBehindCandyAni, 0x001e838c);
 
 typedef i32 (CUserLogic::*BehindCandyHandler)();
 struct CBehindCandyActEntry {

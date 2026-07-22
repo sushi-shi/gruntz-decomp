@@ -23,6 +23,12 @@ typedef enum DSoundDx5Magic {
 
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 
+VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
+VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
+VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
+VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
+VTBL(PureSoundElem, 0x001ef6c8); // 2 __purecall slots (Tick/Stop); the reap-teardown
+VTBL(DSoundVoice, 0x001ef6d0); // cl-emitted ??_7DSoundVoice@@6B@ (Tick/Stop/+137630)
 DATA(0x00253ab8)
 i32 g_volumeTable[100];
 DATA(0x00253c48)

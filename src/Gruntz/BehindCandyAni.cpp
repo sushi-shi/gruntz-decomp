@@ -8,6 +8,7 @@
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
+VTBL(CBehindCandyAni, 0x001e838c);
 DATA(0x00245f98)
 extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 

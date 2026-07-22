@@ -21,6 +21,7 @@
 
 struct CHaznEntry; // an entry: first dword is the registered handler
 
+VTBL(CStaticHazard, 0x001e7824);
 DATA(0x0024e3d0)
 extern CCoordColl g_haznColl;
 

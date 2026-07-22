@@ -10,6 +10,7 @@
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
+VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
 DATA(0x00244d58)
 extern CIndicatorActReg g_toyActReg; // 0x644d58
 

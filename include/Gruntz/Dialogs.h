@@ -28,7 +28,6 @@ extern WapGetWindow g_pGetWindow;           // 0x2c44d8
 
 class CLatencyList;
 
-VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(class CGruntzMgr* a0, CWnd* pParent);
@@ -151,7 +150,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
@@ -171,7 +169,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
@@ -195,7 +192,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(class CGruntzMgr* a0, CWnd* pParent);
@@ -357,7 +353,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);

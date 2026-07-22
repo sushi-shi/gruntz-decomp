@@ -474,3 +474,4 @@ void CPathHazard::ForwardTick() {
 }
 
 #include <rva.h>
+VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)

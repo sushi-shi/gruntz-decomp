@@ -11,14 +11,14 @@
 #include <Bute/ButeMgr.h>
 #include <string.h> // strlen (the m4 draw helpers)
 
+DATA(0x0020c7a8)
+i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 DATA(0x0022b434)
 i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
 DATA(0x0022b438)
 i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
 DATA(0x0022b43c)
 i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
-DATA(0x0020c7a8)
-i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
 
 RVA(0x000218e0, 0x1ff)

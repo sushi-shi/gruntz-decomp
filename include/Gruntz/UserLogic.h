@@ -41,7 +41,6 @@ public:
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
 SIZE_UNKNOWN(); // (was covered by the BoundaryMisc placeholder before its rename)
-VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
 
 
 class CUserLogic : public CUserBase {
@@ -164,7 +163,6 @@ public:
     void* m_prevAnimSetNode; // +0x30
 };
 SIZE(0x34); // base size 0x34 (see the NOTE). The tile-logic leaves'
-VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 
 #ifndef USERLOGIC_OOL_CTOR
 inline CUserLogic::CUserLogic(CGameObject* obj) {
@@ -256,6 +254,5 @@ public:
     // pin in src/Gruntz/UserLogic.cpp.
 };
 SIZE(0x54);
-VTBL(CTileTrigger, 0x1e7f14);
 
 #endif // GRUNTZ_USERLOGIC_H

@@ -10,6 +10,7 @@
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells)
 
+VTBL(CGruntHealthSprite, 0x001e7ba4);
 DATA(0x00244d80)
 extern CIndicatorActReg g_healthActReg; // 0x644d80
 

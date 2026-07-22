@@ -6,7 +6,6 @@
 #include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
 #include <Gruntz/Fader.h> // the real polymorphic CFader element base (virtual ~CFader)
 
-VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 struct CFaderArray : public CObject {
     virtual ~CFaderArray() OVERRIDE;               // slot 1 (retail dtor 0x17e430)
     virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x17e2a0, declared-only)

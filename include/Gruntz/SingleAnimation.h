@@ -32,7 +32,6 @@ public:
     // same way CBrickz::m_own hid. Same fix, same evidence.
 };
 SIZE(0x54);
-VTBL(CSingleAnimation, 0x1e745c);
 
 typedef i32 (CUserLogic::*SingleAnimHandler)();
 struct CSingleAnimActEntry {

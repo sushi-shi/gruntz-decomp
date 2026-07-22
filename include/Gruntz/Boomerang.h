@@ -25,7 +25,6 @@ public:
     i32 m_launched;              // +0x258  launched latch
 };
 SIZE(0x260);
-VTBL(CBoomerang, 0x1e792c);
 
 extern const double g_boomHalf;      // 0x5eaad8  midpoint scale
 extern const double g_boomTimeScale; // 0x5eaae0

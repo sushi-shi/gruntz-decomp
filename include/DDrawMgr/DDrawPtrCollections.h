@@ -28,7 +28,6 @@ public:
     ); // slot 10 0x148ac0
 };
 SIZE(0xc0);
-VTBL(CPoolItemA88, 0x001efa88);
 
 class CPoolItemAB8 : public CDDSurface {
 public:
@@ -39,7 +38,6 @@ public:
     virtual i32 InstallColorFormat();                        // slot 10 0x148b80
 };
 SIZE(0xc0);
-VTBL(CPoolItemAB8, 0x001efab8);
 
 class CPoolItemAE8 : public CDDSurface {
 public:
@@ -49,7 +47,6 @@ public:
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
 SIZE(0xc0);
-VTBL(CPoolItemAE8, 0x001efae8);
 
 struct CDdModePair; // <DDrawMgr/DirectDrawMgr.h> (the mode-pair the finders fill)
 

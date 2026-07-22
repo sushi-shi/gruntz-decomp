@@ -53,7 +53,6 @@ typedef enum DDSurfacePoolKind {
     POOLKIND_BLIT47 = 4,    // CPoolItemAE8 "Blit47" pocket   (0x143ce0)
 } DDSurfacePoolKind;
 
-VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 class CDDSurface {
 public:
     // The pool factories (CDDrawPtrCollections::Create*) construct this via `new`; the

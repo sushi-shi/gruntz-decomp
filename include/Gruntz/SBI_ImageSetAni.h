@@ -69,7 +69,6 @@ public:
     i32 m_frameEnd; // +0x50
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {

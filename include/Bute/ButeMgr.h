@@ -19,7 +19,6 @@ struct CBSecStream : zPTree {
     virtual ~CBSecStream() OVERRIDE {} // inline: ~CButeMgr inlines the two-layer expansion
 };
 SIZE(0x2c); // adds nothing to zPTree (m_tree +0x18 .. m_pNode +0x44)
-VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
 // base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
 

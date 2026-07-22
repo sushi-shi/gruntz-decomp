@@ -6,6 +6,7 @@
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
+VTBL(CSingleAnimation, 0x1e745c);
 DATA(0x00245f70)
 extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 

@@ -12,6 +12,7 @@
 
 #include <Gruntz/FreeNodePool.h>
 
+VTBL(CMapMgr, 0x001ea3b4); // vtable_names -> code (RTTI game class)
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_0 = 0;

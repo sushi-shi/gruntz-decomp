@@ -32,7 +32,6 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(0x54);
-VTBL(CFortressFlag, 0x001e725c);
 
 typedef i32 (CUserLogic::*FortressFlagHandler)();
 struct CFortressFlagActEntry {

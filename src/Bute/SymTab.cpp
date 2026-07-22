@@ -1208,6 +1208,11 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 
 void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey); // 0x13b970
 void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
+VTBL(CParseSlotHashNode, 0x001ef740);
+VTBL(CSymRecNode, 0x001ef744);
+VTBL(CSymTabNode, 0x001ef748);
+VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
+VTBL(CParserObjList, 0x001ef75c);
 DATA(0x0020cff0)
 const char g_sepSlash[] = "\\"; // decl in <Bute/SymTab.h>
 extern "C" const char g_wildcard[];

@@ -44,7 +44,6 @@ public:
     i32 m_60;     // +0x60  screen-Y bias (HealthUpdate adds it to the grunt's screen y)
 };
 SIZE_UNKNOWN();
-VTBL(CGruntHealthSprite, 0x001e7ba4);
 
 typedef i32 (CUserLogic::*HealthActHandler)();
 struct CHealthActEntry {

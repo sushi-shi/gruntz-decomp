@@ -72,6 +72,5 @@ public:
     CImage* m_standaloneFrame;    // +0x44  standalone frame handle (blitted directly)
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 
 #endif // SBI_GRUNTMACHINE_H

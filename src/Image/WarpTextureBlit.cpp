@@ -26,35 +26,35 @@ i32 WarpIsPow2(i32 x) {
     return c == 1;
 }
 
-DATA(0x002a2cf0)
-extern "C" ClipVtx g_rasterEdgeL[]; // 0x6a2cf0 (per-scanline edge rows; fixed x/u/v at fx/fu/fv)
-DATA(0x002856f8)
-extern "C" ClipVtx g_rasterEdgeR[]; // 0x6856f8
-
-DATA(0x002a2ce8)
-i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
-DATA(0x002becf4)
-i32 g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
+DATA(0x001efb18)
+extern "C" const float g_rasterScale = 16384.0f;
+DATA(0x001efb1c)
+extern "C" const float g_rasterScaleNeg = -16384.0f;
 
 DATA(0x002856f0)
 i32 g_warpU = 0; // 0x6856f0  (u accumulator)
 DATA(0x002856f4)
 i32 g_warpV = 0; // 0x6856f4  (v accumulator)
+
+DATA(0x002856f8)
+extern "C" ClipVtx g_rasterEdgeR[]; // 0x6856f8
 DATA(0x002a16f8)
 i32 g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
 DATA(0x002a16fc)
 i32 g_warpUStep = 0; // 0x6a16fc  (u per-pixel step)
 DATA(0x002a1700)
 i32 g_warpVStep = 0; // 0x6a1700  (v per-pixel step)
+DATA(0x002a2ce8)
+i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
+DATA(0x002a2cf0)
+extern "C" ClipVtx g_rasterEdgeL[]; // 0x6a2cf0 (per-scanline edge rows; fixed x/u/v at fx/fu/fv)
 DATA(0x002becf0)
 i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
+
+DATA(0x002becf4)
+i32 g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 DATA(0x002becfc)
 i16 g_warpColorkey = 0; // 0x6becfc
-
-DATA(0x001efb18)
-extern "C" const float g_rasterScale = 16384.0f;
-DATA(0x001efb1c)
-extern "C" const float g_rasterScaleNeg = -16384.0f;
 
 static i32 warpFtol(double v) {
     return static_cast<i32>(v);

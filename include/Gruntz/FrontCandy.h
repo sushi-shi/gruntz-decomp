@@ -21,6 +21,5 @@ public:
                                // logic-worker pump @0xaa1e0, pushes 0x54)
 };
 SIZE_UNKNOWN();
-VTBL(CFrontCandy, 0x1e84ec);
 
 #endif // GRUNTZ_CFRONTCANDY_H

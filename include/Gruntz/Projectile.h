@@ -78,7 +78,6 @@ public:
     // pushes 0x228). The boomerang return-trajectory fields (+0x228..+0x258) belong to
     // the derived CBoomerang (<Gruntz/Boomerang.h>), NOT here - see StepMotion.
 };
-VTBL(CProjectile, 0x1e798c);
 
 typedef i32 (CUserLogic::*ProjActHandler)();
 struct CProjActEntry {

@@ -19,6 +19,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type
 #include <Gruntz/GruntzMgr.h>
 
+VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // ---------------------------------------------------------------------------
 // vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo::Setup, the slot-2 override
 // (dossier #16 identity: vtbl 0x1eadfc slot [2] jmps here). The ex-AniPlayer-TU

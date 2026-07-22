@@ -21,6 +21,5 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE_UNKNOWN();
-VTBL(CEyeCandy, 0x001e843c);
 
 #endif // GRUNTZ_CEYECANDY_H

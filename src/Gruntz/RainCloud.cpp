@@ -3,6 +3,7 @@
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
 #include <rva.h>
 
+VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
 // ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
 // destructible members of its own, so it folds the bare CUserLogic teardown (store
 // the CUserLogic vptr, inline-destruct the +0x18 link's ~EngStr, store the CUserBase

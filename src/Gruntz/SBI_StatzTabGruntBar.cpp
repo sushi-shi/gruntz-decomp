@@ -7,6 +7,7 @@
 #include <Gruntz/Sprite.h> // CSprite (the glyph maps; ex CStatzGlyphMap view)
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 
+VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 extern "C" CStatzGameReg* g_gameReg;
 
 

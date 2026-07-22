@@ -27,7 +27,6 @@ public:
     i32 m_nodeCount; // +0x0c (abs +0x14)  zero-init; live-node count
 };
 SIZE(0x10); // { vptr, desc, kind, count }
-VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 
 class zPTree : public zErrHandling, public CButeNodeEntry {
 public:
@@ -79,7 +78,6 @@ public:
     CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
 SIZE(0x2c); // new CButeNode(0x2c); zPTree provides the full layout
-VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00
 // (The two through-base ??_7CButeNode @data-symbol pins live in src/Bute/ButeNode.cpp -
 //  labels.py reads @data-symbol out of the TU's .cpp only, never a header.)
 

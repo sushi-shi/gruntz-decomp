@@ -25,7 +25,6 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_A = 0x1c, // CWwdGameObjectA::GetClassId @0x15b760 (the CreateSprite kind)
 };
 
-VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
 class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's
