@@ -2,6 +2,7 @@
 #define GRUNTZ_CSTATUSBARMGR_H
 
 class CSBI_ImageSet; // notify-field element (slot-12 Notify receiver)
+class CSBI_WellGoo;  // <Gruntz/SBI_WellGoo.h> - m_gaugeSink's real type (the WELLGOO gauge widget)
 class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine; // <Gruntz/SBI_GruntMachine.h> - m_machineDisplay's real type
@@ -81,51 +82,23 @@ struct CSbiNotifyNode {
 };
 SIZE_UNKNOWN();
 
-// VTBL_ABSENT: never-constructed dispatch view (the CStatusBarItem-family slot
-// scheme - Destroy/Serialize/Setup/... - with RECOVERED role names). @identity-TODO:
-// fold onto CStatusBarItem after per-slot signature reconciliation (its Serialize
-// is the PROVEN 4-arg SerializeFields; this view still spells 0-arg shapes).
-VTBL_ABSENT(CSbiNotifyPayload);
-class CSbiNotifyPayload {
-public:
-    virtual void Destroy();     // slot 0  scalar-deleting dtor
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll(i32 arg); // +0x10 (slot 4)
-    virtual void Tick();        // +0x14 (slot 5)
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual void HitHandlerC(); // slot 8
-    virtual void HitHandlerD(); // slot 9
-    virtual void Refresh();     // +0x28 (slot 10)
-};
-SIZE_UNKNOWN();
+// (CSbiNotifyPayload DISSOLVED 2026-07-22: it was a never-constructed dispatch view
+// of the CStatusBarItem-family slot scheme - its 11 slots aligned one-to-one with
+// ??_7CStatusBarItem@@6B@. The base-view iterators in SBI_RectOnly.cpp (m_tabLists
+// walks) now dispatch through the real CStatusBarItem: the only slots they call -
+// Poll->Refresh (slot 4), Tick->Render (slot 5), Refresh->SetSubtype (slot 10) - are
+// signature-identical, so the fold is byte-neutral. See <Gruntz/StatusBarItem.h>.)
 
 // (CSbiSpriteCfg DISSOLVED 2026-07-21: it was a partial .cpp-reached view of LeafCue -
 // its m_playFactory @+0x10 IS LeafCue::m_10, the pooled cue play-factory. See
 // <Gruntz/LeafCue.h>.)
 
-// VTBL_ABSENT: never-constructed dispatch view (same CStatusBarItem-family scheme
-// + @identity-TODO as CSbiNotifyPayload above).
-VTBL_ABSENT(CSbiGaugeNotify);
-class CSbiGaugeNotify {
-public:
-    virtual void Destroy();     // slot 0  scalar-deleting dtor
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll();        // slot 4
-    virtual void Tick();        // slot 5
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual void HitHandlerC(); // slot 8
-    virtual void HitHandlerD(); // slot 9
-    virtual void Refresh();     // +0x28 (slot 10) refresh
-    char m_pad4[0x44 - 0x4];
-    i32 m_gaugeReading; // +0x44  latched gauge reading
-};
-SIZE_UNKNOWN();
+// (CSbiGaugeNotify DISSOLVED 2026-07-22: it was a never-constructed dispatch view of the
+// two gauge widgets - m_gaugeNotify is the WELL (a plain CSBI_Image) and m_gaugeSink is the
+// WELLGOO (a CSBI_WellGoo, `new`'d in StatusBarMgr.cpp). Its Refresh (slot 10) is
+// CStatusBarItem::SetSubtype, and its m_gaugeReading @+0x44 IS CSBI_WellGoo::m_fillScale (the
+// 0..100 gauge drives the goo fill). Members now carry the real types. See
+// <Gruntz/SBI_WellGoo.h>.)
 
 extern CButeMgr g_buteMgr;
 
@@ -212,7 +185,7 @@ public:
     void BuildGameTabPauseButton();
 
     // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
-    struct CSbiHiWidget* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget)
+    CStatusBarItem* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget - a tab-list item)
     void HiRefreshResource();                     // 0x3d91 (call 0x3d91)
     void HiSelectStat(i32 idx);                   // 0x264e (call 0x264e, 1 arg)
     void HiTabA(i32 idx);                         // 0x4179 (1 arg)
@@ -375,8 +348,8 @@ public:
     CSBI_MenuItem* m_tabSprite14; // +0x200
     // +0x204: the five slot notifiers (ArmSlot indexes `[ecx+eax*4+0x204]`, idx 0..4).
     CSBI_ImageSet* m_slotNotify[5]; // +0x204 .. +0x218
-    CSbiGaugeNotify* m_gaugeNotify; // +0x218  gauge notifier (vfunc 0x28)
-    CSbiGaugeNotify* m_gaugeSink;   // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
+    CStatusBarItem* m_gaugeNotify; // +0x218  gauge notifier (the WELL CSBI_Image; slot 10)
+    CSBI_WellGoo* m_gaugeSink;     // +0x21c  gauge value sink (m_fillScale = gauge; slot 10)
     // +0x220: the five 0x18-byte slot records. ArmSlot: `lea edx,[eax+eax*2];
     // lea edx,[ecx+edx*8]; mov [edx+0x220],0; mov [edx+0x224],1` => base 0x220, stride
     // 0x18, five elements ending exactly at m_gauge (0x220 + 5*0x18 == 0x298).
@@ -533,23 +506,11 @@ SIZE_UNKNOWN();
 class CDDrawSurfacePair; // the real main-bar draw receiver (ex the CSbiMainL2 facet)
 void __stdcall MainBarDrawFrame(CDDrawSurfacePair* obj, i32 x, i32 y, i32 flag); // 0x153790 (NOTE:
 
-// VTBL_ABSENT: never-constructed dispatch view (CStatusBarItem-family scheme;
-// same @identity-TODO fold as CSbiNotifyPayload).
-VTBL_ABSENT(CSbiHiWidget);
-class CSbiHiWidget {
-public:
-    virtual void Destroy();                   // slot 0  scalar-deleting dtor
-    virtual void Serialize();                 // slot 1
-    virtual void Setup();                     // slot 2
-    virtual void ClearFrame();                // slot 3
-    virtual void Poll();                      // slot 4
-    virtual void Tick();                      // slot 5
-    virtual void Update(i32 a, i32 b, i32 c); // +0x18 (slot 6)
-    char m_pad4[0xc - 0x4];
-    i32 m_cmdId;      // +0xc  command id
-    i32 m_widgetKind; // +0x10  widget kind (outer switch key, 0..6)
-};
-SIZE_UNKNOWN();
+// (CSbiHiWidget DISSOLVED 2026-07-22: it was a never-constructed dispatch view of the
+// CStatusBarItem-family hit widget HiResolve returns. UpdateStatusBarTabHighlight now
+// uses the real CStatusBarItem: Update->SbiSlot6 (slot 6), m_cmdId->m_cmd (+0xc),
+// m_widgetKind->m_tab (+0x10, the switch key 0..6 IS the owning tab index) - all
+// slot/offset-identical, byte-neutral. See <Gruntz/StatusBarItem.h>.)
 
 inline CStatusBarMgr::CStatusBarMgr() {
     // Scalar body, in retail's source order. NOTE what is DELIBERATELY absent: the

@@ -43,6 +43,7 @@ DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/SBI_WellGoo.h> // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
 
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 
@@ -1051,9 +1052,9 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->Refresh();
-            m_gaugeSink->m_gaugeReading = m_gauge;
-            m_gaugeSink->Refresh();
+            m_gaugeNotify->SetSubtype(); // slot 10
+            m_gaugeSink->m_fillScale = m_gauge; // +0x44
+            m_gaugeSink->SetSubtype(); // slot 10
         }
     }
 }
@@ -3117,17 +3118,17 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         char* B = reinterpret_cast<char*>(this);
         POSITION n = m_tabLists[0].GetHeadPosition();
         while (n) {
-            CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[0].GetNext(n));
+            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
             if (cur) {
-                cur->Tick();
+                cur->Render();
             }
         }
         CPtrList& tab = m_tabLists[m_activeTab];
         POSITION m = tab.GetHeadPosition();
         while (m) {
-            CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(tab.GetNext(m));
+            CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(m));
             if (cur) {
-                cur->Tick();
+                cur->Render();
             }
         }
         if (m_retabNotify) {
@@ -3137,10 +3138,10 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
     POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyPayload* p = static_cast<CSbiNotifyPayload*>(m_tabLists[6].GetNext(k));
+        CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (p) {
-            p->Refresh();
-            p->Tick();
+            p->SetSubtype(); // slot 10 (the view called it "Refresh")
+            p->Render();      // slot 5
         }
     }
     return 1;
@@ -3214,13 +3215,13 @@ static __inline void HiPost(i32 cmdId) {
 // also names the real g_gameReg at 0x245460. The residual is purely the code bytes.)
 RVA(0x000fe910, 0xb8e)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
-    CSbiHiWidget* w = HiResolve(a2, a3);
+    CStatusBarItem* w = HiResolve(a2, a3);
     if (w == 0) {
         return 1;
     }
-    w->Update(a1, a2, a3);
-    i32 cmd = w->m_cmdId;
-    switch (w->m_widgetKind) {
+    w->SbiSlot6(a1, a2, a3); // slot 6 (the view called it Update)
+    i32 cmd = w->m_cmd;
+    switch (w->m_tab) { // widget kind == owning tab index (0..6)
         case 0:
             if (m_hitTestDisabled != 0) {
                 return 1;
@@ -3489,24 +3490,24 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     char* B = reinterpret_cast<char*>(this);
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[0].GetNext(n));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (cur) {
-            cur->Poll(arg);
+            cur->Refresh(arg);
         }
     }
     CPtrList& tab = m_tabLists[m_activeTab];
     POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(tab.GetNext(m));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(m));
         if (cur) {
-            cur->Poll(arg);
+            cur->Refresh(arg);
         }
     }
     POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[6].GetNext(k));
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (cur) {
-            cur->Poll(arg);
+            cur->Refresh(arg);
         }
     }
     if (m_retabNotify) {

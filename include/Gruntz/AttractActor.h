@@ -8,10 +8,6 @@
 // attract-mode actors are concrete classes with their own vtables). @identity-TODO:
 // recover the real actor base via the attract spawners' ctor stamps.
 VTBL_ABSENT(AttractActor);
-// VTBL_ABSENT: never-constructed dispatch view of the g_actorList entries (the
-// attract-mode actors are concrete classes with their own vtables). @identity-TODO:
-// recover the real actor base via the attract spawners' ctor stamps.
-VTBL_ABSENT(AttractActor);
 class AttractActor {
 public:
     virtual void Vslot00();

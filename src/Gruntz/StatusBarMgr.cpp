@@ -164,7 +164,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            m_gaugeNotify = reinterpret_cast<CSbiGaugeNotify*>(it);
+            m_gaugeNotify = it; // it is CSBI_Image* (the WELL) -> CStatusBarItem* base
             it = new CSBI_Image;
             r.left = bx + 0x1e;
             r.top = by + 0xc4;
@@ -228,7 +228,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            m_gaugeSink = reinterpret_cast<CSbiGaugeNotify*>(it);
+            m_gaugeSink = static_cast<CSBI_WellGoo*>(it); // it points at the just-new'd CSBI_WellGoo
             return 1;
 
         case 3: // ---- Resource tab ----
