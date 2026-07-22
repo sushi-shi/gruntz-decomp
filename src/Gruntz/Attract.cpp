@@ -241,7 +241,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
 }
 
 RVA(0x000fa410, 0xf5)
-i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CSoundFxEmitter::FadeSceneClear1(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
@@ -284,7 +284,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
 // deferred winapi_17e620 branch picks ecx/edx vs retail's eax/ecx for the two arg
 // temporaries. Both are /O2 instruction-scheduling choices, not source-steerable.
 RVA(0x000fa550, 0x10c)
-i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CSoundFxEmitter::FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
@@ -354,7 +354,7 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 // other way round; identical structure, a few push/mov reg bytes differ. Not
 // source-steerable (computation order is pinned by the chain walk).
 RVA(0x000fa790, 0x104)
-i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
+i32 CSoundFxEmitter::FadeScene2(i32 a1, i32 a2, i32 a3) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
@@ -449,7 +449,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 RVA(0x000faa60, 0xed)
-i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
+i32 CSoundFxEmitter::FadeSceneClear2(i32 a1, i32 a2, i32 a3) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
