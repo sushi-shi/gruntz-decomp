@@ -362,4 +362,6 @@ extern i32 g_hostServicesMode; // 0x00248cf0
 
 extern HWND g_netPlayerListHwnd; // 0x00248d00
 
+void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

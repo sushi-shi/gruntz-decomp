@@ -1,4 +1,6 @@
 #include <Mfc.h>
+#include <Utils/WinAPICdRom.h> // IsGruntzCDInAnyDrive (ex .cpp extern)
+#include <Gruntz/HeapDiag.h> // FileExists (ex .cpp extern)
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -19,8 +21,6 @@ extern "C" {
 
 }
 
-extern "C" i32 IsGruntzCDInAnyDrive();    // 0x402540
-extern "C" i32 FileExists(const char* p); // 0x404282
 
 // @early-stop
 // ~98%: body byte-exact incl. the /GX frame, both CString temps + the CWaitCursor

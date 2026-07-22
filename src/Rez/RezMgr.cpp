@@ -97,7 +97,6 @@ i32 CGruntzMgr::PerFrameTick() {
 // bound to the thunk rva (the pushed DIR32 is reloc-masked) - the same idiom as
 // GruntzMgr.cpp's other dialog-proc thunk externs.
 DATA_SYMBOL(0x00002d0b, 0x0, _WarpDialogProcThunk)
-extern "C" void WarpDialogProcThunk(); // thunk 0x2d0b -> body 0x8e4e0
 
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {

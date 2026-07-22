@@ -100,11 +100,6 @@ DATA_SYMBOL(0x000021e9, 0x0, _GruntzDebugGruntTypeProc)
 DATA_SYMBOL(0x00001041, 0x0, _GruntzSaveGameDlgProc)
 DATA_SYMBOL(0x000011d1, 0x0, _GruntzSaveMsgDlgProc)
 DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
-extern "C" void GruntzLoadGameDlgProc();      // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
-extern "C" void GruntzDebugGruntTypeProc();   // thunk 0x21e9
-extern "C" void GruntzSaveGameDlgProc();      // thunk 0x1041 (GAME_SAVE)
-extern "C" void GruntzSaveMsgDlgProc();       // thunk 0x11d1 (GAME_SAVEMSG)
-extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
@@ -1914,7 +1909,6 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 // The DEBUG_SETSKILL dialog proc, address-taken through its ILT thunk (0x1947);
 // bound to the thunk rva (the reference is a reloc-masked DIR32 push).
 DATA_SYMBOL(0x00001947, 0x0, ?Lab401947@@YAXXZ)
-extern void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {

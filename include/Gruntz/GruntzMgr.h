@@ -453,4 +453,16 @@ i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 
 extern "C" i32 g_scoreTimeBase; // 0x00248ce8
 
+extern "C" void GruntzLoadGameDlgProc(); // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
+
+extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
+
+extern "C" void GruntzSaveGameDlgProc(); // thunk 0x1041 (GAME_SAVE)
+
+extern "C" void GruntzSaveMsgDlgProc(); // thunk 0x11d1 (GAME_SAVEMSG)
+
+extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
+
+void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

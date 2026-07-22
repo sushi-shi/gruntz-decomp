@@ -38,6 +38,7 @@
 #include <stdlib.h>                   // srand (reloc-masked)
 #include <Globals.h>
 
+#include <Utils/DebugTiming.h> // ActiveWait (ex .cpp extern)
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
@@ -206,14 +207,12 @@ void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 
 extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 
-extern void ActiveWait(i32 phase);
 
 // The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
 // `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
 // (that body is Gap_0b8020 @0xb8020); bind the thunk rva to the referenced symbol so
 // the delinked datum name pairs (R66/GruntzApp _ErrorDialogProcThunk idiom).
 DATA_SYMBOL(0x0000222f, 0x0, ?MultiJoinHandler@@YAXXZ)
-extern void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
 // The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
 // OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to

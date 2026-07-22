@@ -10,6 +10,7 @@
 #include <string.h>  // inline strcpy / memcpy / memset
 #include <Globals.h> // g_clut (bank planes = interior slices; RGB565 shift/size ints are local: g_rUp/g_gUp/g_rDown/g_gDown/g_bDown)
 
+#include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
 void* operator new(u32); // engine allocator (reloc-masked rel32)
@@ -1738,17 +1739,6 @@ i32 CDDSurface::DecodeRun24(void* src) {
 
 #pragma optimize("", on)
 
-extern void ImageRotateBlit(
-    i32 a1,
-    i32 a2,
-    i32* pivot,
-    void* dst,
-    void* in,
-    float rot,   // arg6 (deg->rad rotation)
-    float scale, // arg7
-    i32 mode,    // arg8
-    i32 colorkey // arg9
-);
 
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(

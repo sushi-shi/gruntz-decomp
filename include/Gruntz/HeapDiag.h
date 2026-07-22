@@ -4,4 +4,8 @@
 
 #include <Ints.h>
 
+i32 FileExists(char* path);
+
+i32 FileExists(const char* p); // 0x404282
+
 #endif // GRUNTZ_GRUNTZ_HEAPDIAG_H

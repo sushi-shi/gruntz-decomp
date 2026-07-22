@@ -34,6 +34,7 @@
 // (docs/patterns/pin-local-for-callee-saved-reg.md) did NOT flip it -> the pure
 // allocator coin-flip that doc flags as the zero-register-pinning.md wall.
 // ===========================================================================
+#include <Gruntz/GlyphStringDraw.h> // ShowHudMessage (ex .cpp extern)
 RVA(0x00019cd0, 0x1df)
 void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
@@ -305,17 +306,6 @@ i32 g_levelMsgIconPos[16] = {
     0x1a8
 }; // 0x60b8b8
 
-extern void ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
-    RECT* box,
-    CString* text,
-    i32 a,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x1154b0
 
 // @early-stop
 // /GX branchy megafunction wall (~complete reconstruction): the whole body - the reveal

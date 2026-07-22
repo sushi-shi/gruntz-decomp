@@ -4,4 +4,6 @@
 
 #include <Ints.h>
 
+i32 IsGruntzCDInAnyDrive(); // 0x402540
+
 #endif // GRUNTZ_UTILS_WINAPICDROM_H
