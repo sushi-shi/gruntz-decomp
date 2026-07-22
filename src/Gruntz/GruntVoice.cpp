@@ -93,7 +93,7 @@ i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 
 RVA(0x00119620, 0xf1)
-i32 GruntVoiceStep(CGameObject* obj) {
+extern "C" i32 CreateGruntVoice(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
@@ -131,7 +131,7 @@ i32 GruntVoiceStep(CGameObject* obj) {
 }
 
 RVA(0x00119760, 0xf1)
-i32 VoiceTriggerStep(CGameObject* obj) {
+extern "C" i32 CreateVoiceTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {

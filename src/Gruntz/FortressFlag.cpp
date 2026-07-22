@@ -304,7 +304,7 @@ i32 LogicDispatchC(CGameObject* owner) {
 }
 
 RVA(0x00046990, 0xf1)
-i32 ExplosionWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {

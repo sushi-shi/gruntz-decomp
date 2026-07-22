@@ -18,13 +18,13 @@
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + LOGIC_WORKER_PUMP
 
 RVA(0x000a9a40, 0xf1)
-i32 HandlerA9A40(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
+extern "C" i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
 
 RVA(0x000a9b80, 0xf1)
 i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 
 RVA(0x000a9cc0, 0xf1)
-i32 HandlerA9CC0(CGameObject* owner) {
+extern "C" i32 CreateDoNothing(CGameObject* owner) {
     LOGIC_WORKER_PUMP(CDoNothing)
 }
 
@@ -47,37 +47,37 @@ i32 HandlerA9CC0(CGameObject* owner) {
 // cast-through-pointer vptr write - all identical codegen). Parked for the final
 // sweep.
 RVA(0x000a9e00, 0x10c)
-i32 HandlerA9E00(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothingNormal)}
+extern "C" i32 CreateDoNothingNormal(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothingNormal)}
 
 RVA(0x000a9f60, 0xf1)
-i32 HandlerA9F60(CGameObject* owner){LOGIC_WORKER_PUMP(CSimpleAnimation)}
+extern "C" i32 CreateSimpleAnimation(CGameObject* owner){LOGIC_WORKER_PUMP(CSimpleAnimation)}
 
 RVA(0x000aa0a0, 0xf1)
-i32 HandlerAA0A0(CGameObject* owner){LOGIC_WORKER_PUMP(CMenuSparkle)}
+extern "C" i32 CreateMenuSparkle(CGameObject* owner){LOGIC_WORKER_PUMP(CMenuSparkle)}
 
 RVA(0x000aa1e0, 0xf1)
-i32 HandlerAA1E0(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandy)}
+extern "C" i32 CreateFrontCandy(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandy)}
 
 RVA(0x000aa320, 0xf1)
-i32 HandlerAA320(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandy)}
+extern "C" i32 CreateBehindCandy(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandy)}
 
 RVA(0x000aa460, 0xf1)
-i32 HandlerAA460(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandyAni)}
+extern "C" i32 CreateFrontCandyAni(CGameObject* owner){LOGIC_WORKER_PUMP(CFrontCandyAni)}
 
 RVA(0x000aa5a0, 0xf1)
-i32 HandlerAA5A0(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandyAni)}
+extern "C" i32 CreateBehindCandyAni(CGameObject* owner){LOGIC_WORKER_PUMP(CBehindCandyAni)}
 
 RVA(0x000aa6e0, 0xf1)
-i32 EyeCandyWorkerPump(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
+extern "C" i32 CreateEyeCandy(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandy)}
 
 RVA(0x000aa820, 0xf1)
-i32 HandlerAA820(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandyAni)}
+extern "C" i32 CreateEyeCandyAni(CGameObject* owner){LOGIC_WORKER_PUMP(CEyeCandyAni)}
 
 RVA(0x000aa960, 0xf1)
-i32 HandlerAA960(CGameObject* owner){LOGIC_WORKER_PUMP(CWayPoint)}
+extern "C" i32 CreateWayPoint(CGameObject* owner){LOGIC_WORKER_PUMP(CWayPoint)}
 
 RVA(0x000aaaa0, 0xf1)
-i32 HandlerAAAA0(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
+extern "C" i32 CreateSingleAnimation(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
 
 RVA(0x000aabe0, 0xf1)
-i32 HandlerAABE0(CGameObject* owner){LOGIC_WORKER_PUMP(CGuardPoint)}
+extern "C" i32 CreateGuardPoint(CGameObject* owner){LOGIC_WORKER_PUMP(CGuardPoint)}

@@ -9,7 +9,7 @@
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
-i32 ToobSpikezLogic(CGameObject* obj) {
+extern "C" i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {

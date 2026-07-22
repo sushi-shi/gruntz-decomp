@@ -241,25 +241,25 @@ i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i3
 RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
 RVA(0x0010cb10, 0xf1)
-i32 TileTriggerStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTrigger)}
+extern "C" i32 CreateTileTrigger(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTrigger)}
 
 RVA(0x0010cc50, 0xf1)
-i32 TileTriggerSwitchStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch)}
+extern "C" i32 CreateTileTriggerSwitch(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch)}
 
 RVA(0x0010cd90, 0xf1)
-i32 TileSecretTriggerStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger)}
+extern "C" i32 CreateTileSecretTrigger(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger)}
 
 RVA(0x0010ced0, 0xf1)
-i32 GiantRockStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CGiantRock)}
+extern "C" i32 CreateGiantRock(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CGiantRock)}
 
 RVA(0x0010d010, 0xf1)
-i32 CoveredPowerupStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
+extern "C" i32 CreateCoveredPowerup(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
 
 RVA(0x0010d150, 0xf1)
 i32 StepController(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransition)}
 
 RVA(0x0010d290, 0xf4)
-i32 CheckpointTriggerStep(CGameObject* obj) {
+extern "C" i32 CreateCheckpointTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
@@ -300,7 +300,7 @@ RVA(0x0010d3d0, 0xf1)
 i32 LogicDispatchB(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
 
 RVA(0x0010d510, 0xf1)
-i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
+extern "C" i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

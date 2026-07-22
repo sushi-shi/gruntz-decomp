@@ -26,7 +26,7 @@ VTBL(CStatusBarSprite, 0x001e7fc4);
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)
-i32 StatusBarSpriteStep(CGameObject* obj) {
+extern "C" i32 CreateStatusBarSprite(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {

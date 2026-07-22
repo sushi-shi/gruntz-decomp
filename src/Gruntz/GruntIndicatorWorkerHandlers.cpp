@@ -47,7 +47,7 @@
     return 1;
 
 RVA(0x0007db20, 0xf1)
-i32 SelectedSpriteWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntSelectedSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -85,10 +85,10 @@ i32 SelectedSpriteWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0007dc60, 0xf1)
-i32 HealthSpriteWorkerPump(CGameObject* owner){ANIM_WORKER_PUMP(CGruntHealthSprite)} // new 0x64, ctor 0x07eb00
+extern "C" i32 CreateGruntHealthSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntHealthSprite)} // new 0x64, ctor 0x07eb00
 
 RVA(0x0007dda0, 0xf1)
-i32 ToySpriteWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntToySprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -126,15 +126,15 @@ i32 ToySpriteWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0007dee0, 0xf1)
-i32 StaminaSpriteWorkerPump(CGameObject* owner){ANIM_WORKER_PUMP(CGruntStaminaSprite)} // new 0x64, ctor 0x07fae0
+extern "C" i32 CreateGruntStaminaSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntStaminaSprite)} // new 0x64, ctor 0x07fae0
 
 RVA(0x0007e020, 0xf1)
-i32 ToyTimeSpriteWorkerPump(CGameObject* owner){ANIM_WORKER_PUMP(CGruntToyTimeSprite)} // new 0x64, ctor 0x07fbd0
+extern "C" i32 CreateGruntToyTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntToyTimeSprite)} // new 0x64, ctor 0x07fbd0
 
 RVA(0x0007e160, 0xf1)
-i32 WingzTimeSpriteWorkerPump(CGameObject* owner){ANIM_WORKER_PUMP(CGruntWingzTimeSprite)} // new 0x64, ctor 0x07fcc0
+extern "C" i32 CreateGruntWingzTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntWingzTimeSprite)} // new 0x64, ctor 0x07fcc0
 
 RVA(0x0007e2a0, 0xf1)
-i32 PowerupSpriteWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntPowerupSprite(CGameObject* owner) {
     ANIM_WORKER_PUMP(CGruntPowerupSprite)
 } // new 0x60, ctor 0x07fdb0

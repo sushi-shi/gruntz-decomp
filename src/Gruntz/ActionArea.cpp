@@ -43,7 +43,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // @early-stop
 // 0x7c60 IS the body of _CreateActionArea (PROVEN by xref: GameObjectFactory.cpp
 // registers it as `CreateWorker(CreateActionArea, "ActionArea", 4)`, and its thunk
-// 0x349a is address-taken in RegisterGameObjectTypes @0xa523 - the DATA_SYMBOL(0x349a,
 // _CreateActionArea) binding names the thunk, so the body carries its behavioral
 // name here, matching the sibling worker-pump family). The ActionArea worker pump /
 // Create<X> game-object notify handler: switches
@@ -55,7 +54,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // canonical CUserLogic declares only slots 00..09; dispatching inherited slots 10-15
 // needs those 6 virtuals added to the shared CUserLogic base (a base-vtable reshape).
 RVA(0x00007c60, 0xf1)
-i32 ActionAreaWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateActionArea(CGameObject* owner) {
     return 0;
 }
 

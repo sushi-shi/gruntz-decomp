@@ -377,7 +377,7 @@ i32 EditDwRectsTxt(void) {
 }
 
 RVA(0x0003d2b0, 0xf1)
-i32 GruntStartingPointWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -415,7 +415,7 @@ i32 GruntStartingPointWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003d3f0, 0xf1)
-i32 ExitTriggerWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -453,7 +453,7 @@ i32 ExitTriggerWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003d530, 0xf1)
-i32 GruntCreationPointWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -491,7 +491,7 @@ i32 GruntCreationPointWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003d670, 0xf1)
-i32 WormholeWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -529,7 +529,7 @@ i32 WormholeWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003d7b0, 0xf1)
-i32 GruntPuddleWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -567,7 +567,7 @@ i32 GruntPuddleWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003d8f0, 0xf1)
-i32 TeleporterWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -605,7 +605,7 @@ i32 TeleporterWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003da30, 0xf1)
-i32 SecretTeleporterWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -643,7 +643,7 @@ i32 SecretTeleporterWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003db70, 0xf4)
-i32 WarlordWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -681,7 +681,7 @@ i32 WarlordWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003dcb0, 0xf1)
-i32 FortressFlagWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -719,7 +719,7 @@ i32 FortressFlagWorkerPump(CGameObject* owner) {
 }
 
 RVA(0x0003ddf0, 0xf1)
-i32 SecretLevelTriggerWorkerPump(CGameObject* owner) {
+extern "C" i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {

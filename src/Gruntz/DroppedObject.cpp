@@ -92,7 +92,7 @@ RVA_COMPGEN(0x000125b0, 0x44, ??1CDroppedObject@@UAE@XZ)
 RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
-i32 ObjectDropperPump(CGameObject* obj) {
+extern "C" i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
@@ -130,7 +130,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
 }
 
 RVA(0x000c5770, 0xf1)
-i32 DroppedObjectPump(CGameObject* obj) {
+extern "C" i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
@@ -168,7 +168,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
 }
 
 RVA(0x000c58b0, 0xf1)
-i32 DroppedObjectShadowPump(CGameObject* obj) {
+extern "C" i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
