@@ -89,6 +89,8 @@ public:
     struct LeafCue* m_host; // +0x1b8  the looked-up sound cue (ex the CAttractHost view)
     i32 m_activeFlag;       // +0x1bc  attract-active flag
 };
+SIZE(0x1c0); // retail operator-new size (TransitionState 0x8bacf)
+SIZE(0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 VTBL(CAttract, 0x001ea194);
 
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

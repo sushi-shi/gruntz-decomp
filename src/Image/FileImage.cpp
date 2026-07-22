@@ -1231,10 +1231,3 @@ void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
     return result;
 }
 
-SIZE_UNKNOWN(CFileImageSrc);
-SIZE_UNKNOWN(CFileImagePal);
-SIZE_UNKNOWN(CDDSurface);
-SIZE_UNKNOWN(DecodeSrc);
-SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
-SIZE_UNKNOWN(BmpFileHeader);
-SIZE_UNKNOWN(TgaHeader);

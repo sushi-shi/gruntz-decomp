@@ -37,7 +37,7 @@ public:
     // are methods of the 0x630 status-bar HOST (CStatusBarMgr) and moved there with the
     // split - this thin sub-widget never had them.)
 };
-SIZE_UNKNOWN(CSBI_RectOnly);
+SIZE_UNKNOWN();
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
@@ -96,7 +96,7 @@ public:
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     CImage* m_frame; // +0x30  latched/resolved frame (the config value; ex i32)
 };
-SIZE(CSBI_Image, 0x34);
+SIZE(0x34);
 VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)

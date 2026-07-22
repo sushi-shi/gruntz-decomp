@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTileTriggerSwitch : CUserLogic)
 
-SIZE(CTileTriggerSwitch, 0x54);
 VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
@@ -22,10 +21,12 @@ public:
     static void RegisterActs(); // 0x10e000
     i32 AdvanceAnim();          // 0x10e200 (declared-only; recovery gap)
 };
+SIZE(0x54);
 
 typedef i32 (CUserLogic::*TileTriggerSwitchHandler)();
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CTILETRIGGERSWITCH_H

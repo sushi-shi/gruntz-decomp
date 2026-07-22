@@ -2,6 +2,7 @@
 #define CRYPTO_FECCRYPT_H
 
 #include <Ints.h>
+#include <rva.h>
 #include <Mfc.h> // CDWordArray, CFile, MSG/PeekMessageA (windows.h)
 
 struct FecEntry {
@@ -11,6 +12,7 @@ struct FecEntry {
     u16 m_scramble;     // +0x106
     i32 m_payloadLen;   // +0x108
 };
+SIZE(0x10c); // the CFecFile+0x18 per-entry record (typed in FecCrypt.h)
 
 class CFecFile {
 public:
@@ -45,5 +47,6 @@ public:
     CDWordArray m_index; // +0x138  per-entry offset table (m_pData @+0x13c, m_nSize @+0x140)
     char m_copyBuf[0x8000];  // +0x14c  32 KB streaming copy buffer
 };
+SIZE(0x814c);
 
 #endif // CRYPTO_FECCRYPT_H

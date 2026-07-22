@@ -8,7 +8,6 @@
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase) - CPulseHighlight::Serialize
 
-SIZE_UNKNOWN(CActionArea);
 class CActionArea : public CUserLogic, public CWapX {
 public:
 public:
@@ -39,13 +38,14 @@ public:
     i32 m_60; // +0x60
     i32 m_64; // +0x64
 };
+SIZE_UNKNOWN();
 VTBL(CActionArea, 0x001e7004);
 
 typedef void (CUserLogic::*ProjActHandler)();
 struct CActionAreaActEntry {
     ProjActHandler m_fn; // [entry] - the registered handler
 };
-SIZE_UNKNOWN(CActionAreaActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 // CPulseHighlight : CUserLogic - the pulse-highlight sprite leaf (ex pulsehighlight
 // unit, merged into ActionArea.cpp): a per-frame brightness ramp (Tick 0x8440) +
@@ -68,6 +68,6 @@ public:
     i64 m_timestamp;           // +0x58 last-toggle game clock
     i64 m_duration;            // +0x60 current interval (ms)
 };
-SIZE_UNKNOWN(CPulseHighlight);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CACTIONAREA_H

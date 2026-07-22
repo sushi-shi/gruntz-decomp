@@ -7,21 +7,20 @@ class CInputDevice;    // the real DinMgr2 device (<DinMgr2/DirectInputMgr2.h>)
 #include <Ints.h>
 #include <rva.h>
 
-SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
     char _vft0[4];         // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     CInputDevice** m_data; // +0x04  controller storage
     i32 m_count;           // +0x08  controller count
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
     char _vft0[4];            // +0x00 foreign node vptr (reduced view; not dispatched)
     i32 m_count;              // +0x04
     CInputDevice* m_elems[1]; // +0x08.. controller pointers
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(DirectInputMgr2);
 class StateMgrBZ {
 public:
     // 0x382c0 - Init(src, mode): clears the latched state, builds the source wiring

@@ -1245,4 +1245,3 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // bodies; keep the completeness typedefs after the last function).
 // ===========================================================================
 // --- local views moved with their bodies from src/Wwd/WwdFile.cpp ---
-SIZE_UNKNOWN(WwdSubMgrCtor);

@@ -204,8 +204,6 @@ def allocation_oracle(img, opnew, rva2name):
 # ---------------------------------------------------------------------------
 
 SRC_GLOBS = ("src/**/*.cpp", "src/**/*.h", "include/**/*.h")
-SIZE_RE = re.compile(r"\bSIZE\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
-SIZE_UNK_RE = re.compile(r"\bSIZE_UNKNOWN\(\s*(\w+)\s*\)")
 DEF_RE = re.compile(r"^\s*(?:class|struct)\s+(\w+)\s*(?::[^;{]*)?\{", re.M)
 TYPEDEF_RE = re.compile(r"^\s*typedef\s+\w+\s+(\w+)\s*;", re.M)
 INCLUDE_RE = re.compile(r'^\s*#include\s*[<"]([^>"]+)[>"]', re.M)
@@ -277,10 +275,7 @@ def scan_sources():
             rel = os.path.relpath(f, REPO)
             t = open(f, encoding="latin-1").read()
             files[rel] = t
-            for m in SIZE_RE.finditer(t):
-                sizes[m.group(1)] = int(m.group(2), 16 if m.group(2).startswith("0x") else 10)
-            for m in SIZE_UNK_RE.finditer(t):
-                unknown.add(m.group(1))
+            # (SIZE labels are read once, positionally, below this loop)
             here = set(DEF_RE.findall(t))
             defined.update(here)
             defined.update(TYPEDEF_RE.findall(t))
@@ -289,6 +284,15 @@ def scan_sources():
                 defs_by_class.setdefault(c, set()).add(rel)
             for h in INCLUDE_RE.findall(t):
                 includes.setdefault(os.path.basename(h), set()).add(rel)
+    from gruntz.core.class_meta import positional_size_annotations
+    for name, entries in positional_size_annotations().items():
+        if name is None:
+            continue
+        for val, _p, _l in entries:
+            if val is None:
+                unknown.add(name)
+            else:
+                sizes[name] = val
     return files, sizes, unknown, defined, includes, defs_by_class, defs_by_file
 
 

@@ -38,8 +38,10 @@ RVA_H = INC / "rva.h"
 # A file-scope class/struct definition head: keyword at column 0, then the name.
 _CLASS_HEAD_RE = re.compile(r"^(class|struct)\s+([A-Za-z_]\w*)\b")
 # SIZE / SIZE_UNKNOWN / VTBL macro invocations (first arg = the class/type name).
-_SIZE_RE = re.compile(r"\bSIZE\s*\(\s*([A-Za-z_]\w*)\b")
-_SIZEUNK_RE = re.compile(r"\bSIZE_UNKNOWN\s*\(\s*([A-Za-z_]\w*)\b")
+# POSITIONAL size labels (rva.h): SIZE(<bytes>); / SIZE_UNKNOWN(); sit directly
+# under the class definition (or its fwd decl / typedef alias line).
+_SIZE_POS_RE = re.compile(r"^\s*SIZE\(\s*(0x[0-9a-fA-F]+|\d+)\s*\)\s*;")
+_SIZEUNK_POS_RE = re.compile(r"^\s*SIZE_UNKNOWN\(\s*\)\s*;")
 _VTBL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\b")
 
 
@@ -135,6 +137,81 @@ def unique_class_defs():
     return out
 
 
+
+_TYPEDEF_RE = re.compile(r"^\s*typedef\b.*?\b([A-Za-z_]\w*)\s*;")
+_FWD_RE = re.compile(r"^\s*(?:class|struct)\s+([A-Za-z_]\w*)\s*;")
+_CLOSE_RE = re.compile(r"^\s*\}\s*;")
+# a complete one-line definition: `struct X : public Y { ... };`
+_ONELINE_RE = re.compile(
+    r"^\s*(?:typedef\s+)?(?:class|struct|union)\s+([A-Za-z_]\w*)[^;{]*\{.*\}\s*;")
+
+
+def _entity_above(lines, idx):
+    """The class name a POSITIONAL SIZE at line `idx` annotates: the nearest
+    preceding class-def close (brace-matched back to its head), fwd decl, or
+    typedef alias, skipping blanks/comments/other annotation lines."""
+    j = idx - 1
+    while j >= 0:
+        ln = lines[j]
+        st = ln.strip()
+        if not st or st.startswith("//") or st.startswith("*") or st.startswith("/*"):
+            j -= 1
+            continue
+        if _SIZE_POS_RE.match(ln) or _SIZEUNK_POS_RE.match(ln) or st.startswith("VTBL"):
+            j -= 1
+            continue
+        m = _TYPEDEF_RE.match(ln)
+        if m:
+            return m.group(1)
+        m = _FWD_RE.match(ln)
+        if m:
+            return m.group(1)
+        m = _ONELINE_RE.match(ln)
+        if m:
+            return m.group(1)
+        if _CLOSE_RE.match(ln):
+            depth = 0
+            k = j
+            while k >= 0:
+                depth += lines[k].count("}") - lines[k].count("{")
+                if depth <= 0 and "{" in lines[k]:
+                    break
+                k -= 1
+            # the head may be on the brace line or up to a few lines above
+            for h in range(k, max(-1, k - 4), -1):
+                hm = re.match(r"\s*(?:typedef\s+)?(?:class|struct|union)\s+([A-Za-z_]\w*)", lines[h])
+                if hm:
+                    return hm.group(1)
+            return None
+        return None
+    return None
+
+
+def positional_size_annotations():
+    """{class_name: (bytes_or_None, path, lineno)} for every positional
+    SIZE(<bytes>); / SIZE_UNKNOWN(); label, resolved to the entity above it.
+    Unresolvable labels are returned under the key ``None`` (a list)."""
+    out, orphans = {}, []
+    for path in source_files():
+        lines = _blank_comments(path.read_text(errors="ignore")).splitlines()
+        for i, ln in enumerate(lines):
+            m = _SIZE_POS_RE.match(ln)
+            unk = None if m else _SIZEUNK_POS_RE.match(ln)
+            if not m and not unk:
+                continue
+            name = _entity_above(lines, i)
+            if name is None:
+                orphans.append((str(path), i + 1))
+                continue
+            val = None
+            if m:
+                t = m.group(1)
+                val = int(t, 16 if t.startswith("0x") else 10)
+            out.setdefault(name, []).append((val, path, i + 1))
+    out[None] = orphans
+    return out
+
+
 def _annotated(rx: re.Pattern) -> set:
     """Set of class NAMES named by macro `rx` anywhere in the scanned tree."""
     names = set()
@@ -147,7 +224,8 @@ def _annotated(rx: re.Pattern) -> set:
 
 def size_annotated_names() -> set:
     """Class names carrying a SIZE(...) OR SIZE_UNKNOWN(...) annotation."""
-    return _annotated(_SIZE_RE) | _annotated(_SIZEUNK_RE)
+    ann = positional_size_annotations()
+    return {n for n in ann if n is not None}
 
 
 def vtbl_annotated_names() -> set:

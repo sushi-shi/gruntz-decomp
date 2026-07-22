@@ -4,7 +4,6 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CWormhole : CUserLogic)
 
-SIZE_UNKNOWN(CWormhole);
 class CWormhole : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -34,6 +33,7 @@ public:
     char m_pad58[0x68 - 0x58];
     i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
+SIZE_UNKNOWN();
 VTBL(CWormhole, 0x1e817c);
 
 #endif // GRUNTZ_CWORMHOLE_H

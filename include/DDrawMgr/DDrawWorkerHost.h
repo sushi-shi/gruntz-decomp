@@ -7,8 +7,8 @@
 #include <ddraw.h> // DDBLTFX (the +0xf4 blit-fx member; windows.h via <Mfc.h> above)
 #include <rva.h>
 
-SIZE_UNKNOWN(LevelCoordRect);
 typedef struct tagRECT LevelCoordRect;
+SIZE_UNKNOWN();
 
 struct CWwdSpatialMgr;
 
@@ -145,9 +145,11 @@ public:
     DDBLTFX m_bltFx;
     // ENDS AT 0x158 - the ReadPlane allocation size.
 };
+SIZE(0x158);
 
 typedef CDDrawWorkerHost CPlane;       // the WwdFile.h loader-facet spelling
 typedef CDDrawWorkerHost CPlaneRender; // the render-facet spelling
+SIZE_UNKNOWN();
 typedef CDDrawWorkerHost CLevelPlane;  // the GameLevel.h level-facet spelling
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

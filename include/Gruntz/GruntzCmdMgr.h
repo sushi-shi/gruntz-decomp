@@ -10,21 +10,20 @@ class CState;
 
 typedef CPtrList GzObList;
 
-SIZE_UNKNOWN(GzTargetObj);
 typedef CGruntzCommand GzTargetObj;
+SIZE_UNKNOWN();
 
 class CGruntzMgr; // consumers that deref m_38 include <Gruntz/GruntzMgr.h>
 
 typedef CGruntzCommand GzSerCmd;
 
-SIZE_UNKNOWN(GzCmdNode);
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node
     char m_pad4[4];
     CGruntzCommand* m_8; // +0x08  payload command
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGruntzCmdMgr);
 class CGruntzCmdMgr {
 public:
     void
@@ -78,5 +77,6 @@ public:
     GzObList m_1c;    // +0x1c  nested subset queue
     CGruntzMgr* m_38; // +0x38  the game-manager singleton (RezSync::Init self-registers)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZCMDMGR_H

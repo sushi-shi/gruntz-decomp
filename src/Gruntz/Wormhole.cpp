@@ -889,9 +889,4 @@ i32 CTeleporter::Update() {
     return 0;
 }
 
-SIZE_UNKNOWN(CWormGeoSub);
-SIZE_UNKNOWN(CTeleAnimSink);
-SIZE_UNKNOWN(CTeleIconTable);
-SIZE_UNKNOWN(CTeleScroller);
 VTBL(CTeleporter, 0x001e80cc); // vtable_names -> code (RTTI game class)
-SIZE_UNKNOWN(CTeleporterActReg);

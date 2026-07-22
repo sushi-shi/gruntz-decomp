@@ -524,5 +524,3 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     return 1;
 }
 
-SIZE_UNKNOWN(BattlezRecord);
-SIZE_UNKNOWN(CBattlezData);

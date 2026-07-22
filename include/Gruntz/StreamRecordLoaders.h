@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_STREAMRECORDLOADERS_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Gruntz/SerialArchive.h> // CSerialArchive (a typedef - a bare fwd decl
 
@@ -19,5 +20,6 @@ struct CEventLoadRec {
     char m_pad24[0x48 - 0x24];
     i32 m_48, m_4c; // +0x48,+0x4c  raw
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_STREAMRECORDLOADERS_H

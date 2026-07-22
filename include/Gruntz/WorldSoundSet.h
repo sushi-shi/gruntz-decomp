@@ -13,6 +13,7 @@ struct CSoundNode {
     CSoundNode* m_prev;    // +0x04
     CAmbientSound* m_data; // +0x08  the channel (family base; see the note above)
 };
+SIZE_UNKNOWN();
 
 class CAmbientPosSound;
 class CRandomAmbientSound;
@@ -21,6 +22,7 @@ struct CRandomAmbientWorld {
     char m_pad00[0x2c];
     SoundDevice* m_soundDev; // +0x2c  the world's SoundDevice sub-object
 };
+SIZE_UNKNOWN();
 
 enum { kSoundVolumeMax = 100 }; // 0x64 - full volume on the 0-100 "Sound Volume" slider
 
@@ -60,6 +62,7 @@ public:
     i32 m_listenerX; // +0x28
     i32 m_listenerY; // +0x2c
 };
+SIZE_UNKNOWN();
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_world = 0;

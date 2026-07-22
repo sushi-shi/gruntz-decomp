@@ -40,6 +40,7 @@ struct SaveSlot {
         i32 m_isWon;  //        "won" flag (FillSaveInfo writes m_134 == 3)
     };
 };
+SIZE(0x100); // 0x100-byte slot record (m_slots[] array stride)
 
 class CSaveGame {
 public:
@@ -82,5 +83,6 @@ public:
     char m_pad100[0x924]; // +0x100 to +0xa24 (end of 0xa1c header)
     SaveSlot m_slots[10]; // +0xa24, 10 x 0x100
 };
+SIZE_UNKNOWN(); // fully modeled but tail not proven; owner may upgrade
 
 #endif // SRC_IO_SAVEGAME_H

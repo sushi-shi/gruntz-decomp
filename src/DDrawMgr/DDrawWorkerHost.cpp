@@ -46,5 +46,4 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
     // vtable restore) fold here under the /GX frame.
 }
 
-SIZE(CDDrawWorkerHost, 0x158);
 VTBL(CDDrawWorkerHost, 0x001f0270);

@@ -15,6 +15,6 @@ public:
     // `this` is forwarded to ReopenSharedFile, which ignores it. __thiscall, no args.
     void OpenGruntzLog(); // 0x0bd450
 };
-SIZE_UNKNOWN(CFileLog); // data-less __thiscall host (never constructed)
+SIZE_UNKNOWN(); // data-less __thiscall host (never constructed)
 
 #endif // SRC_IO_FILESTREAM_H

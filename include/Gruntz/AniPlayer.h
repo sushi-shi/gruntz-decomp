@@ -53,6 +53,6 @@ public:
     i32 m_60; // +0x60  timed-play window duration (i64 lo)
     i32 m_64; // +0x64  (i64 hi)
 };
-SIZE_UNKNOWN(CAniPlayer);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CANIPLAYER_H

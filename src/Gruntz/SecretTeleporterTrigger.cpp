@@ -29,7 +29,6 @@ static inline CActEntry* ActLookup(i32 coord) {
 DATA(0x00244598)
 extern CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
 
-SIZE_UNKNOWN(CTrigger);
 
 RVA(0x00010a10, 0x47)
 i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {

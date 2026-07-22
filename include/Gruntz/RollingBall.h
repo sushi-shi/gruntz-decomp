@@ -54,14 +54,14 @@ public:
     i32 m_moveDeltaLo;         // +0x98  move delta (i64 lo)
     i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
 };
+SIZE(0xa0);
 VTBL(CRollingBall, 0x1e86fc);
 
 typedef i32 (CUserLogic::*RollingBallHandler)();
 struct CRollingBallActEntry {
     RollingBallHandler m_fn;
 };
-SIZE_UNKNOWN(CRollingBallActEntry);
+SIZE_UNKNOWN();
 
-SIZE(CRollingBall, 0xa0);
 
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

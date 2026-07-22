@@ -22,8 +22,8 @@ class DirectSoundMgr;
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/MovingLogic.h> // the ONE CMovingLogic (fat spine + the band union; CGrunt derives it)
 
-SIZE_UNKNOWN(CCueRect);
 typedef struct tagRECT CCueRect;
+SIZE_UNKNOWN();
 
 class CGruntSpawnConfig;                  // the +0x60 registry object (one class, three ex-names)
 typedef CGruntSpawnConfig CGruntCueSink; // cue-receiver face: methods live on CGruntSpawnConfig
@@ -35,7 +35,6 @@ typedef CGruntSpawnConfig CGruntCueSink; // cue-receiver face: methods live on C
 CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
-SIZE_UNKNOWN(CAnimLookupNode);
 extern i32 g_movingSeed;
 
 extern "C" i32 GruntRand(); // stub
@@ -44,11 +43,11 @@ class CGrunt; // fwd (CueA/CueSpawn first arg; the resolvers below)
 
 i32 CueVisible(i32 viewport, i32 x, i32 y);
 
-SIZE_UNKNOWN(CGruntCell);
 class CGruntCell {
 public:
     // GetName @0x310f0 IS _zdvec::IndexToPtr; cast at each call.
 };
+SIZE_UNKNOWN();
 
 char* GruntStrGetBuffer(void* str, i32 minLen); // 0x1ba11c
 
@@ -78,11 +77,11 @@ extern double g_dirConst2;  // DAT_005e9a28 = 2.0
 extern double g_dirConst1;  // DAT_005e9a30 = 1.0
 extern double g_dirConstN1; // DAT_005e9a38 = -1.0
 
-SIZE_UNKNOWN(CAnimScratchString);
 struct CAnimScratchString {
     char* m_str; // +0x00  (4-byte stride)
     // Release @0x1b9b93 IS CString::~CString; cast at each call.
 };
+SIZE_UNKNOWN();
 
 extern const char g_codeA[]; // 0x60a454 "A"
 extern const char g_codeD[]; // 0x60cca4 "D"
@@ -100,77 +99,76 @@ extern const char g_codeF[]; // 0x60d2e8 "F"  (PlaySound entrance handler)
 extern const char g_codeE[]; // 0x60d2ec "E"  (PlaySound entrance handler)
 extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 
-SIZE(GruntEntranceCell, 0xc);
 struct GruntEntranceCell {
     i32 col;
     i32 row;
     i32 reason;
 };
+SIZE(0xc);
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 
-SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  the sample factory
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(GruntCoordPool);
 extern FreeNodePool g_coordPool; // DAT_00645540
 
-SIZE_UNKNOWN(GruntCoord);
 struct GruntCoord {
     i32 m_x; // +0x00
     i32 m_y; // +0x04
 };
-SIZE_UNKNOWN(GruntCoordNode);
+SIZE_UNKNOWN();
 struct GruntCoordNode {
     GruntCoordNode* m_next; // +0x00
     char m_pad4[0x4];
     GruntCoord* m_coord; // +0x08
 };
+SIZE_UNKNOWN();
 
 struct CAnimSetNode {
     char m_pad0[0xc];
     i32 m_c;  // +0x0c  the value Lookup returns into the table
     i32 m_10; // +0x10  animation length (toy-swap blend uses this)
 };
+SIZE_UNKNOWN();
 
 class CGruntPuddle;
-SIZE_UNKNOWN(CGruntLiveNode);
 struct CGruntLiveNode {
     CGruntLiveNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
     CGruntPuddle* m_entry; // +0x08  placed puddle (tile x/y + pending gate)
 };
+SIZE_UNKNOWN();
 
 i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
 i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
-SIZE_UNKNOWN(CGruntTypeCatalog);
 struct CGruntTypeCatalog {
     char m_pad0[0xc];
     CDDrawSubMgrLeaf* m_c; // +0x0c  owner -> name-id map
 };
+SIZE_UNKNOWN();
 
 #include <Gruntz/SerialCounter.h>
 
-SIZE_UNKNOWN(CGruntListNode);
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
     u8* m_data;   // +0x08  serialized payload blob (0x2c bytes)
 };
+SIZE_UNKNOWN();
 
 class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 
-SIZE_UNKNOWN(CGruntSub);
 class CGruntSub {
 public:
     // Free @0x69d60 IS CGrunt::LoadFreezeSpellAssets; cast at each call.
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGruntCellRec);
 struct CGruntCellRec {
     CString m_attack; // +0x00  "GRUNTZ_<name>_<DIR>_ATTACK"
     CString m_struck; // +0x04  "GRUNTZ_<name>_<DIR>_STRUCK"
@@ -202,7 +200,7 @@ struct CGruntCellRec {
     CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
 };
-SIZE_UNKNOWN(GruntStrSub);
+SIZE_UNKNOWN();
 struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     void CtorImpl(); // 0x1b9b93 (CString default ctor)
     void Dtor();
@@ -213,6 +211,7 @@ struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
         Dtor();
     }
 };
+SIZE_UNKNOWN();
 
 // (CVtSlot9 DISSOLVED: DispatchVtbl24's +0x24 self-dispatch is the real slot-9
 // virtual, CUserLogic::StepAttackFire.)
@@ -229,14 +228,13 @@ extern CGruntVoiceRec g_voiceNW; // 0x644918  (mid +, dx<0)
 extern CGruntVoiceRec g_voiceNE; // 0x644908  (mid -, dx>0)
 extern CGruntVoiceRec g_voiceSW; // 0x644948  (mid -, dx<0)
 
-SIZE_UNKNOWN(CGruntVoiceRec);
 struct CGruntVoiceRec {
     i32 m_0;
     i32 m_4;
     i32 m_8;
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGruntMotionBand);
 struct CGruntMotionBand {
     void Init(); // 0x136d0 (CMotionState ctor; retail via thunk 0x34db)
     i32 SetParams(
@@ -254,6 +252,7 @@ struct CGruntMotionBand {
     );                   // 0x58bc0 (thunk 0x2ccf)
     void SetZ(double z); // 0x58ca0 (thunk 0x3ea9)
 };
+SIZE_UNKNOWN();
 extern const double g_movingLogicMin;  // 0x5f04b0 (-2147483647.0)
 extern const double g_movingLogicMax;  // 0x5f04b8 (2147483646.0)
 extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
@@ -263,7 +262,6 @@ extern "C" u32 g_frameTime;            // 0x645588 (the running game clock; Fram
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
-SIZE(CGrunt, 0x8d8);
 class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
@@ -1130,25 +1128,26 @@ public:
     i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
     void FreezeApply();                             // 0x28d8
 };
+SIZE(0x8d8);
 
 typedef i32 (CGrunt::*GruntActHandler)();
 struct CGruntActEntry {
     GruntActHandler m_fn;
 };
-SIZE(CGruntActEntry, 0x4);
+SIZE(0x4);
 
-SIZE_UNKNOWN(GruntBox);
 struct GruntBox {
     i32 m_0; // +0x00 x0
     i32 m_4; // +0x04 y0
     i32 m_8; // +0x08 x1
     i32 m_c; // +0x0c y1
 };
-SIZE_UNKNOWN(GruntSegEnd);
+SIZE_UNKNOWN();
 struct GruntSegEnd {
     i32 m_0; // +0x00 x
     i32 m_4; // +0x04 y
 };
+SIZE_UNKNOWN();
 i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2);
 
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);

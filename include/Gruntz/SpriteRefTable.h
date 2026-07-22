@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-SIZE_UNKNOWN(CSpriteRef);
 class CSpriteRef {
 public:
     i32 Build(i32 cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
@@ -16,9 +15,10 @@ public:
     u16 m_teamColor2; // +0x0c  full intensity
     u16 m_pad0e;      // +0x0e  pad to 0x10
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
+SIZE_UNKNOWN();
 
 // Reduced reader views of the map value Add() resolves (`out`), only the two fields
 // Add() reads. @identity-TODO: the sprite value's concrete class needs an xref chase
@@ -27,18 +27,17 @@ struct CLookupSprite {
     char m_pad00[0xc];
     u8* m_frameData;   // +0x0c  the frame's raw RLE/pixel payload
 };
+SIZE_UNKNOWN();
 struct CLookupResult {
     char m_pad00[0x10];
     CLookupSprite* m_sprite; // +0x10
 };
-SIZE_UNKNOWN(CLookupSprite);
-SIZE_UNKNOWN(CLookupResult);
+SIZE_UNKNOWN();
 
 class CShadeTableCache;
 
 class CDDrawSurfaceMgr;
 
-SIZE_UNKNOWN(CSpriteRefTable);
 class CSpriteRefTable {
 public:
     // Cache the two engine sub-objects (m_factory, m_spriteMgrHolder) and clear both buckets; returns
@@ -93,5 +92,6 @@ public:
     CSpriteRef* m_refB[0x11];            // +0x4c  bucket B nodes (17 slots)
     i32 m_built;                         // +0x90  count/flag (reset to 0 on Init/Clear)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SPRITEREFTABLE_H

@@ -23,11 +23,13 @@ public:
     char m_pad0[0xc];
     CDDrawSurfaceMgr* m_c; // +0xc  bound world holder
 };
+SIZE_UNKNOWN();
 
 struct Orient3 {
     i32 m_0, m_4, m_8;
     void StepA(i32 count); // 0x3c850
     void StepB(i32 count); // 0x3c8a0
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_DEMOHELPERS_H

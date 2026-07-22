@@ -83,7 +83,8 @@ public:
     // config triple, slots 12..14.)
     RECT m_clip; // +0x64
 };
-SIZE_UNKNOWN(CResolveNode);
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 VTBL(CResolveNode, 0x001efbc0); // ??_7CResolveNode@@6B@ (10 slots; ex WwdBResolve dup)
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

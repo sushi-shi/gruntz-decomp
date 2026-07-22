@@ -520,4 +520,3 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
 
-SIZE_UNKNOWN(MpSymItem);

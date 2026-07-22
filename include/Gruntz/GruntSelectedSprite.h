@@ -5,7 +5,6 @@
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
-SIZE_UNKNOWN(CGruntSelectedSprite);
 class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
 public:
@@ -28,12 +27,13 @@ public:
     i32 m_cellX; // +0x54  grunt cell x
     i32 m_cellY; // +0x58  grunt cell y
 };
+SIZE_UNKNOWN();
 VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class)
 
 typedef i32 (CUserLogic::*SelectedActHandler)();
-SIZE_UNKNOWN(CSelectedActEntry);
 struct CSelectedActEntry {
     SelectedActHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

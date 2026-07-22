@@ -17,7 +17,6 @@ class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the DirectSound clone (des
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
 
-SIZE(CSbiSlot, 0x18);
 struct CSbiSlot {
     // Inline default ctor (retail inlines it as the 5-iteration loop at +0x228).
     CSbiSlot() {
@@ -33,8 +32,8 @@ struct CSbiSlot {
     i32 m_10;    // +0x10 (the ctor zeroes it)
     i32 m_14;    // +0x14 (the ctor zeroes it)
 };
+SIZE(0x18);
 
-SIZE(CSbiHlRow, 0x18);
 struct CSbiHlRow {
     CSbiHlRow(); // 0x0c86d0 (the address-taken COMDAT; def in ModeObjInit.cpp)
     i32 m_state; // +0x00 state
@@ -56,11 +55,11 @@ struct CSbiHlRow {
         };
     };
 };
+SIZE(0x18);
 // The machine-phase readers walk the SAME 0x18 record under this name.
 typedef CSbiHlRow SbiPhaseSlot;
 
 class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
-SIZE_UNKNOWN(CSbiRect);
 
 // (CSbiStatObj DISSOLVED 2026-07-20: m_statObj holds CStatusBarMgr sub-managers - the
 // SetState clear path already casts m_statObj[idx] to CStatusBarMgr for ResetGroupA, and
@@ -75,13 +74,13 @@ class CSbiNotifyTarget {
 public:
     virtual void Notify(i32 on); // slot 0 (__thiscall void(int))
 };
-SIZE_UNKNOWN(CSbiNotifyTarget);
+SIZE_UNKNOWN();
 struct CSbiNotifyNode {
     CSbiNotifyNode* m_next; // +0
     char m_pad4[0x8 - 0x4];
     CSbiNotifyTarget* m_payload; // +8
 };
-SIZE_UNKNOWN(CSbiNotifyNode);
+SIZE_UNKNOWN();
 
 // VTBL_ABSENT: never-constructed dispatch view (the CStatusBarItem-family slot
 // scheme - Destroy/Serialize/Setup/... - with RECOVERED role names). @identity-TODO:
@@ -102,13 +101,12 @@ public:
     virtual void HitHandlerD(); // slot 9
     virtual void Refresh();     // +0x28 (slot 10)
 };
-SIZE_UNKNOWN(CSbiNotifyPayload);
+SIZE_UNKNOWN();
 
 // (CSbiSpriteCfg DISSOLVED 2026-07-21: it was a partial .cpp-reached view of LeafCue -
 // its m_playFactory @+0x10 IS LeafCue::m_10, the pooled cue play-factory. See
 // <Gruntz/LeafCue.h>.)
 
-SIZE(CWarpStoneFly, 0x40);
 
 // VTBL_ABSENT: never-constructed dispatch view (same CStatusBarItem-family scheme
 // + @identity-TODO as CSbiNotifyPayload above).
@@ -129,7 +127,7 @@ public:
     char m_pad4[0x44 - 0x4];
     i32 m_gaugeReading; // +0x44  latched gauge reading
 };
-SIZE_UNKNOWN(CSbiGaugeNotify);
+SIZE_UNKNOWN();
 
 extern CButeMgr g_buteMgr;
 
@@ -473,7 +471,7 @@ public:
     i32 m_61c[4];         // +0x61c  trailing dword block (cleared on reset)
     i32 m_tabCycle;       // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
-SIZE(CStatusBarMgr, 0x630);
+SIZE(0x630);
 
 // (CSbiCueRecord DISSOLVED 2026-07-21: it was a .cpp-reached view of LeafCue - the
 // cue-map value class in <Gruntz/LeafCue.h>. m_10/m_14/m_18 ARE LeafCue's player/
@@ -481,7 +479,7 @@ SIZE(CStatusBarMgr, 0x630);
 // inlined, and CPlay::Vslot10 already uses the canonical LeafCue on this same map.)
 
 struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
-SIZE_UNKNOWN(CSbiSeqMap);
+SIZE_UNKNOWN();
 
 // VTBL_ABSENT: never-constructed dispatch view of the seq-map values.
 // @identity-TODO: slot-8 TypeTag()==5 gates a CWwdGameObjectA cast - the values
@@ -499,7 +497,7 @@ public:
     virtual void HitHandlerB(); // slot 7
     virtual i32 TypeTag();      // +0x20 (slot 8)
 };
-SIZE_UNKNOWN(CSbiSeqObj);
+SIZE_UNKNOWN();
 
 struct CSbiResetHost {
     char m_pad0[0x8];
@@ -507,18 +505,18 @@ struct CSbiResetHost {
     char m_padc[0x40 - 0xc];
     i32 m_40; // +0x40  control flags (|= 1)
 };
-SIZE_UNKNOWN(CSbiResetHost);
+SIZE_UNKNOWN();
 
 struct CSbiFreeNode {
     i32 m_0, m_4;
 };
-SIZE_UNKNOWN(CSbiFreeNode);
+SIZE_UNKNOWN();
 
 struct SbiTabFrameSub {
     char m_pad0[0x10];
     i32 m_10;
 };
-SIZE_UNKNOWN(SbiTabFrameSub);
+SIZE_UNKNOWN();
 struct SbiTabFrame {
     char m_pad0[0x14];
     SbiTabFrameSub* m_14;
@@ -526,10 +524,10 @@ struct SbiTabFrame {
     i32 m_64;
     i32 m_68;
 };
-SIZE_UNKNOWN(SbiTabFrame);
+SIZE_UNKNOWN();
 
 struct CTabList {};
-SIZE_UNKNOWN(CTabList);
+SIZE_UNKNOWN();
 
 // (CSbiMainBarCfg/CSbiFrameEntry DISSOLVED 2026-07-21: the stored element is the
 // main-bar CDDrawWorker strip - +0x14/+0x64 were m_items.m_pData/m_minIndex and
@@ -553,7 +551,7 @@ public:
     i32 m_cmdId;      // +0xc  command id
     i32 m_widgetKind; // +0x10  widget kind (outer switch key, 0..6)
 };
-SIZE_UNKNOWN(CSbiHiWidget);
+SIZE_UNKNOWN();
 
 inline CStatusBarMgr::CStatusBarMgr() {
     // Scalar body, in retail's source order. NOTE what is DELIBERATELY absent: the

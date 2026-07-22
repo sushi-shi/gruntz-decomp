@@ -18,7 +18,7 @@ public:
     virtual i32 Tick() OVERRIDE;            // slot 16
     virtual i32 HitTest(i32, i32) OVERRIDE; // slot 20
 };
+SIZE(0x130);
 VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
-SIZE(CRainCloud, 0x130);
 
 #endif // GRUNTZ_CRAINCLOUD_H

@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-SIZE_UNKNOWN(CFixedPtrArray32);
 class CFixedPtrArray32 {
 public:
     void Clear();
@@ -15,5 +14,6 @@ public:
     i32 m_count;       // +0x04
     void* m_items[32]; // +0x08
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CFIXEDPTRARRAY32_H

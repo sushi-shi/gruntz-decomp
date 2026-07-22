@@ -30,12 +30,12 @@ public:
     static void RegisterActs();                   // 0xc78b0 (bind Advance to the "A" key)
     i32 Advance();             // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
 };
+SIZE(0x54);
 VTBL(CDroppedObjectShadow, 0x1e787c);
-SIZE(CDroppedObjectShadow, 0x54);
 
 struct CShadowActEntry {
     i32 (CUserLogic::*m_fn)();
 };
-SIZE_UNKNOWN(CShadowActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CDROPPEDOBJECTSHADOW_H

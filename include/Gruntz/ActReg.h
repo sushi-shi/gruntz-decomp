@@ -32,13 +32,19 @@ struct CActReg : public zDArray {
         return m_spare;
     }
 };
+SIZE_UNKNOWN();
 
 struct CLogicActTable : public CActReg {}; // per-logic-class dispatch tables
+SIZE_UNKNOWN();
 struct CLookupColl : public CActReg {};    // the outlined-lookup registries
+SIZE_UNKNOWN();
 struct CSiblingActReg : public CActReg {}; // CUserLogic-leaf sibling registries
-SIZE_UNKNOWN(CSiblingActReg);
+SIZE_UNKNOWN();
 struct CTeleporterActReg : public CActReg {}; // CTeleporter's registry (0x6446b0)
+SIZE_UNKNOWN();
 struct CBehindCandyActReg : public CActReg {}; // CBehindCandyAni's registry (0x645f98)
+SIZE_UNKNOWN();
 struct CSingleAnimActReg : public CActReg {};  // CSingleAnimation's registry (0x645f70)
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

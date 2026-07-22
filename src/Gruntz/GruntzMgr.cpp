@@ -419,17 +419,8 @@ install:
     }
 }
 
-SIZE_UNKNOWN(CBootyState);
-SIZE_UNKNOWN(CCreditsState);
-SIZE_UNKNOWN(CDInputMgrZ);
 VTBL(CHelpState, 0x001e9dfc); // vtable_names -> code (RTTI game class)
-SIZE_UNKNOWN(CMenuState);
-SIZE_UNKNOWN(CMulti);
 VTBL(CMulti, 0x001e9fe4); // vtable_names -> code (RTTI game class)
-SIZE_UNKNOWN(CMultiBootyState);
-SIZE_UNKNOWN(CSplashState);
-SIZE_UNKNOWN(CState);
-SIZE_UNKNOWN(CPlay);
 
 VTBL(CPlay, 0x001ea0bc);
 
@@ -3722,23 +3713,5 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     return 0;
 }
 
-SIZE_UNKNOWN(CColorLookup);
-SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CMonoConfigHolder);
-SIZE_UNKNOWN(CMonoConfigMap);
-SIZE_UNKNOWN(CMonoConfigRec);
-SIZE_UNKNOWN(CMonoEntry);
-SIZE_UNKNOWN(CMonoSprite);
-SIZE_UNKNOWN(CMonoView);
-SIZE_UNKNOWN(CMonoWorld);
-SIZE_UNKNOWN(CRezSurface94);
-SIZE_UNKNOWN(CWorldCoordResolver);
-SIZE_UNKNOWN(CmdSink);
-SIZE_UNKNOWN(RegScoreHud);
-SIZE_UNKNOWN(ScoreNotifier);
-SIZE_UNKNOWN(StateMgrBZ);
-SIZE_UNKNOWN(SvmGuts);
-SIZE_UNKNOWN(SvmStateView);
-SIZE_UNKNOWN(CGameRegistry);
 
 VTBL(CDemo, 0x001e9f0c); // vtable_names -> code (RTTI game class; dtor 0x8d0d0 lives here)

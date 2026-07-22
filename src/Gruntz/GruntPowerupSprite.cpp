@@ -142,6 +142,3 @@ i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 
     return 1;
 }
 
-SIZE_UNKNOWN(CGruntPowerupSprite);
-SIZE_UNKNOWN(CPowerupActEntry);
-SIZE_UNKNOWN(PupSubObj);

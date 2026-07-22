@@ -21,6 +21,6 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
-SIZE(CDoNothing, 0x54);
+SIZE(0x54);
 
 #endif // GRUNTZ_CDONOTHING_H

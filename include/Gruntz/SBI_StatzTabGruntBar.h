@@ -22,21 +22,21 @@ struct CStatzGruntRec {
     char m_pad1dc[0x3ec - 0x1dc];
     i32 m_health; // +0x3ec  health
 };
-SIZE_UNKNOWN(CStatzGruntRec);
+SIZE_UNKNOWN();
 
 struct CStatzSelHost {};
-SIZE_UNKNOWN(CStatzSelHost);
+SIZE_UNKNOWN();
 
 struct CStatzDrawable {
     char m_pad0[0x14];
     void* m_14; // +0x14  render context (RenderFrame arg0)
 };
+SIZE_UNKNOWN();
 struct CStatzGameMgr {
     char m_pad0[0x04];
     CStatzDrawable* m_4; // +0x04  active drawable
 };
-SIZE_UNKNOWN(CStatzDrawable);
-SIZE_UNKNOWN(CStatzGameMgr);
+SIZE_UNKNOWN();
 
 struct CStatzGameReg {
     char m_pad0[0x30];
@@ -44,7 +44,7 @@ struct CStatzGameReg {
     char m_pad34[0x68 - 0x34];
     CStatzSelHost* m_unitTable; // +0x68  unit/record table base + selection host
 };
-SIZE_UNKNOWN(CStatzGameReg);
+SIZE_UNKNOWN();
 
 class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
@@ -146,7 +146,7 @@ public:
     i32 m_timerWindowLo;             // +0x80  timer window lo
     i32 m_timerWindowHi;             // +0x84  timer window hi
 };
-SIZE_UNKNOWN(CSBI_StatzTabGruntBar);
+SIZE_UNKNOWN();
 
 VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
 

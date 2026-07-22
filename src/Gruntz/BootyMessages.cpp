@@ -365,4 +365,3 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     return 1;
 }
 
-SIZE_UNKNOWN(SecretMsgRow);

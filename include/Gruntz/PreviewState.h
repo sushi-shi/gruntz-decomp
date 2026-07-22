@@ -27,6 +27,6 @@ public:
     CString m_1bc; // +0x1bc  scratch screen-name string (PREVIEW%i / \SCREENZ\%s)
     i32 m_1c0;     // +0x1c0  preview counter
 };
-SIZE_UNKNOWN(CPreviewState);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_PREVIEWSTATE_H

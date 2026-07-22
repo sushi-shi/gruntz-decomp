@@ -24,6 +24,6 @@ struct CDDrawWorkerObj {
     i32 m_64; // +0x64  lo index
     i32 m_68; // +0x68  hi index
 };
-SIZE_UNKNOWN(CDDrawWorkerObj);
+SIZE_UNKNOWN();
 
 #endif // DDRAWMGR_DDRAWFRAMENODE_H

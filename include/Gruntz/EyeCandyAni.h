@@ -30,13 +30,13 @@ public:
     // current draw-delta (g_engineFrameDelta) and return 0.
     i32 AdvanceAnim(); // 0x0acf10
 };
+SIZE(0x54);
 VTBL(CEyeCandyAni, 0x001e8334);
-SIZE(CEyeCandyAni, 0x54);
 
 typedef i32 (CUserLogic::*EyeCandyHandler)();
 struct CEyeCandyActEntry {
     EyeCandyHandler m_fn;
 };
-SIZE_UNKNOWN(CEyeCandyActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CEYECANDYANI_H

@@ -7,14 +7,14 @@
 class CString;    // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDSurface.h>
 
-SIZE_UNKNOWN(ShadeRect);
 typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(ShadeDescr);
 struct ShadeDescr {
     char m_00[0x8];
     u8* m_lut; // +0x08 LUT/palette base
 };
+SIZE_UNKNOWN();
 
 class CImageBuildDesc {
 public:
@@ -27,6 +27,7 @@ public:
     char _19[0x20 - 0x19];
     u8 m_frameData[1]; // +0x20  raw frame data (palette + pixels)
 };
+SIZE_UNKNOWN();
 
 struct CImageFrameRebuildDesc {
     i32 f0;
@@ -38,8 +39,8 @@ struct CImageFrameRebuildDesc {
     i32 f6;
     i32 f7;
 };
+SIZE(0x20); // 8-dword by-value frame descriptor
 
-SIZE(CDDrawShadeBlit, 0x3c);
 class CDDrawShadeBlit {
 public:
     // --- build / decode side (former CImageOwned; src/Image/ImageOwned.cpp) -----
@@ -124,5 +125,6 @@ public:
     u16* m_lutBank1; // +0x34 blend LUT bank 1 (g_clut interior plane G, +0x2)
     u16* m_lutBank2; // +0x38 blend LUT bank 2 (g_clut interior plane B, +0x10002)
 };
+SIZE(0x3c);
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

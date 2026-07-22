@@ -34,6 +34,6 @@ public:
         return reinterpret_cast<CGruntzMgr*>(m_owner->m_gameMgr); // downcast; CGruntzMgr incomplete here (header order) - static once complete
     }
 };
-SIZE(CGruntzWnd, 0x10); // recovered from the operator-new site (gruntz.analysis.news)
+SIZE(0x10); // recovered from the operator-new site (gruntz.analysis.news)
 
 #endif // GRUNTZ_GRUNTZWND_H

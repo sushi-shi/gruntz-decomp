@@ -42,7 +42,7 @@ struct CNetVersionMsg {
     i32 m_remoteVersion; // +0x18  host remote-version word
     i32 m_localVersion;  // +0x1c  host local-version word
 };
-SIZE_UNKNOWN(CNetVersionMsg); // host-version msg view (only +0x18/+0x1c pinned); size TBD
+SIZE_UNKNOWN(); // host-version msg view (only +0x18/+0x1c pinned); size TBD
 
 struct CNetVersionPacket {
     u8 m_0; // +0x00  flag byte (bit7 set)
@@ -54,7 +54,7 @@ struct CNetVersionPacket {
     i32 m_remoteVersion; // +0x18  g_remoteVersion
     i32 m_localVersion;  // +0x1c  g_localVersion
 };
-SIZE(CNetVersionPacket, 0x20); // fully-known stack packet
+SIZE(0x20); // fully-known stack packet
 
 #include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
 
@@ -70,20 +70,20 @@ struct CNetStatPacket {
     i32 m_value;    // +0x8  value / player id
     char m_padc[4]; // +0xc  (0x10 total)
 };
-SIZE_UNKNOWN(CNetStatPacket); // 0x10-byte stat-packet header view; full record size TBD
+SIZE_UNKNOWN(); // 0x10-byte stat-packet header view; full record size TBD
 
 struct CNetPlayerNode {
     CNetPlayerNode* m_next; // +0x0
     char m_pad4[4];
     CNetSessionNode* m_8; // +0x8  the payload per-player record
 };
-SIZE_UNKNOWN(CNetPlayerNode); // player-list node walk-view; retail size TBD
+SIZE_UNKNOWN(); // player-list node walk-view; retail size TBD
 
 struct CNetCmd {
     i32 m_seq; // +0x0  command sequence number
     i32 m_4;   // +0x4  payload word (resync compare)
 };
-SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
+SIZE_UNKNOWN(); // queued-command view (2 fields pinned); retail size TBD
 
 // The per-slot record embedded at CNetCmdBuf+0x150 (the ex-CColorSlot view merged
 // in - its m_slotHead was the m_cmdWord dword, its color-owner id sits at +0x08).
@@ -96,7 +96,7 @@ struct SlotInfo {
     char pad1c[0x2c - 0x1c];
     i32 m_dirty; // +0x2c set on slot re-init
 };
-SIZE_UNKNOWN(SlotInfo);
+SIZE_UNKNOWN();
 
 struct CNetCmdSlot {
     i32 m_state;    // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
@@ -160,14 +160,14 @@ struct CNetCmdSlot {
     // slot's m_ackFlags (+0x3c). (Was a stray CNetSyncCheck view; folded back to the slot.)
     i32 Ready(); // c1320
 };
-SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x64)
+SIZE(0x64); // fully-laid-out inline command slot (array stride 0x64)
 
 struct CNetCmdNode {
     CNetCmdNode* m_next; // +0x0
     CNetCmdNode* m_prev; // +0x4
     CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
 };
-SIZE_UNKNOWN(CNetCmdNode); // CObList node walk-view; retail size TBD
+SIZE_UNKNOWN(); // CObList node walk-view; retail size TBD
 
 struct CNetCmdHdr {
     i32 m_sequence;   // +0x0  sequence
@@ -175,7 +175,7 @@ struct CNetCmdHdr {
     i32 m_flags;      // +0x8  flags word
     u8 m_entryCount;  // +0xc  entry count
 };
-SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record size TBD
+SIZE_UNKNOWN(); // record header prefix (payload follows); full record size TBD
 
 struct CNetCmdPacket {
     i32 m_sequence;       // +0x0  sequence
@@ -185,14 +185,14 @@ struct CNetCmdPacket {
     i32 m_payloadLength; // +0xc  payload length
     char m_payload[1];   // +0x10 payload
 };
-SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
+SIZE_UNKNOWN(); // trailing-payload packet (flexible array); fixed size TBD
 
 struct CNetCmdBuf {
     char m_pad0[0x150]; // +0x000
     SlotInfo m_sel;     // +0x150  the per-slot record (ex the CColorSlot 0xc-view)
     char m_pad180[0x238 - 0x180];
 };
-SIZE(CNetCmdBuf, 0x238); // fully-known command buffer (array stride 0x238)
+SIZE(0x238); // fully-known command buffer (array stride 0x238)
 
 struct GruntRec {
     i32 m_seq;             // +0x00 sequence number
@@ -202,7 +202,7 @@ struct GruntRec {
     i32 m_payloadLen;             // +0x0c payload length
     char m_payload[0x410 - 0x10]; // +0x10 payload
 };
-SIZE(GruntRec, 0x410);
+SIZE(0x410);
 
 class CGruntzCommand;
 
@@ -211,7 +211,7 @@ struct LobbyMsg {
     i32 m_04;   // +0x04
     i32 m_08;   // +0x08
 };
-SIZE_UNKNOWN(LobbyMsg);
+SIZE_UNKNOWN();
 
 void* Unmatched_bf530(i32 zero); // bf530
 void RecycleCmd(void* cmd);      // bf580  __cdecl
@@ -296,7 +296,7 @@ struct CNetSession {
         ResetAll();
     }
 };
-SIZE(CNetSession, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
+SIZE(0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
 
 struct NetDPName {
     u32 dwSize;           // +0x00
@@ -304,7 +304,7 @@ struct NetDPName {
     char* lpszShortNameA; // +0x08
     char* lpszLongNameA;  // +0x0c
 };
-SIZE(NetDPName, 0x10); // DirectPlay DPNAME (only the two name pointers are used)
+SIZE(0x10); // DirectPlay DPNAME (only the two name pointers are used)
 
 struct IDirectPlay4Z {
     // External DirectPlay-shaped COM interface (abstract, __stdcall; no dplay.h in
@@ -392,7 +392,7 @@ struct IDirectPlay4Z {
         i32* lpMsgId
     ) PURE; // slot 49 (+0xc4)
 };
-SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
+SIZE_UNKNOWN(); // external DirectPlay COM interface (opaque object); size TBD
 
 // (CNetPlayerObj DISSOLVED: it was a chimera view over two real classes - the
 // m_players walks (+0x34 "profile" = CNetPlayerListNode::m_desc.m_lpszName) and
@@ -406,7 +406,7 @@ struct CNetListNode {
     char m_pad4[4];             // +0x04  prev node (unused)
     CNetPlayerListNode* m_data; // +0x08  payload player node (polymorphic; virtual dtor)
 };
-SIZE_UNKNOWN(CNetListNode); // CObList node walk-view (m_players); retail size TBD
+SIZE_UNKNOWN(); // CObList node walk-view (m_players); retail size TBD
 
 struct CNetSessionDesc {
     i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
@@ -417,7 +417,7 @@ struct CNetSessionDesc {
     char* m_lpszPassword; // +0x34  lpszPassword
     char m_pad38[0x50 - 0x38];
 };
-SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
+SIZE(0x50); // the 0x50-byte DPSESSIONDESC2
 
 class CNetPlayerListNode : public CObject {
 public:
@@ -447,7 +447,7 @@ public:
     // out-of-lined into the Multi TU (its lone caller, CMulti::StartTitle @0xb72c0).
     char* GroupName(); // 0xb76a0
 };
-SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
+SIZE(0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 
 class CNetSessionNode : public CObject {
@@ -480,7 +480,7 @@ public:
     // engine routine reached through an incremental-link thunk (no body here).
     CString GetName();
 };
-SIZE(CNetSessionNode, 0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
+SIZE(0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
 
 extern "C" void* g_netDirectPlayRiid; // 0x5f0588
 
@@ -500,14 +500,14 @@ struct INetReleasable {
     STDMETHOD(v03)() PURE;                                 // slot 3
     STDMETHOD(Slot10)() PURE;                              // slot 4  (+0x10)
 };
-SIZE_UNKNOWN(INetReleasable); // external COM interface (opaque object); size TBD
+SIZE_UNKNOWN(); // external COM interface (opaque object); size TBD
 
 struct CNetCtrlMsg {
     i32 m_code;     // +0x0  message code (switch tag)
     i32 m_subCode;  // +0x4  sub-code
     i32 m_playerId; // +0x8  payload (player id on the player-left path)
 };
-SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size TBD
+SIZE_UNKNOWN(); // packed control-record view (3 dwords pinned); size TBD
 
 struct MenuSelectEvent {
     char m_pad0[0x4];
@@ -517,7 +517,7 @@ struct MenuSelectEvent {
     char* m_nameA; // +0x20  AddSessionNode name arg A
     char* m_nameB; // +0x24  AddSessionNode name arg B
 };
-SIZE_UNKNOWN(MenuSelectEvent); // menu-select control-message view (touched offsets pinned)
+SIZE_UNKNOWN(); // menu-select control-message view (touched offsets pinned)
 
 class CFontConfig; // <Gruntz/FontConfig.h> (the deref TUs include the real header)
 
@@ -553,14 +553,14 @@ struct CNetCreateCtx {
         m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
     u8* m_74;              // +0x74  the group-enumeration record blob
 };
-SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
+SIZE_UNKNOWN(); // create-context view (only +0x74 pinned); retail size TBD
 
 struct CGroupNode {
     CGroupNode* m_next;      // +0x00  CObList CNode pNext
     CGroupNode* m_prev;      // +0x04  CObList CNode pPrev (not walked here)
     InterfaceObject* m_data; // +0x08  payload service-provider node
 };
-SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
+SIZE_UNKNOWN(); // traversal view of the +0x1c group list node
 
 class CNetMgr : public CObject {
 public:
@@ -916,7 +916,7 @@ public:
     // override (<Gruntz/Multi.h>; retail ??_7CMulti slot 1 = ILT 0x3fb2 -> 0xb5460),
     // run on this=g_curMulti. The orphan alias decl that sat here is gone.)
 };
-SIZE(CNetMgr, 0x8c);       // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
+SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 
 #endif // NET_NETMGR_H

@@ -6,5 +6,6 @@
 #include <Gruntz/ActReg.h>
 
 struct CCoordColl : public CActReg {};
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CHAZNCOLL_H

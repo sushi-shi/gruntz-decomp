@@ -762,7 +762,6 @@ extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
 extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
 extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 
-SIZE_UNKNOWN(CButeTextBuf); // an embedded ostream - not the old fabricated 0x10
 
 static i16 g_tokenLen;
 

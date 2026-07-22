@@ -104,4 +104,3 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     return buf.m_2ec;
 }
 
-SIZE_UNKNOWN(LevelRezData);

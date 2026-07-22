@@ -38,6 +38,7 @@ public:
     i32 m_countdownLo;  // +0x60  countdown (0x1388)
     i32 m_countdownHi;  // +0x64
 };
+SIZE_UNKNOWN();
 VTBL(CToyPeek, 0x1e7204);
 
 typedef i32 (CUserLogic::*ToyPeekActHandler)();

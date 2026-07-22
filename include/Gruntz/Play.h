@@ -22,11 +22,11 @@ struct CGameObject; class CWwdGameObjectA; // CPlay::m_scrollSink (+0x4e4; the C
 
 class CMulti; // notify sink (Multi.h; AckJoinFailure 0xbc420); reloc-masked
 
-SIZE(CHitMarker, 0x8);
 struct CHitMarker {
     i32 m_0; // +0x00  center x
     i32 m_4; // +0x04  center y
 };
+SIZE(0x8);
 
 #include <Gruntz/View.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CImageRegistry / CDDrawSubMgrLeafScan)
@@ -37,6 +37,7 @@ struct Edge {
     i32 m_0;
     i32 m_4;
 };
+SIZE_UNKNOWN();
 
 #include <Gruntz/Timer.h>
 
@@ -611,6 +612,8 @@ public:
     i32 ScanBuildTiles();   // 0x0d53d0
     i32 ScanShuffleQuads(); // 0x0d9290
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 struct StateMgrBZ {
     i32 m_0, m_4, m_8; // +0x00..+0x08
@@ -619,6 +622,8 @@ struct StateMgrBZ {
     i32 m_18;       // +0x18  flags
     i32 Flush();    // 0x385e0 (?Flush@) (the +0x578 state-mgr flush)
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 extern "C" {
     extern i32 g_lastNow;    // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)

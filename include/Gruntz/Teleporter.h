@@ -15,6 +15,7 @@ struct CTeleAnimSink {
     char m_pad24[0x28 - 0x24];
     i32 m_28; // +0x28 active flag
 };
+SIZE_UNKNOWN();
 
 extern "C" u32 g_engineFrameDelta;
 
@@ -79,12 +80,12 @@ public:
     char m_pad6c[0x70 - 0x6c]; // +0x6c  (unmodeled tail; size proven 0x70 from
                                //         AnimWorkerHandlers `new CTeleporter`)
 };
-SIZE(CTeleporter, 0x70);
+SIZE(0x70);
 
 typedef i32 (CUserLogic::*TeleporterHandler)();
 struct CTeleporterActEntry {
     TeleporterHandler m_fn;
 };
-SIZE_UNKNOWN(CTeleporterActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CTELEPORTER_H

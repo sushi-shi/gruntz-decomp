@@ -36,7 +36,6 @@ typedef CFileMemBase CSerialArchive;
 //   +0x11 m_11  char  } setters/getters) AND as a 16-bit flag mask (the bit
 //                       loop), so it is read/written via *(short*)&m_10.
 // ---------------------------------------------------------------------------
-SIZE(CGruntzCommand, 0x14);
 class CState; // the live game state (Select's arg; slot-4 Update() reports its id)
 
 class CGruntzCommand {
@@ -120,10 +119,10 @@ public:
     void CGruntzCommand_0242f0();
     void CGruntzCommand_024430();
 };
+SIZE(0x14);
 
 extern const u16 g_cmdBitTable[16]; // 0x1e9608
 
-SIZE(CGruntzSingleCommand, 0x14);
 VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
@@ -148,8 +147,8 @@ public:
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
 };
+SIZE(0x14);
 
-SIZE(CGruntzMultiCommand, 0x14);
 VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
@@ -173,6 +172,7 @@ public:
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
 };
+SIZE(0x14);
 
 extern i32 g_singleCmdCount;           // 0x62b5dc - non-empty gate
 extern CGruntzCmdList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)

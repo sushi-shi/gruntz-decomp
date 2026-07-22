@@ -175,5 +175,3 @@ i32 CGruntCreationPoint::AdvanceAnim() {
     return 0;
 }
 
-SIZE_UNKNOWN(CAnimSink);
-SIZE_UNKNOWN(CCreationSpriteRefTable);

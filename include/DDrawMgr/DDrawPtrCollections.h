@@ -27,7 +27,7 @@ public:
         void* fx
     ); // slot 10 0x148ac0
 };
-SIZE(CPoolItemA88, 0xc0);
+SIZE(0xc0);
 VTBL(CPoolItemA88, 0x001efa88);
 
 class CPoolItemAB8 : public CDDSurface {
@@ -38,7 +38,7 @@ public:
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148af0 (4 args)
     virtual i32 InstallColorFormat();                        // slot 10 0x148b80
 };
-SIZE(CPoolItemAB8, 0xc0);
+SIZE(0xc0);
 VTBL(CPoolItemAB8, 0x001efab8);
 
 class CPoolItemAE8 : public CDDSurface {
@@ -48,10 +48,9 @@ public:
     virtual i32 GetPoolKind() OVERRIDE;                     // slot 6  0x143ce0 (POOLKIND_BLIT47)
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
-SIZE(CPoolItemAE8, 0xc0);
+SIZE(0xc0);
 VTBL(CPoolItemAE8, 0x001efae8);
 
-SIZE_UNKNOWN(CDDrawPtrCollections);
 struct CDdModePair; // <DDrawMgr/DirectDrawMgr.h> (the mode-pair the finders fill)
 
 class CDDrawPtrCollections {
@@ -219,5 +218,7 @@ public:
     i32 m_940;            // +0x940  - zeroed in ctor (palette tag)
     i32 m_lastError;      // +0x944  last-error stash; zeroed in ctor
 }; // 0x948
+SIZE_UNKNOWN();
+SIZE(0x948);
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H

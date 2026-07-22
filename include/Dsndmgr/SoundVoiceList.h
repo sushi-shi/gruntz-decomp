@@ -9,7 +9,7 @@ struct DSoundLink {
     DSoundLink* m_next; // +0x00
     DSoundLink* m_prev; // +0x04
 };
-SIZE(DSoundLink, 0x8); // 2-word intrusive chain link
+SIZE(0x8); // 2-word intrusive chain link
 
 template<class T> inline T* elemOf(DSoundLink* link) {
     return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
@@ -28,10 +28,10 @@ struct PureSoundElem {
     // the fake placeholder class CAbstract137330).
     ~PureSoundElem() {}
 };
+SIZE(0x4); // one vptr (abstract element base)
 inline void PureSoundElem::operator delete(void* p) {
     RezFree(p);
 }
-SIZE(PureSoundElem, 0x4);        // one vptr (abstract element base)
 VTBL(PureSoundElem, 0x001ef6c8); // 2 __purecall slots (Tick/Stop); the reap-teardown
 
 struct DSoundElem : public PureSoundElem {
@@ -40,7 +40,7 @@ struct DSoundElem : public PureSoundElem {
     u32 m_tag;         // +0x0c  (skipped unless tag == arg, or arg == 0xffff)
     void* m_key;       // +0x10  match key (the owning buffer pointer)
 };
-SIZE(DSoundElem, 0x14); // reaped-element view (real element may add trailing fields)
+SIZE(0x14); // reaped-element view (real element may add trailing fields)
 
 struct DSoundList {
     DSoundLink* m_head; // +0x00
@@ -53,6 +53,6 @@ struct DSoundList {
     void Unlink(DSoundLink* node);                           // 0x1391e0
     void RemoveMatching(void* key, u32 tag);                 // 0x136f60
 };
-SIZE(DSoundList, 0x8); // {head,tail} intrusive list head
+SIZE(0x8); // {head,tail} intrusive list head
 
 #endif // SRC_DSNDMGR_SOUNDVOICELIST_H

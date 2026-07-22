@@ -23,14 +23,14 @@ public:
     char m_pad04[0x2ac - 0x4];
     i32 m_2ac; // +0x2ac flags (0x100 == request exit)
 };
-SIZE_UNKNOWN(AttractActor);
+SIZE_UNKNOWN();
 
 struct AttractActorList {
     char m_pad00[0x4];
     i32 m_count;             // +0x04
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
-SIZE_UNKNOWN(AttractActorList);
+SIZE_UNKNOWN();
 
 extern "C" AttractActorList* g_actorList;
 

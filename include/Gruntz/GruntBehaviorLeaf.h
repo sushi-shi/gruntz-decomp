@@ -12,7 +12,6 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic base + CGameObject (the +0x154 draw-state object)
 
-SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
 public:
     CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL; own fields here - NO CWapX base:
@@ -71,5 +70,6 @@ public:
     i32 m_wandDowntimeLo; // +0x868 wand downtime (lo)
     i32 m_wandDowntimeHi; // +0x86c (hi)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTBEHAVIORLEAF_H

@@ -22,13 +22,13 @@ public:
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
 };
+SIZE(0x54);
 VTBL(CGruntStartingPoint, 0x1e8284);
-SIZE(CGruntStartingPoint, 0x54);
 
 typedef i32 (CUserLogic::*StartActHandler)();
 struct StartActEntry {
     StartActHandler m_fn;
 };
-SIZE_UNKNOWN(StartActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

@@ -24,11 +24,12 @@ public:
     i32 m_state[15];           // +0x54  the captured checkpoint state (15 dwords)
     i32 m_firstEmpty;          // +0x90  first-empty index
 };
+SIZE(0x94);
 VTBL(CCheckpointTrigger, 0x1e7ebc);
-SIZE(CCheckpointTrigger, 0x94);
 
 struct CCheckpointActEntry {
     i32 (CUserLogic::*m_fn)();
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H

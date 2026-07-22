@@ -19,15 +19,18 @@ struct AmbientPoint {
     i32 x; // +0x00
     i32 y; // +0x04
 };
+SIZE_UNKNOWN();
 
 struct AmbSoundMapHolder {
     char m_pad00[0x10];
     CMapStringToPtr m_map; // +0x10  the key -> AmbSoundRecord* table
 };
+SIZE_UNKNOWN();
 struct AmbSoundRecord {
     char m_pad00[0x10];
     DirectSoundMgr* m_mgr; // +0x10
 };
+SIZE_UNKNOWN();
 
 VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
@@ -90,6 +93,6 @@ public:
     i32 m_countdownMs; // +0x50  rolled countdown (ms, drained by g_frameDelta)
     i32 m_phase;       // +0x54  roller phase flag (toggled each reroll)
 };
-SIZE(CRandomAmbientSound, 0x58);
+SIZE(0x58);
 
 #endif // GRUNTZ_CRANDOMAMBIENTSOUND_H

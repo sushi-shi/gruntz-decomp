@@ -4,7 +4,6 @@
 #include <rva.h>
 #include <Bute/PTreeNode.h> // the RTTI-real zErrHandling/CButeNodeEntry/zPTree base hierarchy
 
-SIZE_UNKNOWN(CVariantSlot);
 // The keyed error-handling slot: it is BOTH the variant slot (m_callback/word/tag/label,
 // via Set) and the key-table cursor (Find/Add over the global g_recs23 table). The ex
 // CKeyFinder "reduced view" was this same 0x18-byte object (byte-identical layout, and its
@@ -23,23 +22,24 @@ struct CVariantSlot {
     i32 m_10;                                    // +0x10 (the cursor ctor sets 2)
     char* m_label;                               // +0x14 label / format text / cursor owner (ex m_owner)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(TypeKeyRec);
 struct TypeKeyRec {
     i32 m_key; // +0x00  the key (CVariantSlot::Find subtracts the probe key from it)
     void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
     short m_8; // flag / word slot
     short m_a;
 };
+SIZE_UNKNOWN();
 
 
-SIZE(CButeTreeNode, 0x14);
 struct CButeTreeNode {
     CButeTreeNode* m_child[2]; // +0x00 / +0x04
     i32 m_bit;                 // +0x08  crit-bit index
     char* m_key;               // +0x0c  owned key copy
     void* m_value;             // +0x10  stored value
 };
+SIZE(0x14);
 
 class CButeTree : public zPTree {
 public:
@@ -58,7 +58,7 @@ public:
     void ClearRecursive(i32 recurse); // 0x16e070
     void BaseDtor();                  // 0x16da60
 };
-SIZE_UNKNOWN(CButeTree);
+SIZE_UNKNOWN();
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 
 extern CButeTree g_buteTree;

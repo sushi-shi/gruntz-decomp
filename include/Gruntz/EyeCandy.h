@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CEyeCandy : CUserLogic)
 
-SIZE_UNKNOWN(CEyeCandy);
 class CEyeCandy : public CUserLogic, public CWapX {
 public:
 public:
@@ -21,6 +20,7 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE_UNKNOWN();
 VTBL(CEyeCandy, 0x001e843c);
 
 #endif // GRUNTZ_CEYECANDY_H

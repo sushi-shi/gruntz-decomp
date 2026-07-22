@@ -31,12 +31,13 @@ public:
     // class_sizes reports UNVERIFIABLE (not a mismatch) for a duplicated name - the
     // same way CBrickz::m_own hid. Same fix, same evidence.
 };
+SIZE(0x54);
 VTBL(CSingleAnimation, 0x1e745c);
-SIZE(CSingleAnimation, 0x54);
 
 typedef i32 (CUserLogic::*SingleAnimHandler)();
 struct CSingleAnimActEntry {
     SingleAnimHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

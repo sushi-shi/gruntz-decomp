@@ -25,11 +25,9 @@ extern WapGetWindow g_pGetWindow;           // 0x2c44d8
 
 #include <Gruntz/ObList.h>
 
-SIZE(CDialog, 0x5c);
 
 class CLatencyList;
 
-SIZE_UNKNOWN(CBattlezDlg);
 VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
@@ -151,8 +149,8 @@ public:
     // default processing - `return Default();` tail-jmps to CWnd::Default.
     long DoDefault();
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CBattlezDlgCustom);
 VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
 public:
@@ -171,8 +169,8 @@ public:
 
     CString m_customName; // +0x5c  (default CString)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CBattlezDlgColors);
 VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
 public:
@@ -195,8 +193,8 @@ public:
     i32 m_pickedColor;         // +0x64  (= 0; the picked value read after DoModal)
     i32 m_68;                  // +0x68  (= a2; always 0 at call sites; role unproven)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CMultiStartDlg);
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
@@ -357,8 +355,8 @@ public:
     CString m_70;             // +0x70  (default CString)
     CStringList m_74;         // +0x74  (CStringList(0xa); ctor 0x1b5d04 / dtor 0x1b5d78)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CCheckpointDlg);
 VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
 public:
@@ -378,14 +376,15 @@ public:
     // Checkbox handler (0x23590): mirror control 0x53a into m_isCheckpointPrompts.
     void OnToggleCheckpointPrompts();
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CMultiHelpDlg);
 class CMultiHelpDlg : public CDialog {
 public:
     virtual ~CMultiHelpDlg() OVERRIDE;                        // slot 1
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
 };
+SIZE_UNKNOWN();
 VTBL(CMultiHelpDlg, 0x001ea474);
 
 #endif // SRC_GRUNTZ_DIALOGS_H

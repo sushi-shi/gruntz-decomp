@@ -23,13 +23,13 @@ public:
     i64 m_startTime; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
     i64 m_duration;  // +0x60  phase duration (lo dword of the i64)
 };
+SIZE(0x68);
 VTBL(CTimeBomb, 0x1e771c);
-SIZE(CTimeBomb, 0x68);
 
 typedef void (CUserLogic::*TBombHandler)();
 struct CTBombEntry {
     TBombHandler m_fn; // [entry]
 };
-SIZE_UNKNOWN(CTBombEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CTIMEBOMB_H

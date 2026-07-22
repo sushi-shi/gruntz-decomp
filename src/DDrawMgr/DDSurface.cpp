@@ -1861,6 +1861,3 @@ i32 CDDSurface::Scale(i32 n) {
     return m_pitch * n;
 }
 
-SIZE_UNKNOWN(CFileImageElement);
-SIZE_UNKNOWN(CFileImageSrc);
-SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record

@@ -65,7 +65,7 @@ public:
     HSEQUENCE m_seqHandle; // +0x58  AIL sequence handle (queried by IsBusy)
     char* m_loadBuffer;    // +0x5c  owned load buffer (operator new; SoundBankLoad::Load)
 };
-SIZE(CGruntzSoundInnerZ, 0x60);       // allocated 0x60 bytes (inner sound object)
+SIZE(0x60); // allocated 0x60 bytes (inner sound object)
 VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
 
 class CGruntzSoundZ {
@@ -98,6 +98,6 @@ public:
     i32 m_mdiHandle;                // +0x24
     i32 m_enabled;                  // +0x28
 };
-SIZE(CGruntzSoundZ, 0x2c); // 0x1c CMapStringToOb member + 4 dwords
+SIZE(0x2c); // 0x1c CMapStringToOb member + 4 dwords
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

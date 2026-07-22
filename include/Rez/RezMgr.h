@@ -11,6 +11,7 @@
 struct RezFindRec {
     char raw[0x24];
 };
+SIZE(0x24); // RE'd WIN32-find-style fixed record
 extern "C" i32 RezStatEntry(const char* name, RezFindRec* rec);
 
 class CRezDir;
@@ -48,6 +49,7 @@ public:
     CRezItmBase* m_prev;    // +0x08
     CSymParser* m_parent; // +0x0c  the owning parser CRezItm polls via Retry() (slot 2)
 };
+SIZE(0x10); // "16 bytes" base (derived fields start at +0x10)
 
 class CRezItm : public CRezItmBase {
 public:
@@ -95,6 +97,7 @@ public:
     i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)
 };
+SIZE(0x24); // operator new leaf size 0x24
 
 extern "C" i32 RezFClose(void* fp);                             // 0x11f780
 extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);  // 0x18c220
@@ -131,6 +134,7 @@ public:
     i32 m_readonly;        // +0x30  mode flag (= 1; slot-4 Open re-latches)
     i32 m_write;           // +0x34  mode flag (= 0)
 };
+SIZE(0x38); // verified: ParseBuffer `push 0x38; new; call 0x13c940`
 
 class CRezDirNode; // fwd (a CHashElement holds a CRezDirNode* sub-dir at +0x14)
 
@@ -141,6 +145,7 @@ struct RezSrc {
     i32 m_1c;            // +0x1c  (must be <= 1)
     CRezItmBase* m_stream; // +0x20  the polymorphic read stream (family item)
 };
+SIZE_UNKNOWN(); // partial view of the foreign archive-source object
 
 class CRezDirNode {
 public:
@@ -157,6 +162,7 @@ public:
     char m_pad40[8];  // +0x40..+0x47
     u8* m_buf;        // +0x48  payload buffer / loaded gate
 };
+SIZE_UNKNOWN(); // partial view of the loader's recursive dir node
 
 #include <Gruntz/String.h>
 

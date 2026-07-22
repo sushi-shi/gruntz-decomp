@@ -72,7 +72,7 @@ public:
     i32 m_onLeft; // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
     i32 m_drawGate; // +0x58  draw gate (0 => not built)
 };
-SIZE_UNKNOWN(CSBI_SideTab);
+SIZE_UNKNOWN();
 VTBL(CSBI_SideTab, 0x001eae3c); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_SBI_SIDETAB_H

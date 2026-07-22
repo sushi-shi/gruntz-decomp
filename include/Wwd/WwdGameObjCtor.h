@@ -54,7 +54,7 @@ struct WwdCtorBase {
     char _pc4[0xd8 - 0xc4];
     int m_d8;
 };
-SIZE_UNKNOWN(WwdCtorBase); // CResolveNode base subobject (+0x00..+0xd8)
+SIZE_UNKNOWN(); // CResolveNode base subobject (+0x00..+0xd8)
 
 struct CWwdGameObjBaseCtor : public WwdCtorBase {
     CString m_label; // +0xdc  ??0CString (0x1b9b93)
@@ -62,7 +62,7 @@ struct CWwdGameObjBaseCtor : public WwdCtorBase {
     int m_188;                              // +0x188  object id
     CWwdGameObjBaseCtor(int a, int b, int c); // 0x15b390 (I obj)
 };
-SIZE_UNKNOWN(CWwdGameObjBaseCtor); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
+SIZE_UNKNOWN(); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 
 #include <DDrawMgr/AnimWorkerObj.h>
 

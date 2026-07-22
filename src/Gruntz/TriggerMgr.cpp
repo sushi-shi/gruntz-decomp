@@ -1764,7 +1764,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     }
     return 1;
 }
-SIZE_UNKNOWN(CMapStringToOb);
 
 static const char s_LightFx[] = "LightFx";
 static const char s_GAME_FLASH[] = "GAME_FLASH";
@@ -2923,10 +2922,3 @@ CTriggerMgr::~CTriggerMgr() {
     Cleanup();
 }
 
-SIZE_UNKNOWN(CMapHolderB);
-SIZE_UNKNOWN(CMapHolderA);
-SIZE_UNKNOWN(CSelGrunt);
-SIZE_UNKNOWN(CSelGridCell);
-SIZE_UNKNOWN(CSelKey);
-SIZE_UNKNOWN(CSelNode);
-SIZE_UNKNOWN(CGroupSel);

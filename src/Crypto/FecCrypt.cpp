@@ -366,5 +366,3 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     dst[len] = 0;
 }
 
-SIZE(CFecFile, 0x814c);
-SIZE(FecEntry, 0x10c); // the CFecFile+0x18 per-entry record (typed in FecCrypt.h)

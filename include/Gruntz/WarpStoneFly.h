@@ -8,7 +8,6 @@ class CStatusBarMgr;
 
 class CImage; // <Image/CImage.h> - the drawn sprite frame
 
-SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
 public:
     CWarpStoneFly(); // 0x109bb0  clears m_sprite/m_owner, returns this
@@ -32,16 +31,18 @@ public:
     CImage* m_sprite;       // +0x38  the drawn sprite frame (CImage::RenderFrame)
     CStatusBarMgr* m_owner; // +0x3c  back-pointer to the owning CStatusBarMgr
 };
+SIZE(0x40);
+SIZE_UNKNOWN();
 
 struct CWsfDrawable {
     char m_pad0[0x14];
     i32 m_context; // +0x14  surface context
 };
+SIZE_UNKNOWN();
 struct CWsfGameMgr {
     char m_pad0[0x4];
     CWsfDrawable* m_drawable; // +0x04  active drawable
 };
-SIZE_UNKNOWN(CWsfDrawable);
-SIZE_UNKNOWN(CWsfGameMgr);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_WARPSTONEFLY_H

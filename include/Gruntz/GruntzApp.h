@@ -4,7 +4,6 @@
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
 
-SIZE(CGruntzApp, 0x254);
 VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
 class CGruntzApp : public CGameApp {
 public:
@@ -44,5 +43,6 @@ public:
         return LoadSwitchDownSprite() != 0;
     }
 };
+SIZE(0x254);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

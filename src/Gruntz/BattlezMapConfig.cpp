@@ -5299,4 +5299,3 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     unit->m_31c.RemoveAll();
     return 1;
 }
-SIZE_UNKNOWN(CAnimNameRecord);

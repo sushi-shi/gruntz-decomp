@@ -196,7 +196,6 @@ const i32 g_rotTableB_60d078[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
 }; // CCW transitions
 
-SIZE_UNKNOWN(Orient3);
 
 // @early-stop
 // Counter-register regalloc wall: retail pins the loop counter in edi (push edi at
@@ -757,6 +756,3 @@ i32 Handler03ddf0(CGameObject* owner) {
     return 1;
 }
 
-SIZE_UNKNOWN(CDemoWorld);
-SIZE_UNKNOWN(CDemoSetup);
-SIZE_UNKNOWN(CTriRecord);

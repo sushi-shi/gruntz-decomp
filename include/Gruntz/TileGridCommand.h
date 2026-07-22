@@ -17,7 +17,7 @@ struct TgcMap {
     char _pad00[0x5c];
     CPlaneRender* m_5c; // +0x5c  active layer
 };
-SIZE_UNKNOWN(TgcMap);
+SIZE_UNKNOWN();
 
 struct TgcGameMgr {
     char _pad00[0x08];
@@ -25,12 +25,11 @@ struct TgcGameMgr {
     char _pad0c[0x24 - 0x0c];
     TgcMap* m_24; // +0x24  the tile map
 };
-SIZE_UNKNOWN(TgcGameMgr);
+SIZE_UNKNOWN();
 
 struct TgcRedraw {};
-SIZE_UNKNOWN(TgcRedraw);
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGameRegistry);
 
 #include <Gruntz/TileTriggerLogic.h>
 

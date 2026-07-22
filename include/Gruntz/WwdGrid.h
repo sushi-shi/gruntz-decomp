@@ -9,7 +9,6 @@
 
 struct BucketHead;
 
-SIZE_UNKNOWN(BucketHead);
 struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherited
     BucketHead() {
         m_head = 0;
@@ -21,8 +20,8 @@ struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherite
     // FreeBuckets DOES call ??_M, so the dtor was opaque to it, i.e. out-of-line.
     ~BucketHead();
 };
+SIZE_UNKNOWN();
 
-SIZE(CWwdGrid, 0x44);
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 class CWwdGrid : public CObject {
 public:
@@ -63,5 +62,6 @@ public:
     i32 m_cellW;           // +0x3c  2^shiftX
     BucketHead* m_buckets; // +0x40
 };
+SIZE(0x44);
 
 #endif // GRUNTZ_WWDGRID_H

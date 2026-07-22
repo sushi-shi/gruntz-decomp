@@ -61,8 +61,9 @@ public:
 
     CMapStringToPtr m_10; // +0x10  m_map
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H

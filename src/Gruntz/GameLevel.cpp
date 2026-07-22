@@ -2310,8 +2310,3 @@ VTBL(CGameLevel, 0x001f0150); // ??_7CGameLevel (was g_gameLevelVtbl)
 VTBL(CImageSet1, 0x001f0198); // ??_7CImageSet1 (was g_imageSet1Vtbl)
 VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
 VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
-SIZE(CImageSet1, 0x10);
-SIZE(CImageSet2, 0x24);
-SIZE(CImageSet3, 0x18); // ReadImageSet's `new CImageSet3` (push 0x18)
-SIZE(CGameLevel, 0x6d4);
-SIZE_UNKNOWN(CTileImageSet);

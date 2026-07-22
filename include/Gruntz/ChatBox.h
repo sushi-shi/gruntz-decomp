@@ -85,6 +85,6 @@ public:
     i32 m_row1Offset;        // +0x74 row1 horizontal draw offset
     i32 m_row1FrameIdx;      // +0x78 row1 index into the frame table
 };
-SIZE_UNKNOWN(CChatBox);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CHATBOX_H

@@ -706,4 +706,3 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     return 1;
 }
 
-SIZE_UNKNOWN(CWarlordAnimSub);

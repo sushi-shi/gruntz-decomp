@@ -11,7 +11,6 @@
 
 extern "C" i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
-SIZE_UNKNOWN(CTrieNode);
 struct CTrieNode {
     CTrieNode* m_0; // +0x0  child[0]
     CTrieNode* m_4; // +0x4  child[1]
@@ -19,8 +18,8 @@ struct CTrieNode {
     char* m_c;      // +0xc  owned key copy
     void* m_10;     // +0x10 stored value
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CProjActMap);
 class CProjActMap {
 public:
     void* Insert(const char* key, void* value); // 0x1933b0
@@ -35,5 +34,6 @@ public:
     i32 m_24;        // +0x24  key bit-length (strlen*8)
     i32 m_28;        // +0x28  cleared on entry
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_PROJACTCACHE_H

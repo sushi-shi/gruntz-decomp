@@ -15,18 +15,18 @@ struct CMenuItemCatalog {
     // (There is NO fold: CMapStringToPtr's Lookup is a SEPARATE body at 0x1b8438.)
     CMapStringToOb m_10; // +0x10 the string->item map base (real MFC)
 };
-SIZE_UNKNOWN(CMenuItemCatalog);
+SIZE_UNKNOWN();
 struct CMenuItemHostOwner {
     char pad0[0x10];
     CMenuItemCatalog* m_catalog; // +0x10 -> the catalog
 };
-SIZE_UNKNOWN(CMenuItemHostOwner);
+SIZE_UNKNOWN();
 
 struct CMenuItemTemplate {
     CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
     class CChatBox* m_4;     // +0x04 -> the chatbox
 };
-SIZE_UNKNOWN(CMenuItemTemplate);
+SIZE_UNKNOWN();
 
 class CMenuItem {
 public:
@@ -105,6 +105,7 @@ public:
     CString m_54;                  // +0x54  (GetField54 only; role unproven)
     CString m_58;                  // +0x58  (GetField58 only; role unproven)
 };
+SIZE(0x5c);
 
 inline CMenuItem::CMenuItem() {
     m_host = 0;

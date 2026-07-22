@@ -536,11 +536,5 @@ void ForceEmitCGameAppDtor() {
 }
 #pragma inline_depth()
 
-SIZE(CGameMgr, 0x2c);
 
 VTBL(CGameApp, 0x001e9b0c);
-SIZE(
-    CGameApp,
-    0x254
-); // == SIZE(CGruntzApp): the derived app adds no fields (m_errorDetail@0x250 last)
-SIZE(GameInfo, 0x1d4); // self-describing: size field == sizeof == 0x1d4

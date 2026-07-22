@@ -700,4 +700,3 @@ CFontConfig::~CFontConfig() {
     Reset();
 }
 
-SIZE_UNKNOWN(FontItem);

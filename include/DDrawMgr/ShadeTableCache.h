@@ -25,6 +25,7 @@ struct CShadeTable {
     i32 ReadFrom(CFile* file, i32 id);           // 0x1501f0  (LoadFrom* wrap a local CFile)
     i32 SaveToFile(CString path);                // 0x1503f0  (completeness; no caller)
 };
+SIZE(0x10); // array-element stride (0x10-byte buffer wrapper)
 
 struct CShadeTableArray : CObject {
     CShadeTable** m_pData; // +0x04 (cache +0x08)
@@ -38,10 +39,13 @@ struct CShadeTableArray : CObject {
     // slots 0/3/4 (GetRuntimeClass/AssertValid/Dump) inherited from MFC CObject
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
+SIZE(0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
+SIZE(0x14); // vptr + 4 array fields over the CObject base
 
 struct PalEntry {
     u8 r, g, b, pad;
 };
+SIZE(0x4); // 4-byte palette record (256-entry array stride)
 
 class CShadeTableCache {
 public:
@@ -81,5 +85,6 @@ public:
     i32 m_initialized;      // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject
 };
+SIZE(0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 #endif // GRUNTZ_DDRAWMGR_SHADETABLECACHE_H

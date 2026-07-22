@@ -6,7 +6,7 @@
 struct DirDesc {
     char b[0x10];
 };
-SIZE_UNKNOWN(DirDesc);
+SIZE_UNKNOWN();
 
 // MotionEntity - the position-bearing entity Classify (0x4a780) runs on.
 // @identity-TODO: the owning class is unrecovered (orphan; world coords as doubles at
@@ -21,6 +21,6 @@ struct MotionEntity {
     i32 m_144;                                          // +0x144  snapped cell B
     DirDesc* Classify(MotionEntity* other, char exact); // 0x4a780
 };
-SIZE_UNKNOWN(MotionEntity);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_DIRECTIONCLASSIFY_H

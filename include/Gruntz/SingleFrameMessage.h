@@ -29,12 +29,13 @@ public:
     // NO user-declared dtor: retail 0xf640 is COMPILER-GENERATED (implicit; pin in
     // SingleFrameMessage.cpp).
 };
+SIZE(0x54);
 VTBL(CSingleFrameMessage, 0x1e864c);
-SIZE(CSingleFrameMessage, 0x54);
 
 typedef i32 (CUserLogic::*SingleFrameHandler)();
 struct CSingleFrameActEntry {
     SingleFrameHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

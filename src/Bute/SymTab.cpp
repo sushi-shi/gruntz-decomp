@@ -1642,5 +1642,3 @@ void CSymParser::AddNode(void* rec) {
     }
 }
 
-SIZE_UNKNOWN(CParseSource);
-SIZE_UNKNOWN(ParseMappedSource);

@@ -2,6 +2,7 @@
 #define GRUNTZ_SPLASHSTATE_H
 
 #include <Gruntz/State.h> // CState base (m_4/m_8/m_c/m_2c facets) + GameStateId
+#include <rva.h>
 
 class CSplashState : public CState {
 public:
@@ -37,6 +38,7 @@ public:
     i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)
     // ENDS AT 0x1bc - the allocation-proven size (TransitionState: `push 0x1bc`).
 };
-SIZE_UNKNOWN(CSplashState);
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SPLASHSTATE_H

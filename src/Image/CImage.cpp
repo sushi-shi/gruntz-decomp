@@ -1293,13 +1293,5 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirtyH = h;
     info->m_dirtyArmed = 0;
 }
-SIZE_UNKNOWN(CBlitXform);
 
-SIZE_UNKNOWN(CDDrawSurfaceDesc);
-SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
-SIZE_UNKNOWN(CBlitClipOwner);
-SIZE_UNKNOWN(CImageParent);
-SIZE_UNKNOWN(CImageFrameDesc);
-SIZE_UNKNOWN(CImage);     // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
 VTBL(CImage, 0x001eaa2c); // vtable_names -> code (RTTI game class)
-SIZE_UNKNOWN(CResolveNode);

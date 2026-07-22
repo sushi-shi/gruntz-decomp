@@ -11,7 +11,6 @@ namespace ApiCallerStubs {
 }
 using ApiCallerStubs::CImagePaletteNode;
 
-SIZE_UNKNOWN(CImagePool);
 class CImagePool {
 public:
     // Inline ctor/dtor: the preview dialog is the only site that `new`s/`delete`s the
@@ -56,5 +55,6 @@ public:
     CPtrList m_palettes;              // +0x2c  palette nodes (m_pHead @+0x30)
     i32 m_48;                         // +0x48
 };
+SIZE_UNKNOWN();
 
 #endif // SRC_IMAGE_IMAGEPOOL_H

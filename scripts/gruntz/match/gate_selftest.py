@@ -73,8 +73,8 @@ class _Tree:
 class TestClassSizesProse(unittest.TestCase):
     def test_size_in_a_comment_is_not_a_declaration(self):
         """THE ORIGINAL BUG: a note mentioning SIZE(C, 0x30) beat the real SIZE(C, 0x34)."""
-        with _Tree({"a.h": "class CUserLogic {};\nSIZE(CUserLogic, 0x34);\n",
-                    "b.cpp": "// (2) SIZE(CUserLogic, 0x30) revisited - a base at +0x34 ...\n"}):
+        with _Tree({"a.h": "class CUserLogic {};\nSIZE(0x34);\n",
+                    "b.cpp": "// (2) SIZE(0x30) under CUserLogic revisited - a base at +0x34 ...\n"}):
             self.assertEqual(class_sizes._declared_sizes(), {"CUserLogic": 0x34},
                              "a SIZE() written in prose was read as a declaration")
 
@@ -82,7 +82,7 @@ class TestClassSizesProse(unittest.TestCase):
         """Two REAL decls disagreeing must FAIL, not silently pick the last writer."""
         # The gate reports the conflict on stderr; swallow it so this EXPECTED failure
         # does not read as a real one in the build log it now runs inside.
-        with _Tree({"a.h": "SIZE(CFoo, 0x34);\n", "b.h": "SIZE(CFoo, 0x30);\n"}):
+        with _Tree({"a.h": "struct CFoo {};\nSIZE(0x34);\n", "b.h": "struct CFoo;\nSIZE(0x30);\n"}):
             with contextlib.redirect_stderr(io.StringIO()) as err:
                 with self.assertRaises(SystemExit) as cm:
                     class_sizes._declared_sizes()
@@ -92,7 +92,7 @@ class TestClassSizesProse(unittest.TestCase):
             self.assertIn("0x30", err.getvalue())
 
     def test_agreeing_duplicates_are_fine(self):
-        with _Tree({"a.h": "SIZE(CFoo, 0x34);\n", "b.h": "SIZE(CFoo, 0x34);\n"}):
+        with _Tree({"a.h": "struct CFoo {};\nSIZE(0x34);\n", "b.h": "struct CFoo;\nSIZE(0x34);\n"}):
             self.assertEqual(class_sizes._declared_sizes(), {"CFoo": 0x34})
 
     def test_loadbearing_ignores_english_prose(self):
@@ -414,16 +414,16 @@ class TestSlotBindingBaseline(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 class TestClassMetaScanner(unittest.TestCase):
     def test_a_comment_never_declares_anything(self):
-        with _Tree({"a.cpp": "// class CGhost { };  SIZE(CGhost, 0x10);  VTBL(CGhost, 0x1)\n"
-                             "/* class CBlock {}; SIZE(CBlock, 0x20); */\n"
-                             "class CReal {};\nSIZE(CReal, 0x30);\n"}):
+        with _Tree({"a.cpp": "// class CGhost { };  SIZE(0x10);  VTBL(CGhost, 0x1)\n"
+                             "/* class CBlock {}; SIZE(0x20); */\n"
+                             "class CReal {};\nSIZE(0x30);\n"}):
             self.assertEqual(set(class_meta.unique_class_defs()), {"CReal"})
             self.assertEqual(class_meta.size_annotated_names(), {"CReal"})
 
     def test_a_double_slash_inside_a_string_is_not_a_comment(self):
         """The state machine must not treat "http://x" as starting a comment and eat
         the real declaration that follows on the same line."""
-        with _Tree({"a.cpp": 'const char* u = "http://x"; \nSIZE(CAfter, 0x40);\n'}):
+        with _Tree({"a.cpp": 'const char* u = "http://x";\nstruct CAfter {};\nSIZE(0x40);\n'}):
             self.assertIn("CAfter", class_meta.size_annotated_names())
 
 

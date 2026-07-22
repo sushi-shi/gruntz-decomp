@@ -60,8 +60,8 @@ public:
     // 0x155630 (frame-name reverse lookup; reloc-masked direct call).
     void ReadField(i32 handle, char* tmp, i32* outZero);
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CDDrawWorkerRegistry);
 VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H

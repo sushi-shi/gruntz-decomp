@@ -296,4 +296,3 @@ i32 CSpotLight::Tick() {
     return 0;
 }
 
-SIZE_UNKNOWN(CSpotActEntry);

@@ -962,5 +962,3 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
 
-SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
-SIZE_UNKNOWN(CSaveGame); // fully modeled but tail not proven; owner may upgrade

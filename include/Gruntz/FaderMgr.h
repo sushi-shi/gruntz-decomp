@@ -6,7 +6,6 @@
 #include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
 #include <Gruntz/Fader.h> // the real polymorphic CFader element base (virtual ~CFader)
 
-SIZE_UNKNOWN(CFaderArray);
 VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 struct CFaderArray : public CObject {
     virtual ~CFaderArray() OVERRIDE;               // slot 1 (retail dtor 0x17e430)
@@ -19,6 +18,7 @@ struct CFaderArray : public CObject {
 
     CFaderArray();
 };
+SIZE_UNKNOWN();
 
 inline CFaderArray::CFaderArray() {
     m_pData = 0;
@@ -33,7 +33,6 @@ inline CFaderArray::~CFaderArray() {
     }
 }
 
-SIZE_UNKNOWN(CFaderMgr);
 class CFaderMgr {
 public:
     CFaderMgr();                                           // 0x17d8f0
@@ -56,5 +55,6 @@ public:
     CFaderArray m_arr;    // +0x10 element array subobject
     i32 m_sharedSet2cArg; // +0x24
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H

@@ -67,7 +67,7 @@ public:
     i32 m_dstRect;   // +0x5c  dest-rect base (lea &m_dstRect: BltEx dstRect)
     i32 m_fgTop;     // +0x60  ftol(fillTop - clampedFill); foreground y top (m_fgTop - 2)
 };
-SIZE_UNKNOWN(CSBI_WellGoo);
+SIZE_UNKNOWN();
 VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 
 #endif // SBI_WELLGOO_H

@@ -38,10 +38,12 @@ from pathlib import Path
 
 import sys
 
-from gruntz.core.class_meta import (_blank_comments, iter_class_defs, rel,
-                                     size_annotated_names, source_files, unique_class_defs)
+from gruntz.core.class_meta import (_blank_comments, iter_class_defs,
+                                     positional_size_annotations, rel,
+                                     size_annotated_names, source_files,
+                                     unique_class_defs)
 
-_SIZE_DECL_RE = re.compile(r"\bSIZE\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
+# sizes come from the POSITIONAL labels via class_meta.positional_size_annotations()
 _REPO = Path(__file__).resolve().parents[3]
 _STRUCTS = _REPO / "build/gen/structs.json"
 
@@ -66,13 +68,14 @@ def _declared_sizes() -> dict:
     the gate must not pick one. Agreeing duplicates are fine (one class, restated).
     """
     seen: dict = defaultdict(dict)     # name -> {value: [locations]}
-    for path in source_files():
-        code = _blank_comments(path.read_text(errors="ignore"))
-        for m in _SIZE_DECL_RE.finditer(code):
-            n = m.group(2)
-            val = int(n, 16 if n.startswith("0x") else 10)
-            seen[m.group(1)].setdefault(val, []).append(
-                f"{rel(path)}:{code.count(chr(10), 0, m.start()) + 1}")
+    ann = positional_size_annotations()
+    for name, entries in ann.items():
+        if name is None:
+            continue
+        for val, path, lineno in entries:
+            if val is None:
+                continue  # SIZE_UNKNOWN(): tracked, no exact value
+            seen[name].setdefault(val, []).append(f"{rel(path)}:{lineno}")
     conflicts = {c: v for c, v in seen.items() if len(v) > 1}
     if conflicts:
         print(f"class-size correctness: {len(conflicts)} class(es) DECLARE CONFLICTING "

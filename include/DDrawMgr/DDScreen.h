@@ -9,9 +9,9 @@ struct CTileInfo {
     u32 m_width;  // +0x4  tile width
     u32 m_height; // +0x8  tile height
 };
+SIZE_UNKNOWN();
 
 class CMoviePlayer;
 typedef CMoviePlayer CDDScreen;
-SIZE_UNKNOWN(CTileInfo);
 
 #endif // GRUNTZ_DDRAWMGR_DDSCREEN_H

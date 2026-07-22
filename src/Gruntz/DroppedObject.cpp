@@ -842,6 +842,3 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CDroppedObject);
-SIZE_UNKNOWN(DropAnimSink);
-SIZE_UNKNOWN(CGameRegistry);

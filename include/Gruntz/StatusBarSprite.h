@@ -20,13 +20,13 @@ public:
     static void RegisterActs(); // 0x10c610
     i32 AdvanceAnim();          // 0x10c810 (the per-frame handler PMF; body in the stub TU)
 };
+SIZE(0x54);
 VTBL(CStatusBarSprite, 0x1e7fc4);
-SIZE(CStatusBarSprite, 0x54);
 
 typedef i32 (CUserLogic::*StatusBarSpriteHandler)();
 struct CStatusBarSpriteActEntry {
     StatusBarSpriteHandler m_fn;
 };
-SIZE_UNKNOWN(CStatusBarSpriteActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CSTATUSBARSPRITE_H

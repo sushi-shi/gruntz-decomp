@@ -11,7 +11,7 @@ struct CScanCell {
     i32 m_type; // +0x10  tile type/code
     char _14[0x1c - 0x14];
 };
-SIZE(CScanCell, 0x1c); // stride proven by every scan walk (cell++ steps 0x1c)
+SIZE(0x1c); // stride proven by every scan walk (cell++ steps 0x1c)
 
 struct CScanGrid {
     char _00[8];
@@ -22,7 +22,7 @@ struct CScanGrid {
     RECT m_60;      // +0x60 dirty rect
     i32 m_70, m_74; // +0x70/0x74 its size
 };
-SIZE_UNKNOWN(CScanGrid);
+SIZE_UNKNOWN();
 
 struct CGameRegistry; // CTileScan::m_4 (the registry whose +0x150 m_focusSlots[] the scan probes)
 class CGrunt;         // CTileScan::Scan arg (the scanned grunt)
@@ -42,7 +42,7 @@ struct CTileScan {
     i32 m_c8;              // +0xc8  dwell threshold
     i32 Scan(CGrunt* arg); // 0x35f10
 };
-SIZE_UNKNOWN(CTileScan);
+SIZE_UNKNOWN();
 
 // @identity-TODO: the 10x10 tile-region scan owner (GruntTileScan.cpp
 // CScanMgr::ScanRegion @0x32ce0) - a sibling orphan scan-owner of CTileScan (both
@@ -53,6 +53,7 @@ SIZE_UNKNOWN(CTileScan);
 struct CScanGoal { // CScanMgr::m_f4[] element (a {x,y} goal point)
     i32 m_0, m_4;
 };
+SIZE_UNKNOWN();
 struct CScanMgr {
     // Fire the per-cell trigger (msg 0xd87) on a flagged tile. No body -> the __thiscall
     // through the 0x1fb9 ILT thunk (-> 0x300c0) reloc-masks.
@@ -66,13 +67,12 @@ struct CScanMgr {
     i32 m_f8;         // +0xf8  goal count
     i32 ScanRegion(CGrunt* g); // 0x32ce0
 };
-SIZE_UNKNOWN(CScanGoal);
-SIZE_UNKNOWN(CScanMgr);
+SIZE_UNKNOWN();
 
 struct CScanSub10 {
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c screen x, +0x60 screen y
 };
-SIZE_UNKNOWN(CScanSub10); // tree-wide tag (was hosted in GruntPathScan.cpp before the CGrunt fold)
+SIZE_UNKNOWN(); // tree-wide tag (was hosted in GruntPathScan.cpp before the CGrunt fold)
 
 #endif // GRUNTZ_GRUNTZ_CSCANGRID_H

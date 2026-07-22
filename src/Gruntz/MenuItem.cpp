@@ -10,10 +10,8 @@
 
 #include <stdio.h> // engine sprintf (reloc-masked; CMenuItem2::Init)
 
-SIZE(CMenuItem, 0x5c);
 VTBL(CMenuItem, 0x001f08c0);
 
-SIZE(CMenuItem2, 0x74);
 VTBL(CMenuItem2, 0x001f08f8);
 
 RVA(0x00184610, 0x20)

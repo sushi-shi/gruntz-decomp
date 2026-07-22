@@ -72,7 +72,7 @@ public:
     FILE* m_handle; // +0x14  CRT FILE* (0 = closed); passed to fseek/fread/... by value
     CRezDir* m_dir; // +0x18  owning directory / handle cache
 };
-SIZE(CRezFile, 0x1c); // verified: CSymParser::ParseRecords `push 0x1c; new; ctor 0x13cac0`
+SIZE(0x1c); // verified: CSymParser::ParseRecords `push 0x1c; new; ctor 0x13cac0`
 
 extern "C" const char g_wildcard[]; // 0x61a0a0  "*.*"
 

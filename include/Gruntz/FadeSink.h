@@ -4,7 +4,6 @@
 
 #include <Ints.h>
 
-SIZE_UNKNOWN(IFadeSink);
 // VTBL_ABSENT: never-constructed notify facet - RunFade dispatches slot 22 (+0x58,
 // __stdcall) on an object reached via the Set2c(**) argument. @identity-TODO: every
 // reconstructed SetConfig caller passes 0, so the receiver class is unrecovered
@@ -35,5 +34,6 @@ struct IFadeSink { // real polymorphic; FadeNotify is slot 22 (+0x58), __stdcall
     virtual void S21();
     virtual void __stdcall FadeNotify(i32, i32); // +0x58 (slot 22)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_FADESINK_H

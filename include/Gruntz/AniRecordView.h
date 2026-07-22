@@ -39,6 +39,7 @@ struct CAniRecordView : public CObject {
     i32 m_count;              // +0x2c  resolved-index array length
     i32* m_indices;           // +0x30  resolved-index array
 };
+SIZE_UNKNOWN();
 
 // --- vtable catalog ---
 // The primary 5-slot CObject-derived facet vtable. [vtbl-4]=NULL (verified) -> no RTTI

@@ -66,7 +66,7 @@ struct StreamFeeder {
     // FillBuffer the whole window (TickSubManagers fires it with -1 on idle+stop).
     i32 TickPump(i32 now);
 };
-SIZE(StreamFeeder, 0x44);       // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
+SIZE(0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
 VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
 
 // The DERIVED per-voice feeder (retail vtable 0x5ef6e0) embedded at StreamVoice+0x6c.
@@ -84,7 +84,7 @@ struct StreamVoiceFeeder : StreamFeeder {
     virtual i32 FeedData() OVERRIDE; // [1] 0x137490
     virtual void OnDrain() OVERRIDE; // [2] 0x1374b0
 };
-SIZE(StreamVoiceFeeder, 0x44);       // derived feeder; no added fields
+SIZE(0x44); // derived feeder; no added fields
 VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
 
 #endif // DSNDMGR_STREAMFEEDER_H

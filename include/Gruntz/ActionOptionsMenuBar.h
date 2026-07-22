@@ -41,3 +41,4 @@ public:
     CSprite* m_greyChipSprite; // +0x38  grey-chip sprite
     i32 m_loaded;              // +0x3c  loaded flag
 };
+SIZE_UNKNOWN();

@@ -683,14 +683,3 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
     return 1;
 }
 
-SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
-SIZE_UNKNOWN(CMenuBrightnessHolder);
-SIZE_UNKNOWN(CMenuBrightnessReset);
-SIZE_UNKNOWN(CMenuBrightnessTarget);
-SIZE_UNKNOWN(CMenuRenderM10);
-SIZE_UNKNOWN(CSoundFxEmitter);
-SIZE_UNKNOWN(CDDrawSurfacePair);
-SIZE_UNKNOWN(FxResource);
-SIZE_UNKNOWN(CMgrPersistObj);
-SIZE_UNKNOWN(CRezLocator);
-SIZE_UNKNOWN(SplashParams);

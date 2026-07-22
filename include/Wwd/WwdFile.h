@@ -28,6 +28,7 @@ struct WwdHeader {
     u32 checksum;                 // +0x2EC
     u8 pad_2f0[0x5f4 - 0x2f0];
 };
+SIZE(0x5f4); // on-disk WWD header (RE'd 0x5F4 bytes)
 
 class WwdInputStream {
 public:
@@ -52,13 +53,13 @@ private:
     i32 m_open;      // +0x08  open/refcount flag
     char* m_name;    // +0x0C  CString filename buffer (the CString body pointer)
 };
+SIZE(0x10); // 16-byte file-stream object (full layout to +0xc)
 
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CPlane/CPlaneRender/
 
 class CDDSurface;
 struct CPlaneTile;
 
-SIZE_UNKNOWN(CPlaneFrame);
 struct CPlaneFrame {
     u8 pad_0[0x14];
     CPlaneTile** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
@@ -66,19 +67,20 @@ struct CPlaneFrame {
     i32 m_lo; // +0x64  valid handle range [m_lo, m_hi]
     i32 m_hi; // +0x68
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CPlaneTile);
 struct CPlaneTile {
     u8 pad_0[0x28];
     u32 m_trans;       // +0x28  BltFast transparency/colour-key flag
     CDDSurface* m_src; // +0x2c  source surface
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CPlaneDrawCtx);
 struct CPlaneDrawCtx {
     u8 pad_0[0x2c];
     CDDSurface* m_surface; // +0x2c  the blit target surface
 };
+SIZE_UNKNOWN();
 
 // The palette tail hanging off CDDrawWorkerMapSmall::m_cachedWorker (+0x64).
 // @identity-TODO: these two are the ONLY links of the cascade still unproven - the
@@ -99,10 +101,12 @@ struct CPlanePalArr {
     u8 pad_0[0xc];
     u8* m_rgb; // +0xc  RGB888 triples (4 bytes/entry)
 };
+SIZE_UNKNOWN();
 struct CPlanePalOwner {
     u8 pad_0[0x10];
     CPlanePalArr* m_palette; // +0x10
 };
+SIZE_UNKNOWN();
 class CFileMemBase;
 
 extern void* operator new(u32 size);
@@ -127,5 +131,6 @@ public:
     // the spatial worker @+0xb0 off it - so they are CDDrawWorkerHost methods now. This
     // class keeps only its two genuinely-static WWD helpers.)
 };
+SIZE_UNKNOWN(); // namespace-class (method-only)
 
 #endif // SRC_WWD_WWDFILE_H

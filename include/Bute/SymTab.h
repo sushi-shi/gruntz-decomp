@@ -2,6 +2,7 @@
 #define SRC_BUTE_SYMTAB_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Bute/Hash.h> // CHashElement (the embeddable hash-node prefix records carry)
 
@@ -22,7 +23,7 @@ struct CSymTabNode : public CHashElement {
         m_record = 0;
     }
 };
-SIZE(CSymTabNode, 0x18); // no new fields over CHashElement
+SIZE(0x18); // no new fields over CHashElement
 VTBL(CSymTabNode, 0x001ef748);
 
 u32 __stdcall PackTag(const char* s);         // 0x13b910
@@ -40,7 +41,7 @@ struct CSymRecNode : public CHashElement {
         m_record = 0;
     }
 };
-SIZE(CSymRecNode, 0x18); // no new fields over CHashElement
+SIZE(0x18); // no new fields over CHashElement
 VTBL(CSymRecNode, 0x001ef744);
 
 class CSymRec {
@@ -67,7 +68,7 @@ public:
     CHash m_valTable;      // +0x24  the record's value sub-table (Walk 0x13c270)
     CSymTab* m_scope;      // +0x2c  the owning scope (back-ptr)
 };
-SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
+SIZE(0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
 struct CParseSource; // <Gruntz/ParseSource.h>
 
@@ -215,7 +216,7 @@ public:
     CHash m_symbols;      // +0x40  leaf-symbol table (Walk 0x13c270; destructed first)
     char* m_mappedBuf;    // +0x48  owned mapped/shared buffer (nonzero = mapping active)
 };
-SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
+SIZE(0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
 extern "C" const char g_sepSlash[]; // 0x60cff0  "\"  (CSymTab directory-path builder)
 

@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-SIZE(CNetJoinPacket, 0x28);
 struct CNetJoinPacket {
     u8 m_0; // +0x00  flag byte (bit7)
     char m_pad1[3];
@@ -20,8 +19,8 @@ struct CNetJoinPacket {
     i32 m_playerId;        // +0x10  local player id (m_localPlayerId)
     char m_playerName[0x14]; // +0x14  player name (strcpy)
 };
+SIZE(0x28);
 
-SIZE(CNetConfigBlob, 0x11c);
 struct CNetConfigBlob {
     u8 m_0; // +0x000  flag byte (bit7)
     char m_pad1[3];
@@ -34,6 +33,7 @@ struct CNetConfigBlob {
     i32 m_114;          // +0x114  <- CMulti::m_600
     i32 m_118;          // +0x118  <- CMulti::m_rngSeed
 };
+SIZE(0x11c);
 
 struct CNetMsg {
     u8 m_0; // +0x00  flag byte (bit7 => "process me")
@@ -44,5 +44,6 @@ struct CNetMsg {
     i32 m_10;    // +0x10
     i32 m_14;    // +0x14  player id (channel-assign path)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_NET_NETPACKETS_H

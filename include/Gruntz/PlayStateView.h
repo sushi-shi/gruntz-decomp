@@ -18,12 +18,12 @@ struct PlayStatusSlot {
     i32 m_status; // +0x20  (3 == won/done)
     char m_pad24[0x64 - 0x24];
 };
+SIZE_UNKNOWN();
 
 struct CPlayStateView {
     char m_pad0[0x520];
     PlayStatusSlot* m_520; // +0x520
 };
-SIZE_UNKNOWN(PlayStatusSlot);
-SIZE_UNKNOWN(CPlayStateView);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_PLAYSTATEVIEW_H

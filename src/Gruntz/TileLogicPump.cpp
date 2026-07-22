@@ -759,8 +759,3 @@ i32 CTileTriggerTransition::Handler_110110() {
     return 0;
 }
 
-SIZE_UNKNOWN(CWarpStonePadActEntry);
-SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
-SIZE_UNKNOWN(CCheckpointActEntry);
-SIZE_UNKNOWN(CTileTriggerActEntry);
-SIZE_UNKNOWN(CBrickzActEntry);

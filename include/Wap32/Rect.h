@@ -14,6 +14,6 @@ struct CRect : public tagRECT {
     i32 Width(); // 0x17b500 right-left (out-of-line IN THE FONT TU - retail placement;
                  // was the fabricated TextRange::Span - all 5 retail callers pass a CRect)
 };
-SIZE(CRect, 16);
+SIZE(16);
 
 #endif // WAP32_RECT_H

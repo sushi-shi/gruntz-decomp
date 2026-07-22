@@ -34,6 +34,7 @@ public:
     i32 m_tileCol;      // +0x64  tile column (bound object screen-X >> 5)
     i32 m_tileRow;      // +0x68  tile row    (bound object screen-Y >> 5)
 };
+SIZE_UNKNOWN();
 VTBL(CStaticHazard, 0x001e7824);
 
 // ONE entry type: the registered handlers (LoadAttributes/LoadAttributes2) return
@@ -43,5 +44,6 @@ typedef i32 (CUserLogic::*HaznHandler)();
 struct CHaznEntry {
     HaznHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSTATICHAZARD_H

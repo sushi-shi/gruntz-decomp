@@ -6,6 +6,7 @@ struct CVariantSlot;
 struct CActEntry;
 class CDDrawPtrCollections;
 typedef CDDrawPtrCollections CDirectDrawMgr; // one class, both spellings
+SIZE_UNKNOWN();
 class CGameWnd; // g_activeGameWnd's pointee (?g_activeGameWnd@@3PAVCGameWnd@@A)
 struct CVariantSlot;
 struct CDropEntry;

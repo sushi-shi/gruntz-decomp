@@ -25,7 +25,6 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_A = 0x1c, // CWwdGameObjectA::GetClassId @0x15b760 (the CreateSprite kind)
 };
 
-SIZE(CLoadable, 0x10);
 VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
 class CLoadable : public CWapObj {
 public:
@@ -66,5 +65,6 @@ public:
         m_0c = 0;
     }
 };
+SIZE(0x10);
 
 #endif // GRUNTZ_CLOADABLE_H

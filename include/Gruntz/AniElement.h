@@ -8,6 +8,7 @@
 #include <rva.h>                  // OVERRIDE
 
 typedef CObArray CAniRecordArray;
+SIZE_UNKNOWN();
 
 struct CAniSource {
     char m_pad00[0x8];
@@ -17,6 +18,7 @@ struct CAniSource {
     char m_pad14[0xc];
     char m_data[1]; // +0x20 name bytes followed by the record stream
 };
+SIZE_UNKNOWN();
 
 class CAniElement : public CObject {
 public:
@@ -41,7 +43,7 @@ public:
     float m_scale;             // +0x20
     i32 m_total;               // +0x24
 }; // size = 0x28
-SIZE(CAniElement, 0x28);
+SIZE(0x28);
 VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 
 #endif // GRUNTZ_CANIELEMENT_H

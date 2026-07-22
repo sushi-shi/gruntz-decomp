@@ -836,8 +836,6 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     return 1;
 }
 
-SIZE_UNKNOWN(MapElemA);
-SIZE_UNKNOWN(BrickzFreeRec);
 
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {

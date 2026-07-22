@@ -8,7 +8,6 @@
 
 class CGrunt;
 
-SIZE_UNKNOWN(CGruntHealthSprite);
 class CGruntHealthSprite : public CUserLogic, public CWapX {
 public:
 public:
@@ -44,12 +43,13 @@ public:
     i32 m_health; // +0x5c  stashed health value
     i32 m_60;     // +0x60  screen-Y bias (HealthUpdate adds it to the grunt's screen y)
 };
+SIZE_UNKNOWN();
 VTBL(CGruntHealthSprite, 0x001e7ba4);
 
 typedef i32 (CUserLogic::*HealthActHandler)();
-SIZE_UNKNOWN(CHealthActEntry);
 struct CHealthActEntry {
     HealthActHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

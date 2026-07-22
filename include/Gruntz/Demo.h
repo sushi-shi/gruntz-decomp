@@ -4,7 +4,6 @@
 #include <rva.h>         // OVERRIDE
 #include <Gruntz/Play.h> // canonical CPlay base (typed MFC members -> the /GX fold)
 
-SIZE_UNKNOWN(CDemo);
 class CDemo : public CPlay {
 public:
     // Empty ctor: cl runs the CPlay/CState base chain + auto-stamps ??_7CDemo
@@ -31,6 +30,7 @@ public:
     i32 m_520; // +0x520  the slot-1 loader stores 0x124f80 on success
     i32 m_524; // +0x524
 };
+SIZE_UNKNOWN();
 
 extern "C" const i32 g_rotTableA_60d008[27]; // 0x60d008  CW transitions
 extern "C" const i32 g_rotTableB_60d078[27]; // 0x60d078  CCW transitions

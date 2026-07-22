@@ -71,7 +71,7 @@ public:
     i32 m_frameIdxB;        // +0x40  frame index B (resolved into m_frameB)
     CImage* m_standaloneFrame;    // +0x44  standalone frame handle (blitted directly)
 };
-SIZE_UNKNOWN(CSBI_GruntMachine);
+SIZE_UNKNOWN();
 VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 
 #endif // SBI_GRUNTMACHINE_H

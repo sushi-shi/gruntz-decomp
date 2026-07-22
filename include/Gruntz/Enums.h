@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_ENUMS_H
 
 #include <Ints.h>
+#include <rva.h>
 
 enum GruntType {
     GRUNT_NORMAL = 0, // NORMALGRUNT      (unarmed; m_gruntKind default 0)
@@ -231,5 +232,6 @@ struct GruntzVolumeAttenuation {
     };
     // table[i] = -1000 * log2(100 / i), for i in 1..100
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_ENUMS_H

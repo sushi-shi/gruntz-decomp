@@ -12,6 +12,6 @@ struct SbRect {
     SbRect() {}
     SbRect(i32 l, i32 t, i32 r, i32 b) : left(l), top(t), right(r), bottom(b) {}
 };
-SIZE_UNKNOWN(SbRect);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_SBRECT_H

@@ -20,7 +20,7 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
-SIZE(CGruntWingzTimeSprite, 0x64);       // recovered from operator-new sites (gruntz.analysis.news)
+SIZE(0x64); // recovered from operator-new sites (gruntz.analysis.news)
 VTBL(CGruntWingzTimeSprite, 0x001e77cc); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_CGRUNTWINGZTIMESPRITE_H

@@ -26,8 +26,8 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CExplosion, 0x1e766c);
-SIZE(CExplosion, 0x54);
 
 extern CLogicActTable g_logicActReg_6447f8;
 
@@ -35,6 +35,6 @@ typedef i32 (CUserLogic::*ExplosionActHandler)();
 struct CExplosionActEntry {
     ExplosionActHandler m_fn;
 };
-SIZE_UNKNOWN(CExplosionActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CEXPLOSION_H

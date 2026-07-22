@@ -1455,5 +1455,3 @@ i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
 DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 
-SIZE_UNKNOWN(CObject);
-SIZE_UNKNOWN(CDDrawWorker);

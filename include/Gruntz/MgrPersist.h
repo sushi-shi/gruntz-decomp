@@ -15,6 +15,7 @@ struct SplashParams {
     i32 m_04;     // +0x04
     i32 m_08, m_0c, m_10, m_14;
 };
+SIZE_UNKNOWN();
 
 struct CMgrPersistObj {
     i32 m_00;                      // +0x00
@@ -38,5 +39,6 @@ struct CMgrPersistObj {
     i32 Load(CSerialArchive* s); // 0x0faff0 (+0x30 slot pass; ex SaveRecord::Load)
     i32 Init();                  // 0x0face0 (misattributed CState::InputVirtual; SYMBOL'd)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_MGRPERSIST_H

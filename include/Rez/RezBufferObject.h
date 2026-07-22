@@ -7,7 +7,7 @@ struct RezElem40 {
     RezElem40(); // 0x17e300 (declared-only; reloc-masked)
     char m_b[0x28];
 };
-SIZE(RezElem40, 0x28);
+SIZE(0x28);
 
 struct CRezBufferObject : public CObject {
     RezElem40* m_pData; // +0x04  heap buffer (mesh-record array)
@@ -31,4 +31,4 @@ struct CRezBufferObject : public CObject {
     // method, not a free "CArrayE40" the fader TU invented. Body in Fader.cpp.
     void SetSize(i32 nNewSize, i32 nGrowBy);
 };
-SIZE_UNKNOWN(CRezBufferObject);
+SIZE_UNKNOWN();

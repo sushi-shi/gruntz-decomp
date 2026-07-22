@@ -708,4 +708,3 @@ void SaveVideoCheckboxes(HWND hDlg) {
     g_gameReg->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
     g_gameReg->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
 }
-SIZE_UNKNOWN(CSliderCtrl);

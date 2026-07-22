@@ -725,4 +725,3 @@ i32 BlackoutSystemPalette() {
     return 0;
 }
 
-SIZE_UNKNOWN(LogPal256);

@@ -90,13 +90,3 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
 //    dispatch view is the canonical class's own slot 5.)
 // ===========================================================================
 // --- WwdFile.h header classes ---
-SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
-SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
-SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
-SIZE_UNKNOWN(CPlaneSurfDesc);
-SIZE_UNKNOWN(CPlaneSurf);
-SIZE_UNKNOWN(CPlanePalArr);
-SIZE_UNKNOWN(CPlanePalOwner);
-SIZE_UNKNOWN(CPlanePalHost);
-SIZE_UNKNOWN(CPlaneMapData);
-SIZE_UNKNOWN(WwdFile); // namespace-class (method-only)

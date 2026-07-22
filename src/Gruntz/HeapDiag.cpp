@@ -143,8 +143,6 @@ int HeapStats() {
 }
 
 #include <tlhelp32.h>
-SIZE(PROCESSENTRY32, 0x128);
-SIZE(MODULEENTRY32, 0x224);
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 

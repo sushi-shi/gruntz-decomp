@@ -35,6 +35,6 @@
 struct CButeStoreResetCopyClear : public CButeStore {
     void ResetCopy(); // 0x212a0
 };
-SIZE(CButeStoreResetCopyClear, 0x2c);
+SIZE(0x2c);
 
 #endif // SRC_BUTE_BUTESTOREDTORCOPIES_H

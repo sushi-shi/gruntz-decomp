@@ -486,12 +486,5 @@ void CRezFile::Noop() {}
 // this obj's 0x21a0a4 mode strings - dossier #14A. Their Rez-flavored names are
 // an @identity-TODO carried there.)
 
-SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
 VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
-SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
-SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
 VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
-SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
-SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
-SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
-SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node

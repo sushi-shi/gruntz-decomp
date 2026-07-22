@@ -11,7 +11,6 @@ class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
-SIZE(CDDrawSubMgrPages, 0x1c);
 class CDDrawSubMgrPages : public CWapObj {
 public:
     virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0)
@@ -57,6 +56,8 @@ public:
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
+SIZE(0x1c);
+SIZE_UNKNOWN();
 VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 
 // ---------------------------------------------------------------------------
@@ -100,7 +101,7 @@ public:
     i32 m_srcRect[4];      // +0x1c..+0x2b  {0,0,w,h}
     CDDSurface* m_surface; // +0x2c  held surface slot (the derived ctors zero it)
 }; // 0x30
-SIZE(CDrawSubWorker, 0x30);
+SIZE(0x30);
 VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
 class CDDrawSurfaceChildA : public CDrawSubWorker {
@@ -122,7 +123,7 @@ public:
     virtual i32 SetGeometry(i32 a1, i32 a2, i32 a3) OVERRIDE;
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE; // [10] 0x1646b0 (T obj def)
 }; // 0x30 (no own fields)
-SIZE(CDDrawSurfaceChildA, 0x30);
+SIZE(0x30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

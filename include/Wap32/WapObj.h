@@ -5,7 +5,6 @@
 #include <Ints.h>
 #include <Wap32/Object.h> // CObject - the 5-slot engine grand-base (vtbl 0x5e8cb4)
 
-SIZE(CWapObj, 0x04);
 // VTBL_ABSENT: the engine grand-base is never standalone-constructed - its default
 // bodies (IsLoaded @0x13b6-thunked, IsReady @0x1c08-thunked) are dispatched only
 // through derived vtables; no ??_7CWapObj exists in the image (every analysed
@@ -20,5 +19,6 @@ public:
     // rest of the family (CImage, CResolveNode, the workers, ...) keep it.
     virtual i32 IsReady();
 };
+SIZE(0x04);
 
 #endif // WAP32_CWAPOBJ_H

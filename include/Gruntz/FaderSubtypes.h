@@ -10,12 +10,12 @@
 
 #include <Gruntz/FxModeDesc.h>
 
-SIZE_UNKNOWN(FaderSrc);
 struct FaderSrc {
     char pad00[0x18];
     i32 m_frameCount; // +0x18  frame count (w)
     i32 m_count;      // +0x1c  element count
 };
+SIZE_UNKNOWN();
 class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
 struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
 
@@ -25,9 +25,8 @@ struct CFaderRadialCell {
     float m_fade; // +0x08 fade threshold
     i32 m_pixel;  // +0x0c source pixel (byte)
 };
-SIZE(CFaderRadialCell, 0x10);
+SIZE(0x10);
 
-SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
 class CFaderMesh : public CFader {
 public:
@@ -59,8 +58,8 @@ public:
     CRezBufferObject
         m_meshBuf; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
 };
+SIZE(0x6c);
 
-SIZE(CFaderSine, 0x7d5c);
 VTBL(CFaderSine, 0x001f0848);
 class CFaderSine : public CFader {
 public:
@@ -90,8 +89,8 @@ public:
     i32 m_arr2[2000];         // +0x3edc
     i32 m_arr3[2000];         // +0x5e1c  scattered, handed to ScatterSamples
 };
+SIZE(0x7d5c);
 
-SIZE(CFaderFlat, 0x50);
 VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
 public:
@@ -116,8 +115,8 @@ public:
     i32 m_desc14;    // +0x48  desc +0x14
     i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
+SIZE(0x50);
 
-SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
@@ -164,8 +163,8 @@ public:
     i32 m_surfWidth;        // +0x2064  active-surface width
     i32 m_surfHeight;       // +0x2068  active-surface height
 };
+SIZE(0x206c);
 
-SIZE(CFaderRadial, 0x5c);
 VTBL(CFaderRadial, 0x001f0810);
 class CFaderRadial : public CFader {
 public:
@@ -199,8 +198,8 @@ public:
     i32 m_centerX;             // +0x54
     i32 m_centerY;             // +0x58
 };
+SIZE(0x5c);
 
-SIZE(CFaderShape, 0x494);
 VTBL(CFaderShape, 0x001f0890);
 class CFaderShape : public CFader {
 public:
@@ -257,5 +256,6 @@ public:
     // with a placeholder name so the SIZE is honest; do not invent a meaning for it.
     i32 m_490; // +0x490
 };
+SIZE(0x494);
 
 #endif // GRUNTZ_GRUNTZ_CFADERSUBTYPES_H

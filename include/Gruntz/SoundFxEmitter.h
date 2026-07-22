@@ -24,6 +24,7 @@ struct FxResource {
     char _08[0x14];
     i32 m_gate; // +0x1c gate field (must be set to proceed)
 };
+SIZE_UNKNOWN();
 
 class CSoundFxEmitter {
 public:
@@ -42,5 +43,6 @@ public:
     FxResource* m_resChain; // +0x0c resource chain root
     CFaderMgr* m_faderMgr;  // +0x10 fader manager
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSOUNDFXEMITTER_H

@@ -25,7 +25,7 @@ struct TtcNode {
     // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
     void* m_data;
 };
-SIZE_UNKNOWN(TtcNode);
+SIZE_UNKNOWN();
 
 typedef ::CPtrList TtcObList;
 inline TtcNode* TtcHead(const ::CPtrList& l) {
@@ -185,6 +185,6 @@ public:
     CTileTriggerLogic* m_latchedLeaf; // +0x70  id-0x15 latches the built logic leaf here
     i32 m_built;                // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
-SIZE_UNKNOWN(CTileTriggerContainer);
+SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

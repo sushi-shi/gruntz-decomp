@@ -2,6 +2,7 @@
 #define SRC_IMAGE_CFILEIMAGERECORDS_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #pragma pack(push, 1)
 struct DecodeSrc {
@@ -15,6 +16,7 @@ struct DecodeSrc {
     char _1e[0x36 - 0x1e];
     // +0x36  source palette the grayscale-ramp build reads
 };
+SIZE_UNKNOWN();
 #pragma pack(pop)
 
 struct BmpFileHeader {
@@ -24,6 +26,7 @@ struct BmpFileHeader {
     u32 _0a;       // +0x0a
     u32 bfOffBits; // +0x0e -> stored at struct +0x0e... (0x436)
 };
+SIZE_UNKNOWN();
 
 struct TgaHeader {
     char magic[2]; // +0x00
@@ -33,8 +36,8 @@ struct TgaHeader {
     i16 planes;   // +0x10
     i16 bitCount; // +0x12
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(RtBitmapResHeader); // resource-header view (only the first 0x10 bytes pinned)
 struct RtBitmapResHeader {
     i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
     i32 m_4; // +0x04 (stored into the surface desc width)
@@ -42,5 +45,6 @@ struct RtBitmapResHeader {
     char m_padc[0xe - 0xc];
     i16 m_e; // +0x0e (must be 8)
 };
+SIZE_UNKNOWN(); // resource-header view (only the first 0x10 bytes pinned)
 
 #endif // SRC_IMAGE_CFILEIMAGERECORDS_H

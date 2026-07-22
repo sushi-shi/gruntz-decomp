@@ -112,14 +112,14 @@ public:
     i32 m_28;        // +0x28  (serialized in LoadState)
     i32 m_block[24]; // +0x2c..0x8b  (the ctor zeroes exactly these 24; ends at 0x8c)
 };
-SIZE(CTileTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CTileTriggerSwitchLogic, 0x001eae8c); // vtable_names -> code (RTTI game class)
 
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileMultiTriggerSwitchLogic(); // 0x111f10
 };
-SIZE(CTileMultiTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CTileMultiTriggerSwitchLogic, 0x001eaeb4);
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
@@ -127,7 +127,7 @@ class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileExclusiveTriggerSwitchLogic(); // 0x112050
 };
-SIZE(CTileExclusiveTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CTileExclusiveTriggerSwitchLogic, 0x001eaecc);
 
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
@@ -135,7 +135,7 @@ class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileSecretTriggerSwitchLogic(); // 0x112790
 };
-SIZE(CTileSecretTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CTileSecretTriggerSwitchLogic, 0x001eaf24);
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
@@ -144,7 +144,7 @@ class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileTimeTriggerSwitchLogic(); // 0x1127c0
 };
-SIZE(CTileTimeTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c);
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
@@ -166,7 +166,7 @@ public:
         i32 a9
     ) OVERRIDE;
 };
-SIZE(CCheckpointTriggerSwitchLogic, 0x8c);
+SIZE(0x8c);
 VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54);
 
 #endif // SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H

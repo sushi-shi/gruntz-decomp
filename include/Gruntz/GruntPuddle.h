@@ -11,27 +11,27 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-SIZE_UNKNOWN(CObjListNode);
 struct CObjListNode {
     CObjListNode* m_next; // +0x00
     CObjListNode* m_prev; // +0x04
     void* m_data;         // +0x08
 };
-SIZE_UNKNOWN(CObjList);
+SIZE_UNKNOWN();
 struct CObjList {
     char m_pad00[0x4];
     CObjListNode* m_head;             // +0x04  list head
     void RemoveAt(CObjListNode* pos); // 0x1b4ac7 (__thiscall, unlink + free node)
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN(); // {vptr,head,tail}=0xc header; full engine size unproven
 
-SIZE_UNKNOWN(CGruntPuddleSink);
 struct CGruntPuddleSink {};
+SIZE_UNKNOWN();
 
 extern "C" u32 g_engineFrameDelta;
 
 extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 
-SIZE_UNKNOWN(CGruntPuddle);
 class CGruntPuddle : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -72,6 +72,7 @@ public:
     i32 m_placeIndex; // +0x6c  selector/icon index (Place() a1 snapshot; GetSel draws by
                       //         it, the resurrect passes it through as PlaceObject a6)
 };
+SIZE_UNKNOWN();
 VTBL(CGruntPuddle, 0x1e8124);
 
 extern CLogicActTable g_logicDispatch_6445e8;
@@ -80,6 +81,6 @@ typedef i32 (CUserLogic::*PuddleActHandler)();
 struct CPuddleActEntry {
     PuddleActHandler m_fn;
 };
-SIZE_UNKNOWN(CPuddleActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

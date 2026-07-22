@@ -14,6 +14,8 @@ class CFileImageSrc;        // fwd (Decode's run-length source header; full def 
 struct ClipRect16 {
     i32 a, b, c, d;
 };
+SIZE(0x10); // 16-byte by-value rect/clip record
+SIZE(0x10); // 16-byte by-value rect/clip record
 
 enum PidFlags {
     PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
@@ -34,7 +36,7 @@ struct PidHeader {
     u32 unk1;     // +0x1c
     // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
 };
-SIZE(PidHeader, 0x20);
+SIZE(0x20);
 
 enum FileImageFormat {
     FMT_BMP = 1,
@@ -42,7 +44,6 @@ enum FileImageFormat {
     FMT_PID = 4,
 };
 
-SIZE(CDDSurface, 0xc0);
 
 typedef enum DDSurfacePoolKind {
     POOLKIND_PLAIN = 0,     // CDDSurface base default        (0x141300: xor eax,eax)
@@ -308,6 +309,8 @@ public:
     i32(__cdecl* m_b8)(CDDSurface*);
     i32 m_hasColorKey; // +0xbc  cleared
 };
-SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
+SIZE(0xc0);
+SIZE(0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
+SIZE_UNKNOWN();
 
 #endif // DDRAWMGR_CDDSURFACE_H

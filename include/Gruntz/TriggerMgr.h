@@ -569,7 +569,7 @@ public:
     i32 m_teleportWanted;              // +0x3fc  teleportloop wanted this frame
     i32 m_groupFlag;                   // +0x400  magic-group active flag
 };
-SIZE_UNKNOWN(CTriggerMgr);
+SIZE_UNKNOWN();
 
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 

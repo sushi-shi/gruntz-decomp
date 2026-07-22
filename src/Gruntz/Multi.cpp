@@ -1371,13 +1371,6 @@ i32 CMulti::JoinSession() {
     return 1;
 }
 
-SIZE_UNKNOWN(CMulti);
-SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
-SIZE_UNKNOWN(CMultiLogicDesc);
-SIZE_UNKNOWN(CMultiMgrOptions);
-SIZE_UNKNOWN(CSlotConfig);
-SIZE_UNKNOWN(CRefresh21bd0);
-SIZE_UNKNOWN(PBListSink);
 
 // ---------------------------------------------------------------------------
 // MultiJoinDlgProc (0x0b8020) - the MULTI_JOIN "wait for players" modeless dialog
@@ -2072,7 +2065,6 @@ void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
 extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
 
-SIZE_UNKNOWN(CNetMsg);
 
 // @early-stop
 // tail-merge + regalloc wall (~78%): the whole dispatcher is byte-faithful - the

@@ -19,14 +19,14 @@ public:
     i32 m_flag;     // +0x04  = 0 at ctor; "wanted" mark (LoadObject*Resources set 1)
     i32 m_data;     // +0x08  = the ctor's 2nd arg (0 from the voice builder)
 };
-SIZE(CSpawnEntry, 0xc);
+SIZE(0xc);
 
 struct CSpawnNode {
     CSpawnNode* m_next;   // +0x00
     CSpawnNode* m_prev;   // +0x04
     CSpawnEntry* m_entry; // +0x08
 };
-SIZE(CSpawnNode, 0xc);
+SIZE(0xc);
 
 class CSpawnList {
 public:
@@ -45,6 +45,6 @@ public:
     CSpawnNode* m_cursor; // +0x1c  scan cursor (LoadObject*Resources' re-scan)
     i32 m_lastPicked;     // +0x20  last-picked index (-1; the weighted picker's memory)
 };
-SIZE(CSpawnList, 0x24);
+SIZE(0x24);
 
 #endif // GRUNTZ_GRUNTZ_SPAWNLIST_H

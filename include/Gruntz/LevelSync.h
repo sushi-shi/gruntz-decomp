@@ -23,6 +23,7 @@ struct SyncSub {
     virtual ~SyncSub() {} // slot 0
     virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
 };
+SIZE_UNKNOWN();
 
 class CLevelSync; // owner (defined below); m_3c back-links to it
 struct CLevelSyncChild {
@@ -30,6 +31,7 @@ struct CLevelSyncChild {
     CLevelSync* m_3c; // +0x3c back-link to the owner (= `this` in Sync)
     CLevelSyncChild();
 };
+SIZE_UNKNOWN();
 
 class CLevelSync {
 public:
@@ -46,8 +48,6 @@ public:
 
     i32 m[0x160];
 };
-SIZE_UNKNOWN(CLevelSync);
-SIZE_UNKNOWN(CLevelSyncChild);
-SIZE_UNKNOWN(SyncSub);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_LEVELSYNC_H

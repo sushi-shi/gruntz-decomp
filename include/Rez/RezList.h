@@ -10,10 +10,10 @@ public:
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
 };
-SIZE_UNKNOWN(CObjNode); // a view of the (variably-sized) list elements
+SIZE_UNKNOWN(); // a view of the (variably-sized) list elements
 
 struct CRezListNode : public CObjNode {};
-SIZE_UNKNOWN(CRezListNode);
+SIZE_UNKNOWN();
 
 #include <Bute/ObjListBase.h>
 struct CObjList : public CObjListBase {
@@ -27,7 +27,6 @@ struct CObjList : public CObjListBase {
     CObjNode* m_tail;            // +0x08
     void Remove(CObjNode* node); // 0x1852e0
 };
-SIZE_UNKNOWN(CObjList); // {vptr,head,tail}=0xc header; full engine size unproven
 
 VTBL(CRezList, 0x001ef7c8);
 struct CRezList : public CObjList {
@@ -48,6 +47,6 @@ struct CRezList : public CObjList {
     void InsertAfter(CRezListNode* pos, CRezListNode* node);  // 0x185240
     void InsertBefore(CRezListNode* pos, CRezListNode* node); // 0x185290
 };
-SIZE(CRezList, 0xc); // {vptr,head,tail}
+SIZE(0xc); // {vptr,head,tail}
 
 #endif // REZ_REZLIST_H

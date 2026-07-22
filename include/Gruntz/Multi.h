@@ -28,6 +28,7 @@ public:
     char* m_8;            // +0x08  host-name string
     CMultiLogicDesc* m_c; // +0x0c  linked descriptor; its m_8 host-name is copied into a CString
 };
+SIZE_UNKNOWN();
 
 void SetActiveAndFocus(void* hwnd); // 0x00518930
 
@@ -348,6 +349,8 @@ public:
     // then the inline `mov [esi],??_7CMulti@@6B@` (0x5e9fe4) stamp.
     char m_pad618[0x660 - 0x618];
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 extern CMulti* g_multiState;
 extern CString g_sessionName;

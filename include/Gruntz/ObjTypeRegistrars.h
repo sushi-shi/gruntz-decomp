@@ -2,6 +2,7 @@
 #define GRUNTZ_OBJTYPEREGISTRARS_H
 
 #include <Gruntz/MovingLogic.h> // CMovingLogic (CProjectile base) -> pulls CUserLogic
+#include <rva.h>
 #include <Gruntz/CBrickz.h>     // the REAL CBrickz (its static RegisterActs @0x10ebe0)
 #include <Gruntz/ExitTrigger.h> // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
 #include <Gruntz/ObjectDropper.h> // the REAL CObjectDropper (MI: CUserLogic + CWapX)
@@ -26,11 +27,12 @@
 struct CProjectile : public CMovingLogic {
     static void RegisterType();
 };
+SIZE(0x228);
 
 struct CProjActObj {
     static void RegisterType(); // 0x8240 (home: ActionArea.cpp; the ActionArea class registrar)
 };
-SIZE_UNKNOWN(CProjActObj); // static-only registrar shell - never instantiated
+SIZE_UNKNOWN(); // static-only registrar shell - never instantiated
 struct CAniCycle {
     static void RegisterActs();
 };

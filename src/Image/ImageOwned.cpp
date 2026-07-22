@@ -328,5 +328,3 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     return 1;
 }
 
-SIZE_UNKNOWN(CImageBuildDesc);
-SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor

@@ -27,18 +27,18 @@ public:
     // coordinate registry by FireActivation. __thiscall, no args, returns int.
     i32 SpawnTeleporter(); // 0x042b80
 };
+SIZE(0x54);
 VTBL(CSecretTeleporterTrigger, 0x1e7564);
-SIZE(CSecretTeleporterTrigger, 0x54);
 
 typedef void (CUserLogic::*ActHandler)();
 struct CActEntry {
     ActHandler m_fn; // [entry]
 };
-SIZE_UNKNOWN(CActEntry);
+SIZE_UNKNOWN();
 typedef i32 (CUserLogic::*SpawnHandler)();
 struct CTelActEntry {
     SpawnHandler m_fn;
 };
-SIZE_UNKNOWN(CTelActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

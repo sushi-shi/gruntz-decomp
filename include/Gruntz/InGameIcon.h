@@ -13,10 +13,12 @@ struct CIconMapHolder {
     char m_pad00[0x10];
     CMapStringToPtr m_10map; // +0x10  the lookup table (Lookup 0x1b8438 = CMapStringToPtr)
 };
+SIZE_UNKNOWN();
 struct CGameRegMapHolder {
     char m_pad00[0x28];
     CIconMapHolder* m_28; // +0x28  the map holder (Lookup table at +0x10)
 };
+SIZE_UNKNOWN();
 
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
@@ -70,6 +72,7 @@ public:
     i32 m_74;            // +0x74  icon idle-window HI
     CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
 };
+SIZE_UNKNOWN();
 VTBL(CInGameIcon, 0x1e7d04);
 
 typedef i32 (CUserLogic::*IconActHandler)();

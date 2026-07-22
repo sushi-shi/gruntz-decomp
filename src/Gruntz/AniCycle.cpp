@@ -82,5 +82,3 @@ void CAniCycle::RegisterActs() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-SIZE_UNKNOWN(CAniCycleActEntry);
-SIZE_UNKNOWN(CAniCycleActReg);

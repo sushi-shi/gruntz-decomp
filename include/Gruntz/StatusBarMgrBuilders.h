@@ -20,9 +20,9 @@ class CSbFactory {
 public:
     void* GetByIndex(i32 idx, i32 z); // thunk 0x4165 -> FUN_004e23c0
 };
-SIZE_UNKNOWN(CSbFactory);
+SIZE_UNKNOWN();
 
 class CSbIconSet {};
-SIZE_UNKNOWN(CSbIconSet);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSTATUSBARMGR_BUILDERS_H

@@ -31,6 +31,7 @@ struct CDDrawGroupNode {
     // arms were per-view spellings; derived readers downcast).
     CGameObject* m_obj;
 };
+SIZE_UNKNOWN();
 
 class CDDrawChildGroup : public CWapObj {
 public:
@@ -149,6 +150,8 @@ public:
     // 0 when exhausted. Ex CQueueDrainHost::Drain (that view IS this class).
     CGameObject* Drain();
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 struct WwdObjDesc {
     i32 m_00;               // +0x00  passed to the factory
@@ -161,10 +164,8 @@ struct WwdObjDesc {
     i32 m_98;               // +0x98
     i32 m_9c;               // +0x9c
 };
-SIZE_UNKNOWN(WwdObjDesc);
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CDDrawChildGroup);
 VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
-SIZE_UNKNOWN(CDDrawGroupNode);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

@@ -474,7 +474,3 @@ void CPathHazard::ForwardTick() {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CPathEntity);
-SIZE_UNKNOWN(CPathSubMgr);
-SIZE_UNKNOWN(CPathWaypoint);
-SIZE_UNKNOWN(CPathHazardActEntry);

@@ -10,7 +10,6 @@ class CDDrawSurfaceMgr; // the world holder latched at m_18 (<Gruntz/GameRegistr
 
 class CFontConfig;
 
-SIZE(CChatBoxOwner, 0x1c);
 class CChatBoxOwner {
 public:
     // Inline ctor, recovered from its retail inline expansion at CMulti::
@@ -62,5 +61,6 @@ public:
                             //        GetInputText / ClearInput / RenderInputText run on it)
     CDDrawSurfaceMgr* m_18; // +0x18  the world holder (name registry source)
 };
+SIZE(0x1c);
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

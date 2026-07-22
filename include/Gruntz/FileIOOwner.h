@@ -26,6 +26,6 @@ struct FileIOOwner {
     // CByteArray's ctor is 0x1b527e (vtable 0x1ed28c) and retail never calls it here.
     CDWordArray m_138; // +0x138 (constructed last; no cleanup emitted here)
 };
-SIZE_UNKNOWN(FileIOOwner);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_FILEIOOWNER_H

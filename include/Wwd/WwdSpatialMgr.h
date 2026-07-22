@@ -12,7 +12,6 @@ class CDDrawChildGroup; // the master object manager (+0x00)
 class CWwdGrid;         // one plane's spatial bucket index (each TU supplies its own def)
 class CWwdGameObject;   // the engine sprite the grids hold (the canonical managed object)
 
-SIZE(CWwdSpatialMgr, 0xb8); // RebuildPlanes' `operator new(0xb8)`
 struct CWwdSpatialMgr {
     CDDrawChildGroup* m_mgr; // +0x00
     CWwdGrid* m_grid0;       // +0x04
@@ -67,6 +66,8 @@ struct CWwdSpatialMgr {
     CGameObject* GetFirstObject();
     CGameObject* GetNextObject();
 };
+SIZE(0xb8); // RebuildPlanes' `operator new(0xb8)`
+SIZE_UNKNOWN();
 
 typedef CWwdSpatialMgr CPlaneScroll; // the ex-WwdFile.h spelling
 

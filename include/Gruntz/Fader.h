@@ -42,8 +42,8 @@ public:
     i32 m_flag;               // +0x30  teardown gate (=1 in the base ctor)
     i32 m_34;                 // +0x34  RunFade's measured frame rate
 };
+SIZE(0x38);
 
-SIZE(CFader, 0x38);
 VTBL(CFader, 0x001f07a8);
 
 #endif // GRUNTZ_GRUNTZ_CFADER_H

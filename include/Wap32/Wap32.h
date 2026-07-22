@@ -72,6 +72,7 @@ public:
     CGameApp* m_owner; // +0x08  owning app (set by CreateAndShow; not touched by ctor)
     i32 m_closeGuard;  // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
+SIZE(0x10);
 
     class CGameMgr;
 VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
@@ -128,6 +129,7 @@ class CGameMgr {
         // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
         // where cl already emits that COMDAT.)
     };
+SIZE(0x2c);
 
 struct GameInfo {
     i32 size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
@@ -141,6 +143,7 @@ struct GameInfo {
     i32 windowWidth;              // +0x1cc
     i32 windowHeight;             // +0x1d0
 }; // 0x1d4 bytes
+SIZE(0x1d4); // self-describing: size field == sizeof == 0x1d4
 
 extern i32 g_gameAppInstanceCount;
 
@@ -217,5 +220,6 @@ public:
     // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
     // CloseResources, decrement the live-instance counter, then the delete-flag tail.
 };
+SIZE(0x254); // == CGruntzApp's size too: the derived app adds no fields (m_errorDetail@0x250 last)
 
 #endif // WAP32_H

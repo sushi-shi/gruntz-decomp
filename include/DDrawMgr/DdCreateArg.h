@@ -27,10 +27,12 @@ struct CDdDescSrc {
     STDMETHOD(v0b)() PURE;
     STDMETHOD(Make)(void* outB, void* outA) PURE; // slot 12 (+0x30)
 };
+SIZE_UNKNOWN();
 
 struct CDdCreateArg {
     char m_pad00[8];
     CDdDescSrc* m_8; // +0x08 descriptor source
 };
+SIZE_UNKNOWN();
 
 #endif // DDRAWMGR_DDCREATEARG_H

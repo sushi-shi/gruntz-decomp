@@ -145,7 +145,6 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
 
     return 1;
 }
-SIZE_UNKNOWN(CEventLoadRec);
 
 RVA(0x0009cab0, 0x23)
 i32 CDDrawWorkerCache::Find(const char* key) {

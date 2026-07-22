@@ -904,7 +904,6 @@ static inline char* ActNameLookup(i32 id) {
 
 extern i32 TBombLogic_e1e60();
 
-SIZE_UNKNOWN(TBombTileMgr);
 
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
@@ -997,7 +996,6 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_124 = -1;
 }
 
-SIZE_UNKNOWN(TBombAnimSink);
 
 static inline i32 TBombGridCell(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;

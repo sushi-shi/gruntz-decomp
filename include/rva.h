@@ -24,20 +24,22 @@
 //                         both compilers; the label pass reads the invocation
 //                         from source text. Keep invocations in RVA order among
 //                         the TU's other RVA() functions.
-//   SIZE(type, bytes)   - at file scope, preferably ATOP a class, record the
-//                         class's retail byte size. A clang-only `annotate`
-//                         carrier (see the class-metadata note below); MSVC sees
-//                         NOTHING. Consumed by gruntz.match.class_sizes.
-//   SIZE_UNKNOWN(type)  - the tracking sibling of SIZE for a class whose retail
-//                         byte size is not yet pinned: marks it size-annotated
-//                         (value TBD) so the completeness check counts it, with NO
-//                         exact size. Every class carries SIZE(..) xor
-//                         SIZE_UNKNOWN(..).
-//   VTBL(type, addr)    - atop a class, bind ??_7<type>@@6B@ at retail RVA `addr`
-//                         as a DATA symbol (vtable catalog). labels.py text-scans
-//                         it tree-wide -> symbol_names.csv. Matching-NEUTRAL
-//                         tracking (a vtable name is reloc-masked in objdiff), not
-//                         a match lever.
+//   SIZE(bytes)         - DIRECTLY UNDER the closing `};` of a class definition
+//                         (`struct Hello { u64 a; }; SIZE(0x8);`), record its
+//                         retail byte size. POSITIONAL: the class is the nearest
+//                         preceding definition (or forward declaration, for
+//                         opaque/foreign types). Text-scanned; MSVC sees NOTHING.
+//                         Consumed by gruntz.cleanliness.class_sizes.
+//   SIZE_UNKNOWN()      - the tracking sibling of SIZE for a class whose retail
+//                         byte size is not yet pinned: same position, no value.
+//                         Every class carries SIZE(..) xor SIZE_UNKNOWN().
+//   VTBL(type, addr)    - in the vtable-OWNING TU (the .cpp whose obj emits the
+//                         class's ??_7), beside the TU's DATA() bindings in
+//                         address order: bind ??_7<type>@@6B@ at retail RVA
+//                         `addr` as a DATA symbol (vtable catalog). labels.py
+//                         text-scans it tree-wide -> symbol_names.csv.
+//                         Matching-NEUTRAL tracking (a vtable name is
+//                         reloc-masked in objdiff), not a match lever.
 //
 // IMPORTANT - the same source is compiled by clang (the label step) AND by MSVC
 // 5.0 under wine (the base objs). MSVC 5.0 predates __attribute__, [[...]], AND
@@ -80,8 +82,10 @@
         gruntz_clsmeta_,                                                                           \
         __COUNTER__                                                                                \
     ) = 0
-#define SIZE(type, bytes) GRUNTZ_META("size:" #bytes " class:" #type)
-#define SIZE_UNKNOWN(type) GRUNTZ_META("size:unknown class:" #type)
+// SIZE/SIZE_UNKNOWN are POSITIONAL (the class is the nearest preceding
+// definition) - pure text-scan labels, no IR carrier; both compilers see nothing.
+#define SIZE(bytes)
+#define SIZE_UNKNOWN()
 // VTBL(type, addr) - bind the class's virtual-table symbol ??_7<type>@@6B@ at the
 // retail RVA `addr` as a DATA symbol: the single source of truth for the vtable
 // catalog. labels.py TEXT-SCANS this macro tree-wide (src/ + include/) and emits
@@ -118,8 +122,8 @@
 #define DATA(addr)
 #define OVERRIDE
 
-#define SIZE(type, bytes)
-#define SIZE_UNKNOWN(type)
+#define SIZE(bytes)
+#define SIZE_UNKNOWN()
 #define VTBL(type, addr)
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)

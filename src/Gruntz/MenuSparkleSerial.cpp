@@ -34,4 +34,3 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CMenuSparkle);

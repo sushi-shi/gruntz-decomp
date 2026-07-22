@@ -10,6 +10,7 @@ struct CGameSaveHost {
     char m_head[0x30];
     CDDrawSurfaceMgr* m_surfaceMgr; // +0x30  bound surface manager
 };
+SIZE_UNKNOWN();
 
 i32 SaveGame(CGameSaveHost* host, char* name);
 

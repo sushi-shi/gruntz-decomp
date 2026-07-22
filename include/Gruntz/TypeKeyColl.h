@@ -5,11 +5,12 @@
 
 #include <Wap32/ZVec.h> // the REAL container hierarchy: zErrHandling <- _zvec <- _zdvec
 
-SIZE_UNKNOWN(CAnimNameRecord);
 class CAnimNameRecord {
 public:
     char* m_name; // +0x00
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 class zDArray : public _zdvec {
@@ -45,6 +46,7 @@ public:
     // seeds them with the fresh band base and its slot count, which is precisely what an
     // initial allocation leaves in the vector's alloc/grown pair.
 };
+SIZE_UNKNOWN();
 
 extern zDArray g_typeColl;
 

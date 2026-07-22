@@ -27,7 +27,6 @@ class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.
         }                                                                                          \
     } while (0)
 
-SIZE_UNKNOWN(CGameObject); // base subobject; the concrete kinds carry the sizes
 struct CGameObject : public CResolveNode {
 public:
     virtual ~CGameObject() OVERRIDE; // 0x15b4f0 (out-of-line, WwdFactoryObject.cpp;
@@ -183,6 +182,7 @@ public:
     i32 m_188;          // +0x188  object id (the manager's CMapPtrToPtr key -
                         //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
+SIZE_UNKNOWN(); // base subobject; the concrete kinds carry the sizes
 
 class CWwdGameObjectA : public CGameObject {
 public:
@@ -243,6 +243,7 @@ public:
                              //  ~CAniAdvanceCursor folds inline in ~A/~B - the
                              //  retail 0x5f0128 member restamp)
 };
+SIZE(0x1dc);
 
 class CWwdGameObject : public CWwdGameObjectA {
 public:
@@ -286,6 +287,7 @@ public:
                    // AddTail/RemoveAt = 0x1b5af6/0x1b5c2c; member dtor = ~CObList 0x1b5a2b)
     i32 m_1f8;     // +0x1f8
 };
+SIZE(0x1fc);
 
 class CWwdGameObjectF : public CGameObject {
 public:
@@ -308,6 +310,7 @@ public:
     // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(a3, a4)).
     virtual i32 SetupDeferred(i32 a3, i32 a4); // slot 16 @0x15bc30 (new)
 };
+SIZE(0x18c);
 
 class CWwdGameObjectC : public CGameObject {
 public:
@@ -337,6 +340,7 @@ public:
     u8 m_dotColor; // +0x18c (byte dot color / setup flag)
     char _p18d[0x190 - 0x18d];
 };
+SIZE(0x190);
 
 class CWwdSlot9c {
 public:
@@ -347,7 +351,7 @@ public:
     i32 m_18;     // +0x18  -> obj+0xb4
     CWwdSlot9c(); // 0x15b2a0
 };
-SIZE_UNKNOWN(CWwdSlot9c);
+SIZE_UNKNOWN();
 class CWwdShadowRec { // the E-level shadow dirty-rect block (+0xb8)
 public:
     CWwdShadowRec(); // 0x15b270
@@ -356,7 +360,7 @@ public:
     char m_pad0c[0x20 - 0xc];
     i32 m_20; // abs +0xd8 == CGameObject::m_d8 (-1 == disarmed)
 };
-SIZE_UNKNOWN(CWwdShadowRec);
+SIZE_UNKNOWN();
 class CWwdSlot9cA { // the A kind's +0x9c sibling record
 public:
     CWwdSlot9cA(); // 0x15b2b0
@@ -366,12 +370,8 @@ public:
     char m_pad10[0x18 - 0x10];
     i32 m_18;
 };
-SIZE_UNKNOWN(CWwdSlot9cA);
+SIZE_UNKNOWN();
 
-SIZE(CWwdGameObjectA, 0x1dc);
-SIZE(CWwdGameObject, 0x1fc);
-SIZE(CWwdGameObjectC, 0x190);
-SIZE(CWwdGameObjectF, 0x18c);
 VTBL(CGameObject, 0x001f0020); // ??_7 (base, 16 slots)
 VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (16 slots)
 VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)

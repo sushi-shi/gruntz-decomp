@@ -52,7 +52,7 @@ public:
     CImageSet* m_34; // +0x34  resolved config record (the real image-registry CImageSet)
     i32 m_38;      // +0x38  serialized config id (4 bytes)
 };
-SIZE(CSBI_ImageSet, 0x3c);
+SIZE(0x3c);
 
 VTBL(CSBI_ImageSet, 0x001eac4c);
 

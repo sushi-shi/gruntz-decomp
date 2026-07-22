@@ -87,12 +87,10 @@ public:
     i32 m_emitGate; // +0x30  live-surface/emit gate (must be 0 to emit; ex "m_30")
     i32 m_34;       // +0x34  redraw arg
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 
-VTBL(
-    CDDrawSubMgrLeafScan,
-    0x001efca0
-); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
+VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

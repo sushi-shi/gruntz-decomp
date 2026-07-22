@@ -475,10 +475,3 @@ BOOL CGruntSpawnConfig::IsReady() {
     return m_owner->m_100 != 0;
 }
 
-SIZE_UNKNOWN(CGruntSpawnConfig);
-SIZE_UNKNOWN(CSpawnActiveVoice);
-SIZE_UNKNOWN(CSpawnButeConfig);
-SIZE_UNKNOWN(CSpawnButeTarget);
-SIZE_UNKNOWN(CSpawnOwner);
-SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CSpawnTree);

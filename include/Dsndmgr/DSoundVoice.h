@@ -28,7 +28,7 @@ struct DSoundVoice : public PureSoundElem {
     // params. A placement/heap new in CloneAndPlay lowers to `call 0x136fe0`.
     DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp);
 };
-SIZE(DSoundVoice, 0x28);       // measured: new(0x28) voice node (ctor 0x136fe0)
+SIZE(0x28); // measured: new(0x28) voice node (ctor 0x136fe0)
 VTBL(DSoundVoice, 0x001ef6d0); // cl-emitted ??_7DSoundVoice@@6B@ (Tick/Stop/+137630)
 
 #endif // DSNDMGR_DSOUNDVOICE_H

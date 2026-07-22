@@ -12,14 +12,14 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/InGameIcon.h> // s_actKeyB ("B" @0x60d1bc), g_frameTime (@0x645588)
 
-SIZE_UNKNOWN(CVoiceSample);
 struct CVoiceSample {};
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CVActColl);
 struct CVActColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
+SIZE_UNKNOWN();
 
 extern i32 g_vactLo;                 // 0x2514e0
 extern i32 g_vactHi;                 // 0x2514e4
@@ -30,7 +30,6 @@ extern i32 g_vactScratch;            // 0x2514f8
 extern CVActColl g_vactColl;         // 0x2514d8
 extern CVariantSlot* g_vactColl2;    // 0x2514dc
 
-SIZE(CGruntVoice, 0x78);
 class CGruntVoice : public CUserLogic, public CWapX {
 public:
 public:
@@ -57,13 +56,14 @@ public:
     char m_pad74[0x78 - 0x74]; // +0x74  (size 0x78 proven from the state pump's
                                //         `new CGruntVoice` = operator new(0x78))
 };
+SIZE(0x78);
 VTBL(CGruntVoice, 0x1eaf6c);
 
 typedef void (CUserLogic::*VActHandler)();
-SIZE_UNKNOWN(CVActEntry);
 struct CVActEntry {
     VActHandler m_fn; // [entry]
 };
+SIZE_UNKNOWN();
 
 static inline CVActEntry* VActLookup(i32 coord) {
     g_vactScratch = 0;

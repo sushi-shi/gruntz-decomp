@@ -87,5 +87,6 @@ public:
     i32 m_refreshRemaining; // +0x438 decay-refresh countdown
     i32 m_43c;              // +0x43c (role unproven)
 };
+SIZE_UNKNOWN();
 
 #endif

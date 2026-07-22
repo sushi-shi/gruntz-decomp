@@ -15,7 +15,7 @@ struct CWhRect {
     i32 m_8;
     i32 m_c;
 };
-SIZE_UNKNOWN(CWhRect);
+SIZE_UNKNOWN();
 
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
@@ -75,7 +75,7 @@ public:
     // m_34 (config, the base's CImageSet*), m_38 (state index).
     i32 m_direction; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
-SIZE_UNKNOWN(CSBI_WarlordHead);
+SIZE_UNKNOWN();
 VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 
 void WhShowItem(i32 handle, i32 flag);

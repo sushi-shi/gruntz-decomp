@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CFrontCandy : CUserLogic)
 
-SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -21,6 +20,7 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                // logic-worker pump @0xaa1e0, pushes 0x54)
 };
+SIZE_UNKNOWN();
 VTBL(CFrontCandy, 0x1e84ec);
 
 #endif // GRUNTZ_CFRONTCANDY_H

@@ -3,6 +3,5 @@
 
 #include <rva.h>
 
-SIZE_UNKNOWN(CStepList2);
 
 #endif // GRUNTZ_GRUNTZ_CSTEPLIST2_H

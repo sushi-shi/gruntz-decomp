@@ -37,12 +37,13 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CAniCycle, 0x001e86a4);
-SIZE(CAniCycle, 0x54);
 
 typedef i32 (CUserLogic::*AniCycleHandler)();
 struct CAniCycleActEntry {
     AniCycleHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CANICYCLE_H

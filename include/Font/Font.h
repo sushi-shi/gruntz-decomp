@@ -10,7 +10,7 @@ struct Glyph {
     i32 width;  // +0x00
     i32 height; // +0x04
 };
-SIZE(Glyph, 0x8); // m_glyphs[] element stride (8-byte metric record)
+SIZE(0x8); // m_glyphs[] element stride (8-byte metric record)
 
 class Font {
 public:
@@ -34,7 +34,7 @@ public:
     i32 m_maxHeight;   // +0x10
     i32 m_reserved14;  // +0x14  (unread here; present in the retail object)
 };
-SIZE(Font, 0x18); // the four global Font instances are laid out 0x18 apart
+SIZE(0x18); // the four global Font instances are laid out 0x18 apart
 
 extern Font g_largeFont;  // 0x24eac0
 extern Font g_mediumFont; // 0x24eae8
@@ -45,7 +45,7 @@ struct TextExtent {
     i32 width;  // +0x00 (sum of per-glyph advance widths)
     i32 height; // +0x04 (the font line-height, Font::GetMaxHeight)
 };
-SIZE(TextExtent, 0x8); // sret 8-byte {w,h} pair
+SIZE(0x8); // sret 8-byte {w,h} pair
 
 class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 
@@ -108,8 +108,7 @@ public:
     void* m_surface; // +0x08  (optional dest surface handle)
     void* m_clip;    // +0x0c  (optional clip-rect handle)
 };
-SIZE(FontRenderer, 0x10); // stateful render shim; the ctor inits exactly the four
+SIZE(0x10); // stateful render shim; the ctor inits exactly the four
 
-SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 
 #endif // SRC_FONT_FONT_H

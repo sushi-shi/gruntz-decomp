@@ -1367,6 +1367,3 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     return hr;
 }
 
-SIZE_UNKNOWN(CDdCreateArg);
-SIZE_UNKNOWN(CDdDescSrc);
-SIZE(CDDrawPtrCollections, 0x948);

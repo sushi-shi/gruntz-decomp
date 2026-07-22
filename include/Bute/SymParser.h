@@ -24,7 +24,7 @@ struct CParserObjList : public CObjList {
     // same body as CRezList::AddHead; alias decl, reloc-masked).
     void Link(void* node);
 };
-SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
+SIZE(0x10); // { vptr, head, tail, count }
 
 struct CParseSource; // the 0x3c leaf parse record (ex 'CSymLeafBuilder')
 
@@ -32,7 +32,7 @@ struct CSlotNode {
     DSoundLink m_link;         // +0x00  intrusive chain node { next, prev }
     CParseSource* m_buffer;    // +0x08  owned parse-slot block (RezFree'd)
 };
-SIZE(CSlotNode, 0xc);
+SIZE(0xc);
 
 struct CParserHash : public CHashBase {
     // The +0x80 hash-table member's 1-arg construction (0x184960) is the canonical
@@ -42,7 +42,7 @@ struct CParserHash : public CHashBase {
         RemoveAll();
     }
 };
-SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
+SIZE(0x8); // derives CHashBase (no new fields)
 
 VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
 class CSymParser {
@@ -175,6 +175,6 @@ public:
     DSoundList m_nodes;         // +0x88  { head, tail }
     i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
-SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
+SIZE(0x94); // fields through m_parseSlotBlockCount @0x90
 
 #endif // SRC_BUTE_SYMPARSER_H

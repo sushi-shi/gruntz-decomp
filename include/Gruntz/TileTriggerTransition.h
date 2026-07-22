@@ -28,13 +28,13 @@ public:
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
     // +0x1b4 animation descriptor.
 };
+SIZE_UNKNOWN();
 VTBL(CTileTriggerTransition, 0x1e7db4);
-SIZE_UNKNOWN(CTileTriggerTransition);
 
 typedef i32 (CUserLogic::*TileActHandler)();
 struct TileActEntry {
     TileActHandler m_fn;
 };
-SIZE_UNKNOWN(TileActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

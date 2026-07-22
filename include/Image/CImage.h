@@ -25,14 +25,17 @@ public:
     char _00[0x10];
     i32* m_10; // +0x10  active surface (its +0x18 is the format)
 };
+SIZE_UNKNOWN();
 
 typedef struct tagRECT BlitRect;
+SIZE(0x10); // {left,top,right,bottom} RECT
 
 class CBlitClipOwner {
 public:
     char _00[0x10];
     BlitRect m_clipRect; // +0x10  clip RECT {left, top, right, bottom}
 };
+SIZE_UNKNOWN();
 
 class CImageParent {
 public:
@@ -43,6 +46,7 @@ public:
     char _20[0x24 - 0x20];
     CBlitClipOwner* m_24; // +0x24  clip-region owner (its +0x10 is the clip RECT)
 };
+SIZE_UNKNOWN();
 
 class CImageFrameDesc {
 public:
@@ -52,6 +56,7 @@ public:
     i32 m_originX; // +0x10
     i32 m_originY; // +0x14
 };
+SIZE_UNKNOWN();
 
 extern i32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
@@ -153,5 +158,6 @@ public:
     CDDSurface* m_surface;    // +0x2c  the held DirectDraw surface (CPoolItemA), pool-removed
     CDDrawShadeBlit* m_owned; // +0x30  owned shaded sprite (teardown + RezFree)
 };
+SIZE_UNKNOWN(); // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
 
 #endif // SRC_IMAGE_CIMAGE_H

@@ -8,14 +8,14 @@ struct CTrigParam {
     i32 m0, m4, m8, mc;
     CTrigParam() : m0(0), m4(0), m8(0), mc(0) {} // VC5 won't value-init -> zero by ctor
 };
-SIZE_UNKNOWN(CTrigParam);
+SIZE_UNKNOWN();
 
 struct CTrigRecordSub {
     char _00[0xf0];
     CTrigParam m_f0;  // +0xf0
     CTrigParam m_100; // +0x100
 };
-SIZE_UNKNOWN(CTrigRecordSub);
+SIZE_UNKNOWN();
 
 struct CTrigSourceRecord {
     char _00[0x04];
@@ -37,6 +37,6 @@ struct CTrigSourceRecord {
     i32 m_164;        // +0x164
     i32 m_168;        // +0x168
 };
-SIZE_UNKNOWN(CTrigSourceRecord);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TILETRIGGERWIRING_H

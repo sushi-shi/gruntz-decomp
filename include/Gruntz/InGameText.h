@@ -32,6 +32,7 @@ public:
     i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
     i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar
 };
+SIZE_UNKNOWN();
 VTBL(CInGameText, 0x1e7cac);
 
 struct CActReg;

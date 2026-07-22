@@ -2,6 +2,7 @@
 #define SRC_GRUNTZ_AREAMGR_H
 
 #include <Ints.h>
+#include <rva.h>
 #include <Gruntz/SpawnList.h> // CSpawnList (embedded at +0x04) + CSpawnEntry
 
 class CDDrawSurfaceMgr; // DDrawMgr/DDrawSurfaceMgr.h (the per-spawn registry holder)
@@ -80,7 +81,7 @@ public:
     i32 m_currentAreaIndex;      // +0x00
     CSpawnList m_spawnEntryList; // +0x04  the named spawn-entry list (0x24 B)
 };
-SIZE(CAreaMgr, 0x28);
+SIZE(0x28);
 
 extern CAreaMgr g_areaMgr;
 extern CAreaMgr* g_pAreaMgr;

@@ -88,4 +88,3 @@ void ImageRotateBlit(
     RotateRasterize(mtx, 4, reinterpret_cast<i32>(a4), reinterpret_cast<i32>(inp), mode, colorkey, -1, -1, -1, -1);
 }
 
-SIZE_UNKNOWN(RotateSrcImage);

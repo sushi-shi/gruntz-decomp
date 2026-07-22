@@ -6,11 +6,11 @@
 
 #include <Gruntz/CoordNode.h> // Coord - the {x,y} the pool's nodes carry inline
 
-SIZE(CoordPoolNode, 0xc);
 struct CoordPoolNode {
     CoordPoolNode* m_next; // +0x00  free-list link
     Coord m_coord;         // +0x04  the {x,y} payload handed to the caller
 };
+SIZE(0xc);
 
 class FreeNodePool {
 public:
@@ -28,7 +28,7 @@ public:
     i32 m_count;      // +0x08  element count of m_block
     i32 m_linkOffset; // +0x0c  payload offset inside a node (Push subtracts it)
 };
-SIZE_UNKNOWN(FreeNodePool);
+SIZE_UNKNOWN();
 
 extern FreeNodePool g_coordPool;
 

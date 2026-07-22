@@ -12,7 +12,6 @@ struct CParseSource;    // LoadImage arg (the 0x139xxx byte-reader)
 // (CSurfacePairBase DELETED: dead scaffolding - nothing derived it and nothing
 // constructed it; CDDrawSurfacePair derives CWapObj directly and owns the fields.)
 
-SIZE(CDDrawSurfacePair, 0x34); // new-size from CDDrawSubMgrPages::CreateChildren
 VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair : public CWapObj {
 public:
@@ -75,5 +74,8 @@ public:
     CDDSurface* m_surface; // +0x2c  the held surface (CFileImageSurface)
     i32 m_ownsSurface;     // +0x30  "owns surface" flag (free on teardown)
 };
+SIZE(0x34); // new-size from CDDrawSubMgrPages::CreateChildren
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

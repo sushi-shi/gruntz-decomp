@@ -29,7 +29,7 @@ public:
     CSprite* m_frameSeq;        // +0x194  active frame sequence
     i32 m_curFrame;             // +0x198  resolved current frame pointer
 };
-SIZE_UNKNOWN(CAniRenderCtx);
+SIZE_UNKNOWN();
 
 class CAniDesc : public CObject { // the CObArray-stored frame record (vptr from CObject)
 public:
@@ -48,7 +48,7 @@ public:
     i32 m_randMod;             // +0x2c  random modulus
     i32* m_randTable;          // +0x30  random-trigger table
 };
-SIZE_UNKNOWN(CAniDesc);
+SIZE_UNKNOWN();
 
 class CAniBlitTrigger {
 public:
@@ -65,6 +65,6 @@ public:
     class CDDrawSurfaceMgr* m_ctx;  // +0x0c geometry context (the world root)
     DSoundCloneInst* m_soundPlayer; // +0x10 sound player
 };
-SIZE_UNKNOWN(CAniBlitTrigger);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_DDRAWMGR_ANIADVANCE_H

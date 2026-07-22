@@ -29,6 +29,6 @@ struct InterfaceObject : public CObject {
     i32 IsInterface4(); // 0x179540
     i32 IsInterface5(); // 0x179570
 };
-SIZE(InterfaceObject, 0x10); // vptr@0 + m_4 + m_name CString + m_c
+SIZE(0x10); // vptr@0 + m_4 + m_name CString + m_c
 
 #endif // SRC_NET_INTERFACEOBJECT_H

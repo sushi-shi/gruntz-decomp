@@ -1,4 +1,5 @@
 #include <Net/InterfaceObject.h> // the ONE canonical InterfaceObject class (layout +
+#include <rva.h>
 
 VTBL(InterfaceObject, 0x001f0748);
 

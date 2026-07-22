@@ -6,6 +6,5 @@
 #include <rva.h>
 #include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
 
-SIZE_UNKNOWN(C16be60);
 
 #endif // GRUNTZ_BOUNDARYUPPERVIEWS_H

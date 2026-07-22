@@ -21,6 +21,6 @@ struct RbEffect {
     CWwdGameObjectA* m_38; // +0x38  effect sprite (a CreateSprite product - the A kind)
     i32 Update();      // 0x476b0
 };
-SIZE_UNKNOWN(RbEffect);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_RBEFFECT_H

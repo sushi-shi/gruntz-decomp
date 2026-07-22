@@ -12,7 +12,6 @@ class CImage; // the resolved m_38 frame element (<Image/CImage.h>)
 
 #include <Gruntz/SerialCounter.h>
 
-SIZE_UNKNOWN(CMgrSettings);
 class CMgrSettings {
 public:
     i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
@@ -21,5 +20,6 @@ public:
     double m_10, m_18, m_20, m_28, m_30; // +0x10..+0x30
     CImage* m_38; // +0x38 resolved frame reference (a CImageSet frame; ex void*)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CMGRSETTINGS_H

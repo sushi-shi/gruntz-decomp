@@ -5,7 +5,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-SIZE(CFontConfig, 0x44);
 class CFontConfig {
 public:
     CPtrList m_list; // +0x00 (0x1c: vptr, m_pNodeHead@+0x04, m_nCount@+0x0c) - the FontItem* list
@@ -75,6 +74,7 @@ public:
     HFONT m_trainingFont;      // +0x3c  the TrainingFont
     HFONT m_messageFont;       // +0x40  the MessageFont
 };
+SIZE(0x44);
 
 extern "C" i32 g_chatTextWidth;      // 0x62b434: DT_CALCRECT-measured text width
 extern "C" i32 g_caretBlinkMs;       // 0x62b438: caret blink countdown in ms
@@ -87,5 +87,6 @@ struct FontItem {
     CString name; // +0x08
     ~FontItem();  // 0x21c40  out-of-line member dtor (destroys name; add ecx,8; jmp ~CString)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

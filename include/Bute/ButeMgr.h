@@ -18,7 +18,7 @@ struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
     virtual ~CBSecStream() OVERRIDE {} // inline: ~CButeMgr inlines the two-layer expansion
 };
-SIZE(CBSecStream, 0x2c);       // adds nothing to zPTree (m_tree +0x18 .. m_pNode +0x44)
+SIZE(0x2c); // adds nothing to zPTree (m_tree +0x18 .. m_pNode +0x44)
 VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
 // base); the @data-symbol pins binding both retail datums live in ButeSectionCtor.cpp.
@@ -31,7 +31,7 @@ struct CButeTail {
     // catalog, and faked here as a declared-only "Dtor()").
     ~CButeTail();
 };
-SIZE(CButeTail, 0x1); // 1-byte embedded tail object
+SIZE(0x1); // 1-byte embedded tail object
 
 extern "C" void AfxString_AppendChar(void* pStr, char c);
 
@@ -40,25 +40,25 @@ struct CButeRef5 { // 16 bytes
     ~CButeRef5();
     DWORD a, b, c, d;
 };
-SIZE(CButeRef5, 0x10);
+SIZE(0x10);
 struct CButeRef6 { // 8 bytes
     CButeRef6() : a(0), b(0) {}
     ~CButeRef6();
     DWORD a, b;
 };
-SIZE(CButeRef6, 0x8);
+SIZE(0x8);
 struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
     ~CButeRef7();
     DWORD a, b, c, d, e, f;
 };
-SIZE(CButeRef7, 0x18);
+SIZE(0x18);
 struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
     ~CButeRef8();
     DWORD a, b, c, d;
 };
-SIZE(CButeRef8, 0x10);
+SIZE(0x10);
 
 extern "C" i32 atexit(void (*func)(void));
 
@@ -208,13 +208,13 @@ public:
     CButeRef7* GetRef7(const char* tag, const char* key);
     CButeRef8* GetRef8(const char* tag, const char* key);
 };
-SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
+SIZE(0x110); // fields through the +0x10f embedded tail object
 
 class ButeMgr : public CButeMgr {
 public:
     bool ParseAttributeFile(); // 0x170750
 };
-SIZE(ButeMgr, 0x110); // == sizeof(CButeMgr): the single base, no added members
+SIZE(0x110); // == sizeof(CButeMgr): the single base, no added members
 
 extern CButeMgr g_buteMgr;
 

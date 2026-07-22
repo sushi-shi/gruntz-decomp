@@ -13,11 +13,13 @@ struct CTriRecord {
     i32 m_8;
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x3c8f0
 };
+SIZE_UNKNOWN();
 
 struct CPairRecord {
     i64 m_0;
     i64 m_8;
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x58ee0
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SERIALRECORDS_H

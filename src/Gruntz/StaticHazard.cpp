@@ -381,13 +381,6 @@ dispatch:
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-SIZE_UNKNOWN(CHaznEntry);
-SIZE_UNKNOWN(CHaznEntry2);
-SIZE_UNKNOWN(CStaticHazard);
-SIZE_UNKNOWN(HazGrid);
-SIZE_UNKNOWN(HazGridMgr);
-SIZE_UNKNOWN(CCoordColl);
-SIZE_UNKNOWN(WwdAnimSub);
 
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {

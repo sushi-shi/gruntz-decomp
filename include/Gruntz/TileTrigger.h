@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CTileTrigger base (CUserLogic hierarchy + CGameObject)
 
-SIZE_UNKNOWN(CTileSecretTrigger);
 VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 class CTileSecretTrigger : public CTileTrigger {
 public:
@@ -18,8 +17,8 @@ public:
     // slot 4 is INHERITED from CTileTrigger (-> 0x0034fe -> jmp 0x10e4a0). The
     // 0x10f160.. cluster it used to claim is CCheckpointTrigger's (the shift-by-one).
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGiantRock);
 VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 class CGiantRock : public CTileTrigger {
 public:
@@ -28,8 +27,8 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CCoveredPowerup);
 VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 class CCoveredPowerup : public CTileTrigger {
 public:
@@ -38,10 +37,12 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE_UNKNOWN();
 
 typedef i32 (CUserLogic::*TileTriggerHandler)();
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TILETRIGGER_H

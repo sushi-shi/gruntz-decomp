@@ -11,7 +11,6 @@ class CAniElement;   // the descriptor playlist (<Gruntz/AniElement.h>; the ex
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-SIZE_UNKNOWN(CAniAdvanceCursor);
 class CAniAdvanceCursor : public CLoadable {
 public:
     CAniAdvanceCursor() {} // default (view-embed)
@@ -56,6 +55,7 @@ public:
     float m_scale;       // +0x38  float speed/scale multiplier (Advance compares
                          //        it as raw bits vs 0x3f800000 == 1.0f)
 };
+SIZE_UNKNOWN();
 VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H

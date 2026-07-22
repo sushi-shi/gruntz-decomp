@@ -29,7 +29,7 @@ struct CParseSlotHashNode : public CHashElement {
     // need a downcast of the CHashBase* m_owner; the slot reloc-masks.
     virtual u32 Hash() OVERRIDE;
 };
-SIZE(CParseSlotHashNode, 0x18);
+SIZE(0x18);
 VTBL(CParseSlotHashNode, 0x001ef740);
 
 struct CParseSource {
@@ -69,5 +69,6 @@ struct CParseSource {
     CRezItmBase* m_reader; // +0x34  the providing rez node (slot-2 virtual Read)
     i32 m_buffer;                      // +0x38 lazily-allocated inline byte buffer (as int address)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CPARSESOURCE_H

@@ -62,4 +62,3 @@ i32 CWapX::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
     return 1;
 }
 
-SIZE_UNKNOWN(CDDrawSubMgrLeaf);

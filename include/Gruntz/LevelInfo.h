@@ -11,28 +11,27 @@ class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
 struct CGameObject;          // <Gruntz/UserLogic.h>
 class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
 
-SIZE_UNKNOWN(CLevelSpawnInfo);
 struct CLevelSpawnInfo {
     char m_pad00[0x2e4];
     CTileTriggerContainer* m_2e4; // +0x2e4  the level's tile-trigger container
 };
+SIZE_UNKNOWN();
 
 class CDDrawWorkerHost;
 
-SIZE_UNKNOWN(CLevelViewHolder);
 struct CLevelViewHolder {
     char m_pad00[0x5c];
     CDDrawWorkerHost* m_5c; // +0x5c  the plane/view mapper (WorldToScreen)
 };
-SIZE_UNKNOWN(CLevelList);
+SIZE_UNKNOWN();
 struct CLevelList {
     char m_pad00[0x8];
     CDDrawChildGroup* m_coll; // +0x08  the walked game-object collection (ex CQueueDrainHost view)
     char m_pad0c[0x24 - 0xc];
     CLevelViewHolder* m_view; // +0x24  (->m_5c = the world->screen mapper)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CLevelInfo); // extends past +0xfc; total retail size not pinned
 struct CLevelInfo {
     char m_pad00[0x4];
     i32 m_levelNum;           // +0x04  level number (1..)
@@ -59,5 +58,6 @@ struct CLevelInfo {
     i32 m_isCustom;               // +0xf8  flag: custom level
     i32 m_isBattlez;              // +0xfc  flag: battlez (vs questz)
 };
+SIZE_UNKNOWN(); // extends past +0xfc; total retail size not pinned
 
 #endif // SRC_GRUNTZ_LEVELINFO_H

@@ -2,6 +2,7 @@
 #define GRUNTZ_BATTLEZDATA_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
@@ -12,6 +13,7 @@ struct BattlezRecord {
     i32 m_scoreValue; // +0x28  win/score value (0fced0 returns; 0fd330 fills)
     i32 m_2c, m_30, m_34, m_38, m_3c;
 };
+SIZE_UNKNOWN();
 
 class CBattlezData {
 public:
@@ -74,5 +76,6 @@ public:
     i32 m_powerupPickupz[28]; // +0x2d8  [7*owner + (type - PICKUP_GHOST)]
     i32 m_miscPickupz[16];    // +0x348  [4*owner + (type - PICKUP_RANDOMCOLORZ)]
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_BATTLEZDATA_H

@@ -28,6 +28,7 @@ struct CSpawnActiveVoice {
     char m_00[0x188];
     i32 m_188; // +0x188  currently-active voice id
 };
+SIZE_UNKNOWN();
 struct CSpawnButeConfig {
     char m_00[0x10];
     CSpawnActiveVoice* m_10; // +0x10  the active-voice sub-object (was the CSpawnGate view)
@@ -38,12 +39,14 @@ struct CSpawnButeConfig {
     char m_238[0x258 - 0x238];
     i32 m_258; // +0x258  early-special selector (0x39 / 0x3a)
 };
+SIZE_UNKNOWN();
 struct CSpawnButeTarget {
     char m_data[0x2c0];
 };
+SIZE_UNKNOWN();
 
 struct CSpawnResolver {};
-SIZE_UNKNOWN(CSpawnResolver);
+SIZE_UNKNOWN();
 struct CSpawnOwner {
     char m_00[0x30];
     CSpawnTree* m_30;     // +0x30  -> the config tree stashed in m_04
@@ -51,6 +54,7 @@ struct CSpawnOwner {
     char m_38[0x100 - 0x38];
     i32 m_100; // +0x100 the "ready" flag the @0x11c830 probe tests
 };
+SIZE_UNKNOWN();
 
 class CGrunt; // CueA/CueSpawn first arg
 
@@ -108,6 +112,7 @@ public:
     CPtrArray m_voiceLists; // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
     i32 m_voiceVolume;      // +0x2c  = 0x64
 };
+SIZE_UNKNOWN();
 
 struct CSpawnTree {
     char m_pad00[8];
@@ -116,6 +121,7 @@ struct CSpawnTree {
     class SoundStream* m_20; // +0x20  the sound-stream mgr (DestroyVoice/OpenStream;
                              //        ex the empty CSpawnRemoveColl marker view)
 };
+SIZE_UNKNOWN();
 
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 

@@ -37,6 +37,7 @@ public:
     i32 m_6c;                      // +0x6c  (zeroed by Init; role unproven)
     i32 m_70;                      // +0x70  seeded to 0x64 (role unproven)
 };
+SIZE(0x74);
 
 inline CMenuItem2::CMenuItem2() {
     m_spriteNormal = 0;

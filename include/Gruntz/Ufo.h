@@ -24,7 +24,7 @@ public:
     // from AppHelpers.cpp (was CHandlerB4::Handle - proven a CUFO method by xref).
     i32 Method_b4cb0(void* stream, i32 tag, i32 c, i32 d);
 };
+SIZE(0x130);
 VTBL(CUFO, 0x001e72b4); // vtable_names -> code (RTTI game class)
-SIZE(CUFO, 0x130);
 
 #endif // GRUNTZ_CUFO_H

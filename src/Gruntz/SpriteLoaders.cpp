@@ -439,5 +439,3 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     ar->Write(&m_currentMs, 4);
     return 1;
 }
-SIZE_UNKNOWN(CDDrawChildGroup);
-SIZE_UNKNOWN(CLoadingBar);

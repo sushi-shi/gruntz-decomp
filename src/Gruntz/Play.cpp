@@ -6890,12 +6890,6 @@ i32 CPlay::SetEffectSpriteDurations() {
     return 1;
 }
 
-SIZE_UNKNOWN(CImageRegistry);
-SIZE_UNKNOWN(CPlay);
-SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
-SIZE_UNKNOWN(CState);
-SIZE_UNKNOWN(Edge);
-SIZE_UNKNOWN(StateMgrBZ);
 
 // @early-stop
 // 0x0cf0a0 (1.4 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5); a large Play

@@ -10,9 +10,8 @@ struct CLatencyItem {
     i32 m_param;       // +0x08  row param column
     CString GetName(); // 0x38120  returns m_text by value
 };
-SIZE_UNKNOWN(CLatencyItem);
+SIZE_UNKNOWN();
 
-SIZE(CLatencyList, 0x20);
 class CLatencyList : public CKeyedList {
 public:
     // Forward to the CKeyedList(nBlockSize) ctor (chains CPtrList(0x1b4867), zeros the
@@ -39,5 +38,6 @@ public:
     // (ignores `this` - a pure dialog-item scan). Returns 1 if found.
     i32 SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi);
 };
+SIZE(0x20);
 
 #endif // GRUNTZ_NET_LATENCYLIST_H

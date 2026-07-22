@@ -34,6 +34,6 @@ public:
     CShadeTable* m_greyTable;  // +0x10  the identity "grey" table (registered key 9)
     CShadeTable* m_tables[10]; // +0x14  the 10 color tables (1 add + 9 sub)
 };
-SIZE(CLightFxMgr, 0x3c);
+SIZE(0x3c);
 
 #endif // GRUNTZ_GRUNTZ_LIGHTFXMGR_H

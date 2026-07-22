@@ -6,7 +6,6 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
-SIZE_UNKNOWN(CGruntToySprite);
 VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
 class CGruntToySprite : public CUserLogic, public CWapX {
 public:
@@ -37,11 +36,12 @@ public:
     i32 m_cellY;     // +0x58  grunt cell y
     i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
 };
+SIZE_UNKNOWN();
 
 typedef i32 (CUserLogic::*ToyActHandler)();
-SIZE_UNKNOWN(CToyActEntry);
 struct CToyActEntry {
     ToyActHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

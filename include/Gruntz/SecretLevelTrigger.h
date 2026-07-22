@@ -5,7 +5,6 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
-SIZE(CSecretLevelTrigger, 0x54);
 class CSecretLevelTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -24,12 +23,13 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
+SIZE(0x54);
 VTBL(CSecretLevelTrigger, 0x1e8804);
 
 typedef i32 (CUserLogic::*SecretActHandler)();
 struct CSecretActEntry {
     SecretActHandler m_fn;
 };
-SIZE_UNKNOWN(CSecretActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

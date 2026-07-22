@@ -11,7 +11,6 @@ extern const double g_motionNegHalf; // 0x5f04f8 (-0.5)
 extern const double g_motionZero;    // 0x5f0500 (0.0)
 extern const double g_motionNegTwo;  // 0x5f0508 (-2.0)
 
-SIZE_UNKNOWN(CMotionState);
 class CMotionState {
 public:
     CMotionState(); // 0x136d0
@@ -51,5 +50,6 @@ public:
     double m_d8, m_e0, m_e8;  // per-axis upper clamp (MAX)
     double m_f0, m_f8, m_100; // per-axis clamp (MAX)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_MOTIONSTATE_H

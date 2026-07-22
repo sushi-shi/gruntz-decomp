@@ -24,7 +24,6 @@ struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
-SIZE(CDDrawSurfaceMgr, 0x40);
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
@@ -92,5 +91,7 @@ public:
     i32 m_lastError;        // +0x38  last-error code
     HP_Callback m_callback; // +0x3c  run/config callback
 };
+SIZE(0x40);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

@@ -61,6 +61,3 @@ void RegisterActs_646188() {
     *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id2)) = static_cast<void*>(&Handler_402414);
 }
 
-SIZE_UNKNOWN(CLogicActTable);
-SIZE_UNKNOWN(CLookupColl);
-SIZE_UNKNOWN(CActReg);

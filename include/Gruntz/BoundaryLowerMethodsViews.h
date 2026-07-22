@@ -49,8 +49,6 @@
 #include <Gruntz/SerialArchive.h>     // canonical Read@+0x2c / Write@+0x30 archive stream
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 
-SIZE_UNKNOWN(Ccef50);
 
-SIZE_UNKNOWN(Cdb2f0);
 
 #endif // GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H

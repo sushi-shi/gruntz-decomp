@@ -1091,9 +1091,3 @@ void CInGameIcon::SetField54(i32 v) {
     m_cmapId = reinterpret_cast<i32>(found);
 }
 
-SIZE_UNKNOWN(CGameRegMapHolder);
-SIZE_UNKNOWN(CIconMapHolder);
-SIZE_UNKNOWN(CInGameIcon);
-SIZE_UNKNOWN(IconSpriteFactory);
-SIZE_UNKNOWN(LogicFnTable);
-SIZE_UNKNOWN(CInGameText);

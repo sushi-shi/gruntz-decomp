@@ -42,7 +42,6 @@ typedef enum TrigErrSite {
     TRIGSITE_LINKS_KEY_MISS = 0x453,  // VerifyBlockLinks: block key unresolved (id-8 filter)
 } TrigErrSite;
 
-SIZE(CTileTriggerLogic, 0x9c);
 VTBL(CTileTriggerLogic, 0x001eaea4); // vtable_names -> code (RTTI game class)
 class CTileTriggerLogic {
 public:
@@ -116,6 +115,7 @@ public:
     i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords; the "m_grid" of the
                                  //        folded view - same 24 dwords at the same offset)
 };
+SIZE(0x9c);
 
 class CGiantRockLogic : public CTileTriggerLogic {
 public:
@@ -136,21 +136,21 @@ public:
     i32 m_powerupType;        // +0xc0        streamed FIRST (before the matrix)
     i32 m_textId;        // +0xc4        streamed SECOND; the object ends at 0xc8
 };
-SIZE(CGiantRockLogic, 0xc8);
+SIZE(0xc8);
 VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)
 
 class CCoveredPowerupLogic : public CTileTriggerLogic {
 public:
     CCoveredPowerupLogic(); // 0x112240 (ILT 0x2a4f)
 };
-SIZE(CCoveredPowerupLogic, 0x9c);
+SIZE(0x9c);
 VTBL(CCoveredPowerupLogic, 0x001eaef4); // vtable_names -> code (RTTI game class)
 
 class CTileTimeTriggerLogic : public CTileTriggerLogic {
 public:
     CTileTimeTriggerLogic(); // 0x112270 (ILT 0x18de)
 };
-SIZE(CTileTimeTriggerLogic, 0x9c);
+SIZE(0x9c);
 VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 
 class CTileSecretTriggerLogic : public CTileTriggerLogic {
@@ -158,7 +158,7 @@ class CTileSecretTriggerLogic : public CTileTriggerLogic {
 public:
     CTileSecretTriggerLogic(); // 0x112760 (ILT 0x310c)
 };
-SIZE(CTileSecretTriggerLogic, 0x9c);
+SIZE(0x9c);
 VTBL(CTileSecretTriggerLogic, 0x001eaf14); // vtable_names -> code (RTTI game class)
 
 #endif // TILETRIGGERLOGIC_H

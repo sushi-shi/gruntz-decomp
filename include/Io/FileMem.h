@@ -32,7 +32,7 @@ public:
     i32 m_mode;        // +0x08
     CString m_name; // +0x0c
 };
-SIZE(CFileMemBase, 0x10); // vptr + m_4 + m_8 + CString (base sub-object; m_file follows at +0x10)
+SIZE(0x10); // vptr + m_4 + m_8 + CString (base sub-object; m_file follows at +0x10)
 VTBL(CFileMemBase, 0x001efe68);
 
 class CFileMem : public CFileMemBase {
@@ -51,7 +51,7 @@ public:
     i32 m_length;   // +0x20
     i32 m_offset;   // +0x24
 };
-SIZE(CFileMem, 0x28); // base 0x10 + CFileIO m_file 0x10 + m_length + m_offset
+SIZE(0x28); // base 0x10 + CFileIO m_file 0x10 + m_length + m_offset
 VTBL(CFileMem, 0x001efe30);
 
 #endif // SRC_IO_FILEMEM_H

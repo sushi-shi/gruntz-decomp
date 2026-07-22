@@ -21,6 +21,7 @@ class CDDrawSubMgrLeafScan;
 typedef CDDrawSubMgrLeafScan CSndHost;
 class CDDrawWorkerRegistry;
 typedef CDDrawWorkerRegistry CImageRegistry;
+SIZE_UNKNOWN();
 class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
 typedef CDDrawWorker CImageSet; // (identical repeat of ImageSet.h's typedef)
 class CDDrawSurfaceMgr;
@@ -47,7 +48,6 @@ class CTriggerMgr;
 class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
-SIZE(CGruntzMgr, 0xa30);
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
 class CGruntzMgr : public CGameMgr {
 public:
@@ -448,6 +448,7 @@ public:
     char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
     GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
+SIZE(0xa30);
 
 i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 

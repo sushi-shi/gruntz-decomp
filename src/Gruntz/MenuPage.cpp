@@ -15,7 +15,6 @@ inline void* operator new(size_t, void* p) {
     return p;
 }
 
-SIZE_UNKNOWN(CMenuPlacer);
 
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {

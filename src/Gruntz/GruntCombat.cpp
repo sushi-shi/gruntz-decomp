@@ -282,8 +282,6 @@ void CGrunt::ComputeFacing(double dt) {
     m_410 = static_cast<double>(h->m_screenY);
 }
 
-SIZE_UNKNOWN(CombatItemOwner);
-SIZE_UNKNOWN(CombatTypeNode);
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \

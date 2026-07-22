@@ -410,4 +410,3 @@ tail:
 #undef DEATH_FRAME
 #undef DEATH_CUE
 
-SIZE_UNKNOWN(CDeathReg7c);

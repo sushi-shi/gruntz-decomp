@@ -26,7 +26,7 @@ struct PLAYLISTINFOSTRUCT {
     i32 m_flags;   // +0x18  Pump flags
     i32 m_count;   // +0x1c  Pump loop count
 };
-SIZE(PLAYLISTINFOSTRUCT, 0x20);
+SIZE(0x20);
 
 typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
@@ -177,5 +177,6 @@ public:
     CMoviePlaylist m_playlist;
     i32 m_loopCount; // +0x86a0  loop counter (the screen view's m_86a0, "reset by Configure")
 };
-SIZE_UNKNOWN(CMoviePlayer); // no op-new site names the size; the layout runs to 0x86a4
+SIZE_UNKNOWN(); // no op-new site names the size; the layout runs to 0x86a4
+SIZE_UNKNOWN();
 #endif // GRUNTZ_CMOVIEPLAYER_H

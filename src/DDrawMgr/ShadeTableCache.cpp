@@ -35,7 +35,6 @@ inline CShadeTableArray::~CShadeTableArray() {
         ::operator delete(m_pData);
     }
 }
-SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the CObject base
 VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
 RVA(0x0014de30, 0x1a)

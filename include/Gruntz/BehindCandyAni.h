@@ -30,12 +30,13 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CBehindCandyAni, 0x001e838c);
-SIZE(CBehindCandyAni, 0x54);
 
 typedef i32 (CUserLogic::*BehindCandyHandler)();
 struct CBehindCandyActEntry {
     BehindCandyHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

@@ -11,13 +11,16 @@ struct CPathWaypoint {
     i32 x; // +0x00
     i32 y; // +0x04
 };
+SIZE_UNKNOWN();
 
 struct CPathEntity {
     char m_pad00[0x258];
     i32 m_258; // +0x258
 };
+SIZE_UNKNOWN();
 
 struct CPathSubMgr {};
+SIZE_UNKNOWN();
 
 extern "C" u32 g_engineFrameDelta;
 
@@ -102,11 +105,12 @@ public:
     i64 m_strikeDeadline; // +0x120 strike start-clock deadline
     i64 m_strikeWindow;   // +0x128 strike window duration
 };
-SIZE(CPathHazard, 0x130);
+SIZE(0x130);
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 
 struct CPathHazardActEntry {
     i32 (CUserLogic::*m_fn)();
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CPATHHAZARD_H

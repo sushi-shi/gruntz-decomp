@@ -7,6 +7,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
 struct CIndicatorSyncHelper {};
+SIZE_UNKNOWN();
 extern "C" u32 g_engineFrameDelta; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 #include <Bute/ButeMgr.h>
@@ -14,6 +15,7 @@ extern "C" u32 g_engineFrameDelta; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 
 struct CIndicatorActReg : public CActReg {};
+SIZE_UNKNOWN();
 
 extern CIndicatorActReg g_healthActReg;   // 0x644d80
 extern CIndicatorActReg g_powerupActReg;  // 0x644d30

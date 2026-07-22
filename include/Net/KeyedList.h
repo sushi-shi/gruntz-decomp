@@ -10,9 +10,8 @@ struct CKeyedNode {
     i32 m_8;       // +0x08
     ~CKeyedNode();
 };
-SIZE_UNKNOWN(CKeyedNode);
+SIZE_UNKNOWN();
 
-SIZE(CKeyedList, 0x20);
 class CKeyedList {
 public:
     // Run the MFC CPtrList(nBlockSize) ctor (0x1b4867) on the member, zero the mode.
@@ -33,5 +32,6 @@ public:
     CPtrList m_list; // +0x00  the backing MFC list (vtable 0x5eb054 stamped by ITS ctor)
     i32 m_mode;      // +0x1c  latched mode
 };
+SIZE(0x20);
 
 #endif // GRUNTZ_NET_KEYEDLIST_H

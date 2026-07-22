@@ -480,4 +480,3 @@ i32 CKitchenSlime::LoadSprites() {
     return 1;
 }
 
-SIZE_UNKNOWN(CStringNode);

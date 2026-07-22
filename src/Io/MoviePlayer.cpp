@@ -3,7 +3,6 @@
 #include <Mfc.h>             // /GX EH-frame helpers
 #include <Crypto/FecCrypt.h> // the +0x540 decode store IS a CFecFile (Init/ReadArchive/Lookup/Close)
 
-SIZE_UNKNOWN(CMoviePlayer);
 
 // ===========================================================================
 // 0x038fc0 - ~CMoviePlayer: run the worker Teardown, then the two embedded

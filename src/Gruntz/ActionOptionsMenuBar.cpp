@@ -561,7 +561,3 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
     return 1;
 }
 
-SIZE_UNKNOWN(CActionOptionsMenuBar);
-SIZE_UNKNOWN(CDDrawSubMgrPages);
-SIZE_UNKNOWN(CSpriteMgr);
-SIZE_UNKNOWN(CPlaneRender);

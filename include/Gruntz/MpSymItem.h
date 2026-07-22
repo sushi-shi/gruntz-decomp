@@ -12,6 +12,7 @@
 struct MpSymItem {
     char* m_name; // +0x00  entry name (LPCSTR)
 };
-SIZE_UNKNOWN(MpSymItem);
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_MPSYMITEM_H

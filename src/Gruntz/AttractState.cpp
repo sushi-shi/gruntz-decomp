@@ -307,5 +307,3 @@ CAttract::~CAttract() {
     ReleaseResources();
 }
 
-SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
-SIZE_UNKNOWN(CDDrawSurfacePair);

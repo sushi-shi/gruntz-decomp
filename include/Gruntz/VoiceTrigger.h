@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CVoiceTrigger : CUserLogic)
 
-SIZE(CVoiceTrigger, 0x54);
 class CVoiceTrigger : public CUserLogic, public CWapX {
 public:
 public:
@@ -29,12 +28,13 @@ public:
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                        //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
+SIZE(0x54);
 VTBL(CVoiceTrigger, 0x001e885c);
 
 typedef void (CUserLogic::*VTrigHandler)();
-SIZE_UNKNOWN(CVTrigEntry);
 struct CVTrigEntry {
     VTrigHandler m_fn; // [entry]  the registered handler PMF
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CVOICETRIGGER_H

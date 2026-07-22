@@ -18,7 +18,7 @@ struct CMenuListNode {
     CMenuListNode* pPrev;
     CMenuItem* data;
 };
-SIZE_UNKNOWN(CMenuListNode);
+SIZE_UNKNOWN();
 
 class CMenuPage {
 public:
@@ -125,6 +125,6 @@ public:
                                //        result; its CImage rows head the layout passes)
     CMenuItem* m_focus;        // +0x64 current focused child item
 };
-SIZE(CMenuPage, 0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
+SIZE(0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
 
 #endif // GRUNTZ_MENUPAGE_H

@@ -42,12 +42,13 @@ public:
     // ended at +0x40 and the leaf added 0x14); the CWapX sweep missed it because it
     // was named m_own, not m_pad40. Removing it makes the body compute 0x54 exactly.
 };
+SIZE(0x54); // CUserLogic (0x34) + CWapX (0x20)
 VTBL(CBrickz, 0x001e7c54);
-SIZE(CBrickz, 0x54); // CUserLogic (0x34) + CWapX (0x20)
 
 typedef i32 (CUserLogic::*BrickzHandler)();
 struct CBrickzActEntry {
     BrickzHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CBRICKZ_H

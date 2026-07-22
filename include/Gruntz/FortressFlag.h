@@ -31,13 +31,13 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CFortressFlag, 0x001e725c);
-SIZE(CFortressFlag, 0x54);
 
 typedef i32 (CUserLogic::*FortressFlagHandler)();
 struct CFortressFlagActEntry {
     FortressFlagHandler m_fn;
 };
-SIZE_UNKNOWN(CFortressFlagActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CFORTRESSFLAG_H

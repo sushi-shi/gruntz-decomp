@@ -6,7 +6,7 @@
 struct CTypeNode {
     char* m_0;
 };
-SIZE_UNKNOWN(CTypeNode);
+SIZE_UNKNOWN();
 
 struct CTypeColl {
     // Find (0x16da80, == _zvec::GrowTo) is the slow id lookup, declared here so the
@@ -14,6 +14,6 @@ struct CTypeColl {
     i32 Find(i32 key, i32 z); // 0x16da80  (external, reloc-masked)
     // Lookup @0x437c = _zdvec::IndexToPtr; still cast at its call sites.
 };
-SIZE_UNKNOWN(CTypeColl);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CTYPECOLL_H

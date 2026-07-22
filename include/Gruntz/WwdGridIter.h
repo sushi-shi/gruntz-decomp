@@ -13,6 +13,7 @@ struct BucketHead; // a grid cell's {head,tail} bucket (<Gruntz/WwdGrid.h>)
 struct WwdRect {
     i32 a, b, c, d;
 };
+SIZE_UNKNOWN();
 
 struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
     char m_pad08[0x0c - 0x08];
@@ -21,8 +22,8 @@ struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
     i32 m_y;              // +0x14
     struct CGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
+SIZE(0x1c); // == the +0x9c..+0xb7 embedded m_region span
 
-SIZE(CWwdGridIter, 0x44);
 VTBL(CWwdGridIter, 0x001f02a8);
 class CWwdGridIter : public CObject {
 public:
@@ -50,6 +51,7 @@ public:
     i32 m_rowBase;       // +0x3c  current row-base linear index
     i32 m_remove;        // +0x40  unlink-as-visited flag
 };
+SIZE(0x44);
 
 inline CWwdGridIter::CWwdGridIter() {
     m_grid = 0;
@@ -57,7 +59,5 @@ inline CWwdGridIter::CWwdGridIter() {
 }
 inline CWwdGridIter::~CWwdGridIter() {}
 
-SIZE_UNKNOWN(WwdRect);
-SIZE(WwdRegion, 0x1c); // == the +0x9c..+0xb7 embedded m_region span
 
 #endif // GRUNTZ_WWDGRIDITER_H

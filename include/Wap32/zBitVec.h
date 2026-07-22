@@ -15,7 +15,6 @@ void* GetCallerRetAddr(); // 0x16e0f0
 
 struct CVariantSlot;
 
-SIZE(zErrHandling, 0x8); // { vptr @0, m_errSink @4 }
 class zErrHandling {
 public:
     zErrHandling(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
@@ -31,8 +30,9 @@ public:
 
     CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
 };
+SIZE(0x8); // { vptr @0, m_errSink @4 }
+SIZE_UNKNOWN(); // error-reporter subobject view
 
-SIZE(zBitVec, 0x10);
 class zBitVec : public zErrHandling {
 public:
     zBitVec();                                // default (link-embedded; see CUserBaseLink)
@@ -49,6 +49,7 @@ public:
                     // int; the ctor/EnsureSize cast (u32) for the unsigned `>0x20` jbe)
     u32* m_words;   // +0x0c  SBO word band (inline u32 when m_capacity <= 0x20)
 };
+SIZE(0x10);
 
 VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 VTBL(zBitVec, 0x001f04c8);

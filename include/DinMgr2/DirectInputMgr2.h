@@ -14,7 +14,6 @@ class CInputDevBase;
 class CInputDevice;
 typedef CInputDevice CDeviceConfigA;
 
-SIZE(CDeviceListNode, 0x88); // operator new(0x88) in AddController
 struct CDeviceListNode {
     CDeviceListNode() {
         m_00 = 0;
@@ -25,6 +24,7 @@ struct CDeviceListNode {
     i32 m_04;                 // +0x04  (CFixedPtrArray32 count; zeroed by ctor)
     char m_body[0x88 - 0x08]; // +0x08..0x87  element body (CFixedPtrArray32 items)
 };
+SIZE(0x88); // operator new(0x88) in AddController
 
 class DirectInputMgr2 {
 public:
@@ -88,15 +88,15 @@ public:
     CPtrArray m_devices;      // +0x18  extra devices (MFC CPtrArray; data@1c size@20)
     CPtrList m_deviceList;    // +0x2c  device-config list (MFC CPtrList; head@30 tail@34)
 };
+SIZE_UNKNOWN();
 
-SIZE(DIMouseStateZ, 0x10); // DIMOUSESTATE
 struct DIMouseStateZ {
     i32 lX;           // +0x00
     i32 lY;           // +0x04
     i32 lZ;           // +0x08 (unread)
     u8 rgbButtons[4]; // +0x0c
 };
-SIZE(DIJoyState2Z, 0x110); // DIJOYSTATE2 (only lX/lY + the first ten buttons read)
+SIZE(0x10); // DIMOUSESTATE
 struct DIJoyState2Z {
     i32 lX; // +0x00
     i32 lY; // +0x04
@@ -104,14 +104,14 @@ struct DIJoyState2Z {
     u8 rgbButtons[10];        // +0x30 (DIJOYSTATE2 has 128; only ten are mapped)
     char pad3a[0x110 - 0x3a]; // remainder of the DIJOYSTATE2 blob
 };
-SIZE(DeviceState, 0x110); // sized to the largest variant (joystick DIJOYSTATE2)
+SIZE(0x110); // DIJOYSTATE2 (only lX/lY + the first ten buttons read)
 union DeviceState {
     u8 keys[0x100];      // keyboard scan-code snapshot
     DIMouseStateZ mouse; // mouse snapshot
     DIJoyState2Z joy;    // joystick snapshot
 };
+SIZE(0x110); // sized to the largest variant (joystick DIJOYSTATE2)
 
-SIZE(CInputDevRoot, 0x2b4); // grand-base subobject (derived fields start at 0x2b4)
 class CInputDevRoot {
 public:
     CInputDevRoot();
@@ -164,8 +164,8 @@ public:
     u32 m_currentKeys;          // +0x2ac  current packed key flags (press edges this frame)
     u32 m_edgeKeys;             // +0x2b0  raw current snapshot (pre-latch)
 }; // ends at +0x2b4
+SIZE(0x2b4); // grand-base subobject (derived fields start at 0x2b4)
 
-SIZE(CInputDevBase, 0x2b4); // middle-base subobject (adds no fields)
 class CInputDevBase : public CInputDevRoot {
 public:
     CInputDevBase();
@@ -191,8 +191,8 @@ public:
     virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
 
 };
+SIZE(0x2b4); // middle-base subobject (adds no fields)
 
-SIZE(CInputDevice, 0x338);
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
@@ -212,8 +212,8 @@ public:
     u32 m_keyTable[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)
     i32 m_modeFlags;      // +0x334  keyboard/mouse mode flag (bit 0 = direct/async)
 };
+SIZE(0x338);
 
-SIZE(CDeviceConfigB, 0x2c8);
 class CDeviceConfigB : public CInputDevBase {
 public:
     CDeviceConfigB();
@@ -228,8 +228,8 @@ public:
     i32 m_flags; // +0x2b4
     char m_pad2b8[0x2c8 - 0x2b8];
 };
+SIZE(0x2c8);
 
-SIZE_UNKNOWN(CDeviceConfigC);
 class CDeviceConfigC : public CInputDevBase {
 public:
     CDeviceConfigC(); // inline; the enum callback new's it (zeroes m_flags, stamps ??_7)
@@ -242,5 +242,6 @@ public:
 
     i32 m_flags; // +0x2b4
 };
+SIZE_UNKNOWN();
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H

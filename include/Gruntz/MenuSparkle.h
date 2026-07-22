@@ -30,6 +30,7 @@ public:
     // +0x1a0 anim on expiry, then re-arm the random flicker delay.
     i32 AdvanceAnim();
 };
+SIZE_UNKNOWN();
 VTBL(CMenuSparkle, 0x1e82dc);
 
 #endif // GRUNTZ_CMENUSPARKLE_H

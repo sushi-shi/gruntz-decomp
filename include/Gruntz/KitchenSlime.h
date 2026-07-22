@@ -46,8 +46,8 @@ public:
     i32 m_stepMag;   // +0x88  per-step magnitude double {lo,hi}, overlaid as int pair
     i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
 };
+SIZE(0x90);
 VTBL(CKitchenSlime, 0x1e750c);
-SIZE(CKitchenSlime, 0x90);
 
 // The activation-registry entry record: its first dword is a PMF of CKitchenSlime
 // (single inheritance -> a 4-byte code pointer). FireActivation dispatches it on
@@ -60,6 +60,6 @@ typedef void (CUserLogic::*KSlimeHandler)();
 struct CKSlimeEntry {
     KSlimeHandler m_fn; // [entry]
 };
-SIZE_UNKNOWN(CKSlimeEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CKITCHENSLIME_H

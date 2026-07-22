@@ -51,4 +51,3 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     return out;
 }
 
-SIZE_UNKNOWN(ColorHSV);

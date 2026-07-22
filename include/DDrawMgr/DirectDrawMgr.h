@@ -20,17 +20,15 @@ struct CDdMode {
     char _10[0x54 - 0x10];
     u32 m_54; // +0x54  mode tag / bpp (Compare's tie-break is unsigned)
 };
-SIZE_UNKNOWN(CDdMode);
+SIZE_UNKNOWN();
 
 struct CDdModePair {
     i32 a, b;
 };
-SIZE_UNKNOWN(CDdModePair);
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CDirectDrawMgr);
 typedef CDDrawPtrCollections CDirectDrawMgr;
 
-SIZE(CDDPalette, 0x38); // measured: the pool factories RezAlloc 0x38-byte items
 struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
     // Pool-item construction (the CDDrawPtrCollections MakeB*/Create factories
@@ -112,21 +110,22 @@ public:
     i32 m_colorCount;      // +0x30  fade color count
     i32 m_active;          // +0x34  fade active/pending flag (cleared by Destroy/Flush)
 };
+SIZE(0x38); // measured: the pool factories RezAlloc 0x38-byte items
 
-SIZE_UNKNOWN(DDModeInfo);
 struct DDModeInfo {
     i32 width;  // +0x00
     i32 height; // +0x04
     i32 bpp;    // +0x08
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CPageRec);
 struct CPageRec {
     u8* m_00; // +0x00  owned heap buffer (RemoveAt frees)
     char m_pad04[0x10 - 4];
     u8* m_10; // +0x10  owned heap buffer
     u8* m_14; // +0x14  owned heap buffer
 };
+SIZE_UNKNOWN();
 
 class CMoviePlayer;
 typedef CMoviePlayer CDDPageMgr;

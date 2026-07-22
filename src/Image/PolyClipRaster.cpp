@@ -152,4 +152,3 @@ i32 RotateRasterize(
     WarpTextureBlit(g_rasterVtxB, n, reinterpret_cast<CDDSurface*>(a4), reinterpret_cast<CDDSurface*>(a4), a5, a6);
     return 1;
 }
-SIZE(ClipVtx, 0x1c);

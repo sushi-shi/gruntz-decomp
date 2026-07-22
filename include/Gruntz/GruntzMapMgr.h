@@ -9,7 +9,6 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-SIZE_UNKNOWN(CGruntzMapMgr);
 VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 class CGruntzMapMgr : public CMapMgr {
 public:
@@ -33,5 +32,6 @@ public:
     CPtrArray m_arr; // +0x7c  footprint array (m_pData@+0x80, m_nSize@+0x84)
     i32 m_90;        // +0x90  cleared at LoadAttributes start (object size 0x94)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

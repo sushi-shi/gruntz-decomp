@@ -68,4 +68,3 @@ i32 CToyPeek::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CToyPeek);

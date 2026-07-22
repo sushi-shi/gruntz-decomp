@@ -1596,4 +1596,3 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     return 1;
 }
 
-SIZE_UNKNOWN(CLightFxRender);

@@ -41,6 +41,7 @@ struct LeafCue : public CLoadable {
     i32 m_14;              // +0x14  last draw-clock (throttle stamp)
     i32 m_18;              // +0x18  cooldown interval (seeded from the cache's m_34)
 };
+SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_04 = count;
     m_flags = 0;
@@ -50,7 +51,6 @@ inline LeafCue::LeafCue(i32 count, i32 handle) {
     m_14 = 0;
 }
 
-SIZE(LeafCue, 0x1c);
 VTBL(LeafCue, 0x001eff08); // ??_7LeafCue (9-slot CLoadable leaf; was g_leafElemVtbl)
 
 #endif // GRUNTZ_GRUNTZ_LEAFCUE_H

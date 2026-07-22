@@ -35,12 +35,12 @@ public:
     class CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c  the owning surface mgr (copied into worker m_ctx)
     WorkerListSibBase() {}
 };
+SIZE(0x10);
 inline WorkerListSibBase::~WorkerListSibBase() {
     m_status = -1;
     m_08 = 0;
     m_pSurfaceMgr = 0;
 }
-SIZE(WorkerListSibBase, 0x10);
 
 class CDDrawWorkerList : public WorkerListSibBase {
 public:
@@ -82,7 +82,7 @@ public:
     // dev idiom (MFC CObject* container), not a removable view cast.
     CObList m_workers;
 };
-SIZE(CDDrawWorkerList, 0x2c);       // new(0x2c) in CDDrawSurfaceMgr::Init @0x1559d1
+SIZE(0x2c); // new(0x2c) in CDDrawSurfaceMgr::Init @0x1559d1
 VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H

@@ -7,7 +7,6 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (HandleEvent/Serialize stream)
 #include <Gruntz/Sprite.h>        // CSprite (the looked-up "GAME_TIMER" sprite set)
 
-SIZE_UNKNOWN(CTimer);
 class CTimer {
 public:
     CTimer* Init();
@@ -51,5 +50,6 @@ public:
     i32 m_currentMs; // +0x4c decoded current/remaining value (ms within hour;
                      //        0x8107 cheat zeroes)
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_TIMER_H

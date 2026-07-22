@@ -61,6 +61,6 @@ public:
     CTileTriggerContainer* m_owner;
     i32 m_playerFlags[4]; // +0x18..+0x24  per-player seen/active flags [0..3]
 };
-SIZE(CTileActionEvent, 0x28);
+SIZE(0x28);
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

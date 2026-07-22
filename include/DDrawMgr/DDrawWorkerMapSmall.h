@@ -45,7 +45,7 @@ public:
     i32 RemoveByValue(CObject* obj);  // 0x165c40
     i32 RemoveByKey(const char* key); // 0x165d30
 };
-SIZE_UNKNOWN(CDDrawWorkerMapSmall);
+SIZE_UNKNOWN();
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H

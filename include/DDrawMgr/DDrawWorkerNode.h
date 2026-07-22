@@ -61,7 +61,7 @@ public:
         m_stateFlags = 0;
     }
 };
-SIZE(CDDrawWorkerBase, 0x7c);
+SIZE(0x7c);
 
 struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (compiler ??_G @0x1570b0; ~ @0x1570d0)
@@ -74,7 +74,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x157110
     // +0x78 byte frame = the base union's m_78b.
 };
-SIZE(CDDrawWorkerA, 0x7c);
+SIZE(0x7c);
 VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
 struct CDDrawWorkerB : public CDDrawWorkerBase {
@@ -95,7 +95,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     i32 Helper(i32 key, i32 idx); // 0x166040
     // +0x78 int frame/node = the base union's m_78.
 };
-SIZE(CDDrawWorkerB, 0x7c);
+SIZE(0x7c);
 
 VTBL(CDDrawWorkerB, 0x001efed0);
 

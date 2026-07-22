@@ -49,12 +49,12 @@ public:
     i64 m_lastDropTime; // +0x88  last-drop timestamp (64-bit)
     i64 m_dropInterval; // +0x90  drop interval (64-bit)
 };
+SIZE(0x98);
 VTBL(CObjectDropper, 0x001e7a9c);
-SIZE(CObjectDropper, 0x98);
 
 struct CDropperActEntry {
     i32 (CUserLogic::*m_fn)();
 };
-SIZE_UNKNOWN(CDropperActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_COBJECTDROPPER_H

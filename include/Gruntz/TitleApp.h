@@ -23,6 +23,6 @@ public:
     char m_pad1a8[0x1b8 - 0x1a8];
     int m_1b8; // +0x1b8 timer
 };
-SIZE_UNKNOWN(CTitleApp);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TITLEAPP_H

@@ -6,7 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (host->m_10) + its m_10map
 #include <Image/ImageSet.h>           // CImageSet - the real class the lookup yields
 
-SIZE_UNKNOWN(CSbiSurfacePool);
 struct CSbiSurfacePool {};
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SBICONFIG_H

@@ -25,6 +25,7 @@ struct CTmNode {
     i32 m_4;         // +0x04
     i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
 };
+SIZE_UNKNOWN();
 
 extern CButeMgr g_buteMgr;
 extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
@@ -36,11 +37,13 @@ struct CTmRecNode {
     char p0[0x4];        // +0x04
     CGruntPuddle* m_obj; // +0x08  placed object (the baseList puddle element)
 };
+SIZE_UNKNOWN();
 
 struct CGridCell {
     i32 m_0;
     char _pad[0x1c - 4];
 };
+SIZE_UNKNOWN();
 struct CGridLookup {
     char _00[8];
     CGridCell** m_8;          // +0x08  rows
@@ -48,10 +51,7 @@ struct CGridLookup {
     i32 m_10;                 // +0x10  height
     i32 Lookup(i32 x, i32 y); // 0x75a40
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CTmNode);
-SIZE_UNKNOWN(CTmRecNode);
-SIZE_UNKNOWN(CGridCell);
-SIZE_UNKNOWN(CGridLookup);
 
 #endif // GRUNTZ_TRIGGERMGR_RECORDS_H

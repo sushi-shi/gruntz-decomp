@@ -16,7 +16,6 @@ class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fad
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
 class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
-SIZE_UNKNOWN(CState);
 VTBL(CState, 0x001ea21c);
 class CState {
 public:
@@ -284,5 +283,10 @@ public:
     //
     // BuildBootyWalkingGruntz (0x1b450) is a BzState method (BootyWalkAnim.cpp).
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
+SIZE_UNKNOWN(); // local dtor-view (stamps ??_7CState in ~CMulti)
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

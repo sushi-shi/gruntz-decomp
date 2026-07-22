@@ -13,7 +13,7 @@ class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
 struct CloneNode : public DSoundLink {
     DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
 };
-SIZE(CloneNode, 0xc); // {link.next, link.prev, inst}
+SIZE(0xc); // {link.next, link.prev, inst}
 
 class DirectSoundMgr {
 public:
@@ -86,7 +86,7 @@ public:
     i32 m_playKey;         // +0x50  clone play key
     DirectSoundMgr* m_reacquireOwner; // +0x54  device/owner used to reacquire a lost buffer
 };
-SIZE(DirectSoundMgr, 0x58);       // per-buffer wrapper base (fields end at +0x58)
+SIZE(0x58); // per-buffer wrapper base (fields end at +0x58)
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 
 typedef DSoundList CloneList;
@@ -103,7 +103,7 @@ public:
     );                                 // 0x136180
     virtual ~DSoundBaseSub() OVERRIDE; // 0x136260  base-subobject dtor (vptr reset + chain)
 };
-SIZE(DSoundBaseSub, 0x58);       // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
+SIZE(0x58); // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
 VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 
 class DSoundCloneInst : public DSoundBaseSub {
@@ -128,7 +128,7 @@ public:
 
     CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
 };
-SIZE(DSoundCloneInst, 0x60);       // buffer leaf: CreateBuffer RezAlloc(0x60)
+SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
 VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

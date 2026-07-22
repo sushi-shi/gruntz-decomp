@@ -9,7 +9,6 @@ class CLightFx; // folded CProjShadowActivate
 
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buffer
 
-SIZE(CProjectile, 0x228);
 class CProjectile : public CMovingLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -85,6 +84,6 @@ typedef i32 (CUserLogic::*ProjActHandler)();
 struct CProjActEntry {
     ProjActHandler m_fn;
 };
-SIZE_UNKNOWN(CProjActEntry); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_PROJECTILE_H

@@ -32,7 +32,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-SIZE(CDDrawWorker, 0x6c);
 
 void operator delete(void*);
 

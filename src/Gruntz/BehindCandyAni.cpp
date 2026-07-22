@@ -112,5 +112,3 @@ i32 CBehindCandyAni::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-SIZE_UNKNOWN(CBehindCandyActEntry);
-SIZE_UNKNOWN(CBehindCandyActReg);

@@ -5,7 +5,6 @@
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-SIZE_UNKNOWN(GruntDataRecord);
 struct GruntDataRecord {
     char* m_str[5];  // +0x00..+0x10  five owned name strings
     char m_14[0x10]; // +0x14
@@ -22,5 +21,6 @@ struct GruntDataRecord {
     // four fixed blocks back verbatim. Returns 0 if `ar` is null, else 1.
     i32 DeserializeStrings(CSerialArchive* ar);
 };
+SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_GRUNTDATARECORD_H

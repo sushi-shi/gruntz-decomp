@@ -49,7 +49,7 @@ public:
     // it never touches +0x94), so this list is entirely the derived class's.
     DSoundList m_voices; // +0x94  owned per-stream voice list
 };
-SIZE(SoundStream, 0x9c);       // 0x94 SoundDevice base + DSoundList m_voices (8 B)
+SIZE(0x9c); // 0x94 SoundDevice base + DSoundList m_voices (8 B)
 VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
 
 #endif // DSNDMGR_SOUNDSTREAM_H

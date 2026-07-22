@@ -19,15 +19,14 @@ struct CRezFillRect {
     i32 right;  // +0x08
     i32 bottom; // +0x0c
 };
-SIZE(CRezFillRect, 0x10);
+SIZE(0x10);
 
 struct ScanlinePalette {
     char m_pad0[8];    // +0x00  header
     u32 m_colors[256]; // +0x08  RGB table (indexed by the 8bpp pixel)
 };
-SIZE_UNKNOWN(ScanlinePalette);
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CRezImage);
 class CRezImage {
 public:
     i32 LoadFromRez(char* name, void* a2, void* a3);
@@ -107,6 +106,7 @@ public:
     i32 m_paletteScalar;          // +0x454  associated palette scalar (SetPalette 2nd arg)
     ApiCallerStubs::CImagePaletteNode* m_paletteNode; // +0x458  the pool's palette list node
 };
+SIZE_UNKNOWN();
 
 // VTBL_ABSENT: never-constructed 1-slot dtor-dispatch facet over the CDDSurface
 // m_elements pool entries (slot-0-dtor family scheme). @identity-TODO: no
@@ -117,8 +117,8 @@ class CFileImageElement {
 public:
     virtual ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)
 };
+SIZE_UNKNOWN();
 
-SIZE(CFileImageSurface, 0xc0);
 VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
 class CFileImageSurface : public CDDSurface {
 public:
@@ -150,6 +150,7 @@ public:
         i32 key
     ); // slot 11 0x148840 (blit + install colour key)
 };
+SIZE(0xc0);
 
 class CFileImageSrc {
 public:
@@ -161,11 +162,14 @@ public:
     char _0c[0x41 - 0x0c];
     u8 m_format; // +0x41  format (1 = 8-bit, 3 = 24-bit)
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 
 class CFileImagePal {
 public:
     char _00[0x0c];
     u8* m_srcPalette; // +0x0c  source palette (4 bytes/entry)
 };
+SIZE_UNKNOWN();
 
 #endif // SRC_IMAGE_IMAGE_H

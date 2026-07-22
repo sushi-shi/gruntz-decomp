@@ -16,6 +16,7 @@ public:
     char m_pad24[0x28 - 0x24];
     i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
 };
+SIZE_UNKNOWN();
 
 extern "C" u32 g_engineFrameDelta;
 
@@ -140,7 +141,7 @@ public:
     // +0xac  the warlord battle-event tag (0x442..0x445 per owner KING/NAPOLEAN/PATTON/VIKING)
     i32 m_ownerTag;
 };
+SIZE(0xb0);
 VTBL(CWarlord, 0x1e7404);
-SIZE(CWarlord, 0xb0);
 
 #endif // GRUNTZ_CWARLORD_H

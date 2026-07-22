@@ -117,4 +117,3 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     return 1;
 }
 
-SIZE_UNKNOWN(FillEdgeRow);

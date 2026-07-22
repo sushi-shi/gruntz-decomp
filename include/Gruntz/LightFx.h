@@ -47,13 +47,13 @@ public:
     i32 m_anchorA; // +0x54  latched anchor A
     i32 m_anchorB; // +0x58  latched anchor B
 };
+SIZE(0x5c);
 VTBL(CLightFx, 0x1e7af4);
-SIZE(CLightFx, 0x5c);
 
 typedef i32 (CUserLogic::*LightFxHandler)();
 struct CLightFxActEntry {
     LightFxHandler m_fn;
 };
-SIZE_UNKNOWN(CLightFxActEntry);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

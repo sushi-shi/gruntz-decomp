@@ -40,7 +40,7 @@ public:
     virtual LogicTypeId
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
-SIZE_UNKNOWN(CUserBase);     // (was covered by the BoundaryMisc placeholder before its rename)
+SIZE_UNKNOWN(); // (was covered by the BoundaryMisc placeholder before its rename)
 VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
 
 
@@ -163,7 +163,7 @@ public:
     // CGrunt) under this same name/offset/role: one inherited field, modeled thrice.
     void* m_prevAnimSetNode; // +0x30
 };
-SIZE(CUserLogic, 0x34);       // base size 0x34 (see the NOTE). The tile-logic leaves'
+SIZE(0x34); // base size 0x34 (see the NOTE). The tile-logic leaves'
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 
 #ifndef USERLOGIC_OOL_CTOR
@@ -229,9 +229,8 @@ public:
     char m_blob[0x10]; // +0x10..0x20 (leaf +0x44..0x54, moving +0x160..0x170)  the
                        // serialized blob (every world had it as a 0x10 pad)
 };
-SIZE(CWapX, 0x20);
+SIZE(0x20);
 
-SIZE(CTileTrigger, 0x54);
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -256,6 +255,7 @@ public:
     // FOLD it; the out-of-line COMDAT (called by ??_G) is labeled via the @rva-symbol
     // pin in src/Gruntz/UserLogic.cpp.
 };
+SIZE(0x54);
 VTBL(CTileTrigger, 0x1e7f14);
 
 #endif // GRUNTZ_USERLOGIC_H

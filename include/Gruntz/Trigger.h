@@ -13,5 +13,6 @@ struct CTrigger {
     char m_pad174[0x198 - 0x174];
     i32 m_198; // +0x198  required layer id
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CTRIGGER_H

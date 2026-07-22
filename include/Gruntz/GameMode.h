@@ -25,18 +25,18 @@ extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 #include <Gruntz/ChatBox.h>
 
-SIZE_UNKNOWN(CGMVerRect);
 struct CGMVerRect {
     i32 a, b, c, d;
 };
+SIZE_UNKNOWN();
 extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" i32 g_frameDelta;         // (last-frame delta, fed to Step)
 
-SIZE_UNKNOWN(BzGeomPair);
 struct BzGeomPair {
     i32 m_y; // +0x00  onscreen y
     i32 m_x; // +0x04  onscreen x
 };
+SIZE_UNKNOWN();
 
 extern RECT g_levelMsgRectsB[8];
 
@@ -50,7 +50,6 @@ class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
 class CWwdGameObjectA; // the created-sprite kind (sprite fields below hold it)
 
-SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
     // Constructed by CGruntzMgr::TransitionState (`new CMenuState`, state id 5,
@@ -121,9 +120,10 @@ public:
 
     void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 VTBL(CMenuState, 0x1e9e84);
 
-SIZE_UNKNOWN(CCreditsState);
 void CreditsRectSet(void* rect, i32 l, i32 t, i32 r, i32 b); // 0x08c380
 
 class CCreditsState : public CState {
@@ -235,9 +235,10 @@ public:
     // GONE - they ARE the inherited CState::FadeInTitle / CState::RetireScene
     // title-roll/transition helpers, reached cast-free.)
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 VTBL(CCreditsState, 0x001e9c64);
 
-SIZE_UNKNOWN(CBootyState);
 class CBootyState : public CState {
 public:
     // Constructed by CGruntzMgr::TransitionState (`new CBootyState`, state id 10,
@@ -427,9 +428,10 @@ public:
     // then the inline `mov [esi],??_7CBootyState@@6B@` (0x5e9cec) stamp.
     char m_pad31c[0x320 - 0x31c];
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 VTBL(CBootyState, 0x001e9cec);
 
-SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
     // Constructed by CGruntzMgr::TransitionState (`new CMultiBootyState`, state id 18,
@@ -530,6 +532,8 @@ public:
     CWwdGameObjectA* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
     char m_pad224[0x244 - 0x224];
 };
+SIZE_UNKNOWN();
+SIZE_UNKNOWN();
 VTBL(CMultiBootyState, 0x001e9bdc);
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

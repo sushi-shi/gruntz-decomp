@@ -37,7 +37,6 @@
 #include <Gruntz/BattlezMapConfig.h> // the REAL +0x38 sub-object (0x1e8 B; ctor 0x24dc0)
 #include <Mfc.h>                     // CString (real MFC, 4-byte m_pchData)
 
-SIZE_UNKNOWN(GruntzPlayer);
 class GruntzPlayer {
 public:
     GruntzPlayer();  // 0x0da790 (default; constructs m_name + m_038, then Clear)
@@ -92,5 +91,6 @@ public:
     i32 m_230;                    // +0x230  = 0
     char m_pad234[0x238 - 0x234]; // +0x234
 }; // 0x238
+SIZE_UNKNOWN();
 
 #endif /* SRC_GRUNTZ_GRUNTZPLAYER_H */

@@ -33,11 +33,13 @@ public:
     i32 m_cellY;     // +0x58  grunt cell y
     i32 m_powerupId; // +0x5c  powerup id
 };
+SIZE_UNKNOWN();
 VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 
 typedef i32 (CUserLogic::*PowerupActHandler)();
 struct CPowerupActEntry {
     PowerupActHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

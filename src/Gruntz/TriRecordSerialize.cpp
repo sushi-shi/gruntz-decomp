@@ -17,4 +17,3 @@ i32 CPairRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-SIZE_UNKNOWN(CPairRecord);

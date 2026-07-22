@@ -26,7 +26,7 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CToobSpikez, 0x001e7774);
-SIZE(CToobSpikez, 0x54);
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

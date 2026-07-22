@@ -91,7 +91,7 @@ public:
     // (the CImageSet==CSprite duplicate-class question; see the session report).
     CImageSet* m_record;
 };
-SIZE_UNKNOWN(CSBI_MenuItem);
+SIZE_UNKNOWN();
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 
 #endif // SBI_MENUITEM_H

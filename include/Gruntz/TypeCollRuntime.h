@@ -15,6 +15,6 @@ class CTypeCollRuntime : public _zdvec {
 public:
     virtual ~CTypeCollRuntime() OVERRIDE;
 };
-SIZE_UNKNOWN(CTypeCollRuntime); // _zdvec base (0x24) + no own fields; size not pinned
+SIZE_UNKNOWN(); // _zdvec base (0x24) + no own fields; size not pinned
 
 #endif // GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H

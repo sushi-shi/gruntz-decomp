@@ -264,7 +264,3 @@ i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
 // The `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` this TU carried existed
 // only to serve this phantom's call and dies with it - see <Gruntz/MapLogic.h>.
 
-SIZE_UNKNOWN(BrickzCell);
-SIZE_UNKNOWN(BrickzNode);
-SIZE_UNKNOWN(BrickzNodePoolB);
-SIZE_UNKNOWN(CBrickzGrid);

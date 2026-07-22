@@ -12,6 +12,6 @@ public:
     char m_pad00[0x14];
     i32 m_deviceId; // +0x14  configured device id (1..5)
 };
-SIZE_UNKNOWN(CInputConfig);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_INPUTCONFIG_H

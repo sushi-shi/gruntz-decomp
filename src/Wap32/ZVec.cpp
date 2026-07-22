@@ -85,7 +85,3 @@ char* _zvec::IndexToPtr(i32 idx) {
     return m_spare;
 }
 
-SIZE_UNKNOWN(_zvec);          // dynamic-vector base (partial: no true base chain)
-SIZE_UNKNOWN(_zdvec);        // derived; adds override, no storage
-SIZE_UNKNOWN(zErrHandling);   // error-reporter subobject view
-SIZE_UNKNOWN(zMemberPtrSlot); // member-ptr slot fixup view

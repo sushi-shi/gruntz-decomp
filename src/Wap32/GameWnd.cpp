@@ -326,4 +326,3 @@ i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
 }
 
 VTBL(CGameWnd, 0x001ea344);
-SIZE(CGameWnd, 0x10);

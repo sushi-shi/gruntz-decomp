@@ -8,6 +8,6 @@
 struct Blk6c {
     i32 d[0x1b];
 };
-SIZE_UNKNOWN(Blk6c);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_BLK6C_H

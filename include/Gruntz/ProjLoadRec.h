@@ -59,6 +59,6 @@ struct CProjLoadRec {
     i32 _214, _218, _21c;
     i32 m_220, m_224; // +0x220, +0x224
 };
-SIZE_UNKNOWN(CProjLoadRec);
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_PROJLOADREC_H

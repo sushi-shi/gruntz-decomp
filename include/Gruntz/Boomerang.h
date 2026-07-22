@@ -4,7 +4,6 @@
 #include <Gruntz/Projectile.h> // real CProjectile base (pulls CMovingLogic/CUserLogic, CGruntArchive, LogicTypeId)
 #include <rva.h>
 
-SIZE(CBoomerang, 0x260);
 class CBoomerang : public CProjectile {
 public:
     CBoomerang(CGameObject* owner); // 0xe0650 (chains CProjectile(owner))
@@ -25,6 +24,7 @@ public:
     double m_phase;              // +0x250  trajectory parameter (sin/cos arg; phase gate)
     i32 m_launched;              // +0x258  launched latch
 };
+SIZE(0x260);
 VTBL(CBoomerang, 0x1e792c);
 
 extern const double g_boomHalf;      // 0x5eaad8  midpoint scale

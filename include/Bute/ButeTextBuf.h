@@ -12,10 +12,12 @@
 #define SRC_BUTE_BUTETEXTBUF_H
 
 #include <iostream.h> // the real MSVC 5.0 CRT ostream (the accumulator sub-object)
+#include <rva.h>
 
 struct CButeTextBuf {
     char m_pad00[0xc]; // +0x00  the CRT stream prefix (fstreambase/strstreambase)
     ostream accum;     // +0x0c  the value-text accumulator (the real CRT ostream)
 };
+SIZE_UNKNOWN(); // an embedded ostream - not the old fabricated 0x10
 
 #endif // SRC_BUTE_BUTETEXTBUF_H

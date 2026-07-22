@@ -473,4 +473,3 @@ void RegisterXLogic_6447f8() {
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
 //  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).
-SIZE_UNKNOWN(CParticlez);

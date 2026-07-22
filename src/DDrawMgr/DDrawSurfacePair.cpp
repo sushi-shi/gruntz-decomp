@@ -875,9 +875,6 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
     return r;
 }
 
-SIZE_UNKNOWN(CAniRecordArray);
-SIZE_UNKNOWN(CAniRecordView);
-SIZE_UNKNOWN(CAniSource);
 
 // ---------------------------------------------------------------------------
 // 0x165620: load + build the element from a file.  Open the reader on `filename`;

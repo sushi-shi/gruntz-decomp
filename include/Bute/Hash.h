@@ -26,7 +26,7 @@ struct CHashSlot {
     char m_pad00[0x8];     // +0x00
     DSoundList m_chain; // +0x08  { head, tail }
 };
-SIZE(CHashSlot, 0x10);
+SIZE(0x10);
 
 // VTBL_ABSENT: the intrusive-element base - only the concrete elements (CSymRec/
 // CSymTab/...) are constructed, each stamping its own vtable; no standalone base
@@ -49,7 +49,7 @@ public:
     void* m_record;     // +0x14  the stored (key,value) payload (key first);
                         //        genuinely heterogeneous (CSymRec / CSymTab / ...)
 };
-SIZE(CHashElement, 0x18);
+SIZE(0x18);
 
 class CHashBase {
 public:
@@ -89,7 +89,7 @@ public:
     u32 m_count;          // +0x00
     CHashSlot* m_buckets; // +0x04
 };
-SIZE(CHashBase, 0x8);
+SIZE(0x8);
 
 class CHash : public CHashBase {
 public:
@@ -116,7 +116,7 @@ public:
     u32 HashInt(u32 key);                 // 0x13c350
     void* FindInt(u32 key);               // 0x13c360
 };
-SIZE(CHash, 0x8);
+SIZE(0x8);
 
 class CHashB : public CHashBase {
 public:
@@ -133,6 +133,6 @@ public:
     u32 HashStr(const char* s);           // 0x13c3c0 (out-of-line; see CHash above)
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };
-SIZE(CHashB, 0x8);
+SIZE(0x8);
 
 #endif // SRC_BUTE_HASH_H

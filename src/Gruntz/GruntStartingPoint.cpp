@@ -127,5 +127,3 @@ void ActReg4RegisterType() {
     *reinterpret_cast<void**>(R4Lookup(id)) = static_cast<void*>(&ActReg4Handler);
 }
 
-SIZE_UNKNOWN(CActReg4);
-SIZE_UNKNOWN(CTypeColl2);

@@ -81,6 +81,7 @@ public:
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
 };
+SIZE_UNKNOWN();
 
 struct CParseSource;
 
@@ -375,6 +376,7 @@ public:
     i32 m_rectCWidth, m_rectCHeight; // +0xD8
     WwdHeader m_header;              // +0xE0  (1524 B copy)
 };
+SIZE(0x6d4);
 
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 

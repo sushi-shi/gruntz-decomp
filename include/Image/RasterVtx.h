@@ -2,6 +2,7 @@
 #define GRUNTZ_IMAGE_RASTERVTX_H
 
 #include <Ints.h>
+#include <rva.h>
 
 class CDDSurface;
 
@@ -12,6 +13,7 @@ struct ClipVtx {
     // the tail exists anywhere - grep-proven 2026-07-19; ex `float c,d,e`).
     i32 fx, fu, fv;
 };
+SIZE(0x1c);
 
 extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
@@ -31,6 +33,7 @@ struct RotateSrcImage {
     i32 m_18; // +0x18  width
     i32 m_1c; // +0x1c  height
 };
+SIZE_UNKNOWN();
 
 i32 RotateRasterize(
     ClipVtx* verts,

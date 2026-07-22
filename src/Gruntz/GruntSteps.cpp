@@ -1502,5 +1502,3 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     return 1;
 }
 
-SIZE_UNKNOWN(CSpriteSetReg);
-SIZE_UNKNOWN(CTileCell);

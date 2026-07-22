@@ -31,6 +31,7 @@ struct BrickzNode {
     i32 m_1c;         // +0x1c  payload (search data)
     BrickzNode* m_20; // +0x20  owning bucket-node / parent back-pointer
 };
+SIZE_UNKNOWN();
 
 struct BrickzCell {
     // +0x00 is read BOTH ways in retail: as a dword of packed terrain flags, and as a single
@@ -49,5 +50,6 @@ struct BrickzCell {
     i32 m_count;        // +0x14  per-cell open-list reference count
     BrickzNode* m_head; // +0x18  bucket-list head
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_BRICKZ_H

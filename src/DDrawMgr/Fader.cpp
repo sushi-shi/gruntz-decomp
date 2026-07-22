@@ -324,10 +324,6 @@ CFaderLight::~CFaderLight() {
 DATA(0x001f0888)
 extern const double g_faderPowK = 2.0; // 2.0
 
-SIZE(CShadeTable, 0x10);      // array-element stride (0x10-byte buffer wrapper)
-SIZE(CShadeTableArray, 0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
-SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
-SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
 // clip the centre to the surface rect (early-out if outside), fill the per-scanline span

@@ -87,4 +87,3 @@ void CRezBufferObject::Serialize(CArchive& ar) {
     }
 }
 VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
-SIZE_UNKNOWN(CObject);

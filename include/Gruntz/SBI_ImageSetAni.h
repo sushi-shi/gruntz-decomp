@@ -68,7 +68,7 @@ public:
     i32 m_frameStart; // +0x4c
     i32 m_frameEnd; // +0x50
 };
-SIZE_UNKNOWN(CSBI_ImageSetAni);
+SIZE_UNKNOWN();
 VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; was in SbiDtorChain.h)
 
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
@@ -99,7 +99,7 @@ public:
     // The m_114-gated 2-arg arrow mode sink (reloc `M`).
     void SetArrowMode(i32 a, i32 b);
 };
-SIZE(CSBI_StatzTabArrow, 0x54);
+SIZE(0x54);
 VTBL(CSBI_StatzTabArrow, 0x001eac94); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

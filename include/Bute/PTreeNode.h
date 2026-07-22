@@ -26,7 +26,7 @@ public:
     char m_pada[2];
     i32 m_nodeCount; // +0x0c (abs +0x14)  zero-init; live-node count
 };
-SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, count }
+SIZE(0x10); // { vptr, desc, kind, count }
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 
 class zPTree : public zErrHandling, public CButeNodeEntry {
@@ -63,7 +63,7 @@ public:
     i32 m_keyBitLength;             // +0x24  strlen*8 + 7 (CButeTree)
     i32 m_lookupPending;            // +0x28  lookup-pending / store reset field
 };
-SIZE(zPTree, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0
+SIZE(0x2c); // measured: new(0x2c) -> ctor 0x16dff0
 // zPTree's two most-derived vtables. RTTI names 0x1e94ac `zPTree`; 0x1e949c is its
 // CButeNodeEntry-base secondary. cl spells them through the ultimate polymorphic base, so
 // the pins carry the through-base names (they live in src/Bute/ButeNode.cpp - labels.py
@@ -78,7 +78,7 @@ public:
     // ParseTagLine inlines this 2-arg form (`new CButeNode(&ButeValueTeardown, 2)`).
     CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
-SIZE(CButeNode, 0x2c);       // new CButeNode(0x2c); zPTree provides the full layout
+SIZE(0x2c); // new CButeNode(0x2c); zPTree provides the full layout
 VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00
 // (The two through-base ??_7CButeNode @data-symbol pins live in src/Bute/ButeNode.cpp -
 //  labels.py reads @data-symbol out of the TU's .cpp only, never a header.)

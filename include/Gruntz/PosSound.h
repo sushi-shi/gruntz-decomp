@@ -11,6 +11,7 @@
 #define GRUNTZ_GRUNTZ_POSSOUND_H
 
 #include <Ints.h>
+#include <rva.h>
 #include <Mfc.h> // RECT (m_area/m_placed/m_28)
 
 class CAmbientPosSound; // the live voice (aux->m_voice) - the REAL 0x48-byte channel
@@ -30,6 +31,7 @@ struct PosSoundAux {
     char m_pad3c[0x168 - 0x3c];
     CAmbientPosSound* m_voice; // +0x168  the live voice (was the PosSoundVoice view)
 };
+SIZE_UNKNOWN();
 
 struct PosSoundObj {
     char m_pad00[0x08];
@@ -51,10 +53,12 @@ struct PosSoundObj {
     struct LeafCue* m_layer; // +0x19c  the resolved leaf cue (its m_10 clone-inst
                              //        feeds the spawn factory)
 };
+SIZE_UNKNOWN();
 
 struct PosSoundPlaced {
     char m_pad0[0x28];
     RECT m_28; // +0x28  == CAmbientSound::m_box2 written as the placement rect
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_POSSOUND_H

@@ -654,7 +654,6 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     h->m_drawFillArg = sel;
 }
 
-SIZE_UNKNOWN(CAnimSetNode);
 
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):

@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-SIZE_UNKNOWN(CGameInfoTime);
 struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
     i32 m_0;           // +0x00 (this+0xb8)
     u32 m_4;           // +0x04 (this+0xbc)  S (seconds, %lu)
@@ -15,8 +14,8 @@ struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
     i32 m_14;          // +0x14 (this+0xcc)  Year
     i32 m_18;          // +0x18 (this+0xd0)
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CGameInfo);
 class CGameInfo {
 public:
     // The name/record setters (NameRecord.cpp; __thiscall, RVA-bound).
@@ -36,6 +35,7 @@ public:
     CGameInfoTime m_b8;     // +0xb8
     u32 m_d4;               // +0xd4  Type (%i)
 };
+SIZE_UNKNOWN();
 
 i32 BuildGameDate(CGameInfoTime* out); // 0x118330
 

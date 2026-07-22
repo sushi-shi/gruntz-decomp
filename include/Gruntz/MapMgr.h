@@ -12,7 +12,6 @@ struct tagRECT;
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-SIZE_UNKNOWN(CMapArrayA);
 class CMapArrayA {
 public:
     CMapArrayA();
@@ -23,8 +22,8 @@ public:
     BrickzNode* m_0;     // +0x04  the owned element block (the dtor frees it; == m_block)
     u32 m_count;         // +0x08
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CMapArrayB);
 class CMapArrayB {
 public:
     CMapArrayB();
@@ -35,14 +34,14 @@ public:
     BrickzNode* m_block; // +0x04  the 0x0c-byte bucket-node pool (was void*)
     u32 m_count;         // +0x08
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(MapCell);
 struct MapCell {
     char m_pad0[0x18];
     i32 m_18; // +0x18  runtime field (zeroed after Load) == BrickzCell::m_head
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CMapMgr);
 VTBL(CMapMgr, 0x001ea3b4); // vtable_names -> code (RTTI game class)
 class CMapMgr {
 public:
@@ -173,13 +172,16 @@ public:
     CDDrawSurfaceMgr* m_attrMgr; // +0x78  the world/asset holder (its m_24 is the
                                  //        CGameLevel; ex the BrickzAttrMgr view)
 };
+SIZE_UNKNOWN();
 
 typedef CMapMgr CBrickzGrid;
+SIZE_UNKNOWN();
 
 struct BrickzFreeRec {
     i32 m_0; // +0x00  next-free link
     i32 m_4; // +0x04  path col
     i32 m_8; // +0x08  path row
 };
+SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_MAPMGR_H

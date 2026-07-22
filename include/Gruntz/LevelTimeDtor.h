@@ -21,7 +21,7 @@ public:
     // the 0x54 size are pinned by the StateDispatch new-site (0x9b770: push 0x54
     // before operator new, then the bare `call ??0CLevelTime` thunk 0x404d).
 };
+SIZE(0x54); // `new CLevelTime` @0x9b77f pushes 0x54
 VTBL(CLevelTime, 0x1e801c);
-SIZE(CLevelTime, 0x54); // `new CLevelTime` @0x9b77f pushes 0x54
 
 #endif // GRUNTZ_CLEVELTIMEDTOR_H

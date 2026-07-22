@@ -16,7 +16,7 @@ struct SbiRect {
     SbiRect() {}
     SbiRect(i32 l, i32 t, i32 r, i32 b) : m_0(l), m_4(t), m_8(r), m_c(b) {}
 };
-SIZE_UNKNOWN(SbiRect);
+SIZE_UNKNOWN();
 
 class CStatusBarItem {
 public:
@@ -97,7 +97,7 @@ public:
     // (reloc-masked extern; the retail standalone body is 0x10bfa0).
     void DtorStatus(); // 0x10bfa0
 };
-SIZE_UNKNOWN(CStatusBarItem);
+SIZE_UNKNOWN();
 
 // LOAD-BEARING GATE - MEASURED, do not degate (A/B 2026-07-22): making this
 // inline body unconditional (and the leaf-chain bodies own-TU-gated only) folds

@@ -13,13 +13,13 @@ typedef enum AmbientBoxSentinel {
     AMBIENT_BOX_UNBOUNDED = 0x80000000, // INT_MIN sentinel (same immediate)
 } AmbientBoxSentinel;
 
-SIZE_UNKNOWN(AmbientBox);
 struct AmbientBox {
     i32 left;   // +0x00
     i32 top;    // +0x04
     i32 right;  // +0x08
     i32 bottom; // +0x0c
 };
+SIZE_UNKNOWN();
 
 VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
@@ -87,7 +87,7 @@ public:
                              //        appended at (Create* factories store AddTail's return;
                              //        Teardown feeds it to m_list.RemoveAt); zeroed in the dtor
 };
-SIZE(CAmbientSound, 0x40);
+SIZE(0x40);
 
 VTBL(CAmbientPosSound, 0x001e7124);
 class CAmbientPosSound : public CAmbientSound {
@@ -106,6 +106,6 @@ public:
     i32 m_40; // +0x40  anchor position x (seeded by Init6/Init5; role by analogy
     i32 m_44; // +0x44  anchor position y  with CRandomAmbientSound's +0x40/+0x44)
 };
-SIZE(CAmbientPosSound, 0x48);
+SIZE(0x48);
 
 #endif // GRUNTZ_CAMBIENTSOUND_H

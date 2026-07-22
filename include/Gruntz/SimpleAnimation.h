@@ -20,7 +20,7 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
+SIZE(0x54);
 VTBL(CSimpleAnimation, 0x1e8544);
-SIZE(CSimpleAnimation, 0x54);
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

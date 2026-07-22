@@ -39,6 +39,6 @@ public:
     // from the allocation; the field roles are not. Do not invent them.
     char m_pad1a8[0x1b8 - 0x1a8];
 };
-SIZE(CHelpState, 0x1b8);
+SIZE(0x1b8);
 
 #endif // GRUNTZ_HELPSTATE_H

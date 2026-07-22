@@ -14,7 +14,6 @@ class CGruntzMgr;
 class CLevelInfo;      // real level record (m_levelInfo member)
 class CLevelSpawnInfo; // spawn-info handle
 
-SIZE(CBattlezMapConfig, 0x1e8);
 class CBattlezMapConfig {
 public:
     // ---- load phase (BattlezMapConfig.cpp) --------------------------------
@@ -291,5 +290,6 @@ public:
         };
     };
 };
+SIZE(0x1e8);
 
 #endif // SRC_GRUNTZ_BATTLEZMAPCONFIG_H

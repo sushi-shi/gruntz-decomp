@@ -27,6 +27,7 @@ public:
     char* m_alloc; // +0x1c  raw realloc base / per-element-fixup start
     i32 m_grown;   // +0x20
 };
+SIZE_UNKNOWN(); // dynamic-vector base (partial: no true base chain)
 
 class _zdvec : public _zvec {
 public:
@@ -39,5 +40,6 @@ public:
     char* IndexToPtr(i32 i);     // 0x310f0 (base accessor + per-slot member-ptr init)
     virtual ~_zdvec() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
+SIZE_UNKNOWN(); // derived; adds override, no storage
 
 #endif // GRUNTZ_WAP32_ZVEC_H

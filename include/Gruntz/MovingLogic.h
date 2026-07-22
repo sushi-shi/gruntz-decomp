@@ -17,7 +17,6 @@ extern u32 g_defaultZ;              // 0x5f04e8
 class CWwdGameObjectA; // the A-kind sprite (the grunt arm's m_animPlayer)
 class CAniElement;     // resolved anim-geometry handle (the grunt arm's *GeoSrc)
 
-SIZE_UNKNOWN(CMovingLogic);
 class CMovingLogic : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -122,6 +121,7 @@ public:
         };
     };
 };
+SIZE_UNKNOWN();
 VTBL(CMovingLogic, 0x1e87ac);
 
 #ifndef CMOVINGLOGIC_STANDALONE_CTOR

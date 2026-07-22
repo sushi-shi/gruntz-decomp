@@ -273,5 +273,3 @@ CGameObject* CWwdSpatialMgr::GetNextObject() {
     return 0;
 }
 
-SIZE_UNKNOWN(CWwdObjWorker);
-SIZE_UNKNOWN(CWwdSpatialMgr);

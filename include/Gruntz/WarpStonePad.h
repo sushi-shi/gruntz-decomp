@@ -6,7 +6,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CWarpStonePad : CUserLogic)
 
-SIZE(CWarpStonePad, 0x54);
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 class CWarpStonePad : public CUserLogic, public CWapX {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -27,10 +26,12 @@ public:
     i32 AdvanceAnim();                            // 0x10dc20
                                //         the state pump's `new CWarpStonePad` = new(0x54))
 };
+SIZE(0x54);
 
 typedef i32 (CUserLogic::*WarpStonePadHandler)();
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;
 };
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CWARPSTONEPAD_H

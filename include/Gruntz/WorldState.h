@@ -8,13 +8,12 @@ class CGruntzMgr; // Gruntz/GruntzMgr.h (CWorldState::m_4 IS the game mgr)
 class CSymTab;    // <Bute/SymTab.h>
 class CGameLevel; // <Gruntz/GameLevel.h>
 
-SIZE_UNKNOWN(LevelMgr);
 struct LevelMgr {
     char m_pad00[0x24];
     CGameLevel* m_24; // +0x24
 };
+SIZE_UNKNOWN();
 
-SIZE_UNKNOWN(CWorldState);
 class CWorldState {
 public:
     i32 BuildWorldLevelPath(i32 unused); // 0x0dbc80 (WorldLevelPath.cpp)
@@ -31,5 +30,6 @@ public:
     char m_pad2c[0x34 - 0x2c];
     CSymTab* m_34; // +0x34  battlez/multi symbol table
 };
+SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_WORLDSTATE_H

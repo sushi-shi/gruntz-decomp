@@ -53,17 +53,17 @@ struct CButeValue {
     // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns this.
     CButeValue* CopyValue(CButeValue* other);
 };
-SIZE(CButeValue, 0x8); // { type @0, pValue @4 }
+SIZE(0x8); // { type @0, pValue @4 }
 
 struct ButeRefSmall {
     i32 w[4];
 };
-SIZE(ButeRefSmall, 0x10); // 16-byte kButeRef5/kButeRef8 payload
+SIZE(0x10); // 16-byte kButeRef5/kButeRef8 payload
 
 struct ButeRefLarge {
     i32 w[6];
 };
-SIZE(ButeRefLarge, 0x18); // 24-byte kButeRef7 payload
+SIZE(0x18); // 24-byte kButeRef7 payload
 
 void __cdecl ButeValueTeardown(void* pValue); // 0x174df0
 

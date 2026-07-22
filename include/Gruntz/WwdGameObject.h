@@ -21,7 +21,7 @@ struct WwdSnapshot {
     i32 m_98;          // +0x98  m_posY
     i32 m_9c;          // +0x9c  m_sortKey
 };
-SIZE(WwdSnapshot, 0xa0); // WriteSnapshot emits ar->Write(&rec, 0xa0)
+SIZE(0xa0); // WriteSnapshot emits ar->Write(&rec, 0xa0)
 
 class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
@@ -57,6 +57,6 @@ struct WwdRetailSlot16Facet {
     virtual void S15();
     virtual i32 GetSnapshotSubId(); // [16] +0x40 - lands on B[0] at runtime
 };
-SIZE_UNKNOWN(WwdRetailSlot16Facet); // dispatch facet (never constructed)
+SIZE_UNKNOWN(); // dispatch facet (never constructed)
 
 #endif // GRUNTZ_WWDGAMEOBJECT_H
