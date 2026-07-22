@@ -31,12 +31,14 @@ static inline CGruntzMgr* Owner(CState* s) {
 void operator delete(void*);
 
 #include <Gruntz/Attract.h>
+#include <Gruntz/CreditsState.h> // g_clipRegionEnabled decl
+
+DATA(0x0022bf74)
+i32 g_clipRegionEnabled; // owner def (zero-init .bss)
 
 extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 
 VTBL(CCreditsState, 0x001e9c64);
-DATA(0x0022bf74)
-extern "C" i32 g_clipRegionEnabled; // 0x62bf74 - gates the credits CRgn clip
 
 static const double kScreenH = 480.0;    // 0x5e96f8  screen height
 static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate

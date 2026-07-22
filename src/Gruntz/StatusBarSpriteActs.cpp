@@ -9,10 +9,13 @@
 
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/StatusBarSpriteActs.h> // g_statusBarSpriteActReg decl
+
+// g_statusBarSpriteActReg (0x0024e670): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x0024e670, 0x0, ?g_statusBarSpriteActReg@@3UCActReg@@A)
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
-DATA(0x0024e670)
-extern CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 
 // CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the
 // CUserLogic teardown (the /GX leaf-dtor archetype). Adjacent to SerializeMove (0x11ae0).

@@ -1,8 +1,11 @@
 #include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
+#include <Gruntz/CursorSnapActReg.h> // g_logicActReg_62bfa0 decl
 
-DATA(0x0022bfa0)
-extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
+// g_logicActReg_62bfa0 (0x0022bfa0): CLogicActTable - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x0022bfa0, 0x0, ?g_logicActReg_62bfa0@@3UCLogicActTable@@A)
+
 
 extern "C" void LogicHandler_039910();
 

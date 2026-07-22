@@ -5,18 +5,15 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
 
+#include <Image/WarpTextureBlit.h> // g_rasterDestPtr (ex .cpp extern)
 DATA(0x001efb18)
 extern "C" float g_rasterScale; // 0x5efb18  +fixed-point scale
 DATA(0x001efb1c)
 extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
 DATA(0x002856f8)
 extern "C" FillEdgeRow g_rasterEdgeR[]; // 0x6856f8 (ascending-edge table; fill reads +0x10)
-DATA(0x002a2ce8)
-extern "C" i32 g_rasterDestRow; // 0x6a2ce8  current scanline base (engine scratch)
 DATA(0x002a2cf0)
 extern "C" FillEdgeRow g_rasterEdgeL[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
-DATA(0x002becf4)
-extern "C" i32 g_rasterDestPtr; // 0x6becf4  current span start (engine scratch)
 
 // FillPolygon (0x146fe0, __cdecl) - scanline-fill a polygon into a CDDSurface. Pass 1
 // walks each edge (prev->cur, wrapping), ftol's the endpoints, picks the asc/desc edge

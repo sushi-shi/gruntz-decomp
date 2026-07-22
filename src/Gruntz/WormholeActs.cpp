@@ -6,9 +6,12 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
+#include <Gruntz/WormholeActs.h> // g_exitTriggerActReg decl
 
-DATA(0x002445c0)
-extern CActReg g_exitTriggerActReg; // 0x6445c0 (ex "g_wormholeActReg" - an RVA-proximity guess)
+// g_exitTriggerActReg (0x002445c0): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x002445c0, 0x0, ?g_exitTriggerActReg@@3UCActReg@@A)
+
 
 RVA(0x0003f210, 0x15)
 void CExitTrigger::InitActReg() {

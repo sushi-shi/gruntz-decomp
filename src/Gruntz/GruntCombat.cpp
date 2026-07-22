@@ -236,6 +236,11 @@ void CGrunt::EntranceTileOffset(i32* out) {
 }
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/GruntCombat.h> // g_reg_644af0 decl
+
+// g_reg_644af0 (0x00244af0): CLookupColl - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00244af0, 0x0, ?g_reg_644af0@@3UCLookupColl@@A)
 
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 
@@ -728,8 +733,6 @@ void CGrunt::DestroyAnims() {
     ClearSubB();
 }
 
-DATA(0x00244af0)
-extern CLookupColl g_reg_644af0;
 
 // @early-stop
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame

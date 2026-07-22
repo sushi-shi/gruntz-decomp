@@ -8,8 +8,8 @@
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
 #include <Globals.h>
 
-extern WORD g_sfDeviceId; // 0x64dd28 (best device index; shared with soundfontpath)
 
+#include <Gruntz/SoundFontPath.h> // g_sfDeviceId (ex .cpp extern)
 extern "C" {
     DATA(0x00213dff)
     char g_id0_613dff = 0;
