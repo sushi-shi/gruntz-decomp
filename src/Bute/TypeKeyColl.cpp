@@ -75,7 +75,8 @@ i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
-DATA_SYMBOL(0x002bf618, 0x4, _g_recCount23)
+DATA(0x002bf618)
+i32 g_recCount23;
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and

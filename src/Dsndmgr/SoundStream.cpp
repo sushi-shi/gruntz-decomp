@@ -16,10 +16,14 @@ VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630
 VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
 VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
 VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
-DATA_SYMBOL(0x00253c4c, 0x4, _g_ssLogEnabled)
-DATA_SYMBOL(0x00253c50, 0x4, _g_ssMsgBoxEnabled)
-DATA_SYMBOL(0x00253c54, 0x4, _g_ssBeepEnabled)
-DATA_SYMBOL(0x00253c58, 0x4, _g_ssThirdEnabled)
+DATA(0x00253c4c)
+i32 g_ssLogEnabled;
+DATA(0x00253c50)
+i32 g_ssMsgBoxEnabled;
+DATA(0x00253c54)
+i32 g_ssBeepEnabled;
+DATA(0x00253c58)
+i32 g_ssThirdEnabled;
 
 // ---------------------------------------------------------------------------
 // 0x137330 - ??1PureSoundElem, the standalone out-of-line COMDAT copy of the

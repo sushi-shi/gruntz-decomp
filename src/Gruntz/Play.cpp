@@ -2583,8 +2583,10 @@ i32 CPlay::ProfileDeltaFrame() {
     return 1;
 }
 
-DATA_SYMBOL(0x0024c284, 0x4, _g_profAccA)
-DATA_SYMBOL(0x0024c288, 0x4, _g_profAccB)
+DATA(0x0024c284)
+i32 g_profAccA;
+DATA(0x0024c288)
+i32 g_profAccB;
 
 // ===========================================================================
 // CPlay::ProfileInputFrame (0x0c9e40) - the fully-instrumented frame: nine
@@ -3464,7 +3466,8 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     return s;
 }
 
-DATA_SYMBOL(0x0024c3f0, 0x44, _g_soundChannelInUse)
+DATA(0x0024c3f0)
+i32 g_soundChannelInUse[17];
 
 RVA(0x000db1d0, 0x14)
 void ChannelSlots_InitAll() {

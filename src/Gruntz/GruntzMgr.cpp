@@ -78,7 +78,8 @@ i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
-DATA_SYMBOL(0x00248ce8, 0x4, _g_scoreTimeBase)
+DATA(0x00248ce8)
+i32 g_scoreTimeBase;
 
 void OpenSettingsStore();  // FUN_005158f0
 void CloseSettingsStore(); // FUN_004f8e20
@@ -100,7 +101,8 @@ DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-DATA_SYMBOL(0x002455e8, 0x4, _g_monologoShown)
+DATA(0x002455e8)
+i32 g_monologoShown;
 
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
 VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
@@ -129,11 +131,16 @@ void EndWaitCursor();   // 0x1beb10
 
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
-DATA_SYMBOL(0x002455a4, 0x4, _g_gruntDestruction)
-DATA_SYMBOL(0x002455a8, 0x4, _g_gruntCreation)
-DATA_SYMBOL(0x002455ac, 0x4, _g_gooPuddlez)
-DATA_SYMBOL(0x002455f8, 0x4, _g_explosionz)
-DATA_SYMBOL(0x00245600, 0x4, _g_resolutionChanged)
+DATA(0x002455a4)
+u32 g_gruntDestruction;
+DATA(0x002455a8)
+u32 g_gruntCreation;
+DATA(0x002455ac)
+u32 g_gooPuddlez;
+DATA(0x002455f8)
+u32 g_explosionz;
+DATA(0x00245600)
+u32 g_resolutionChanged;
 DATA(0x002455f4)
 i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 

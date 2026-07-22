@@ -58,7 +58,8 @@ i32 g_optionsCursor = 0; // decl in Multi.h
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
 
-DATA_SYMBOL(0x00248cf4, 0x4, _g_netCreateCtx)
+DATA(0x00248cf4)
+CNetCreateCtx* g_netCreateCtx;
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
