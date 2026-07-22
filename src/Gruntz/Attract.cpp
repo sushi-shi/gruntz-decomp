@@ -516,8 +516,14 @@ i32 g_playActive;
 // under the canonical CState::InputVirtual name so those overrides' base calls bind;
 // the CMgrPersistObj member VIEW is a fake facet of CState (m_levelData@+0x0c ==
 // CState::m_c) - its body-shape fold onto CState is deferred.
-// retail identity: ?InputVirtual@CState@@UAEHXZ (reconstructed under the byte-matched
-// CMgrPersistObj::Init placeholder; the body-fold onto CState is deferred)
+// LOAD-BEARING: 0xface0 IS CState's slot-8 base virtual (??_7CState@@6B@+0x20),
+// base-called by CBootyState/CMultiBootyState/CImageState/CPlay's slot-8 overrides,
+// so it MUST carry the CState::InputVirtual name (vtable_slot_binding requires the
+// slot wired to a real virtual). The clean fold - CMgrPersistObj facet -> CState -
+// is BLOCKED: InputVirtual writes m_1a8/m_1ac/m_1b0, and adding those to CState shifts
+// the whole CState family's derived layouts (measured: -100 exact). A family-wide
+// re-base, deferred; until then this SYMBOL names the base virtual.
+SYMBOL(?InputVirtual@CState@@UAEHXZ)
 RVA(0x000face0, 0x17c)
 i32 CMgrPersistObj::Init() {
     if (m_levelData == 0) {

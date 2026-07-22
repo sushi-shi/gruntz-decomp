@@ -39,6 +39,14 @@ SYMBOL_SIZE = 18
 VOLATILE_SG = re.compile(r"^\$SG[0-9]+$")
 VOLATILE_T = re.compile(r"^\$T[0-9]+$")
 NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
+# `$E<n>` - a compiler-generated dynamic-initializer / EH-cleanup TEXT funclet for a
+# file-scope object with a non-trivial ctor (e.g. `static CString g_worldName[8]={...}`).
+# The `<n>` is a per-object counter that renumbers on ANY static-init add/remove in the
+# TU, so - exactly like `$S<n>` local statics - it must be content-addressed, not pinned
+# by a fixed number. Same treatment: rename base + target `$E<n>` to a hash of the
+# funclet body so objdiff pairs by content. (Text, not data, but the byte/reloc hash is
+# identical machinery.)
+VOLATILE_E = re.compile(r"^\$E[0-9]+$")
 
 INITIALIZED_DATA = 0x00000040
 UNINITIALIZED_DATA = 0x00000080
@@ -313,6 +321,8 @@ def _family(name: str) -> tuple[str, str | None] | None:
         return "sg", None
     if VOLATILE_T.fullmatch(name):
         return "t", None
+    if VOLATILE_E.fullmatch(name):
+        return "e", None
     match = NAMED_STATIC.fullmatch(name)
     if match:
         return "named", match.group("prefix")

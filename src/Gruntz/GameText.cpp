@@ -17,9 +17,14 @@
 //   / "High Rollerz" / "Honey, I Shrunk the Gruntz!" / "The Miniature Masterz"
 //   / "Gruntz in Space".
 // ---------------------------------------------------------------------------
-// GetWorldDisplayName (the g_worldName[] array initializer).
-SYMBOL(_$E1)
-RVA(0x00082990, 0x79)
+// The two file-scope CString name tables (g_worldName below, g_statLabel further down)
+// each emit a compiler-generated dynamic-init `$E<n>` funclet that runs the 8
+// CString::CString ctors at startup. The `<n>` is an unstable per-object counter, so the
+// funclets are content-addressed by canonicalize_data_symbols (paired by body, not
+// number); both pins live here, co-located in RVA order for the compgen_order ratchet
+// (this TU's .text is multi-region, so the two funclets' addresses are far apart).
+RVA_COMPGEN(0x00018740, 0x79, _$E4) // g_statLabel[8] initializer
+RVA_COMPGEN(0x00082990, 0x79, _$E1) // g_worldName[8] initializer
 static CString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -128,8 +133,6 @@ void ClearCoordPool() {
     g_coordPool.m_linkOffset = 0;
 }
 
-SYMBOL(_$E4)
-RVA(0x00018740, 0x79)
 static CString g_statLabel[8] = {
     "Time:",
     "Survivorz:",

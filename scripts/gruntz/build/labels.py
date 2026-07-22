@@ -115,6 +115,12 @@ RVA_COMPGEN_RE = re.compile(
 # pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
 DATA_SYMBOL_RE = re.compile(
     r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
+# A content-addressed compiler-gen TEXT funclet name: `$E<n>` (x86 `_$E<n>`) dynamic-init
+# / EH-cleanup helper. Its per-object counter is unstable, so the exact number is never a
+# reliable base-obj match; canonicalize_data_symbols renames base + target `$E<n>` to a
+# content hash for objdiff. RVA_COMPGEN(rva, size, _$E<n>) therefore skips the base-obj
+# authority check (any `$E<n>` placeholder pairs by content).
+CONTENT_ADDR_FN_RE = re.compile(r"^_?\$E[0-9]+$")
 
 
 def resolve_pool_id(sym, all_syms):
@@ -1188,7 +1194,12 @@ def main():
             # No source body -> no AST param names; undname still gives the
             # (typed, unnamed) signature for functions.json.
             func_meta[rva] = {"ir_sym": sym, "names": None}
-            if obj_syms is None or sym in obj_syms:
+            if obj_syms is None or sym in obj_syms or CONTENT_ADDR_FN_RE.match(sym):
+                # A content-addressed funclet (`$E<n>` dynamic-init / EH cleanup) carries
+                # an UNSTABLE per-object counter, so the exact number is never in the base
+                # obj - the normalizer (canonicalize_data_symbols) renames base + target
+                # `$E<n>` to a content hash and objdiff pairs by that, so any `$E<n>`
+                # placeholder is fine here; skip the base-obj name check for it.
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
