@@ -1,76 +1,5 @@
 // rva.h - RVA/data label macros for the binary-matching pipeline.
-//
-// Matched code/data carries its retail address as a clang `annotate` ATTRIBUTE
-// instead of a `// @address:` comment. labels.py compiles each TU to LLVM IR and
-// reads @llvm.global.annotations - which pairs the MANGLED SYMBOL directly with
-// the annotation string - so there is no fragile "nearest definition below the
-// comment" positional join (an inline header def can no longer steal an address).
-//
-//   RVA(addr, size)     - on a matched FUNCTION definition. `size` is the retail
-//                         byte extent; synth_pdb uses it as the authoritative
-//                         boundary for functions Ghidra never recovered as
-//                         objects.
-//   SYMBOL(mangled)     - explicit mangled-name override for a function whose
-//                         clang MS-mangling differs from the retail symbol.
-//   DATA(addr)          - on an `extern` declaration of a matched GLOBAL (the
-//                         DATA symbol it is referenced through).
-//   RVA_COMPGEN(addr, size, symbol)
-//                       - a COMPILER-GENERATED function (a `??_G` scalar-deleting
-//                         destructor, a `??_D` vbase destructor, an `_$E` EH
-//                         funclet, an out-of-line MFC-inline COMDAT, ...): there
-//                         is NO source definition to hang an RVA() on - cl emits
-//                         the body itself; this binds the retail address to the
-//                         verbatim mangled `symbol`. Expands to NOTHING under
-//                         both compilers; the label pass reads the invocation
-//                         from source text. Keep invocations in RVA order among
-//                         the TU's other RVA() functions.
-//   DATA_SYMBOL(addr, size, symbol)
-//                       - the DATA analog of RVA_COMPGEN: a compiler-emitted
-//                         DATUM with no source VarDecl to hang DATA() on (an
-//                         MI-decorated `??_7<C>@@6B<Base>@@@` secondary vftable,
-//                         a `$S<n>`-pooled local static, a Q/P-mangled const
-//                         array clang cannot reproduce). Binds the verbatim
-//                         mangled `symbol` at retail RVA `addr`; `size` is the
-//                         byte extent (0x0 = unknown). Same shape and ordering
-//                         rule as the TU's other data labels.
-//   SIZE(bytes)         - DIRECTLY UNDER the closing `};` of a class definition
-//                         (`struct Hello { u64 a; }; SIZE(0x8);`), record its
-//                         retail byte size. POSITIONAL: the class is the nearest
-//                         preceding definition (or forward declaration, for
-//                         opaque/foreign types). Text-scanned; MSVC sees NOTHING.
-//                         Consumed by gruntz.cleanliness.class_sizes.
-//   SIZE_UNKNOWN()      - the tracking sibling of SIZE for a class whose retail
-//                         byte size is not yet pinned: same position, no value.
-//                         Every class carries SIZE(..) xor SIZE_UNKNOWN().
-//   VTBL(type, addr)    - in the vtable-OWNING TU (the .cpp whose obj emits the
-//                         class's ??_7), beside the TU's DATA() bindings in
-//                         address order: bind ??_7<type>@@6B@ at retail RVA
-//                         `addr` as a DATA symbol (vtable catalog). labels.py
-//                         text-scans it tree-wide -> symbol_names.csv.
-//                         Matching-NEUTRAL tracking (a vtable name is
-//                         reloc-masked in objdiff), not a match lever.
-//
-// IMPORTANT - the same source is compiled by clang (the label step) AND by MSVC
-// 5.0 under wine (the base objs). MSVC 5.0 predates __attribute__, [[...]], AND
-// C99 variadic macros (__VA_ARGS__), so each macro must be FIXED-arity and must
-// compile to nothing under any non-clang compiler. Under MSVC ALL of these macros
-// (RVA/SYMBOL/DATA/OVERRIDE and now SIZE/SIZE_UNKNOWN/VTBL) vanish - they are
-// purely clang-side labels and never perturb matched code. (SIZE/SIZE_UNKNOWN/VTBL
-// were once a negative-size typedef that FORCED sizeof under MSVC and rescheduled
-// includers' /O2 codegen; they are now MSVC-empty, so they are matching-neutral
-// wherever placed - in particular directly atop a class in a hot header.)
-//
-// IR caveat (MEASURED): clang only emits an annotation
-// into @llvm.global.annotations for a DEFINED, live global. (1) An `extern`
-// declaration's annotation is dropped even when the global is referenced, and
-// `used` does NOT rescue a declaration - so DATA labels are NOT read from IR;
-// labels.py scans the DATA(...) macro in source text and binds it to the clang-AST
-// VarDecl mangledName. (2) An annotation on a CLASS/RECORD is dropped too. (3) A
-// DEFINED global (even an unused `static`) reaches the IR IFF it is kept alive -
-// hence SIZE/SIZE_UNKNOWN/VTBL use a `used` static carrier (they DO reach the IR).
-// The carriers are named `gruntz_clsmeta_*`; labels.py's AST DATA scan skips that
-// prefix so a carrier can never steal a DATA(...) binding. Functions/SYMBOL go
-// through IR; VTBL is still text-scanned (tree-wide / include-independent).
+
 #ifndef GRUNTZ_RVA_H
 #define GRUNTZ_RVA_H
 
@@ -79,8 +8,6 @@
 #if defined(__clang__) && defined(GRUNTZ_EMIT_META)
 
 #define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))
-#define SYMBOL(mangled) __attribute__((annotate("symbol:" #mangled)))
-#define DATA(addr) __attribute__((annotate("data:" #addr)))
 
 #define OVERRIDE override
 
@@ -91,61 +18,23 @@
         gruntz_clsmeta_,                                                                           \
         __COUNTER__                                                                                \
     ) = 0
-// SIZE/SIZE_UNKNOWN are POSITIONAL (the class is the nearest preceding
-// definition) - pure text-scan labels, no IR carrier; both compilers see nothing.
+
 #define SIZE(bytes)
 #define SIZE_UNKNOWN()
-// VTBL(type, addr) - bind the class's virtual-table symbol ??_7<type>@@6B@ at the
-// retail RVA `addr` as a DATA symbol: the single source of truth for the vtable
-// catalog. labels.py TEXT-SCANS this macro tree-wide (src/ + include/) and emits
-// the ??_7 row into build/gen/symbol_names.csv (a TARGET-side name - the EXE has
-// no debug symbols, so the delinked datum's name is ours to assign). A vtable
-// NAME is reloc-masked in objdiff, so this is matching-neutral TRACKING, not a
-// match lever. Only simple global-namespace class names lower cleanly to
-// ??_7<type>@@6B@ - templated/namespaced vtables keep using config/vtable_names.csv
-// or a DATA_SYMBOL(..) row. (The carrier's annotate also reaches the IR, so a
-// future sweep could read VTBL from @llvm.global.annotations; the text scan is
-// retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
-
-// VTBL2(derived, base, addr) - the SECONDARY (multiple-inheritance) vtable
-// ??_7<derived>@@6B<base>@@@: the vftable for `derived`'s non-first polymorphic base
-// `base` (a base subobject at a nonzero offset). A multiply-inheriting class emits
-// one such secondary vtable per extra polymorphic base; VTBL only names the primary
-// ??_7<derived>@@6B@. Text-scanned by labels.py (like DATA_SYMBOL); expands to nothing
-// for BOTH compilers. Retires the raw secondary-vtable DATA_SYMBOL and lets the vtable
-// tooling coverage-check secondaries (gruntz.cleanliness.vtable_coverage - an MI class
-// must bind every secondary vtable).
 #define VTBL2(derived, base, addr)
 
-// VTBL_ABSENT(type) - catalog a vtable-bearing class whose ??_7 datum is PROVEN
-// ABSENT from the retail image: a base whose every ctor/dtor is folded under a
-// derived stamp (no standalone emission), or a never-constructed dispatch facet
-// that models a retail-side view (bare ??_G calls / OOB slot dispatch / a caller
-// TU's own header revision). ALWAYS pair it with a comment stating the proof (and
-// an @identity-TODO when the facet's receiver identity is still open). Cataloged
-// by gruntz.match.class_vtables; no symbol is emitted.
+// @TODO: Match debt. Those macros should be with proper structure/inheritance modeled.
 #define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
+#define DATA(addr) __attribute__((annotate("data:" #addr)))
 
-// RVA_COMPGEN(addr, size, symbol) - bind a COMPILER-GENERATED function (no source
-// definition exists; cl emits the body) to its retail address under the verbatim
-// mangled symbol. Text-scanned by labels.py; expands to nothing for BOTH compilers
-// (mangled names pass through a discarded macro argument unharmed - probe-verified
-// on cl 5.0 and clang). Keep invocations in RVA order among the TU's RVA() fns.
+// @TODO: Most likely match debt.
 #define RVA_COMPGEN(addr, size, symbol)
-
-// DATA_SYMBOL(addr, size, symbol) - bind a compiler-emitted DATUM (no source
-// VarDecl for DATA() to ride: MI-decorated ??_7 secondary vftables, $S<n>-pooled
-// local statics - `$S*` binds by prefix and survives pool renumbering - and
-// Q/P-mangled const arrays) to its retail address under the verbatim mangled
-// symbol. size 0x0 = unknown. Text-scanned by labels.py; expands to nothing for
-// BOTH compilers, exactly like RVA_COMPGEN.
 #define DATA_SYMBOL(addr, size, symbol)
 
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
-#define SYMBOL(mangled)
 #define DATA(addr)
 #define OVERRIDE
 

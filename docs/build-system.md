@@ -479,15 +479,15 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    The macros (`src/rva.h`, compiled to nothing under MSVC 5.0 — it predates
    `__attribute__` and C99 variadic macros, so each macro is FIXED-arity):
    - `RVA(addr, size)` — a matched function;
-   - `SYMBOL(mangled)` — an explicit mangled-name override for the rare case
-     clang's MS mangling differs from VC5's;
    - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it
      is referenced through);
    - `RVA_COMPGEN(<rva>, <size>, <mangled>)` — the macro (rva.h) for a compiler-generated fn with no
      source body (a `??_G` deleting dtor) that can't hold an attribute.
 
-   `labels.py` reads `RVA`/`SYMBOL` from **LLVM IR** (`@llvm.global.annotations`
-   pairs the mangled symbol DIRECTLY with the annotation — no positional join);
+   `labels.py` reads `RVA` from **LLVM IR** (`@llvm.global.annotations`
+   pairs the mangled symbol DIRECTLY with the annotation — no positional join;
+   the old `SYMBOL()` name-override escape hatch is RETIRED — a clang-vs-VC5
+   mangling mismatch is a modeling bug to fix in source);
    `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The
    label map regenerates from these annotations — never hand-edit the CSV. (The
    vendored zlib C TUs keep PRISTINE source — no labels in it; their rva→symbol

@@ -13,7 +13,6 @@ Checked forms:
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
   DATA_SYMBOL(0x00xxxxxx, 0xN, <mangled>)
   SIZE(0xN)                        SIZE_UNKNOWN()
-  SYMBOL(<mangled>)
 
 Comments are blanked first (labels.py does the same), so prose may quote an
 invocation freely. The retired comment-form carriers (`// @rva-symbol:` /
@@ -56,16 +55,15 @@ CANON = {
     "DATA_SYMBOL": rf"DATA_SYMBOL\({ADDR}, {HEXN}, {MANGLED}\)",
     "SIZE": rf"SIZE\({HEXN}\)",
     "SIZE_UNKNOWN": r"SIZE_UNKNOWN\(\)",
-    "SYMBOL": r"SYMBOL\([^\s()]+\)",
 }
 CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit
-# (the WhitespaceSensitiveMacros carriers SYMBOL/RVA_COMPGEN/DATA_SYMBOL are
+# (the WhitespaceSensitiveMacros carriers RVA_COMPGEN/DATA_SYMBOL are
 # wrap-immune - a giant mangled local-static name may legitimately run long).
 WRAPPABLE = {"RVA", "DATA", "VTBL", "VTBL_ABSENT", "SIZE", "SIZE_UNKNOWN"}
 # longest-first so RVA_COMPGEN/DATA_SYMBOL/SIZE_UNKNOWN/VTBL_ABSENT win their prefixes
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|DATA_SYMBOL|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA|VTBL|SYMBOL)\s*\(")
+    r"\b(RVA_COMPGEN|DATA_SYMBOL|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA|VTBL)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /

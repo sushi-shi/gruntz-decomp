@@ -76,10 +76,9 @@ StatementMacros:
 # spelling, gated by gruntz.audit.label_style): clang-format must never re-space
 # or wrap their args - it splits stdcall decorations (`_WinMain@16` ->
 # `_WinMain @16`), which silently unbinds the label. StatementMacros WINS over
-# WhitespaceSensitiveMacros (measured, clang-format 21), so these three must NOT
+# WhitespaceSensitiveMacros (measured, clang-format 21), so these two must NOT
 # be listed above.
 WhitespaceSensitiveMacros:
-  - SYMBOL
   - RVA_COMPGEN
   - DATA_SYMBOL
 AttributeMacros:

@@ -8,12 +8,11 @@ derived. See docs/build-system.md.
 ANNOTATIONS (src/rva.h macros, compiled out under MSVC):
 
     RVA(0x13dc70, 0x1d)        // a matched FUNCTION: rva + (optional) byte size
-    SYMBOL(?Mangled@@...)      // explicit mangled-name override for a function
     DATA(0x253c70)             // the DATA symbol a matched `extern` global uses
 
 How the map is built per TU:
 
-  1. FUNCTIONS / SYMBOL come from LLVM IR. `clang ... -S -emit-llvm` emits
+  1. FUNCTIONS come from LLVM IR. `clang ... -S -emit-llvm` emits
      `@llvm.global.annotations`, which pairs the MANGLED SYMBOL of each annotated
      function DIRECTLY with its annotation string (e.g. "rva:0x13dc70 size:0x1d").
      There is NO positional "nearest definition below the comment" join, so an
@@ -34,7 +33,8 @@ How the map is built per TU:
      the obj (a matched global is only *referenced* there, so it appears as an
      undefined `U` external). clang's MS mangling reproduced the real VC5 symbols
      in the spike, but is not contractually VC5 - the nm membership check is what
-     makes it safe. An explicit SYMBOL override is trusted as-is.
+     makes it safe. (The old SYMBOL() name-override escape hatch is RETIRED: a
+     clang-vs-VC5 mangling mismatch is a modeling bug to fix in source.)
 
   4. unit comes from config/units.toml via the source path.
 
@@ -140,15 +140,14 @@ def resolve_pool_id(sym, all_syms):
     return cands[0] if len(cands) == 1 else sym
 # Annotation strings carried in @llvm.global.annotations (emitted by src/rva.h).
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
-ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
-# Macro annotation markers (presence of any -> a migrated TU; functions/SYMBOL
-# come from IR for these). A TU with none is a vendored C TU (config-table path).
+# Macro annotation markers (presence of any -> a migrated TU; functions come
+# from IR for these). A TU with none is a vendored C TU (config-table path).
 # A TU "carries labels" if it invokes ANY rva.h label macro - a pin-only TU (e.g.
 # an explicit template-instantiation host whose every function is a
 # compiler-emitted COMDAT, like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>)
 # carries only RVA_COMPGEN/DATA_SYMBOL rows, and without those alternatives it
 # silently fell through to the vendored-C path and contributed ZERO rows.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL|RVA_COMPGEN|DATA_SYMBOL|VTBL2)\s*\(")
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|DATA_SYMBOL|VTBL2)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
@@ -244,35 +243,24 @@ def parse_ir_annotations(ir):
 
 
 def func_labels_from_ir(ir):
-    """[(rva, mangled_or_None, size_or_None)] keyed by the symbol the annotation
-    is attached to. Returns rows as (rva, candidate_name, size, override).
-
-    `rva:`/`symbol:` annotations attached to the SAME symbol are merged: the
-    symbol the IR pairs the annotation with IS the function's mangled name, so a
-    standalone SYMBOL override is rarely needed, but is honoured when present.
-    """
-    rows = {}            # mangled symbol -> {"rva":..,"size":..,"override":..}
+    """[(rva, mangled, size_or_None)] keyed by the symbol the annotation is
+    attached to: the symbol the IR pairs the annotation with IS the function's
+    mangled name (no positional join, no name overrides - the retired SYMBOL()
+    escape hatch is gone; a name mismatch is a modeling bug to fix in source)."""
+    rows = {}            # mangled symbol -> {"rva":..,"size":..}
     for sym, ann in parse_ir_annotations(ir):
         ma = ANN_RVA_RE.match(ann)
-        if ma:
-            size = None
-            if ma.group(2):
-                s = ma.group(2)
-                size = int(s, 16) if s.lower().startswith("0x") else int(s)
-            rows.setdefault(sym, {})["rva"] = int(ma.group(1), 16)
-            rows[sym].setdefault("size", None)
-            if size is not None:
-                rows[sym]["size"] = size
+        if not ma:
             continue
-        ms = ANN_SYM_RE.match(ann)
-        if ms:
-            rows.setdefault(sym, {})["override"] = ms.group(1)
-    out = []
-    for sym, d in rows.items():
-        if "rva" not in d:
-            continue                     # SYMBOL with no RVA -> nothing to label
-        out.append((d["rva"], sym, d.get("size"), d.get("override")))
-    return out
+        size = None
+        if ma.group(2):
+            s = ma.group(2)
+            size = int(s, 16) if s.lower().startswith("0x") else int(s)
+        rows.setdefault(sym, {})["rva"] = int(ma.group(1), 16)
+        rows[sym].setdefault("size", None)
+        if size is not None:
+            rows[sym]["size"] = size
+    return [(d["rva"], sym, d.get("size")) for sym, d in rows.items()]
 
 
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
@@ -751,7 +739,7 @@ def ms_c_symbol(candidate, obj_syms):
     hands us `RezAssertFail` while the obj has `_RezAssertFail`.
 
     Resolve the bare IR name to the decorated obj symbol so an `extern "C"` function
-    needs no SYMBOL() override. Only fires for a bare identifier (no `?` C++ mangling,
+    needs no name override. Only fires for a bare identifier (no `?` C++ mangling,
     no already-`_`/`@`-decorated form). Returns the obj symbol or None."""
     if not candidate or candidate[0] in "?_@.$" or not obj_syms:
         return None
@@ -1007,7 +995,7 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     # so the merge must reject it too. This is the last place a unit can silently
     # contribute nothing.
     #
-    # A fragment IS allowed to be empty when its TU carries no RVA/DATA/SYMBOL macro at
+    # A fragment IS allowed to be empty when its TU carries no rva.h label macro at
     # all: the class-metadata-only TUs (FinalVtables.cpp, OrphanClassMeta.cpp) exist
     # purely to host SIZE()/VTBL() annotations, and VTBL rows are folded in below from a
     # tree-wide source scan, not from the per-TU fragment. So consult the SOURCE rather
@@ -1130,7 +1118,7 @@ def main():
                       rows, misses, addr_sites)
             continue
 
-        # --- functions / SYMBOL via LLVM IR (mangled symbol paired directly) ---
+        # --- functions via LLVM IR (mangled symbol paired directly) ---
         # FATAL, never `continue`. The label pass is CLANG, not the wine cl that builds
         # the objs, so a TU can compile perfectly under cl and still yield NO IR here -
         # e.g. afxwin*.inl's implicit-int CMenu::operator== which clang rejects and cl
@@ -1152,11 +1140,10 @@ def main():
         # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
         ast = clang_ast(args.clang, tu, args.flag, cl_flags)
         ast_param_names = param_names_from_ast(ast, tu) if ast is not None else {}
-        for rva, ir_sym, size, override in func_labels_from_ir(ir):
+        for rva, ir_sym, size in func_labels_from_ir(ir):
             addr_sites.setdefault(rva, []).append((tu, ir_sym))
-            # The IR pairs the annotation with the function's own mangled symbol;
-            # an explicit SYMBOL override wins over it when present.
-            name = override or ir_sym
+            # The IR pairs the annotation with the function's own mangled symbol.
+            name = ir_sym
             # functions.json signature is derived from the clang mangledName
             # (ir_sym): undname gives the type/cc/class, AST the parameter names.
             func_meta[rva] = {"ir_sym": ir_sym,
@@ -1170,9 +1157,6 @@ def main():
             c_sym = ms_c_symbol(name, obj_syms)   # extern "C": clang drops the x86 `_`/`@n`
             if c_sym:
                 rows.append((rva, c_sym, unit, size, "func"))
-                continue
-            if override:                          # trust explicit SYMBOL
-                rows.append((rva, name, unit, size, "func"))
                 continue
             # clang's mangledName misses the destructor (it emits the `??_D vbase
             # dtor` variant, not the real `??1`). Resolve the canonical
