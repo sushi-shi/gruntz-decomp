@@ -18,4 +18,6 @@ i32 SaveGame(CGameSaveHost* host, char* name);
 // data-binding gotcha); the owner def in GameSave.cpp inherits it from here.
 extern "C" i32 g_saveBuf[0x24]; // 0x229930  the 0x90-byte save header scratch
 
+extern i32 g_savedMenuCmd; // 0x00213a9c (-1; the deferred menu WM_COMMAND)
+
 #endif // GRUNTZ_IO_GAMESAVE_H

@@ -4,4 +4,6 @@
 
 #include <Ints.h>
 
+extern char g_dot[]; // 0x001ee8ec "." (def in SoundBankLoad.cpp)
+
 #endif // GRUNTZ_DSNDMGR_SOUNDBANKLOAD_H

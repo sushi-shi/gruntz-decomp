@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/PortalPath.h> // g_nameFmt (ex .cpp extern)
 #undef _AFX_ENABLE_INLINES // skip afxwin1.inl (MFC4.2 implicit-int inlines clang rejects)
 #include <afxwin.h>        // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
 #include <Gruntz/GameRegMfcPtr.h>
@@ -147,7 +148,6 @@ DATA(0x0020cf90)
 char g_dotDot[] = ".."; // 0x60cf90
 DATA(0x0020cf94)
 char g_customGlob[] = "*.WWD"; // 0x60cf94
-extern char g_nameFmt[];       // 0x60c5b8 "%s" (def: BootyStateActivate.cpp)
 
 namespace m4 {
 

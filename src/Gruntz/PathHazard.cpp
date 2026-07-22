@@ -17,6 +17,7 @@
 
 
 
+#include <Gruntz/PathHazardActReg.h> // g_actReg_646250 (ex .cpp extern)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_legDeadline = 0;
@@ -134,7 +135,6 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-extern CActReg g_actReg_646250; // 0x646250
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
     CPathHazardActEntry* e = reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id));

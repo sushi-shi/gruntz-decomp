@@ -383,4 +383,6 @@ public:
 SIZE_UNKNOWN();
 VTBL(CMultiHelpDlg, 0x001ea474);
 
+extern CString g_gruntNames[4]; // 0x0024bdb0 per-channel label table (def in MultiStartDlg.cpp)
+
 #endif // SRC_GRUNTZ_DIALOGS_H

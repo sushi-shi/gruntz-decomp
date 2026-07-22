@@ -29,12 +29,12 @@
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
 #include <Globals.h>
 
+#include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
+#include <Gruntz/SoundState.h> // g_sndCueTag (ex the g_aniCueItem alias)
 namespace Rng {
     i32 Next2();
 }
 
-extern float g_sndPanScale; // 0x5eff2c
-extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 
 #include <Gruntz/AniElement.h>
 
@@ -591,7 +591,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    (reinterpret_cast<LeafCue*>(entry))->PlayIfElapsed(g_aniCueItem, 0, 0, 0);
+                    (reinterpret_cast<LeafCue*>(entry))->PlayIfElapsed(g_sndCueTag, 0, 0, 0); // 0x61ab24 (the ex "g_aniCueItem" alias)
                 }
             }
         }

@@ -11,6 +11,7 @@
 #include <string.h> // inline strcpy / memcpy / memset (rep stos)
 #include <Globals.h>
 
+#include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
@@ -578,7 +579,6 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
 }
 
 extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
-extern char g_dotDot[];                                  // 0x5ee8ec  ".."
 
 // ---------------------------------------------------------------------------
 // CreateRange (0x142630). Build a numbered sequence of a58 pool items named
@@ -611,7 +611,7 @@ i32 CDDrawPtrCollections::CreateRange(
         sprintf(buf, "%s%i", baseName, i);
         if (suffix != 0) {
             if (suffix[0] != '.') {
-                strcpy(buf, g_dotDot);
+                strcpy(buf, g_dot); // 0x5ee8ec IS "." (the old extern's ".."/g_dotDot label was wrong)
             }
             strcat(buf, suffix);
         }

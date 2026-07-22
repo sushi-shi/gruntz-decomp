@@ -20,7 +20,6 @@ CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
 void __stdcall Func1d70(i32 flag);              // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
-extern CString g_gruntNames[]; // 0x64bdb0 per-channel label table
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
 i32 ChannelSlots_FindFree();            // 0xdb280

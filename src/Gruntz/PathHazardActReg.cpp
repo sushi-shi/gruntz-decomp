@@ -3,9 +3,12 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
+#include <Gruntz/PathHazardActReg.h> // g_actReg_646250 decl
 
-DATA(0x00246250)
-extern CActReg g_actReg_646250; // 0x646250
+// g_actReg_646250 (0x00246250): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00246250, 0x0, ?g_actReg_646250@@3UCActReg@@A)
+
 
 extern "C" void Handler_4021d5(); // 0x4021d5
 extern "C" void Handler_402252(); // 0x402252

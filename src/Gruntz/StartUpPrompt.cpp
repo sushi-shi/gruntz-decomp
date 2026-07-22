@@ -7,13 +7,16 @@
 
 #include <rva.h>
 #include <Globals.h>
+#include <Gruntz/StartUpPrompt.h> // g_appResHandle decl
+
+// g_appResHandle (0x00251618): HINSTANCE - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+DATA_SYMBOL(0x00251618, 0x0, _g_appResHandle)
 
 DATA(0x002455ec)
 extern "C" {
     i32 g_cdPromptResult = 0;
 
-DATA(0x00251618)
-extern "C" HINSTANCE g_appResHandle; // 0x651618
 }
 
 extern "C" i32 IsGruntzCDInAnyDrive();    // 0x402540

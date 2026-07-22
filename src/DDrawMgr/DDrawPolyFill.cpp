@@ -5,11 +5,7 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
 
-#include <Image/WarpTextureBlit.h> // g_rasterDestPtr (ex .cpp extern)
-DATA(0x001efb18)
-extern "C" float g_rasterScale; // 0x5efb18  +fixed-point scale
-DATA(0x001efb1c)
-extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
+#include <Image/WarpTextureBlit.h> // g_rasterDestPtr/Scale/ScaleNeg (ex .cpp externs; bound at their defs)
 DATA(0x002856f8)
 extern "C" FillEdgeRow g_rasterEdgeR[]; // 0x6856f8 (ascending-edge table; fill reads +0x10)
 DATA(0x002a2cf0)

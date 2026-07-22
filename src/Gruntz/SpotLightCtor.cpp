@@ -19,6 +19,7 @@
 #include <math.h>         // sin / cos (the Tick rotation)
 #include <rva.h>
 
+#include <Gruntz/SpotLightActReg.h> // g_actReg_646188 (ex .cpp extern)
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
@@ -103,7 +104,6 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-extern CActReg g_actReg_646188; // 0x646188
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {

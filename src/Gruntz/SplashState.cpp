@@ -21,7 +21,6 @@
 
 #include <Gruntz/AssetRoot.h>
 
-extern i32 g_wap32FrameDelta; // 0x653c74
 
 // @confidence: high
 // @source: decomp-xref
@@ -32,6 +31,7 @@ extern i32 g_wap32FrameDelta; // 0x653c74
 // plateau, NOT exact. (The CState::LoadGameAssetNamespaces base-chain reloc DOES
 // bind now - the slot-1 family unification named it.) See
 // docs/patterns/external-nobody-callee.md + reloc-typing-vptr-global.md.
+#include <Globals.h> // g_wap32FrameDelta (ex .cpp extern)
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
     if (g_assetRoot.GetLength() == 0) {

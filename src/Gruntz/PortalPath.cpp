@@ -3,6 +3,10 @@
 #include <rva.h>
 #include <string.h> // inline strlen/strcat/strcpy
 
+#include <Gruntz/PortalPath.h>
+DATA(0x0020c5b8)
+char g_nameFmt[] = "%s"; // owner def (retail .data bytes: 25 73 00 00)
+
 extern i32 FileExists(char* path);
 
 RVA(0x00090550, 0x1e6)

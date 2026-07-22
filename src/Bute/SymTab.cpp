@@ -19,6 +19,8 @@
 #include <Rez/RezMgr.h>         // CRezDirNode/CRezDir/RezSrc (the two stray fns)
 #include <Rez/RezFile.h> // g_wildcard (ex .cpp extern)
 
+#include <Dsndmgr/SoundBankLoad.h> // g_dot (ex .cpp extern)
+#include <Gruntz/CustomWorldInfoDlg.h> // g_dotDot (ex .cpp extern)
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -1216,8 +1218,6 @@ VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor st
 VTBL(CParserObjList, 0x001ef75c);
 DATA(0x0020cff0)
 const char g_sepSlash[] = "\\"; // decl in <Bute/SymTab.h>
-extern char g_dot[];    // 0x5ee8ec  "." (def: Dsndmgr/SoundBankLoad.cpp)
-extern char g_dotDot[]; // 0x60cf90  ".."
 
 // @early-stop
 // 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with

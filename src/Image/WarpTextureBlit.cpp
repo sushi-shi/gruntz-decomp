@@ -13,6 +13,7 @@
 // frame-pointer wall (~82%): the popcount loop + parity result are byte-identical,
 // but retail is frameless (arg at [esp+4], /Oy applied) while cl keeps the ebp frame
 // (push ebp / arg at [ebp+8]) - a whole-function /Oy decision not source-steerable.
+#include <Image/WarpTextureBlit.h> // own decls (C-linkage carriers)
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;
@@ -27,9 +28,9 @@ i32 WarpIsPow2(i32 x) {
 }
 
 DATA(0x001efb18)
-extern "C" const float g_rasterScale = 16384.0f;
+const float g_rasterScale = 16384.0f; // C linkage from WarpTextureBlit.h
 DATA(0x001efb1c)
-extern "C" const float g_rasterScaleNeg = -16384.0f;
+const float g_rasterScaleNeg = -16384.0f; // C linkage from WarpTextureBlit.h
 
 DATA(0x002856f0)
 i32 g_warpU = 0; // 0x6856f0  (u accumulator)

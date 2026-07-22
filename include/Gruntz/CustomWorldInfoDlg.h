@@ -14,4 +14,6 @@ struct WwdWorldHolder {
 };
 SIZE_UNKNOWN();
 
+extern char g_dotDot[]; // 0x0020cf90 ".." (def in CustomWorldDialog.cpp)
+
 #endif // GRUNTZ_CUSTOMWORLDINFODLG_H

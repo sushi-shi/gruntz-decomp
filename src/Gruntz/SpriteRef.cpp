@@ -17,6 +17,7 @@
 // .text order, the RGB565 pack tail, both ret paths); the trailing 17-entry inline
 // jump table scores fuzzy because cl emits local $L-label DIR32 relocs vs the
 // delinked target's self-relocs. ~93.7% unit, the remainder is that data region.
+#include <Io/GameSave.h> // g_savedMenuCmd (ex .cpp extern)
 RVA(0x000e2df0, 0x39f)
 i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
     m_cache = cache;
@@ -236,7 +237,6 @@ void CSpriteRef::Free() {
 
 DATA(0x0024c86c)
 i32 g_dlg64c86c = 0;       // DAT_0064c86c (the active save-sink; owner-TU definition)
-extern i32 g_savedMenuCmd; // 0x213a9c (canonical, DATA-bound in savegame)
 class CSaveGame;
 i32 DrawSaveGameMenu(HWND hDlg, i32 wParam, CSaveGame* cur); // 0xe3f40 (savegame)
 void FillSaveDialog(HWND hDlg, CSaveGame* sg);               // 0xe3c60 (savegame)

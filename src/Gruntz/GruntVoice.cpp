@@ -25,9 +25,9 @@
 
 // g_vtrigActReg (0x00251500): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
+#include <Gruntz/GruntVoiceActReg.h> // g_actReg_6514d8 (ex .cpp extern)
 DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
 
-extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);

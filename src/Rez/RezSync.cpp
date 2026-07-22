@@ -1,5 +1,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (ex .cpp extern)
+#include <Net/NetMgr.h>           // g_localVersion (ex .cpp extern; def in Multi.cpp)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
@@ -45,7 +46,6 @@
 void* operator new(unsigned int);
 void operator delete(void*);
 
-extern "C" i32 g_localVersion; // 0x60fa70
 extern "C" {
     DATA(0x002455b4)
     i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
