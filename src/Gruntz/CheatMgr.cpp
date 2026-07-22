@@ -10,52 +10,53 @@
 // (uppercase-ASCII + 0x3d) per byte (CheckCode uppercases + adds 0x3d to the typed
 // code before Lookup, so the stored key matches). Recovered from the retail .data
 // bytes at each rva; de-obfuscated (byte-0x3d) plaintext shown in each comment.
-// Defined here (not extern-only) so the bytes land in cheatmgr.obj; the array
-// storage class is `char[]` (mutable), so cl5 mangles `?s_cheat_<rva>@@3PADA`
-// which a header DATA() (clang's mangledName) would miss - DATA_SYMBOL names the
-// exact cl5 symbol and is authority-checked against the base obj.
-DATA_SYMBOL(0x0020c920, 0x0, ?s_cheat_20c920@@3PADA)
-DATA_SYMBOL(0x0020c918, 0x0, ?s_cheat_20c918@@3PADA)
-DATA_SYMBOL(0x0020c90c, 0x0, ?s_cheat_20c90c@@3PADA)
-DATA_SYMBOL(0x0020c900, 0x0, ?s_cheat_20c900@@3PADA)
-DATA_SYMBOL(0x0020c8f0, 0x0, ?s_cheat_20c8f0@@3PADA)
-DATA_SYMBOL(0x0020c8e0, 0x0, ?s_cheat_20c8e0@@3PADA)
-DATA_SYMBOL(0x0020c8d4, 0x0, ?s_cheat_20c8d4@@3PADA)
-DATA_SYMBOL(0x0020c8c4, 0x0, ?s_cheat_20c8c4@@3PADA)
-DATA_SYMBOL(0x0020c8b8, 0x0, ?s_cheat_20c8b8@@3PADA)
-DATA_SYMBOL(0x0020c8ac, 0x0, ?s_cheat_20c8ac@@3PADA)
-DATA_SYMBOL(0x0020c8a4, 0x0, ?s_cheat_20c8a4@@3PADA)
-DATA_SYMBOL(0x0020c89c, 0x0, ?s_cheat_20c89c@@3PADA)
-DATA_SYMBOL(0x0020c894, 0x0, ?s_cheat_20c894@@3PADA)
-DATA_SYMBOL(0x0020c884, 0x0, ?s_cheat_20c884@@3PADA)
-DATA_SYMBOL(0x0020c878, 0x0, ?s_cheat_20c878@@3PADA)
-DATA_SYMBOL(0x0020c868, 0x0, ?s_cheat_20c868@@3PADA)
-DATA_SYMBOL(0x0020c85c, 0x0, ?s_cheat_20c85c@@3PADA)
-DATA_SYMBOL(0x0020c84c, 0x0, ?s_cheat_20c84c@@3PADA)
-DATA_SYMBOL(0x0020c838, 0x0, ?s_cheat_20c838@@3PADA)
+// Defined here (not extern-only) so the bytes land in cheatmgr.obj. Each def
+// carries its DATA() directly: clang's AST mangledName for a mutable `char[]`
+// global (`?s_cheat_<rva>@@3PADA`) MATCHES cl5's, so the label binds without
+// the old DATA_SYMBOL escape hatch (that hatch is only needed for CONST arrays,
+// where clang goes internal-linkage/Q-mangled and the names diverge).
 //
 // Definitions in ascending-rva order (the retail .data layout). The explicit array
 // size = the retail symbol stride; the string literal's implicit NUL + zero-fill
 // reproduce the trailing NUL padding exactly (verified byte-for-byte vs retail).
 // clang-format off
+DATA(0x0020c838)
 char s_cheat_20c838[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e"; // "MPWAWAWAWAWAWA"
+DATA(0x0020c84c)
 char s_cheat_20c84c[16] = "\x8a\x8d\x94\x86\x89\x81\x94\x7e\x80\x88\x96";             // "MPWILDWACKY"
+DATA(0x0020c85c)
 char s_cheat_20c85c[12] = "\x8a\x8d\x7f\x92\x86\x89\x81";                             // "MPBUILD"
+DATA(0x0020c868)
 char s_cheat_20c868[16] = "\x8a\x8d\x81\x82\x93\x85\x82\x7e\x81\x90";                 // "MPDEVHEADS"
+DATA(0x0020c878)
 char s_cheat_20c878[12] = "\x8a\x8c\x8b\x8c\x89\x86\x91\x85";                         // "MONOLITH"
+DATA(0x0020c884)
 char s_cheat_20c884[16] = "\x8a\x8d\x8a\x8c\x8b\x8c\x89\x86\x91\x85";                 // "MPMONOLITH"
+DATA(0x0020c894)
 char s_cheat_20c894[8] = "\x8a\x8d\x89\x8c\x84\x8c";                                  // "MPLOGO"
+DATA(0x0020c89c)
 char s_cheat_20c89c[8] = "\x8a\x8d\x89\x86\x91\x85";                                  // "MPLITH"
+DATA(0x0020c8a4)
 char s_cheat_20c8a4[8] = "\x8a\x8d\x80\x85\x8c\x8d";                                  // "MPCHOP"
+DATA(0x0020c8ac)
 char s_cheat_20c8ac[12] = "\x8a\x8d\x90\x80\x8c\x8f\x8d\x86\x8c";                     // "MPSCORPIO"
+DATA(0x0020c8b8)
 char s_cheat_20c8b8[12] = "\x8a\x8d\x84\x8c\x7f\x89\x82";                             // "MPGOBLE"
+DATA(0x0020c8c4)
 char s_cheat_20c8c4[16] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91\x86\x7e\x8b";         // "MPLAMBERTIAN"
+DATA(0x0020c8d4)
 char s_cheat_20c8d4[12] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91";                     // "MPLAMBERT"
+DATA(0x0020c8e0)
 char s_cheat_20c8e0[16] = "\x8a\x8d\x85\x8c\x89\x8c\x84\x8f\x7e\x8a";                 // "MPHOLOGRAM"
+DATA(0x0020c8f0)
 char s_cheat_20c8f0[16] = "\x8a\x8d\x90\x91\x8c\x8d\x94\x7e\x91\x80\x85";             // "MPSTOPWATCH"
+DATA(0x0020c900)
 char s_cheat_20c900[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c";                         // "MPNOINFO"
+DATA(0x0020c90c)
 char s_cheat_20c90c[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90";                     // "MPOBJECTS"
+DATA(0x0020c918)
 char s_cheat_20c918[8] = "\x8a\x8d\x8d\x8c\x90";                                      // "MPPOS"
+DATA(0x0020c920)
 char s_cheat_20c920[8] = "\x8a\x8d\x83\x8d\x90";                                      // "MPFPS"
 
 RVA(0x00022ad0, 0x1f)
