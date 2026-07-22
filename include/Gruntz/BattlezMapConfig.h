@@ -292,4 +292,9 @@ public:
 };
 SIZE(0x1e8);
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void Handler_0040288d(void);
+
 #endif // SRC_GRUNTZ_BATTLEZMAPCONFIG_H

@@ -76,4 +76,12 @@ SIZE_UNKNOWN();
 
 typedef i32 (CUserLogic::*IconActHandler)();
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern i32 TextLogic_402013();
+extern i32 IconState_40370b();
+extern i32 IconAction_403c06();
+extern i32 IconAction_4023d3();
+
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

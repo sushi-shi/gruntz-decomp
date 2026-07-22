@@ -131,4 +131,9 @@ class CMoviePlayer;
 typedef CMoviePlayer CDDPageMgr;
 extern i32 RestoreLostSurfaces(); // 0x1437f0 (BoundaryUpper2.cpp)
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void DdEnumModesCallback(); // 0x143390
+
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

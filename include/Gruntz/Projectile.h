@@ -94,4 +94,10 @@ extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 
 
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern i32 TBombLogic_e1e60();
+extern "C" void ProjActivationHandler(); // 0x403896
+
 #endif // GRUNTZ_PROJECTILE_H

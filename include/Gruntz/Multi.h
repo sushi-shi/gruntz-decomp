@@ -364,4 +364,10 @@ extern HWND g_netPlayerListHwnd; // 0x00248d00
 
 void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
+extern "C" void ServicesDispatchCb(); // 0x401a19
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

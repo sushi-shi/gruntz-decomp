@@ -1853,7 +1853,6 @@ i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
     return 1;
 }
 
-extern "C" void Handler_0040288d(void);
 
 // ===========================================================================
 // CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect  @0x02c140

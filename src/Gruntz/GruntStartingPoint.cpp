@@ -66,7 +66,6 @@ u32 g_zvecErrSentinel; // owner def (zero-init .bss)
 DATA(0x002bf464)
 void* g_projActCache;
 
-extern "C" void ActReg4Handler(); // 0x4040a2
 
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;

@@ -45,4 +45,9 @@ extern CActReg g_fortressFlagActReg; // 0x00244638
 #include <Gruntz/ActReg.h> // CLogicActTable (extern below)
 extern CLogicActTable g_logicActReg_6447f8; // 0x002447f8
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
+
 #endif // GRUNTZ_CFORTRESSFLAG_H

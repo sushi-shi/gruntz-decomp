@@ -64,7 +64,6 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x002446b0, 0x0, ?g_teleporterActReg@@3UCTeleporterActReg@@A)
 
-extern "C" void WormholeTypeMarker();
 
 VTBL(CGruntPuddle, 0x001e8124);
 VTBL(CWormhole, 0x001e817c);
@@ -78,12 +77,7 @@ DATA(0x00244660)
 extern LogicFnTable g_wormholeDispatch;
 
 
-extern i32 WormholeLogic_40181b();
 
-extern "C" void Handler_4021f8(); // 0x4021f8 (puddle "A")
-extern "C" void Handler_403418(); // 0x403418 (puddle "B")
-extern "C" void Handler_40187a(); // 0x40187a (teleporter "A")
-extern "C" void Handler_403846(); // 0x403846 (teleporter "B")
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;

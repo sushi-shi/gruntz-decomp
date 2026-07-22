@@ -56,7 +56,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 VTBL(CMenuSparkle, 0x001e82dc);
 
-extern "C" void LogicHandler_0ad2a0();
 
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));

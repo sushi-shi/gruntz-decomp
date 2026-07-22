@@ -168,7 +168,6 @@ fail:
     return 0;
 }
 
-extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 
 RVA(0x00155f50, 0x10)

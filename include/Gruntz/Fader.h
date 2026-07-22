@@ -45,4 +45,9 @@ public:
 SIZE(0x38);
 
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
+
 #endif // GRUNTZ_GRUNTZ_CFADER_H

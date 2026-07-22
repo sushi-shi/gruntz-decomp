@@ -39,7 +39,6 @@ static inline CPartEntry* PartLookup(i32 coord) {
 }
 
 
-extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 
 static inline i32 RegisterActionName() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));

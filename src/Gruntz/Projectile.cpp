@@ -416,7 +416,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 DATA(0x0024c758)
 extern CActReg g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 
-extern "C" void ProjActivationHandler(); // 0x403896
 
 static inline CProjActEntry* ProjActLookup(i32 coord) {
     return reinterpret_cast<CProjActEntry*>(g_projActColl.ResolveEntry(coord));
@@ -1091,7 +1090,6 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-extern i32 TBombLogic_e1e60();
 
 
 RVA(0x000e1830, 0x102)

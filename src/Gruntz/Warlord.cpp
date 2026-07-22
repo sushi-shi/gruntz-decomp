@@ -76,12 +76,6 @@ DATA_SYMBOL(0x00244610, 0x0, ?g_actionTable@@3UCActReg@@A)
 //   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
 //       (global scheduling); logic identical. Deferred to the final sweep.
 
-extern "C" void Act_A(); // 0x403ba7
-extern "C" void Act_B(); // 0x401ce9
-extern "C" void Act_C(); // 0x4024f0
-extern "C" void Act_D(); // 0x403422
-extern "C" void Act_E(); // 0x40431d
-extern "C" void Act_F(); // 0x402725
 
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \

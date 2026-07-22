@@ -38,7 +38,7 @@ extern const double g_pathOne; // VA 0x5ea410
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
-extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed)
+extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long; one canonical signature)
 
 class CPathHazard : public CUserLogic, public CWapX {
 public:

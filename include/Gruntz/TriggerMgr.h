@@ -573,4 +573,11 @@ SIZE_UNKNOWN();
 
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
+extern "C" void IconClassInitB(); // 0x402bad
+extern "C" void IconClassInitA(); // 0x40288d
+
 #endif

@@ -56,4 +56,9 @@ public:
 };
 SIZE_UNKNOWN();
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
+
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H

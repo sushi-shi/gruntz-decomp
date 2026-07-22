@@ -7,7 +7,6 @@
 
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 void operator delete(void* p);
-extern "C" double log(double);
 extern "C" double pow(double, double);
 
 RVA(0x001682a0, 0x46)

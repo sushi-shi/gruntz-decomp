@@ -85,4 +85,11 @@ public:
 };
 SIZE_UNKNOWN(); // fully modeled but tail not proven; owner may upgrade
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void SaveOverwriteProc();
+extern "C" void SaveDeleteProc();
+extern "C" void SaveInfoProc();
+
 #endif // SRC_IO_SAVEGAME_H

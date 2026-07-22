@@ -54,8 +54,6 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-extern i32 DropActA_c7090();
-extern i32 DropActB_c7be0();
 
 static inline CDropEntry* DropLookup(i32 coord) {
     return reinterpret_cast<CDropEntry*>(g_dropColl.ResolveEntry(coord));

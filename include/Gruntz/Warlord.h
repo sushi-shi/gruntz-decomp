@@ -146,4 +146,14 @@ SIZE(0xb0);
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_actionTable; // 0x00244610
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void Act_F(); // 0x402725
+extern "C" void Act_E(); // 0x40431d
+extern "C" void Act_D(); // 0x403422
+extern "C" void Act_C(); // 0x4024f0
+extern "C" void Act_B(); // 0x401ce9
+extern "C" void Act_A(); // 0x403ba7
+
 #endif // GRUNTZ_CWARLORD_H

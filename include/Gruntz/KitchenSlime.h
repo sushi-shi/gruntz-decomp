@@ -61,4 +61,9 @@ struct CKSlimeEntry {
 };
 SIZE_UNKNOWN();
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void KSlimeActivationHandler(); // 0x40180c
+
 #endif // GRUNTZ_CKITCHENSLIME_H

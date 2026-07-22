@@ -161,7 +161,6 @@ enum {
 };
 
 extern "C" i32 g_serviceId;           // 0x611d8c
-extern "C" void ServicesDispatchCb(); // 0x401a19
 
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
@@ -171,7 +170,6 @@ extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf91
 
 extern "C" HWND g_setupDlgHwnd;                                    // 0x64557c
 extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
-extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
 extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 

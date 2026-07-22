@@ -125,7 +125,6 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 
 #include <Gruntz/PlayStateView.h>
 
-extern "C" void ModeResetCallback(); // LAB_00403193
 void CreateWorldObjects(void* world);
 
 // ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/

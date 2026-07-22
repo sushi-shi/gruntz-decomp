@@ -857,7 +857,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     return MakeB(buf, z); // retail passes the original z tag (not const-folded 0)
 }
 
-extern "C" void DdEnumModesCallback(); // 0x143390
 
 // @early-stop
 // ~87% - selection-sort induction/spill wall (was 81%: accessing m_poolItems directly

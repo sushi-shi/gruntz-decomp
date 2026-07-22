@@ -42,7 +42,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // @early-stop
 // 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj), /GX;

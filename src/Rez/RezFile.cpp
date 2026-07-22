@@ -227,7 +227,6 @@ i32 CRezItm::Flush() {
     return 0;
 }
 
-extern "C" i32 RezDirLookup(void* fp); // 0x18ccd0
 
 RVA(0x0013c8f0, 0x41)
 i32 CRezItm::Check() {

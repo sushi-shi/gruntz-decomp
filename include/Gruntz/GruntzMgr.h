@@ -465,4 +465,9 @@ extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 
 void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void ModeResetCallback(); // LAB_00403193
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

@@ -475,8 +475,6 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     return 1;
 }
 
-extern "C" void IconClassInitA(); // 0x40288d
-extern "C" void IconClassInitB(); // 0x402bad
 
 RVA(0x00078960, 0x9b)
 i32 CTriggerMgr::LoadCameraSprite() {
@@ -895,7 +893,6 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     return 1;
 }
 
-extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {

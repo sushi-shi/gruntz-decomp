@@ -94,4 +94,9 @@ public:
 SIZE(0x40);
 SIZE_UNKNOWN();
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
+
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

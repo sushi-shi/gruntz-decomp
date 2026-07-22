@@ -74,7 +74,6 @@ void RbStrAssign(void* str, const char* s); // 0x1b9e74 CString::operator=(LPCST
 i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
 double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
-extern "C" i32 __ftol(double x);                              // 0x11f570
 
 i32 RbProbeRect(
     void* obj,

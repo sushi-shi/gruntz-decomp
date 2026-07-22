@@ -52,7 +52,6 @@ static inline char* ActNameLookup(i32 id) {
     return reinterpret_cast<char*>(g_typeColl.m_spare);
 }
 
-extern i32 VTrigLogic_11a700();
 
 // @early-stop
 // MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::

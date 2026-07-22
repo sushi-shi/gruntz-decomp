@@ -761,7 +761,6 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 // landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
 // PosSoundPlaced (the create-helper return record; == a CAmbientSound-family channel,
 // its +0x28 record IS CAmbientSound::m_box2) now lives in <Gruntz/PosSound.h>.
-extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
 PosSoundPlaced* __stdcall WorldSoundCreateFull(
     void* factory,
     i32 z,

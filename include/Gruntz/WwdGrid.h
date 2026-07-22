@@ -63,4 +63,9 @@ public:
 };
 SIZE(0x44);
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" double log(double);
+
 #endif // GRUNTZ_WWDGRID_H

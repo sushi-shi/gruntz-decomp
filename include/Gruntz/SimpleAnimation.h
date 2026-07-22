@@ -22,4 +22,9 @@ public:
 };
 SIZE(0x54);
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern i32 SimpleAnimLogic_4028b0();
+
 #endif // GRUNTZ_CSIMPLEANIMATION_H

@@ -39,7 +39,6 @@ VTBL(CSimpleAnimation, 0x001e8544);
 DATA(0x00246038)
 extern LogicFnTable g_simpleAnimDispatch;
 
-extern i32 SimpleAnimLogic_4028b0();
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;

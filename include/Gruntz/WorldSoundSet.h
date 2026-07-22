@@ -69,4 +69,9 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_volume = kSoundVolumeMax;
 }
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
+
 #endif // GRUNTZ_CWORLDSOUNDSET_H

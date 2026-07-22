@@ -36,9 +36,6 @@ extern LogicFnTable g_iconStateTable;
 
 DATA(0x00245950)
 
-extern i32 IconAction_4023d3();
-extern i32 IconAction_403c06();
-extern i32 IconState_40370b();
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -959,7 +956,6 @@ i32 CInGameIcon::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
 
-extern i32 TextLogic_402013();
 
 typedef i32 (CUserLogic::*LogicFn)();
 

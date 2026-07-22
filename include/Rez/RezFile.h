@@ -75,4 +75,9 @@ SIZE(0x1c); // verified: CSymParser::ParseRecords `push 0x1c; new; ctor 0x13cac0
 
 extern "C" const char g_wildcard[]; // 0x61a0a0  "*.*"
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" i32 RezDirLookup(void* fp); // 0x18ccd0
+
 #endif // SRC_REZ_REZFILE_H

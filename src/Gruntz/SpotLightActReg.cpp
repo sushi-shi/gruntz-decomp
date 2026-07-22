@@ -10,8 +10,6 @@
 DATA_SYMBOL(0x00246188, 0x0, ?g_actReg_646188@@3UCActReg@@A)
 
 
-extern "C" void Handler_4025db(); // 0x4025db
-extern "C" void Handler_402414(); // 0x402414
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;

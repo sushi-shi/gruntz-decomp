@@ -759,7 +759,6 @@ extern "C" {
 extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
 
 extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
-extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
 extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 
 

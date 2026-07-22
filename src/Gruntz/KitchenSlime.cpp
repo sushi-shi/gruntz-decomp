@@ -144,7 +144,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
 }
 
-extern "C" void KSlimeActivationHandler(); // 0x40180c
 
 // CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
 // the slime class a type-id via the global bute-tree (registering its name on

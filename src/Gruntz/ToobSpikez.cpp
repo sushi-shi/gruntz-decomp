@@ -53,7 +53,6 @@ extern CActReg g_toobColl;
 
 typedef void (CUserLogic::*ToobHandler)();
 
-extern i32 ToobLogic_114bc0();
 
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

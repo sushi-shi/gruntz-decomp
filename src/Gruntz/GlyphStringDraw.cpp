@@ -1,3 +1,4 @@
+#include <Gruntz/GlyphStringDraw.h> // own header (the moved thunk-name decls)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Ints.h>
@@ -93,18 +94,6 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
     return 1;
 }
 
-extern "C" void HudMsgPush(
-    CDDrawSurfaceMgr* sink,
-    i32 a2,
-    i32 a3,
-    CDDSurface* surf,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8,
-    i32 a9
-); // 0x115930
 
 // @early-stop
 // tail-merge / block-layout wall (~94.3%): the page load + the 10-arg

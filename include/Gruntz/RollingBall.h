@@ -66,4 +66,9 @@ SIZE_UNKNOWN();
 #include <Gruntz/ActReg.h> // CActReg (extern below)
 extern CActReg g_rollingBallActReg; // 0x002461b0
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" i32 __ftol(double x);                              // 0x11f570
+
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

@@ -30,9 +30,6 @@ i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
 void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
-extern "C" void SaveInfoProc();
-extern "C" void SaveDeleteProc();
-extern "C" void SaveOverwriteProc();
 
 // LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
 // builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)

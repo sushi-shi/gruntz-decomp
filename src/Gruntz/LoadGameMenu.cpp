@@ -1,3 +1,4 @@
+#include <Gruntz/LoadGameMenu.h> // own header (the moved thunk-name decls)
 #include <Mfc.h> // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot
@@ -11,8 +12,6 @@ extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
-extern "C" void LoadInfoDlgProc();   // 0x1e3d (GAME_INFO)
-extern "C" void LoadDeleteDlgProc(); // 0x121c (GAME_DELETE)
 
 void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);

@@ -869,7 +869,6 @@ i32 CFaderFlat::GetFrameCount() {
     return n + (m_percent * n) / 100;
 }
 
-extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
 DATA(0x001f0828)
 extern const float g_faderHalf = 0.5f; // 0.5

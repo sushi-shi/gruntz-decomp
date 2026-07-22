@@ -217,4 +217,9 @@ SIZE(0x110); // == sizeof(CButeMgr): the single base, no added members
 
 extern CButeMgr g_buteMgr;
 
+
+// TU-local thunk/table names this TU registers (moved from the .cpp; the
+// addresses are ILT thunk VAs, reloc-masked at every use).
+extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
+
 #endif // SRC_BUTE_BUTEMGR_H
