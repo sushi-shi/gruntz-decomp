@@ -18,8 +18,6 @@ void* operator new(u32); // engine allocator (reloc-masked rel32)
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 DATA(0x00253c88)
 CPtrArray g_imageCache;
-DATA(0x00253c90)
-i32 g_imageCacheIndex = 0; // 0x653c90
 DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
 DATA(0x00283ca0)
@@ -38,10 +36,11 @@ i32 g_gDown; // 0x683eb0  (== ex g_gDown)
 DATA(0x00283eb4)
 i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
-RVA(0x0013e070, 0xa)
-void ClearImageCache() {
-    g_imageCache.CPtrArray::CPtrArray();
-}
+// g_imageCache's file-scope construction/destruction family.
+RVA_COMPGEN(0x0013e060, 0xa, _$E1302624)
+RVA_COMPGEN(0x0013e070, 0xa, _$E1302640)
+RVA_COMPGEN(0x0013e080, 0xe, _$E1302656)
+RVA_COMPGEN(0x0013e090, 0xa, _$E1302672)
 
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
@@ -428,7 +427,7 @@ i32 __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc
     if (surf->QueryInterface(IID_IDirectDrawSurface3, &payload) == 0) {
         CDDSurface* item = new CDDSurface;
         if (item->Refresh(static_cast<IDirectDrawSurface*>(payload))) { // slot 1 @+0x04
-            g_imageCache.SetAtGrow(g_imageCacheIndex, item);
+            g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
         } else if (item) {
             delete item; // slot 0 @+0x00  scalar-deleting dtor
         }

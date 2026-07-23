@@ -16,6 +16,11 @@ Font::Font() {
     m_count = 0;
 }
 
+RVA(0x00179710, 0x5)
+Font::~Font() {
+    FreeMemory();
+}
+
 RVA(0x00179720, 0x87)
 i32 Font::AllocateMemory(i32 count) {
     FreeMemory();
@@ -139,6 +144,9 @@ FontRenderer::FontRenderer() {
     m_clip = 0;
     m_surface = 0;
 }
+
+RVA(0x00179c00, 0x1)
+FontRenderer::~FontRenderer() {}
 
 RVA(0x00179c10, 0x9)
 void FontRenderer::SetFont(Font* f) {

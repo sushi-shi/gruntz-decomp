@@ -1,8 +1,6 @@
 #include <Io/FileStream.h>
 #include <rva.h>
 
-DATA_SYMBOL(0x00246778, 0x10, ?g_obj646778@@3VCFile@@A)
-
 // CFileLog::ReopenSharedFile - reopen the shared file object around a close. Ignores
 // `this`; the single stack arg is the path.
 // @early-stop

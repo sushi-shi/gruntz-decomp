@@ -300,10 +300,11 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     }
 }
 
-RVA(0x00141c80, 0xa)
-void ClearModeArray() {
-    g_modeArray.CPtrArray::CPtrArray();
-}
+// g_modeArray's file-scope construction/destruction family.
+RVA_COMPGEN(0x00141c70, 0xa, _$E1318000)
+RVA_COMPGEN(0x00141c80, 0xa, _$E1318016)
+RVA_COMPGEN(0x00141c90, 0xe, _$E1318032)
+RVA_COMPGEN(0x00141ca0, 0xa, _$E1318048)
 
 RVA(0x00141cb0, 0x1)
 void __cdecl DDrawLogLine(char*, ...) {}

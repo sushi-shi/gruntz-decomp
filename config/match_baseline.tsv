@@ -22,7 +22,7 @@
 actionarea	19	12
 actionoptionsmenubar	12	3
 adler32	1	1
-advancedoptions	6	6
+advancedoptions	9	5
 anicycle	11	9
 aniplayer	4	0
 anirecord	14	12
@@ -77,7 +77,7 @@ cspawnentry	1	1
 cursorsnapactreg	5	4
 cursorsnapsprite	6	5
 customleveldlg	4	3
-customworlddialog	13	9
+customworlddialog	22	18
 databuffer	8	6
 ddpagemgr	18	12
 ddpalette	23	7
@@ -91,14 +91,14 @@ ddrawsurfacemgr	13	7
 ddrawsurfacepair	45	26
 ddrawworkerhost	4	3
 ddrawworkerregistry	27	20
-ddsurface	57	37
+ddsurface	60	40
 debugprintf	14	11
 debugtiming	2	2
 deflate	15	15
 demo	26	20
 destructbutton	1	1
 dialogs	62	52
-directdrawmgr	66	54
+directdrawmgr	69	57
 directinputmgr2	46	41
 directionclassify	2	1
 directsoundmgr	75	54
@@ -110,13 +110,13 @@ engstrrendertext	1	0
 exittrigger	4	2
 eyecandy	4	3
 fader	53	33
-fadermgr	10	7
+fadermgr	11	8
 feccrypt	10	7
 fileimage	19	7
 filestream	3	2
-font	20	14
+font	22	16
 fontconfig	14	7
-fonts	5	4
+fonts	22	17
 fortconquered	1	0
 fortressflag	35	22
 freenodepool	1	1
@@ -213,7 +213,7 @@ keyedlist	3	2
 kitchenslime	12	8
 latencylist	2	2
 leafcueplay	1	0
-levelplane	22	5
+levelplane	22	6
 levelpreview	10	7
 levelrezpath	1	0
 leveltilevalidation	3	0
@@ -242,8 +242,8 @@ modeobjinit	2	1
 motionstate	6	3
 movieplayer	2	2
 movinglogic	7	3
-multi	105	66
-multistartdlg	17	8
+multi	108	69
+multistartdlg	20	8
 multistartdlgroster	35	22
 namerecord	4	3
 netcmdmgr	1	1
@@ -361,7 +361,6 @@ videoconfig	19	12
 voicesoundlist	1	0
 wallproject	1	0
 wap32rect	3	3
-wapmisc	1	1
 wapuncompress	1	0
 warlord	22	10
 warpstonefly	3	2
@@ -417,9 +416,12 @@ actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	0.0000	0.0000	12	e61
 actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	76.2571	76.2571	14	468ea815edde	0x94c0
 actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	95.8667	95.8667	6	989eccaab977	0x9810
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0
+advancedoptions	$anon_data_0b4e6524297b81bc000f44457b01a7f71beb524df5a03c9af7968e5b59d1d50a_0	0.0000	0.0000	1	cpp:8cd604e2581b
+advancedoptions	$anon_data_74510f74fea570744fdb0282211edd979de1e16063c50e66649e12bcbbbd092c_0	0.0000	0.0000	1	cpp:8cd604e2581b
+advancedoptions	$anon_data_8facc7ba49e5a040ddd1df0536daf52426d204bb40b1f0d3616262b96686e5da_0	0.0000	0.0000	1	cpp:8cd604e2581b
+advancedoptions	$anon_data_f898eab9b85f5e352cc50bb7affcb00e8194a6be0803258ca71342329b38ceb5_0	0.0000	0.0000	1	cpp:8cd604e2581b
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	18	734c2076b698	0xafb0
 advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	16	a80f3175e25e	0xb1b0
-advancedoptions	?ResetRegistryHelper@@YAXXZ	100.0000	100.0000	1	412239cbf186	0xaf50
 advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0000	100.0000	16	bb8da362b63b	0xb110
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	16	e7f2bb15457b	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	16	857ed969d6eb	0xb160
@@ -860,7 +862,7 @@ cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	9	7341188a8bf
 cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	87.4133	87.4133	1	a3fdeed28876	0x153470
 cimage	?Resolve@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	4	68a9e697cbe1	0x152f20
 cimage	?SetOrigin@CImage@@QAEHPAVCImageFrameDesc@@H@Z	100.0000	100.0000	2	ed577e76ea50	0x153330
-circleshadeblit	?Render@CFaderLight@@QAEXHHHHHH@Z	51.5847	51.5847	4	a2dfcc1590a7	0x180fb0
+circleshadeblit	?Render@CFaderLight@@QAEXHHHHHH@Z	50.1230	50.1230	4	a2dfcc1590a7	0x180fb0
 cmdscrollapply	?Cmd_ApplyScrollParams@@YAXHHHHH@Z	100.0000	100.0000	23	78eb601e9e20	0xec1c0
 cmdscrollapply	?Cmd_ResetScroll@@YAXXZ	100.0000	100.0000	21	92171173ea8c	0xebd30
 colorhsv	?RgbToHsv@@YAPAUColorHSV@@PAU1@I@Z	45.0973	45.0973	2	187f803722a1	0x14fcc0
@@ -903,14 +905,23 @@ customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	75.50
 customleveldlg	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	3	f235edd18292	0x18430
 customleveldlg	?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	959caef97758	0x183d0
 customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	1	7a141aff04d5	0x183f0
+customworlddialog	$anon_data_0af837c17c31890841b6af3bbe83e80aa473d44cbd6e935e6485cb2491f9cfee_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_110fe474b12e71eedc28e4110de34a7f698f5f20427192b0ca71fe21cf4b961c_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_2628e7befc63a511dcf504dd433773485a4315bdc8980aa1c8501296ef93e5c4_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_3e18227bb162032b9f98e11263a7b788a3048b70564396e77d7e76dcdeff72c1_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_51654b5e24c35c90a9c5c92d36aa063d415d1b33259d1c26156df7ea1ef996ae_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_6cb952b57741ed71d858cd515d44fa3fc5ac62a4136cf14678dc0d65d51cae4b_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_71952daff527cbfff5e29b97e3e1ef9cfd3cb2f342661dcb5f7bec2ecd00fcd9_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_a0a2a338c45e31d097fee4a4bd39428ee1493c1a97bd499047aded1511107c96_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_bfb7c13cc4987c3c190fda9da7080a0ff5105d5dbd8441059c6f5e05b8d17a6a_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_cb29ec271aabc6c21c24ea95d8bd3b949377df1783151dc05dc1f468a6a18135_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_ef5182c71c06669911611f25291018105b839f9737b3e1f280dc6c9510603f8f_0	100.0000	100.0000	1	cpp:e5565e63b3d7
+customworlddialog	$anon_data_f634845a2baef805e501843dd5fc6b069d258985a6723291c268389ea05abe47_0	100.0000	100.0000	1	cpp:e5565e63b3d7
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	593a4e37df91	0x3b940
 customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	c3f6b086ecc1	0x3b600
 customworlddialog	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	70.9590	70.9590	7	0d2c248ae5dd	0x3af90
 customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	12399fb6dd39	0x3b1a0
-customworlddialog	?FreeGlobal@@YAXXZ	100.0000	100.0000	2	3191e9dda13f	0x3ac30
-customworlddialog	?FreeLevelStr@@YAXXZ	100.0000	100.0000	1	ce95e065a8f8	0x3ad30
 customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	1	c7a8c051baf4	0x3bb50
-customworlddialog	?InitStr62c264@@YAXXZ	100.0000	100.0000	1	6f742cb5d5d6	0x3acb0
 customworlddialog	?LoadCustomWorldInfo@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	9efb18a13a8a	0x3b7c0
 customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	1ef4759496e8	0x3b310
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	95.7143	95.7143	11	844900d38850	0x3ad90
@@ -982,7 +993,7 @@ ddrawshadeblit	?BlitAt@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HHHH@Z	100.0000	100.0
 ddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	23.2688	23.2688	2	6bf46e5bd85e	0x14a200
 ddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	31.2094	31.2094	1	52947539243d	0x149950
 ddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	29.0880	29.0880	1	bcac945a8887	0x149d00
-ddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	22.0720	22.0720	2	6a96ec7dd4a2	0x14b770
+ddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	21.3321	21.3321	2	6a96ec7dd4a2	0x14b770
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	54.3058	54.3058	4	16a0309c7403	0x14c9f0
 ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	48.2844	48.2844	4	dd9cba9b0261	0x14d950
 ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	54.5461	54.5461	4	4651a42bbd99	0x14d5e0
@@ -1208,9 +1219,13 @@ ddrawworkerregistry	?SetKey@CDDrawWorker@@UAEHPBD@Z	100.0000	100.0000	3	ff89e7f5
 ddrawworkerregistry	?SumSizesEqual@CDDrawWorkerRegistry@@QAEHPBDH@Z	65.6000	65.6000	5	d28485f661ac	0x155460
 ddrawworkerregistry	?Unload@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	1	13b78d30b9a5	0x154ac0
 ddrawworkerregistry	?Unload@CLoadable@@UAEXXZ	100.0000	100.0000	1	7a980cb2b000	0x155740
+ddsurface	$anon_data_21f3a00254fc348c6ca3dc1b73f3943299dd2932178a03311ecf5aa02c812eec_0	100.0000	100.0000	1	cpp:2e2221d556ea
+ddsurface	$anon_data_36b4bf0d4a525386805c7c53639e9e97aff72d323e40f372c90956140bd4c91a_0	100.0000	100.0000	1	cpp:2e2221d556ea
+ddsurface	$anon_data_8ee740628ec0831f7fe4f4426c7e9b8bf1937b933c5f23e2ea9268c435790220_0	100.0000	100.0000	1	cpp:2e2221d556ea
+ddsurface	$anon_data_d6ce2bba447656f28dae7aba665a0d80e9f8989d13aee8eadb0dd6cdd6da1dde_0	100.0000	100.0000	1	cpp:2e2221d556ea
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	bbcdcbde2404	0x141350
 ddsurface	?Blit1624@CDDSurface@@QAEHPAXH@Z	72.0703	72.0703	4	e418c872051e	0x13fce0
-ddsurface	?Blit168@CDDSurface@@QAEHPAX0H@Z	66.0088	66.0088	4	b681e527b1b0	0x13fbb0
+ddsurface	?Blit168@CDDSurface@@QAEHPAX0H@Z	67.5044	67.5044	4	b681e527b1b0	0x13fbb0
 ddsurface	?Blit2416@CDDSurface@@QAEHPAXH@Z	82.0000	82.0000	4	426c6be539d0	0x13ff80
 ddsurface	?Blit248@CDDSurface@@QAEHPAX0H@Z	94.3103	94.3103	2	d84e2ff47278	0x13fe60
 ddsurface	?Blit816@CDDSurface@@QAEHPAX0H@Z	66.2889	66.2889	4	823fb73fec2f	0x140420
@@ -1225,12 +1240,11 @@ ddsurface	?BltFast@CDDSurface@@QAEHIIPAV1@PAXI@Z	100.0000	100.0000	4	862a29d027d
 ddsurface	?BuildColorChannelTables@@YAXXZ	96.8561	96.8561	4	8026eebb1808	0x13f740
 ddsurface	?BuildRotateBlitTransform@@YAHXZ	0.7547	0.7547	1	b91c09c14ca9	0x141080
 ddsurface	?Clear@CDDSurface@@QAEXH@Z	100.0000	100.0000	3	e2acdb7218c4	0x13edb0
-ddsurface	?ClearImageCache@@YAXXZ	100.0000	100.0000	3	6164def76330	0x13e070
 ddsurface	?DecodeRun24@CDDSurface@@QAEHPAX@Z	99.5437	99.5437	2	d87720278598	0x140c50
 ddsurface	?DecodeRun8@CDDSurface@@QAEHPAX@Z	99.5000	99.5000	2	ec37d0be6d88	0x140aa0
 ddsurface	?DecodeThunk@CDDSurface@@QAEXHHHHHHHHHH@Z	42.1923	42.1923	1	669f79de1d9e	0x141280
 ddsurface	?DumpSurfaceInfo@CDDSurface@@QAEXH@Z	96.6800	96.6800	2	342d0f93d464	0x140770
-ddsurface	?EnumSurfacesCallback@@YGHPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PAX@Z	86.6000	86.6000	2	72d1e29fd893	0x13e9a0
+ddsurface	?EnumSurfacesCallback@@YGHPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PAX@Z	87.4462	87.4462	3	9619df896b49	0x13e9a0
 ddsurface	?Fill@CDDSurface@@QAEHI@Z	100.0000	100.0000	5	09fb77f91363	0x13e760
 ddsurface	?FillPalette@CDDSurface@@QAEXI@Z	100.0000	100.0000	3	b26b741f16fe	0x13eb40
 ddsurface	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	4	471282ca215a	0x13e850
@@ -1260,8 +1274,8 @@ ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13eae0
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	3	482a2140b13f	0x13e690
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	61.2727	61.2727	6	61ba01984a88	0x13f020
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	64.3091	64.3091	6	4b8f6d7efd62	0x13f460
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	64.9530	64.9530	6	61ba01984a88	0x13f020
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	63.6909	63.6909	6	4b8f6d7efd62	0x13f460
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	2	0d9b3e0f3b6c	0x13f990
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	2	1cba59666bcf	0x1413b0
 ddsurface	?WaitFlip@CDDSurface@@QAEXXZ	100.0000	100.0000	2	05eed5eee876	0x13ee30
@@ -1385,6 +1399,10 @@ dialogs	?ShowCustomDlg@CBattlezDlg@@QAEXXZ	90.6471	90.6471	5	3aba3809d7f7	0x1703
 dialogs	?StubBtnHandler@CBattlezDlg@@QAEXH@Z	100.0000	100.0000	1	d86c5ed8ec14	0x17540
 dialogs	?UnusedMsgHandler@CBattlezDlg@@QAEHXZ	100.0000	100.0000	1	4b3dbbe2205e	0x17440
 dialogs	_WndProc_15a10@16	100.0000	100.0000	4	70cdce374ed3	0x15a10
+directdrawmgr	$anon_data_65548a791339b1dc0ab48ec8794f72c43fbfc9911ce3f4a658c2e533d3a7148d_0	100.0000	100.0000	1	cpp:3a97eab0e1a1
+directdrawmgr	$anon_data_8291730d653d835e7c3223dadfbc740c59e5ead58b3f8ddaa7751744e6c42534_0	100.0000	100.0000	1	cpp:3a97eab0e1a1
+directdrawmgr	$anon_data_96e8a5d1a0a033e32ac9e24024b56b623eb47eaa449699a2e674f4c984b914f9_0	100.0000	100.0000	1	cpp:3a97eab0e1a1
+directdrawmgr	$anon_data_da25acb968168f76ab08dac145c5ba77b0bef1c5832f3d34e60097139e13f866_0	100.0000	100.0000	1	cpp:3a97eab0e1a1
 directdrawmgr	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	2	f681fbc5e4f8	0x141cc0
 directdrawmgr	??1CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	1	46d635cdbc10	0x141d50
 directdrawmgr	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	3	ffd20a2b7e57	0x142360
@@ -1396,7 +1414,6 @@ directdrawmgr	?AddDisplayMode@@YGHPAXH@Z	100.0000	100.0000	2	8c7e19568094	0x1433
 directdrawmgr	?AddItemA@CDDrawPtrCollections@@QAEXPAVCDDSurface@@@Z	100.0000	100.0000	1	063e773f1091	0x142100
 directdrawmgr	?AddItemB@CDDrawPtrCollections@@QAEXPAUCDDPalette@@@Z	100.0000	100.0000	1	91ef022570de	0x142eb0
 directdrawmgr	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	3	966d36539971	0x142060
-directdrawmgr	?ClearModeArray@@YAXXZ	100.0000	100.0000	3	ee68e1847c80	0x141c80
 directdrawmgr	?Compare@CDDrawPtrCollections@@SGHPAX0@Z	100.0000	100.0000	1	fec44aaa8816	0x1433d0
 directdrawmgr	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	5	21140f7dc25b	0x143b20
 directdrawmgr	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	4	5cb8376560ad	0x143c20
@@ -1685,6 +1702,7 @@ fader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	2	6ac51d13d68b	0x17e510
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	7fcbeb7688ce	0x17d8f0
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:83fdeb88f0de	0x17e240
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	2	b7d521a26e4e	0x17d910
+fadermgr	??1CFxModeT1@@QAE@XZ	100.0000	100.0000	1	cpp:52f982e15fd5	0x17e160
 fadermgr	?Add@CFaderMgr@@QAEPAVCFader@@HPAVCFxModeDesc@@@Z	0.0000	0.0000	2	01ce03c3e3b7	0x17d9c0
 fadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	2	71ca84ea0e97	0x17e1d0
 fadermgr	?Fader_TraceStr@@YGXVCString@@@Z	100.0000	100.0000	2	a376bbdc6056	0x17e230
@@ -1726,6 +1744,8 @@ filestream	?OpenGruntzLog@CFileLog@@QAEXXZ	100.0000	100.0000	1	5a2e5a9ab3f9	0xbd
 filestream	?ReopenSharedFile@CFileLog@@QAEXPAD@Z	79.0625	79.0625	1	476bbb42c092	0xbd3e0
 font	??0Font@@QAE@XZ	100.0000	100.0000	5	88e5f8e36a9a	0x179700
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	4	8328abcb5c12	0x179be0
+font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710
+font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	7	de54c84aec41	0x179720
 font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@UCRect@@HHH@Z	61.5787	61.5787	5	773df045f356	0x179e70
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	3	48ba966aeb23	0x179c30
@@ -1758,9 +1778,26 @@ fontconfig	?RenderInputText@CFontConfig@@QAEHPAUHDC__@@HPAUtagRECT@@@Z	75.2239	7
 fontconfig	?Reset@CFontConfig@@QAEXXZ	100.0000	100.0000	3	d2b43b21a86e	0x21b60
 fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	6	ac91dd77ab35	0x21d80
 fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	61.1207	61.1207	5	d72194d88678	0x21e20
-fonts	?Forward_115630@@YAXXZ	100.0000	100.0000	1	53465f688ed9	0x115630
-fonts	?Forward_115730@@YAXXZ	100.0000	100.0000	1	c593f82b06a7	0x115730
-fonts	?Forward_1157b0@@YAXXZ	100.0000	100.0000	2	6432b9ba761a	0x1157b0
+fonts	$anon_data_0de1e441cc1db834ff14cc9edf85c29ba841ccdf684d5c685f6d2d47e3ebdb8b_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_19fd6d85aa5e9da46a70eacd089f3e6e4c60335d1dcd39cf50537405bbd67576_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_1f47371a164bf37eaaf0aac9750a7d6103746b0ad8cc3389060167e4d87aa22f_0	0.0000	0.0000	1	cpp:326b95bb4255
+fonts	$anon_data_1f7cad448da3b875a7f2629deea9f94cd28f198292412cf1d4eaa5d5123569d3_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_2eddf68cc0985fe757b9146ee3e09ce2965ba10363ef2ce5f8d30b2407ee18a5_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_413c5d6f99c8191406540b5e53d3ba8203e644f88f9e11a6ce50c67876ef64d0_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_50f49c1c38bbce9de1b0576111e1239b02418d1cb63dc65fa2e516ad3a3af860_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_5fb1ea25746bacb0e3fb13d153df3e1a75e227be351843c42e7413b4cb5228bd_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_606c2250e7288a4419c6f0935e288958485ea99fb7cd2d1ad4b2332cae29392a_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_64887582aceb0158bd2b16fd7b34993595441d68e17fb1559fa59b9644d5de2e_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_72d9622e110a80c96493f11290fdf6db90b1e6dc681a0934d125e6e69d22cba8_0	0.0000	0.0000	1	cpp:326b95bb4255
+fonts	$anon_data_81b6d3b5e80adf03a8e0454a17fd51eab92cc6511f67f62bd3e8954784589c4e_0	0.0000	0.0000	1	cpp:326b95bb4255
+fonts	$anon_data_87beee7d58df41d57a1457ab78354925cc2940b469c064249513ca74dcefcc1e_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_8d69085bfbd45917aba5f542e8670177fbf5c049e5d8898cd3f5dbcccf18ea21_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_9623bdfc222cecb6701f8bb7bba3815632d2bbe3d4ddb054811d34680bb01e54_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_a3f90eca5902deb27653133d9142a94c4b2c677356438e0f57dafd3773c6fed1_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_a48e088266e3866df8b9af777978dce20bf014e28d53a6c8bad329e0dc7b6ec9_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_e991959944312662a74dfb29c0fff155969c05edcf7964ee9e2927076cc47265_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_eddab4d70d7119cc342f492d23edd26d848334661c3c0d9a698797ed593b91b1_0	100.0000	100.0000	1	cpp:326b95bb4255
+fonts	$anon_data_ffe7e4084d7e6c4a9bed5b991cc6c936f1a618dd278548932806f6e7bf081e26_0	0.0000	0.0000	1	cpp:326b95bb4255
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	7	1164e8ea8f1a	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	9	d84b6dee7d02	0x115810
 fortconquered	?AdvanceAnim@CExitTrigger@@QAEHXZ	0.5149	0.5149	1	fd6397885487	0x3f5f0
@@ -2812,13 +2849,13 @@ latencylist	?Populate3@CLatencyList@@QAEHXZ	100.0000	100.0000	7	4eaf811725e6	0x3
 leafcueplay	?PlayIfElapsed@LeafCue@@QAEHHHHH@Z	66.0000	66.0000	2	a4a4acfcb505	0x1f940
 levelplane	??0CDDrawWorkerHost@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	67.7143	67.7143	4	ac19f285755f	0x1615a0
 levelplane	?Build@CDDrawWorkerHost@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	f5a9f73b6125	0x161e80
-levelplane	?CenterScrollA@CDDrawWorkerHost@@QAEHXZ	87.9464	87.9464	4	788c721fc195	0x163300
+levelplane	?CenterScrollA@CDDrawWorkerHost@@QAEHXZ	87.8750	87.8750	4	788c721fc195	0x163300
 levelplane	?CenterScrollB@CDDrawWorkerHost@@QAEHXZ	87.9464	87.9464	4	53cf6e1a713a	0x163370
 levelplane	?Draw@CDDrawWorkerHost@@QAEXPAUCPlaneDrawCtx@@@Z	81.5202	81.5202	2	ecbc1fb7c1bc	0x162010
 levelplane	?GetSize@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	3	655b5dab73cc	0x1633e0
 levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	78.3314	78.3314	2	c76bab275d61	0x1619f0
 levelplane	?InitScrollRects@CDDrawWorkerHost@@QAEXXZ	99.9157	99.9157	4	07c03a8960f8	0x163420
-levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	99.9841	99.9841	1	fcfcfcb7ca80	0x1638c0
+levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	fcfcfcb7ca80	0x1638c0
 levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	3	f043e73d9d80	0x1628d0
 levelplane	?Read@CDDrawWorkerHost@@UAEHPAX00@Z	0.6032	0.6032	1	69c4e39e2af2	0x161640
 levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBH@Z	67.6053	67.6053	11	ba566265b6ac	0x162af0
@@ -3068,8 +3105,12 @@ movinglogic	?MovingSlot16@CMovingLogic@@UAEXXZ	98.5455	98.5455	7	534ecef98b2f	0x
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@HHH@Z	9.5305	9.5305	4	013e61686ce3	0x16f4a0
 movinglogic	?SerializeMove@CUserLogic@@UAEHPAVCFileMemBase@@HHH@Z	0.0506	0.0506	4	6970824db119	0x16e7f0
 movinglogic	?WriteCurve@@YAAAVostream@@AAV1@ABVCMotionState@@@Z	100.0000	100.0000	1	cb48b6e014e1	0x16cdd0
+multi	$anon_data_03eba7b171cc1ff23101b3c265b1e0959afb339331be16be4efaeb4954bcb350_0	100.0000	100.0000	1	cpp:9f51a3c6a23d
+multi	$anon_data_3162f1d1b7882b71ccc20525eb374ce96ff8b99b66192a6a5ef4af11d05a9077_0	100.0000	100.0000	1	cpp:9f51a3c6a23d
 multi	$anon_data_683ced57ffff46dc6ac2555ce43fee2a74d811ee1f2af9dbccc064b803a2da9f_0	100.0000	100.0000	1	cpp:2599fd7ca2cc
 multi	$anon_data_802ef740c9ebc8a32d43eeb64cc7bde4cce09b221e1e7d677b591c2adec02778_0	100.0000	100.0000	1	cpp:2599fd7ca2cc
+multi	$anon_data_a9fbd90ae2f897c678bda7af200cb7d87b10bdb040a3ed1e52ec5047f9946fef_0	100.0000	100.0000	1	cpp:9f51a3c6a23d
+multi	$anon_data_ac3d1514d3a8d965cae993c8126e97e35379f19e8aec568ca016441998982b48_0	100.0000	100.0000	1	cpp:9f51a3c6a23d
 multi	$anon_data_c2134a3b614143a91cebed079c935f62d3b47ce5ebd27e79ac27c33b43da29f8_0	100.0000	100.0000	1	cpp:2599fd7ca2cc
 multi	$anon_data_f1871a25349101e999981b3d7fa23ecc3069212df207c953831d9e62f5b9e0a7_0	100.0000	100.0000	1	cpp:2599fd7ca2cc
 multi	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	2	693ece6e0a04	0xbbec0
@@ -3090,7 +3131,6 @@ multi	?BroadcastChatLine@CMulti@@QAEHPADHHPAX@Z	74.1500	74.1500	5	876a26526289	0
 multi	?BroadcastOneChannel@CMulti@@QAEHPAVGruntzPlayer@@@Z	87.0333	87.0333	1	29ed5c597d08	0xbaf00
 multi	?BuildHostName@CNetCmdSlot@@QAE?AVCString@@XZ	100.0000	100.0000	1	5267605682e3	0xbc3f0
 multi	?Connect@CMulti@@QAEHH@Z	78.5135	78.5135	5	9905377d9832	0xb67f0
-multi	?ConstructFileIOGlobal@@YAXXZ	100.0000	100.0000	2	b3342137dfcf	0xb5400
 multi	?CreateLocalPlayer@CMulti@@QAEHXZ	94.4815	94.4815	4	27d1cb7c5a2b	0xbc750
 multi	?CreateSession@CMulti@@QAEHXZ	95.3546	95.3546	6	7e042d73c37d	0xbbc90
 multi	?DetectConnectionConfig@CMulti@@QAEHXZ	85.8924	85.8924	3	2d4fbe5d357b	0xb82e0
@@ -3173,8 +3213,11 @@ multi	?Vslot15@CMulti@@UAEHXZ	100.0000	100.0000	1	4c5276d67e43	0xb6560
 multi	?Vslot24@CPlay@@UAEXXZ	100.0000	100.0000	1	cpp:e6f062a3ee0a	0xd0030
 multi	?WaitForConnect@CMulti@@QAEHXZ	74.0809	74.0809	2	d04f9809a8c7	0xbca50
 multi	?WaitForOtherPlayers@CMulti@@QAEHXZ	75.0380	75.0380	3	54a60e11963d	0xbb700
+multistartdlg	$anon_data_3e10ee114d8b1a5fa3e00318035846e96d96fc8da2d7c3edb03da32432ddb2b3_0	100.0000	100.0000	1	cpp:802bdf1ad77a
+multistartdlg	$anon_data_670219bc4bc8c3a5be680ee0cb10f2a07be5f560d4273433333ba47b1cc2940a_0	0.0000	0.0000	1	cpp:802bdf1ad77a
+multistartdlg	$anon_data_97d8985a7ce9c40a82340efd18a7bb99cfa1fd82f5dd01ecf707756c41cde0d2_0	0.0000	0.0000	1	cpp:802bdf1ad77a
+multistartdlg	$anon_data_c18bc335a4acf7b9289eda4971bd0547b0c2ec9adbc42e93729fce2c4fd2add3_0	0.0000	0.0000	1	cpp:802bdf1ad77a
 multistartdlg	??0CMultiStartDlg@@QAE@PAVCGruntzMgr@@PAVCWnd@@@Z	100.0000	100.0000	1	dd7c416dc283	0xc1750
-multistartdlg	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	2	b3633fde45aa	0xc16b0
 multistartdlg	?BuildSlotList@CMultiStartDlg@@QAEHXZ	89.3294	89.3294	4	9724669f2a90	0xc1e60
 multistartdlg	?DoDataExchange@CMultiStartDlg@@UAEXPAVCDataExchange@@@Z	96.2557	96.2557	8	1eb9dacd8ffb	0xc20a0
 multistartdlg	?GetComboSelC@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	2	6af2ff5ee4e7	0xc2940
@@ -3445,7 +3488,7 @@ play	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	4	0a4d861e565a	0xdb750
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	8	ec6c2f7bb630	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	8	80c2370efbdb	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	8	2cc1097e7e6f	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.2500	90.2500	11	538683642a50	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.3250	90.3250	11	538683642a50	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	15	a0676026e9c0	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	03f0d70791b8	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	f5c3cf707abf	0xcee10
@@ -4503,7 +4546,6 @@ wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	41.1727	41.1727	20	f4c7e3cdc065	0
 wap32rect	??0CRect@@QAE@HHHH@Z	100.0000	100.0000	1	1edde1fedff4	0x29ac0
 wap32rect	??4CRect@@QAEAAU0@ABUtagRECT@@@Z	100.0000	100.0000	1	9ad4eb3864d2	0x115b30
 wap32rect	?SetRect@CRect@@QAEXHHHH@Z	100.0000	100.0000	1	f640754770df	0x8c380
-wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	4	7fc827fdf728	0x1155b0
 wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	26	68da4ac6a5cd	0x1853b0
 warlord	$anon_data_04300071182dedd9ce2f274cf96d209c3649702eec087ff6efb5fff71903f4d6_0	100.0000	100.0000	1	cpp:192922a64766
 warlord	$anon_data_4229f5fd47882c0d5075437c2e7c5823d0fb895f6fe84f45a67a800ee934eb5b_0	100.0000	100.0000	1	cpp:192922a64766

@@ -15,8 +15,17 @@ typedef enum AdvancedOptionsDlgId {
 // address-load bytes are load-bearing. Bound to their retail DATA rvas by exact
 // base-obj symbol name (MSVC internal-linkage $S mangling; clang mangles differently
 // so DATA_SYMBOL pins the exact name the reloc uses).
+DATA(0x002295d8)
+DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S17365)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
+
+// g_registryHelper's file-scope construction/destruction family. The _$E<n>
+// suffixes are unique placeholders; the compiler-private numbers are unstable.
+RVA_COMPGEN(0x0000af30, 0xa, _$E44848)
+RVA_COMPGEN(0x0000af50, 0xb, _$E44880)
+RVA_COMPGEN(0x0000af70, 0xe, _$E44912)
+RVA_COMPGEN(0x0000af90, 0xa, _$E44944)
 
 RVA(0x0000b110, 0x32)
 void SaveOption(
@@ -66,11 +75,6 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
         SaveOption(hWnd, pRegistryHelper, "Disable Music", IDC_DISABLE_MUSIC);
         SaveOption(hWnd, pRegistryHelper, "Disable High Quality Movie", IDC_DISABLE_MOVIE);
     }
-}
-
-RVA(0x0000af50, 0xb)
-void ResetRegistryHelper() {
-    g_registryHelper.m_open = 0;
 }
 
 RVA(0x0000afb0, 0x108)

@@ -1956,10 +1956,6 @@ flags = "base"
 unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
 flags = "base"
-[[unit]]
-unit = "wapmisc"
-source = "src/Wap32/WapMisc.cpp"
-flags = "base"
 
 [[unit]]
 unit = "recordfill"

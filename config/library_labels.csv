@@ -36,7 +36,6 @@ rva,name,lib,confidence,source
 0x00ae40,__inc,LIBCMT,LOW,anchored
 0x00ae90,__inc,LIBCMT,LOW,anchored
 0x00aee0,__inc,LIBCMT,LOW,anchored
-0x00af70,___inittime,LIBCMT,LOW,anchored
 0x00b310,__inc,LIBCMT,LOW,anchored
 0x00b360,__inc,LIBCMT,LOW,anchored
 0x00b3b0,__inc,LIBCMT,LOW,anchored
@@ -331,9 +330,6 @@ rva,name,lib,confidence,source
 0x03ab20,__inc,LIBCMT,LOW,anchored
 0x03ab70,__inc,LIBCMT,LOW,anchored
 0x03abc0,__inc,LIBCMT,LOW,anchored
-0x03ac50,___inittime,LIBCMT,LOW,anchored
-0x03acd0,___inittime,LIBCMT,LOW,anchored
-0x03ad50,___inittime,LIBCMT,LOW,anchored
 0x03bcd0,__inc,LIBCMT,LOW,anchored
 0x03bd20,__inc,LIBCMT,LOW,anchored
 0x03bd70,__inc,LIBCMT,LOW,anchored
@@ -582,7 +578,6 @@ rva,name,lib,confidence,source
 0x0b5270,__inc,LIBCMT,LOW,anchored
 0x0b52c0,__inc,LIBCMT,LOW,anchored
 0x0b5310,__inc,LIBCMT,LOW,anchored
-0x0b5420,___inittime,LIBCMT,LOW,anchored
 0x0b5fd0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0b8af0,__fpclear,LIBCMT,LOW,anchored
 0x0bd500,__inc,LIBCMT,LOW,anchored
@@ -630,7 +625,6 @@ rva,name,lib,confidence,source
 0x0c15a0,__inc,LIBCMT,LOW,anchored
 0x0c15f0,__inc,LIBCMT,LOW,anchored
 0x0c1640,__inc,LIBCMT,LOW,anchored
-0x0c1700,___inittime,LIBCMT,LOW,anchored
 0x0c1810,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0c5360,__inc,LIBCMT,LOW,anchored
 0x0c53b0,__inc,LIBCMT,LOW,anchored
@@ -1041,11 +1035,6 @@ rva,name,lib,confidence,source
 0x114dd0,__inc,LIBCMT,LOW,anchored
 0x114e20,__inc,LIBCMT,LOW,anchored
 0x114e70,__inc,LIBCMT,LOW,anchored
-0x1155d0,___inittime,LIBCMT,LOW,anchored
-0x115650,___inittime,LIBCMT,LOW,anchored
-0x1156d0,___inittime,LIBCMT,LOW,anchored
-0x115750,___inittime,LIBCMT,LOW,anchored
-0x1157d0,___inittime,LIBCMT,LOW,anchored
 0x115c30,__inc,LIBCMT,LOW,anchored
 0x115c80,__inc,LIBCMT,LOW,anchored
 0x115cd0,__inc,LIBCMT,LOW,anchored
@@ -1685,9 +1674,7 @@ rva,name,lib,confidence,source
 0x139ec0,__inc,LIBCMT,LOW,anchored
 0x139ed0,__inc,LIBCMT,LOW,anchored
 0x13d430,___init_collate,LIBCMT,LOW,anchored
-0x13e080,___inittime,LIBCMT,LOW,anchored
 0x141330,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x141c90,___inittime,LIBCMT,LOW,anchored
 0x142800,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x142a20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x142d20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -3163,7 +3150,6 @@ rva,name,lib,confidence,source
 0x1bc087,Funclet_1bc087,MSVC-EH,HIGH,asm-carveout
 0x1bb075,Funclet_1bb075,MSVC-EH,HIGH,asm-carveout
 0x1ca249,Funclet_1ca249,MSVC-EH,HIGH,asm-carveout
-0x1156b0,Init_smallFont,MSVC-THUNK,HIGH,asm-carveout
 0x1bade1,Thunk_1bade1,MSVC-THUNK,HIGH,asm-carveout
 0x1d3330,Thunk_1d3330,MSVC-THUNK,HIGH,asm-carveout
 0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout

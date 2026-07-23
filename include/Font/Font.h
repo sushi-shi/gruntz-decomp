@@ -15,6 +15,7 @@ SIZE(0x8); // m_glyphs[] element stride (8-byte metric record)
 class Font {
 public:
     Font();
+    ~Font();
     i32 AllocateMemory(i32 count);
     void FreeMemory();
     i32 LoadFont(CString szFileName);
@@ -32,9 +33,8 @@ public:
     void** m_surfaces; // +0x08
     Glyph* m_glyphs;   // +0x0c
     i32 m_maxHeight;   // +0x10
-    i32 m_reserved14;  // +0x14  (unread here; present in the retail object)
 };
-SIZE(0x18); // the four global Font instances are laid out 0x18 apart
+SIZE(0x14); // some globals are 0x18 apart because MSVC aligns the next BSS symbol
 
 extern Font g_largeFont;  // 0x24eac0
 extern Font g_mediumFont; // 0x24eae8
@@ -52,6 +52,7 @@ class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 class FontRenderer {
 public:
     FontRenderer();
+    ~FontRenderer();
     void SetFont(Font* f);    // 0x179c10  (m_font = f)
     void SetColor(i32 color); // 0x179c20
 

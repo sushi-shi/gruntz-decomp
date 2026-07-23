@@ -214,3 +214,31 @@ masked relocation alias can stop pairing even while many new functions become
 exact. Preserve the MAX high-water mark, compare the exact affected helpers and
 ordered relocations, and record the cause. Do not undo the object model merely
 to restore the current percentage.
+
+## Private-symbol and BSS-layout traps
+
+`RVA_COMPGEN` names the retail helper; it does not rename VC5's emitted local
+symbol. A source annotation such as `_$E1136016` can therefore correspond to a
+base-object symbol named `_$E28`. A source/retail disassembly query by the
+placeholder may report that the base symbol is missing even when `llvm-nm` and
+`llvm-objdump -dr` show the complete compiler-emitted family. Compare the actual
+base and target local definitions, meaningful body lengths, and ordered
+relocation roles. Never interpret the placeholder suffix as source identity.
+
+A structurally correct helper can also remain anonymous or unpaired in the
+report when delinking changes the visibility of a file-local `$S<n>` data
+symbol, withholds an overlapping/interior data label, or externalizes only one
+side's private definition. The `AdvancedOptions` registry helper and the
+`Fonts` small-font family are concrete controls: VC5 emits the right helper
+instructions and semantic relocations, but the normalized target cannot always
+pair the private data referent. Do not make a real `static` object external, add
+an overlapping global, or change the class model to improve that score.
+
+Data RVAs do not follow function-style 16-byte alignment. Each object is placed
+according to its own alignment and the linker/COFF BSS allocator, so a gap to
+the next symbol can include padding rather than fields. The `Font` globals prove
+the distinction: `Font` ends at `+0x14`; some following objects start at
+`+0x18` after four bytes of alignment padding, while `g_loadedFlag` immediately
+follows `g_smallFont` at `+0x14`. Derive a type's extent from member xrefs,
+constructor/destructor accesses, arrays or allocations, and a proven next
+independent object—not from one unusually large inter-symbol gap.

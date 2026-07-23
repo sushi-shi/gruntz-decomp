@@ -323,7 +323,6 @@ inline CDDSurface::CDDSurface() {
 // VAs are reloc-masked at use) ---
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
-extern i32 g_imageCacheIndex;
 extern u8 g_clut[];
 extern u16 g_lut16[256];
 #endif // DDRAWMGR_CDDSURFACE_H
