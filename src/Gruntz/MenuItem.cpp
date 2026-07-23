@@ -22,6 +22,16 @@ RVA(0x00184630, 0x20)
 CString CMenuItem::GetField58() {
     return m_58;
 }
+RVA(0x00184650, 0xa)
+void CMenuItem::Disable(i32 mode) {
+    m_state = mode;
+}
+
+RVA(0x00184660, 0x3)
+i32 CMenuItem::OnInit() {
+    return 0;
+}
+
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
     Dispatch0c();
@@ -40,16 +50,39 @@ void CMenuItem::Reset() {
     m_54.Empty();
     m_58.Empty();
 }
+RVA(0x00184780, 0x14)
+void CMenuItem2::Disable(i32 mode) {
+    i32 frameLimit = m_70;
+    m_state = mode;
+    m_frameIdx = 0;
+    m_6c = frameLimit;
+}
+
 RVA(0x001847a0, 0xa)
 void CMenuItem2::SetFrame(i32 v) {
     m_70 = v;
 }
+RVA(0x001847b0, 0x6)
+i32 CMenuItem2::OnInit() {
+    return 1;
+}
+
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
     Dispatch0c();
     // compiler stamps ??_7CMenuItem2@@6B@ at entry, then the base ~CMenuItem is
     // inlined here: it stamps ??_7CMenuItem@@6B@, runs its Dispatch0c hook, and
     // destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
+}
+
+RVA(0x00184890, 0x1a)
+void CMenuItem2::Reset() {
+    m_70 = 0x64;
+    m_spriteNormal = 0;
+    m_spriteSelected = 0;
+    m_spriteDisabled = 0;
+    m_frameIdx = 0;
+    m_6c = 0;
 }
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
@@ -169,6 +202,16 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     m_hitBottom = px + row->m_anchorY;
     return 1;
 }
+RVA(0x001855d0, 0x6)
+i32 CMenuItem::Detach() {
+    return 1;
+}
+
+RVA(0x001855e0, 0x8)
+i32 CMenuItem::Notify(void*) {
+    return 1;
+}
+
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(void* notify) {
     if (notify) {
@@ -177,6 +220,12 @@ i32 CMenuItem::Configure(void* notify) {
     Disable(2);
     return 1;
 }
+RVA(0x001856c0, 0xb)
+i32 CMenuItem::Release() {
+    Disable(1);
+    return 1;
+}
+
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     m_host->ScrollRow1();
@@ -240,6 +289,24 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
     return 1;
 }
+RVA(0x00185880, 0xa)
+i32 CMenuItem2::GetFrameWidth() {
+    CImage* f = GetCurrentFrame();
+    if (!f) {
+        return 0;
+    }
+    return f->m_width;
+}
+
+RVA(0x00185890, 0xa)
+i32 CMenuItem2::GetWidth() {
+    CImage* f = GetCurrentFrame();
+    if (!f) {
+        return 0;
+    }
+    return f->m_height;
+}
+
 RVA(0x001858a0, 0x2b)
 i32 CMenuItem2::Notify(void* arg) {
     u32 a = reinterpret_cast<u32>(arg);

@@ -1,6 +1,15 @@
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
+// The kind-2 set owns no pixel buffer; slot 6 is the empty family default.
+RVA(0x00161420, 0x1)
+void CImageSet2::FreePixels() {}
+
+RVA(0x00161430, 0x6)
+i32 CImageSet2::GetKind() {
+    return 2;
+}
+
 RVA(0x00161460, 0x7)
 CImageSet2::~CImageSet2() {}
 
@@ -10,6 +19,11 @@ i32 CImageSet2::GetCollisionAt(i32 x, i32 y) {
         return m_0c;
     }
     return m_10;
+}
+
+RVA(0x001614a0, 0x6)
+i32 CImageSet2::GetStride() {
+    return 0x28;
 }
 
 // CImageSet2::Parse (0x166990, ??_7CImageSet2 slot +0x14). Copies eight dwords

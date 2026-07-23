@@ -52,13 +52,13 @@ public:
     virtual void Disable(i32 mode);           // 0x184650  slot 6  (disable/state hook: the
                                               // main-menu builder Disables gated items w/ 3;
                                               // Configure chains it w/ 2)
-    virtual void Detach();                    // 0x1855d0  slot 7  (declared-only)
+    virtual i32 Detach();                     // 0x1855d0  slot 7  (return-1 default)
     virtual i32 Notify(void* arg);            // 0x1855e0  slot 8  (declared-only)
     virtual i32 Place(i32 ctx, i32 x, i32 y); // 0x1855f0  slot 9
     virtual i32 Configure(void* notify);      // 0x185690  slot 10 (0x185690)
-    virtual void Release();                   // 0x1856c0  slot 11 (declared-only)
+    virtual i32 Release();                    // 0x1856c0  slot 11 (Disable(1) + return 1)
     virtual i32 Trigger();                    // 0x1856d0  slot 12
-    virtual i32 OnInit();                     // 0x184660  slot 13 (declared-only)
+    virtual i32 OnInit();                     // 0x184660  slot 13 (return-0 default)
 
     // Non-virtual __thiscall helpers/accessors (bodies in MenuItem.cpp):
     RVA(0x001845b0, 0x20)

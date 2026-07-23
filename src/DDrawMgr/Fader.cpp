@@ -5,7 +5,7 @@
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
 #include <Ints.h>
 #include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
-#include <ddraw.h> // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
+#include <ddraw.h>              // IDirectDrawSurface::Unlock (the ex manual slot dispatch)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
 #include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
 #include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight BeginFade/EndFade)
@@ -54,6 +54,13 @@ RVA(0x0017e780, 0xa)
 void CFader::Set2c(CDDrawPtrCollections* pool) {
     m_ptrColl = pool;
 }
+
+// The base fade brackets (slots 3/4) default to no-ops; CFaderLight overrides both.
+RVA(0x0017e790, 0x1)
+void CFader::BeginFade() {}
+
+RVA(0x0017e7a0, 0x1)
+void CFader::EndFade() {}
 
 RVA(0x0017e7b0, 0x9)
 CFxModeDesc::CFxModeDesc() {
@@ -257,7 +264,7 @@ static __inline i32 FxRand(i32 range) {
 
 DATA(0x001f085c)
 extern const float g_faderScale_5f085c = 0.01f;
-void ScatterSamples(i32* arr, i32, i32, i32);   // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
+void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
 // regalloc coin-flip wall (73.5% fuzzy). Full body is byte-shape-identical to retail;
@@ -404,7 +411,11 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     }
     if (m_spanCount > 0) {
         if (d->m_20 == 0) {
-            m_table = m_cache.HueRampTable(reinterpret_cast<PalEntry*>(m_palette->m_cacheA), m_spanCount, 0);
+            m_table = m_cache.HueRampTable(
+                reinterpret_cast<PalEntry*>(m_palette->m_cacheA),
+                m_spanCount,
+                0
+            );
             m_flag = 1;
             return 1;
         }
@@ -588,7 +599,8 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     float fCount = static_cast<float>(count);
     if (count >= 0) {
         do {
-            frame = static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
+            frame =
+                static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
                 if (vsync && m_ptrColl) {
                     m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
@@ -636,8 +648,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_meshBuf;
 
-    m_dstSurface = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_bltSrc = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_dstSurface = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04)
+                             : reinterpret_cast<CDDSurface*>(m_timerA);
+    m_bltSrc = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08)
+                         : reinterpret_cast<CDDSurface*>(m_timerB);
     if (cfg->m_10 == 0) {
         return 0;
     }
@@ -933,15 +947,19 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         for (i32 x = 0; x < m_srcSurface->m_width; x++) {
             i32 dx = x - m_centerX;
             i32 dy = y - m_centerY;
-            float r = static_cast<float>((static_cast<double>(m_maxRadius) - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale
-                              - g_faderBiasR));
+            float r = static_cast<float>(
+                (static_cast<double>(m_maxRadius)
+                 - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale - g_faderBiasR)
+            );
             float fade = r / m_fadeDivisor - g_faderBiasFade;
             float vx = static_cast<float>(dx) * fade;
             float vy = static_cast<float>(dy) * fade;
             u8 pix;
             i32 base = m_srcSurface->Lock(0);
             if (base != 0) {
-                pix = *reinterpret_cast<u8*>((base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y));
+                pix = *reinterpret_cast<u8*>(
+                    (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
+                );
                 m_srcSurface->UnlockThunk();
             } else {
                 pix = 0;
@@ -1045,8 +1063,10 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         return 0;
     }
 
-    m_surfA = pInit->m_04 ? reinterpret_cast<CDDSurface*>(pInit->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_surfB = pInit->m_08 ? reinterpret_cast<CDDSurface*>(pInit->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_surfA = pInit->m_04 ? reinterpret_cast<CDDSurface*>(pInit->m_04)
+                          : reinterpret_cast<CDDSurface*>(m_timerA);
+    m_surfB = pInit->m_08 ? reinterpret_cast<CDDSurface*>(pInit->m_08)
+                          : reinterpret_cast<CDDSurface*>(m_timerB);
     if (m_surfA == 0) {
         return 0;
     }
@@ -1103,8 +1123,13 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     m_warpTable = static_cast<i32*>(RezAlloc(m_halfWidth * 8));
     for (i = 0; i < 2 * m_halfWidth; i++) {
-        m_warpTable[i] =
-            static_cast<i32>((acos((static_cast<float>(i) - static_cast<float>(m_halfWidth)) / static_cast<float>(m_halfWidth)) * static_cast<float>(m_halfWidth)));
+        m_warpTable[i] = static_cast<i32>(
+            (acos(
+                 (static_cast<float>(i) - static_cast<float>(m_halfWidth))
+                 / static_cast<float>(m_halfWidth)
+             )
+             * static_cast<float>(m_halfWidth))
+        );
     }
 
     m_useLut = pInit->m_1c;
@@ -1123,13 +1148,17 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
             }
         } else {
             CDDPalette* pal = reinterpret_cast<CDDPalette*>(pInit->m_28);
-            m_table = m_cache.FlashTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x20, 0x20, 0x32, 0xc8);
+            m_table =
+                m_cache
+                    .FlashTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x20, 0x20, 0x32, 0xc8);
         }
 
         i32 m = m_halfWidth << 1;
         m_shadeRamp = static_cast<u8*>(RezAlloc(m));
         for (i = 0; i < m; i++) {
-            i32 t = static_cast<i32>((sin(static_cast<float>(i) / static_cast<float>(m_halfWidth) * 3.14f) * -32.0));
+            i32 t = static_cast<i32>(
+                (sin(static_cast<float>(i) / static_cast<float>(m_halfWidth) * 3.14f) * -32.0)
+            );
             m_shadeRamp[i] = static_cast<u8>((0x10 - t));
         }
     }
@@ -1264,7 +1293,10 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
 
     i32 colBase;
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
-        colBase = stride - static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - arg0 - stride)));
+        colBase = stride
+                  - static_cast<i32>(
+                      (static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - arg0 - stride))
+                  );
     } else {
         colBase = arg0;
     }
@@ -1345,7 +1377,9 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
-                        m_lineBuf[t] = lut[static_cast<u32>(m_shadeRamp[t]) + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
+                        m_lineBuf[t] =
+                            lut[static_cast<u32>(m_shadeRamp[t])
+                                + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
                     }
                 }
                 u8* sp = m_lineBuf;
@@ -1453,7 +1487,9 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                 if (colBase > 0) {
                     do {
                         e = i + 1;
-                        m_lineBuf[i] = lut[static_cast<u32>(m_shadeRamp[i]) + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
+                        m_lineBuf[i] =
+                            lut[static_cast<u32>(m_shadeRamp[i])
+                                + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
                         i = e;
                     } while (e < colBase);
                 }

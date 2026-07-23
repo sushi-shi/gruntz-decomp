@@ -35,3 +35,19 @@ i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
     }
     return 0;
 }
+
+// 0x166e60 (slot 11): the val-gated form - scan LEFT for the first pixel that
+// EQUALS `val`, reporting only its column.
+RVA(0x00166e60, 0x48)
+i32 CImageSet3::ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX) {
+    u8* p = m_pixels + ((y << m_heightLog2) + x);
+    while (x > 0) {
+        --x;
+        --p;
+        if (*p == val) {
+            *outX = x;
+            return 1;
+        }
+    }
+    return 0;
+}

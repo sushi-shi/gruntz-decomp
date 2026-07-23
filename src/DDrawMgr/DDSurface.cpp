@@ -8,7 +8,7 @@
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>
-#include <string.h>  // inline strcpy / memcpy / memset
+#include <string.h> // inline strcpy / memcpy / memset
 
 #include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
@@ -126,8 +126,9 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     }
     m_bytesPerPixel = divisor;
 
-    m_fullRect.right = m_width;      // dwWidth cached after switch
-    m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel); // lPitch / divisor
+    m_fullRect.right = m_width; // dwWidth cached after switch
+    m_pixelsPerRow =
+        static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel); // lPitch / divisor
     m_fullRect.left = 0;
     m_fullRect.top = 0;
     i32 height = m_height;
@@ -221,7 +222,8 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
-    i32 hr = m_ddSurface->Lock(static_cast<LPRECT>(rect), reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
+    i32 hr = m_ddSurface
+                 ->Lock(static_cast<LPRECT>(rect), reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
     if (hr == 0) {
         return m_lockBits;
     }
@@ -247,11 +249,15 @@ i32 CDDSurface::Fill(u32 color) {
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx[0] = 0x64;          // dwSize
+    fx[0] = 0x64;                       // dwSize
     fx[0x14] = static_cast<i32>(color); // dwFillColor @ +0x50
     i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"), 0x22c, hr);
+        CDDrawPtrCollections::GetErrorString(
+            const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
+            0x22c,
+            hr
+        );
     }
     return hr == 0;
 }
@@ -554,13 +560,31 @@ RVA(0x0013eef0, 0x98)
 i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx) {
     i32 hr;
     if (src != 0) {
-        hr = m_ddSurface->Blt(static_cast<LPRECT>(dstRect), src->m_ddSurface, static_cast<LPRECT>(srcRect), flags, static_cast<LPDDBLTFX>(fx));
+        hr = m_ddSurface->Blt(
+            static_cast<LPRECT>(dstRect),
+            src->m_ddSurface,
+            static_cast<LPRECT>(srcRect),
+            flags,
+            static_cast<LPDDBLTFX>(fx)
+        );
     } else {
-        hr = m_ddSurface->Blt(static_cast<LPRECT>(dstRect), 0, static_cast<LPRECT>(srcRect), flags, static_cast<LPDDBLTFX>(fx));
+        hr = m_ddSurface->Blt(
+            static_cast<LPRECT>(dstRect),
+            0,
+            static_cast<LPRECT>(srcRect),
+            flags,
+            static_cast<LPDDBLTFX>(fx)
+        );
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->Blt(static_cast<LPRECT>(dstRect), src->m_ddSurface, static_cast<LPRECT>(srcRect), flags, static_cast<LPDDBLTFX>(fx));
+            hr = m_ddSurface->Blt(
+                static_cast<LPRECT>(dstRect),
+                src->m_ddSurface,
+                static_cast<LPRECT>(srcRect),
+                flags,
+                static_cast<LPDDBLTFX>(fx)
+            );
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -674,12 +698,16 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        u16 v = *reinterpret_cast<u16*>(((g_clut + 0x10002) + bank
-                                        + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2));
-                        v |= *reinterpret_cast<u16*>(((g_clut + 0x20002) + bank
-                                     + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2));
-                        v |= *reinterpret_cast<u16*>(((g_clut + 0x2) + bank
-                                     + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2));
+                        u16 v = *reinterpret_cast<u16*>(
+                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
+                        );
+                        v |= *reinterpret_cast<u16*>(
+                            ((g_clut + 0x20002) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2)
+                        );
+                        v |= *reinterpret_cast<u16*>(
+                            ((g_clut + 0x2) + bank
+                             + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2)
+                        );
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;
@@ -702,12 +730,16 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        u16 v = *reinterpret_cast<u16*>(((g_clut + 0x10002) + bank
-                                        + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2));
-                        v |= *reinterpret_cast<u16*>(((g_clut + 0x20002) + bank
-                                     + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2));
-                        v |= *reinterpret_cast<u16*>(((g_clut + 0x2) + bank
-                                     + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2));
+                        u16 v = *reinterpret_cast<u16*>(
+                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
+                        );
+                        v |= *reinterpret_cast<u16*>(
+                            ((g_clut + 0x20002) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2)
+                        );
+                        v |= *reinterpret_cast<u16*>(
+                            ((g_clut + 0x2) + bank
+                             + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2)
+                        );
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;
@@ -793,9 +825,17 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 5;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = static_cast<u16>((*reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6)))
-                                      | *reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6)))
-                                      | *reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2))));
+                    *srcPix++ = static_cast<u16>(
+                        (*reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                         )
+                         | *reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                         )
+                         | *reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)
+                         ))
+                    );
                 }
                 srcPix += stride;
             }
@@ -809,9 +849,17 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 6;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = static_cast<u16>((*reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6)))
-                                      | *reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6)))
-                                      | *reinterpret_cast<u16*>((reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2))));
+                    *srcPix++ = static_cast<u16>(
+                        (*reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                         )
+                         | *reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                         )
+                         | *reinterpret_cast<u16*>(
+                             (reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)
+                         ))
+                    );
                 }
                 srcPix += stride;
             }
@@ -859,9 +907,11 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) = static_cast<i16>((sum << 0xa));
+                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) =
+                        static_cast<i16>((sum << 0xa));
                     *reinterpret_cast<i16*>((g_clut + base)) = static_cast<i16>((sum << 5));
-                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) = static_cast<i16>((sum << bShift));
+                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) =
+                        static_cast<i16>((sum << bShift));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -882,9 +932,12 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) = static_cast<i16>((sum << g_rUp));
-                    *reinterpret_cast<i16*>((g_clut + base)) = static_cast<i16>(((sum << g_gUp) << 1));
-                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) = static_cast<i16>((sum << g_bUp));
+                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) =
+                        static_cast<i16>((sum << g_rUp));
+                    *reinterpret_cast<i16*>((g_clut + base)) =
+                        static_cast<i16>(((sum << g_gUp) << 1));
+                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) =
+                        static_cast<i16>((sum << g_bUp));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1022,7 +1075,9 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
         pal += 4;
         u8 g = static_cast<u8>((static_cast<u8>(pal[-3]) >> g_gDown));
         u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
-        *lut++ = static_cast<u16>(((static_cast<u32>(r) << g_rUp) | (static_cast<u32>(g) << g_gUp) | static_cast<u32>(b)));
+        *lut++ = static_cast<u16>(
+            ((static_cast<u32>(r) << g_rUp) | (static_cast<u32>(g) << g_gUp) | static_cast<u32>(b))
+        );
     } while (lut < g_lut16 + 256);
     u8* locked = reinterpret_cast<u8*>(Lock(0));
     if (locked == 0) {
@@ -1073,9 +1128,12 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
                 u8 g = src[1];
                 u8 r = src[2];
                 src += 3;
-                *dst++ = static_cast<u16>(((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
-                               | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)))) << g_rUp)
-                               | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown))))));
+                *dst++ = static_cast<u16>(
+                    ((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
+                     | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown))))
+                        << g_rUp)
+                     | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown)))))
+                );
             }
         }
     } else {
@@ -1086,9 +1144,12 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
                 u8 g = src[1];
                 u8 r = src[2];
                 src += 3;
-                *dst++ = static_cast<u16>(((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
-                               | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)))) << g_rUp)
-                               | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown))))));
+                *dst++ = static_cast<u16>(
+                    ((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
+                     | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown))))
+                        << g_rUp)
+                     | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown)))))
+                );
             }
         }
     }
@@ -1167,8 +1228,12 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
             u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown)));
-                dst[1] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown)));
+                dst[0] = static_cast<u16>(
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown))
+                );
+                dst[1] = static_cast<u16>(
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown))
+                );
                 dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
                 dst += 3;
             }
@@ -1178,8 +1243,12 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
             u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown)));
-                dst[1] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown)));
+                dst[0] = static_cast<u16>(
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown))
+                );
+                dst[1] = static_cast<u16>(
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown))
+                );
                 dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
                 dst += 3;
             }
@@ -1303,8 +1372,10 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
-                i32 green = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 red =
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
+                i32 green =
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[1];
@@ -1333,8 +1404,10 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
-                i32 green = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 red =
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
+                i32 green =
+                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[1];
@@ -1752,7 +1825,17 @@ i32 CDDSurface::RotateBlit(
     i32 colorkey
 ) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
-    ImageRotateBlit(a1, a2, reinterpret_cast<i32*>(pivot), static_cast<void*>(this), reinterpret_cast<void*>(rect), 0.0f, scale, mode, colorkey);
+    ImageRotateBlit(
+        a1,
+        a2,
+        reinterpret_cast<i32*>(pivot),
+        static_cast<void*>(this),
+        reinterpret_cast<void*>(rect),
+        0.0f,
+        scale,
+        mode,
+        colorkey
+    );
     return 1;
 }
 
@@ -1777,7 +1860,17 @@ i32 CDDSurface::ScaleBlit(
     i32 colorkey
 ) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
-    ImageRotateBlit(a1, a2, reinterpret_cast<i32*>(pivot), static_cast<void*>(this), reinterpret_cast<void*>(rect), angle, 1.0f, mode, colorkey);
+    ImageRotateBlit(
+        a1,
+        a2,
+        reinterpret_cast<i32*>(pivot),
+        static_cast<void*>(this),
+        reinterpret_cast<void*>(rect),
+        angle,
+        1.0f,
+        mode,
+        colorkey
+    );
     return 1;
 }
 
@@ -1792,7 +1885,17 @@ i32 CDDSurface::RotateScaleBlit(
     i32 mode,
     i32 colorkey
 ) {
-    ImageRotateBlit(a1, a2, reinterpret_cast<i32*>(pivot), static_cast<void*>(this), reinterpret_cast<void*>(rect), angle, scale, mode, colorkey);
+    ImageRotateBlit(
+        a1,
+        a2,
+        reinterpret_cast<i32*>(pivot),
+        static_cast<void*>(this),
+        reinterpret_cast<void*>(rect),
+        angle,
+        scale,
+        mode,
+        colorkey
+    );
     return 1;
 }
 
@@ -1827,6 +1930,11 @@ i32 CDDSurface::IsValid() {
     return 0;
 }
 
+RVA(0x00141300, 0x3)
+i32 CDDSurface::GetPoolKind() {
+    return POOLKIND_PLAIN;
+}
+
 RVA(0x00141310, 0x4)
 i32 CDDSurface::GetWidth() {
     return m_width;
@@ -1851,4 +1959,3 @@ RVA(0x001413c0, 0xb)
 i32 CDDSurface::Scale(i32 n) {
     return m_pitch * n;
 }
-

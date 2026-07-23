@@ -11,6 +11,21 @@ void CImageSet3::FreePixels() {
     m_pixels = 0;
 }
 
+RVA(0x001614d0, 0x6)
+i32 CImageSet3::GetKind() {
+    return 3;
+}
+
+RVA(0x00161570, 0x1d)
+i32 CImageSet3::GetCollisionAt(i32 x, i32 y) {
+    return m_pixels[(y << m_heightLog2) + x];
+}
+
+RVA(0x00161590, 0xb)
+i32 CImageSet3::GetStride() {
+    return m_height * m_width + 0x10;
+}
+
 // CImageSet3::Parse (0x166d70, ??_7CImageSet3 slot +0x14). Reads tile width/height
 // from the record at +0x08/+0x0c, derives the height log2 shift and the byte size,
 // and - only when the width is the matching power of two - allocates and copies the

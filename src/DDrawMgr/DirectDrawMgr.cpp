@@ -1361,3 +1361,25 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     }
     return hr;
 }
+
+// The four pool-kind tags (slot 6): one per concrete pool-item class, laid down
+// together at this TU's tail (their dtors live above at 0x1423xx-0x142dxx).
+RVA(0x00143cb0, 0x6)
+i32 CPoolItemA88::GetPoolKind() {
+    return POOLKIND_BLIT7;
+}
+
+RVA(0x00143cc0, 0x6)
+i32 CFileImageSurface::GetPoolKind() {
+    return POOLKIND_FILEIMAGE;
+}
+
+RVA(0x00143cd0, 0x6)
+i32 CPoolItemAB8::GetPoolKind() {
+    return POOLKIND_MODE;
+}
+
+RVA(0x00143ce0, 0x6)
+i32 CPoolItemAE8::GetPoolKind() {
+    return POOLKIND_BLIT47;
+}

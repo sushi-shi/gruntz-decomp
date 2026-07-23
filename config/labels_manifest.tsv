@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 366  functions: 4109
+# units: 366  functions: 4150
 actionarea	16
 actionoptionsmenubar	12
 adler32	1
@@ -74,15 +74,15 @@ ddrawsubmgrleaf	13
 ddrawsurfacemgr	13
 ddrawsurfacepair	44
 ddrawworkerhost	4
-ddrawworkerregistry	26
-ddsurface	55
+ddrawworkerregistry	27
+ddsurface	56
 debugprintf	14
 debugtiming	2
 deflate	15
 demo	25
 destructbutton	1
 dialogs	59
-directdrawmgr	62
+directdrawmgr	66
 directinputmgr2	46
 directionclassify	1
 directsoundmgr	75
@@ -93,7 +93,7 @@ engstr	1
 engstrrendertext	1
 exittrigger	4
 eyecandy	4
-fader	47
+fader	49
 fadermgr	10
 feccrypt	10
 fileimage	19
@@ -177,10 +177,10 @@ imageprobe	1
 imagerle16encode	1
 imagerotate	1
 imagesavebmp	1
-imageset1	2
-imageset2	11
-imageset3	2
-imageset3g	8
+imageset1	14
+imageset2	14
+imageset3	3
+imageset3g	11
 infblock	5
 infcodes	3
 inffast	1
@@ -214,7 +214,7 @@ logicworkerhandlersb	6
 mainmenubuilder	2
 maplogic	1
 mapmgr	25
-menuitem	21
+menuitem	31
 menupage	34
 menusparkle	7
 menusparkleserial	1
@@ -359,7 +359,7 @@ worldlevelpath	2
 worldsoundset	31
 wormhole	28
 wormholeacts	3
-wwdfactoryobject	33
+wwdfactoryobject	37
 wwdfile	3
 wwdgameobject	43
 wwdgameobjectrender	15

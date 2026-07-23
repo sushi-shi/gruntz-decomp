@@ -29,8 +29,8 @@
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
 
 #include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
-#include <Gruntz/SoundState.h> // g_sndCueTag (ex the g_aniCueItem alias)
-#include <Wwd/WwdObjMgr.h> // ex Globals.h
+#include <Gruntz/SoundState.h>    // g_sndCueTag (ex the g_aniCueItem alias)
+#include <Wwd/WwdObjMgr.h>        // ex Globals.h
 namespace Rng {
     i32 Next2();
 }
@@ -40,11 +40,11 @@ namespace Rng {
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
 
-VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
-VTBL(CGameObject, 0x001f0020); // ??_7 (base, 16 slots)
-VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
-VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (16 slots)
-VTBL(CWwdGameObject, 0x001f00e8); // ??_7 (16 slots; B : A)
+VTBL(CWwdGameObjectC, 0x001effd0);   // ??_7 (19 slots)
+VTBL(CGameObject, 0x001f0020);       // ??_7 (base, 16 slots)
+VTBL(CWwdGameObjectF, 0x001f0060);   // ??_7 (17 slots)
+VTBL(CWwdGameObjectA, 0x001f00a8);   // ??_7 (16 slots)
+VTBL(CWwdGameObject, 0x001f00e8);    // ??_7 (16 slots; B : A)
 VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 // ---------------------------------------------------------------------------
 // 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
@@ -237,6 +237,19 @@ i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_1a0.Construct(this);
     return CGameObject::Setup(a1, a2, a3, a4);
 }
+
+// The F kind draws nothing: all four draw slots (11-14) are empty defaults.
+RVA(0x0015ba70, 0x3)
+void CWwdGameObjectF::Render(CDDrawSurfacePair*) {}
+
+RVA(0x0015ba80, 0x3)
+void CWwdGameObjectF::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+
+RVA(0x0015ba90, 0x3)
+void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, i32) {}
+
+RVA(0x0015baa0, 0x3)
+void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, i32) {}
 
 // ---------------------------------------------------------------------------
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
@@ -590,7 +603,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    (reinterpret_cast<LeafCue*>(entry))->PlayIfElapsed(g_sndCueTag, 0, 0, 0); // 0x61ab24 (the ex "g_aniCueItem" alias)
+                    (reinterpret_cast<LeafCue*>(entry))
+                        ->PlayIfElapsed(
+                            g_sndCueTag,
+                            0,
+                            0,
+                            0
+                        ); // 0x61ab24 (the ex "g_aniCueItem" alias)
                 }
             }
         }

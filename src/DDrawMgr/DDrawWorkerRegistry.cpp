@@ -17,8 +17,8 @@
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Mfc.h>
-#include <Win32.h> // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // DDBLTFX (g_bltFx - the shared BltEx fx block)
+#include <Win32.h>  // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>  // DDBLTFX (g_bltFx - the shared BltEx fx block)
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in InstallTree / LoadNamespace)
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -26,7 +26,7 @@
 #include <Gruntz/String.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
-#include <Image/CImage.h> // ex Globals.h
+#include <Image/CImage.h>    // ex Globals.h
 
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 inline void* operator new(u32, void* p) {
@@ -104,7 +104,9 @@ i32 CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i3
     if (worker == 0) {
         return 0;
     }
-    return reinterpret_cast<i32>(worker->InsertFrame(rec, a3, a4)); // slot 14 returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->InsertFrame(rec, a3, a4)
+    ); // slot 14 returns CImage*; forwarded as i32
 }
 
 RVA(0x00154be0, 0xfc)
@@ -113,7 +115,9 @@ i32 CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a
     if (worker == 0) {
         return 0;
     }
-    return reinterpret_cast<i32>(worker->CreateFrame30(a1, a3, a4)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame30(a1, a3, a4)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 RVA(0x00154ce0, 0x101)
@@ -122,7 +126,9 @@ i32 CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a
     if (worker == 0) {
         return 0;
     }
-    return reinterpret_cast<i32>(worker->CreateFrame28(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame28(a1, a2, a4, a5)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 RVA(0x00154df0, 0x101)
@@ -131,27 +137,37 @@ i32 CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a
     if (worker == 0) {
         return 0;
     }
-    return reinterpret_cast<i32>(worker->CreateFrame24(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame24(a1, a2, a4, a5)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 RVA(0x00154f00, 0x1b)
 i32 CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
-    return reinterpret_cast<i32>(worker->CreateFrame30(a1, a3, a4)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame30(a1, a3, a4)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 RVA(0x00154f20, 0x1b)
 i32 CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4) {
-    return reinterpret_cast<i32>(worker->InsertFrame(rec, a3, a4)); // slot 14 returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->InsertFrame(rec, a3, a4)
+    ); // slot 14 returns CImage*; forwarded as i32
 }
 
 RVA(0x00154f40, 0x20)
 i32 CDDrawWorkerRegistry::Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
-    return reinterpret_cast<i32>(worker->CreateFrame28(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame28(a1, a2, a4, a5)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 RVA(0x00154f60, 0x20)
 i32 CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
-    return reinterpret_cast<i32>(worker->CreateFrame24(a1, a2, a4, a5)); // slot returns CImage*; forwarded as i32
+    return reinterpret_cast<i32>(
+        worker->CreateFrame24(a1, a2, a4, a5)
+    ); // slot returns CImage*; forwarded as i32
 }
 
 // ---------------------------------------------------------------------------
@@ -368,11 +384,13 @@ i32 CLoadable::IsLoaded() {
 
 // (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, RVA_COMPGEN-bound at the
 // file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
-// (CLoadable::Unload @0x155740 is a bare `ret` = i32-slot no-op; MSVC5 rejects an
-//  empty-body non-void fn (C2561) and the slot can't be void (derived overrides
-//  return their eax residue), so this base default stays declared-only.)
 
 RVA_COMPGEN(0x00155720, 0x1e, ??_GCLoadable@@UAEPAXI@Z)
+
+// Slot-7 base default: bare `ret` (the bare c3 PROVES the slot is void - the
+// void-slot scheme; derived overrides' eax residue is their own dissolve-work).
+RVA(0x00155740, 0x1)
+void CLoadable::Unload() {}
 
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {
