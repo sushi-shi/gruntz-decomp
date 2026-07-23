@@ -184,7 +184,8 @@ void CAreaMgr::Reset() {
 // ---------------------------------------------------------------------------
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
-    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0; n = n->m_next) {
+    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0;
+         n = n->m_next) {
         CSpawnEntry* e = n->m_entry;
         if (e == 0) {
             continue;
@@ -220,7 +221,8 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key(name);
-    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0; n = n->m_next) {
+    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0;
+         n = n->m_next) {
         CSpawnEntry* e = n->m_entry;
         if (e == 0) {
             continue;
@@ -324,7 +326,8 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        CDDrawWorker* obj = static_cast<CDDrawWorker*>(toAdd.GetNext(dp)); // the pooled map values ARE workers
+        CDDrawWorker* obj =
+            static_cast<CDDrawWorker*>(toAdd.GetNext(dp)); // the pooled map values ARE workers
         entry->m_imageRegistry->RemoveWorker(obj);
     }
     toAdd.RemoveAll();
@@ -348,7 +351,8 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_imageRegistry->InstallTree(handle, const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+            entry->m_imageRegistry
+                ->InstallTree(handle, const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
             g_resourceInstallActive = 0;
             e->m_flag = 1;
         }
@@ -448,7 +452,11 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_soundRegistry->ScanTree(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+            entry->m_soundRegistry->ScanTree(
+                static_cast<CSymTab*>(handle),
+                const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
+                ""
+            );
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -497,7 +505,9 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        entry->m_animRegistry->RemoveValue(static_cast<CAniElement*>(obj)); // m_animRegistry is CDDrawSubMgrLeaf*
+        entry->m_animRegistry->RemoveValue(
+            static_cast<CAniElement*>(obj)
+        ); // m_animRegistry is CDDrawSubMgrLeaf*
     }
     toAdd.RemoveAll();
 
@@ -519,7 +529,11 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_animRegistry->ScanTree(static_cast<CSymTab*>(handle), const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+            entry->m_animRegistry->ScanTree(
+                static_cast<CSymTab*>(handle),
+                const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
+                ""
+            );
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -539,16 +553,219 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 // within mod-36 index space: group(n) = ((n - 1) % 36) / 4 + 1.  Returns 0 for
 // a <= 0.
 // ---------------------------------------------------------------------------
+// The 40 per-area handlers (H01..H40, 0x09af30..0x09b410): every one is the
+// same `return 1` placeholder - per-area logic the devs never filled in.
+
+RVA(0x0009af30, 0x6)
+i32 CAreaMgr::H01() {
+    return 1;
+}
+
+RVA(0x0009af50, 0x6)
+i32 CAreaMgr::H02() {
+    return 1;
+}
+
+RVA(0x0009af70, 0x6)
+i32 CAreaMgr::H03() {
+    return 1;
+}
+
+RVA(0x0009af90, 0x6)
+i32 CAreaMgr::H04() {
+    return 1;
+}
+
+RVA(0x0009afb0, 0x6)
+i32 CAreaMgr::H05() {
+    return 1;
+}
+
+RVA(0x0009afd0, 0x6)
+i32 CAreaMgr::H06() {
+    return 1;
+}
+
+RVA(0x0009aff0, 0x6)
+i32 CAreaMgr::H07() {
+    return 1;
+}
+
+RVA(0x0009b010, 0x6)
+i32 CAreaMgr::H08() {
+    return 1;
+}
+
+RVA(0x0009b030, 0x6)
+i32 CAreaMgr::H09() {
+    return 1;
+}
+
+RVA(0x0009b050, 0x6)
+i32 CAreaMgr::H10() {
+    return 1;
+}
+
+RVA(0x0009b070, 0x6)
+i32 CAreaMgr::H11() {
+    return 1;
+}
+
+RVA(0x0009b090, 0x6)
+i32 CAreaMgr::H12() {
+    return 1;
+}
+
+RVA(0x0009b0b0, 0x6)
+i32 CAreaMgr::H13() {
+    return 1;
+}
+
+RVA(0x0009b0d0, 0x6)
+i32 CAreaMgr::H14() {
+    return 1;
+}
+
+RVA(0x0009b0f0, 0x6)
+i32 CAreaMgr::H15() {
+    return 1;
+}
+
+RVA(0x0009b110, 0x6)
+i32 CAreaMgr::H16() {
+    return 1;
+}
+
+RVA(0x0009b130, 0x6)
+i32 CAreaMgr::H17() {
+    return 1;
+}
+
+RVA(0x0009b150, 0x6)
+i32 CAreaMgr::H18() {
+    return 1;
+}
+
+RVA(0x0009b170, 0x6)
+i32 CAreaMgr::H19() {
+    return 1;
+}
+
+RVA(0x0009b190, 0x6)
+i32 CAreaMgr::H20() {
+    return 1;
+}
+
+RVA(0x0009b1b0, 0x6)
+i32 CAreaMgr::H21() {
+    return 1;
+}
+
+RVA(0x0009b1d0, 0x6)
+i32 CAreaMgr::H22() {
+    return 1;
+}
+
+RVA(0x0009b1f0, 0x6)
+i32 CAreaMgr::H23() {
+    return 1;
+}
+
+RVA(0x0009b210, 0x6)
+i32 CAreaMgr::H24() {
+    return 1;
+}
+
+RVA(0x0009b230, 0x6)
+i32 CAreaMgr::H25() {
+    return 1;
+}
+
+RVA(0x0009b250, 0x6)
+i32 CAreaMgr::H26() {
+    return 1;
+}
+
+RVA(0x0009b270, 0x6)
+i32 CAreaMgr::H27() {
+    return 1;
+}
+
+RVA(0x0009b290, 0x6)
+i32 CAreaMgr::H28() {
+    return 1;
+}
+
+RVA(0x0009b2b0, 0x6)
+i32 CAreaMgr::H29() {
+    return 1;
+}
+
+RVA(0x0009b2d0, 0x6)
+i32 CAreaMgr::H30() {
+    return 1;
+}
+
+RVA(0x0009b2f0, 0x6)
+i32 CAreaMgr::H31() {
+    return 1;
+}
+
+RVA(0x0009b310, 0x6)
+i32 CAreaMgr::H32() {
+    return 1;
+}
+
+RVA(0x0009b330, 0x6)
+i32 CAreaMgr::H33() {
+    return 1;
+}
+
+RVA(0x0009b350, 0x6)
+i32 CAreaMgr::H34() {
+    return 1;
+}
+
+RVA(0x0009b370, 0x6)
+i32 CAreaMgr::H35() {
+    return 1;
+}
+
+RVA(0x0009b390, 0x6)
+i32 CAreaMgr::H36() {
+    return 1;
+}
+
+RVA(0x0009b3b0, 0x6)
+i32 CAreaMgr::H37() {
+    return 1;
+}
+
+RVA(0x0009b3d0, 0x6)
+i32 CAreaMgr::H38() {
+    return 1;
+}
+
+RVA(0x0009b3f0, 0x6)
+i32 CAreaMgr::H39() {
+    return 1;
+}
+
+RVA(0x0009b410, 0x6)
+i32 CAreaMgr::H40() {
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // @early-stop
 // shrink-wrapped callee-save-push wall (~58%): the dual idiv-group math is logically
 // identical, but retail keeps `a` in eax for the `if(a<=0)` guard and DEFERS the
 // `push esi` past it, computing the arg group first; the recompile commits `a` to
 // callee-saved esi at entry (push esi upfront) and computes the current index group first.
 // Not source-steerable.  See docs/patterns/shrink-wrapped-callee-save-push.md
-// @interleaver CAreaMgr::SameGroup emitted-in <boundary: foreign ILT thunk-table
-// FUN_0049afXX..b410 @0x9af30-0x9b410 (before) + StateDispatch.cpp StateDispatch @0x9b770
-// (after)>. A /Gy first-use COMDAT the linker placed past the thunk table, isolated from
-// this TU's body run.
+// @interleaver CAreaMgr::SameGroup emitted-in <boundary: the H01..H40 handler run
+// @0x9af30-0x9b410 (before, defined above) + StateDispatch.cpp StateDispatch @0x9b770
+// (after)>. A /Gy first-use COMDAT the linker placed past the handler run.
 RVA(0x0009b430, 0x49)
 i32 CAreaMgr::SameGroup(i32 a) {
     if (a <= 0) {
