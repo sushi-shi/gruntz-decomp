@@ -18,6 +18,7 @@
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (LoadGameAssetNamespaces ResolvePath)
 #include <Image/CImage.h>   // g_resourceInstallActive
 #include <Gruntz/ChatBox.h> // canonical CChatBox (m_1b4 menu UI object; Init lives here)
+#include <Gruntz/MainMenuBuilder.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawWorkerRegistry (m_c->m_imageRegistry)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
@@ -39,10 +40,6 @@ RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();
 }
-
-i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
-
-i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
 
 // @early-stop
 // frame-layout / regalloc wall: complete + correct body - instruction
@@ -123,7 +120,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         m_1b8 = 0;
     }
 
-    if (!MenuCommit(m_1b4, -1)) {
+    if (!BuildMainMenuTree(m_1b4, -1)) {
         return 0;
     }
 

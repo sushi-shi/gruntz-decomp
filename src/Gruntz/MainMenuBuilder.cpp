@@ -43,10 +43,11 @@ RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
 #include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
 #include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
-#include <Io/SaveGame.h>     // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
+#include <Gruntz/MainMenuBuilder.h>
+#include <Io/SaveGame.h> // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
-static i32 RegisterPage(void* arg, CMenuPage* page) {
-    return static_cast<CChatBox*>(arg)->AddNode(page);
+static i32 RegisterPage(CChatBox* menu, CMenuPage* page) {
+    return menu->AddNode(page);
 }
 
 static char s_MAIN[] = "MAIN";
@@ -140,9 +141,9 @@ void SetMenuTextRect() {
 }
 
 RVA(0x000a11d0, 0x180d)
-void BuildMainMenuTree(void* arg) {
-    if (arg == 0) {
-        return;
+i32 BuildMainMenuTree(CChatBox* menu, i32) {
+    if (menu == 0) {
+        return 0;
     }
 
     CMenuPage* page;
@@ -150,9 +151,9 @@ void BuildMainMenuTree(void* arg) {
     i32 progress;
     // ---- page 1 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_MAIN, s_MENU_MAINMENU_TITLE, 0, 0) == 0) {
+    if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, 0, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     it = page->AddItem(s_SINGLEPLAYER, s_MENU_MAINMENU_SINGLEPLAYER, 0, s_SINGLEPLAYER, 0);
     if (g_multiplayerAvail != 0) {
@@ -166,21 +167,14 @@ void BuildMainMenuTree(void* arg) {
     }
     page->AddItem(s_HELP, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, 0, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 2 ----
     page = new CMenuPage;
-    if (page->Configure(
-            static_cast<CChatBox*>(arg),
-            s_SINGLEPLAYER,
-            s_MENU_SINGLEPLAYER_TITLE,
-            s_MAIN,
-            0
-        )
-        == 0) {
+    if (page->Configure(menu, s_SINGLEPLAYER, s_MENU_SINGLEPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     page->AddItem(s_QUICKSTART, s_MENU_SINGLEPLAYER_QUICKSTART, 0x8174, 0, 0);
     page->AddItem(s_QUESTZ, s_MENU_SINGLEPLAYER_QUESTZ, 0, s_QUESTZ, 0);
@@ -188,21 +182,14 @@ void BuildMainMenuTree(void* arg) {
     page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, 0, 0);
     page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, 0, 0);
     page->AddItem(s_BACK, s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 3 ----
     page = new CMenuPage;
-    if (page->Configure(
-            static_cast<CChatBox*>(arg),
-            s_MULTIPLAYER,
-            s_MENU_MULTIPLAYER_TITLE,
-            s_MAIN,
-            0
-        )
-        == 0) {
+    if (page->Configure(menu, s_MULTIPLAYER, s_MENU_MULTIPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, 0, 0);
     if (g_multiplayerAvail != 0) {
@@ -210,15 +197,14 @@ void BuildMainMenuTree(void* arg) {
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);
     page->AddItem(s_BACK, s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 4 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0)
-        == 0) {
+    if (page->Configure(menu, s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
@@ -229,21 +215,14 @@ void BuildMainMenuTree(void* arg) {
     }
     page->AddItem(s_CREDITZ, s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
     page->AddItem(s_BACK, s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 5 ----
     page = new CMenuPage;
-    if (page->Configure(
-            static_cast<CChatBox*>(arg),
-            s_QUESTZ,
-            s_MENU_QUESTZ_TITLE,
-            s_SINGLEPLAYER,
-            0
-        )
-        == 0) {
+    if (page->Configure(menu, s_QUESTZ, s_MENU_QUESTZ_TITLE, s_SINGLEPLAYER, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
@@ -277,21 +256,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddItem(s_BACK, s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 6 ----
     page = new CMenuPage;
-    if (page->Configure(
-            static_cast<CChatBox*>(arg),
-            s_TRAINING,
-            s_MENU_AREAS_TRAININGTITLE,
-            s_QUESTZ,
-            0
-        )
-        == 0) {
+    if (page->Configure(menu, s_TRAINING, s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x25, 0, 0, 0);
@@ -299,15 +271,14 @@ void BuildMainMenuTree(void* arg) {
     page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x27, 0, 0, 0);
     page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, 0x807f, 0x28, 0, 0, 0);
     page->AddItem(s_BACK, s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 7 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1, 0, 0, 0);
@@ -324,15 +295,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 8 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x5, 0, 0, 0);
@@ -352,15 +322,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 9 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x9, 0, 0, 0);
@@ -380,15 +349,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 10 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0xd, 0, 0, 0);
@@ -408,15 +376,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 11 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x11, 0, 0, 0);
@@ -436,15 +403,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 12 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x15, 0, 0, 0);
@@ -464,15 +430,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 13 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x19, 0, 0, 0);
@@ -492,15 +457,14 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
+    if (RegisterPage(menu, page) == 0) {
+        return 0;
     }
     // ---- page 14 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0)
-        == 0) {
+    if (page->Configure(menu, s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0) == 0) {
         delete page;
-        return;
+        return 0;
     }
     progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1d, 0, 0, 0);
@@ -520,7 +484,5 @@ void BuildMainMenuTree(void* arg) {
         it->Disable(3);
     }
     page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
-    if (RegisterPage(arg, page) == 0) {
-        return;
-    }
+    return RegisterPage(menu, page) != 0;
 }

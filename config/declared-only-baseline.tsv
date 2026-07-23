@@ -59,7 +59,6 @@
 ?MapCellRecord2@zDArray@@QAEHHH@Z
 ?MapCellRecord@zDArray@@QAEHHH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
-?MenuCommit@@YAHPAVCChatBox@@H@Z
 ?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
