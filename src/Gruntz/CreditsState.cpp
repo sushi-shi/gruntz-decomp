@@ -200,7 +200,7 @@ i32 CCreditsState::Render() {
     if (m_fxEnabled) {
         CGruntzSoundInnerZ* s = Owner(this)->m_sound->FindBank("MONOLITH");
         if (s && !s->IsStarted()) {
-            Sub3();
+            LoadCreditzAssets();
         }
     }
     return 1;

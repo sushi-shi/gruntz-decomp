@@ -2971,7 +2971,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_28 = vy - 0x30;
     m_itemKind = 5;
     m_tabCycle = g_curPlayer;
-    ResetTabWidgets2b44();
+    Reset();
     if (BuildStatusBarTabs() == 0) {
         return 0;
     }
@@ -4229,7 +4229,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     }
     SetTab(5, 1);
     memset(m_statFlags, 0, sizeof(m_statFlags));
-    ResetTabWidgets2b44();
+    Reset();
 
     i32 mode = g_gameReg->m_134;
     if (mode == 2) {

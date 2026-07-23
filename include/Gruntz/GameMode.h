@@ -167,10 +167,6 @@ public:
         OVERRIDE; // slot 12 (+0x30) 0x039440 (declared-only: ESC/SPC/ENTER cmd)
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x0394b0 (declared-only)
 
-    // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
-    // `mov ecx,this`). External no-body -> reloc-masked.
-    void Sub3();
-
     i32 DrawScrollingCredits(); // 0x396f0 per-frame credits scroll-text renderer
 
     // FinishState (0x39c40): clear the playing gate, ret 1. StepVideo (0x39c60):

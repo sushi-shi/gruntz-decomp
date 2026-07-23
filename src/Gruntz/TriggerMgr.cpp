@@ -780,7 +780,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         if (this->Probe() == 0) {
             CActionOptionsMenuBar* o2 = m_overlay;
             if (o2 != 0) {
-                o2->Dtor();
+                o2->Clear();
                 operator delete(o2);
                 m_overlay = 0;
             }

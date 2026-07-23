@@ -109,14 +109,6 @@ public:
     // phantom `void Term()` once claimed this RVA too, with zero callers.)
     CButeMgr();
 
-    // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
-    // PeekClass classifies the current char (returns a token-class word);
-    // ReadValue/ReadIdent scan a value/identifier token (return the next kind);
-    // All __thiscall on CButeMgr.
-    i16 PeekClass(i32 kind, char c);
-    i32 ReadValue(i32 kind, char c);
-    i32 ReadIdent(i32 kind, char c);
-
     // ------------------------------------------------------------------
     // Lexer cluster (0x170330-0x170460, 0x171160-0x171a60). Recovered as
     // real methods on this class; the externals they reach (CButeTree::Find,
@@ -132,9 +124,9 @@ public:
     void NextChar();
     // Map a raw char to its lexer character-class index (g_charClass - 1).
     i16 CharClass(char c);
-    // Two adjacent columns of the lexer transition table (state x class):
-    // PeekState classifies the current state/char; ScanState writes the token
-    // type (+0xaa) and the secondary state (+0xac).
+    // The lexer transition table's three columns (state x class): PeekState
+    // returns column 0, PeekState2 returns column 1, and ScanState writes
+    // columns 1 and 2 to the token type (+0xaa) and lexer state (+0xac).
     i16 PeekState(i16 state, char c);
     i16 PeekState2(i16 state, char c);
     void ScanState(i16 state, char c);

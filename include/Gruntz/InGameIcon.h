@@ -44,8 +44,6 @@ public:
     // "GAME_POWERUP" / "GAME_CURSE"; 0 for the initial reset). Reached through an
     // ILT thunk (0x3440), reloc-masked.
     void SetupSprite(const char* cat); // -> 0x3440
-    // Post-build validity probe (ILT 0x1fb4); returns 0 to hide the icon.
-    i32 Check(); // -> 0x1fb4
 
     i32 HandleInput(); // 0x097680
     virtual void FireActivation(i32 id)

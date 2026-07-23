@@ -283,9 +283,6 @@ public:
     i32 winapi_0fe520_SetRect();
     void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
-    // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----
-    void ResetTabWidgets2b44(); // call 0x2b44 (__thiscall, no args)
-
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     // +0x00 is a DATA member, not a vptr: this class has no vtable, and the code both
     // reads it (`*(i32*)this == 2` subtype gate) and WRITES it (SetState), then persists

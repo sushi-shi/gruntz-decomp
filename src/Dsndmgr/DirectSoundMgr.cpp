@@ -1017,13 +1017,9 @@ void SoundDevice::Shutdown() {
 }
 
 // ---------------------------------------------------------------------------
-// CreateBuffer (/GX EH frame): validate PCM fmt, CreateSoundBuffer, RezAlloc+BaseInit a
-// DSoundCloneInst leaf, thread on the +0x04 list, seed fmt/avg-bytes/byte-count + duration.
-// @early-stop
-// RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
-// body byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
-// ctor-in-flight frame the RezAlloc+BaseInit path can't reproduce. Same wall as
-// SoundStream::CreateStreamBuffer.
+// CreateBuffer (/GX EH frame): validate PCM fmt, CreateSoundBuffer, construct a
+// DSoundCloneInst leaf, thread it on the +0x04 list, and seed its format,
+// avg-bytes, byte-count, and duration.
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     if (m_initialized == 0) {
@@ -1067,13 +1063,9 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
         return 0;
     }
 
-    // RezAlloc the 0x60B leaf, then BaseInit (the ctor 0x135b10, reached as a method)
-    // stamps its vptr. The buffer's cached format/rate/sample fields (base offsets
-    // +0x18/+0x38/+0x3c/+0x2c) are seeded from the wave header here.
-    DSoundCloneInst* voice = static_cast<DSoundCloneInst*>(RezAlloc(0x60));
-    if (voice) {
-        voice->BaseInit(out, this);
-    }
+    // Global operator new is RezAlloc; the constructor call gives MSVC the
+    // retail ctor-in-flight /GX state and stamps the leaf vptr.
+    DSoundCloneInst* voice = new DSoundCloneInst(out, this);
     voice->m_freq =
         *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);

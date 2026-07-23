@@ -17,7 +17,6 @@ public:
     i32 HitHover(i32 mx, i32 my);
     void Deactivate();
     i32 Serialize(CFileMemBase* ar);
-    void Dtor(); // in-place dtor (DestroyGroup teardown, reloc-masked)
     i32 LoadAssets();
 
     int Deserialize(CFileMemBase* s); // 0x00009bb0

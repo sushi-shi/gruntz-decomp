@@ -115,7 +115,7 @@ RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 //     level record (g_gameReg->m_curState +0x384.. per index) and stamp m_128,
 //   - for a WarpStone in test mode, formats the per-level warp target name and
 //     re-applies it,
-//   - builds the glitter overlay sprite, then a Check() gate either marks the
+//   - builds the glitter overlay sprite, then a HandleInput() gate either marks the
 //     owner's tile cell occupied (owner->m_188 -> cell+8, toggle 0x40000) or hides
 //     the icon (owner->m_8 |= 0x10000).
 //
@@ -431,7 +431,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_glitterSprite->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 
-    if (Check() == 0) {
+    if (HandleInput() == 0) {
         m_38->m_flags |= 0x10000;
         return;
     }

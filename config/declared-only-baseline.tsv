@@ -23,11 +23,9 @@
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
-?BaseInit@DSoundCloneInst@@QAEXPAUIDirectSoundBuffer@@PAVSoundDevice@@@Z
 ?BeginWaitCursor@@YAXXZ
 ?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?BlitIntoDesc@CDDSurface@@UAEHPAX@Z
-?Check@CInGameIcon@@QAEHXZ
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?Classify@CTriggerMgr@@QAEHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
@@ -45,7 +43,6 @@
 ?Disarm@CGrunt@@QAEHHH@Z
 ?Dispatch@CGrunt@@QAEHHH@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
-?Dtor@CActionOptionsMenuBar@@QAEXXZ
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?EmptyMsgHook@@YGXIJ@Z
 ?EndWaitCursor@@YAXXZ
@@ -105,7 +102,6 @@
 ?OnReanchor@CGrunt@@QAEXH@Z
 ?OnRegion5@CPlay@@QAEXXZ
 ?OnTileMismatch@CGrunt@@QAEXH@Z
-?PeekClass@CButeMgr@@QAEFHD@Z
 ?PickupResetA@CGrunt@@QAEXXZ
 ?PickupResetB@CGrunt@@QAEXHHH@Z
 ?PinCellIndex@zDArray@@QAEHXZ
@@ -131,16 +127,13 @@
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
 ?RbClearCell@@YAXPAXHHH@Z
 ?ReadCurve@@YAXAAVistream@@AAVCMotionState@@@Z
-?ReadIdent@CButeMgr@@QAEHHD@Z
 ?ReadName@@YAXPAX0@Z
-?ReadValue@CButeMgr@@QAEHHD@Z
 ?Ready27ed@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?RefreshDecay@CGruntBehaviorLeaf@@QAEXXZ
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
 ?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
-?ResetTabWidgets2b44@CStatusBarMgr@@QAEXXZ
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
 ?RezAlloc@@YAPAXH@Z
 ?Run@CDDSurface@@QAEHHHHHHHUClipRect16@@@Z
@@ -159,7 +152,6 @@
 ?Step20b3@CGruntzCmdMgr@@QAEXH@Z
 ?StepCoordTick@CGrunt@@QAEXXZ
 ?StepDropApply@CGrunt@@QAEXXZ
-?Sub3@CCreditsState@@QAEXXZ
 ?SubResetA@CStatusBarMgr@@QAEXXZ
 ?SubResetB@CStatusBarMgr@@QAEXXZ
 ?SymBindRecord@@YAXPAXPADH@Z

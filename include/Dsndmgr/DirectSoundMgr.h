@@ -116,11 +116,6 @@ public:
     // "DirectSoundMgr" pooled items are the clones, i.e. DirectSoundMgr):
     DirectSoundMgr* GetItem(); // 0x135d70  pull a keyed, non-playing pooled clone (or mint one)
     i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop); // 0x1360d0  set params + Play
-    // BaseInit: the 2-arg ctor (0x135b10) reached as a method so CreateBuffer's
-    // RezAlloc(0x60)+construct path lowers to a reloc-masked __thiscall instead of a
-    // placement-new (which cl would frame differently). Same address as the ctor above;
-    // declared-only here so the call reloc-masks.
-    void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10 (== ctor)
 
     DSoundList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
 };

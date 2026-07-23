@@ -1316,10 +1316,10 @@ bool CButeMgr::ParseTagLine() {
 // ---------------------------------------------------------------------------
 // CButeMgr::Parse
 // The recursive-descent token lexer: resets the token-length counter, then loops
-// classifying the current character (ButeLex_PeekClass) -- skipping any class > 5
-// -- and dispatching a 6-way jump table on the token class to read identifiers/
-// values/punctuation (ButeLex_ReadValue/ReadIdent), append chars to the token
-// buffer, advance the lexer (ButeLex_NextChar), and recurse for nested groups.
+// through the transition table -- skipping any class > 5 -- and dispatches a
+// 6-way jump table on the token class to read identifiers/values/punctuation,
+// append chars to the token buffer, advance the lexer, and recurse for nested
+// groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 // @early-stop
 // jump-table scoring artifact (95%): the 6-way `jmp *tbl[eax*4]` dispatch + all case
@@ -1327,19 +1327,19 @@ bool CButeMgr::ParseTagLine() {
 // code (base `jmp *(,eax,4)` vs retail `jmp *0x1e4(,eax,4)`). CODE bytes match. Final sweep.
 RVA(0x001704c0, 0x1e3)
 bool CButeMgr::Parse() {
-    const i32 kLexStartState = 0x11; // initial lexer state seeded into PeekClass
+    const i32 kLexStartState = 0x11;
     i32 kind = kLexStartState;
     g_tokenLen = 0;
 
     for (;;) {
-        i16 cls = PeekClass(kind, m_curChar);
+        i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
         switch (cls) {
             case 0: // bad symbol
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
             case 1: // value char: scan, store to token buffer, echo, advance, loop
-                kind = ReadValue(kind, m_curChar);
+                kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     m_pText->accum << static_cast<unsigned char>(m_curChar);
@@ -1348,7 +1348,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case 2: // value char: scan, echo only, advance, loop
-                kind = ReadValue(kind, m_curChar);
+                kind = PeekState2(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
@@ -1356,7 +1356,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case 3: // identifier: scan, store, echo, advance, recurse, terminate
-                ReadIdent(kind, m_curChar);
+                ScanState(static_cast<i16>(kind), m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     m_pText->accum << static_cast<unsigned char>(m_curChar);
@@ -1369,7 +1369,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case 4: // identifier: scan, echo only, advance, recurse, terminate
-                ReadIdent(kind, m_curChar);
+                ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     m_pText->accum << static_cast<unsigned char>(m_curChar);
                 }
@@ -1381,7 +1381,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case 5: // identifier: scan, recurse, terminate (no echo, no advance)
-                ReadIdent(kind, m_curChar);
+                ScanState(static_cast<i16>(kind), m_curChar);
                 if (m_tokType == 0) {
                     Parse();
                 }
