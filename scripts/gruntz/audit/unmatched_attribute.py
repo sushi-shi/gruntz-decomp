@@ -29,6 +29,8 @@ import struct
 import sys
 from pathlib import Path
 
+from gruntz.core.library_labels import active_rvas
+
 REPO = Path(__file__).resolve().parents[3]
 FUNCS_CSV = REPO / "build/ghidra-enrich/exports/functions.csv"
 FID_CSV = REPO / "config/library_labels.csv"
@@ -59,15 +61,7 @@ def _load_rows():
 
 
 def _load_lib() -> set[int]:
-    lib: set[int] = set()
-    if FID_CSV.is_file():
-        with open(FID_CSV) as f:
-            for r in csv.DictReader(f):
-                try:
-                    lib.add(_rint(r["rva"]))
-                except Exception:
-                    pass
-    return lib
+    return active_rvas(FID_CSV)
 
 
 def _load_claimed_and_units():

@@ -43,6 +43,8 @@ import re
 import sys
 from pathlib import Path
 
+from gruntz.core.library_labels import active_rows
+
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
 FUNCS_CSV = REPO / "build/ghidra-enrich/exports/functions.csv"
@@ -165,7 +167,7 @@ def _load_library():
     out = {}
     if not LIB_CSV.is_file():
         return out
-    for r in csv.DictReader(LIB_CSV.open()):
+    for r in active_rows(LIB_CSV):
         try:
             rva = _rint(r["rva"])
         except (ValueError, KeyError):

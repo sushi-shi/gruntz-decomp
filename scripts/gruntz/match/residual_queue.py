@@ -19,6 +19,7 @@ import json
 import os
 import pathlib
 
+from gruntz.core.library_labels import active_rvas
 from gruntz.core.pe import IMAGEBASE as IMAGE_BASE
 
 # Anchor on the CWD's repo root (flake.nix), NOT the package location: run from a
@@ -40,20 +41,8 @@ def _rint(s):
 
 
 def library_rvas(path):
-    """FID-identified CRT/MFC library RVAs (config/library_labels.csv). These are NOT
-    reconstruction targets - library code is IDENTIFIED (via FID matching) and carved
-    out, never matched - so they must not appear in the work queue."""
-    rvas = set()
-    p = pathlib.Path(path)
-    if not p.is_file():
-        return rvas
-    with p.open(encoding="latin-1", newline="") as stream:
-        for row in csv.DictReader(stream):
-            try:
-                rvas.add(_rint(row["rva"]))
-            except (KeyError, ValueError):
-                pass
-    return rvas
+    """Active FID library RVAs, excluding LOW-confidence diagnostic leads."""
+    return active_rvas(path)
 
 
 def symbol_inventory(path):

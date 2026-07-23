@@ -17,6 +17,7 @@ imported by more than one package lives here.
     codeview.py      MSVC 5.0 CodeView reader: /Z7 locals + line tables
                      (harvest_locals, sema disasm --rich)
     exe_map.py       queryable .text space map (sema map + the docs/exe-map suite)
+    library_labels.py shared HIGH/MED/AMBIG library-carve contract
     clangd_query.py  the clangd LSP client (sema refs/hover/rename, fingerprints)
     data_audit.py    data-section attribution engine (`gruntz data-audit` + build)
 

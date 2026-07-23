@@ -39,6 +39,7 @@ from pathlib import Path
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
+from gruntz.core import library_labels
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun
@@ -65,6 +66,22 @@ class _Tree:
     def __exit__(self, *a):
         class_meta.SRC, class_meta.INC, class_meta.RVA_H = self._saved
         self._tmp.cleanup()
+
+
+# --------------------------------------------------------------------------- #
+# library_labels: LOW is evidence to investigate, never carve-out authority    #
+# --------------------------------------------------------------------------- #
+class TestLibraryLabels(unittest.TestCase):
+    def test_low_rows_are_not_active_library_claims(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            labels = Path(tmp) / "library_labels.csv"
+            labels.write_text(
+                "rva,name,lib,confidence,source\n"
+                "0x1000,high,LIBCMT,HIGH,test\n"
+                "0x2000,ambig,NAFXCW,AMBIG,test\n"
+                "0x3000,low,LIBCMT,LOW,test\n"
+            )
+            self.assertEqual(library_labels.active_rvas(labels), {0x1000, 0x2000})
 
 
 # --------------------------------------------------------------------------- #

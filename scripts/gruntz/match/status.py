@@ -80,6 +80,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from gruntz.core.library_labels import active_rvas
+
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 MANIFEST = REPO / "config" / "units.toml"
@@ -143,13 +145,7 @@ def engine_universe():
             # column; honor it when an older export still does).
             is_thunk = name.startswith("thunk_") or r.get("is_thunk", "0") == "1"
             rows.append((rva, sz, name, is_thunk))
-    lib: set[int] = set()
-    with open(FID_CSV) as f:
-        for r in csv.DictReader(f):
-            try:
-                lib.add(rint(r["rva"]))
-            except Exception:
-                pass
+    lib = active_rvas(FID_CSV)
 
     # Functions already pulled into a unit (the objdiff "started" set, from the
     # build's symbol map). A carve-out that's been claimed/reconstructed is a real
