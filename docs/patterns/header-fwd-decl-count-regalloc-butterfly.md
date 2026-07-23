@@ -128,3 +128,26 @@ seventh, and `PhaseStep` to the fifth. Thus the two new deltas are header-state
 recolorings, not evidence against the helper or return-type corrections.
 Preserve both per-function MAX values and include the declaration/signature
 batch as a reverse-search dimension for these residues.
+
+NINTH FIRING (2026-07-23, larger Grunt thunk-alias collapse): replacing 17
+declared-only helper calls with their per-call-site ILT-proven destinations and
+removing the corresponding `Grunt.h` member declarations left the exact count
+unchanged but recolored direct and transitive includers. Nine unrelated,
+source-identical rows moved below their saved current values: the largest were
+`CGruntSelectedSprite::Update` 99.2424→84.8485,
+`CTriggerMgr::ToggleRegionA` 76.5663→71.9277, and
+`CGrunt::LoadWingzGruntSprites` 76.6337→75.2651; smaller movements affected
+`CGruntToySprite::Update`,
+`CTriggerMgr::ScrollToActiveRecord`/`ToggleRegionB`,
+and `CGrunt::StepArrivalDefense`/`ArrivalScanB`/`GruntInRadius`. Two other
+rows, `CGrunt::ArrivalRecycle` 55.4211→54.8607 and
+`CGrunt::StepAnimDispatchA` 43.5366→43.5229, directly changed their helper-call
+targets and are not unrelated butterfly controls. Two further reported rows
+were older retained dips
+(`CGrunt::Activate` from the eighth firing and
+`CPlay::LoadScrollSpeedOptions` from the sixth). The destination corrections
+are relocation-backed, so the lower coloring is retained and every prior MAX
+is preserved. This broader sample strengthens the reverse heuristic: unexplained
+register-order residues in a `Grunt.h` includer may move when another fake or
+missing authentic member declaration is corrected, even when that includer
+does not call the edited member.

@@ -76,6 +76,16 @@ Grunt entrance-animation tails both resolve to
 `EntranceApplyFrame` declaration with the real member call removed another
 declared-only function.
 
+A placeholder name is not an identity shared by all of its call sites. Audit
+each relocation independently before doing a global rename. `CGrunt::ApplyBox`
+was used at two six-argument call sites: `CTriggerMgr::ClearCell` really
+relocates to `CGrunt::StepArrivalDrop`, while `CTriggerMgr::ApplyTriggerB` has
+no such call at all. The latter placeholder compresses a much larger missing
+branch whose first retail call is `CTriggerMgr::CellHitTest`. Replacing both
+uses from the evidence for the first would trade one fabricated declaration
+for a false semantic call. A safe alias collapse therefore requires a
+call-site-to-target table, not a declaration-to-target guess.
+
 A thin wrapper that is only `call <member>; ret` also preserves the callee's
 return register. If its caller consumes EAX, a `void` reconstruction of that
 member is disproved even when the source-inferred name looked plausible.

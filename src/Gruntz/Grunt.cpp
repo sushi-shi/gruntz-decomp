@@ -1833,7 +1833,7 @@ void CGrunt::MovingSlot16() {
                 m_entrancePxX = (co->m_x << 5) + 0x10;
                 m_entrancePxY = (co->m_y << 5) + 0x10;
                 m_coordRetryCount = 0;
-                NotifyDrop();
+                StepEntranceReinit();
             } else if (m_coordRetryCount <= 5) {
                 if (PathScan() != 0) {
                     GruntCoord* h2 = (CoordHead())->m_coord;
@@ -1846,7 +1846,7 @@ void CGrunt::MovingSlot16() {
                         ))[h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;
-                            NotifyDrop();
+                            StepEntranceReinit();
                         }
                     }
                 } else {
@@ -1862,5 +1862,5 @@ void CGrunt::MovingSlot16() {
     eq2 = (strcmp(g_typeColl.GetNameRecords(m_objAux->m_1c)->m_name, s_codeD) == 0);
     static_cast<void>(eq2);
     GruntScratchTeardown();
-    OnMoveFinishA(0);
+    LoadWingzGruntSprites(0);
 }

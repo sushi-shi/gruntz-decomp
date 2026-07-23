@@ -1451,7 +1451,7 @@ i32 CGrunt::StepAnimDispatchB() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
     if (eq) {
         SnapToLastTile(1);
-        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
         return 1;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0);
@@ -1509,7 +1509,7 @@ kArm:
     // code "K": the arrival arm - re-anchor + re-stamp the grid cell.
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) == 0);
     if (eq && m_entranceArmed != 0) {
-        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
         StepDropApply();
     }
     return 1;

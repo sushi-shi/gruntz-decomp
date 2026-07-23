@@ -975,7 +975,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (eq) {
         // code "O": commit the move directly.
         SnapToLastTile(1);
-        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
         goto applyTail;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeQ) == 0);
@@ -1027,12 +1027,12 @@ idleReseed:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    StepCoordTick();
+    ClearSubA();
 
 applyTail:
     // The shared movement-apply tail: re-set the geometry, recycle coords.
     if (m_wingzEnabled != 0) {
-        OnMoveFinishA(0);
+        LoadWingzGruntSprites(0);
     }
     if (m_poweredUp == 0 && m_neighborValid == 0) {
         m_entranceCommitted = 0;

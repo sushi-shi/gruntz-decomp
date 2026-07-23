@@ -1851,7 +1851,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             break;
                         }
                         g->m_health = 0x64;
-                        g->UpdateCombatTimer();
+                        g->CreateHealthSprite();
                         g->m_combatTimeoutLo =
                             g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
                         g->m_combatTimeoutHi = 0;

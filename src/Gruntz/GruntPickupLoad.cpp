@@ -65,7 +65,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             return 0;
         }
     }
-    PickupResetA();
+    StepAnimDispatchB();
     if (m_entranceActive != 0) {
         return 0;
     }
@@ -89,7 +89,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        PickupResetB(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
     if (m_entranceReason == 0x14) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ) {

@@ -1052,7 +1052,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                     hit = RectContainsGated(xMasked, yMasked);
                 }
                 if (hit != 0) {
-                    OnReanchor(0);
+                    BuildEntranceAnimation(0);
                 }
                 if (phase == 3) {
                     m_tileMgr->ApplyTriggerB(

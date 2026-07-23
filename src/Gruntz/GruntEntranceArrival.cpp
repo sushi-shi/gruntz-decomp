@@ -607,7 +607,7 @@ i32 CGrunt::StepAttackFire() {
                     flag = 1;
                     break;
                 }
-                tgt->TakeHit(
+                tgt->StepCombatReaction(
                     m_entranceReason,
                     m_214,
                     m_tileOwnerHi,
@@ -642,7 +642,7 @@ i32 CGrunt::StepAttackFire() {
         m_lowStaminaCued = 0;
         m_stamina = 0; // stamina drains fully at each attack
         if (m_healthSprite != 0) {
-            NotifyAttackImpact();
+            CreateStaminaSprite();
         }
         m_combatActive = 0;
     }
@@ -664,7 +664,7 @@ i32 CGrunt::StepAttackFire() {
     i32 v220 = m_poweredUp;
     m_entranceActive = 0;
     if (v220 != 0) {
-        FinishAttackPowered();
+        ResetGeometry();
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -1866,18 +1866,18 @@ reject:
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
-    StepCoordTick();
+    ClearSubA();
 
 tail:
-    UpdateCombatTimer();
+    CreateHealthSprite();
     m_combatTimeoutLo = g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
     if (m_object->m_screenX != m_lastTilePxX || m_object->m_screenY != m_lastTilePxY) {
-        OnTileMismatch(1);
+        ConsiderArrival(1);
     }
-    if (ForwardCombatStep(a0, a1, a2, a3, a4, a5, a6, a7) == 0) {
+    if (LoadGruntCombatAnimations(a0, a1, a2, a3, a4, a5, a6, a7) == 0) {
         return 0;
     }
 

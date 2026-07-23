@@ -291,23 +291,10 @@ public:
     // CommitNeighbor 0x5b050, BeginAttack 0x5b570, PlayMoveSound 0x511b0,
     // ResetEntranceAnimation 0x62e10) - the fold binds the call sites straight to them.
     //
-    // The eight below are the ones the view could not bind. @identity-TODO, and the reason
-    // is worth recording: the RVAs the view carried for them (ResetA 0x6a40c, ResetB
-    // 0x6a2ae, ResetC 0x6c216, ResetMagic 0x6c498, Disarm 0x6f970, ApplyBox 0x6fc40,
-    // Type13Check 0x71f80, Apply13 0x70520) are NOT function starts - several are not even
-    // 4-byte aligned and none appears in Ghidra's function list, so they look like call-site
-    // operands mis-recorded as entry points. They are declared here so the call sites keep
-    // compiling, but they are still declared-never-defined: the honest fix is to recover the
-    // real entry points, not to invent addresses for them.
-    void ResetA();
-    void ResetB();
-    void ResetC();
-    i32 ResetMagic();
-    i32 Disarm(i32 a, i32 b);
+    // ApplyTriggerB's current ApplyBox call is not a real retail callee. That call
+    // compresses an unreconstructed branch beginning with CTriggerMgr::CellHitTest;
+    // keep it visible as modeling debt until that branch is recovered.
     i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-    i32 Type13Check();
-    void Apply13(i32 a, i32 b);
-    i32 Dispatch(i32 kind, i32 a);
     virtual void Activate() OVERRIDE;       // slot 6  @0x5caa0 (void family slot)
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
     virtual i32 StepAttackFire() OVERRIDE;  // slot 9  @0x61cb0 (attack-fire step)
@@ -398,10 +385,6 @@ public:
     // then a ~90-way switch on the pickup type resolves the matching GRUNTZ_PICKUPS_*
     // sprite (megaphone runs a 2nd unit-type switch) + fires the on-screen entrance cue.
     i32 LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5);
-    // Pickup-loader helper this-methods (reloc-masked engine thunks).
-    void PickupResetA();                    // thunk 0x214e (__thiscall ret 0)
-    void PickupResetB(i32 a, i32 b, i32 c); // thunk 0x136b (__thiscall ret 0xc)
-
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
     // sprite, fire the on-screen spawn cue, then re-run the type-table step.
@@ -958,25 +941,9 @@ public:
     // offset is this layout: m_154/m_tileOwnerHi/Lo/m_tileMgr/m_deathType/m_36c.)
     i32 StepWarpExit(); // @0x64540
 
-    // The engine helpers these machines call (all external/no-body, reloc-masked;
-    // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
-    // falls out). Names describe the observed effect, not a recovered symbol.
+    // Remaining unreconstructed helper.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
-    // Attack-fire step (UserLogicVfunc7 @0x61cb0, ProjectileUpdate.cpp) helpers
-    // (external/no-body thunks, reloc-masked; names = observed roles):
-    void FinishAttackPowered(); // thunk_0x3dd7 (finish-tail hook when m_poweredUp is set)
-    void NotifyAttackImpact();  // thunk_0x22de (impact hook when m_healthSprite exists)
-    // Melee hit delivery: the attacker's fire step runs this ON THE TARGET grunt
-    // (the neighbor-cell m_grid occupant) with the attacker's tool kind, cell and
-    // screen pos; the target's reaction machinery takes over. thunk_0x1bf9, 8 args.
-    void
-    TakeHit(i32 kind, i32 a2, i32 ownerHi, i32 ownerLo, i32 px, i32 py, i32 a7, i32 attackerKind);
-    void OnMoveFinishA(i32 a);             // thunk_0x3ea4 (1-arg finish)
-    void CommitMoveA(i32 a, i32 b, i32 c); // thunk_0x3dfa (3-arg move commit)
-    void StepCoordTick();                  // thunk_0x245a (0-arg coord tick)
-    void NotifyDrop();                     // thunk_0x119a (0-arg drop notify)
-    void OnReanchor(i32 a);                // thunk_0x3cce (1-arg reanchor)
-    void StepDropApply();                  // thunk (drop-apply tail)
+    void StepDropApply();       // placeholder for an unreconstructed inlined drop-apply tail
 
     // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
     // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
@@ -1099,19 +1066,6 @@ public:
     // is only 0x40 bytes; +0x1fc is impossible). Re-homed here.
     i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
-    // StepCombatReaction's engine thunks (external/no-body, reloc-masked).
-    void UpdateCombatTimer();   // call 0x243c (0-arg tail step)
-    void OnTileMismatch(i32 v); // call 0x2cb6 (1-arg)
-    i32 ForwardCombatStep(
-        i32 a0,
-        i32 a1,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7
-    ); // call 0x1451
     // The tile-switch trigger @0x4b320 (thunk 0x1640): scale the (col,row) grid pair
     // to tile-pixel centres (*0x20+0x10) and forward all six args to the engine
     // helper. __thiscall on the grunt - the body

@@ -561,13 +561,13 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
     }
     if (k == 0x13) {
         CGrunt* tc = cell;
-        if (tc->Type13Check() != 0) {
-            tc->Apply13(row, a28 + 1);
+        if (tc->CanShowStamina() != 0) {
+            tc->RunMoveConfig(row, a28 + 1);
             return 1;
         }
     }
     if (k == 0xf) {
-        cell->Dispatch(k, row);
+        cell->BeginAttack(k, row);
     }
     return 0;
 }
@@ -610,7 +610,8 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
 // 0x6e800: ClearCell(col, row, a18, a1c, a20) - if grid[col*15+row] is live, reset its
 // trigger/anim sub-state (unless already cleared via +0x420), bail if it has a pending
 // flag (+0x1e4), look up its config name; when it equals "I" run the manager's fx with the
-// cell's pose; then ApplyBox the snapped (a18..a20) bounds and return its boolean result.
+// cell's pose; then StepArrivalDrop on the snapped (a18..a20) bounds and return its
+// boolean result.
 // (__stdcall: ret 0x14.)
 // @early-stop
 // regalloc + inline-strcmp wall: the "I" compare inlines as a byte loop pinning ah/bl
@@ -630,7 +631,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
         cell->m_arrivalFlags &= 0xe7fbfbfd;
         cell->m_tileClaimed = 0;
         cell->m_arrivalState = 0;
-        cell->Disarm(1, 1);
+        cell->SetEntrancePos(1, 1);
     }
     if (cell->m_entranceActive != 0) {
         return 0;
@@ -647,7 +648,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     i32 by = (a20 & ~0x1f) + 0x10;
     i32 bx = (a1c & ~0x1f) + 0x10;
     cell->m_coordRetryCount = 0;
-    i32 r = cell->ApplyBox(bx, by, a18, -1, 1, 0);
+    i32 r = cell->StepArrivalDrop(bx, by, a18, -1, 1, 0);
     return r != 0 ? 1 : 0;
 }
 
