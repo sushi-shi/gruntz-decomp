@@ -2205,7 +2205,7 @@ i32 CGrunt::PhaseStep() {
     Coord pb;
 
     m_358 = 0;
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeF) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "F") == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -2254,7 +2254,7 @@ i32 CGrunt::PhaseStep() {
     return 1;
 
 state2: {
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeF) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "F") == 0) {
         goto common;
     }
     i32 x = m_arrivalCol;
@@ -2725,7 +2725,7 @@ RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), g_codeI) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
     CGrunt* occ;

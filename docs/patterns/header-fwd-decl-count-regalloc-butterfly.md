@@ -86,3 +86,19 @@ None of the three source files changed. This proves that member-function signatu
 only forward declarations or class bodies, belongs to the butterfly family. Keep the correct ABI
 and preserve the per-function MAX; use the includer intersection to explain and later reverse
 similar dips when other missing authentic declarations are restored.
+
+SIXTH FIRING (2026-07-23, one-letter data-alias cleanup): removing a contiguous block of 15
+unused `extern const char g_codeX[]` declarations from `Grunt.h` changed code generation across
+its includers even though no remaining function ODR-used any declaration in the block. A
+controlled A/B kept the three real source substitutions (`"F"`, `"I"`, and
+`"LEVEL_UFOHAZARDLASER%d"`) identical and varied only the declaration block. Restoring the block
+returned the whole affected set to its prior codegen and overall fuzzy to 73.64%; removing it
+raised fuzzy/MAX to 73.65%. The clean state notably moved `CPlay::StepScroll`
+63.5172→71.6207, `CGrunt::StepCompassMove` 32.9266→35.2959, and
+`CSpotLight::Tick` 52.0887→53.5444, while five source-identical functions took small current-only
+dips (largest 0.0750). `CGrunt::GruntInRadius` visibly changed load/register ordering. This proves
+that otherwise-unused namespace-scope data declarations also participate in this state family.
+The experiment isolates the block, not an individual declaration or a simple numeric threshold;
+do not claim that a particular letter is the lever without a finer A/B. Preserve the authentic
+declaration set and use missing or spurious data declarations as a reverse-search dimension for
+similar unexplained scheduling residues.

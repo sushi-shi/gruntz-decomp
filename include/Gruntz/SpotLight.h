@@ -55,8 +55,6 @@ SIZE_UNKNOWN();
 extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
 extern "C" void Activate_4322(void* target, i32 f);
 extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
-extern u8 g_randSeeded;               // 0x6c127d  (canonical C++ linkage; see <Gruntz/Random.h>)
-extern i32 g_randSeed;                // 0x6c1288  (canonical C++ linkage; see <Gruntz/Random.h>)
-extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
-
-#endif // GRUNTZ_CSPOTLIGHT_H
+extern u8 g_randSeeded; // 0x6c127d  (canonical C++ linkage; see <Gruntz/Random.h>)
+extern i32 g_randSeed;  // 0x6c1288  (canonical C++ linkage; see <Gruntz/Random.h>)
+#endif                  // GRUNTZ_CSPOTLIGHT_H

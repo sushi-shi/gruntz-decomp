@@ -155,8 +155,6 @@
 ?g_cellRecordBase@@3HA
 ?g_cellRecordRet@@3HA
 ?g_checkpointActReg@@3UCActReg@@A
-?g_codeF@@3PBDB
-?g_codeI@@3PBDB
 ?g_containerName@@3PADA
 ?g_creationPointActReg@@3UCActReg@@A
 ?g_dirAa0@@3PAHA
@@ -224,6 +222,5 @@
 ?g_vactStride@@3HA
 ?g_vtrigActReg@@3UCActReg@@A
 ?g_warpStonePadActReg@@3UCActReg@@A
-?s_LEVEL_UFOHAZARDLASER@@3PADA
 ?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ
 ?zDArrayLiveTable@@3QAXA

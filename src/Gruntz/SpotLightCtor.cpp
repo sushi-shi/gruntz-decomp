@@ -255,7 +255,7 @@ i32 CSpotLight::Tick() {
                 g_randSeed = seed * 0x343fd + 0x269ec3;
                 i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
                 CString name;
-                name.Format(s_LEVEL_UFOHAZARDLASER, laser);
+                name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry; // the name->cue map host
                 if (obj->m_emitGate == 0) {
                     void* out = 0;

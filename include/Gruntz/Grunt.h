@@ -80,22 +80,6 @@ struct CAnimScratchString {
 };
 SIZE_UNKNOWN();
 
-extern const char g_codeA[]; // 0x60a454 "A"
-extern const char g_codeD[]; // 0x60cca4 "D"
-extern const char g_codeI[]; // 0x60cca0 "I"
-extern const char g_codeG[]; // 0x60cc9c "G"
-extern const char g_codeL[]; // 0x60cc98 "L"
-extern const char g_codeP[]; // 0x60beb8 "P"
-extern const char g_codeO[]; // 0x60dc0c "O"
-extern const char g_codeQ[]; // 0x60dc08 "Q"
-extern const char g_codeJ[]; // 0x60cc94 "J"
-extern const char g_codeN[]; // 0x60dc04 "N"
-extern const char g_codeM[]; // 0x60d7f4 "M"
-extern const char g_codeK[]; // 0x60d7f8 "K"
-extern const char g_codeF[]; // 0x60d2e8 "F"  (PlaySound entrance handler)
-extern const char g_codeE[]; // 0x60d2ec "E"  (PlaySound entrance handler)
-extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
-
 struct GruntEntranceCell {
     i32 col;
     i32 row;
