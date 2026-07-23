@@ -794,7 +794,6 @@ public:
     // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
     // is set: posts the assembled line to a Win32 chat control (SendMessageA-based
     // helper). __thiscall; external (sibling 0xbb3e0), no body here.
-    void ShowChatLine(void* hWnd, const char* text); // 0xbb3e0
 
     // ---- 0xbc0xx cluster ---------------------------------------------------
     // The cluster's matched methods (defined in NetMgr.cpp).

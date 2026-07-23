@@ -631,8 +631,10 @@ extern "C" {
 
 // The channel-slot pool helpers (defs in Play.cpp, C++ linkage - the old
 // consumer-side `extern "C"` decls were wrong about the defs' linkage).
-i32 ChannelSlots_FindFree(); // 0xdb280
-void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
+i32 ChannelSlots_FindFree();                // 0xdb280
+void ChannelSlots_Set(i32 slot, i32 value); // 0xdb2b0
+i32 ChannelSlots_Get(i32 slot);             // 0xdb2d0
+void ChannelSlots_InitAll();                // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 extern i32 g_areaPageSize; // 0x00245270
 

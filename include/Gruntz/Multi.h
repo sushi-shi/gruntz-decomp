@@ -30,7 +30,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-void SetActiveAndFocus(void* hwnd); // 0x00518930
+void SetActiveAndFocus(void* hwnd);                                         // 0x00518930
+void FillPlayerList(HWND hList, CNetMgr* session);                          // 0x0b89e0
+i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam); // 0x0b8020
 
 // CMultiPlayer DISSOLVED: it was a fake view of CNetPlayerListNode (<Net/NetMgr.h>) -
 // OpenPlayer @0x5786d0 RezAlloc's a 0x58-byte node with vptr 0x5f0760 (the real
@@ -125,9 +127,7 @@ public:
 
     // (The dtor-run lobby drain @0xb6110, ex "Teardown", IS the slot-2
     // ReleaseResources override declared above - one slot, one name.)
-    CString& ClearString59c(CString& s); // 0x0b76c0  (assign m_groupName <- empty)
-    CString& ClearString5a0(CString& s); // 0x0b7730  (assign m_hostName <- empty)
-    CString GetString59c();              // 0x0b7a90 (out-of-line: return m_groupName by value)
+    CString GetString59c(); // 0x0b7a90 (out-of-line: return m_groupName by value)
     RVA(0x000b7ad0, 0x23)
     CString GetString5a0() {
         return m_hostName;
@@ -143,7 +143,6 @@ public:
     CString GetConfigNameB() {
         return m_5b8;
     }
-    CString Name42ff(); // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
     void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
     // Status-bar diagnostic by string-resource id: LoadStringA through
     // m_logic->m_owner->m_hInstance then ReportVersionMsg. Defined in
@@ -199,7 +198,6 @@ public:
     i32 ReadGroupSel();                                                     // 0x0b76a0
     i32 PumpA();        // 0x0b6b40  (timeGetTime/wsprintf helper)
     void PumpB();       // PumpA idle reset (thiscall) 0x??
-    i32 PumpAIndex();   // PumpA ambient index (thiscall) 0x??
     void OnOutOfSync(); // 0x0bae40
     // (The ex "LoadLevelByMode" @0xca200 alias is GONE - that body is the inherited
     // CPlay::LoadByMode slot-30 default, reached with the qualified CPlay:: spelling
@@ -273,13 +271,9 @@ public:
     void AnnounceVersion(i32 param);                                             // 0x0bd180
     // External thunked helpers the cluster fires (no body here so the call reloc-masks).
     // (ProbeLatency moved to CGruntzMgr - retail probes it on m_4, called via Mgr())
-    i32 WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload (returns int; tail-returned)
-    void ShowChatLine(void* hWnd, const char* text);           // 0xbb3e0 (external)
-    void HandleSpriteMsg(CNetCtrlMsg* msg);                    // 0xba620 (external)
-    i32 DispatchServices(const char* cmd, i32 flag, void* cb); // 0xbc250 (external)
-    void ApplyDynSetting(CString s);                           // 0xb76c0 (external)
-    void SetServiceName(CString s);                            // 0xb7730 (external)
-    void PopulateGroupList(void* hList, i32 flag);             // 0x1784be (external)
+    void ApplyDynSetting(CString s);               // 0xb76c0
+    void SetServiceName(CString s);                // 0xb7730
+    void PopulateGroupList(void* hList, i32 flag); // 0x1784be (external)
     // (ReportError/SetReportMode are CNetMgr statics reached directly as
     //  CNetMgr::ReportError - <Net/NetMgr.h> is included by Multi.cpp.)
 

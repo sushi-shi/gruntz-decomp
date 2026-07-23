@@ -261,10 +261,10 @@ def summarize(report: dict, full: bool = True, table: bool = False,
             for lbl, fl, n in _viol:
                 print(f"  RATCHET VIOLATED: {lbl}  {fl} -> {n}  (+{n - fl})", file=sys.stderr)
             if write:
-                die("cleanliness ratchet violated: a cast/fake-view/fake-vtable metric rose "
-                    "above its floor (see above). Fix the reintroduced cast/view at the "
-                    "SOURCE - dissolve the view, type the member, make the virtual real. "
-                    "Never bless it up.")
+                die("cleanliness ratchet violated: a protected source metric rose above "
+                    "its floor (see above). Fix the source regression: dissolve the view, "
+                    "type the member, make the virtual real, or move a .cpp declaration "
+                    "to its owner header. Never bless it up.")
     except Exception as exc:  # never let the SCOREBOARD break a build report (die() is not caught)
         print(f"  cleanliness: (unavailable: {exc})")
     # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the

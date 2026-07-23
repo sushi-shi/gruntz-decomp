@@ -156,7 +156,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
     ::SendMessageA(it4ff->m_hWnd, 0x14e, static_cast<WPARAM>(-1), 0);
     m_6c = g_multiState->m_5b0;
     if (g_multiState->m_5b0 != 0) {
-        CString name = g_multiState->Name42ff();
+        CString name = g_multiState->GetConfigNameB();
         itChild->SetWindowTextA(name);
     } else {
         CString cur;
@@ -295,7 +295,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
         }
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
-            CWnd* e = NameEdit298c(i);
+            CWnd* e = GetCtrlB(i);
             if (e != 0) {
                 pSend(e->m_hWnd, EM_LIMITTEXT, 9, 0);
             }
@@ -363,7 +363,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         GruntzPlayer* slots = m_host->m_options;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
-            CWnd* e = NameEdit298c(i);
+            CWnd* e = GetCtrlB(i);
             if (e != 0) {
                 CString temp;
                 e->GetWindowTextA(temp);

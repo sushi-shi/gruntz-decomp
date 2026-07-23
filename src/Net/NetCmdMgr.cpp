@@ -9,9 +9,6 @@
 DATA(0x0024bd5c)
 CMulti* g_multiState;
 
-i32 ChannelSlots_Get(i32 i);         // 0xdb2d0  (color-taken read)
-void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0  (color-flag stamp)
-
 RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SelectColor(i32 colorIndex, i32 playerId) {
     GruntzPlayer* colorSlot = &m_host->m_options[colorIndex];

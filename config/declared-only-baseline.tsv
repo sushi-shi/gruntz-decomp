@@ -20,7 +20,6 @@
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
-?ApplyDynSetting@CMulti@@QAEXVCString@@@Z
 ?ApplyGameOptions@@YAXXZ
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
@@ -33,7 +32,6 @@
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?Classify@CTriggerMgr@@QAEHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
-?ColourBtn1753@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Command@CBattlezData@@QAEHHHHH@Z
 ?Commit42e1@CBattlezMapConfig@@QAEXPAVCGrunt@@@Z
 ?CommitMoveA@CGrunt@@QAEXHHH@Z
@@ -49,7 +47,6 @@
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
 ?Disarm@CGrunt@@QAEHHH@Z
 ?Dispatch@CGrunt@@QAEHHH@Z
-?DispatchServices@CMulti@@QAEHPBDHPAX@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Dtor@CActionOptionsMenuBar@@QAEXXZ
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
@@ -70,8 +67,6 @@
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?GetColorName@@YAPAVCString@@PAV1@@Z
-?GetConfigNameA@@YA?AVCString@@XZ
-?GetConfigNameB@@YA?AVCString@@XZ
 ?GetDlgItemThreaded@@YGPAVCWnd@@H@Z
 ?GetMessageMap@CBattlezDlg@@UBEPBUAFX_MSGMAP@@XZ
 ?GetMessageMap@CMultiStartDlg@@UBEPBUAFX_MSGMAP@@XZ
@@ -83,7 +78,6 @@
 ?GruntTileSwitchImpl@@YGHHHHHHH@Z
 ?GutsStepB@CPlay@@QAEXXZ
 ?GutsStepC@CPlay@@QAEXXZ
-?HandleSpriteMsg@CMulti@@QAEXPAUCNetCtrlMsg@@@Z
 ?HiGrunt0@CStatusBarMgr@@QAEXH@Z
 ?HiGrunt1@CStatusBarMgr@@QAEXH@Z
 ?HiGrunt2@CStatusBarMgr@@QAEXH@Z
@@ -106,8 +100,6 @@
 ?MapCellRecord@zDArray@@QAEHHH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
 ?MenuCommit@@YAHPAVCChatBox@@H@Z
-?Name42ff@CMulti@@QAE?AVCString@@XZ
-?NameEdit298c@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
@@ -139,7 +131,6 @@
 ?Probe@CTriggerMgr@@QAEHXZ
 ?Probe@zDArray@@QAEHHH@Z
 ?ProbeCell@CTriggerMgr@@QAEHHHPAXH0HHHH@Z
-?PumpAIndex@CMulti@@QAEHXZ
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
 ?Rand@CGruntzMgr@@QAEHXZ
 ?RandRange@CGruntzMgr@@QAEHHH@Z
@@ -149,10 +140,7 @@
 ?ReadName@@YAXPAX0@Z
 ?ReadValue@CButeMgr@@QAEHHD@Z
 ?Ready27ed@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?ReadyCheck1159@CMultiStartDlg@@QAEPAVCWnd@@H@Z
-?Refresh185c@@YGXPAVGruntzPlayer@@@Z
 ?RefreshDecay@CGruntBehaviorLeaf@@QAEXXZ
-?RefreshRosterRow@@YGXH@Z
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
 ?ReportError@@YAXPBDHHH@Z
@@ -160,7 +148,6 @@
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
 ?ResetNetSlots@@YAXXZ
 ?ResetTabWidgets2b44@CStatusBarMgr@@QAEXXZ
-?ResolveItem_1159@@YGPAVCWnd@@H@Z
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
 ?RezAlloc@@YAPAXH@Z
 ?Run@CDDSurface@@QAEHHHHHHHUClipRect16@@@Z
@@ -172,9 +159,7 @@
 ?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetFont@FontRenderer@@QAEXPAVFont@@@Z
-?SetServiceName@CMulti@@QAEXVCString@@@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
-?ShowChatLine@CMulti@@QAEXPAXPBD@Z
 ?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ
 ?Spawn@CTriggerMgr@@QAEPAXHHHHHHH@Z
@@ -187,7 +172,6 @@
 ?SymBindRecord@@YAXPAXPADH@Z
 ?SymBuildLeaf@@YAXPAVCSymParser@@PAX1@Z
 ?Sync@CWarpStoneFly@@QAEHPAVCFileMemBase@@HHH@Z
-?SyncColour3a5d@CMultiStartDlg@@QAEXHH@Z
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
 ?Teardown@CBattlezData@@QAEXXZ
 ?Tick@CGruntSpawnConfig@@QAEXXZ
@@ -197,7 +181,6 @@
 ?ValidateMainBlock@@YAHPAX@Z
 ?WorldSoundCreateFull@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HHHHHH@Z
 ?WorldSoundCreateSimple@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HH@Z
-?WriteCmdDelay@CMulti@@QAEHH@Z
 ?WriteName@@YAXPAX0@Z
 ?g_actReg_646188@@3UCActReg@@A
 ?g_actReg_646250@@3UCActReg@@A

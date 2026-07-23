@@ -366,6 +366,25 @@ class TestCleanlinessRatchet(unittest.TestCase):
         merged = dict(cleanliness.merge_baseline_downonly([(".cpp-local views", 20)]))
         self.assertEqual(merged[".cpp-local views"], 20)
 
+    def test_cpp_external_prototypes_include_implicit_externs(self):
+        code = cleanliness._strip(
+            """
+            void GlobalDecl(int value);
+            namespace NetLobby {
+                void __stdcall AppendEditLine(HWND__* edit, char* str);
+                void Definition(int value) { Local local(value); }
+                class LocalView { void MemberDecl(); };
+            }
+            """
+        )
+        self.assertEqual(cleanliness._count_cpp_external_prototypes(code), 2)
+        self.assertIn("cpp external prototypes", cleanliness._RATCHET)
+        cleanliness.save_baseline([("cpp external prototypes", 2)])
+        merged = dict(
+            cleanliness.merge_baseline_downonly([("cpp external prototypes", 3)])
+        )
+        self.assertEqual(merged["cpp external prototypes"], 2)
+
     def test_prose_does_not_inflate_the_metrics(self):
         code = cleanliness._strip('// a )this cast and a void* m_x live in this comment\n'
                                   'const char* s = "void* m_y and )this";\n'

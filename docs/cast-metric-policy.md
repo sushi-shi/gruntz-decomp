@@ -9,7 +9,8 @@ metrics, all drive-to-0:
 - `void* m_ members`
 - `.cpp-local views`
 - `placeholder classes`
-- `cpp extern decls`
+- `cpp extern decls` and implicit `cpp external prototypes` — external declarations belong in
+  their owner headers even when the prototype omits the `extern` keyword
 - `caller-callee FAKE-VIEW` (the one mechanical slice of the call-graph reconcile — retype the
   receiver to the real class so the call binds; NOT the MISSING/SPECIAL total, which is the deep
   per-function matching residual, not a cleanliness crater)

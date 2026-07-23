@@ -22,6 +22,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
+#include <Net/NetLobby.h>
 #include <Net/NetMgr.h> // CNetPlayerListNode - the real OpenPlayer result (ex CMultiPlayer view)
 #include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
@@ -156,8 +157,6 @@ enum {
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
 
-void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
-
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 #include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
 
@@ -184,12 +183,6 @@ enum {
     STAT_VERIFY_AGREE = 0x41d,    // host: all players agree on the level
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
-
-void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0 (play TU; ex NetCueReset_3bbb)
-
-// The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog (defined
-// below @0xb8020; the push reloc targets its ILT jmp-thunk @0x222f, reloc-masked).
-i32 __stdcall MultiJoinDlgProc(HWND__* hDlg, u32 msg, u32 wParam, i32 lParam);
 
 // The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
 // OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to
@@ -527,16 +520,16 @@ CNetSession::~CNetSession() {
     ResetSync();
 }
 
+RVA(0x000b62a0, 0x4a)
+CNetCmdSlot::~CNetCmdSlot() {
+    ResetAll();
+}
+
 // Slot-32 override: a pure forwarder - cl /O2 tail-jumps the base body (retail
 // 0xb6310 = `jmp` -> ILT 0x3f30 -> ?OnExit@CPlay 0xcb400; vtable holds thunk 0x33be).
 RVA(0x000b6310, 0x5)
 void CMulti::OnExit() {
     CPlay::OnExit();
-}
-
-RVA(0x000b62a0, 0x4a)
-CNetCmdSlot::~CNetCmdSlot() {
-    ResetAll();
 }
 
 // CMulti::Vslot09 (0x0b6330): chain the base ResetForMode gate; on success run the
@@ -836,7 +829,7 @@ i32 CMulti::PumpA() {
                 - *reinterpret_cast<i64*>(&m_ambientTimerLo)
             >= *reinterpret_cast<i64*>(&m_ambientInterval)) {
             char name[0x40];
-            wsprintfA(name, "AMBIENT%d", PumpAIndex());
+            wsprintfA(name, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != 0) {
                 Mgr()->m_sound->PlayByName(name, 1);
             } else {
@@ -1078,10 +1071,10 @@ i32 CMulti::StartTitle() {
     }
     m_netGate->m_playerSel = player; // +0x74 latch
     CString hostName(desc->m_c->m_8);
-    ClearString5a0(hostName); // clear m_hostName, return the temp
+    SetServiceName(hostName);
     char* grp = player->GroupName();
     CString grpName(grp);
-    ClearString59c(grpName); // clear m_groupName, return the temp
+    ApplyDynSetting(grpName);
     // 0xbc460 SetupTcpIpConfig (host) / 0xbc750 CreateLocalPlayer (guest) - the
     // real bodies below (ex the "RebindHostAlt"/"RebindHost" alias decls).
     i32 r = m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer();
@@ -1095,34 +1088,18 @@ char* CNetPlayerListNode::GroupName() {
     return m_desc.m_lpszName;
 }
 
-// ===========================================================================
-// CMulti::ClearString59c  @ 0x0b76c0  - assign an empty CString into m_groupName,
-// return the caller-supplied reference.
-// ===========================================================================
-// @early-stop
-// MFC-version CString()-empty wall: retail builds the empty temp inline (mov
-// [temp],0, m_pchData = NULL) then operator=, while our toolchain's MFC
-// CString::CString() -> Init() sets m_pchData = afxEmptyString.m_pchData and is
-// emitted as an out-of-line ??0CString@@QAE@XZ call (the retail MFC's Init used
-// _afxPchNil / 0). Plus the /GX prologue reads fs:0 before push -1 vs our push-
-// first order. Operation is correct (operator= from an empty CString); the
-// codegen gap is the MFC build divergence - documented in
-// docs/patterns/cstring-empty-init-version-divergence.md, deferred to final sweep.
+// Assign the supplied game/group name into the multiplayer state. The by-value
+// CString parameter is significant: retail assigns from the incoming stack
+// object and destroys it in this callee.
 RVA(0x000b76c0, 0x4f)
-CString& CMulti::ClearString59c(CString& s) {
-    m_groupName = CString();
-    return s;
+void CMulti::ApplyDynSetting(CString s) {
+    m_groupName = s;
 }
 
-// ===========================================================================
-// CMulti::ClearString5a0  @ 0x0b7730  - assign an empty CString into m_hostName.
-// ===========================================================================
-// @early-stop
-// same MFC-version CString()-empty wall as ClearString59c (see above).
+// Same by-value assignment shape for the local player/service name.
 RVA(0x000b7730, 0x4f)
-CString& CMulti::ClearString5a0(CString& s) {
-    m_hostName = CString();
-    return s;
+void CMulti::SetServiceName(CString s) {
+    m_hostName = s;
 }
 
 RVA(0x000b77a0, 0xb5)
@@ -1173,8 +1150,7 @@ InterfaceObject* CMulti::SetupServices() {
     }
 
     if (g_hostServicesMode != 0) {
-        if (DispatchServices("MULTI_HOSTSERVICES", 0, static_cast<void*>(&ServicesDispatchCb))
-            != 0) {
+        if (RunErrorDialog("MULTI_HOSTSERVICES", static_cast<void*>(&ServicesDispatchCb), 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != 0 && g_serviceId != 0x3e7) {
                 store->SetValueDword("Service", g_serviceId);
@@ -1195,8 +1171,7 @@ InterfaceObject* CMulti::SetupServices() {
             }
         }
     } else {
-        if (DispatchServices("MULTI_JOINSERVICES", 0, static_cast<void*>(&ServicesDispatchCb))
-            != 0) {
+        if (RunErrorDialog("MULTI_JOINSERVICES", static_cast<void*>(&ServicesDispatchCb), 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != 0) {
                 if (g_serviceId != 0x3e7) {
@@ -2047,9 +2022,6 @@ i32 CMulti::PollSession() {
     return dispatched;
 }
 
-i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
-void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
-
 // @early-stop
 // tail-merge + regalloc wall (~78%): the whole dispatcher is byte-faithful - the
 // /GX prologue, the sender==0 HandleControlMsg forward, the command-slot latency
@@ -2136,7 +2108,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 
         case 0x3f0: {
             if (g_sharedFlag != 0) {
-                ShowChatLine(reinterpret_cast<void*>(g_sharedFlag), msg->m_c);
+                NetLobby::AppendEditLine(reinterpret_cast<HWND>(g_sharedFlag), msg->m_c);
                 break;
             }
             if (m_connected == 0) {
@@ -2379,7 +2351,10 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 result.Format("*** A player had a different version of the game.");
             }
             if (g_sharedFlag != 0) {
-                ShowChatLine(reinterpret_cast<void*>(g_sharedFlag), result);
+                NetLobby::AppendEditLine(
+                    reinterpret_cast<HWND>(g_sharedFlag),
+                    const_cast<char*>(static_cast<const char*>(result))
+                );
             } else {
                 (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(result, 0, 0x11);
             }
@@ -2423,7 +2398,7 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
 
     switch (msg->m_code) {
         case 3:
-            HandleSpriteMsg(msg);
+            LoadMenuSelectSprite(msg);
             return 1;
         case 5:
             if (msg->m_subCode != 1) {
@@ -2952,7 +2927,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     if (showWnd != 0) {
         if (hWnd != 0) {
-            ShowChatLine(hWnd, line);
+            NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
         } else {
             GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
             if (player != 0) {
@@ -2983,11 +2958,11 @@ namespace NetLobby {
         if (!edit || !str || !str[0]) {
             return;
         }
-        i32 len = ::GetWindowTextLengthA(edit);
+        i32 len = GetWindowTextLengthA(edit);
         if (len == 0) {
-            ::SendMessageA(edit, 0xb1, len, -1);
+            SendMessageA(edit, 0xb1, len, -1);
         } else {
-            ::SendMessageA(edit, 0xb1, len, len);
+            SendMessageA(edit, 0xb1, len, len);
         }
         char buf[0x80];
         buf[0] = 0;
@@ -2995,8 +2970,8 @@ namespace NetLobby {
             strcat(buf, "\r\n");
         }
         strcat(buf, str);
-        ::SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
-        ::SendMessageA(edit, 0xb6, 0, 0x270f);
+        SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
+        SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 } // namespace NetLobby
 
@@ -3833,7 +3808,7 @@ i32 CMulti::WaitForConnect() {
 // this/quotient register-coloring wall (~80%): logic + math now byte-faithful after
 // four fixes - the divide is /30 (0x88888889;shr4, was wrongly /9), the resend is
 // (base>8 ? 30 : 20) (was inverted), the fn returns int (early `return 1` / tail
-// `return WriteCmdDelay(0)`, which shrink-wraps the edi push), and ProbeLatency is
+// `return SaveConfig(0)`, which shrink-wraps the edi push), and ProbeLatency is
 // called on the m_4 game mgr (Mgr(), `mov ecx,[this+4]`), not on `this`. Residual:
 // retail pins this=esi / quotient=edi; our MSVC5 /O2 pins this=edi / quotient=esi,
 // a swap that cascades. Not source-steerable. Final sweep.
@@ -3854,10 +3829,10 @@ i32 CMulti::AutoTuneCmdDelay() {
     m_5a4 = base;
     if (base <= 5) {
         m_drainReload = 0xa;
-        return WriteCmdDelay(0);
+        return SaveConfig(0);
     }
     m_drainReload = (base > 8 ? 0x1e : 0x14);
-    return WriteCmdDelay(0);
+    return SaveConfig(0);
 }
 
 // ---------------------------------------------------------------------------

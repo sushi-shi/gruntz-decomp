@@ -149,10 +149,62 @@ def _count_offset_macro_casts(code: str) -> int:
     return total
 
 
-# Per-TU `extern` decls: a global/function re-declared in a consumer .cpp instead of living in its
-# OWNER's header (which consumers #include). extern "C" DATA-array globals that need it for mangling
-# are the residual; the rest belong in owner headers. .cpp-only (a header `extern` IS the owner decl).
+# Per-TU declarations: a global/function re-declared in a consumer .cpp instead of living in its
+# OWNER's header (which consumers #include). `extern "C"` DATA-array globals that need it for
+# mangling are the residual; the rest belong in owner headers. A header `extern` IS the owner decl.
 _CPP_EXTERN = re.compile(r"^\s*extern\b", re.MULTILINE)
+
+# A function prototype has external linkage even when it does not spell `extern`:
+#
+#     void ChannelSlots_Set(i32, i32);
+#     namespace NetLobby { void __stdcall AppendEditLine(HWND, char*); }
+#
+# `_CPP_EXTERN` misses both. Scan only file/namespace scope (not function bodies or
+# class definitions), split it into semicolon-terminated declarations, and count
+# function-shaped declarators. This intentionally treats a namespace-scope
+# most-vexing-parse form as a prototype too; use a real initializer form for objects.
+_CPP_PROTO = re.compile(
+    r"^\s*"
+    r"(?!typedef\b|using\b|return\b|if\b|for\b|while\b|switch\b)"
+    r"(?:(?:extern|static|inline|constexpr|friend)\s+)*"
+    r"(?:[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*(?:\s*<[^;{}()]*>)?"
+    r"(?:\s+const)?\s*(?:[*&]\s*)?\s+)+"
+    r"(?:__cdecl\s+|__stdcall\s+|WINAPI\s+|CALLBACK\s+)*"
+    r"[A-Za-z_~]\w*(?:::[A-Za-z_~]\w*)*\s*"
+    r"\([^;{}]*\)\s*"
+    r"(?:(?:const|volatile|noexcept|OVERRIDE)\s*|=\s*0\s*)*$",
+    re.DOTALL,
+)
+_NAMESPACE_OPEN = re.compile(r"(?:^|[;{}])\s*(?:inline\s+)?namespace(?:\s+\w+(?:::\w+)*)?\s*$")
+_EXTERN_BLOCK_OPEN = re.compile(r"(?:^|[;{}])\s*extern\s*$")
+
+
+def _count_cpp_external_prototypes(code: str) -> int:
+    """Count external function prototypes at .cpp file/namespace scope."""
+    # Preprocessor directives are not declarations and can otherwise become a
+    # prefix of the next semicolon-terminated statement.
+    code = re.sub(r"(?m)^\s*#.*$", "", code)
+    contexts: list[bool] = []
+    statement_start = 0
+    total = 0
+    for i, ch in enumerate(code):
+        allowed = all(contexts)
+        if ch == "{":
+            prefix = code[statement_start:i]
+            opens_decl_scope = bool(
+                _NAMESPACE_OPEN.search(prefix) or _EXTERN_BLOCK_OPEN.search(prefix)
+            )
+            contexts.append(allowed and opens_decl_scope)
+            statement_start = i + 1
+        elif ch == "}":
+            if contexts:
+                contexts.pop()
+            statement_start = i + 1
+        elif ch == ";":
+            if allowed and _CPP_PROTO.match(code[statement_start:i]):
+                total += 1
+            statement_start = i + 1
+    return total
 
 
 # --- C-style casts: the ONE cast ratchet (user directive 2026-07-21) ---
@@ -208,6 +260,7 @@ METRICS = (
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
     ("cpp extern decls", _CPP_EXTERN, True),
+    ("cpp external prototypes", _count_cpp_external_prototypes, True),
 )
 
 
@@ -275,8 +328,12 @@ def _caller_callee_counts() -> dict[str, int]:
 
 
 # Ratchet set: metrics that only go DOWN. The view/vtable metrics + the caller_callee
-# fake-view edge + the single "C-style casts" metric (no C-casts allowed, ever).
-_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {"C-style casts"}
+# fake-view edge + C-style casts + .cpp external declarations (owner headers only).
+_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
+    "C-style casts",
+    "cpp extern decls",
+    "cpp external prototypes",
+}
 
 
 def count() -> list[tuple[str, int]]:

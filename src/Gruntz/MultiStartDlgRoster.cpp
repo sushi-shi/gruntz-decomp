@@ -16,15 +16,6 @@
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
-void __stdcall RefreshRosterRow(i32 flag);      // 0x01d70
-void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
-
-void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
-i32 ChannelSlots_FindFree();            // 0xdb280
-CString GetConfigNameA();               // 0xb6090
-CString GetConfigNameB();               // 0xb60d0
-
 RVA(0x00038220, 0x73)
 i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);
@@ -80,11 +71,11 @@ void CMultiStartDlg::ReconcileChannel3() {
 // (0xc2ab0; also reached as the roster's per-row reconcile via ILT thunk 0x3ffd.)
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
-    CWnd* owner = GetCtrlE(ch);  // 0x1929  the list whose selection drives the slot
-    CWnd* c1 = NameEdit298c(ch); // 0x298c
-    CWnd* c2 = GetCtrlD(ch);     // 0x30da -> 0xc2840
-    ColourBtn1753(ch);           // 0x1753 (side effect only)
-    ReadyCheck1159(ch);          // 0x1159 (side effect only)
+    CWnd* owner = GetCtrlE(ch); // 0x1929  the list whose selection drives the slot
+    CWnd* c1 = GetCtrlB(ch);
+    CWnd* c2 = GetCtrlD(ch); // 0x30da -> 0xc2840
+    GetCtrlC(ch);
+    GetCtrlA(ch);
     GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
@@ -719,14 +710,14 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             } else {
                 enName = slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0;
             }
-            this->NameEdit298c(idx)->EnableWindow(enName);
+            GetCtrlB(idx)->EnableWindow(enName);
             GetCtrlE(idx)->EnableWindow(
                 g_multiState->m_isHost && localColour == 0
                         && slot->m_slotKey != g_multiState->m_hostIndex
                     ? 1
                     : 0
             );
-            CWnd* ready = this->ReadyCheck1159(idx);
+            CWnd* ready = GetCtrlA(idx);
             ready->EnableWindow(slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0);
             if (slot->m_readyFlag) {
                 if (slot->m_liveGate) {
@@ -740,10 +731,10 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             } else {
                 ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
             }
-            this->ColourBtn1753(idx)->EnableWindow(
+            GetCtrlC(idx)->EnableWindow(
                 g_multiState->m_isHost && slot->m_liveGate && localColour == 0 ? 1 : 0
             );
-            this->SyncColour3a5d(idx, slot->m_liveGate ? slot->m_comboSel : 0);
+            SetListCurSel(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
                 if (this->GetSlotIndex() == idx) {
                     goto next;
@@ -757,7 +748,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     CString name = slot->GetName();
                     LPCTSTR pch = static_cast<LPCTSTR>(name);
                     force = 0;
-                    this->NameEdit298c(idx)->SetWindowTextA(pch);
+                    GetCtrlB(idx)->SetWindowTextA(pch);
                 }
                 if (slot->m_014) {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 4, 0);
@@ -765,7 +756,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
                 }
             } else {
-                this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
+                GetCtrlB(idx)->SetWindowTextA(g_emptyString);
                 ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 0, 0);
             }
             this->SyncChannelSlot(idx); // 0x3ffd thunk -> 0xc2ab0 reconcile (== SyncChannelSlot)
@@ -945,10 +936,10 @@ void CMultiStartDlg::OnOK() {
     mgr->SendStatFlag(0x3fc, 1);
     i32 token;
     if (g_multiState->m_5b0 != 0) {
-        CString b = GetConfigNameB();
+        CString b = mgr->GetConfigNameB();
         token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, b);
     } else {
-        CString a = GetConfigNameA();
+        CString a = mgr->GetConfigNameA();
         token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_5b0, 0, 0, a);
     }
     g_multiState->m_levelVerifyResult = 0;
@@ -1028,16 +1019,9 @@ void CMultiStartDlg::CommitLatencyOption() {
 
 // __thiscall(idx): toggle slot idx's ready flag from its checkbox, then either re-sync
 // the whole roster (host) or just refresh that one slot.
-// @early-stop
-// regalloc coin-flip wall (~97.7%, docs/patterns/zero-register-pinning.md family): the
-// full logic is byte-faithful, but the final slot lea overwrites the INDEX register
-// (ecx) here while retail overwrites the BASE register (edx) - so retail carries the
-// slot pointer in edx, this cl in ecx, cascading through the g_multiState/m_isHost load
-// pair (ecx/eax vs eax/edx) and the Refresh185c arg push (push edx vs push ecx). A pure
-// allocator choice, no source lever.
 RVA(0x000c50f0, 0x9b)
 void CMultiStartDlg::ToggleReady(i32 idx) {
-    CWnd* it = ResolveItem_1159(idx);
+    CWnd* it = GetCtrlA(idx);
     if (!it) {
         return;
     }
@@ -1052,13 +1036,13 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         slot->m_readyFlag = 0;
     }
     if (g_multiState->m_isHost) {
-        RefreshRosterRow(0);
+        g_multiState->BroadcastChannelTable(0);
         UpdatePlayers(1);
         EnableControls();
         UpdateColorItems();
         UpdateSlot();
     } else {
-        Refresh185c(slot);
+        g_multiState->BroadcastOneChannel(slot);
     }
 }
 

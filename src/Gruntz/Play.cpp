@@ -3498,8 +3498,6 @@ void ChannelSlots_InitAll() {
 // what the int-seeded ctor writes into m_008.
 // Swap's probes are the channel-slot free fns (defined below): the slot read
 // (ChannelSlots_Get @0xdb2d0) and the slot set (ChannelSlots_Set @0xdb2b0).
-i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
-void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 RVA(0x000db200, 0x51)
 i32 GruntzPlayer::SwapChannel(i32 channel) {
     if (m_008 == channel) {
