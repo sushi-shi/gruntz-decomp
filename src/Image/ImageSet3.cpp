@@ -20,7 +20,7 @@ CImageSet3::~CImageSet3() {
 // 100%: the former SIB base/index-swap residual (a 99.778% @early-stop) flipped to
 // retail's pick when the TU regained its retail /GX profile + the collapsed dtor
 // (the *Eh.cpp merge) - the codegen residue was TU-composition-sensitive, not a wall.
-RVA(0x00166e00, 0xa8)
+RVA(0x00166e00, 0x60)
 i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
