@@ -32,7 +32,6 @@
 ?Hit@CTriggerMgr@@QAEPAVCGrunt@@HHHPAH0@Z
 ?Impact25e5@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?Init@CMotionState@@QAEXXZ
-?InitAnimState@CGruntBehaviorLeaf@@QAEXHHH@Z
 ?InputSubStep@CPlay@@QAEXPAX@Z
 ?IsDropReady@CGrunt@@QAEHH@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
@@ -45,8 +44,6 @@
 ?PinCellIndex@zDArray@@QAEHXZ
 ?Place@CUserLogic@@QAEHHHHHHHHHHHHH@Z
 ?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
-?PostCellCommand6@CTriggerMgr@@QAEXHH@Z
-?PostCellCommand7@CTriggerMgr@@QAEXHH@Z
 ?PrepCmd4@CGruntzMgr@@QAEHH@Z
 ?PrepCmd7@CGruntzMgr@@QAEHH@Z
 ?Probe1a4b@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z
@@ -58,7 +55,6 @@
 ?ReadCurve@@YAXAAVistream@@AAVCMotionState@@@Z
 ?ReadName@@YAXPAX0@Z
 ?Ready27ed@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?RefreshDecay@CGruntBehaviorLeaf@@QAEXXZ
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
 ?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
@@ -69,7 +65,6 @@
 ?RunModal@CGameApp@@QAEXPBDPAUHWND__@@@Z
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
-?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
 ?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ

@@ -895,7 +895,7 @@ i32 CGrunt::CommitArrival() {
     }
     if (m_tileClaimed != 0) {
         if (g_gameReg->m_134 == 2) {
-            m_tileMgr->PostCellCommand7(m_tileOwnerHi, m_tileOwnerLo); // 0x2c48 -> 0x6daa0
+            GridAction7(m_tileOwnerHi, m_tileOwnerLo); // 0x2c48 -> 0x6daa0
         } else if (m_tileClaimed != 0) {
             m_arrivalRerollLo = 0;
             m_arrivalRerollWindowLo = 0;

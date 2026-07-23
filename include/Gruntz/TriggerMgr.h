@@ -396,12 +396,6 @@ public:
     i32 LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel);
     // (SpawnTileFx @0x79ea0 is a free __stdcall function, not a CTriggerMgr method -
     //  declared at namespace scope below the class.)
-    // 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): post cell command 6 / 7 for the
-    // (hi,lo) cell - each forwards (1, hi, lo, N, 0,0,0,0) to the registry's
-    // command sub-manager (g_gameReg->m_6c, CGruntzCmdMgr). The bodies never touch
-    // `this`, but every retail caller dispatches them thiscall on this board.
-    void PostCellCommand6(i32 hi, i32 lo); // 0x6da60
-    void PostCellCommand7(i32 hi, i32 lo); // 0x6daa0
     // 0x7b930: the 5-arg combat-area cue (radius scan over m_grid applying the
     // per-cell tier effect); body in TriggerMgr.cpp (ex ?CombatCue@CGruntTileMgr@@).
     i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x7b930 (ret 0x14)
@@ -554,6 +548,12 @@ public:
     i32 m_groupFlag;                   // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN();
+
+// 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): free __stdcall command
+// helpers. Each forwards (1, hi, lo, N, 0,0,0,0) to CGruntzCmdMgr and never
+// receives or reads a CTriggerMgr receiver.
+void __stdcall GridAction6(i32 hi, i32 lo);
+void __stdcall GridAction7(i32 hi, i32 lo);
 
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 

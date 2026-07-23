@@ -127,8 +127,6 @@ static void GruntScratchTeardown() {
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 
-#include <Gruntz/GruntBehaviorLeaf.h>
-
 DATA(0x0020df94)
 char k_60df94[] = "S";
 
@@ -1202,7 +1200,7 @@ void CGrunt::ResolveEntranceArrival() {
             if (slot != 0 && slot->m_014 != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
                     && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
-                    m_tileMgr->PostCellCommand6(m_tileOwnerHi, m_tileOwnerLo); // 0x275c -> 0x6da60
+                    GridAction6(m_tileOwnerHi, m_tileOwnerLo); // 0x275c -> 0x6da60
                     m_arrivalNotified = 1;
                     goto tail;
                 }
@@ -2154,39 +2152,47 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 // idiom) except cl schedules the `if (m_1c4)` load a few slots earlier than retail
 // (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
-i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_drawState->m_1a0.Advance(g_engineFrameDelta);
+i32 CGrunt::LoadWandGruntItemConfig() {
+    i32 phase = m_38->m_1a0.Advance(g_engineFrameDelta);
     if (phase > 0) {
         if (phase == 0x63) {
-            m_downtimeLatch = 1;
-            u32 downtime = g_buteMgr.GetDword(m_gruntTypeTag, "ItemDowntime");
-            if (m_typeDisc == GRUNT_ROIDZ) { // Roidz: no item downtime either
+            m_entranceActive = 1;
+            u32 downtime =
+                g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
+            if (m_gruntKind == GRUNT_ROIDZ) { // Roidz: no item downtime either
                 downtime = 0;
             }
-            m_wandDowntimeLo = downtime;
-            m_wandDowntimeHi = 0;
-            m_wandTimerLo = g_frameTime;
-            m_wandTimerHi = 0;
-            m_460 = 0;
-            m_3f0 = 0;
-            if (m_1c4 != 0) {
-                RefreshDecay();
+            m_attackDowntimeLo = downtime;
+            m_attackDowntimeHi = 0;
+            m_860 = g_frameTime;
+            m_864 = 0;
+            m_lowStaminaCued = 0;
+            m_stamina = 0;
+            if (m_healthSprite != 0) {
+                CreateStaminaSprite();
             }
-            if (m_gruntSubState == 0x13) {
-                SetDecayTarget(m_380);
+            if (m_entranceReason == 0x13) {
+                LoadGruntAbilityTuning(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    m_260->CellDispatch(m_animArg0, m_animArg1, 1, -1);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
                 }
             }
         }
-        m_260->LoadTileArrivalFx(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
+        m_tileMgr->LoadTileArrivalFx(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            phase
+        );
     }
-    CAniAdvanceCursor* sub = &m_drawState->m_1a0;
+    CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        m_downtimeLatch = 0;
-        InitAnimState(1, 0, 0);
+        m_entranceActive = 0;
+        ResetEntranceAnimation(1, 0, 0);
     }
     return 0;
 }

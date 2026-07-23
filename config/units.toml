@@ -1215,7 +1215,7 @@ flags = "eh"
 
 [[unit]]
 unit = "gruntbehaviorleaf"
-source = "src/Gruntz/GruntBehaviorLeaf.cpp"
+source = "src/Gruntz/GruntDecay.cpp"
 flags = "eh"
 
 
@@ -2119,4 +2119,3 @@ flags = "eh"
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
 flags = "eh"
-

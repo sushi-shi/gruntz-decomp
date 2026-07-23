@@ -151,3 +151,23 @@ is preserved. This broader sample strengthens the reverse heuristic: unexplained
 register-order residues in a `Grunt.h` includer may move when another fake or
 missing authentic member declaration is corrected, even when that includer
 does not call the edited member.
+
+TENTH FIRING (2026-07-23, placeholder-owner collapse): proving the three
+`CGruntBehaviorLeaf` action handlers to be `CGrunt` methods removed the fake
+class definition and added the real member declarations to `Grunt.h`; two
+mis-modeled `CTriggerMgr` members were also corrected to free `__stdcall`
+functions. Eight source-identical rows newly moved below their saved current
+values: `CSpotLight::Tick` 53.5444→52.0887,
+`CGrunt::PhaseStep` 39.7717→38.5960,
+`CGrunt::StepGruntMovement` 64.2121→63.4882,
+`CGrunt::RectSegProbe` 78.8911→78.7723,
+`CGrunt::ArrivalScanC` 47.2696→47.2280,
+`CBattlezMapConfig::winapi_02e3a0_PtInRect` 54.8391→54.8233,
+`CGrunt::ArrivalScanA` 50.2333→50.2182, and
+`CBattlezMapConfig::Step33520` 53.5120→53.5016. Conversely,
+`CGrunt::LoadWingzGruntSprites` and `CPlay::LoadScrollSpeedOptions` recovered
+above their previously saved current values without body edits. The symmetric
+dips and recoveries are useful evidence that authentic class/member declaration
+state can reverse earlier compiler-state colorings; they are not a reason to
+restore the disproved placeholder. The owner fold itself is documented in
+`pmf-registry-collapses-placeholder-owner.md`.

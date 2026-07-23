@@ -376,6 +376,11 @@ public:
     // sound cue, then dispatch on the (random or forced) ability index to build
     // the matching LightFx/rolling-ball effect + tuning.
     i32 LoadGruntAbilityTuning(i32 forced);
+    // Per-frame decay/wand handlers registered on this same class under the
+    // "C", "R", and "I" action keys.
+    i32 LoadGruntDecayConfig();    // @0x612a0
+    i32 LoadGruntDecayConfig2();   // @0x61570
+    i32 LoadWandGruntItemConfig(); // @0x65a60
     // @0x60150 (ret 8) - the grunt death dispatch: tear down the running anim state,
     // retire the HUD sprites, latch the "C" death anim-set, then switch on the death
     // type to resolve + apply the matching GRUNTZ_DEATHZ_* sprite + cue.
@@ -485,9 +490,10 @@ public:
     //       <Gruntz/UserLogic.h>) surfacing at the PMF table: making CGrunt MI widens
     //       `i32 (CGrunt::*)()` to 8 bytes where retail stores 4, so GruntActHandler
     //       must be declared on the SI base (retail's own RTTI names the table
-    //       `zDArray<int (CUserLogic::*)(void)>`, and it mixes CGrunt with
-    //       CGruntBehaviorLeaf handlers, so the base IS its true type - that part is
-    //       right). But g_reg_644af0's handlers are a MIX of void- and i32-returning
+    //       `zDArray<int (CUserLogic::*)(void)>`. The three handlers formerly
+    //       attributed to a placeholder CGruntBehaviorLeaf are now proved to be
+    //       CGrunt methods, so that apparent class mix is WITHDRAWN as support for
+    //       the PMF-base claim. But g_reg_644af0's handlers are a MIX of void- and i32-returning
     //       methods, and MSVC5 rejects `static_cast<i32 (CUserLogic::*)()>(&CGrunt::)<void method>`.
     //       So the PMF retype cannot land until the void/i32 return split is
     //       reconciled from the BODIES (which arm actually materializes eax) - the same
