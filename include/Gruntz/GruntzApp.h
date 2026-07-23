@@ -32,7 +32,7 @@ public:
         return 0;
     }
     // Shows the MESSAGE dialog with an arbitrary message string.
-    void ShowMessage(char* msg, HWND hParent);
+    void ShowMessage(const char* msg, HWND hParent);
     virtual CGameMgr* InitializeGameManager() OVERRIDE;
     static INT_PTR CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

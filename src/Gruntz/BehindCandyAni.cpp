@@ -58,11 +58,6 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     }
 }
 
-RVA_COMPGEN(0x000ad7b0, 0xa, _$E710576)
-RVA_COMPGEN(0x000ad7d0, 0x15, _$E710608)
-RVA_COMPGEN(0x000ad800, 0xe, _$E710656)
-RVA_COMPGEN(0x000ad820, 0x1f, _$E710688)
-
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
     CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(

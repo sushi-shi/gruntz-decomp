@@ -220,7 +220,7 @@ public:
     // slot-1 activate; ret 1 (0 on new/activate failure). Lives in an eh sibling TU.
     i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
     // @0x08ef10 - suspend the world and pop the modal message screen carrying `msg`
-    // (m_owner->RunModal(msg, hwnd), which strcpy's it into the g_644ea0 message buffer).
+    // (CGruntzApp::ShowMessage(msg, hwnd), which strcpy's it into the g_644ea0 message buffer).
     void EnterModalUI(const char* msg);
     // Takes the REAL MFC CDialog. BINARY-PROVEN, not assumed: ExitModalUI (0x903f0)
     // dispatches `call [vtbl+0xc0]` = slot 48, and MFC CDialog's vtable (0x1eb174)

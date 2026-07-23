@@ -444,6 +444,13 @@ names + authorized jump-table reloc fields moved and every resolved offset is un
 proven safe over all objs (exact-match count unchanged). See **`docs/data-attribution.md`**;
 `gruntz data-audit` complements it with a retail data-byte attribution ledger.
 
+The normalizer also attempts content names for emitted `_$E<n>` text helpers,
+but that does **not** make the ordinal a stable binding. Retail delinking may
+omit relocation records that exist in the recompiled object; the resulting
+digest then retains different address bytes and cannot establish identity.
+These helpers remain unlabelled and are recorded only in
+`config/compiler-generated-functions.tsv`.
+
 ## Pairing (objdiff)
 
 `build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`) pairs, per unit:
@@ -481,8 +488,11 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    - `RVA(addr, size)` — a matched function;
    - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it
      is referenced through);
-   - `RVA_COMPGEN(<rva>, <size>, <mangled>)` — the macro (rva.h) for a compiler-generated fn with no
-     source body (a `??_G` deleting dtor) that can't hold an attribute.
+   - `RVA_COMPGEN(<rva>, <size>, <mangled>)` — the macro (rva.h) for a
+     deterministically named compiler-generated function with no source body
+     (such as a `??_G` deleting dtor) that cannot hold an attribute. Volatile
+     ordinal names such as `_$E<n>` are forbidden here and belong in
+     `config/compiler-generated-functions.tsv`.
 
    `labels.py` reads `RVA` from **LLVM IR** (`@llvm.global.annotations`
    pairs the mangled symbol DIRECTLY with the annotation — no positional join;

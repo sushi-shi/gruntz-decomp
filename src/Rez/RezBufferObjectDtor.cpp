@@ -14,6 +14,9 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
     }
 }
 
+RVA(0x0017f300, 0x3)
+RezElem40::RezElem40() {}
+
 RVA(0x0017f330, 0x51)
 CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {

@@ -71,9 +71,21 @@ SIZE(0x1c);
 // ---------------------------------------------------------------------------
 class CDrawSubWorker : public CLoadable {
 public:
-    // Out-of-line @0x158f30: the CLoadable seed fused into the leaf ctor (the
-    // CResolveNode(i32,i32,i32) precedent in Loadable.h) + m_width = 0.
+    // Out-of-line @0x158f30; ChildA calls this retained copy.
     CDrawSubWorker(i32 a1, i32 a2, i32 a3);
+
+protected:
+    // CDDrawSurfacePair's construction path has the same base initialization
+    // semantics but is inline at its only two call sites: retail retains the
+    // nested CLoadable call, then seeds m_width before the derived vptr.
+    enum InlineCtorTag {
+        INLINE_CTOR
+    };
+    CDrawSubWorker(InlineCtorTag, i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
+        m_width = 0;
+    }
+
+public:
     virtual i32 IsLoaded() OVERRIDE;   // [5] 0x158f60 (declared-only, unreconstructed)
     virtual void Unload() OVERRIDE;    // [7] 0x159080 (declared-only, unreconstructed)
     virtual i32 GetClassId() OVERRIDE; // [8] 0x158f80 (declared-only, unreconstructed)

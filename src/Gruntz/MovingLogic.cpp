@@ -14,9 +14,8 @@ const double g_motionNegHalf = -0.5;
 DATA(0x001f04f0)
 const double g_motionTimeScale = 0.001; // 0x5f04f0
 
-// The standalone ctor. The +0x38..+0x10c motion ints are zeroed in retail's
-// scheduled "column" order (all .a/low fields, then all .b/high fields), then the
-// twelve coordinate bounds are seeded to the default [MIN,MAX] box.
+// The standalone ctor. Its CMotionState member constructor is inlined, producing
+// the scheduled zeroing and default [MIN,MAX] bounds at +0x38.
 // @early-stop
 // 98.4% (vptr-stamp scheduling artifact, 6 residual bytes = ONE instruction):
 // prologue, the /GX EH frame, the byte-exact field-zero "column" schedule, the
@@ -31,49 +30,7 @@ const double g_motionTimeScale = 0.001; // 0x5f04f0
 // @interleaver CMovingLogic - own-class out-of-line COMDAT (0x13xxx leaf-ctor pool, run
 // methods sit in the engine band 0x16cdd0+); RVA-placement artifact per the header note.
 RVA(0x00013940, 0x1e1)
-CMovingLogic::CMovingLogic() {
-    m_78 = 0;
-    m_80 = 0;
-    m_88 = 0;
-    m_60 = 0;
-    m_68 = 0;
-    m_70 = 0;
-    m_48 = 0;
-    m_50 = 0;
-    m_58 = 0;
-    m_band38 = 0; // the CMotionState band's dword 0 (flat overlay zero-init)
-    m_40 = 0;
-    m_f8 = 0;
-    m_100 = 0;
-    m_108 = 0;
-    m_7c = 0;
-    m_84 = 0;
-    m_8c = 0;
-    m_64 = 0;
-    m_6c = 0;
-    m_74 = 0;
-    m_4c = 0;
-    m_54 = 0;
-    m_5c = 0;
-    m_band3c = 0; // the band's dword 1
-    m_44 = 0;
-    m_fc = 0;
-    m_104 = 0;
-    m_10c = 0;
-    m_f0 = 0;
-    m_a8 = g_movingLogicMin;
-    m_c0 = g_movingLogicMax;
-    m_b0 = g_movingLogicMin;
-    m_c8 = g_movingLogicMax;
-    m_b8 = g_movingLogicMin;
-    m_d0 = g_movingLogicMax;
-    m_110 = g_movingLogicMax;
-    m_118 = g_movingLogicMax;
-    m_120 = g_movingLogicMax;
-    m_128 = g_movingLogicMax;
-    m_130 = g_movingLogicMax;
-    m_138 = g_movingLogicMax;
-}
+CMovingLogic::CMovingLogic() {}
 
 RVA(0x00013bb0, 0x4)
 LogicTypeId CMovingLogic::GetTypeTag() {
@@ -118,6 +75,41 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     return accum;
 }
 
+RVA(0x0016d000, 0x189)
+istream& ReadCurve(istream& accum, CMotionState& c) {
+    accum >> c.m_00;
+    accum >> c.m_08;
+    accum >> c.m_10;
+    accum >> c.m_18;
+    accum >> c.m_20;
+    accum >> c.m_28;
+    accum >> c.m_30;
+    accum >> c.m_38;
+    accum >> c.m_40;
+    accum >> c.m_48;
+    accum >> c.m_50;
+    accum >> c.m_70;
+    accum >> c.m_78;
+    accum >> c.m_80;
+    accum >> c.m_88;
+    accum >> c.m_90;
+    accum >> c.m_98;
+    accum >> c.m_a0;
+    accum >> c.m_a8;
+    accum >> c.m_b0;
+    accum >> c.m_b8;
+    accum >> c.m_c0;
+    accum >> c.m_c8;
+    accum >> c.m_d0;
+    accum >> c.m_d8;
+    accum >> c.m_e0;
+    accum >> c.m_e8;
+    accum >> c.m_f0;
+    accum >> c.m_f8;
+    accum >> c.m_100;
+    return accum;
+}
+
 // ---------------------------------------------------------------------------
 // 0x16e7f0 - CUserLogic::SerializeMove(arc, mode, a3, a4): the class's OWN vtable
 // slot-1 override (vtbl 0x1e705c[1], `override` of CUserBase's slot 1 per RTTI;
@@ -146,7 +138,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         // WRITE: render the name to bute text, length-prefix it, append ints.
         char buf[0x100];
         ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
-        WriteName(&accum, &m_link);
+        accum << m_link.m_str;
         i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
         arc->Write(&len, 4);
         arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
@@ -162,7 +154,7 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         void* buf = RezAlloc(len);
         arc->Read(buf, len);
         istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
-        ReadName(&accum, &m_link);
+        accum >> m_link.m_str;
         RezFree(buf);
         arc->Read(&m_28, 4);
         arc->Read(&m_2c, 4);

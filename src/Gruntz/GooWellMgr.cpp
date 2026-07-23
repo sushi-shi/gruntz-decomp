@@ -5,6 +5,7 @@
 #include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
 #include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
 #include <Gruntz/Grunt.h>
+#include <Gruntz/Warlord.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -143,7 +144,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                 )
                                 && out) {
                                 if (out->m_7c->m_logic) {
-                                    (static_cast<CGrunt*>(out->m_7c->m_logic))
+                                    (static_cast<CWarlord*>(out->m_7c->m_logic))
                                         ->ResolveDeathAnimation();
                                 }
                             }
@@ -162,7 +163,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                 )
                                 && out) {
                                 if (out->m_7c->m_logic) {
-                                    (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveAnimation();
+                                    (static_cast<CWarlord*>(out->m_7c->m_logic))
+                                        ->RaiseBattleAlert();
                                 }
                             }
                             ClearRow(i);

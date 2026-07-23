@@ -591,7 +591,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     CWwdSpatialMgr*& worker = m_scroll;
     if (worker) {
         worker->FreeGrids();
-        worker->ListDtor();
+        worker->m_iter.~CWwdGridIter();
         ::operator delete(worker);
         worker = 0;
     }

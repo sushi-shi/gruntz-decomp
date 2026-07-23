@@ -45,6 +45,7 @@ ADDR = r"0x[0-9a-f]{8}"                 # zero-padded 8-digit lowercase RVA
 HEXN = r"(?:0x0|0x[1-9a-f][0-9a-f]*)"   # unpadded lowercase hex (0x0 = unknown)
 NAME = r"[A-Za-z_]\w*"                  # a plain class name
 MANGLED = r"[^\s,()]+"                  # a verbatim mangled symbol
+VOLATILE_COMPGEN_RE = re.compile(r"\bRVA_COMPGEN\([^)]*,\s*_?\$E[0-9]+\s*\)")
 
 CANON = {
     "RVA": rf"RVA\({ADDR}, {HEXN}\)",
@@ -88,6 +89,13 @@ def scan(path: Path):
                         ln.strip()[:90]))
     raw_lines = raw.splitlines()
     for i, ln in enumerate(blank_comments(raw).splitlines(), 1):
+        if VOLATILE_COMPGEN_RE.search(ln):
+            out.append((
+                i,
+                "volatile _$E<n> ordinal is evidence, not a source label "
+                "(use config/compiler-generated-functions.tsv)",
+                ln.strip()[:90],
+            ))
         for m in FIND_RE.finditer(ln):
             name = m.group(1)
             hit = CANON_RE[name].match(ln, m.start())

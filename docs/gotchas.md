@@ -14,6 +14,14 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   normalize / content-address step, so it can report a function unchanged when it actually
   moved (76%→85% shown as 76%). **Only `gruntz build --fast` gives accurate per-function
   fuzzy%.** Never trust a bare `report generate` number.
+- **A normalization refresh can expose fake `_$E<n>` matches.** The suffix is a
+  compiler emission ordinal, and retail helpers may lack the relocation records
+  needed to hash them like the base object. A broad loss of exact tiny
+  static-init helpers after refresh is evidence that old ordinal pins or stale
+  normalized copies inflated the report; keep the real static objects, remove
+  the pins, and preserve their observed rows in
+  `config/compiler-generated-functions.tsv`. See
+  `docs/patterns/volatile-compiler-ordinal-refresh-dip.md`.
 - **Inline `.text` jump tables defeat objdiff alignment.** A function with one or two inline
   jump tables can't be aligned across the table region, so its *current* % measures
   alignment luck, not byte-correctness — **a byte-BETTER reconstruction can show a LOWER

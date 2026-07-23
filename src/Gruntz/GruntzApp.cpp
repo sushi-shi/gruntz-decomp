@@ -145,7 +145,7 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 RVA(0x00080c00, 0x48)
-void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
+void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
     DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &ErrorDialogProcThunk, 0);
 }

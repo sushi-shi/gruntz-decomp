@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """compgen_order.py - RVA_COMPGEN placement ratchet.
 
-RVA_COMPGEN(<rva>, <size>, <mangled>) pins a COMPILER-GENERATED function (a
-``??_G`` scalar-deleting dtor, a ``??_D`` vbase dtor, an ``_$E`` EH funclet, an
-out-of-line MFC-inline COMDAT, ...) that has no source body to hang an RVA() on.
+RVA_COMPGEN(<rva>, <size>, <mangled>) pins a deterministically named
+COMPILER-GENERATED function (a ``??_G`` scalar-deleting dtor, a ``??_D`` vbase
+dtor, an out-of-line MFC-inline COMDAT, ...) that has no source body to hang an
+RVA() on. Volatile ``_$E<n>`` ordinal helpers are evidence-only TSV rows.
 The convention (rva.h) is that every invocation sits in RVA ORDER among the TU's
 other labeled functions, so a reader scanning a TU top-to-bottom walks the retail
 address space monotonically - the same property tu_order_check ratchets for

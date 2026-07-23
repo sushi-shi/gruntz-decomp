@@ -225,18 +225,8 @@ CMulti::~CMulti() {
     // CMulti : CPlay. No manual base teardown here.
 }
 
-RVA_COMPGEN(0x000b5360, 0xa, _$E742240)
-RVA_COMPGEN(0x000b5380, 0xa, _$E742272)
-RVA_COMPGEN(0x000b53a0, 0xe, _$E742304)
-RVA_COMPGEN(0x000b53c0, 0xa, _$E742336)
-
 DATA(0x00246778)
 CFile g_obj646778;
-
-RVA_COMPGEN(0x000b53e0, 0xa, _$E742368)
-RVA_COMPGEN(0x000b5400, 0xa, _$E742400)
-RVA_COMPGEN(0x000b5420, 0xe, _$E742432)
-RVA_COMPGEN(0x000b5440, 0xa, _$E742464)
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
@@ -1370,7 +1360,7 @@ i32 CMulti::JoinSession() {
 // (`push ebx`/`push eax` where we materialize immediates) - non-source-steerable
 // block-layout + register-reuse heuristics. Final sweep.
 RVA(0x000b8020, 0x22f)
-i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
+INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     g_setupDlgHwnd = hDlg;
     if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
         goto ret_true;
@@ -2956,7 +2946,7 @@ namespace NetLobby {
     // __stdcall(edit, str): append `str` to an edit control, prefixing a CRLF when
     // the control is non-empty, then scroll to keep the caret in view.
     RVA(0x000bb3e0, 0xe5)
-    void __stdcall AppendEditLine(HWND edit, char* str) {
+    void WINAPI AppendEditLine(HWND edit, char* str) {
         if (!edit || !str || !str[0]) {
             return;
         }

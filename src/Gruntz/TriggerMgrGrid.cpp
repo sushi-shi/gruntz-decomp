@@ -257,7 +257,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 // from scroll[0] (`(scroll0-view10)+sx`), our cl reloads sx and accumulates from it
 // (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
-void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
+CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CGameLevel* view = m_world->m_level;
     i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.left + sx;
     i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.top + sy;
@@ -274,7 +274,7 @@ void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 st
 // in ebx. High register pressure (5 args + this + nested loop) -> different spill picks.
 // Logic + offsets byte-exact. topic:wall topic:regalloc.
 RVA(0x0006bea0, 0xe2)
-void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
+CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
     i32 row, last;
     if (startRow == 5) {
         row = 0;
@@ -641,7 +641,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTileX;
         i32 py = cell->m_moveTileY;
-        this->Fx(px, py, py, cell->m_entranceReason, -1, py);
+        this->LoadTileArrivalFx(px, py, py, cell->m_entranceReason, -1, py);
     }
     i32 by = (a20 & ~0x1f) + 0x10;
     i32 bx = (a1c & ~0x1f) + 0x10;
@@ -662,10 +662,8 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 // (the `bool` local is required for the setne form but shifts the result register). topic:wall.
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
-    i32 outRow = 0;
-    i32 outCol = 0;
-    CGrunt* cell = this->Hit(kind, y, y, &outRow, &outCol);
-    if (cell == 0 || outCol != g_curPlayer) {
+    CGrunt* cell = FindGruntAt(x, y, reinterpret_cast<RECT*>(kind), &kind, &y, 0);
+    if (cell == 0 || kind != g_curPlayer) {
         return;
     }
     char* name = g_typeColl.GetNameRecords(cell->m_objAux->m_1c)->m_name;

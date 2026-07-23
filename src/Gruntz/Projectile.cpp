@@ -127,34 +127,33 @@ u32 g_defaultZ = 0;
 // (retail 0/1/2/3 over +0x38 + CPtrList) and the m_hitList-vs-body order differ.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
-    // The band init - THIS ctor's own copy (its grunt sibling @0x47a10 carries a
-    // drifted copy: g_gruntSpawnScale for the step + a SetZ call for the Z seed).
-    Motion()->Init();
+    // CMovingLogic constructed the real m_motion member. This leaf applies its
+    // own bounds, step scale, and Z seed.
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild (if/else, not ?:, so the constant branch stays a mov/mov copy).
     i32 lo0 = m_objAux->m_2c;
     if (lo0 == 0) {
-        m_a8 = g_movingLogicMin;
+        Motion()->m_70 = g_movingLogicMin;
     } else {
-        m_a8 = static_cast<double>(lo0);
+        Motion()->m_70 = static_cast<double>(lo0);
     }
     i32 lo1 = m_objAux->m_34;
     if (lo1 == 0) {
-        m_b0 = g_movingLogicMin;
+        Motion()->m_78 = g_movingLogicMin;
     } else {
-        m_b0 = static_cast<double>(lo1);
+        Motion()->m_78 = static_cast<double>(lo1);
     }
     i32 hi0 = m_objAux->m_30;
     if (hi0 == 0) {
-        m_c0 = g_movingLogicMax;
+        Motion()->m_88 = g_movingLogicMax;
     } else {
-        m_c0 = static_cast<double>(hi0);
+        Motion()->m_88 = static_cast<double>(hi0);
     }
     i32 hi1 = m_objAux->m_38;
     if (hi1 == 0) {
-        m_c8 = g_movingLogicMax;
+        Motion()->m_90 = g_movingLogicMax;
     } else {
-        m_c8 = static_cast<double>(hi1);
+        Motion()->m_90 = static_cast<double>(hi1);
     }
     Motion()->SetParams(
         static_cast<double>(m_object->m_screenX),
@@ -169,7 +168,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         static_cast<double>(g_frameTime) * g_motionZScale,
         0.0
     );
-    m_110 = m_118 = m_120 = static_cast<double>(g_defaultZ);
+    Motion()->m_d8 = Motion()->m_e0 = Motion()->m_e8 = static_cast<double>(g_defaultZ);
     m_148 = 0;
     m_14c = 0;
     m_object->m_moveMode = 7;
@@ -447,11 +446,6 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
 }
-
-RVA_COMPGEN(0x000df900, 0xa, _$E915712)
-RVA_COMPGEN(0x000df920, 0x15, _$E915744)
-RVA_COMPGEN(0x000df950, 0xe, _$E915792)
-RVA_COMPGEN(0x000df970, 0x1f, _$E915824)
 
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
@@ -906,7 +900,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // reinterpreted at use exactly like CUserLogic::SerializeMove does.
 // ---------------------------------------------------------------------------
 // @early-stop
-// scratch-slot scheduling tail (same family as CTriggerLoadRec/CEventLoadRec/
+// scratch-slot scheduling tail (same family as CTriggerLoadRec/CTimer::Deserialize/
 // CGruntStateRec): the dual-mode switch, every Read/Write field+size, the
 // 7-entry name-ref loop, the type-code-gated map lookup, the g_coordPool
 // m_freeHead splice + AddTail, the inline strlen/strcpy KeyOfValue temps, the
@@ -1082,11 +1076,6 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
 
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
-
-RVA_COMPGEN(0x000e1790, 0xa, _$E923536)
-RVA_COMPGEN(0x000e17b0, 0x15, _$E923568)
-RVA_COMPGEN(0x000e17e0, 0xe, _$E923616)
-RVA_COMPGEN(0x000e1800, 0x1f, _$E923648)
 
 static inline CTBombEntry* TBombLookup(i32 coord) {
     return reinterpret_cast<CTBombEntry*>(CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));

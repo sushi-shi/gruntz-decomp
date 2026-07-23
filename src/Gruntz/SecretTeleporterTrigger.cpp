@@ -93,11 +93,6 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     }
 }
 
-RVA_COMPGEN(0x000420b0, 0xa, _$E270512)
-RVA_COMPGEN(0x000420d0, 0x15, _$E270544)
-RVA_COMPGEN(0x00042100, 0xe, _$E270592)
-RVA_COMPGEN(0x00042120, 0x1f, _$E270624)
-
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     CActEntry* e = ActLookup(coord);
@@ -158,11 +153,6 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
         m_38->m_flags |= 0x10000;
     }
 }
-
-RVA_COMPGEN(0x000426c0, 0xa, _$E272064)
-RVA_COMPGEN(0x000426e0, 0x15, _$E272096)
-RVA_COMPGEN(0x00042710, 0xe, _$E272144)
-RVA_COMPGEN(0x00042730, 0x1f, _$E272176)
 
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {

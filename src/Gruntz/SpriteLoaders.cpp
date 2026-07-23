@@ -172,7 +172,7 @@ i32 CTimer::Tick(i32 dt) {
             CGameObject* obj = static_cast<CGameObject*>(fv);
             CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
-                static_cast<CGrunt*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
+                static_cast<CWarlord*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
             }
         }
         return 1;
@@ -321,9 +321,9 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 }
 
 // ---------------------------------------------------------------------------
-// CTimer::HandleEvent (0x9c1c0) - load (kind==4) / save (kind==7) the timer
-// through the archive: dispatch the whole-object (de)serializer (kind 4 ->
-// Deserialize 0x9c650, kind 7 -> Serialize 0x9c2e0) then stream the two 64-bit
+// CTimer::HandleEvent (0x9c1c0) - save (kind==4) / load (kind==7) the timer
+// through the archive: dispatch the whole-object serializer (kind 4 ->
+// Serialize 0x9c2e0, kind 7 -> Deserialize 0x9c650) then stream the two 64-bit
 // clock pairs (m_baseTimeLo/m_accumLo and m_38/m_40) field by field via the archive's
 // Read(+0x2c)/Write(+0x30) virtuals.
 // ---------------------------------------------------------------------------
@@ -338,12 +338,12 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         return 0;
     }
     if (kind == 4) {
-        i32 r = Deserialize(ar);
+        i32 r = Serialize(ar);
         if (!r) {
             return r;
         }
     } else if (kind == 7) {
-        i32 r = Serialize(ar);
+        i32 r = Deserialize(ar);
         if (!r) {
             return r;
         }
@@ -351,25 +351,25 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
 
     i32* p = &m_baseTimeLo;
     if (kind == 4) {
-        ar->Read(p, 8);
+        ar->Write(p, 8);
         p += 2;
-        ar->Read(p, 8);
+        ar->Write(p, 8);
     } else if (kind == 7) {
-        ar->Write(p, 8);
+        ar->Read(p, 8);
         p += 2;
-        ar->Write(p, 8);
+        ar->Read(p, 8);
     }
 
     p = &m_38;
     if (kind == 4) {
-        ar->Read(p, 8);
+        ar->Write(p, 8);
         p += 2;
-        ar->Read(p, 8);
+        ar->Write(p, 8);
         return 1;
     } else if (kind == 7) {
-        ar->Write(p, 8);
+        ar->Read(p, 8);
         p += 2;
-        ar->Write(p, 8);
+        ar->Read(p, 8);
     }
     return 1;
 }

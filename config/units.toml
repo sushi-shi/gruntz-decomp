@@ -2000,6 +2000,10 @@ unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
 flags = "base"
 [[unit]]
+unit = "bitarraystream"
+source = "src/Utils/BitArrayStream.cpp"
+flags = "base"
+[[unit]]
 unit = "surfacepalette"
 source = "src/Image/PaletteReset.cpp"
 flags = "base"

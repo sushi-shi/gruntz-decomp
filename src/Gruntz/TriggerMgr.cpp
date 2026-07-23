@@ -41,6 +41,7 @@
 #include <Gruntz/GameLevel.h>    // CDDrawWorkerHost (PositionUpdate @0x788d0 tail call)
 #include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
 #include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
+#include <Gruntz/Warlord.h>      // CWarlord (the +0x2a0 player-fort logic)
 #include <Gruntz/GruntPuddle.h>  // CGruntPuddle (the baseList element - ex CTmCandidate)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig (g_gameReg->m_cueSink SpawnVoiceDriver ReportError)
 #include <Gruntz/String.h>
@@ -642,7 +643,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     if (m_groupFlag == 0) {
         return 0;
     }
-    CGrunt* hit = this->Hit5(a14, a18, 0, 0, 5);
+    CGrunt* hit = CellHitTest(a14, a18, 0, 0, 5);
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
         cell = 0;
@@ -754,8 +755,13 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     }
 
 arm:
-    (static_cast<CUserLogic*>(sprite->m_7c->m_logic))
-        ->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, 1);
+    (static_cast<CLightFx*>(sprite->m_7c->m_logic))
+        ->Activate(
+            reinterpret_cast<i32>("GAME_LIGHTING_TARGETCURSOR"),
+            reinterpret_cast<i32>("GAME_TARGETCURSOR"),
+            kindArg,
+            1
+        );
     return 1;
 
 reportError:
@@ -919,7 +925,7 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     if (g_gameReg->m_134 == 1) {
-        CGrunt* fx = m_pendingFx;
+        CWarlord* fx = m_pendingFx;
         if (fx != 0) {
             fx->ResolveDeathAnimation();
         }
@@ -952,14 +958,15 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
         tile = grid->m_rowInts[ty][tx * 8 - tx];
     }
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
-        Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
+        g_gameReg->m_cmdGrid
+            ->LoadPowerupIconSprites(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 idx = a3 - 1;
     CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
-        Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
+        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(0x14, rec->m_x, rec->m_y, 0, a3, 0);
     }
     return 1;
 }
@@ -1009,7 +1016,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         }
         if (k == 0x14) {
             if (g_gameReg->m_134 == 1) {
-                CGrunt* fx = m_pendingFx;
+                CWarlord* fx = m_pendingFx;
                 if (fx != 0) {
                     fx->ResolveDeathAnimation();
                 }
@@ -1240,8 +1247,6 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
     return 1;
 }
 
-void Ar_WriteId(void* id, i32 stride, void* archive); // 0x1b8760
-
 // 0x7a760: ScanGroup(ar) - serialize the whole manager into archive `ar`: the 4x15 grid of
 // cell ids, the four per-row arrays, the magic table + its bytes, the record + selection
 // lists, the goal/overlay/state words. ret 0 when ar/level null or the overlay write fails.
@@ -1267,7 +1272,8 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             i32 id = 0;
             if (g != 0) {
                 id = g->m_object->m_188;
-                Ar_WriteId(lvl->m_childGroup, id, ar);
+                void* found = 0;
+                lvl->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), found);
             }
             ar->Write(&id, 4);
             cell++;
@@ -1313,7 +1319,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         goalId = goal->m_188;
     }
     ar->Write(&goalId, 4);
-    CGrunt* ov = m_pendingFx; // the pending-fx grunt; its HUD carries the archive id
+    CWarlord* ov = m_pendingFx;
     i32 ovId = 0;
     if (ov != 0 && ov->m_object != 0) {
         ovId = ov->m_object->m_188;
@@ -1331,7 +1337,8 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             return 0;
         }
         i32 oid = obj->m_object->m_188;
-        Ar_WriteId(lvl->m_childGroup, oid, ar);
+        void* found = 0;
+        lvl->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(oid), found);
         ar->Write(&oid, 4);
     }
     i32 hasOv = (m_overlay != 0) ? 1 : 0;
@@ -1485,9 +1492,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (looked == 0) {
                 return 0;
             }
-            // the looked-up sprite's bound logic IS the pending-fx grunt (the creator
-            // downcast every m_7c->m_logic consumer does)
-            CGrunt* obj = static_cast<CGrunt*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
+            CWarlord* obj =
+                static_cast<CWarlord*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
             m_pendingFx = obj;
             if (obj == 0) {
                 return 0;

@@ -20,6 +20,7 @@
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr (m_cmdGrid)
 #include <Wwd/WwdGameObjectFamily.h> // CGameObject (the wide-object family base)
 #include <Gruntz/Grunt.h>            // CGrunt (grid cells) + GruntObjEntry (death chain)
+#include <Gruntz/Warlord.h>          // player-slot m_00c resolves to warlord logic
 #include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
@@ -372,10 +373,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             if (g_gameReg->m_world->m_childGroup->m_map48
                                     .Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
                                 && _dr) {
-                                // the entry's inner receiver is the grunt logic (thunk
-                                // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
-                                // AnimWorkerObj::m_logic holds the bound grunt logic leaf
-                                CGrunt* _d = static_cast<CGrunt*>(_dr->m_7c->m_logic);
+                                CWarlord* _d = static_cast<CWarlord*>(_dr->m_7c->m_logic);
                                 if (_d) {
                                     _d->ResolveDeathAnimation();
                                 }

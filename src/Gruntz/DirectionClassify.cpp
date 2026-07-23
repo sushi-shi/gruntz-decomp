@@ -35,7 +35,6 @@ GruntDirectionCell g_gruntMoveDirCenter(1, 1, 0);
 // dx via `fld other.x; fld this.x; fxch; fsubp` and lands dy=edi/dx=ebx; that register
 // swap ripples through the sign tests. x87-stack-schedule + regalloc wall; permuter
 // found no closing spelling.
-RVA_COMPGEN(0x000479e0, 0x1a, _$E293344)
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == 0) {

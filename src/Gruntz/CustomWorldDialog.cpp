@@ -55,18 +55,6 @@ i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a
 // The three file-scope CStrings each emit wrapper/constructor/registrar/
 // destructor helpers. The _$E<n> suffixes are unique placeholders; the
 // compiler-private numbers are unstable.
-RVA_COMPGEN(0x0003ac10, 0xa, _$E240656)
-RVA_COMPGEN(0x0003ac30, 0xa, _$E240688)
-RVA_COMPGEN(0x0003ac50, 0xe, _$E240720)
-RVA_COMPGEN(0x0003ac70, 0xa, _$E240752)
-RVA_COMPGEN(0x0003ac90, 0xa, _$E240784)
-RVA_COMPGEN(0x0003acb0, 0xa, _$E240816)
-RVA_COMPGEN(0x0003acd0, 0xe, _$E240848)
-RVA_COMPGEN(0x0003acf0, 0xa, _$E240880)
-RVA_COMPGEN(0x0003ad10, 0xa, _$E240912)
-RVA_COMPGEN(0x0003ad30, 0xa, _$E240944)
-RVA_COMPGEN(0x0003ad50, 0xe, _$E240976)
-RVA_COMPGEN(0x0003ad70, 0xa, _$E241008)
 
 // ===========================================================================
 // run the custom-world dialog. Seed 0x62c26c with the supplied parent (or the

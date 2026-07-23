@@ -11,6 +11,7 @@
 #include <string.h> // inline strcpy / memcpy / memset
 
 #include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
+#include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
 void* operator new(u32); // engine allocator (reloc-masked rel32)
@@ -37,10 +38,6 @@ DATA(0x00283eb4)
 i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
 // g_imageCache's file-scope construction/destruction family.
-RVA_COMPGEN(0x0013e060, 0xa, _$E1302624)
-RVA_COMPGEN(0x0013e070, 0xa, _$E1302640)
-RVA_COMPGEN(0x0013e080, 0xe, _$E1302656)
-RVA_COMPGEN(0x0013e090, 0xa, _$E1302672)
 
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
@@ -2001,7 +1998,7 @@ void CDDSurface::
     clip.b = r1;
     clip.c = r2;
     clip.d = r3;
-    this->Run(a1, a2, a3, a4, a5, a6, clip);
+    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, clip.a, clip.b, clip.c, clip.d);
 }
 
 RVA(0x001412d0, 0x24)

@@ -38,11 +38,6 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     m_lastLayer = 0;
 }
 
-RVA_COMPGEN(0x0007f520, 0xa, _$E521504)
-RVA_COMPGEN(0x0007f540, 0x15, _$E521536)
-RVA_COMPGEN(0x0007f570, 0xe, _$E521584)
-RVA_COMPGEN(0x0007f590, 0x1f, _$E521616)
-
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CToyActEntry*>(CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))

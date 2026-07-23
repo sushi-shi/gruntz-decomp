@@ -21,10 +21,7 @@ class istream;
 
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
-void ReadCurve(istream& accum, CMotionState& c); // (external curve parser; reloc-masked)
-
-void WriteName(void* accum, void* pstr); // 0x193080
-void ReadName(void* accum, void* pstr);  // 0x193140
+istream& ReadCurve(istream& accum, CMotionState& c); // 0x16d000
 
 extern i32 g_logicTypesRegistered; // 0x6bf674 (?g_logicTypesRegistered@@3HA)
 

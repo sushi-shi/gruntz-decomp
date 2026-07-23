@@ -3105,8 +3105,6 @@ rva,name,lib,confidence,source
 0x130570,__pxcptinfoptrs,LIBCMT,HIGH,manual-crt-reclass
 0x18bf4d,crt_fp_math_18bf4d,LIBCMT,HIGH,manual-crt-reclass
 0x18d4cd,crt_fp_math_18d4cd,LIBCMT,HIGH,manual-crt-reclass
-0x193080,crt_iostream_193080,LIBCIMT,HIGH,manual-crt-reclass
-0x193140,crt_iostream_193140,LIBCIMT,HIGH,manual-crt-reclass
 0x1badee,crt_E_static_dtor_1badee,LIBCMT,HIGH,manual-crt-reclass
 0x1bae2c,crt_E_static_dtor_1bae2c,LIBCMT,HIGH,manual-crt-reclass
 0x1bae6a,crt_E_static_dtor_1bae6a,LIBCMT,HIGH,manual-crt-reclass

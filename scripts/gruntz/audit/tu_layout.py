@@ -69,6 +69,7 @@ RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s
 # participates in the intra-TU order check like RVA().
 RVA_COMPGEN_RE = re.compile(
     r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
+VOLATILE_COMPGEN_NAME_RE = re.compile(r"^_?\$E[0-9]+$")
 # the Class::method (or Class::~Class / operator) on the definition line below it.
 SIG_RE = re.compile(r"([A-Za-z_]\w*)::(~?[A-Za-z_]\w*|operator[^\(]*)")
 
@@ -146,6 +147,8 @@ def load_funcs(src: Path = SRC) -> list[Func]:
             cm = RVA_COMPGEN_RE.search(ln)
             if not m and not cm:
                 continue
+            if cm and VOLATILE_COMPGEN_NAME_RE.match(cm.group(3)):
+                continue
             match = m or cm
             rva, size = int(match.group(1), 16), _parse_size(match.group(2))
             cls = meth = None
@@ -177,6 +180,10 @@ def load_claimed_extents(roots=(SRC, INCLUDE)) -> list[tuple[int, int]]:
                 text = path.read_text(errors="replace")
                 for rx in (RVA_RE, RVA_COMPGEN_RE):
                     for match in rx.finditer(text):
+                        if rx is RVA_COMPGEN_RE and VOLATILE_COMPGEN_NAME_RE.match(
+                            match.group(3)
+                        ):
+                            continue
                         rva = int(match.group(1), 16)
                         size = _parse_size(match.group(2))
                         claimed.append((rva, rva + max(size, 1)))

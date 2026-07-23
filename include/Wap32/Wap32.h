@@ -199,11 +199,6 @@ public:
     // Static window procedure stored into m_wc.lpfnWndProc.
     static LRESULT CALLBACK GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
-    // Non-virtual modal-screen handler @0x80c00 (reloc-masked; ILT 0x2b0d). `msg` is the
-    // modal TEXT, not an id: the body strlen/strcpy's it into the g_644ea0 message buffer,
-    // then DialogBoxParamA's the message dialog on m_hInstance.
-    void RunModal(const char* msg, HWND hwnd);
-
     CGameWnd* m_gameWnd;          // +0x04  the game window (deleted by CloseResources)
     CGameMgr* m_gameMgr;          // +0x08  the game manager (deleted by CloseResources)
     HINSTANCE m_hInstance;        // +0x0c  hInstance

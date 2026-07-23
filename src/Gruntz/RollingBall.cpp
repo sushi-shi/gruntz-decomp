@@ -64,8 +64,6 @@ VTBL(CRollingBall, 0x001e86fc);
 
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
 
-void RbClearCell(void* obj, i32 a, i32 b, i32 z); // 0x26df (ILT thunk; target unresolved)
-
 static i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
 }
@@ -170,11 +168,6 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_moveDeltaHi = 0;
     m_moveDeltaLo = 0;
 }
-
-RVA_COMPGEN(0x000afd40, 0xa, _$E720192)
-RVA_COMPGEN(0x000afd60, 0x15, _$E720224)
-RVA_COMPGEN(0x000afd90, 0xe, _$E720272)
-RVA_COMPGEN(0x000afdb0, 0x1f, _$E720304)
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
@@ -294,7 +287,7 @@ i32 CRollingBall::Update() {
     if (logic->m_screenX == m_targetX && m_targetY == logic->m_screenY) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
-        RbClearCell(g_gameReg->m_cmdGrid, m_targetY, m_targetX, 0);
+        g_gameReg->m_cmdGrid->ApplySwitch(0, m_targetX, m_targetY);
 
         CMapMgr* map = g_gameReg->m_tileGrid;
         i32 cx = m_targetX >> 5;

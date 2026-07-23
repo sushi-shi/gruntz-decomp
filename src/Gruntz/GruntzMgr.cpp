@@ -42,6 +42,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CDDrawSubMgrLeafScan == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzApp.h>
 #include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane
 #include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
@@ -2657,7 +2658,7 @@ DATA_SYMBOL(0x0024556c, 0x4, _g_gameReg)
 // modal screen: stops the +0x60 timer if any, forces a map redraw + ticks the
 // world's dispatch object, then brings the hardware cursor visible
 // (while (ShowCursor(TRUE) < 0)), runs the modal handler on the app
-// (m_8->RunModal(msg, hwnd)) with the cursor-busy gate raised, clears the gate,
+// (CGruntzApp::ShowMessage(msg, hwnd)) with the cursor-busy gate raised, clears the gate,
 // and - if the cursor was already shown on entry - hides it again
 // (while (ShowCursor(FALSE) >= 0)). No-op when there is no app bound.
 // @early-stop
@@ -2685,7 +2686,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
 
     m_modalBusy = 1;
-    app->RunModal(msg, m_gameWnd->m_hwnd);
+    static_cast<CGruntzApp*>(app)->ShowMessage(msg, m_gameWnd->m_hwnd);
     NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (shown <= 0) {

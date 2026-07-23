@@ -29,11 +29,6 @@ CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 DATA(0x0024bdc0)
 i32 g_savedMultiWndProc = 0; // 0x24bdc0
 
-RVA_COMPGEN(0x000c1690, 0xa, _$E792208)
-RVA_COMPGEN(0x000c16b0, 0x3d, _$E792240)
-RVA_COMPGEN(0x000c1700, 0xe, _$E792320)
-RVA_COMPGEN(0x000c1720, 0x14, _$E792352)
-
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_host = a0;

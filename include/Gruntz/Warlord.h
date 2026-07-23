@@ -86,17 +86,14 @@ public:
     // raise the fort alert when an enemy is inside the panic radius (0x45270).
     void NotifyFortUnderAttack();
 
-    // The moving/idle/battlecry anim resolvers (0x45100/0x45960/0x45b60) are CWarlord's.
-    // This header used to claim they "are real CGrunt methods (the warlord `this` is a
-    // CGrunt receiver at these sites)" - that was an assertion with no caller evidence
-    // behind it, and the callers refute it: every retail caller of all three is a
-    // CWarlord method, 0x45100's include ??0CWarlord (the ctor, which can only call its
-    // own class's/bases' methods), and CWarlord's RTTI chain (CUserLogic/CUserBase/CWapX)
-    // has no CGrunt. They stay declared on CGrunt for now ONLY because their bodies use
-    // animation members (m_animPlayer/m_activeAnimDesc/m_*GeoSrc) that CWarlord does not
-    // model yet - see the blocker write-up in Warlord.cpp's banner. Not a wall: a
-    // dependency on the CGrunt-spine conversion Grunt.h tracks.
-    void RaiseBattleAlert(); // 0x457b0  (panic-radius alert variant)
+    // Animation resolvers. Every caller is a CWarlord method, including the
+    // constructor, and the accessed +0x38..+0xac fields map exactly to CWarlord's
+    // CWapX base and members. They were formerly misdeclared on CGrunt.
+    i32 ResolveMovingAnimation();    // 0x45100
+    i32 ResolveDeathAnimation();     // 0x455f0
+    i32 RaiseBattleAlert();          // 0x457b0 (joy / panic-radius alert variant)
+    i32 ResolveIdleAnimation();      // 0x45960
+    i32 ResolveBattlecryAnimation(); // 0x45b60
 
     // Past the 0x40 CUserLogic base. m_38 is the inherited CUserLogic::m_38
     // (anim player); CString m_54 is CWarlord's own destructible member; the
@@ -108,18 +105,13 @@ public:
     // The eleven per-state anim descriptors, each looked up as a CAniElement* out of
     // the bound object's m_animRegistry CMapStringToPtr (macro WARLORD_ANIM_LOOKUP:
     // `dst = (CAniElement*)h`, the sole driver; CreateAniEntry returns CAniElement*).
-    CAniElement* m_animIdle1;      // +0x58
-    CAniElement* m_animIdle2;      // +0x5c
-    CAniElement* m_animIdle3;      // +0x60
-    CAniElement* m_animIdle4;      // +0x64
-    CAniElement* m_animBattlecry1; // +0x68
-    CAniElement* m_animBattlecry2; // +0x6c
-    CAniElement* m_animBattlecry3; // +0x70
-    CAniElement* m_animJoy;        // +0x74
-    CAniElement* m_animDeath;      // +0x78
-    CAniElement* m_animMoving;     // +0x7c
-    CAniElement* m_animPanic;      // +0x80
-    char m_pad84[0x88 - 0x84];     // +0x84
+    CAniElement* m_idleAnims[4];      // +0x58..+0x67
+    CAniElement* m_battlecryAnims[3]; // +0x68..+0x73
+    CAniElement* m_animJoy;           // +0x74
+    CAniElement* m_animDeath;         // +0x78
+    CAniElement* m_animMoving;        // +0x7c
+    CAniElement* m_animPanic;         // +0x80
+    char m_pad84[0x88 - 0x84];        // +0x84
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
     // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.

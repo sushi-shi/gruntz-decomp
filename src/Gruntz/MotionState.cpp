@@ -1,3 +1,4 @@
+#define CMOTIONSTATE_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h> // own extern surface
 #include <Gruntz/MotionState.h>
 #include <math.h>

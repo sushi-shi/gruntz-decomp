@@ -34,13 +34,14 @@ public:
     // create flags (& 0x10000 = make-and-add path). +0x0c (INHERITED): the parent
     // CDDrawSurfaceMgr - read through OwnerMgr().
 public:
-    // The spawned-child ctor: the CreateChildren path reuses the shared base-family
-    // arg-ctor (??0CLoadable @0x156cb0 - <Gruntz/Loadable.h>, the ex "??0CDDrawSubMgr" -
-    // which stamps the CLoadable base vtable 0x5efc30) then manually re-stamps this
-    // class's own vtable (??_7 @0x5eff30). Declared-only here (the body IS the
-    // shared 0x156cb0 base ctor - the reloc pairs masked). The family rebase the
-    // old note asked for happened (: CDrawSubWorker, slots 7/8 = Unload/GetClassId).
-    CDDrawSurfacePair(i32 mgr, i32 kind, i32 a3); // 0x156cb0 (shared base ctor)
+    // Inline in CreateChildren: CDrawSubWorker itself inlines, leaving the nested
+    // CLoadable call @0x156cb0 followed by m_width, this vptr, m_surface, and the
+    // ownership flag in normal base/member construction order.
+    CDDrawSurfacePair(i32 mgr, i32 kind, i32 flags)
+        : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
+        m_surface = 0;
+        m_ownsSurface = 1;
+    }
 
     // --- slots 7..10 override the CLoadable/CDrawSubWorker scheme; 11..14 are new ---
     // slot 7 Unload (@0x1c) 0x163e20 (ex "TeardownSurface"): release the held

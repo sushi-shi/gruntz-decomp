@@ -137,11 +137,6 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-RVA_COMPGEN(0x000fbb50, 0xa, _$E1030992)
-RVA_COMPGEN(0x000fbb70, 0x15, _$E1031024)
-RVA_COMPGEN(0x000fbba0, 0xe, _$E1031072)
-RVA_COMPGEN(0x000fbbc0, 0x1f, _$E1031104)
-
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
     CHaznEntry* e = HaznLookup(coord);

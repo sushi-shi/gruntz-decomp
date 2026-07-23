@@ -4,8 +4,8 @@
 #include <Ints.h>
 #include <rva.h>
 
-extern const double g_motionMin; // 0x5f04b0 (-2147483647.0)
-extern const double g_motionMax; // 0x5f04b8 (2147483646.0)
+extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
+extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 
 extern const double g_motionNegHalf; // 0x5f04f8 (-0.5)
 extern const double g_motionZero;    // 0x5f0500 (0.0)
@@ -14,10 +14,6 @@ extern const double g_motionNegTwo;  // 0x5f0508 (-2.0)
 class CMotionState {
 public:
     CMotionState(); // 0x136d0
-    // The out-of-line ctor entry (0x136d0) the fat-world CMovingLogic leaf ctors
-    // invoke via a `+0x38` cast (the band is not a direct member of a fat-CUserLogic
-    // CMovingLogic; see Gruntz/MovingLogic.h). Same address as the ctor; reloc-masked.
-    void Init(); // 0x136d0
     i32 SetParams(
         double a0,
         double a1,
@@ -51,6 +47,38 @@ public:
     double m_f0, m_f8, m_100; // per-axis clamp (MAX)
 };
 SIZE_UNKNOWN();
+
+#ifndef CMOTIONSTATE_STANDALONE_CTOR
+inline CMotionState::CMotionState() {
+    m_40 = 0.0;
+    m_48 = 0.0;
+    m_50 = 0.0;
+    m_28 = 0.0;
+    m_30 = 0.0;
+    m_38 = 0.0;
+    m_10 = 0.0;
+    m_18 = 0.0;
+    m_20 = 0.0;
+    m_00 = 0.0;
+    m_08 = 0.0;
+    m_c0 = 0.0;
+    m_c8 = 0.0;
+    m_d0 = 0.0;
+    m_b8 = 0;
+    m_70 = g_movingLogicMin;
+    m_88 = g_movingLogicMax;
+    m_78 = g_movingLogicMin;
+    m_90 = g_movingLogicMax;
+    m_80 = g_movingLogicMin;
+    m_98 = g_movingLogicMax;
+    m_d8 = g_movingLogicMax;
+    m_e0 = g_movingLogicMax;
+    m_e8 = g_movingLogicMax;
+    m_f0 = g_movingLogicMax;
+    m_f8 = g_movingLogicMax;
+    m_100 = g_movingLogicMax;
+}
+#endif
 
 extern const double g_motionNegHalf;
 extern const double g_motionNegTwo;

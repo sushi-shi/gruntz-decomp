@@ -2,6 +2,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h>       // g_lastNow / g_frameTicks (frame-clock band)
+#include <Rez/RezAlloc.h>         // retail operator-new/delete allocator entry points
 #include <Gruntz/Random.h>        // the g_randSeed* LCG + g_coin* pair (GetAmbientId)
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h>       // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
@@ -23,6 +24,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/CheatMgr.h> // CCheatMgr (the m_124 cheat-used latch)
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Warlord.h>
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress)
 #include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (HandleMousePress tab cue)
 #include <Gruntz/ChatBoxOwner.h>
@@ -431,7 +433,7 @@ i32 CPlay::Render() {
         }
         m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
-        InputSubStep(w->m_tileGrid); // m_4->m_70
+        w->m_tileGrid->UpdateDiagonals(reinterpret_cast<i32>(w));
 
         // On-screen overlay/banner: the retail block (0xc91b7..0xc9259) is the same
         // shape as CMulti::PumpB's - place the 120x120 overlay rect by HUD position,
@@ -477,13 +479,12 @@ i32 CPlay::Render() {
                 // walk the level tree (CMapPtrToPtr::Lookup):
                 if (g_gameReg->m_options[0].m_00c != 0) {
                     void* out = 0;
-                    MapLookup(
-                        g_gameReg->m_world->m_childGroup,
-                        reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c),
-                        out
-                    );
-                    if (out != 0) {
-                        SnapWalk();
+                    if (g_gameReg->m_world->m_childGroup->m_map48
+                            .Lookup(reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c), out)) {
+                        CGameObject* object = static_cast<CGameObject*>(out);
+                        if (object != 0 && object->m_7c->m_logic != 0) {
+                            static_cast<CWarlord*>(object->m_7c->m_logic)->ResolveDeathAnimation();
+                        }
                     }
                 }
             } else {
@@ -668,12 +669,9 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 // ---------------------------------------------------------------------------
 // Genuine __cdecl engine helpers (reloc-masked rel32).
 // ---------------------------------------------------------------------------
-void Cmd_ResetScroll();            // 0x2bd0  YAXXZ
-i32 QueryToken(i32 a);             // 0x39a4  QueryToken(int)
-i32 ValidateMainBlock(void* cstr); // 0x2c8e  static WwdFile (CString byval)
-void ActiveWait(u32 ms);           // 0x13dfe0 busy-wait
-void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
-void RezFree(void* p);             // 0x1b9b82 operator delete
+void Cmd_ResetScroll();  // 0x2bd0  YAXXZ
+i32 QueryToken(i32 a);   // 0x39a4  QueryToken(int)
+void ActiveWait(u32 ms); // 0x13dfe0 busy-wait
 
 RVA(0x000ca200, 0xe34)
 i32 CPlay::LoadByMode(i32 level, i32) {
@@ -855,9 +853,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
-            level = ValidateMainBlock(
-                const_cast<char*>(static_cast<const char*>(self->m_mgr->GetWorldFileName()))
-            );
+            level = WwdFile::ValidateMainBlock(self->m_mgr->GetWorldFileName());
             self->m_1bc = 0;
             self->m_mgr->m_130 = 0;
         }
@@ -1579,7 +1575,7 @@ i32 g_lastLevelNum = -1;
 // the g_serialCounter bumps, the conditional reverse-lookup call and the final
 // signed element loop are byte-faithful. The sole residual is the MSVC5 scheduler
 // parking one extra scratch slot (frame 0x294 vs retail 0x28c) + a few zero-init
-// store positions - the entropy tail the CTriggerLoadRec/CEventLoadRec siblings
+// store positions - the entropy tail the CTriggerLoadRec/CTimer::Deserialize siblings
 // share; not source-steerable.
 RVA(0x000d79d0, 0x537)
 i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
@@ -3748,13 +3744,12 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (hasGrid != 0) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        void* spr =
-            w->m_spriteFactory->LoadSprite(reinterpret_cast<void*>(w->m_options[id].m_008), 0);
+        i32 spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
         if (spr == 0) {
-            spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
+            spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
         m_grid->SetAllTypes(0xa);
-        m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
+        m_grid->SetAllFormats(spr);
     }
     CDDrawWorker* g = m_grid;
     CImage* frame;

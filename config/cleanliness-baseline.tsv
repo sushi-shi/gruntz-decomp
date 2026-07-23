@@ -1,4 +1,4 @@
-m_<hex> fields	7513
+m_<hex> fields	7430
 Unknown ids	0
 g_<hex> globals	0
 Method/Stub/FUN/Gap	0
@@ -11,9 +11,9 @@ placeholder vtable slots	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 C-style casts	0
-void* m_ members	16
+void* m_ members	15
 offset-cast macros	0
 cpp extern decls	64
-cpp external prototypes	159
+cpp external prototypes	152
 view classes (*Views.h)	0
 caller-callee FAKE-VIEW	0

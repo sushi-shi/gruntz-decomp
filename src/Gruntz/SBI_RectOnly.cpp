@@ -33,10 +33,10 @@
 #include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
 #include <Gruntz/Sprite.h>                 // CDDrawWorker (frame-data value) + CSpriteHashTable
 #include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
-#include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCounter externs
-#include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
-#include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
-#include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
+#include <Gruntz/SerialCounter.h>
+#include <Rez/RezMgr.h>        // RezFree (the per-frame warpstone overlay free)
+#include <math.h>              // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
+#include <string.h>            // strlen / memset
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/Random.h>     // ex Globals.h transitive
 
@@ -3033,7 +3033,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 // back ON it still read 88.55), so the trigger was purely this TU's /O2 budget.
 //
 // AND IT IS NOW BACK AT 95.64 - the leak was never a wall, it was a TU-COMPOSITION
-// READOUT. Finishing the un-merge restored it: CWarpStoneFly / CMgrSettings /
+// READOUT. Finishing the un-merge restored it: CWarpStoneFly /
 // CStatzTabBuilder carved out to their own TUs, CStatusBarMgr::Sync RE-MERGED in (the binary
 // wants it here - see its note). No source change to this function in any of it. So this
 // function is effectively a sensor for "is this TU's content right?", and it reads

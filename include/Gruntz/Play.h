@@ -248,9 +248,7 @@ public:
     // Render-carcass leaves still unresolved (CPlay backlog; carcass-only callers):
     // The two CLightFxRender thunks 0x1fa0/0x14dd are dispatched straight on
     // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
-    void InputSubStep(void* in);         // (m_4->m_70)
     void RegCue(void* sink, i32 wParam); // (reg->m_60)
-    void SnapWalk();
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
     void ApplyGameOptions(); // 0x036be0 (options-dialogs TU: VideoConfig.cpp)
@@ -635,9 +633,6 @@ void ChannelSlots_InitAll();                // 0x2da1 (thunk) - no `this` (stale
 
 extern i32 g_areaPageSize; // 0x00245270
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 // (Eng_Profiler1/2 are GONE - the per-frame tick is m_c->m_soundStream, the REAL
 // SoundStream: PurgeVoiceList @0x136e20 + TickSubManagers @0x137ac0, __thiscall.)
 extern "C" void Eng_HudDraw(void* hud, RECT* r, i32 c);

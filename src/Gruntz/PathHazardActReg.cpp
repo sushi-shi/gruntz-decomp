@@ -21,11 +21,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-RVA_COMPGEN(0x000b3ac0, 0xa, _$E735936)
-RVA_COMPGEN(0x000b3ae0, 0x15, _$E735968)
-RVA_COMPGEN(0x000b3b10, 0xe, _$E736016)
-RVA_COMPGEN(0x000b3b30, 0x1f, _$E736048)
-
 // ===========================================================================
 // RegisterActs_646250 @0x0b3cc0 - bind handler "A" (0x4021d5) and handler "B"
 // (0x402252) into the per-class registry @0x646250.

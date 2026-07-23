@@ -31,7 +31,7 @@ public:
     // 0x9d520  Activate - look the effect spec up in the object's bute map, prime
     // the bound object's layer descriptor, latch the cell anchor, push the effect
     // node, then rebind. __thiscall, 4 args, ret 0x10.
-    i32 Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB);
+    i32 Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB);
     // 0x9d770  RebindNode - save the object map's current bute node, re-point it
     // at the "A" section, return 0. __thiscall, no args.
     i32 RebindNode();

@@ -1,10 +1,9 @@
 #include <Gruntz/UserLogic.h> // complete CUserLogic (ProjTypeXfer drives its [3]/[4]/[5] virtually)
 #include <Mfc.h>
-#include <iostream.h>       // the REAL istream the config reader is (operator>> @0x191fe0/0x191f30)
-#include <Bute/ButeTree.h>  // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
-#include <Bute/PTreeNode.h> // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
-#include <Bute/ButeStore.h> // zPTree / CButeTreeNode (the keyed-store family)
-#include <Wap32/zBitVec.h>  // zErrHandling / zBitVec + the container-error globals
+#include <Bute/ButeTree.h>       // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
+#include <Bute/PTreeNode.h>      // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
+#include <Bute/ButeStore.h>      // zPTree / CButeTreeNode (the keyed-store family)
+#include <Wap32/zBitVec.h>       // zErrHandling / zBitVec + the container-error globals
 #include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
 #include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
@@ -95,60 +94,6 @@ DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
 i32 g_recCount23;
-
-// ===========================================================================
-// 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
-// one int out of the reader into the data block at fixed offsets via the stream
-// extraction operators, returning the reader.  The reader is the global (pre-std)
-// C++ `istream`: 0x191fe0 = istream::operator>>(double&) and 0x191f30 =
-// istream::operator>>(int&) (both LIBCIMT carve-outs). ReadDouble/ReadInt are our
-// reloc-mask names for those library operators - EXEMPT via config/library_labels.csv
-// (reloc-alias rows). @identity-TODO: fold CConfigReader onto the real istream once a
-// safe include path exists (renaming LoadConfigFields' RVA-tracked mangled name).
-// ===========================================================================
-// The reader is the CRT's `istream`, not a class of ours: 0x191fe0 is
-// istream::operator>>(double&) and 0x191f30 is istream::operator>>(int&). The
-// `CConfigReader` view that used to stand in for it declared two methods
-// (ReadDouble / ReadInt) that exist nowhere in the tree or in any library - 32
-// guaranteed unresolved externals. Using the real istream makes every one of them the
-// real, statically-linked library operator.
-// (`d` stays a byte cursor: the 0x108-byte config record it walks has an irregular
-//  layout - doubles at 0x00..0x50 and 0x70..0x100 with an int at 0xb8 - and its field
-//  identities are not recovered yet. @identity-TODO: model the record.)
-RVA(0x0016d000, 0x189)
-istream* LoadConfigFields(istream* r, char* d) {
-    *r >> *reinterpret_cast<double*>((d + 0x00));
-    *r >> *reinterpret_cast<double*>((d + 0x08));
-    *r >> *reinterpret_cast<double*>((d + 0x10));
-    *r >> *reinterpret_cast<double*>((d + 0x18));
-    *r >> *reinterpret_cast<double*>((d + 0x20));
-    *r >> *reinterpret_cast<double*>((d + 0x28));
-    *r >> *reinterpret_cast<double*>((d + 0x30));
-    *r >> *reinterpret_cast<double*>((d + 0x38));
-    *r >> *reinterpret_cast<double*>((d + 0x40));
-    *r >> *reinterpret_cast<double*>((d + 0x48));
-    *r >> *reinterpret_cast<double*>((d + 0x50));
-    *r >> *reinterpret_cast<double*>((d + 0x70));
-    *r >> *reinterpret_cast<double*>((d + 0x78));
-    *r >> *reinterpret_cast<double*>((d + 0x80));
-    *r >> *reinterpret_cast<double*>((d + 0x88));
-    *r >> *reinterpret_cast<double*>((d + 0x90));
-    *r >> *reinterpret_cast<double*>((d + 0x98));
-    *r >> *reinterpret_cast<double*>((d + 0xa0));
-    *r >> *reinterpret_cast<double*>((d + 0xa8));
-    *r >> *reinterpret_cast<double*>((d + 0xb0));
-    *r >> *reinterpret_cast<int*>((d + 0xb8));
-    *r >> *reinterpret_cast<double*>((d + 0xc0));
-    *r >> *reinterpret_cast<double*>((d + 0xc8));
-    *r >> *reinterpret_cast<double*>((d + 0xd0));
-    *r >> *reinterpret_cast<double*>((d + 0xd8));
-    *r >> *reinterpret_cast<double*>((d + 0xe0));
-    *r >> *reinterpret_cast<double*>((d + 0xe8));
-    *r >> *reinterpret_cast<double*>((d + 0xf0));
-    *r >> *reinterpret_cast<double*>((d + 0xf8));
-    *r >> *reinterpret_cast<double*>((d + 0x100));
-    return r;
-}
 
 // ===========================================================================
 // CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
@@ -400,7 +345,6 @@ badchar: {
 // mis-modeled as a char array containing the label.
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
-RVA_COMPGEN(0x0016d700, 0x10, _$E1496832)
 
 inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
@@ -506,7 +450,6 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
 // zErrHandling's constructor in GameText.cpp only consumes it.
 DATA(0x002bf430)
 CVariantSlot g_globalErrorSlot("Global Error: ");
-RVA_COMPGEN(0x0016d9b0, 0x10, _$E1497520)
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
@@ -700,7 +643,6 @@ _zdvec::~_zdvec() {}
 // first byte viewed through an incorrect declaration.
 DATA(0x002bf468)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
-RVA_COMPGEN(0x0016de20, 0x10, _$E1498656)
 
 // ===========================================================================
 // _zvec::_zvec (0x16de30) - the allocating vector ctor. Builds the
@@ -785,7 +727,6 @@ CButeNodeEntry::~CButeNodeEntry() {}
 // exact label immediately before the zPTree constructor.
 DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
-RVA_COMPGEN(0x0016dfe0, 0x10, _$E1499104)
 
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
 // ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two
@@ -1138,7 +1079,6 @@ i32 ButeTreeAtexitDtor(void) {
 
 // MSVC emits the inlined g_typeColl constructor and its atexit wrapper as a pair.
 // The local `$E` number is unstable; compiler-generated matching binds it by content.
-RVA_COMPGEN(0x0016e730, 0x51, _$E1500976)
 RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
 
 // ===========================================================================

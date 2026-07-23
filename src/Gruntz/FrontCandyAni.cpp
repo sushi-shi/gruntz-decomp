@@ -191,11 +191,6 @@ VTBL(CEyeCandyAni, 0x001e8334);
 VTBL(CFrontCandyAni, 0x001e83e4);
 VTBL(CFrontCandy, 0x001e84ec);
 
-RVA_COMPGEN(0x000ad110, 0xa, _$E708880)
-RVA_COMPGEN(0x000ad130, 0x15, _$E708912)
-RVA_COMPGEN(0x000ad160, 0xe, _$E708960)
-RVA_COMPGEN(0x000ad180, 0x1f, _$E708992)
-
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
     CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(

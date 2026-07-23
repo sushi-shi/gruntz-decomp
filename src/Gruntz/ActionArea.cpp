@@ -115,11 +115,6 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
 RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
-RVA_COMPGEN(0x00008040, 0xa, _$E32832)
-RVA_COMPGEN(0x00008060, 0x15, _$E32864)
-RVA_COMPGEN(0x00008090, 0xe, _$E32912)
-RVA_COMPGEN(0x000080b0, 0x1f, _$E32944)
-
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
     CActionAreaActEntry* e = R3Lookup(coord);

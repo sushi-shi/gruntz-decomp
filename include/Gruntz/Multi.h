@@ -30,9 +30,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-void SetActiveAndFocus(void* hwnd);                                         // 0x00518930
-void FillPlayerList(HWND hList, CNetMgr* session);                          // 0x0b89e0
-i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam); // 0x0b8020
+void SetActiveAndFocus(void* hwnd);                                                   // 0x00518930
+void FillPlayerList(HWND hList, CNetMgr* session);                                    // 0x0b89e0
+INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam); // 0x0b8020
 
 // CMultiPlayer DISSOLVED: it was a fake view of CNetPlayerListNode (<Net/NetMgr.h>) -
 // OpenPlayer @0x5786d0 RezAlloc's a 0x58-byte node with vptr 0x5f0760 (the real

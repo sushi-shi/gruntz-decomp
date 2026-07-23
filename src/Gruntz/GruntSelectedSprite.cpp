@@ -42,11 +42,6 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     }
 }
 
-RVA_COMPGEN(0x0007e5c0, 0xa, _$E517568)
-RVA_COMPGEN(0x0007e5e0, 0x15, _$E517600)
-RVA_COMPGEN(0x0007e610, 0xe, _$E517648)
-RVA_COMPGEN(0x0007e630, 0x1f, _$E517680)
-
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CSelectedActEntry*>(

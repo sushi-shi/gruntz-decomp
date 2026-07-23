@@ -13,11 +13,6 @@
 template<> DATA(0x002445c0)
 CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);
 
-RVA_COMPGEN(0x0003f1f0, 0xa, _$E258544)
-RVA_COMPGEN(0x0003f210, 0x15, _$E258576)
-RVA_COMPGEN(0x0003f240, 0xe, _$E258624)
-RVA_COMPGEN(0x0003f260, 0x1f, _$E258656)
-
 // CWormhole::FireAct @0x03f290 [@identity-TODO: retail says this is CExitTrigger's
 // vtable slot 4 - ILT 0x42e6 `jmp 0x3f290` + CExitTrigger vtbl 0x1e822c slot 4 == 0x42e6;
 // see the note in <Gruntz/Wormhole.h>] - look the activation coordinate up in the

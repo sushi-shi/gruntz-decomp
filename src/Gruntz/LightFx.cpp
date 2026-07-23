@@ -39,11 +39,6 @@ VTBL(CLightFx, 0x001e7af4);
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
-RVA_COMPGEN(0x0009d120, 0xa, _$E643360)
-RVA_COMPGEN(0x0009d140, 0x15, _$E643392)
-RVA_COMPGEN(0x0009d170, 0xe, _$E643440)
-RVA_COMPGEN(0x0009d190, 0x1f, _$E643472)
-
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
     CLightFxActEntry* e =
@@ -106,7 +101,7 @@ void CLightFx::RegisterActs() {
 // schedule swaps (the node=0 zero relative to the arg pushes; the m_54/m_58 stores
 // vs the m_38 reload before the effect lookup). Logic 100% correct.
 RVA(0x0009d520, 0xfd)
-i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
+i32 CLightFx::Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB) {
     i32 node = 0;
     CObject* nodeOb = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).

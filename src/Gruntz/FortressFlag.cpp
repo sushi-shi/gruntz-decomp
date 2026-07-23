@@ -166,11 +166,6 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     spr->m_drawFillArg = sel;
 }
 
-RVA_COMPGEN(0x00045fe0, 0xa, _$E286688)
-RVA_COMPGEN(0x00046000, 0x15, _$E286720)
-RVA_COMPGEN(0x00046030, 0xe, _$E286768)
-RVA_COMPGEN(0x00046050, 0x1f, _$E286800)
-
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
     CFortressFlagActEntry* e = reinterpret_cast<CFortressFlagActEntry*>(
@@ -360,11 +355,6 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_dirtyArmed = 0;
 }
 
-RVA_COMPGEN(0x00046c90, 0xa, _$E289936)
-RVA_COMPGEN(0x00046cb0, 0x15, _$E289968)
-RVA_COMPGEN(0x00046ce0, 0xe, _$E290016)
-RVA_COMPGEN(0x00046d00, 0x1f, _$E290048)
-
 RVA(0x00046d30, 0x102)
 void CParticlez::FireActivation(i32 coord) {
     CPartEntry* e = PartLookup(coord);
@@ -439,11 +429,6 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_dirtyArmed = 0;
 }
-
-RVA_COMPGEN(0x000472b0, 0xa, _$E291504)
-RVA_COMPGEN(0x000472d0, 0x15, _$E291536)
-RVA_COMPGEN(0x00047300, 0xe, _$E291584)
-RVA_COMPGEN(0x00047320, 0x1f, _$E291616)
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {

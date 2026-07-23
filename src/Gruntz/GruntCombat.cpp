@@ -1841,16 +1841,6 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
     return static_cast<CObject*>(val);
 }
 
-RVA_COMPGEN(0x0005b840, 0x1a, _$E580160)
-RVA_COMPGEN(0x0005b890, 0x1a, _$E580240)
-RVA_COMPGEN(0x0005b8e0, 0x1f, _$E580320)
-RVA_COMPGEN(0x0005b930, 0x1a, _$E580400)
-RVA_COMPGEN(0x0005b980, 0x1f, _$E580480)
-RVA_COMPGEN(0x0005b9d0, 0x1f, _$E580560)
-RVA_COMPGEN(0x0005ba20, 0x1f, _$E580640)
-RVA_COMPGEN(0x0005ba70, 0x17, _$E580720)
-RVA_COMPGEN(0x0005bac0, 0x1a, _$E580800)
-
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
@@ -1888,11 +1878,6 @@ i32 GruntSpawnPump(CGameObject* owner) {
     }
     return 1;
 }
-
-RVA_COMPGEN(0x0005bc30, 0xa, _$E375856)
-RVA_COMPGEN(0x0005bc50, 0x15, _$E375888)
-RVA_COMPGEN(0x0005bc80, 0xe, _$E375936)
-RVA_COMPGEN(0x0005bca0, 0x1f, _$E375968)
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {

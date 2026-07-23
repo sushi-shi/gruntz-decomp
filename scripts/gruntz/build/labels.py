@@ -101,7 +101,7 @@ VTBL2_MACRO_RE = re.compile(
     r"\bVTBL2\s*\(\s*([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # `RVA_COMPGEN(<rva>, <size>, <mangled>)` - a self-contained function label for a
 # compiler-generated body that has NO source definition to hang an RVA() attribute
-# on (a `??_G` scalar-deleting destructor, a `??_D` vbase dtor, an `_$E` funclet).
+# on (a deterministic `??_G` scalar-deleting destructor or `??_D` vbase dtor).
 # The mangled name is given verbatim, so there is no join and no IR (rva.h; expands
 # to nothing under both compilers, read here from source text). size 0 = unknown.
 # Keep invocations in RVA order among the TU's RVA() functions.
@@ -115,12 +115,10 @@ RVA_COMPGEN_RE = re.compile(
 # pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
 DATA_SYMBOL_RE = re.compile(
     r"\bDATA_SYMBOL\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
-# A content-addressed compiler-gen TEXT funclet name: `$E<n>` (x86 `_$E<n>`) dynamic-init
-# / EH-cleanup helper. Its per-object counter is unstable, so the exact number is never a
-# reliable base-obj match; canonicalize_data_symbols renames base + target `$E<n>` to a
-# content hash for objdiff. RVA_COMPGEN(rva, size, _$E<n>) therefore skips the base-obj
-# authority check (any `$E<n>` placeholder pairs by content).
-CONTENT_ADDR_FN_RE = re.compile(r"^_?\$E[0-9]+$")
+# `$E<n>` (x86 `_$E<n>`) dynamic-init/EH helpers have a volatile emission
+# ordinal, not a semantic source identity. They are evidence-only rows in
+# config/compiler-generated-functions.tsv and must never become source labels.
+VOLATILE_ORDINAL_FN_RE = re.compile(r"^_?\$E[0-9]+$")
 
 
 def resolve_pool_id(sym, all_syms):
@@ -1196,12 +1194,13 @@ def main():
             # No source body -> no AST param names; undname still gives the
             # (typed, unnamed) signature for functions.json.
             func_meta[rva] = {"ir_sym": sym, "names": None}
-            if obj_syms is None or sym in obj_syms or CONTENT_ADDR_FN_RE.match(sym):
-                # A content-addressed funclet (`$E<n>` dynamic-init / EH cleanup) carries
-                # an UNSTABLE per-object counter, so the exact number is never in the base
-                # obj - the normalizer (canonicalize_data_symbols) renames base + target
-                # `$E<n>` to a content hash and objdiff pairs by that, so any `$E<n>`
-                # placeholder is fine here; skip the base-obj name check for it.
+            if VOLATILE_ORDINAL_FN_RE.match(sym):
+                misses.append((
+                    rva, sym, unit,
+                    "volatile compiler ordinal belongs in "
+                    "config/compiler-generated-functions.tsv",
+                ))
+            elif obj_syms is None or sym in obj_syms:
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))

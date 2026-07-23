@@ -248,13 +248,13 @@ CWarlord::CWarlord(i32 arg)
     // Register the warlord's asset namespace, then resolve every per-state handle.
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
 
-    WARLORD_ANIM_LOOKUP(m_animIdle1, s__IDLE1);
-    WARLORD_ANIM_LOOKUP(m_animIdle2, s__IDLE2);
-    WARLORD_ANIM_LOOKUP(m_animIdle3, s__IDLE3);
-    WARLORD_ANIM_LOOKUP(m_animIdle4, s__IDLE4);
-    WARLORD_ANIM_LOOKUP(m_animBattlecry1, s__BATTLECRY1);
-    WARLORD_ANIM_LOOKUP(m_animBattlecry2, s__BATTLECRY2);
-    WARLORD_ANIM_LOOKUP(m_animBattlecry3, s__BATTLECRY3);
+    WARLORD_ANIM_LOOKUP(m_idleAnims[0], s__IDLE1);
+    WARLORD_ANIM_LOOKUP(m_idleAnims[1], s__IDLE2);
+    WARLORD_ANIM_LOOKUP(m_idleAnims[2], s__IDLE3);
+    WARLORD_ANIM_LOOKUP(m_idleAnims[3], s__IDLE4);
+    WARLORD_ANIM_LOOKUP(m_battlecryAnims[0], s__BATTLECRY1);
+    WARLORD_ANIM_LOOKUP(m_battlecryAnims[1], s__BATTLECRY2);
+    WARLORD_ANIM_LOOKUP(m_battlecryAnims[2], s__BATTLECRY3);
     WARLORD_ANIM_LOOKUP(m_animJoy, s__JOY);
     WARLORD_ANIM_LOOKUP(m_animDeath, s__DEATH);
     WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
@@ -265,7 +265,7 @@ CWarlord::CWarlord(i32 arg)
     m_timer2StampHi = 0;
     m_timer2WindowHi = 0;
     m_a8 = 0;
-    (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
+    ResolveMovingAnimation();
 }
 #undef WARLORD_ANIM_LOOKUP
 
@@ -322,11 +322,6 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
 
 VTBL(CWarlord, 0x001e7404);
 
-RVA_COMPGEN(0x000445a0, 0xa, _$E279968)
-RVA_COMPGEN(0x000445c0, 0x15, _$E280000)
-RVA_COMPGEN(0x000445f0, 0xe, _$E280048)
-RVA_COMPGEN(0x00044610, 0x1f, _$E280080)
-
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
     void** slot = reinterpret_cast<void**>(CActRegPool<CWarlord>::s_table.ResolveEntry(key));
@@ -357,7 +352,7 @@ i32 CWarlord::RearmMoving() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
+        ResolveMovingAnimation();
     }
     return 0;
 }
@@ -383,10 +378,10 @@ i32 CWarlord::LoadAttributes() {
             - *reinterpret_cast<i64*>(&m_cooldownStampLo)
         >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
         if (rand() % 10 < 5) {
-            (reinterpret_cast<CGrunt*>(this))->ResolveIdleAnimation();
+            ResolveIdleAnimation();
             return 0;
         }
-        (reinterpret_cast<CGrunt*>(this))->ResolveBattlecryAnimation();
+        ResolveBattlecryAnimation();
     }
     return 0;
 }
@@ -425,7 +420,7 @@ i32 CWarlord::LoadAttributes2() {
     } else {
         // the play state's frame-marker timer: not yet running / expired
         if ((static_cast<CPlay*>(reg->m_curState))->m_frameMarker->m_currentMs == 0) {
-            (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
+            ResolveMovingAnimation();
             return 0;
         }
         if (static_cast<i64>(static_cast<u32>(g_frameTime))
@@ -474,7 +469,7 @@ i32 CWarlord::AdvanceMovingAnim() {
         h2->m_timerWindow = 0x3e8;
         h2->m_timerBase = static_cast<u32>(g_frameTime);
     }
-    (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
+    ResolveMovingAnimation();
     return 0;
 }
 
@@ -483,7 +478,7 @@ i32 CWarlord::RearmMoving2() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
+        ResolveMovingAnimation();
     }
     return 0;
 }
@@ -553,23 +548,23 @@ void CWarlord::BuildFortSplashParticles() {
 }
 
 RVA(0x00045100, 0x112)
-i32 CGrunt::ResolveMovingAnimation() {
-    if (m_animResolved != 0) {
+i32 CWarlord::ResolveMovingAnimation() {
+    if (m_a8 != 0) {
         return 0;
     }
 
-    m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__MOVING);
+    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
 
-    m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup(m_movingGeoSrc);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyB);
 
-    m_moveStartTime = (GruntRand() % 0x5dc1 + 0x1770) * 10;
-    m_moveSeedHi = 0;
-    m_moveSeed = g_movingSeed;
-    m_moveTimeHi = 0;
+    m_cooldownWindowLo = (GruntRand() % 0x5dc1 + 0x1770) * 10;
+    m_cooldownWindowHi = 0;
+    m_cooldownStampLo = g_movingSeed;
+    m_cooldownStampHi = 0;
     return 1;
 }
 
@@ -577,11 +572,11 @@ RVA(0x00045270, 0x2a8)
 void CWarlord::NotifyFortUnderAttack() {}
 
 RVA(0x000455f0, 0x15b)
-i32 CGrunt::ResolveDeathAnimation() {
-    if (m_animResolved != 0) {
+i32 CWarlord::ResolveDeathAnimation() {
+    if (m_a8 != 0) {
         return 0;
     }
-    m_animResolved = 1;
+    m_a8 = 1;
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
@@ -590,16 +585,16 @@ i32 CGrunt::ResolveDeathAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, m_deathCueArg, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, m_ownerTag, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, m_deathCueArg, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, m_ownerTag, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup(m_deathGeoSrc);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup(m_animDeath);
 
-    m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__DEATH);
+    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyC);
@@ -607,8 +602,8 @@ i32 CGrunt::ResolveDeathAnimation() {
 }
 
 RVA(0x000457b0, 0x14c)
-i32 CGrunt::ResolveAnimation() {
-    if (m_animResolved != 0) {
+i32 CWarlord::RaiseBattleAlert() {
+    if (m_a8 != 0) {
         return 0;
     }
 
@@ -625,10 +620,10 @@ i32 CGrunt::ResolveAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x43f, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup(m_joyGeoSrc);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup(m_animJoy);
 
-    m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__JOY);
+    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyE);
@@ -636,8 +631,8 @@ i32 CGrunt::ResolveAnimation() {
 }
 
 RVA(0x00045960, 0x181)
-i32 CGrunt::ResolveIdleAnimation() {
-    if (m_animResolved != 0) {
+i32 CWarlord::ResolveIdleAnimation() {
+    if (m_a8 != 0) {
         return 0;
     }
 
@@ -656,15 +651,15 @@ i32 CGrunt::ResolveIdleAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x43b, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup(m_idleGeoSrc[idx]);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup(m_idleAnims[idx]);
 
-    CAniElement* desc = m_animPlayer->m_1a0.m_14;
+    CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* elem =
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
-    m_animPlayer->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
+    m_38->ApplyLookupSprite(s_GRUNTZ_ + m_54 + s__IDLE, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyA);
@@ -672,8 +667,8 @@ i32 CGrunt::ResolveIdleAnimation() {
 }
 
 RVA(0x00045b60, 0x161)
-i32 CGrunt::ResolveBattlecryAnimation() {
-    if (m_animResolved != 0) {
+i32 CWarlord::ResolveBattlecryAnimation() {
+    if (m_a8 != 0) {
         return 0;
     }
 
@@ -692,10 +687,10 @@ i32 CGrunt::ResolveBattlecryAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x438, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
-    m_animPlayer->m_1a0.Setup(m_battlecryGeoSrc[idx]);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup(m_battlecryAnims[idx]);
 
-    m_animPlayer->ApplyName(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
+    m_38->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_keyF);

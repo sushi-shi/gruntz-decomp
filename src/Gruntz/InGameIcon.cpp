@@ -16,11 +16,12 @@
 
 #include <rva.h>
 
-#include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>      // the shared CActReg dispatch-table shape
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <string.h>                       // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>                 // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>                   // _zdvec (the command-dispatch tables)
+#include <Gruntz/LogicFnTable.h>          // the shared CActReg dispatch-table shape
+#include <DDrawMgr/DDrawChildGroup.h>     // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // world sound registry and its keyed asset map
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
@@ -535,11 +536,6 @@ i32 CInGameIcon::HandleInput() {
     return 1;
 }
 
-RVA_COMPGEN(0x000977e0, 0xa, _$E620512)
-RVA_COMPGEN(0x00097800, 0x15, _$E620544)
-RVA_COMPGEN(0x00097830, 0xe, _$E620592)
-RVA_COMPGEN(0x00097850, 0x1f, _$E620624)
-
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
     if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id))
@@ -589,11 +585,6 @@ void RegisterIconActions() {
     *reinterpret_cast<IconActHandler*>(dslotB) =
         static_cast<IconActHandler>(&CInGameIcon::Reposition);
 }
-
-RVA_COMPGEN(0x00097d40, 0xa, _$E621888)
-RVA_COMPGEN(0x00097d60, 0x15, _$E621920)
-RVA_COMPGEN(0x00097d90, 0xe, _$E621968)
-RVA_COMPGEN(0x00097db0, 0x1f, _$E622000)
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
@@ -800,7 +791,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         if (ok == 0) {
             return 0;
         }
-        if (m_cmapId != 0) {
+        if (m_cue != 0) {
             CWwdGameObjectA* o = m_object;
             if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
                 && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
@@ -839,7 +830,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             reg = g_gameReg;
         }
     }
-    if (m_cmapId != 0) {
+    if (m_cue != 0) {
         CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
             && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
@@ -1025,11 +1016,6 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_cachedSubId = -1;
 }
 
-RVA_COMPGEN(0x000993c0, 0xa, _$E627648)
-RVA_COMPGEN(0x000993e0, 0x15, _$E627680)
-RVA_COMPGEN(0x00099410, 0xe, _$E627728)
-RVA_COMPGEN(0x00099430, 0x1f, _$E627760)
-
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx)) != 0) {
@@ -1093,12 +1079,10 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, i32 b) {
 }
 
 RVA(0x00099b10, 0x36)
-void CInGameIcon::SetField54(i32 v) {
+void CInGameIcon::SetupSprite(const char* category) {
     void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
-    if (v != 0) {
-        found = 0;
-        (reinterpret_cast<CGameRegMapHolder*>(g_gameReg->m_world))
-            ->m_28->m_10map.Lookup(reinterpret_cast<const char*>(v), found);
+    if (category != 0) {
+        g_gameReg->m_world->m_soundRegistry->m_10.Lookup(category, found);
     }
-    m_cmapId = reinterpret_cast<i32>(found);
+    m_cue = static_cast<LeafCue*>(found);
 }

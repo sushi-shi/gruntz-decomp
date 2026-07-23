@@ -10,20 +10,6 @@
 
 class CFileMemBase;
 
-struct CObjListNode {
-    CObjListNode* m_next; // +0x00
-    CObjListNode* m_prev; // +0x04
-    void* m_data;         // +0x08
-};
-SIZE_UNKNOWN();
-struct CObjList {
-    char m_pad00[0x4];
-    CObjListNode* m_head;             // +0x04  list head
-    void RemoveAt(CObjListNode* pos); // 0x1b4ac7 (__thiscall, unlink + free node)
-};
-SIZE_UNKNOWN();
-SIZE_UNKNOWN(); // {vptr,head,tail}=0xc header; full engine size unproven
-
 struct CGruntPuddleSink {};
 SIZE_UNKNOWN();
 

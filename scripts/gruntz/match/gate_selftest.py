@@ -282,7 +282,7 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
 # unnamed-function queue: current source claims leave the raw Ghidra inventory #
 # --------------------------------------------------------------------------- #
 class TestUnnamedFunctionQueue(unittest.TestCase):
-    def test_rva_compgen_claim_is_not_reported_as_still_unnamed(self):
+    def test_volatile_rva_compgen_ordinal_does_not_claim_function(self):
         with tempfile.TemporaryDirectory() as tmp:
             src = Path(tmp) / "src"
             src.mkdir()
@@ -297,7 +297,7 @@ class TestUnnamedFunctionQueue(unittest.TestCase):
             _, remaining = tu_layout.attribute(
                 funcs, boundaries, tu_layout.DEFAULT_GAP
             )
-            self.assertEqual(remaining, 1)
+            self.assertEqual(remaining, 2)
 
     def test_header_rva_claim_is_not_reported_as_still_unnamed(self):
         with tempfile.TemporaryDirectory() as tmp:

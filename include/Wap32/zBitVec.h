@@ -5,6 +5,8 @@
 #include <rva.h>
 
 struct CVariantSlot;
+class istream;
+class ostream;
 
 extern CVariantSlot g_zBitSetErrorSlot;      // 0x6bf408 ("zBitSet: ")
 extern CVariantSlot g_globalErrorSlot;       // 0x6bf430 ("Global Error: ")
@@ -52,6 +54,9 @@ public:
     u32* m_words;   // +0x0c  SBO word band (inline u32 when m_capacity <= 0x20)
 };
 SIZE(0x10);
+
+ostream& operator<<(ostream& accum, const zBitVec& bits); // 0x193080
+istream& operator>>(istream& accum, zBitVec& bits);       // 0x193140
 
 extern void* g_retAddrBreadcrumb;
 extern void* g_projActName;

@@ -138,6 +138,13 @@ comments. Keep their enforced spelling:
 - size arguments are unpadded lowercase hex; `0x0` means unknown;
 - one annotation invocation per line;
 - use the dedicated compiler-generated forms where applicable.
+- Never bind volatile compiler ordinals such as `_$E<n>` with
+  `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
+  Keep observed RVA/name/size evidence in
+  `config/compiler-generated-functions.tsv` instead.
+- A `$S*` `DATA_SYMBOL` is narrower: use it only for a real named source
+  static whose exact emitted COFF symbol proves the semantic prefix and whose
+  sole ambiguity is the unstable numeric suffix.
 
 The machine-visible comment vocabulary is closed; see
 `docs/comment-markers.md`. The common states are:
@@ -176,6 +183,10 @@ missing logic or unresolved relocation work.
 - Update `README.md` and the relevant durable documentation when commands,
   paths, build flow, or tool contracts change. Put a newly proven reusable MSVC
   idiom in `docs/patterns/` and its index rather than in an isolated comment.
+- When a build refresh disproves matching doctrine, document both the failed
+  assumption and the recognizable reverse-audit signature. Do not preserve an
+  outdated explanation merely because an old cache or high-water score once
+  appeared to support it.
 - Treat a reproducible matching surprise as a matching pattern, including
   cross-function MSVC optimizer-state effects. Record the controlled A/B
   evidence, detection signature, and safe reverse-use heuristic in

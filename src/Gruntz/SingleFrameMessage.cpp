@@ -42,11 +42,6 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
 
 VTBL(CSingleFrameMessage, 0x001e864c);
 
-RVA_COMPGEN(0x000ab510, 0xa, _$E701712)
-RVA_COMPGEN(0x000ab530, 0x15, _$E701744)
-RVA_COMPGEN(0x000ab560, 0xe, _$E701792)
-RVA_COMPGEN(0x000ab580, 0x1f, _$E701824)
-
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(

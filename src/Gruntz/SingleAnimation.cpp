@@ -38,11 +38,6 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA_COMPGEN(0x000ae980, 0xa, _$E715136)
-RVA_COMPGEN(0x000ae9a0, 0x15, _$E715168)
-RVA_COMPGEN(0x000ae9d0, 0xe, _$E715216)
-RVA_COMPGEN(0x000ae9f0, 0x1f, _$E715248)
-
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CSingleAnimActEntry* e = reinterpret_cast<CSingleAnimActEntry*>(

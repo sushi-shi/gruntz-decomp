@@ -628,24 +628,32 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
         ->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
-        cell = m_ctx->m_cmdGrid->ProbeCell(
+        cell = m_ctx->m_cmdGrid->PlaceObject(
             m_curCell,
             screen.m_x,
-            reinterpret_cast<void*>(0x186a0),
+            screen.m_y,
+            0x186a0,
             2,
-            reinterpret_cast<void*>(g_groupSentinel),
+            g_groupSentinel,
+            0,
+            0,
+            0,
             0,
             0,
             0,
             0
         );
     } else {
-        cell = m_ctx->m_cmdGrid->ProbeCell(
+        cell = m_ctx->m_cmdGrid->PlaceObject(
             m_curCell,
             screen.m_x,
-            reinterpret_cast<void*>(0x186a0),
+            screen.m_y,
+            0x186a0,
             0,
-            reinterpret_cast<void*>(g_groupSentinel),
+            g_groupSentinel,
+            0,
+            0,
+            0,
             0,
             0,
             0,
@@ -3919,7 +3927,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (occupied >= m_ctx->m_options[m_curCell].m_comboSel) {
         return 0;
     }
-    i32 cell = m_triggerMgr->Probe(
+    i32 cell = m_triggerMgr->PlaceObject(
         m_curCell,
         (ay << 5) + 0x10,
         (ax << 5) + 0x10,

@@ -11,21 +11,17 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-// File-scope globals. The reloc that names them is masked in objdiff; only the
-// address-load bytes are load-bearing. Bound to their retail DATA rvas by exact
-// base-obj symbol name (MSVC internal-linkage $S mangling; clang mangles differently
-// so DATA_SYMBOL pins the exact name the reloc uses).
+// File-scope globals. The RegistryHelper span is exactly 0x21c. Keep the real
+// source-level static name. Fresh COFF inspection proves MSVC emits it as
+// `_g_registryHelper$S17365`; bind by semantic prefix because only the `$S`
+// ordinal is unstable.
 DATA(0x002295d8)
-DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S17365)
+DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S*)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
 
 // g_registryHelper's file-scope construction/destruction family. The _$E<n>
 // suffixes are unique placeholders; the compiler-private numbers are unstable.
-RVA_COMPGEN(0x0000af30, 0xa, _$E44848)
-RVA_COMPGEN(0x0000af50, 0xb, _$E44880)
-RVA_COMPGEN(0x0000af70, 0xe, _$E44912)
-RVA_COMPGEN(0x0000af90, 0xa, _$E44944)
 
 RVA(0x0000b110, 0x32)
 void SaveOption(

@@ -31,11 +31,6 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-RVA_COMPGEN(0x0003a510, 0xa, _$E238864)
-RVA_COMPGEN(0x0003a530, 0x15, _$E238896)
-RVA_COMPGEN(0x0003a560, 0xe, _$E238944)
-RVA_COMPGEN(0x0003a580, 0x1f, _$E238976)
-
 // RegisterXLogic @0x03a710 - bind CCursorSnapSprite's logic to its activation handler
 // under the shared action name "A".
 // @early-stop

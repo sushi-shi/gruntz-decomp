@@ -94,11 +94,6 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-RVA_COMPGEN(0x000abb70, 0xa, _$E703344)
-RVA_COMPGEN(0x000abb90, 0x15, _$E703376)
-RVA_COMPGEN(0x000abbc0, 0xe, _$E703424)
-RVA_COMPGEN(0x000abbe0, 0x1f, _$E703456)
-
 typedef i32 (CUserLogic::*LogicFn)();
 
 RVA(0x000abc10, 0x102)

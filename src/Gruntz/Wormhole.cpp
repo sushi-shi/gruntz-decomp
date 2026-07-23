@@ -235,11 +235,6 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-RVA_COMPGEN(0x0003ffb0, 0xa, _$E262064)
-RVA_COMPGEN(0x0003ffd0, 0x15, _$E262096)
-RVA_COMPGEN(0x00040000, 0xe, _$E262144)
-RVA_COMPGEN(0x00040020, 0x1f, _$E262176)
-
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
@@ -362,11 +357,6 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_pending = 1;
     m_placed = 0;
 }
-
-RVA_COMPGEN(0x000406b0, 0xa, _$E263856)
-RVA_COMPGEN(0x000406d0, 0x15, _$E263888)
-RVA_COMPGEN(0x00040700, 0xe, _$E263936)
-RVA_COMPGEN(0x00040720, 0x1f, _$E263968)
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
@@ -493,15 +483,14 @@ i32 CGruntPuddle::Remove() {
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
             m_38->m_flags |= 0x10000;
-            CObjList* list = reinterpret_cast<CObjList*>(g_gameReg->m_cmdGrid);
-            CObjListNode* node = list->m_head;
-            while (node != 0) {
-                CObjListNode* next = node->m_next;
-                if (node->m_data == this) {
-                    list->RemoveAt(node);
+            CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
+            POSITION pos = list.GetHeadPosition();
+            while (pos != 0) {
+                POSITION current = pos;
+                if (list.GetNext(pos) == this) {
+                    list.RemoveAt(current);
                     return 0;
                 }
-                node = next;
             }
         }
     }
@@ -673,11 +662,6 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-
-RVA_COMPGEN(0x00041480, 0xa, _$E267392)
-RVA_COMPGEN(0x000414a0, 0x15, _$E267424)
-RVA_COMPGEN(0x000414d0, 0xe, _$E267472)
-RVA_COMPGEN(0x000414f0, 0x1f, _$E267504)
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {

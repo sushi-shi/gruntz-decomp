@@ -55,21 +55,14 @@ namespace NetLobby {
 
 namespace NetLobby {
 
-    // The pending drop-in player name is a real file-scope CString. MSVC emits its
-    // three private _$E<n> helpers: construct it, register the atexit helper, and
-    // destroy it. Their numeric suffixes are unstable, so the object normalizer
-    // content-addresses them; these placeholders bind the three retail bodies.
-    // Tooling debt: the RVA-derived _$E... placeholders are not semantic identities.
-    // A future annotation
-    // should name each helper's role and owning global instead of exposing a
-    // replaceable compiler-private ordinal.
+    // The pending drop-in player name is a real file-scope CString. MSVC emits
+    // private construction/atexit/destruction _$E<n> helpers, but those suffixes
+    // are volatile emission ordinals rather than semantic identities. Their
+    // observed retail rows live only in compiler-generated-functions.tsv.
     // NetDlgInitDropIn below reads it through CString's LPCTSTR (m_pszData, the char*
     // at 0x249618) - one DATA home, no separate g_playerName_* alias.
     DATA(0x00249618)
     CString g_str649618;
-    RVA_COMPGEN(0x000bd7f0, 0xa, _$E776176)
-    RVA_COMPGEN(0x000bd810, 0xe, _$E776208)
-    RVA_COMPGEN(0x000bd830, 0xa, _$E776240)
 
     // __stdcall DlgProc: the host-wait dialog. WM_TIMER polls the PAUSE key
     // (GetAsyncKeyState(VK_PAUSE) & down|pressed) and re-posts the 0x4d2 abort;

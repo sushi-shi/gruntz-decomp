@@ -52,11 +52,6 @@ VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
 
-RVA_COMPGEN(0x0003e100, 0xa, _$E254208)
-RVA_COMPGEN(0x0003e120, 0x15, _$E254240)
-RVA_COMPGEN(0x0003e150, 0xe, _$E254288)
-RVA_COMPGEN(0x0003e170, 0x1f, _$E254320)
-
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 

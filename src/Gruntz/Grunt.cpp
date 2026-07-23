@@ -1,3 +1,4 @@
+#define CMOTIONSTATE_STANDALONE_CTOR
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
 #include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
@@ -206,11 +207,9 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
-    // The band init - THIS ctor's own copy (its projectile sibling @0xdec60 carries
-    // a drifted copy: g_motionZScale for the step + the inline Z triple). Bounds
-    // via the Motion() view: 0 => MIN/MAX dword copy, else fild-widened int.
+    // CMovingLogic constructed the real m_motion member. This leaf applies its
+    // distinct bounds, step scale, and SetZ seed.
     CMotionState* m = Motion();
-    m->Init();
     i32 lo0 = m_objAux->m_2c;
     if (lo0 == 0) {
         m->m_70 = g_movingLogicMin;

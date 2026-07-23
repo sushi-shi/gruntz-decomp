@@ -2,8 +2,10 @@
 
 The transform is deliberately local to one object.  It does not consult a
 manifest, a paired object, source text, or retail addresses.  Symbol indices do
-not change. Compiler-private data and `$E<n>` text helpers receive stable,
-content-derived names. In
+not change. Compiler-private data receives stable, content-derived names.
+`$E<n>` text helpers are also canonicalized when their object evidence is
+complete, but that comparison aid does not make the ordinal a stable source
+identity. In
 embedded .text jump tables, same-function DIR32 references to volatile local
 labels are rewritten to the containing external function plus an equivalent
 owner-relative addend; all resolved section offsets are proved unchanged.
@@ -44,9 +46,10 @@ NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
 # file-scope object with a non-trivial ctor (e.g. `static CString g_worldName[8]={...}`).
 # The `<n>` is a per-object counter that renumbers on ANY static-init add/remove in the
 # TU, so - exactly like `$S<n>` local statics - it must be content-addressed, not pinned
-# by a fixed number. Same treatment: rename base + target `$E<n>` to a hash of the
-# funclet body so objdiff pairs by content. (Text, not data, but the byte/reloc hash is
-# identical machinery.)
+# by a fixed number. The disposable comparison copy hashes the body and its
+# recorded relocations where possible. Delinked target helpers can lack those
+# relocation records, so this is not a source-label authority and an `_$E<n>`
+# RVA_COMPGEN claim is forbidden.
 VOLATILE_E = re.compile(r"^_?\$E[0-9]+$")
 MSVC_CTOR = re.compile(r"^\?\?0(?P<class_name>[^@]+)@@")
 MSVC_DTOR = re.compile(r"^\?\?1(?P<class_name>[^@]+)@@")

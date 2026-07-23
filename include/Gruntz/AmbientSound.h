@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_CAMBIENTSOUND_H
 #define GRUNTZ_CAMBIENTSOUND_H
 
+#include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/UserLogic.h> // CUserBase base (CAmbientSound : CUserBase)
@@ -12,14 +13,6 @@
 typedef enum AmbientBoxSentinel {
     AMBIENT_BOX_UNBOUNDED = 0x80000000, // INT_MIN sentinel (same immediate)
 } AmbientBoxSentinel;
-
-struct AmbientBox {
-    i32 left;   // +0x00
-    i32 top;    // +0x04
-    i32 right;  // +0x08
-    i32 bottom; // +0x0c
-};
-SIZE_UNKNOWN();
 
 struct AmbientPoint {
     i32 x; // +0x00
@@ -60,10 +53,9 @@ public:
     // box, (re)starting or fading as the listener crosses in/out.
     virtual void Update(i32 x, i32 y, i32 force); // 0xc090  (slot 3)
 
-    // The fade helper (CAmbientSound::SetLevel sibling 0xc2a0; ret 0xc) reached
-    // through the same ILT thunk Update uses. External here (not a target):
-    // declared so Update's `call` reloc-masks.
-    i32 Fade(i32 a, i32 b, i32 c); // 0xc2a0
+    // The non-virtual play/stop helper shared by the base and random update
+    // paths. It owns only CAmbientSound state.
+    void Fade(i32 playFlag, i32 level, i32 mode); // 0xc2a0
 
     // 0xbfb0: Restart - re-arm the voice at its CURRENT level (m_08). No-op unless
     // the voice exists, it is not already playing (m_14==0), and the active level /
@@ -85,10 +77,10 @@ public:
         const char* key,
         i32 a3,
         i32 a4,
-        AmbientBox* box,
+        RECT* box,
         i32 a6
-    );                                                                       // 0xbdd0
-    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0xbe50
+    );                                                                 // 0xbdd0
+    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, RECT* box, i32 a5); // 0xbe50
 
     // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
@@ -96,8 +88,8 @@ public:
     i32 m_scaleA;            // +0x0c  level scale A (compared to 5; -0xf above)
     i32 m_scaleB;            // +0x10  level scale B (>0 multiplier, percent)
     i32 m_isPlaying;         // +0x14  "is playing" flag
-    AmbientBox m_box1;       // +0x18  primary audible box
-    AmbientBox m_box2;       // +0x28  secondary audible box
+    RECT m_box1;             // +0x18  primary audible box
+    RECT m_box2;             // +0x28  secondary audible box
     i32 m_panIndex;          // +0x38  pan index (ApplyAndPlay pan arg; matches CRandomAmbientSound)
     POSITION m_listNode;     // +0x3c  the CWorldSoundSet::m_list POSITION this channel was
                              //        appended at (Create* factories store AddTail's return;

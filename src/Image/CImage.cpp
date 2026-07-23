@@ -631,7 +631,6 @@ i32 g_surfaceColorKey = 0; // 0x2bf380
 // The `$S<5-digit>` tail on the .bss names is cl5's per-TU COMDAT sequence number: it
 // SHIFTS if CImage.cpp's earlier statics change, so re-read it from the base obj
 // (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
-RVA_COMPGEN(0x00153800, 0x10, _$E29)
 
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
@@ -653,8 +652,6 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
         this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
     }
 }
-
-RVA_COMPGEN(0x001538b0, 0x10, _$E31)
 
 // ---------------------------------------------------------------------------
 // No flip, surface blit (BltEx, blend mode 6).

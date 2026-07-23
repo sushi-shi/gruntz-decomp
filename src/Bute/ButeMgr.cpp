@@ -1211,7 +1211,6 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
 // (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
 // pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
 // set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-RVA_COMPGEN(0x00173840, 0x0, _$E48)
 
 RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
@@ -1227,8 +1226,6 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     }
     return def;
 }
-
-RVA_COMPGEN(0x00173dc0, 0x0, _$E50)
 
 // CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
 // `this` with `type`, op-new an 8-byte CButeValue, copy `src`'s {type, pValue}

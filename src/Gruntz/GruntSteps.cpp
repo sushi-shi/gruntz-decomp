@@ -192,15 +192,6 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
-RVA_COMPGEN(0x00047760, 0x1a, _$E292704)
-RVA_COMPGEN(0x000477b0, 0x1a, _$E292784)
-RVA_COMPGEN(0x00047800, 0x1f, _$E292864)
-RVA_COMPGEN(0x00047850, 0x1a, _$E292944)
-RVA_COMPGEN(0x000478a0, 0x1f, _$E293024)
-RVA_COMPGEN(0x000478f0, 0x1f, _$E293104)
-RVA_COMPGEN(0x00047940, 0x1f, _$E293184)
-RVA_COMPGEN(0x00047990, 0x17, _$E293264)
-
 RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
     // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, a CGrunt method);

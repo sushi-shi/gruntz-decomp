@@ -161,10 +161,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // edi), reads the node count into ebp via the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]`
 // count-down idiom (mine a plain --cnt), and orders the `id=key` store before the
 // scratch=0. Not source-steerable (regalloc/strength-reduction wall); deferred.
-RVA_COMPGEN(0x000b28a0, 0xa, _$E731296)
-RVA_COMPGEN(0x000b28c0, 0x15, _$E731328)
-RVA_COMPGEN(0x000b28f0, 0xe, _$E731376)
-RVA_COMPGEN(0x000b2910, 0x1f, _$E731408)
 
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {

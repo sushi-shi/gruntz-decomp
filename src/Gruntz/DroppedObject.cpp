@@ -297,11 +297,6 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_area.bottom = 1;
 }
 
-RVA_COMPGEN(0x000c5ee0, 0xa, _$E810720)
-RVA_COMPGEN(0x000c5f00, 0x15, _$E810752)
-RVA_COMPGEN(0x000c5f30, 0xe, _$E810800)
-RVA_COMPGEN(0x000c5f50, 0x1f, _$E810832)
-
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
     if ((reinterpret_cast<CDropperActEntry*>(
@@ -543,11 +538,6 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         );
 }
 
-RVA_COMPGEN(0x000c6b30, 0xa, _$E813872)
-RVA_COMPGEN(0x000c6b50, 0x15, _$E813904)
-RVA_COMPGEN(0x000c6b80, 0xe, _$E813952)
-RVA_COMPGEN(0x000c6ba0, 0x1f, _$E813984)
-
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
     CDropEntry* e = DropLookup(coord);
@@ -772,11 +762,6 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
         m_object->m_flags |= 0x20000;
     }
 }
-
-RVA_COMPGEN(0x000c76b0, 0xa, _$E816816)
-RVA_COMPGEN(0x000c76d0, 0x15, _$E816848)
-RVA_COMPGEN(0x000c7700, 0xe, _$E816896)
-RVA_COMPGEN(0x000c7720, 0x1f, _$E816928)
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {

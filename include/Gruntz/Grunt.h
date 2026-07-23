@@ -223,7 +223,6 @@ extern GruntDirectionCell g_gruntMoveDirNorthWest; // 0x644918
 extern GruntDirectionCell g_gruntMoveDirCenter;    // 0x644938
 
 struct CGruntMotionBand {
-    void Init(); // 0x136d0 (CMotionState ctor; retail via thunk 0x34db)
     i32 SetParams(
         double a0,
         double a1,
@@ -399,15 +398,6 @@ public:
     // 5x5 dirty box, tracked-coord list scan firing the plane trigger, freelist recycle.
     i32 PathScan();
 
-    // --- animation resolvers (this TU's targets) ---
-    i32 ResolveMovingAnimation();
-    i32 ResolveDeathAnimation();
-    // (NotifyFortUnderAttack @0x45270 is CWarlord's - the CGrunt shadow decl was a
-    //  fake-view alias; the one caller downcasts its CUserLogic* to CWarlord*.)
-    i32 ResolveAnimation(); // (generic / "_JOY")
-    i32 ResolveIdleAnimation();
-    i32 ResolveBattlecryAnimation();
-
     // @0x4a9f0 (ret 0) - the 4-way reachability probe: resolve the grunt under the
     // HUD center (m_tileMgr->FindAtPixel), copy its entrance rect (+0x144) offset by
     // its HUD origin, then test 4 segments (vertical / horizontal / two diagonals,
@@ -424,15 +414,10 @@ public:
     // 0x16e7f0, and that body read/writes this+0x30 - so +0x30 cannot be CGrunt's
     // own field. The local re-declaration was dropped 2026-07-17 (SM1); the name,
     // type (void*) and offset are unchanged, so every use site is untouched.
-    // (+0x34..+0x14f is the CMovingLogic base's - incl. the grunt arm of its band
-    // union: m_animPlayer/m_activeAnimDesc/m_typeName/the *GeoSrc handles/the move
-    // seeds/m_animResolved/m_deathCueArg all live there now. <Gruntz/MovingLogic.h>.)
-    // The +0x54 type name viewed as a CString at its five concat sites
-    // (codegen-neutral: same CString lvalue; the raw char* member keeps ~CGrunt
-    // from auto-destructing it).
-    CString& TypeName() {
-        return *reinterpret_cast<CString*>(&m_typeName);
-    }
+    // +0x34..+0x14f is the CMovingLogic base: padding, a real CMotionState member,
+    // and four trailing motion integers. The former "grunt animation" overlay was
+    // a CWarlord ownership error; those fields map to CWarlord's CWapX base and
+    // own members at the same offsets.
     // (+0x114/+0x118/+0x124 were migrated here last batch as "placement params". That was
     //  WRONG and is reverted: those writes happen on the CreateSprite RESULT - a CGameObject,
     //  not a grunt - and <Gruntz/UserLogic.h>'s CGameObject already models them (m_114 /
@@ -453,23 +438,14 @@ public:
     //     ("m_158 = obj->m_7c", "m_15c = m_154->m_1a0.m_14 cache", a 0x10-byte pad),
     //     and CGrunt's real own data resumes at +0x170 = 0x150 + sizeof(CWapX).
     //
-    // NOT YET CONVERTED. Step 1 (the name collisions) is DONE and committed; step 2
-    // (the spine) is written, ATTEMPTED, and blocked on ONE named thing - read this
-    // before you retry, it is cheap to re-derive wrongly:
+    // NOT YET CONVERTED. The remaining spine conversion is blocked on one named
+    // thing - read this before retrying; it is cheap to re-derive wrongly:
     //
-    //   (1) DONE - the collision renames, USR-exact + byte-neutral (0 functions moved):
-    //         CGrunt::m_38 -> m_animPlayer  (+0x38; collided with CWapX::m_38 @+0x150)
-    //         m_150/m_154/m_158/m_prevEntranceDesc -> m_34/m_38/m_3c/m_value
-    //       so the +0x150 use sites already read the base's names. NB clangd's renamer
-    //       does NOT rewrite MACRO BODIES - three macros kept expanding to the dead
-    //       m_154 and only the build caught them. Rename FIRST, then delete: with the
-    //       decls still present a missed site is a compile error, not a silent rebind.
-    //
-    //   (2) BLOCKED - `: public the lean CMovingLogic, public CWapX` needs the PRIMARY base
+    //   `: public the lean CMovingLogic, public CWapX` needs the PRIMARY base
     //       to be the 0x150 spine (a second base lands right after the primary's size,
-    //       so with today's LEAN base CWapX would sit at +0x34, not +0x150). Moving
-    //       +0x34..+0x14f into the lean CMovingLogic is mechanical and byte-neutral (base
-    //       data precedes own data -> offsets unchanged). ATTEMPTED 2026-07-17: it
+    //       so with a lean base CWapX would sit at +0x34, not +0x150). The
+    //       +0x34..+0x14f motion band is now correctly modeled on CMovingLogic,
+    //       so its size already places CWapX at +0x150. ATTEMPTED 2026-07-17: it
     //       compiles down to exactly ONE class of error, and it is the OLD, KNOWN
     //       CGrunt-ODR blocker #4 (the i32/void slot-signature split; see the NOTE in
     //       <Gruntz/UserLogic.h>) surfacing at the PMF table: making CGrunt MI widens

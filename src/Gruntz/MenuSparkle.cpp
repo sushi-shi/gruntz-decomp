@@ -82,11 +82,6 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-RVA_COMPGEN(0x000addc0, 0xa, _$E712128)
-RVA_COMPGEN(0x000adde0, 0x15, _$E712160)
-RVA_COMPGEN(0x000ade10, 0xe, _$E712208)
-RVA_COMPGEN(0x000ade30, 0x1f, _$E712240)
-
 typedef void (CUserLogic::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)

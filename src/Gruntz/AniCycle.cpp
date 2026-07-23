@@ -37,11 +37,6 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA_COMPGEN(0x000aaee0, 0xa, _$E700128)
-RVA_COMPGEN(0x000aaf00, 0x15, _$E700160)
-RVA_COMPGEN(0x000aaf30, 0xe, _$E700208)
-RVA_COMPGEN(0x000aaf50, 0x1f, _$E700240)
-
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
     CAniCycleActEntry* e =

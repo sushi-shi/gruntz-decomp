@@ -25,11 +25,6 @@ void DebugSetCursor(i32, i32, i32); // 0x184fd0
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;
 
-RVA_COMPGEN(0x00184b60, 0xa, _$E1592160)
-RVA_COMPGEN(0x00184b70, 0xa, _$E1592176)
-RVA_COMPGEN(0x00184b80, 0xe, _$E1592192)
-RVA_COMPGEN(0x00184b90, 0xa, _$E1592208)
-
 RVA(0x00184ba0, 0x33)
 bool CRangeSet::Contains(u32 value) {
     for (u32 i = 0; i < m_count; i++) {

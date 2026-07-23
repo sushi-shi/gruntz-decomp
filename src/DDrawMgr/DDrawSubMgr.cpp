@@ -1216,22 +1216,10 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(a);
 
-    CDDrawSurfacePair* b = static_cast<CDDrawSurfacePair*>(operator new(0x34));
-    if (b != 0) {
-        new (b) CDDrawSurfacePair(m_ownerCtx, 1, 0);
-        b->m_width = 0;
-        b->m_surface = 0;
-        b->m_ownsSurface = 1;
-    }
+    CDDrawSurfacePair* b = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_backPair = b;
 
-    CDDrawSurfacePair* c = static_cast<CDDrawSurfacePair*>(operator new(0x34));
-    if (c != 0) {
-        new (c) CDDrawSurfacePair(m_ownerCtx, 2, 0);
-        c->m_width = 0;
-        c->m_surface = 0;
-        c->m_ownsSurface = 1;
-    }
+    CDDrawSurfacePair* c = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
     m_overlayPair = c;
 
     if (a->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24] (the mode-surface creator)

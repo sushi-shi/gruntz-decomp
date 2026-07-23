@@ -18,10 +18,8 @@ public:
     i32 Init(void* owner, i32 phase, i32 srcX, i32 srcY);
     i32 Tick(i32 dt); // 0x10a0f0  integrate toward target, snap, notify on arrival
     i32 Draw();       // 0x10a2f0  blit the sprite at the rounded position
-    // The fly's own serialize pass, dispatched from CStatusBarMgr::Sync (reloc-
-    // masked, ILT 0x402306; body unreconstructed). Ex "CLevelSync::ChildSync" -
-    // the "CLevelSyncChild" was THIS class (SIZE 0x40, owner backlink @+0x3c).
-    i32 Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5); // ILT 0x402306
+    // The fly's own serialize pass, dispatched from CStatusBarMgr::Sync.
+    i32 Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5); // 0x109e00, ILT 0x402306
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_arrivalMode; // +0x00  mode value poked into the registry tab array on arrival

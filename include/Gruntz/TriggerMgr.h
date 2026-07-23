@@ -17,6 +17,7 @@ typedef enum TmGridDim {
 #include <Gruntz/CoordNode.h>
 
 class CGrunt;
+class CWarlord;
 struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprite returns
 
 class CDDrawSurfaceMgr;
@@ -144,11 +145,11 @@ public:
     // 0x6bea0: scan the cell grid (startRow, or rows 0..3 when startRow==5) for the
     // cell whose 30x30 object bounds contain (px,py); writes the found (row,col)
     // through the out-ptrs and returns the cell pointer (0 when none). (ret 0x14.)
-    void* CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow);
+    CGrunt* CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow);
 
     // 0x6be30: ScreenToCell - translate (sx,sy) by the level view's scroll origin and
     // forward to CellHitTest(startRow). (__stdcall: ret 0x14.)
-    void* ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow);
+    CGrunt* ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow);
 
     // 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present,
     // then drain the record (+0x244) and selection (+0x2d0) lists.
@@ -429,12 +430,8 @@ public:
     i32 Reset3(i32 a, i32 b, i32 c);
     // (ReportObjectAt is GONE - its thunk 0x3030 jumps to 0x6e120, which IS
     // ApplyTriggerB; CGrunt::StepPeerTracking calls the real name.)
-    CGrunt* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
-    CGrunt* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
     i32 PlaceB(i32 a, i32 b, i32 c);
-    void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-
     // 0x7c620: LoadPowerupIconSprites(type, geoB, geoA, m130, warpIdx, m120) - the big
     // in-game-icon loader (PickupType jump-table switch selecting the GAME_INGAMEICONZ_*
     // sprite-set key). Called on the +0x68 registry m_cmdGrid by the tile effect loaders
@@ -454,28 +451,6 @@ public:
     // 0x7a3f0: the lazy "GAME_TOYBOX" in-game-icon loader (bails when an icon already
     // sits on the tile). Body in TriggerMgr.cpp (ex ?LoadToyBoxIcon@EngineLabelBacklog).
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5);
-
-    // 0x46b6d0: the screen-coord -> cell-index probe the battlez spawn machine fires on
-    // this grid (two arg shapes at the same body; Ghidra leaves it class-unattributed).
-    // Declared-only (reloc-masked). These two are all that BattlezMapConfig.cpp's
-    // DUPLICATE `class CTriggerMgr` added - a second, divergent definition of THIS class
-    // inside a .cpp (its "m_objListHead @+0x04" is m_baseList's list head, its
-    i32 Probe(
-        i32 cell,
-        i32 sx,
-        i32 sy,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9,
-        i32 a10,
-        i32 a11,
-        i32 a12
-    );
-    i32 ProbeCell(i32 a0, i32 a1, void* a2, i32 a3, void* a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CPtrList @0, record CPtrList @0x240, byte-table
@@ -526,7 +501,7 @@ public:
     // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
     // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
     // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
-    CGrunt* m_pendingFx;     // +0x2a0  pending-fx grunt logic
+    CWarlord* m_pendingFx;   // +0x2a0  local player's warlord logic
     i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
     i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
     char _pad2ac[0x4];       // +0x2ac
@@ -558,10 +533,6 @@ i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 
 extern "C" void IconClassInitB(); // 0x402bad
 extern "C" void IconClassInitA(); // 0x40288d
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
 
 extern i32 g_groupSentinel;
 #endif

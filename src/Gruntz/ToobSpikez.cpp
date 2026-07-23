@@ -75,11 +75,6 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
-RVA_COMPGEN(0x001147c0, 0xa, _$E1132480)
-RVA_COMPGEN(0x001147e0, 0x15, _$E1132512)
-RVA_COMPGEN(0x00114810, 0xe, _$E1132560)
-RVA_COMPGEN(0x00114830, 0x1f, _$E1132592)
-
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded

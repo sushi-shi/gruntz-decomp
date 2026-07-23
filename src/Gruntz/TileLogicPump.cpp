@@ -356,11 +356,6 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA_COMPGEN(0x0010d820, 0xa, _$E1103904)
-RVA_COMPGEN(0x0010d840, 0x15, _$E1103936)
-RVA_COMPGEN(0x0010d870, 0xe, _$E1103984)
-RVA_COMPGEN(0x0010d890, 0x1f, _$E1104016)
-
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
     CWarpStonePadActEntry* e = reinterpret_cast<CWarpStonePadActEntry*>(
@@ -415,11 +410,6 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
 }
-
-RVA_COMPGEN(0x0010de00, 0xa, _$E1105408)
-RVA_COMPGEN(0x0010de20, 0x15, _$E1105440)
-RVA_COMPGEN(0x0010de50, 0xe, _$E1105488)
-RVA_COMPGEN(0x0010de70, 0x1f, _$E1105520)
 
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
@@ -479,11 +469,6 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_168 = m_object->m_screenY >> 5;
     m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
 }
-
-RVA_COMPGEN(0x0010e400, 0xa, _$E1106944)
-RVA_COMPGEN(0x0010e420, 0x15, _$E1106976)
-RVA_COMPGEN(0x0010e450, 0xe, _$E1107024)
-RVA_COMPGEN(0x0010e470, 0x1f, _$E1107056)
 
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
@@ -559,10 +544,6 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // body has exactly one owner.
 //
 // CBrickz::InitActReg @0x10ea00 - construct CActRegPool<CBrickz>::s_table over [2000,2010].
-RVA_COMPGEN(0x0010e9e0, 0xa, _$E1108448)
-RVA_COMPGEN(0x0010ea00, 0x15, _$E1108480)
-RVA_COMPGEN(0x0010ea30, 0xe, _$E1108528)
-RVA_COMPGEN(0x0010ea50, 0x1f, _$E1108560)
 
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
@@ -666,11 +647,6 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
         }
     }
 }
-
-RVA_COMPGEN(0x0010f140, 0xa, _$E1110336)
-RVA_COMPGEN(0x0010f160, 0x15, _$E1110368)
-RVA_COMPGEN(0x0010f190, 0xe, _$E1110416)
-RVA_COMPGEN(0x0010f1b0, 0x1f, _$E1110448)
 
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
@@ -800,11 +776,6 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
         m_object->m_flags |= 0x20000;
     }
 }
-
-RVA_COMPGEN(0x0010fc70, 0xa, _$E1113200)
-RVA_COMPGEN(0x0010fc90, 0x15, _$E1113232)
-RVA_COMPGEN(0x0010fcc0, 0xe, _$E1113280)
-RVA_COMPGEN(0x0010fce0, 0x1f, _$E1113312)
 
 RVA(0x0010fd10, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {

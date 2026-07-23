@@ -85,11 +85,6 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-RVA_COMPGEN(0x0010c410, 0xa, _$E1098768)
-RVA_COMPGEN(0x0010c430, 0x15, _$E1098800)
-RVA_COMPGEN(0x0010c460, 0xe, _$E1098848)
-RVA_COMPGEN(0x0010c480, 0x1f, _$E1098880)
-
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
     CStatusBarSpriteActEntry* e = reinterpret_cast<CStatusBarSpriteActEntry*>(

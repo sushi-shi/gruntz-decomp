@@ -37,11 +37,6 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_38->m_stateFlags |= 1;
 }
 
-RVA_COMPGEN(0x0007ff80, 0xa, _$E524160)
-RVA_COMPGEN(0x0007ffa0, 0x15, _$E524192)
-RVA_COMPGEN(0x0007ffd0, 0xe, _$E524240)
-RVA_COMPGEN(0x0007fff0, 0x1f, _$E524272)
-
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CPowerupActEntry*>(

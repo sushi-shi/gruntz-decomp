@@ -55,10 +55,4 @@ struct PosSoundObj {
 };
 SIZE_UNKNOWN();
 
-struct PosSoundPlaced {
-    char m_pad0[0x28];
-    RECT m_28; // +0x28  == CAmbientSound::m_box2 written as the placement rect
-};
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_GRUNTZ_POSSOUND_H

@@ -21,7 +21,7 @@ float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*d
 // flag profile exists.
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
-    i32 p0,
+    CDDSurface* surface,
     i32 p1,
     i32 p2,
     i32 p3,
@@ -66,12 +66,7 @@ i32 ProjectWallQuad(
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon(
-            g_rasterVtxB,
-            g_rasterVtxCount,
-            reinterpret_cast<CDDSurface*>(p0),
-            static_cast<i16>(p6)
-        );
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, static_cast<i16>(p6));
     }
     return 1;
 }

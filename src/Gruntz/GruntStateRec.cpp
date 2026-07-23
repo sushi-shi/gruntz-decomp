@@ -1,9 +1,10 @@
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>          // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches)
-#include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // name map + AnyValueMatches
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/GameRegistry.h>         // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
 #include <Gruntz/Sprite.h> // CDDrawWorker - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
 #include <string.h>        // inline strlen / strcpy / memset over the scratch buffer
@@ -24,7 +25,7 @@
 // Write at +0x30 (mode 4) - both slots off the one type.
 // ===========================================================================
 // @early-stop
-// scratch-slot scheduling tail (same family as CTriggerLoadRec/CEventLoadRec/
+// scratch-slot scheduling tail (same family as CTriggerLoadRec/CTimer::Deserialize/
 // CArchiveLoadRec): the dual-mode switch, every Read field/size, the indexed-ref
 // bounds checks, the name-ref Lookups, the FillDefault sub-records, the inline
 // strlen/strcpy, the g_serialCounter bumps and the tail-chain + 0/1 normalise are

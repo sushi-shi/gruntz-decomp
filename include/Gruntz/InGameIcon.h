@@ -9,17 +9,6 @@
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr) // *0x24556c canonical singleton
 
-struct CIconMapHolder {
-    char m_pad00[0x10];
-    CMapStringToPtr m_10map; // +0x10  the lookup table (Lookup 0x1b8438 = CMapStringToPtr)
-};
-SIZE_UNKNOWN();
-struct CGameRegMapHolder {
-    char m_pad00[0x28];
-    CIconMapHolder* m_28; // +0x28  the map holder (Lookup table at +0x10)
-};
-SIZE_UNKNOWN();
-
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 #include <Gruntz/SoundState.h> // g_sndCueTag (the cue-item id) + g_sndEnabled
@@ -27,6 +16,8 @@ SIZE_UNKNOWN();
 extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped into +0x58)
 
 #include <Gruntz/SerialCounter.h> // g_serialCounter (the serialize sequence counter)
+
+class LeafCue;
 
 class CInGameIcon : public CUserLogic, public CWapX {
 public:
@@ -54,10 +45,8 @@ public:
     i32 PeekCycle();                    // 0x0984b0 (peek-timer random-sprite refresh)
     i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
     i32 Reposition();                   // 0x098a90 (drift re-place refresh)
-    void SetField54(i32 v);             // 0x099b10
-
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
-    i32 m_cmapId;        // +0x54  registry-CMap lookup result (SetField54; place gate)
+    LeafCue* m_cue;      // +0x54  sound-registry cue selected by SetupSprite
     i32 m_driftPos;      // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
     i32 m_driftPosHi;    // +0x5c  drift-tracked position hi
     i32 m_driftThresh;   // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})

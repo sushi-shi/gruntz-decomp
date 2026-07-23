@@ -125,11 +125,6 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) 
     return 1;
 }
 
-RVA_COMPGEN(0x0003e8c0, 0xa, _$E256192)
-RVA_COMPGEN(0x0003e8e0, 0x15, _$E256224)
-RVA_COMPGEN(0x0003e910, 0xe, _$E256272)
-RVA_COMPGEN(0x0003e930, 0x1f, _$E256304)
-
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
     CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(

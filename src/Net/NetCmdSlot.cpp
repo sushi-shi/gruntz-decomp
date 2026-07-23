@@ -51,11 +51,6 @@ char g_idListBuf[0x40]; // 0x24b6b0
 
 void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 
-RVA_COMPGEN(0x000beef0, 0xa, _$E782064)
-RVA_COMPGEN(0x000bef10, 0xd, _$E782096)
-RVA_COMPGEN(0x000bef30, 0xe, _$E782128)
-RVA_COMPGEN(0x000bef50, 0x1f, _$E782160)
-
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a1 == 0) {

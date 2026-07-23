@@ -261,11 +261,6 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = m_object->m_screenY + (m_object->m_extent.bottom << 5) + 7;
 }
 
-RVA_COMPGEN(0x00119da0, 0xa, _$E1154464)
-RVA_COMPGEN(0x00119dc0, 0x15, _$E1154496)
-RVA_COMPGEN(0x00119df0, 0xe, _$E1154544)
-RVA_COMPGEN(0x00119e10, 0x1f, _$E1154576)
-
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 coord) {
     CVActEntry* e = VActLookup(coord);
@@ -274,11 +269,6 @@ void CGruntVoice::FireActivation(i32 coord) {
         (this->*(e2->m_fn))();
     }
 }
-
-RVA_COMPGEN(0x0011a300, 0xa, _$E1155840)
-RVA_COMPGEN(0x0011a320, 0x15, _$E1155872)
-RVA_COMPGEN(0x0011a350, 0xe, _$E1155920)
-RVA_COMPGEN(0x0011a370, 0x1f, _$E1155952)
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {

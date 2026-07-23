@@ -53,11 +53,3 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
 // MSVC's compiler-private initializer families for the two explicit template
 // static specializations above. The guarded 0x1f-byte destructor helpers share
 // one compiler guard byte and use bits 1 and 2 respectively.
-RVA_COMPGEN(0x000238b0, 0xa, _$E145584)
-RVA_COMPGEN(0x000238d0, 0xd, _$E145616)
-RVA_COMPGEN(0x000238f0, 0xe, _$E145648)
-RVA_COMPGEN(0x00023910, 0x1f, _$E145680)
-RVA_COMPGEN(0x00023940, 0xa, _$E145728)
-RVA_COMPGEN(0x00023960, 0xd, _$E145760)
-RVA_COMPGEN(0x00023980, 0xe, _$E145792)
-RVA_COMPGEN(0x000239a0, 0x1f, _$E145824)

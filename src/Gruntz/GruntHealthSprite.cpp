@@ -40,11 +40,6 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_60 = -0x19;
 }
 
-RVA_COMPGEN(0x0007ecd0, 0xa, _$E519376)
-RVA_COMPGEN(0x0007ecf0, 0x15, _$E519408)
-RVA_COMPGEN(0x0007ed20, 0xe, _$E519456)
-RVA_COMPGEN(0x0007ed40, 0x1f, _$E519488)
-
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
     if ((reinterpret_cast<CHealthActEntry*>(

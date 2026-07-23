@@ -4,7 +4,7 @@
 #include <Wap32/Object.h> // CObject base (pulls the single MFC ::CObject + CArchive)
 
 struct RezElem40 {
-    RezElem40(); // 0x17e300 (declared-only; reloc-masked)
+    RezElem40(); // 0x17f300
     char m_b[0x28];
 };
 SIZE(0x28);

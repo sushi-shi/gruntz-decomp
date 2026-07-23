@@ -17,7 +17,6 @@ SIZE_UNKNOWN();
 
 class CAmbientPosSound;
 class CRandomAmbientSound;
-struct AmbientBox;
 struct AmbientPoint;
 
 struct CRandomAmbientWorld {
@@ -47,14 +46,14 @@ public:
     // run its one-time Init, and (on success) append it to m_list. The `this` is
     // this CWorldSoundSet owner (the rtti-vptr heuristic once mislabeled them onto
     // the channel classes whose vtables their inlined ctors stamp).
-    CAmbientSound* CreateAmbient6(const char* key, i32 a1, AmbientBox* box, i32 a3, i32 a4);
-    CAmbientSound* CreateAmbient5(DirectSoundMgr* mgr, i32 a1, AmbientBox* box, i32 a3, i32 a4);
+    CAmbientSound* CreateAmbient6(const char* key, i32 a1, RECT* box, i32 a3, i32 a4);
+    CAmbientSound* CreateAmbient5(DirectSoundMgr* mgr, i32 a1, RECT* box, i32 a3, i32 a4);
     CAmbientPosSound* CreatePos6(const char* key, i32 a1, AmbientPoint* pos, i32 a3, i32 a4);
     CAmbientPosSound* CreatePos5(DirectSoundMgr* mgr, i32 a1, AmbientPoint* pos, i32 a3, i32 a4);
     CRandomAmbientSound* CreateRandom(
         DirectSoundMgr* mgr,
         i32 a1,
-        AmbientBox* box,
+        RECT* box,
         i32 a3,
         i32 a4,
         i32 a5,
@@ -66,7 +65,7 @@ public:
     CRandomAmbientSound* CreateRandomBox(
         const char* key,
         i32 a1,
-        AmbientBox* box,
+        RECT* box,
         i32 a3,
         i32 a4,
         i32 a5,

@@ -26,10 +26,6 @@ public:
     CRandomAmbientSound() {}
     // (The one-time inits are the INHERITED CAmbientSound::Init6/Init5 @0xbdd0/0xbe50
     // - the box factories call them on this class - plus Init2 below.)
-    // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
-    // 0x00c2a0 is NOT the slot-3 virtual (no retail vtable holds it) - a plain
-    // random-cue driver, self-called qualified from the Update override.
-    void PlayRandom(i32 playFlag, i32 pos, i32 kind);      // 0x00c2a0
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 - 0xcb30 (ex Step)
     // (The positional variant's entry points are CAmbientPosSound::Init6/Init5
     // @0xc4b0/0xc530 - <Gruntz/AmbientSound.h>.)

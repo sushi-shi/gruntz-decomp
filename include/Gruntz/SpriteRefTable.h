@@ -59,15 +59,8 @@ public:
     CSpriteRef* GetB(i32 i); // 0x0e2390 (out-of-line: i<0x11 ? m_refB[i] : 0)
 
     // Resolve slot i: pick bucket B when bAlt else bucket A, return its node's m_alphaKey
-    // (the sprite/frame pointer), or null. 0xe23c0. (CPlay's BeginGridWalk names this
-    // LoadSprite for its role and InGameIcon names it GetByIndex - all the same 0xe23c0.)
+    // (the sprite/frame pointer), or null. 0xe23c0.
     i32 GetSel(i32 i, i32 bAlt); // 0x0e23c0 (out-of-line)
-
-    // Load a sprite by descriptor (the CPlay grid-walk facet on this same +0x74 object):
-    // desc is the per-grunt-type descriptor from the world config array, flag the variant.
-    // Reloc-masked no-body (its retail RVA is unrecovered); modeled here so CPlay reaches
-    // the +0x74 table cast-free instead of via a per-TU SpriteLoader view.
-    void* LoadSprite(void* desc, i32 flag);
 
     // Look the named sprite up in m_spriteMgrHolder's hash table, build a CSpriteRef of the given
     // kind from it, and return the node (null on miss / alloc fail). 0xe2890.

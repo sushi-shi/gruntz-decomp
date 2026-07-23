@@ -4,8 +4,8 @@
 #include <Gruntz/BoundaryLeafLogicViews.h> // the boundary leaf-dtor views (L_8860 dissolved)
 #include <Gruntz/AmbientSound.h>           // canonical CAmbientSound / CAmbientPosSound
 #include <Gruntz/RandomAmbientSound.h>     // canonical CRandomAmbientSound
-#include <Gruntz/PosSound.h> // PosSoundObj / PosSoundAux / PosSoundPlaced spawn-path types
-#include <Rez/RezMgr.h>      // RezAlloc - the engine heap allocator (reloc-masked)
+#include <Gruntz/PosSound.h>               // PosSoundObj / PosSoundAux spawn-path types
+#include <Rez/RezMgr.h>                    // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
 
@@ -80,8 +80,7 @@ void CWorldSoundSet::Teardown() {
 }
 
 RVA(0x0000b6a0, 0x83)
-CAmbientSound*
-CWorldSoundSet::CreateAmbient6(const char* key, i32 a1, AmbientBox* box, i32 a3, i32 a4) {
+CAmbientSound* CWorldSoundSet::CreateAmbient6(const char* key, i32 a1, RECT* box, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
@@ -101,7 +100,7 @@ RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
 CAmbientSound*
-CWorldSoundSet::CreateAmbient5(DirectSoundMgr* mgr, i32 a1, AmbientBox* box, i32 a3, i32 a4) {
+CWorldSoundSet::CreateAmbient5(DirectSoundMgr* mgr, i32 a1, RECT* box, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
@@ -157,7 +156,7 @@ RVA(0x0000ba00, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
     const char* key,
     i32 a1,
-    AmbientBox* box,
+    RECT* box,
     i32 a3,
     i32 a4,
     i32 a5,
@@ -196,7 +195,7 @@ RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::CreateRandom(
     DirectSoundMgr* mgr,
     i32 a1,
-    AmbientBox* box,
+    RECT* box,
     i32 a3,
     i32 a4,
     i32 a5,
@@ -313,7 +312,7 @@ void* CAmbientSound::Init6(
     const char* key,
     i32 a3,
     i32 a4,
-    AmbientBox* box,
+    RECT* box,
     i32 a6
 ) {
     void* out_ob = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
@@ -326,7 +325,7 @@ void* CAmbientSound::Init6(
 }
 
 RVA(0x0000be50, 0x8f)
-i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5) {
+i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, RECT* box, i32 a5) {
     if (mgr == 0) {
         return 0;
     }
@@ -336,7 +335,7 @@ i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i
     m_scaleB = a5;
     m_panIndex = 0;
     m_isPlaying = 0;
-    AmbientBox* p = &m_box1;
+    RECT* p = &m_box1;
     if (box != 0) {
         *p = *box;
     } else {
@@ -532,17 +531,17 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 }
 
 // ---------------------------------------------------------------------------
-// CRandomAmbientSound::PlayRandom (0x00c2a0, __thiscall, 3 args playFlag/pos/kind):
+// CAmbientSound::Fade (0x00c2a0, __thiscall, 3 args playFlag/level/mode):
 // the play/stop driver. Gated on the mgr handle, the playing flag, and the active
 // level (g_gameReg->m_soundEnabled and g_gameReg->m_inputState->m_active). On play it
-// reseeds the voice (ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA
+// reseeds the voice (ApplyAndPlay(1,m_panIndex,0,1)), scales level by (m_scaleA
 // clamped)/100 then m_scaleB/100 (both signed magic-/100), clamps the result to
-// [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay (kind!=0);
-// on stop it StopAndRewind's (kind==0) or CloneAndPlay-stops (kind!=0).
+// [0,100], and dispatches SetVolumeByIndex (mode==0) or CloneAndPlay (mode!=0);
+// on stop it StopAndRewind's (mode==0) or CloneAndPlay-stops (mode!=0).
 // ---------------------------------------------------------------------------
 // @early-stop
 // ~89% register-materialization wall (was 35% - the play/stop branch polarity and both
-// kind branches are now retail-correct: playFlag!=0 play path is the fall-through, kind==0
+// mode branches are now retail-correct: playFlag!=0 play path is the fall-through, mode==0
 // is the fall-through in BOTH the play and stop arms). Residual: retail pushes the shared
 // ApplyAndPlay args (push 1 / push 1 immediates) once before the kind branch and stores
 // m_isPlaying=1 as an immediate; cl instead pins the constant 1 in ebp (mov ebp,1; push
@@ -550,7 +549,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // (the /100 magic-division family); no source spelling flips the ebp pin. See
 // zero-register-pinning.md.
 RVA(0x0000c2a0, 0x19e)
-void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
+void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
     if (m_voice == 0) {
         return;
     }
@@ -566,20 +565,20 @@ void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
         if (g_gameReg->m_inputState->m_active == 0) {
             return;
         }
-        if (kind == 0) {
+        if (mode == 0) {
             m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
             i32 t = m_scaleA;
-            m_level = pos;
+            m_level = level;
             if (t > 5) {
                 t -= 0xf;
             }
-            i32 v = (t * pos) / 100;
+            i32 v = (t * level) / 100;
             if (m_scaleB > 0) {
                 v = (v * m_scaleB) / 100;
             }
             if (v < 0) {
                 m_voice->SetVolumeByIndex(0);
-                m_level = pos;
+                m_level = level;
                 m_isPlaying = 1;
                 return;
             }
@@ -587,18 +586,18 @@ void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
                 v = 0x64;
             }
             m_voice->SetVolumeByIndex(v);
-            m_level = pos;
+            m_level = level;
             m_isPlaying = 1;
             return;
         }
 
         m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
         i32 t = m_scaleA;
-        m_level = pos;
+        m_level = level;
         if (t > 5) {
             t -= 0xf;
         }
-        i32 v = (t * pos) / 100;
+        i32 v = (t * level) / 100;
         if (m_scaleB > 0) {
             v = (v * m_scaleB) / 100;
         }
@@ -607,24 +606,24 @@ void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
         } else if (v > 0x64) {
             v = 0x64;
         }
-        m_voice->CloneAndPlay(v, kind, 0);
-        m_level = pos;
+        m_voice->CloneAndPlay(v, mode, 0);
+        m_level = level;
         m_isPlaying = 1;
         return;
     }
 
-    // Stop path (playFlag == 0). Retail's `jne` puts StopAndRewind (kind==0) as the
-    // fall-through and the CloneAndPlay-stop (kind!=0) as the jumped-to arm.
+    // Stop path (playFlag == 0). Retail's `jne` puts StopAndRewind (mode==0) as the
+    // fall-through and the CloneAndPlay-stop (mode!=0) as the jumped-to arm.
     if (m_isPlaying == 0) {
         return;
     }
-    if (kind == 0) {
+    if (mode == 0) {
         m_voice->StopAndRewind();
         m_isPlaying = 0;
         return;
     }
     m_level = 0;
-    m_voice->CloneAndPlay(0, kind, 1);
+    m_voice->CloneAndPlay(0, mode, 1);
     m_isPlaying = 0;
 }
 
@@ -781,21 +780,8 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 // exits; the residual is MSVC's just-in-time vs pre-load interleaving of the factory
 // member-arg loads (same push order, same args) + the g_gameReg->m_inputState test
 // landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
-// PosSoundPlaced (the create-helper return record; == a CAmbientSound-family channel,
-// its +0x28 record IS CAmbientSound::m_box2) now lives in <Gruntz/PosSound.h>.
-PosSoundPlaced* __stdcall WorldSoundCreateFull(
-    void* factory,
-    i32 z,
-    RECT* rc,
-    i32 a,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0xbb60
-PosSoundPlaced* __stdcall
-WorldSoundCreateSimple(void* factory, i32 z, RECT* rc, i32 a, i32 b); // 0xb7b0
+// The create-helper return is a CAmbientSound-family channel; its m_box2 is the
+// placement rectangle copied below.
 RVA(0x0000c840, 0x13d)
 i32 CommitSpriteAction(PosSoundObj* obj) {
     PosSoundAux* aux = obj->m_aux;
@@ -815,9 +801,9 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                 SetRect(&rc, aux->m_srcL, aux->m_srcT, aux->m_srcR, aux->m_srcB);
             }
             if (g_gameReg->m_inputState) {
-                PosSoundPlaced* placed;
+                CAmbientSound* placed;
                 if (obj->m_extent.top > 0) {
-                    placed = WorldSoundCreateFull(
+                    placed = g_gameReg->m_inputState->CreateRandom(
                         layer->m_10,
                         0x64,
                         &rc,
@@ -829,10 +815,11 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                         0
                     );
                 } else {
-                    placed = WorldSoundCreateSimple(layer->m_10, 0x64, &rc, obj->m_120, 0);
+                    placed = g_gameReg->m_inputState
+                                 ->CreateAmbient5(layer->m_10, 0x64, &rc, obj->m_120, 0);
                 }
                 if (placed && obj->m_placed.top > 0) {
-                    placed->m_28 = obj->m_placed;
+                    placed->m_box2 = obj->m_placed;
                 }
             }
         }
@@ -933,7 +920,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 
     if (inBox == 0) {
         if (m_isPlaying != 0 && m_voice != 0) {
-            PlayRandom(0, 0x3e8, 1); // direct (non-virtual) call
+            SetLevel(0, 0x3e8, 1);
             m_isPlaying = 0;
         }
         m_phase = 0;
@@ -970,7 +957,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        CRandomAmbientSound::Update(1, 0x64, half);
+        Fade(1, 0x64, half);
     } else {
         i32 lo = m_intervalLoB;
         i32 hi = m_intervalHiB;
@@ -986,7 +973,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        CRandomAmbientSound::Update(0, 0x64, half);
+        Fade(0, 0x64, half);
     }
 }
 

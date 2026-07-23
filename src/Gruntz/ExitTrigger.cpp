@@ -1,5 +1,5 @@
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/Grunt.h>         // complete CGrunt: the CUserLogic downcast is static
+#include <Gruntz/Warlord.h>       // the created "Warlord" sprite's bound logic
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -82,11 +82,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         e->m_124 = m_object->m_124;
         e->m_7c->m_notify(e);
         // snapshot the warlord's bound logic (obj->m_7c->m_logic)
-        m_warlordLogic = e->m_7c->m_logic;
+        m_warlordLogic = static_cast<CWarlord*>(e->m_7c->m_logic);
         if (m_object->m_124 == g_curPlayer) {
-            // track the local player's warlord in the trigger mgr's pending-fx
-            // grunt slot (CGrunt == CGrunt; the warlord logic is a grunt leaf)
-            g_gameReg->m_cmdGrid->m_pendingFx = static_cast<CGrunt*>(m_warlordLogic);
+            g_gameReg->m_cmdGrid->m_pendingFx = m_warlordLogic;
         }
         GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_124];
         if (slot2 != 0) {
@@ -140,7 +138,7 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
                                    )
                                        ? found
                                        : 0;
-                m_warlordLogic = obj->m_7c->m_logic;
+                m_warlordLogic = static_cast<CWarlord*>(obj->m_7c->m_logic);
                 if (m_warlordLogic == 0) {
                     return 0;
                 }
