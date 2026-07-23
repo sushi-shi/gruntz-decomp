@@ -60,6 +60,7 @@ from gruntz.audit.link_order import regions
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
+INCLUDE = REPO / "include"
 
 # RVA(0x.., 0x..) carries a matched function's retail address + size.
 # the unsized variant (an unpinned thunk). Same macros gruntz.match.verify_stubs reads.
@@ -159,6 +160,27 @@ def load_funcs(src: Path = SRC) -> list[Func]:
             out.append(Func(rva, size, cls, meth, tu))
     out.sort(key=lambda f: f.rva)
     return out
+
+
+def load_claimed_extents(roots=(SRC, INCLUDE)) -> list[tuple[int, int]]:
+    """Every function extent claimed by reconstructed source or a shared header.
+
+    Inline and compiler-generated bodies are often annotated at their class
+    definition in include/. They are real claims even though load_funcs() keeps
+    its TU-clustering input restricted to .cpp files. Complete extents matter:
+    Ghidra can place a false FUN_ boundary inside an already reconstructed body.
+    """
+    claimed = []
+    for root in roots:
+        for pattern in ("*.cpp", "*.h"):
+            for path in root.rglob(pattern):
+                text = path.read_text(errors="replace")
+                for rx in (RVA_RE, RVA_COMPGEN_RE):
+                    for match in rx.finditer(text):
+                        rva = int(match.group(1), 16)
+                        size = _parse_size(match.group(2))
+                        claimed.append((rva, rva + max(size, 1)))
+    return sorted(set(claimed))
 
 
 def by_tu(funcs: list[Func]) -> dict[str, list[Func]]:
@@ -387,14 +409,27 @@ def _attribute_targets(seq, back, fwd, gap, target_rvas):
     return out
 
 
-def attribute(funcs, boundaries, gap):
+def attribute(funcs, boundaries, gap, claimed_extents=None):
     """Tie each unclaimed FUN_ body to a class. Returns (attributions, count)."""
+    import bisect
+
     seq = _matched_seq(funcs)
     back, fwd = _run_bounds(seq)
-    claimed = {f.rva for f in funcs}
+    extents = (list(claimed_extents) if claimed_extents is not None
+               else [(f.rva, f.rva + max(f.size, 1)) for f in funcs])
+    extents.sort()
+    starts = [lo for lo, _ in extents]
+    max_ends = []
+    for _, hi in extents:
+        max_ends.append(max(hi, max_ends[-1] if max_ends else hi))
+
+    def is_claimed(rva):
+        i = bisect.bisect_right(starts, rva)
+        return i > 0 and max_ends[i - 1] > rva
+
     unnamed = [b[0] for b in boundaries
                if b[2].startswith("FUN_") and not is_thunk(b[2], b[1])
-               and b[0] not in claimed]
+               and not is_claimed(b[0])]
     return _attribute_targets(seq, back, fwd, gap, unnamed), len(unnamed)
 
 
@@ -482,7 +517,7 @@ def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
         print("  run `gruntz build` (or point --functions at an existing functions.csv).")
         return
     boundaries = load_boundaries(functions_csv)
-    attr, n_unnamed = attribute(funcs, boundaries, gap)
+    attr, n_unnamed = attribute(funcs, boundaries, gap, load_claimed_extents())
     n_hi = sum(1 for _, c in attr.values() if c == "HIGH")
     n_med = len(attr) - n_hi
     both, exact, fam_ok = validate_loo(funcs, gap)

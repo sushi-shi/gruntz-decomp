@@ -64,18 +64,21 @@ mis-attribution lands on a same-family neighbour, not a random class.
 
 `tu_layout --attribute` brackets each classless function: if it sits between two
 matched functions of the **same class C**, within `--gap` (default `0x4000`), it is
-C. The reported unnamed total excludes every RVA already claimed by either
-`RVA(...)` or `RVA_COMPGEN(...)`; the Ghidra export is a boundary inventory, not
-an authoritative current backlog. Confidence:
+C. The reported unnamed total subtracts complete `RVA(...)` and
+`RVA_COMPGEN(...)` extents from both `src/` and `include/`. This is essential:
+inline bodies may be annotated in a shared header, and Ghidra can place a false
+`FUN_` start inside a larger reconstructed function. The Ghidra export is a
+candidate-boundary inventory, not an authoritative current backlog. A body is
+eligible only when its start lies outside every current source claim. Confidence:
 
 - **HIGH** — C sits in a contiguous run of ≥3 of its own methods, and neither
-  bracket end is in a pool. ~260 bodies.
-- **MED** — short/mixed run or pool-adjacent (right family, not always exact). ~110.
+  bracket end is in a pool.
+- **MED** — short/mixed run or pool-adjacent (right family, not always exact).
 
 Two target sets:
 
-- **Unnamed `FUN_` bodies** (Ghidra boundary export) → ~365 attributed → new class
-  stubs via `gen_attributed_stubs` (the `engine_attributed` unit below).
+- **Unnamed `FUN_` bodies** (Ghidra boundary export) → attributed candidates for
+  new class stubs via `gen_attributed_stubs` (the `engine_attributed` unit below).
 - **Already-labeled catch-all stubs** — `ApiCallers.cpp` (generated from
   `docs/api-caller-name-plan.tsv`), `Backlog.cpp`, `EngineExternFns.cpp`, and any
   stub under a placeholder class (`EngineLabelBacklog`, `ThisStubOwnerUnknown`). Of

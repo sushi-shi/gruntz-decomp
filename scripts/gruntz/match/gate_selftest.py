@@ -299,6 +299,45 @@ class TestUnnamedFunctionQueue(unittest.TestCase):
             )
             self.assertEqual(remaining, 1)
 
+    def test_header_rva_claim_is_not_reported_as_still_unnamed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src"
+            inc = root / "include"
+            src.mkdir()
+            inc.mkdir()
+            (src / "Known.cpp").write_text("RVA(0x00002000, 0xa)\nvoid Known() {}\n")
+            (inc / "Inline.h").write_text(
+                "RVA(0x00001000, 0x8)\ninline void ClaimedInline() {}\n"
+            )
+            funcs = tu_layout.load_funcs(src)
+            claims = tu_layout.load_claimed_extents((src, inc))
+            boundaries = [
+                (0x1000, 0x8, "FUN_00401000"),
+                (0x3000, 0xA, "FUN_00403000"),
+            ]
+            _, remaining = tu_layout.attribute(
+                funcs, boundaries, tu_layout.DEFAULT_GAP, claims
+            )
+            self.assertEqual(remaining, 1)
+
+    def test_interior_ghidra_split_is_not_reported_as_unnamed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "src"
+            src.mkdir()
+            (src / "Whole.cpp").write_text(
+                "RVA(0x00001000, 0x100)\nvoid Whole() {}\n"
+            )
+            funcs = tu_layout.load_funcs(src)
+            boundaries = [
+                (0x1080, 0x20, "FUN_00401080"),
+                (0x2000, 0x20, "FUN_00402000"),
+            ]
+            _, remaining = tu_layout.attribute(
+                funcs, boundaries, tu_layout.DEFAULT_GAP
+            )
+            self.assertEqual(remaining, 1)
+
 
 # --------------------------------------------------------------------------- #
 # label extraction: clang and VC5 disagree on MFC message-entry array mangling #
