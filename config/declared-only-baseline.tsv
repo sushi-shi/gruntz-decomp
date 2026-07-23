@@ -73,7 +73,6 @@
 ?g_buteMgr@@3VCButeMgr@@A
 ?g_checkpointActReg@@3UCActReg@@A
 ?g_creationPointActReg@@3UCActReg@@A
-?g_dirDescTable@@3PAUDirDesc@@A
 ?g_dropColl@@3UCSiblingActReg@@A
 ?g_dropperActReg@@3UCSiblingActReg@@A
 ?g_exitTriggerActReg@@3UCActReg@@A

@@ -81,10 +81,18 @@ operations preserved the function's 80.7091 fuzzy score and removed two more
 declared-only functions.
 
 A related one-site alias began at the correct object boundary rather than at
-an interior offset. `g_gruntDefEntranceCell[3]` claimed `0x006448e8`, but that
-address already owns the complete 12-byte `CGruntVoiceRec g_voiceN`. The
-`CGrunt` constructor reads the base, `+4`, and `+8` words and copies them to
-another three-word record. Expressing those loads as `g_voiceN.m_0`,
-`g_voiceN.m_4`, and `g_voiceN.m_8` preserves the retail accesses without
-inventing overlapping storage. Check exact-base collisions as well as interior
-offsets when draining data aliases.
+an interior offset. `g_gruntDefEntranceCell[3]` claimed `0x006448e8`, and the
+`CGrunt` constructor read the base, `+4`, and `+8` words. That exact-base
+collision was enough to remove the overlap, but the first replacement type was
+still provisional.
+
+The complete nine-address xref band and its nine compiler-generated
+initializers later proved the real model: `0x006448e8` is the 12-byte
+`GruntDirectionCell g_gruntMoveDirSouth`, one of nine separately constructed
+and separately aligned direction objects. The same evidence disproved a second
+overlay, the fake `DirDesc g_dirDescTable[9]`, whose 0x10 indexing happened to
+land on those independently aligned bases. Expressing the constructor loads as
+`g_gruntMoveDirSouth.row`, `.column`, and `.direction` preserves the retail
+accesses without inventing overlapping storage. Check exact-base collisions as
+well as interior offsets, then expand from the collision to every related xref
+and initializer before treating the first recovered type as final.

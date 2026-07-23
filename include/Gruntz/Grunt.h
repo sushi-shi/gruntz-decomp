@@ -49,6 +49,7 @@ SIZE_UNKNOWN();
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 struct GruntDirectionCell {
+    GruntDirectionCell() {}
     GruntDirectionCell(i32 row_, i32 column_, i32 direction_)
         : row(row_), column(column_), direction(direction_) {}
 
@@ -211,22 +212,15 @@ SIZE_UNKNOWN();
 // (CVtSlot9 DISSOLVED: DispatchVtbl24's +0x24 self-dispatch is the real slot-9
 // virtual, CUserLogic::StepAttackFire.)
 
-struct CGruntVoiceRec;           // defined below (the 3-DWORD by-value voice record)
-extern CGruntVoiceRec g_voiceN;  // 0x6448e8  (dx==0, dy>0  -> South: down)
-extern CGruntVoiceRec g_voiceS;  // 0x6448d8  (dx==0, dy<0  -> North: up)
-extern CGruntVoiceRec g_voiceE;  // 0x6448c8  (shallow +, dx>0 -> East)
-extern CGruntVoiceRec g_voiceW;  // 0x6448f8  (shallow +, dx<0 -> West)
-extern CGruntVoiceRec g_voiceSE; // 0x644928  (mid +, dx>0)
-extern CGruntVoiceRec g_voiceNW; // 0x644918  (mid +, dx<0)
-extern CGruntVoiceRec g_voiceNE; // 0x644908  (mid -, dx>0)
-extern CGruntVoiceRec g_voiceSW; // 0x644948  (mid -, dx<0)
-
-struct CGruntVoiceRec {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-};
-SIZE_UNKNOWN();
+extern GruntDirectionCell g_gruntMoveDirNorth;     // 0x6448d8
+extern GruntDirectionCell g_gruntMoveDirNorthEast; // 0x644908
+extern GruntDirectionCell g_gruntMoveDirEast;      // 0x6448c8
+extern GruntDirectionCell g_gruntMoveDirSouthEast; // 0x644928
+extern GruntDirectionCell g_gruntMoveDirSouth;     // 0x6448e8
+extern GruntDirectionCell g_gruntMoveDirSouthWest; // 0x644948
+extern GruntDirectionCell g_gruntMoveDirWest;      // 0x6448f8
+extern GruntDirectionCell g_gruntMoveDirNorthWest; // 0x644918
+extern GruntDirectionCell g_gruntMoveDirCenter;    // 0x644938
 
 struct CGruntMotionBand {
     void Init(); // 0x136d0 (CMotionState ctor; retail via thunk 0x34db)
@@ -877,11 +871,11 @@ public:
     i32 ResetGeometry();               // @0x616e0
     void DispatchVtbl24();             // 0x6b260 (out-of-line in Grunt.cpp)
 
-    void PlayMoveSound(i32 x, i32 y);              // @0x511b0 (ret 8)
-    void PlaySound(i32 range, CGruntVoiceRec rec); // @0x4ac10 (ret 0x10) external
-    void OnStruck(i32 wasHit);                     // @0x588f0 (ret 4)
-    i32 ResolveArrivalNeighbor();                  // @0xf26f0 (ret 0)
-    void RearmEntranceDrop();                      // @0x68370 (ret 0)
+    void PlayMoveSound(i32 x, i32 y);                  // @0x511b0 (ret 8)
+    void PlaySound(i32 range, GruntDirectionCell rec); // @0x4ac10 (ret 0x10) external
+    void OnStruck(i32 wasHit);                         // @0x588f0 (ret 4)
+    i32 ResolveArrivalNeighbor();                      // @0xf26f0 (ret 0)
+    void RearmEntranceDrop();                          // @0x68370 (ret 0)
 
     // ---- the move/timer record serializer (@0x53b80, ret 0x10) ----
     // SerializeMove(ar, mode) drives the grunt move/idle-timer state through an

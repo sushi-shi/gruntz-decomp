@@ -36,6 +36,30 @@ support the semantic compass names and the third field's direction identity.
 The helpers occur in the GruntCombat contribution and relocate to the same
 objects used by `CGrunt::Activate`, which also proves the owning TU.
 
+A second, parallel nine-object band at full-image addresses
+`0x006448c8..0x00644948` exposed a subtler false model. The bases are 0x10
+bytes apart, so a placeholder `DirDesc[9]` with a fabricated 0x10-byte element
+appeared to index them correctly. Each retail initializer instead writes only
+three dwords at `base+0`, `base+4`, and `base+8`, and the compiled definitions
+are nine 0xc-byte `GruntDirectionCell` objects with per-object alignment gaps.
+Thus a regular address stride does not prove an array when separate objects
+receive the same alignment.
+
+Initializer-table attribution also splits this apparently contiguous data
+band across two translation units. Eight helpers at
+`0x00047760..0x00047990` form the GruntSteps init run; the center helper at
+`0x000479e0` is the one-entry DirectionClassify run. The latter object's base,
+`0x00644938`, lies inside GruntSteps' address band, but its distinct CRT slot
+and helper prove it is an evidence-backed scattered singleton rather than a
+reason to move the definition. This is a valid `data-tu-order` baseline case.
+
+The parallel GruntCombat set supplies a strong type-and-value check: both bands
+use the same nine triples and the same three-store helper shapes. Recovering
+the second set as the shared `GruntDirectionCell` type removed both the fake
+`DirDesc[9]` overlay and the provisional `CGruntVoiceRec` names. In reverse,
+audit any stride-shaped "array" by grouping initializer helpers by relocation
+base and CRT/TU run before trusting the apparent element size.
+
 Model the shared type and define the real objects in that owner:
 
 ```cpp

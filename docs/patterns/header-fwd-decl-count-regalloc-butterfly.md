@@ -274,10 +274,39 @@ MAX values.
 
 SIXTEENTH FIRING (2026-07-23, exact-base data alias): removing only the false
 `g_gruntDefEntranceCell[3]` declaration from `Grunt.h`, after changing the
-direct `CGrunt` constructor loads to the retail-proven `CGruntVoiceRec
-g_voiceN` fields at the same base address, introduced no new dip.
+direct `CGrunt` constructor loads to the three fields at the same base address,
+introduced no new dip. The first replacement name, `CGruntVoiceRec g_voiceN`,
+was provisional: the next evidence pass proved the object is actually
+`GruntDirectionCell g_gruntMoveDirSouth`.
 `CGrunt::ArrivalScanC` instead recovered 47.2280→47.2696, its saved MAX,
 without a body edit. Overall current fuzzy remained 73.70 and MAX remained
 73.73. Exact-base aliases therefore participate in the same declaration-state
 search dimension as interior-field aliases even when their replacement has
 the same storage width and relocation address.
+
+SEVENTEENTH FIRING (2026-07-23, aligned direction-object recovery): replacing
+the fake 0x10-stride `DirDesc[9]` overlay and eight provisional
+`CGruntVoiceRec` globals with nine real 0xc-byte `GruntDirectionCell` objects
+changed `Grunt.h`, the classifier signature, `CGrunt::PlaySound`'s by-value
+parameter type, and every direction-global relocation name. The nine newly
+exposed compiler-generated initializer helpers are all exact; the classifier
+held 96.2060, `PlaySound` held 61.9547, and the direction data is exact.
+`CGrunt::StepCompassMove` moved 35.2959→32.9266. It directly changed its
+global and callee relocation identities, so it is not a clean unrelated-body
+control, but the value exactly revisits the lower color seen in earlier
+declaration-state firings. Three source-identical `Grunt.h` includers newly
+dipped: `CPlay::LoadScrollSpeedOptions` 90.3250→90.2500,
+`CStatusBarMgr::LoadMainStatusBarSprite` 99.7105→99.5000, and
+`CSpotLight::Tick` 53.5444→52.0887.
+
+The same declaration change reversed five older dips without body edits:
+`CBattlezMapConfig::FindIdleGruntInBox` 77.4821→77.4911,
+`CGrunt::ArrivalScanB` 41.1407→41.1545,
+`CGrunt::PhaseStep` 38.5960→39.7717,
+`CGrunt::RectContains` 55.2258→61.6774, and
+`CSBI_GruntMachine::Render` 88.5897→92.8205, all to their saved MAX.
+`CGrunt::RectSegProbe` partially recovered 78.7228→78.7723. Preserve
+`StepCompassMove`'s 35.2959 MAX and the three newly displaced MAX values, and
+use the completed direction declarations as another reverse-search state. The
+exact-function count rose by nine, current aggregate is 73.7077, and the
+73.7275 MAX remains unchanged.

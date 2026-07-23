@@ -329,9 +329,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_8cc = 0;
 
     // Second-phase field inits (post CGrunt vptr restamp).
-    m_entranceCell.col = g_voiceN.m_0;
-    m_entranceCell.row = g_voiceN.m_4;
-    m_entranceCell.reason = g_voiceN.m_8;
+    m_entranceCell.col = g_gruntMoveDirSouth.row;
+    m_entranceCell.row = g_gruntMoveDirSouth.column;
+    m_entranceCell.reason = g_gruntMoveDirSouth.direction;
     m_434 = m_object->m_11c;
     m_438 = g_frameTicks;
     m_object->m_moveMode = 1;
@@ -767,7 +767,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
 // scheduling, no source lever flips it. Closing this brought PlayMoveSound to 100%.
 // Deferred to the final sweep.
 RVA(0x0004ac10, 0x402)
-void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
+void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     static_cast<void>(range);
     if (CGrunt_IsSameType(
             reinterpret_cast<CGrunt*>(&m_entranceCell),
@@ -827,9 +827,9 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
 codeI:
     // code "I": latch the record first, drive the IDLE2 geometry, reseed the idle
     // timer. Returns directly (no cell-frame stamp).
-    m_entranceCell.col = rec.m_0;
-    m_entranceCell.row = rec.m_4;
-    m_entranceCell.reason = rec.m_8;
+    m_entranceCell.col = rec.row;
+    m_entranceCell.row = rec.column;
+    m_entranceCell.reason = rec.direction;
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseIdle[1]);
     ResetEntranceAnimation(1, 0, 0);
@@ -845,8 +845,8 @@ idle:
         i32* elem =
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
-        i32 col = rec.m_0;
-        i32 row = rec.m_4;
+        i32 col = rec.row;
+        i32 row = rec.column;
         i32 index = 3 * col + row;
         const char* nm = reinterpret_cast<const char*>(
             (reinterpret_cast<_zdvec*>(&m_cells[index].IdleName()))->IndexToPtr(0)
@@ -861,8 +861,8 @@ walk:
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseWalk);
     {
-        i32 col = rec.m_0;
-        i32 row = rec.m_4;
+        i32 col = rec.row;
+        i32 row = rec.column;
         i32 index = 3 * col + row;
         const char* nm = reinterpret_cast<const char*>(
             (reinterpret_cast<_zdvec*>(&m_cells[index].WalkName()))->IndexToPtr(0)
@@ -871,9 +871,9 @@ walk:
     }
 
 store:
-    m_entranceCell.col = rec.m_0;
-    m_entranceCell.row = rec.m_4;
-    m_entranceCell.reason = rec.m_8;
+    m_entranceCell.col = rec.row;
+    m_entranceCell.row = rec.column;
+    m_entranceCell.reason = rec.direction;
 }
 
 // @early-stop
@@ -1006,7 +1006,8 @@ reachedTarget:
 // ---------------------------------------------------------------------------
 // CGrunt::StepGruntMovement()   @0x4c170   (ret 0)
 // The per-tick move step: pop the head occupied-coord, bucket its direction from
-// the grunt HUD center into one of the 8 compass move-vector records (g_voiceXX;
+// the grunt HUD center into one of the 8 compass move-vector records
+// (g_gruntMoveDirXX;
 // [0]/[1] = the destination tile pixel pos, later committed into m_lastTile), gate
 // the destination + last tile against the board occupancy/corner-cut bits, then
 // either play the move sound + reset the entrance (blocked) or commit the tile
@@ -1027,12 +1028,12 @@ reachedTarget:
 // caller-saved regs -> 3 fewer stores/arm-region, 0x30 frame, and the -2-slot
 // shift retypes ~every [esp+N] operand byte. Tried: element-wise (best),
 // pick-struct + rec=pick copy (52.1), scalars d0-d2 + join copy (61.6),
-// by-value CGruntVoiceRec temp (48.9). No spelling extends the CSE ranges.
+// by-value GruntDirectionCell temp (48.9). No spelling extends the CSE ranges.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
     i32 gtX, gtY;
-    CGruntVoiceRec rec;
+    GruntDirectionCell rec;
     i32 tgtPxX, tgtPxY;
     i32 flagHead;
     i32 reason12, reason16, reason0e;
@@ -1074,41 +1075,41 @@ i32 CGrunt::StepGruntMovement() {
     gtY = m_object->m_screenY >> 5;
     if (coordX > gtX) {
         if (coordY > gtY) {
-            rec.m_0 = g_voiceSE.m_0;
-            rec.m_4 = g_voiceSE.m_4;
-            rec.m_8 = g_voiceSE.m_8;
+            rec.row = g_gruntMoveDirSouthEast.row;
+            rec.column = g_gruntMoveDirSouthEast.column;
+            rec.direction = g_gruntMoveDirSouthEast.direction;
         } else if (coordY == gtY) {
-            rec.m_0 = g_voiceE.m_0;
-            rec.m_4 = g_voiceE.m_4;
-            rec.m_8 = g_voiceE.m_8;
+            rec.row = g_gruntMoveDirEast.row;
+            rec.column = g_gruntMoveDirEast.column;
+            rec.direction = g_gruntMoveDirEast.direction;
         } else {
-            rec.m_0 = g_voiceNE.m_0;
-            rec.m_4 = g_voiceNE.m_4;
-            rec.m_8 = g_voiceNE.m_8;
+            rec.row = g_gruntMoveDirNorthEast.row;
+            rec.column = g_gruntMoveDirNorthEast.column;
+            rec.direction = g_gruntMoveDirNorthEast.direction;
         }
     } else if (coordX < gtX) {
         if (coordY > gtY) {
-            rec.m_0 = g_voiceSW.m_0;
-            rec.m_4 = g_voiceSW.m_4;
-            rec.m_8 = g_voiceSW.m_8;
+            rec.row = g_gruntMoveDirSouthWest.row;
+            rec.column = g_gruntMoveDirSouthWest.column;
+            rec.direction = g_gruntMoveDirSouthWest.direction;
         } else if (coordY == gtY) {
-            rec.m_0 = g_voiceW.m_0;
-            rec.m_4 = g_voiceW.m_4;
-            rec.m_8 = g_voiceW.m_8;
+            rec.row = g_gruntMoveDirWest.row;
+            rec.column = g_gruntMoveDirWest.column;
+            rec.direction = g_gruntMoveDirWest.direction;
         } else {
-            rec.m_0 = g_voiceNW.m_0;
-            rec.m_4 = g_voiceNW.m_4;
-            rec.m_8 = g_voiceNW.m_8;
+            rec.row = g_gruntMoveDirNorthWest.row;
+            rec.column = g_gruntMoveDirNorthWest.column;
+            rec.direction = g_gruntMoveDirNorthWest.direction;
         }
     } else {
         if (coordY < gtY) {
-            rec.m_0 = g_voiceS.m_0;
-            rec.m_4 = g_voiceS.m_4;
-            rec.m_8 = g_voiceS.m_8;
+            rec.row = g_gruntMoveDirNorth.row;
+            rec.column = g_gruntMoveDirNorth.column;
+            rec.direction = g_gruntMoveDirNorth.direction;
         } else {
-            rec.m_0 = g_voiceN.m_0;
-            rec.m_4 = g_voiceN.m_4;
-            rec.m_8 = g_voiceN.m_8;
+            rec.row = g_gruntMoveDirSouth.row;
+            rec.column = g_gruntMoveDirSouth.column;
+            rec.direction = g_gruntMoveDirSouth.direction;
         }
     }
 
@@ -1209,41 +1210,41 @@ i32 CGrunt::StepGruntMovement() {
         i32 gy = m_object->m_screenY >> 5;
         if (cx > gx) {
             if (cy > gy) {
-                rec.m_0 = g_voiceSE.m_0;
-                rec.m_4 = g_voiceSE.m_4;
-                rec.m_8 = g_voiceSE.m_8;
+                rec.row = g_gruntMoveDirSouthEast.row;
+                rec.column = g_gruntMoveDirSouthEast.column;
+                rec.direction = g_gruntMoveDirSouthEast.direction;
             } else if (cy == gy) {
-                rec.m_0 = g_voiceE.m_0;
-                rec.m_4 = g_voiceE.m_4;
-                rec.m_8 = g_voiceE.m_8;
+                rec.row = g_gruntMoveDirEast.row;
+                rec.column = g_gruntMoveDirEast.column;
+                rec.direction = g_gruntMoveDirEast.direction;
             } else {
-                rec.m_0 = g_voiceNE.m_0;
-                rec.m_4 = g_voiceNE.m_4;
-                rec.m_8 = g_voiceNE.m_8;
+                rec.row = g_gruntMoveDirNorthEast.row;
+                rec.column = g_gruntMoveDirNorthEast.column;
+                rec.direction = g_gruntMoveDirNorthEast.direction;
             }
         } else if (cx < gx) {
             if (cy > gy) {
-                rec.m_0 = g_voiceSW.m_0;
-                rec.m_4 = g_voiceSW.m_4;
-                rec.m_8 = g_voiceSW.m_8;
+                rec.row = g_gruntMoveDirSouthWest.row;
+                rec.column = g_gruntMoveDirSouthWest.column;
+                rec.direction = g_gruntMoveDirSouthWest.direction;
             } else if (cy == gy) {
-                rec.m_0 = g_voiceW.m_0;
-                rec.m_4 = g_voiceW.m_4;
-                rec.m_8 = g_voiceW.m_8;
+                rec.row = g_gruntMoveDirWest.row;
+                rec.column = g_gruntMoveDirWest.column;
+                rec.direction = g_gruntMoveDirWest.direction;
             } else {
-                rec.m_0 = g_voiceNW.m_0;
-                rec.m_4 = g_voiceNW.m_4;
-                rec.m_8 = g_voiceNW.m_8;
+                rec.row = g_gruntMoveDirNorthWest.row;
+                rec.column = g_gruntMoveDirNorthWest.column;
+                rec.direction = g_gruntMoveDirNorthWest.direction;
             }
         } else {
             if (cy < gy) {
-                rec.m_0 = g_voiceS.m_0;
-                rec.m_4 = g_voiceS.m_4;
-                rec.m_8 = g_voiceS.m_8;
+                rec.row = g_gruntMoveDirNorth.row;
+                rec.column = g_gruntMoveDirNorth.column;
+                rec.direction = g_gruntMoveDirNorth.direction;
             } else {
-                rec.m_0 = g_voiceN.m_0;
-                rec.m_4 = g_voiceN.m_4;
-                rec.m_8 = g_voiceN.m_8;
+                rec.row = g_gruntMoveDirSouth.row;
+                rec.column = g_gruntMoveDirSouth.column;
+                rec.direction = g_gruntMoveDirSouth.direction;
             }
         }
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
@@ -1478,8 +1479,8 @@ label_4cb4b:
         bd2->m_rows[tgtTileY][tgtTileX].m_0 |= 0x20000000;
         bd2->m_rows[tgtTileY][tgtTileX].m_4 = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
-        m_lastTilePxX = rec.m_0;
-        m_lastTilePxY = rec.m_4;
+        m_lastTilePxX = rec.row;
+        m_lastTilePxY = rec.column;
         ComputeFacing(1.0);
     }
     m_arrivalPending = 1;

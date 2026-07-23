@@ -5,6 +5,7 @@
 0x001efb18	g_rasterScale	WarpTextureBlit.cpp	WallProject.cpp	rdata
 0x001efb1c	g_rasterScaleNeg	WarpTextureBlit.cpp	WallProject.cpp	rdata
 0x0020b8b8	g_levelMsgIconPos	GameMode.cpp	BootyMessages.cpp	data
+0x00244938	g_gruntMoveDirCenter	DirectionClassify.cpp	GruntSteps.cpp	bss
 0x00283ee4	g_ddCreateCtx	DirectDrawMgr.cpp	FileImage.cpp	bss
 0x00283ee8	g_DirectDraw	DirectDrawMgr.cpp	FileImage.cpp	bss
 0x002becf8	g_rasterVtxCount	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss

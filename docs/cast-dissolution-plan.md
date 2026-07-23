@@ -48,7 +48,7 @@ WS-G  char-arith (1819)              G1 extend census: split arith-participating
                                      char*->void**/void*->char* ~256 byte-I/O -> mostly keeps.
                                      G5 char*->char** 53 row tables (GruntBoard M7?), ->double* 38.
                                      RasterVtx ClipVtx 0x1c-stride walk = the remodel exemplar.
-WS-H  other residue (~250 after B/D) int*<->i64* 74 puns; int*->CGruntVoiceRec* 38 (type the
+WS-H  other residue (~250 after B/D) int*<->i64* 74 puns; int*->GruntDirectionCell* 38 (type the
                                      source buffer); signedness/width puns 27 (source typing);
                                      double*->int* 21 FP puns (keeps); __POSITION** 7
                                      (collection keep); BrickzCell*/CStatusBarMgr*->int* 16;

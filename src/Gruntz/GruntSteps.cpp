@@ -50,6 +50,23 @@
 
 DATA_SYMBOL(0x00051510, 0x0, ?g_typeDesc1@@3PADA)
 
+DATA(0x002448d8)
+GruntDirectionCell g_gruntMoveDirNorth(0, 1, 1);
+DATA(0x00244908)
+GruntDirectionCell g_gruntMoveDirNorthEast(0, 2, 2);
+DATA(0x002448c8)
+GruntDirectionCell g_gruntMoveDirEast(1, 2, 3);
+DATA(0x00244928)
+GruntDirectionCell g_gruntMoveDirSouthEast(2, 2, 4);
+DATA(0x002448e8)
+GruntDirectionCell g_gruntMoveDirSouth(2, 1, 5);
+DATA(0x00244948)
+GruntDirectionCell g_gruntMoveDirSouthWest(2, 0, 6);
+DATA(0x002448f8)
+GruntDirectionCell g_gruntMoveDirWest(1, 0, 7);
+DATA(0x00244918)
+GruntDirectionCell g_gruntMoveDirNorthWest(0, 0, 8);
+
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -176,6 +193,15 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
+RVA_COMPGEN(0x00047760, 0x1a, _$E292704)
+RVA_COMPGEN(0x000477b0, 0x1a, _$E292784)
+RVA_COMPGEN(0x00047800, 0x1f, _$E292864)
+RVA_COMPGEN(0x00047850, 0x1a, _$E292944)
+RVA_COMPGEN(0x000478a0, 0x1f, _$E293024)
+RVA_COMPGEN(0x000478f0, 0x1f, _$E293104)
+RVA_COMPGEN(0x00047940, 0x1f, _$E293184)
+RVA_COMPGEN(0x00047990, 0x17, _$E293264)
+
 RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
     // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, a CGrunt method);
@@ -286,27 +312,6 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
     return 1;
 }
-// The 8 compass grunt-voice records (CGruntVoiceRec, runtime-filled .bss) +
-// PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
-// definitions bound to their retail .bss RVAs so each `mov ds:addr` reloc-checks
-// against the real target (array mangling -> DATA_SYMBOL names the exact cl sym).
-DATA_SYMBOL(0x002448e8, 0x0, ?g_voiceN@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceN;
-DATA_SYMBOL(0x002448d8, 0x0, ?g_voiceS@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceS;
-DATA_SYMBOL(0x002448c8, 0x0, ?g_voiceE@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceE;
-DATA_SYMBOL(0x002448f8, 0x0, ?g_voiceW@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceW;
-DATA_SYMBOL(0x00244928, 0x0, ?g_voiceSE@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceSE;
-DATA_SYMBOL(0x00244918, 0x0, ?g_voiceNW@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceNW;
-DATA_SYMBOL(0x00244908, 0x0, ?g_voiceNE@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceNE;
-DATA_SYMBOL(0x00244948, 0x0, ?g_voiceSW@@3UCGruntVoiceRec@@A)
-CGruntVoiceRec g_voiceSW;
-
 RVA(0x000511b0, 0x246)
 void CGrunt::PlayMoveSound(i32 x, i32 y) {
     CWwdGameObjectA* h = m_object;
@@ -316,9 +321,9 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
 
     if (dx == 0) {
         if (y > h->m_screenY) {
-            PlaySound(1000, g_voiceN);
+            PlaySound(1000, g_gruntMoveDirSouth);
         } else if (y < h->m_screenY) {
-            PlaySound(1000, g_voiceS);
+            PlaySound(1000, g_gruntMoveDirNorth);
         }
         return;
     }
@@ -326,33 +331,33 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
-            PlaySound(1000, g_voiceN);
+            PlaySound(1000, g_gruntMoveDirSouth);
         } else {
-            PlaySound(1000, g_voiceS);
+            PlaySound(1000, g_gruntMoveDirNorth);
         }
         return;
     }
     if (ratio <= 0.5 && ratio >= -0.5) {
         if (x > cx) {
-            PlaySound(1000, g_voiceE);
+            PlaySound(1000, g_gruntMoveDirEast);
         } else {
-            PlaySound(1000, g_voiceW);
+            PlaySound(1000, g_gruntMoveDirWest);
         }
         return;
     }
     if (ratio > 0.5) {
         if (x > cx) {
-            PlaySound(1000, g_voiceSE);
+            PlaySound(1000, g_gruntMoveDirSouthEast);
         } else {
-            PlaySound(1000, g_voiceNW);
+            PlaySound(1000, g_gruntMoveDirNorthWest);
         }
         return;
     }
     if (ratio < -0.5) {
         if (x > cx) {
-            PlaySound(1000, g_voiceNE);
+            PlaySound(1000, g_gruntMoveDirNorthEast);
         } else {
-            PlaySound(1000, g_voiceSW);
+            PlaySound(1000, g_gruntMoveDirSouthWest);
         }
     }
 }
@@ -510,7 +515,7 @@ i32 CGrunt::StepCompassMove() {
     i32 result = 0;
     i32 moveX = x;
     i32 moveY = y;
-    CGruntVoiceRec voice;
+    GruntDirectionCell voice;
 
     if (s_TileFlags(board, tx, ty) & 0x80) {
         // The current tile carries a move command at field +0x10 (4th dword).
@@ -519,60 +524,60 @@ i32 CGrunt::StepCompassMove() {
             case 0:
             case 4:
                 moveY = y - 0x20;
-                voice = g_voiceS;
+                voice = g_gruntMoveDirNorth;
                 break;
             case 1:
             case 5:
                 moveY = y + 0x20;
-                voice = g_voiceN;
+                voice = g_gruntMoveDirSouth;
                 break;
             case 2:
             case 6:
                 moveX = x - 0x20;
-                voice = g_voiceW;
+                voice = g_gruntMoveDirWest;
                 break;
             case 3:
             case 7:
                 moveX = x + 0x20;
-                voice = g_voiceE;
+                voice = g_gruntMoveDirEast;
                 break;
             case 8:
                 switch (m_entranceCell.reason - 1) {
                     case 0:
                         moveY = y - 0x20;
-                        voice = g_voiceS;
+                        voice = g_gruntMoveDirNorth;
                         break;
                     case 1:
                         moveX = x + 0x20;
                         moveY = y - 0x20;
-                        voice = g_voiceNE;
+                        voice = g_gruntMoveDirNorthEast;
                         break;
                     case 2:
                         moveX = x + 0x20;
-                        voice = g_voiceE;
+                        voice = g_gruntMoveDirEast;
                         break;
                     case 3:
                         moveY = y + 0x20;
                         moveX = x + 0x20;
-                        voice = g_voiceSE;
+                        voice = g_gruntMoveDirSouthEast;
                         break;
                     case 4:
                         moveY = y + 0x20;
-                        voice = g_voiceN;
+                        voice = g_gruntMoveDirSouth;
                         break;
                     case 5:
                         moveY = y + 0x20;
                         moveX = x - 0x20;
-                        voice = g_voiceSW;
+                        voice = g_gruntMoveDirSouthWest;
                         break;
                     case 6:
                         moveX = x - 0x20;
-                        voice = g_voiceW;
+                        voice = g_gruntMoveDirWest;
                         break;
                     case 7:
                         moveX = x - 0x20;
                         moveY = y - 0x20;
-                        voice = g_voiceNW;
+                        voice = g_gruntMoveDirNorthWest;
                         break;
                 }
                 break;
@@ -620,39 +625,39 @@ i32 CGrunt::StepCompassMove() {
             switch (m_entranceCell.reason - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = g_voiceS;
+                    voice = g_gruntMoveDirNorth;
                     break;
                 case 1:
                     moveY = y - 0x20;
                     moveX = x + 0x20;
-                    voice = g_voiceNE;
+                    voice = g_gruntMoveDirNorthEast;
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = g_voiceE;
+                    voice = g_gruntMoveDirEast;
                     break;
                 case 3:
                     moveY = y + 0x20;
                     moveX = x + 0x20;
-                    voice = g_voiceSE;
+                    voice = g_gruntMoveDirSouthEast;
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = g_voiceN;
+                    voice = g_gruntMoveDirSouth;
                     break;
                 case 5:
                     moveY = y + 0x20;
                     moveX = x - 0x20;
-                    voice = g_voiceSW;
+                    voice = g_gruntMoveDirSouthWest;
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = g_voiceW;
+                    voice = g_gruntMoveDirWest;
                     break;
                 case 7:
                     moveX = x - 0x20;
                     moveY = y - 0x20;
-                    voice = g_voiceNW;
+                    voice = g_gruntMoveDirNorthWest;
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
@@ -687,39 +692,39 @@ i32 CGrunt::StepCompassMove() {
             switch (dir - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = g_voiceS;
+                    voice = g_gruntMoveDirNorth;
                     break;
                 case 1:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
-                    voice = g_voiceNE;
+                    voice = g_gruntMoveDirNorthEast;
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = g_voiceE;
+                    voice = g_gruntMoveDirEast;
                     break;
                 case 3:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
-                    voice = g_voiceSE;
+                    voice = g_gruntMoveDirSouthEast;
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = g_voiceN;
+                    voice = g_gruntMoveDirSouth;
                     break;
                 case 5:
                     moveX = x - 0x20;
                     moveY = y + 0x20;
-                    voice = g_voiceSW;
+                    voice = g_gruntMoveDirSouthWest;
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = g_voiceW;
+                    voice = g_gruntMoveDirWest;
                     break;
                 case 7:
                     moveY = y - 0x20;
                     moveX = x - 0x20;
-                    voice = g_voiceNW;
+                    voice = g_gruntMoveDirNorthWest;
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
