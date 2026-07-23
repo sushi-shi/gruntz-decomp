@@ -391,7 +391,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             i32 py = j + m_tileY - 1;
             CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
-            g_gameReg->m_tileGrid->Notify(px, py, value);
+            g_gameReg->m_tileGrid->ComputeCellFlags(px, py, value);
             if (inRect) {
                 CWwdGameObjectA* spr = gameMgr->m_childGroup->CreateSprite(
                     0,

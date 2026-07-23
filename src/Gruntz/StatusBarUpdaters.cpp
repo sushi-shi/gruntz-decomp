@@ -37,7 +37,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] + 1;
     CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
-    g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
+    g_gameReg->m_tileGrid->ComputeCellFlags(m_08, m_key0c, v);
 
     i32 px = (m_08 << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;
@@ -77,7 +77,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] - 1;
     CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
-    g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
+    g_gameReg->m_tileGrid->ComputeCellFlags(m_08, m_key0c, v);
 
     i32 px = (m_08 << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;

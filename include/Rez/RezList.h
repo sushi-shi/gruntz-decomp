@@ -23,9 +23,10 @@ struct CObjList : public CObjListBase {
     // rule), and cl then emits no ??_7CObjList anywhere, matching retail (whose
     // dtor chains restamp only the CObjListBase table). A user `~CObjList() {}`
     // would instead force a phantom vtable, so it is deliberately absent.
-    CObjNode* m_head;            // +0x04
-    CObjNode* m_tail;            // +0x08
-    void Remove(CObjNode* node); // 0x1852e0
+    CObjNode* m_head;             // +0x04
+    CObjNode* m_tail;             // +0x08
+    void AddHead(CObjNode* node); // 0x1851e0
+    void Remove(CObjNode* node);  // 0x1852e0
 };
 
 struct CRezList : public CObjList {
@@ -38,7 +39,6 @@ struct CRezList : public CObjList {
     // EH-funclet-referenced standalone COMDAT copy is retail 0x13ca30 (bound by
     // RezFile.cpp's RVA_COMPGEN).
     ~CRezList() {}
-    void AddHead(CRezListNode* node); // 0x1851e0
     void AddTail(CRezListNode* node); // 0x185210
     // Positional inserts: splice `node` after/before `pos` (null pos -> AddHead /
     // AddTail respectively). Each branch re-reads pos->m_next/m_prev after the

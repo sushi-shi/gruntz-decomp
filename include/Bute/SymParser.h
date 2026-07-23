@@ -18,10 +18,6 @@ struct CParserObjList : public CObjList {
     virtual void V0() OVERRIDE; // [0] 0x13c4c0 (empty body; declared-only, reloc-masked)
     ~CParserObjList() {}
     i32 m_count; // +0x0c (this+0x1c)
-
-    // Link(node): splice a freshly-built reader node onto the list (0x1851e0 - the
-    // same body as CRezList::AddHead; alias decl, reloc-masked).
-    void Link(void* node);
 };
 SIZE(0x10); // { vptr, head, tail, count }
 

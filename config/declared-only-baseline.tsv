@@ -47,14 +47,12 @@
 ?InitAnimState@CGruntBehaviorLeaf@@QAEXHHH@Z
 ?InputSubStep@CPlay@@QAEXPAX@Z
 ?IsDropReady@CGrunt@@QAEHH@Z
-?Link@CParserObjList@@QAEXPAX@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
 ?LoadSprite@CSpriteRefTable@@QAEPAXPAXH@Z
 ?MapCellIndex@zDArray@@QAEHHH@Z
 ?MapCellRecord2@zDArray@@QAEHHH@Z
 ?MapCellRecord@zDArray@@QAEHHH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
-?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
 ?OnMoveFinishA@CGrunt@@QAEXH@Z
@@ -102,7 +100,6 @@
 ?SymBuildLeaf@@YAXPAVCSymParser@@PAX1@Z
 ?Sync@CWarpStoneFly@@QAEHPAVCFileMemBase@@HHH@Z
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
-?Teardown@CBattlezData@@QAEXXZ
 ?Tick@CGruntSpawnConfig@@QAEXXZ
 ?Type13Check@CGrunt@@QAEHXZ
 ?UpdateCombatTimer@CGrunt@@QAEXXZ

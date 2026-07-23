@@ -42,7 +42,7 @@ public:
     virtual i32 Check() = 0;                                        // [7]
 
     // +0x04/+0x08 are the node's intrusive sibling links, written by
-    // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
+    // CObjList::AddHead (0x1851e0) when the node is enrolled in an owner's child
     // list (see CRezFile in <Rez/RezFile.h>). The ctors here never touch them;
     // typed as the node base rather than left as raw void*.
     CRezItmBase* m_next;  // +0x04

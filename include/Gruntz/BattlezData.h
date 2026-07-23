@@ -18,10 +18,10 @@ SIZE_UNKNOWN();
 class CBattlezData {
 public:
     i32 InitWithRecords(void* records);      // 0xfc9c0
+    ~CBattlezData();                         // 0xfc9f0
     void Init();                             // 0xfca10
     void SetCount(i32 count);                // 0xfcad0
     i32 Command(i32 a, i32 b, i32 c, i32 d); // reloc-masked (BroadcastCmd, via m_scoreHud)
-    void Teardown();                         // reloc-masked (Close)
     void MarkFlag(i32 y, i32 x);             // 0xfcb50
     void ClearFlags();                       // 0xfcb90
     i32 SumFlags(i32 y);                     // 0xfcbc0

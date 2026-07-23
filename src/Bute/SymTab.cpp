@@ -1038,7 +1038,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             return 0;
         }
         m_activeNode = reader;
-        m_list.Link(reader);
+        m_list.AddHead(reinterpret_cast<CObjNode*>(reader));
         m_list.m_count++;
         if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
             return 0;
@@ -1066,7 +1066,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 0;
     }
     m_activeNode = reader;
-    m_list.Link(reader);
+    m_list.AddHead(reinterpret_cast<CObjNode*>(reader));
     m_list.m_count++;
     if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
         return 0;
@@ -1160,7 +1160,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
             m_cachedSourceBuffer = 0;
             return 0;
         }
-        m_list.Link(node);
+        m_list.AddHead(reinterpret_cast<CObjNode*>(node));
         m_list.m_count++;
         if (node->Open(name, 1, 0) == 0) {
             return 0;
@@ -1176,7 +1176,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
         m_cachedSourceBuffer = 0;
         return 0;
     }
-    m_list.Link(node);
+    m_list.AddHead(reinterpret_cast<CObjNode*>(node));
     m_list.m_count++;
     if (node->Open(name, 1, 0) == 0) {
         return 0;

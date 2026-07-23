@@ -1045,7 +1045,6 @@ rva,name,lib,confidence,source
 0x0fc8d0,__inc,LIBCMT,LOW,anchored
 0x0fc920,__inc,LIBCMT,LOW,anchored
 0x0fc970,__inc,LIBCMT,LOW,anchored
-0x0fc9f0,__inc,LIBCMT,LOW,anchored
 0x0fd930,__inc,LIBCMT,LOW,anchored
 0x0fd980,__inc,LIBCMT,LOW,anchored
 0x0fd9d0,__inc,LIBCMT,LOW,anchored

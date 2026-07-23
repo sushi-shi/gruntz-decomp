@@ -3010,9 +3010,9 @@ void CGruntzMgr::Close() {
         delete m_tileGrid;
         m_tileGrid = 0;
     }
-    if (m_scoreHud) {
-        m_scoreHud->Teardown();
-        operator delete(m_scoreHud);
+    CBattlezData* scoreHud = m_scoreHud;
+    if (scoreHud) {
+        delete scoreHud;
         m_scoreHud = 0;
     }
     if (m_cmdSubMgr) {

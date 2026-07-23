@@ -15,6 +15,11 @@ i32 CBattlezData::InitWithRecords(void* records) {
     return 1;
 }
 
+RVA(0x000fc9f0, 0x5)
+CBattlezData::~CBattlezData() {
+    Init();
+}
+
 // 0xfca10 - Init: zero the scalar band + the matrices, then the four large
 // zeroed bands (each a rep-stosd run Init open-codes).
 // @early-stop

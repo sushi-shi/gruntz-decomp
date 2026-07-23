@@ -3,7 +3,7 @@
 #include <Rez/RezList.h>
 
 RVA(0x001851e0, 0x2a)
-void CRezList::AddHead(CRezListNode* node) {
+void CObjList::AddHead(CObjNode* node) {
     node->m_next = m_head;
     node->m_prev = 0;
     if (m_head) {

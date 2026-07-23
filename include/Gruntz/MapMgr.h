@@ -110,10 +110,6 @@ public:
     // the class wore two names. Renamed on the fold (nothing called it by name).
     void ResetCells(); // 0x09f5d0
 
-    // The tile-system notify the +0x70 consumers drive (was the fake CMapMgr::Notify -
-    // a method of a class that owns no retail address, i.e. an unlinkable phantom).
-    void Notify(i32 x, i32 y, i32 state);
-
     // 0x75a40 - bounds-checked cell-flags probe: the first dword (packed terrain
     // flags) of the 0x1c-byte cell at m_rows[y][x]; out of bounds returns 1. The
     // ex-`CGridLookup::Lookup` view (same m_rows/m_width/m_height trio at the same
