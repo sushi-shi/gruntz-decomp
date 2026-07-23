@@ -284,10 +284,11 @@ public:
     // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
-    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls
-    void ConnectStep();   // 0xc2a20  one connect step: reconcile slot 1 then Drive
+    i32 EnableControls();     // 0xc4120  re-enable the four player-config controls
+    void ReconcileChannel0(); // 0xc29f0  reconcile channel 0 then Drive
+    void ConnectStep();       // 0xc2a20  reconcile channel 1 then Drive
     // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
-    // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
+    // the connect state. Twins of the channel 0/1 handlers; PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
     // NetMgrMisc.cpp.
     void ReconcileChannel2(); // 0xc2a50  reconcile channel 2 then Drive

@@ -43,6 +43,12 @@ void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     }
 }
 
+RVA(0x000c29f0, 0x13)
+void CMultiStartDlg::ReconcileChannel0() {
+    SyncChannelSlot(0);
+    Drive();
+}
+
 RVA(0x000c2a20, 0x13)
 void CMultiStartDlg::ConnectStep() {
     SyncChannelSlot(1);

@@ -693,7 +693,6 @@ rva,name,lib,confidence,source
 0x0c1640,__inc,LIBCMT,LOW,anchored
 0x0c1700,___inittime,LIBCMT,LOW,anchored
 0x0c1810,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x0c29f0,?OnInitialUpdate@CFormView@@UAEXXZ,NAFXCW,AMBIG,anchored
 0x0c5360,__inc,LIBCMT,LOW,anchored
 0x0c53b0,__inc,LIBCMT,LOW,anchored
 0x0c5400,__inc,LIBCMT,LOW,anchored
