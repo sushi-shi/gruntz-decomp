@@ -960,11 +960,8 @@ public:
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
     // falls out). Names describe the observed effect, not a recovered symbol.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
-    void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
-    void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
     // Attack-fire step (UserLogicVfunc7 @0x61cb0, ProjectileUpdate.cpp) helpers
     // (external/no-body thunks, reloc-masked; names = observed roles):
-    void GetSpawnPos(i32* out); // thunk_0x1a73 (TimeBomb placement pos, {x,y} out-pair)
     void FinishAttackPowered(); // thunk_0x3dd7 (finish-tail hook when m_poweredUp is set)
     void NotifyAttackImpact();  // thunk_0x22de (impact hook when m_healthSprite exists)
     // Melee hit delivery: the attacker's fire step runs this ON THE TARGET grunt

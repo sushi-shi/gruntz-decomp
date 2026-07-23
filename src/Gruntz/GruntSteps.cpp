@@ -37,6 +37,7 @@
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/GruntSpawnConfig.h> // StopVoice on m_cueSink
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -942,7 +943,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (eq) {
         // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
         if (m_entranceReason == 0x13) {
-            EmitMoveCueShort(m_object->m_188, 0, 0);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1011,7 +1012,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
 idleReseed:
     // codes G/L/P: drive the move state by m_19c and (m_170==0x1e) fire the cue.
     if (m_entranceReason == 0x1e) {
-        EmitMoveCueShort(m_object->m_188, 0, 0);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
     }
     LoadGruntTypeTable(m_19c, 1, 0, 1);
     {

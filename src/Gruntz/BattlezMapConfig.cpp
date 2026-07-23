@@ -1311,7 +1311,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::winapi_02ab80_PtInRect  @0x02ab80
+// CBattlezMapConfig::FindIdleGruntInBox  @0x02ab80
 // Build a RECT centered at (cx,cy) with half-extents (halfW,halfH); scan the
 // four cell-bands (15 units each, skipping the current cell band m_curCell) for the
 // nearest idle (m_364==0) unit whose grid coord is inside the rect. On a kind-0x36
@@ -1325,7 +1325,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
 // set, opposite recolor -> the [esp+N] offsets shift and cascade. Logic + offsets
 // byte-exact otherwise (77.9%). Not source-steerable; deferred to the final sweep.
 RVA(0x0002ab80, 0x15e)
-i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 halfH) {
+CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     rect.left = cx - halfW;
     rect.right = cx + halfW;
@@ -1375,7 +1375,7 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
             bestDist = dist;
         }
     }
-    return reinterpret_cast<i32>(best);
+    return best;
 }
 
 // ===========================================================================
@@ -4238,7 +4238,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         g->GetScreenPos((&c0));
         c0.m_x >>= 5;
         c0.m_y >>= 5;
-        CGrunt* nb = QueryTile4098(
+        CGrunt* nb = FindIdleGruntInBox(
             c0.m_x,
             c0.m_y,
             static_cast<i32>((static_cast<u32>(W) / 3)),
@@ -4296,7 +4296,7 @@ inflight: {
     g->GetScreenPos((&c0));
     c0.m_x >>= 5;
     c0.m_y >>= 5;
-    CGrunt* nb = QueryTile4098(
+    CGrunt* nb = FindIdleGruntInBox(
         c0.m_x,
         c0.m_y,
         static_cast<i32>((static_cast<u32>(W) / 3)),

@@ -24,7 +24,6 @@
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
 ?ApplyDynSetting@CMulti@@QAEXVCString@@@Z
 ?ApplyGameOptions@@YAXXZ
-?ApplySetState1@CGrunt@@QAEXH@Z
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
@@ -51,10 +50,7 @@
 ?CreditsRectSet@@YAXPAXHHHH@Z
 ?Cue1@CGruntSpawnConfig@@QAEXH@Z
 ?Cue@CGruntSpawnConfig@@QAEXHHHHH@Z
-?CueA@CGruntSpawnConfig@@QAEXPAVCGrunt@@HHHHH@Z
-?CueEvent@CGruntSpawnConfig@@QAEXPAXHHHHH@Z
 ?CuePrep@CGruntzMgr@@QAEXXZ
-?CueSpawn@CGruntSpawnConfig@@QAEXPAVCGrunt@@HHHH@Z
 ?CueVisible@@YAHHHH@Z
 ?DeleteSaveSlot@@YAXPAUHWND__@@PAVCSaveGame@@@Z
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
@@ -64,7 +60,6 @@
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Dtor@CActionOptionsMenuBar@@QAEXXZ
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
-?EmitMoveCueShort@CGrunt@@QAEXHHH@Z
 ?EmptyMsgHook@@YGXIJ@Z
 ?EndWaitCursor@@YAXXZ
 ?Eng_BuildNotifyA@@YGXH@Z
@@ -78,8 +73,6 @@
 ?FinishAttackPowered@CGrunt@@QAEXXZ
 ?FlipVertical@CImage@@UAEXPAX@Z
 ?FlushStateStack@CGruntzMgr@@QAEXXZ
-?Fn2135@@YGXH@Z
-?Fn213f@@YGXHH@Z
 ?FormatElapsed@@YA?AVCString@@H@Z
 ?FormatStr@@YAXPAVCString@@PBDZZ
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
@@ -111,7 +104,6 @@
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?GetOffset@CFileMem@@UAEXXZ
-?GetSpawnPos@CGrunt@@QAEXPAH@Z
 ?GruntDropReady029b40@@YGHPAVCGrunt@@@Z
 ?GruntNode_Delete@@YAXPAX@Z
 ?GruntPointVisible@@YAHHHH@Z
@@ -152,7 +144,6 @@
 ?Lab401947@@YAXXZ
 ?Link@CParserObjList@@QAEXPAX@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
-?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z
 ?LoadSprite@CSpriteRefTable@@QAEPAXPAXH@Z
 ?MapCellIndex@zDArray@@QAEHHH@Z
 ?MapCellRecord2@zDArray@@QAEHHH@Z
@@ -196,7 +187,6 @@
 ?Probe@zDArray@@QAEHHH@Z
 ?ProbeCell@CTriggerMgr@@QAEHHHPAXH0HHHH@Z
 ?PumpAIndex@CMulti@@QAEHXZ
-?QueryTile4098@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
 ?Rand@CGruntzMgr@@QAEHXZ
 ?RandRange@CGruntzMgr@@QAEHHH@Z
@@ -221,7 +211,6 @@
 ?Render@CStatusBarItem@@UAEHXZ
 ?Render@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@@Z
 ?ReportError@@YAXPBDHHH@Z
-?ReseedIdleReset@CGrunt@@QAEXHHH@Z
 ?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
 ?ResetNetSlots@@YAXXZ
@@ -243,7 +232,6 @@
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetDotColor@CWwdGameObjectC@@UAEXE@Z
 ?SetFont@FontRenderer@@QAEXPAVFont@@@Z
-?SetMoveStateA@CGrunt@@QAEHHHHH@Z
 ?SetRange@CSliderCtrl@@QAEXHHH@Z
 ?SetServiceName@CMulti@@QAEXVCString@@@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
@@ -256,8 +244,6 @@
 ?Step6a060@CGrunt@@QAEXXZ
 ?StepCoordTick@CGrunt@@QAEXXZ
 ?StepDropApply@CGrunt@@QAEXXZ
-?Sub1@CCreditsState@@QAEXXZ
-?Sub2@CCreditsState@@QAEXXZ
 ?Sub3@CCreditsState@@QAEXXZ
 ?SubResetA@CStatusBarMgr@@QAEXXZ
 ?SubResetB@CStatusBarMgr@@QAEXXZ

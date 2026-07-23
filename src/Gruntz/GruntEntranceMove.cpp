@@ -1425,7 +1425,7 @@ i32 CGrunt::StepAnimDispatchB() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            EmitMoveCueShort(m_object->m_188, 0, 0);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_188); // 0x11c730 (ex EmitMoveCueShort)
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,

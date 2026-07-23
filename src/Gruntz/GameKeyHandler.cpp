@@ -17,9 +17,6 @@
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectA - the TriggerMgr goal camera sprite
 
-void __stdcall Fn213f(i32 a, i32 b); // 0x213f
-void __stdcall Fn2135(i32 a);        // 0x2135
-
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
@@ -709,11 +706,11 @@ recorder_place:
         }
         self->m_dragInhibit2 = 0;
         if (key == 0x2e || key == 0x6e) {
-            Fn2135(st);
+            level->ReportTab(st); // 0x10bb50 (ex Fn2135)
             this->SetCursorFrame(0);
             return 1;
         }
-        Fn213f(0, st);
+        level->EnterHlRow(0, st); // 0x106820 (ex Fn213f)
         this->SetCursorFrame(0);
         if (lvl == 0) {
             if (ph == 0) {

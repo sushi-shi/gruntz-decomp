@@ -9,8 +9,8 @@
 #include <string.h>     // inline strcmp type-name gate
 #include <stdlib.h>     // engine rand (0x11fee0)
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/Brickz.h> // canonical CMapMgr == CMapMgr (the board; was the CStepGrid view)
-#include <Gruntz/Grunt.h>  // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14
+#include <Gruntz/Brickz.h>     // canonical CMapMgr == CMapMgr (the board; was the CStepGrid view)
+#include <Gruntz/Grunt.h>      // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
 #include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this`
 #include <Gruntz/TypeColl.h>         // the shared type-name collection
@@ -24,9 +24,9 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
         GruntCoordNode* nd = (g)->CoordHead();                                                     \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
-                void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));                                            \
-                if (*static_cast<i32*>(r) != 0) {                                                               \
-                    g_coordPool.Push(reinterpret_cast<void*>(*static_cast<i32*>(r)));                                           \
+                void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));                          \
+                if (*static_cast<i32*>(r) != 0) {                                                  \
+                    g_coordPool.Push(reinterpret_cast<void*>(*static_cast<i32*>(r)));              \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
@@ -37,17 +37,17 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                 \
-            (grid)->m_bounds = ra;                                                       \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                                \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                               \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 static i32 iabs(i32 v) {
@@ -75,7 +75,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         // ---- fresh: re-query the move grid ----
         Coord tp;
         g->GetScreenPos(&tp);
-        CGrunt* nb = QueryTile4098(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
+        CGrunt* nb = FindIdleGruntInBox(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
         if (nb != 0) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
@@ -148,10 +148,13 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
-                    (reinterpret_cast<CTypeNode*>(g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_objAux->m_1c))))->m_0;
+                    (reinterpret_cast<CTypeNode*>(
+                         g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_objAux->m_1c))
+                     ))
+                        ->m_0;
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
-                    && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0
-                    && strcmp(nm, "C") != 0 && strcmp(nm, "R") != 0) {
+                    && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0 && strcmp(nm, "C") != 0
+                    && strcmp(nm, "R") != 0) {
                     Finish3e4f(g, cur);
                 }
             }
@@ -164,10 +167,13 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         cur->GetTilePos(&np);
         i32 dx = np.m_x - here.m_x;
         i32 dy = np.m_y - here.m_y;
-        i32 dist = static_cast<i32>(sqrt(static_cast<double>((iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy)))));
+        i32 dist = static_cast<i32>(
+            sqrt(static_cast<double>((iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy))))
+        );
         if (dist > m_0a4) {
             if (m_0f0.GetSize() != 0) {
-                GruntCoord* e = (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
+                GruntCoord* e =
+                    (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
@@ -226,8 +232,10 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
 
 tail:
     if (CanPlaySpecialAnim(reinterpret_cast<i32>(g))) {
-        if (g->CoordCount() == 0 && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0a0) && m_0f0.GetSize() != 0) {
-            GruntCoord* e = (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
+        if (g->CoordCount() == 0 && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0a0)
+            && m_0f0.GetSize() != 0) {
+            GruntCoord* e =
+                (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
             g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }

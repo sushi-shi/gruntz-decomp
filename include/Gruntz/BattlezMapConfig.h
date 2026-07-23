@@ -8,8 +8,8 @@
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
-class CTileTriggerContainer;  // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
-class CGrunt;                 // <Gruntz/Grunt.h> - the grid units the spawn machine drives
+class CTileTriggerContainer; // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
+class CGrunt;                // <Gruntz/Grunt.h> - the grid units the spawn machine drives
 class CGruntzMgr;
 class CLevelInfo;      // real level record (m_levelInfo member)
 class CLevelSpawnInfo; // spawn-info handle
@@ -36,7 +36,7 @@ public:
     i32 TrySeedSpawnAt(i32, i32);
     i32 RepathToFreeCell(i32);
     i32 ProbeUnoccupiedAt(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
-    i32 ForcePlaceFromReserve(i32);      // 0x035550  spend-reserve forced place
+    i32 ForcePlaceFromReserve(i32);  // 0x035550  spend-reserve forced place
     void* PickSpawnCoord(void*, i32, i32);
     i32 RouteUnitTo(i32, i32, i32, i32, i32, i32);
     i32 RouteUnitToGoal(i32, i32, i32, i32, i32);
@@ -49,12 +49,12 @@ public:
     i32 PathToNearestCandidate(i32, i32, i32, i32);
     i32 PathToNearestGoal(i32, i32, i32);
     void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
-    i32 AcceptAlways(i32);   // 0x02c080
-    i32 CheckQueuedSpawnTile(i32);   // 0x034c70  board-tile spawn check for a queued unit
-    i32 RetargetIdleUnit(i32);   // 0x0358a0  idle-unit retarget / despawn / near-band keep
+    i32 AcceptAlways(i32);         // 0x02c080
+    i32 CheckQueuedSpawnTile(i32); // 0x034c70  board-tile spawn check for a queued unit
+    i32 RetargetIdleUnit(i32);     // 0x0358a0  idle-unit retarget / despawn / near-band keep
     i32 winapi_0267c0_IntersectRect_PtInRect();
     i32 winapi_02a570_IntersectRect(i32);
-    i32 winapi_02ab80_PtInRect(i32, i32, i32, i32);
+    CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH); // 0x2ab80
     i32 winapi_02ae00_IntersectRect(i32, i32);
     i32 winapi_02c140_IntersectRect_PtInRect(i32);
     i32 winapi_02dfa0_IntersectRect(i32, i32, i32, i32);
@@ -80,7 +80,6 @@ public:
     void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);             // thunk 0x25e5
     void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c);         // thunk 0x2b58
     i32 Ready27ed(CGrunt* g);                                    // thunk 0x27ed
-    CGrunt* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // thunk 0x4098
     void Commit42e1(CGrunt* g);                                  // thunk 0x42e1
     void Plan293c(CGrunt* g, i32 x, i32 y, i32 a, i32 b, i32 c); // thunk 0x293c
     void Finish3e4f(CGrunt* g, CGrunt* a);                       // thunk 0x3e4f
@@ -99,7 +98,7 @@ public:
             i32 m_active;                       // +0x000  active gate (methods bail when 0)
             CGruntzMgr* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
             CTriggerMgr* m_triggerMgr;          // +0x008  the level's CTriggerMgr (4x15 grid)
-            CMapMgr* m_board;               // +0x00c  the CBrickz pathfinding-grid / tile-map
+            CMapMgr* m_board;                   // +0x00c  the CBrickz pathfinding-grid / tile-map
             i32 m_010;                          // +0x010  (untouched by run ctor)
             CTileTriggerContainer* m_cellQuery; // +0x014  the level's tile-trigger container
                                                 //         (LoadConfig-seeded from m_10->m_2e4;

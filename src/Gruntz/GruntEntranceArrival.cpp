@@ -566,7 +566,7 @@ i32 CGrunt::StepAttackFire() {
             }
             case GRUNT_TIMEBOMB: {
                 i32 pos[2];
-                GetSpawnPos(pos);
+                EntranceTileOffset(pos); // 0x56f80 (ex GetSpawnPos)
                 CGameObject* spr = g_gameReg->m_world->m_childGroup
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
