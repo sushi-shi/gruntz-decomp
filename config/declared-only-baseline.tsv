@@ -58,7 +58,6 @@
 ?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
-?OnFound@CWwdGrid@@UAEXPAUWwdRegion@@@Z
 ?OnMoveFinishA@CGrunt@@QAEXH@Z
 ?OnReanchor@CGrunt@@QAEXH@Z
 ?OnRegion5@CPlay@@QAEXXZ

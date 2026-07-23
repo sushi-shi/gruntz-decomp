@@ -52,12 +52,10 @@ differs). `__ehvec_ctor`/`__ehvec_dtor` are **`__stdcall`** (callee-clean: NO
 `add esp` after the call) — if you ever DO model them by hand, declare
 `extern "C" void __stdcall ...`, or the spurious caller cleanup caps you ~95%.
 
-Evidence: `CWwdGrid::CWwdGrid` (0x1915c0) 61%→79% on the switch to `new[]` (the
+Evidence: `CWwdGrid::Setup` (0x1915c0) 61%→79% on the switch to `new[]` (the
 frame + alloc + `??_L` region all snap to retail); the matching teardown
 `delete[]`/`__ehvec_dtor` path is the FreeBuckets sibling (0x191800, 100%).
 
-WALL residue after this fix: the real element type makes the class carry a base
-subobject / extra EH state, which shifts the `__ehfuncinfo` state-id base
-(eh-state-numbering-base.md) and, here, stacks with the log2/pow x87 schedule
-(x87-fp-stack-schedule.md) — so the ctor plateaus ~75% even though the alloc +
-frame are byte-exact.
+WALL residue after this fix: the log2/pow x87 schedule
+(x87-fp-stack-schedule.md) and local/register ordering keep the initializer
+below exact even though the allocation and frame are structurally correct.

@@ -2,21 +2,16 @@
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
-#include <Wwd/WwdGridShell.h>   // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
+#include <Wwd/WwdGridShell.h>
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
 
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 void operator delete(void* p);
 
 RVA(0x001682a0, 0x46)
-CWwdGridShell::~CWwdGridShell() {
-    (reinterpret_cast<CWwdGrid*>(this))->FreeBuckets();
-}
+CWwdGridShell::~CWwdGridShell() {}
 
-RVA(0x00168c10, 0x46)
-CWwdGrid::~CWwdGrid() {
-    FreeBuckets();
-}
+RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
 // ===========================================================================
 // Homed from src/Stub/GapFunctions.cpp (matcher-5): the gap tool had merged the
@@ -30,16 +25,21 @@ CWwdGrid::~CWwdGrid() {
 // delinker pairs the retail orphan (a zero-ref COMDAT; FreeBuckets inlines its own ehvec).
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
-// @early-stop
-// 0x191770 = a __thiscall(this; x0,y0,x1,y1) helper that derives the cell sizes
-// (cellW = |x1-x0|/5, cellH = |y1-y0|/5 via the 0x66666667 /5 magic-divide) and
-// tail-calls CWwdGrid::CWwdGrid(x0,y0,x1,y1,cellW,cellH) @0x1915c0 on `this` (a
-// re-init / 4-arg ctor overload). Body parked: invoking a ctor as a function on an
-// existing object (and CWwdGrid being abstract - the pure OnFound - forbids placement
-// new) is not expressible in MSVC5 C++, so the delegating call cannot be regenerated.
 RVA(0x00191770, 0x8d)
-i32 ReinitWwdGrid(void) {
-    return 0;
+i32 CWwdGrid::Setup(RECT rect) {
+    i32 cellW;
+    if (rect.right > rect.left) {
+        cellW = (rect.right - rect.left) / 10;
+    } else {
+        cellW = (rect.left - rect.right) / 10;
+    }
+    i32 cellH;
+    if (rect.bottom > rect.top) {
+        cellH = (rect.bottom - rect.top) / 10;
+    } else {
+        cellH = (rect.top - rect.bottom) / 10;
+    }
+    return Setup(rect, cellW, cellH);
 }
 
 RVA(0x00191800, 0x39)
@@ -283,36 +283,31 @@ RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}
 
 // ===========================================================================
-// 0x1915c0 - ctor: normalize the rect, compute log2 cell shifts + power-of-two
+// 0x1915c0 - Setup: normalize the rect, compute log2 cell shifts + power-of-two
 // cell sizes, derive the cols/rows/cell-count, allocate the bucket array
 // (count cookie + vector-constructed 8-byte heads). /GX frame from the alloc EH.
 // ===========================================================================
 // @early-stop
-// ~74%: three stacked walls, all logic byte-faithful. (1) the log2/pow x87 path
+// Remaining differences: (1) the log2/pow x87 path
 // (fldln2/fld 2.0/fyl2x/fdiv/__ftol/__CIpow) has a non-steerable FP-stack
-// schedule (docs/patterns/x87-fp-stack-schedule.md). (2) the real polymorphic
-// CObject subobject shifts the /GX __ehfuncinfo state-id base
-// (docs/patterns/eh-state-numbering-base.md) - the trade that took the dtor to
-// 100% (real-virtual implicit stamp-first). (3) the 4 rect-field stores fuse to a
-// `lea edx,[esi+0x28]` pointer-block in retail but stay direct member stores here
-// (regalloc choice). The implicit ctor vptr-stamp is now compiler-emitted (the
-// abstract base's __purecall vtable), matching retail's polymorphic construction.
+// schedule (docs/patterns/x87-fp-stack-schedule.md), and (2) the four rect-field
+// stores fuse to a pointer block in retail depending on source scheduling.
 RVA(0x001915c0, 0x15d)
-CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
+i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_minX = x0;
-    m_minY = y0;
-    m_maxX = x1;
-    m_maxY = y1;
-    i32 lox = x0, hix = x1;
-    if (x1 < x0) {
-        lox = x1;
-        hix = x0;
+    m_minX = rect.left;
+    m_minY = rect.top;
+    m_maxX = rect.right;
+    m_maxY = rect.bottom;
+    i32 lox = rect.left, hix = rect.right;
+    if (rect.right < rect.left) {
+        lox = rect.right;
+        hix = rect.left;
     }
-    i32 loy = y0, hiy = y1;
-    if (y1 < y0) {
-        loy = y1;
-        hiy = y0;
+    i32 loy = rect.top, hiy = rect.bottom;
+    if (rect.bottom < rect.top) {
+        loy = rect.bottom;
+        hiy = rect.top;
     }
     m_width = hix - lox;
     m_height = hiy - loy;
@@ -325,7 +320,9 @@ CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
     m_cellCount = m_rows * m_cols;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
-    if (arr) {
-        m_allocated = 1;
+    if (!arr) {
+        return 0;
     }
+    m_allocated = 1;
+    return 1;
 }

@@ -24,22 +24,14 @@ SIZE_UNKNOWN();
 
 class CWwdGrid : public CObject {
 public:
-    // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
-    // (the empty default ctor exists for the concrete CWwdGridShell's two-phase
-    // construction; its base ??_7 stamp dead-store-elides under the derived stamp)
     CWwdGrid() {}
-    CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH);
-    virtual ~CWwdGrid() OVERRIDE;
-    // slot 5 (vtbl+0x14): __purecall in the retail 0x1f0328 vtable - the class is
-    // abstract THERE. Declared non-pure (and defined nowhere) so CWwdSpatialMgr::Init
-    // can run this ctor over the raw CWwdGridShell via placement-new, exactly as
-    // retail's caller TU must have (its Init calls ??0CWwdGrid on the shell storage).
-    // Only the vtable DATUM's slot-5 reloc differs (ours names OnFound, retail
-    // __purecall) - a data-phase footnote, not a code byte.
-    virtual void OnFound(WwdRegion* r); // [5] retail slot = __purecall (abstract in the
-                                        // original); left concrete here because Init
-                                        // placement-constructs the base over the shell -
-                                        // the family identity knot is still open
+    virtual ~CWwdGrid() OVERRIDE {
+        FreeBuckets();
+    }
+    virtual void OnFound(WwdRegion* r) = 0; // [5] retail slot = __purecall
+
+    i32 Setup(RECT rect, i32 cellW, i32 cellH);
+    i32 Setup(RECT rect);
 
     void FreeBuckets();
     i32 Add(WwdRegion* r);

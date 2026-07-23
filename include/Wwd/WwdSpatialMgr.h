@@ -42,8 +42,8 @@ struct CWwdSpatialMgr {
     // retail's INLINED copy explicitly (see DDrawWorkerHost.cpp).
     ~CWwdSpatialMgr();
 
-    // Bring-up (0x168080, ret 0x20 = 8 args): allocate the three grids and two-phase-
-    // construct each (raw CWwdGridShell alloc -> CWwdGrid ctor via Setup), then seed the
+    // Bring-up (0x168080, ret 0x20 = 8 args): allocate three CWwdGridShells, call the
+    // inherited CWwdGrid::Setup on each, then seed the
     // per-grid rects (0,0,dim-1) + origins (dim/2) from p6/p7/p8, the bbox from `rc`, and
     // park the cached scroll at -22222. `src`->m_mgr, `rc` is the shared grid rect (used in
     // all three Setups + the bbox), p3/p4/p5 are the three Setup size pairs, p6/p7/p8 the

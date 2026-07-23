@@ -20,6 +20,13 @@ The catch: `~B` itself still needs its out-of-line standalone copy (called by B'
 that one address (duplicate-RVA guard fires). Pin the out-of-line COMDAT by mangled
 name instead, with an `RVA_COMPGEN(..)` pin.
 
+Definition visibility is load-bearing. With the derived destructor compiled
+before an out-of-line base definition, MSVC emitted only a vptr store plus
+`jmp ~CWwdGrid` (4.44%). Making the base destructor inline in the shared header
+produced the complete `/GX` teardown and made both destructors exact. Keep the
+RVA annotations ascending: pin the standalone inline base copy with
+`RVA_COMPGEN` rather than moving its definition ahead of a lower-RVA leaf.
+
 ```cpp
 // shared header (MFC-capable TU only — the fold needs the real base):
 class B : public Base {
@@ -47,5 +54,7 @@ STEERABLE — the inline base dtor is the counter to the eh-dtor-needs-base-subo
 and eh-dtor-vptr-restamp-presence walls (which otherwise cap these at ~50-60% /
 ~92%). Evidence: CTileTrigger (0x11290) + its three leaves CTileSecretTrigger
 (0x11540), CGiantRock (0x11600), CCoveredPowerup (0x116c0) — all four 0x44-byte
-dtors 100% once `~CTileTrigger` went inline and the standalone copy was `RVA_COMPGEN`-pinned
-pinned; the three leaf ctors (0x10fa60/90/c0) also 100% in the same model.
+dtors 100% once `~CTileTrigger` went inline and the standalone copy was
+`RVA_COMPGEN`-pinned; the three leaf ctors (0x10fa60/90/c0) also 100% in the
+same model. Same-TU evidence: `CWwdGrid`/`CWwdGridShell` at
+0x168c10/0x1682a0.
