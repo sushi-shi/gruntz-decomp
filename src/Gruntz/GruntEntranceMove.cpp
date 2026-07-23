@@ -176,7 +176,7 @@ i32 CGrunt::RunEntranceMove() {
             m_combatActive = 0;
             m_neighborValid = 0;
             m_poweredUp = 0;
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
@@ -189,7 +189,7 @@ i32 CGrunt::RunEntranceMove() {
         char* nm = m_cells[base].m_walk.GetBuffer(0);
         m_38->ApplyName(nm);
     } else {
-        ReseedIdleReset(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
 
     if (m_arrived != 0) {
@@ -325,7 +325,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->CueA(this, 0x37a, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
@@ -334,7 +334,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->CueA(this, 0x37b, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
@@ -343,7 +343,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->CueA(this, 0x37c, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
@@ -446,7 +446,8 @@ void CGrunt::LoadEntranceConfig() {
         CAniElement* found = static_cast<CAniElement*>(found_ob);
         if (static_cast<void*>(found) == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
-                g_gameReg->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_cueSink
+                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
@@ -581,13 +582,13 @@ i32 CGrunt::StartBombGruntRun() {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        ReseedIdleReset(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
     m_entranceActive = 1;
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
-    ApplySetState1(1);
+    SnapToLastTile(1);
     SetEntrancePos(1, 1);
-    if (SetMoveStateA(1, 1, 0, 1) == 0) {
+    if (LoadGruntTypeTable(1, 1, 0, 1) == 0) {
         CWwdGameObjectA* h = m_object;
         m_tileMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
@@ -615,7 +616,7 @@ i32 CGrunt::StartBombGruntRun() {
         i32 vy = h->m_screenY;
         i32* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
-            g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
     }
     m_value = m_38->m_1a0.m_14;
@@ -693,7 +694,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 x = m_object->m_screenX;
         CCueRect* r = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
     } else {
         m_wingzEnabled = 0;
@@ -783,7 +784,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // name CString, latches m_entranceStamped=1, and kicks the move-kind apply (m_moveVariant ? : m_moveKind).
 // On a later pass (m_entranceStamped!=0) it (when arrived) builds the three HUD stat sprites,
 // re-latches the "A"(idle) anim-set node into m_objAux->m_1c, drives the move state
-// (SetMoveStateA(m_19c,1,0,0)), clears m_entranceActive, then either - when the
+// (LoadGruntTypeTable(m_19c,1,0,0)), clears m_entranceActive, then either - when the
 // grunt's last tile carries the 0x80 attribute - commits the arrival move
 // (SetEntrancePos(1,1); tileMgr->CommitArrivalMove(this, lastX, lastY)) or else
 // bumps the HUD z-clamp (m_object->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).
@@ -793,7 +794,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // (stride 7, attr bit 0x80), the z-clamp constant 0x186a0, and all call shapes are
 // byte-faithful. Residue = the engine callees reached through incremental-link
 // thunks (SetGeoSourceR/SetGeometry/GetBuffer/SetAnimFrame/LookupAnimSet, the
-// CreateHealthSprite/Stamina/Toy creators, SetMoveStateA/SetEntrancePos/the apply
+// CreateHealthSprite/Stamina/Toy creators, LoadGruntTypeTable/SetEntrancePos/the apply
 // + CommitArrivalMove thunks) are unnamed externals, so their `call rel32`
 // displacements pair to differently-named retail thunks and score fuzzy. Naming
 // that whole referent set is a final-sweep task.
@@ -834,7 +835,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("A"));
-    SetMoveStateA(m_19c, 1, 0, 0);
+    LoadGruntTypeTable(m_19c, 1, 0, 0);
     m_entranceActive = 0;
 
     CGruntzMgr* g = g_gameReg;
@@ -1004,7 +1005,7 @@ idleReseed:
     if (m_entranceReason == 0x1e) {
         g_gameReg->m_cueSink->Cue1(m_object->m_188);
     }
-    SetMoveStateA(m_19c, 1, 0, 0);
+    LoadGruntTypeTable(m_19c, 1, 0, 0);
     {
         i32 z = m_object->m_screenY + 0x186a0;
         if (m_object->m_sortKey != z) {
@@ -1023,7 +1024,7 @@ idleReseed:
 modeDispatch: {
     i32 mode = m_moveMode;
     if (mode >= 0x32) {
-        SetMoveStateA(mode, 1, 0, 1);
+        LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
         m_1a4 = 0;
         goto finalize;
@@ -1037,7 +1038,7 @@ modeDispatch: {
         LoadVehicleGruntSprites(mode);
         goto finalize;
     }
-    SetMoveStateA(mode, 1, 0, 1);
+    LoadGruntTypeTable(mode, 1, 0, 1);
     m_moveMode = -1;
     goto finalize;
 }
@@ -1146,7 +1147,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             i32* rect =
                 &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
             if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
-                g_gameReg->m_cueSink->CueA(this, 0x35c, -1, 0, -1, -1);
+                g_gameReg->m_cueSink
+                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x35c, -1, 0, -1, -1);
             }
             m_freezeUnfrozen = 1;
             m_freezeDelayDone = 1;
@@ -1449,7 +1451,7 @@ i32 CGrunt::StepAnimDispatchB() {
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
     if (eq) {
-        ApplySetState1(1);
+        SnapToLastTile(1);
         CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
         return 1;
     }
@@ -1458,7 +1460,7 @@ i32 CGrunt::StepAnimDispatchB() {
         m_entranceActive = 0;
         if (m_poweredUp == 0 && m_neighborValid == 0) {
             m_entranceCommitted = 0;
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
@@ -1474,18 +1476,18 @@ i32 CGrunt::StepAnimDispatchB() {
         m_38->ApplyName(nm);
         goto modeDispatch;
     } else {
-        ApplySetState1(1);
+        SnapToLastTile(1);
         goto modeDispatch;
     }
 
 idleReseed:
-    SetMoveStateA(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_19c, 1, 0, 1);
     goto modeDispatch;
 
 modeDispatch: {
     i32 mode = m_moveMode;
     if (mode >= 0x32) {
-        SetMoveStateA(mode, 1, 0, 1);
+        LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
         m_1a4 = 0;
         return 1;
@@ -1499,7 +1501,7 @@ modeDispatch: {
         LoadVehicleGruntSprites(mode);
         return 1;
     }
-    SetMoveStateA(mode, 1, 0, 1);
+    LoadGruntTypeTable(mode, 1, 0, 1);
     m_moveMode = -1;
     return 1;
 }

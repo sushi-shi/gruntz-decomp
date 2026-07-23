@@ -973,7 +973,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0);
     if (eq) {
         // code "O": commit the move directly.
-        ApplySetState1(1);
+        SnapToLastTile(1);
         CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
         goto applyTail;
     }
@@ -988,7 +988,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_entranceActive = 0;
         if (m_poweredUp == 0 && m_neighborValid == 0) {
             m_entranceCommitted = 0;
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
@@ -1004,7 +1004,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_38->ApplyName(nm);
         goto modeDispatch;
     } else {
-        ApplySetState1(1);
+        SnapToLastTile(1);
         goto modeDispatch;
     }
 
@@ -1013,7 +1013,7 @@ idleReseed:
     if (m_entranceReason == 0x1e) {
         EmitMoveCueShort(m_object->m_188, 0, 0);
     }
-    SetMoveStateA(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_19c, 1, 0, 1);
     {
         i32 px = m_object->m_screenY + 0x186a0;
         if (m_object->m_sortKey != px) {
@@ -1035,7 +1035,7 @@ applyTail:
     }
     if (m_poweredUp == 0 && m_neighborValid == 0) {
         m_entranceCommitted = 0;
-        ReseedIdleReset(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
     StepDropApply();
     return 1;
@@ -1043,7 +1043,7 @@ applyTail:
 modeDispatch: {
     i32 mode = m_moveMode;
     if (mode >= 0x32) {
-        SetMoveStateA(mode, 1, 0, 1);
+        LoadGruntTypeTable(mode, 1, 0, 1);
         m_moveMode = -1;
         m_1a4 = 0;
         return 1;
@@ -1057,7 +1057,7 @@ modeDispatch: {
         LoadVehicleGruntSprites(mode);
         return 1;
     }
-    SetMoveStateA(mode, 1, 0, 1);
+    LoadGruntTypeTable(mode, 1, 0, 1);
     m_moveMode = -1;
     return 1;
 }

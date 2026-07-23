@@ -169,8 +169,6 @@ public:
 
     // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
-    void Sub1();
-    void Sub2();
     void Sub3();
 
     i32 DrawScrollingCredits(); // 0x396f0 per-frame credits scroll-text renderer

@@ -57,12 +57,12 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (rehomed here)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries
-#include <Gruntz/SoundCue.h>     // CDDrawSubMgrLeafScan (typedef of CDDrawSubMgrLeafScan) - the cue registry
-#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board
+#include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan (typedef of CDDrawSubMgrLeafScan) - the cue registry
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - the CGrunt+0x260 board
 #include <Gruntz/GruntBehaviorLeaf.h> // CGruntBehaviorLeaf - 3 of the 19 act handlers (decay/wand AI leaves)
 #include <new>
 #include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>           // ex Globals.h transitive
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -228,7 +228,7 @@ void CGrunt::EntranceTileOffset(i32* out) {
 }
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/GruntCombat.h> // g_reg_644af0 decl
+#include <Gruntz/GruntCombat.h>  // g_reg_644af0 decl
 
 DATA(0x0020d7fc)
 char s_codeH[] = "H";
@@ -552,7 +552,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     i32 y = m_object->m_screenY;
     CCueRect* rc = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
-        g->m_cueSink->CueSpawn(this, 0xe, -1, -1, -1);
+        g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xe, -1, -1, -1);
     }
 
     LoadGruntTypeTable(0, 1, 0, 1);
@@ -742,8 +742,7 @@ void CGrunt::DestroyAnims() {
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
-    CMapMgr* grid =
-        g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
+    CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
     if (CoordCount() == 0) {
         return 1;
     }
@@ -924,14 +923,14 @@ void CGrunt::OnStruck(i32 wasHit) {
             CGruntzMgr* g = g_gameReg;
             i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-                g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-            g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x371, -1, 0, -1, -1);
         } else {
             m_struckCount = 0;
         }
@@ -944,7 +943,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-            g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x320, -1, 0, -1, -1);
         }
         return;
     }
@@ -954,7 +953,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-            g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x321, -1, 0, -1, -1);
         }
         return;
     }
@@ -965,7 +964,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-            g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x322, -1, 0, -1, -1);
         }
     }
 }
@@ -1145,7 +1144,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
             // worker -> owner context (the world holder facet) -> cue host; retail
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
-            CDDrawSubMgrLeafScan* host = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
+            CDDrawSubMgrLeafScan* host =
+                (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != 0) {
@@ -1475,8 +1475,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
-        CMapMgr* grid =
-            static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
+        CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = this->m_lastTilePxX >> 5;
@@ -1533,8 +1532,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_arrivalPending == 0) {
             m_tileMgr->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
-        CMapMgr* g2 =
-            static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
+        CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
         i32* oc = g2->m_rowInts[oy] + ox * 7;

@@ -182,8 +182,8 @@ i32 CCreditsState::Render() {
         }
     }
 
-    Sub1();
-    Sub2();
+    StepVideo();            // 0x39c60 (ex Sub1)
+    DrawScrollingCredits(); // 0x396f0 (ex Sub2)
 
     // draw: cache m_c->m_drawTarget (the target keeps it in esi for the three derefs).
     CDDrawSubMgrPages* v4 = m_world->m_drawTarget;

@@ -826,7 +826,7 @@ codeI:
     m_entranceCell.reason = rec.m_8;
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseIdle[1]);
-    ReseedIdleReset(1, 0, 0);
+    ResetEntranceAnimation(1, 0, 0);
     return;
 
 idle:
@@ -1341,7 +1341,7 @@ label_4c6e4:
         CCueRect* rr =
             reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
-            g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
         tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;
@@ -1788,9 +1788,8 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // @confidence: med
 // @source: string-xref;vtable-slot
 // @stub
-// retail identity: ?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z (stub; the fold onto CGrunt is deferred)
 RVA(0x0004dd50, 0x22c0)
-i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) {
+i32 CGrunt::LoadGruntTypeTable(i32, i32, i32, i32) {
     return 0;
 }
 

@@ -1877,7 +1877,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         if (toy == 0x1e) {
                             toy = 0x20;
                         }
-                        g->SetMoveStateA(toy, 1, 0, 0);
+                        g->LoadGruntTypeTable(toy, 1, 0, 0);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);

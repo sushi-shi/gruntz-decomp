@@ -343,7 +343,7 @@ i32 CGrunt::UpdateGruntStatus() {
         (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
     );
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
-        g->m_cueSink->CueSpawn(this, 2, -1, -1, -1);
+        g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 2, -1, -1, -1);
     }
     m_lowStaminaCued = 1;
     return 0;
@@ -416,7 +416,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         i32 xx = h->m_screenX;
         i32* rect = &g->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
         if (xx < rect[2] && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
-            g->m_cueSink->CueSpawn(this, 1, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 1, -1, -1, -1);
         }
     }
 
@@ -653,7 +653,7 @@ i32 CGrunt::StepAttackFire() {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
-        SetMoveStateA(0, 1, 0, 0);
+        LoadGruntTypeTable(0, 1, 0, 0);
     }
     CWwdGameObjectA* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
@@ -667,7 +667,7 @@ i32 CGrunt::StepAttackFire() {
         FinishAttackPowered();
         return 0;
     }
-    ReseedIdleReset(1, 0, 0);
+    ResetEntranceAnimation(1, 0, 0);
     return 0;
 }
 
@@ -717,7 +717,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_combatActive = 0;
             m_neighborValid = 0;
             m_poweredUp = 0;
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
@@ -770,7 +770,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 i32 tier = cueTier + m380 - 1;
                 i32 anchor = reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX);
                 if (GruntPointVisible(m_object->m_screenY, m_object->m_screenX, anchor) != 0) {
-                    g->m_cueSink->CueA(this, tier, 0, -1, -1, -1);
+                    g->m_cueSink
+                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -780,7 +781,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 i32 tier = cueTier + m_moveKind - 1;
                 i32 anchor = reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX);
                 if (GruntPointVisible(m_object->m_screenY, m_object->m_screenX, anchor) != 0) {
-                    g->m_cueSink->CueA(this, tier, 0, -1, -1, -1);
+                    g->m_cueSink
+                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -801,7 +803,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_combatActive = 0;
             m_neighborValid = 0;
             m_poweredUp = 0;
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("L"));
@@ -865,7 +867,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     }
 
     // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
-    // fire CueSpawn(this, 0xa|0xb, -1,-1,-1) when inside.
+    // fire LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xa|0xb, -1,-1,-1) when inside.
     CWwdGameObjectA* hud = m_object;
     CGruntzMgr* g = g_gameReg;
     i32 yy = hud->m_screenY;
@@ -877,11 +879,11 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     i32* rect = rectBase + 0x40 / 4;
     if (sel != 0) {
         if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
-            g->m_cueSink->CueSpawn(this, 0xb, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xb, -1, -1, -1);
         }
     } else {
         if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
-            g->m_cueSink->CueSpawn(this, 0xa, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xa, -1, -1, -1);
         }
     }
     return 0;
@@ -949,7 +951,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
         );
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xc, -1, -1, -1);
         }
         return 0;
     }
@@ -1290,7 +1292,7 @@ i32 CGrunt::StepEntranceReinit() {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        ReseedIdleReset(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
     m_35c = 0;
     if (CoordCount() == 0) {
@@ -1419,11 +1421,11 @@ i32 CGrunt::StepArrivalReroll() {
     );
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x15d, -1, 0, -1, -1);
         }
     } else {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->CueSpawn(this, 9, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 9, -1, -1, -1);
         }
     }
     return 0;
@@ -1525,7 +1527,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
                 (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
             );
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-                g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
+                g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xc, -1, -1, -1);
                 ClearSubA();
                 return;
             }
@@ -1544,7 +1546,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
         );
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-            g->m_cueSink->CueSpawn(this, 0xd, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xd, -1, -1, -1);
         }
     }
 
@@ -1637,7 +1639,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
         found = static_cast<CDDrawWorker*>(
@@ -1649,7 +1651,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x385, -1, 0, -1, -1);
         }
     } else {
         found = static_cast<CDDrawWorker*>(
@@ -1661,7 +1663,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->CueA(this, 0x386, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x386, -1, 0, -1, -1);
         }
     }
 
@@ -1766,7 +1768,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         goto reject;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeO) == 0) {
-        ApplySetState1(1);
+        SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto tail;
     }
@@ -1782,7 +1784,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
                 m_combatActive = 0;
                 m_neighborValid = 0;
                 m_poweredUp = 0;
-                ReseedIdleReset(1, 0, 0);
+                ResetEntranceAnimation(1, 0, 0);
             }
             m_35c = 0;
             m_prevAnimSetNode = m_objAux->m_1c;
@@ -1795,11 +1797,11 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             char* cn = m_cells[base].m_walk.GetBuffer(0);
             m_38->ApplyName(cn);
         } else {
-            ReseedIdleReset(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         i32 mode = m_moveMode;
         if (mode >= 0x32) {
-            SetMoveStateA(mode, 1, 0, 1);
+            LoadGruntTypeTable(mode, 1, 0, 1);
             m_moveMode = -1;
             m_1a4 = 0;
         } else if (mode >= 0x22) {
@@ -1808,7 +1810,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         } else if (mode >= 0x17) {
             LoadVehicleGruntSprites(mode);
         } else {
-            SetMoveStateA(mode, 1, 0, 1);
+            LoadGruntTypeTable(mode, 1, 0, 1);
             m_moveMode = -1;
         }
         goto tail;
@@ -1824,7 +1826,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
                 flag = 0;
             }
         }
-        ApplySetState1(1);
+        SnapToLastTile(1);
         if (flag != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
@@ -1837,7 +1839,7 @@ reject:
     if (m_entranceReason == 0x1e) {
         g_gameReg->m_cueSink->Cue1(m_object->m_188);
     }
-    SetMoveStateA(m_19c, 1, 0, 1);
+    LoadGruntTypeTable(m_19c, 1, 0, 1);
     {
         CWwdGameObjectA* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
@@ -1925,7 +1927,7 @@ tail:
         i32 vy = h->m_screenY;
         i32* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
-            g_gameReg->m_cueSink->CueSpawn(this, 7, -1, -1, -1);
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 7, -1, -1, -1);
         }
     }
     return 0;
@@ -2054,7 +2056,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
         );
         if (GruntPointVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY)) {
-            g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
     }
 
@@ -2108,7 +2110,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
         );
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-            g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), cueId, -1, 0, -1, -1);
         }
 
         m_prevAnimSetNode = m_objAux->m_1c;

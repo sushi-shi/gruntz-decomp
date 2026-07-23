@@ -5,7 +5,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Wap32/ZVec.h>
-#include <Gruntz/TypeKeyColl.h>   // the shared zDArray (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h> // the shared zDArray (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
@@ -18,7 +18,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));                               \
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));        \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
@@ -41,12 +41,27 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (m_entranceActive != 0) {
             return 0;
         }
-        if (strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))), "A")
-                != 0
-            && strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))), s_codeD)
-                   != 0
-            && strcmp(*reinterpret_cast<const char**>((static_cast<_zdvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))), "E")
-                   != 0) {
+        if (strcmp(
+                *reinterpret_cast<const char**>(
+                    (static_cast<_zdvec*>(&g_typeColl))
+                        ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                ),
+                "A"
+            ) != 0
+            && strcmp(
+                   *reinterpret_cast<const char**>(
+                       (static_cast<_zdvec*>(&g_typeColl))
+                           ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                   ),
+                   s_codeD
+               ) != 0
+            && strcmp(
+                   *reinterpret_cast<const char**>(
+                       (static_cast<_zdvec*>(&g_typeColl))
+                           ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                   ),
+                   "E"
+               ) != 0) {
             return 0;
         }
     }
@@ -218,7 +233,10 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             a4 = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", reinterpret_cast<void*&>(a4));
+            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+                "GRUNTZ_PICKUPS_MEGAPHONE",
+                reinterpret_cast<void*&>(a4)
+            );
             m_pickupGeoSrc = a4;
             i32 n = play->m_guts->GetActiveValue();
             if (a5 != 0) {
@@ -426,7 +444,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if ((hud->m_screenX < g->m_viewOriginR && hud->m_screenX >= g->m_viewOriginL
              && hud->m_screenY < g->m_viewOriginB && hud->m_screenY >= g->m_viewOriginT)
             || a2 != 0) {
-            g->m_cueSink->CueA(this, id, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), id, -1, 0, -1, -1);
         }
     }
     m_1a4 = a3;
@@ -457,4 +475,3 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     m_38->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }
-

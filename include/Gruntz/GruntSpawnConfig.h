@@ -64,13 +64,10 @@ public:
     // the +0x60 registry object is ONE class wearing three names: spawn config ==
     // cue sink == the GruntzMgr "TimerObj" poll face). All declared-only:
     // reloc-masked thunk calls.
-    void Cue(i32 a, i32 b, i32 c, i32 d, i32 e);             // via thunk 0x33b4
-    void Cue1(i32 a);                                        // 1-arg cue (thunk_0x1163 -> 0x51c730)
-    void CueA(CGrunt* g, i32 b, i32 c, i32 d, i32 e, i32 f); // 6-arg entrance cue (ret 0x18)
-    void CueSpawn(CGrunt* g, i32 b, i32 c, i32 d, i32 e);    // via thunk 0x27ac (ret 0x14)
+    void Cue(i32 a, i32 b, i32 c, i32 d, i32 e); // via thunk 0x33b4
+    void Cue1(i32 a);                            // 1-arg cue (thunk_0x1163 -> 0x51c730)
     // 0x39f4: the on-screen event cue the per-tick game-object managers (CObjectTracker::Update)
     // fire on the registry's m_cueSink when the managed object is inside the viewport rect.
-    void CueEvent(void* obj, i32 id, i32 c, i32 d, i32 e, i32 f);
 
     BOOL Init(CSpawnOwner* owner); // 0x11adc0
     void Clear();                  // 0x11ae30

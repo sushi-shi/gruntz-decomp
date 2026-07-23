@@ -32,7 +32,7 @@
 // Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
 #include <Gruntz/GruntSpawnConfig.h> // complete type for the cue calls
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>    // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <string.h>
@@ -41,9 +41,9 @@
 #include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
 #include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
-#include <Gruntz/GameLevel.h>    // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_originX)
-#include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
-#include <stdlib.h>              // engine rand (0x11fee0)
+#include <Gruntz/GameLevel.h> // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_originX)
+#include <Gruntz/ScanGrid.h>  // CScanGrid (the shared board-grid dims view)
+#include <stdlib.h>           // engine rand (0x11fee0)
 
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
@@ -234,14 +234,16 @@ i32 CGrunt::ScanNearestTarget() {
             if (best == 0) {
                 goto L_wander;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_object->m_screenX == best->m_lastTilePxX
+            if (m_poweredUp == 0 && m_stamina >= 100
+                && best->m_object->m_screenX == best->m_lastTilePxX
                 && best->m_object->m_screenY == best->m_lastTilePxY) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, best->m_entranceReason);
                 if (pa <= pb
-                    && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY) != 0) {
+                    && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
+                           != 0) {
                     CommitNeighbor(
                         best->m_tileOwnerHi,
                         best->m_tileOwnerLo,
@@ -295,12 +297,15 @@ i32 CGrunt::ScanNearestTarget() {
             m_defenderState = 1;
             {
                 if (BoardTest(
-                        reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
+                        reinterpret_cast<CCueRect*>(
+                            &g_gameReg->m_world->m_level->m_mainPlane->m_originX
+                        ),
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
                     != 0) {
-                    g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink
+                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:
@@ -315,9 +320,14 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
                 i32 hi = 0 - m_arrivalRerollHi
-                         - (static_cast<u32>(static_cast<i32>(g_frameTime)) < static_cast<u32>(m_arrivalRerollLo) ? 1 : 0);
+                         - (static_cast<u32>(static_cast<i32>(g_frameTime))
+                                    < static_cast<u32>(m_arrivalRerollLo)
+                                ? 1
+                                : 0);
                 i32 winHi = m_arrivalRerollWindowHi;
-                if (hi > winHi || (hi == winHi && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
+                if (hi > winHi
+                    || (hi == winHi
+                        && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
                     // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
                     ResetEntranceAnimation(1, 1, 0);
                     m_arrivalRerollLo = 0;
@@ -344,7 +354,8 @@ i32 CGrunt::ScanNearestTarget() {
                         baseRow += rand() % spanY;
                     }
                     CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
-                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width) && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
+                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
+                        && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
                     if (CoordCount() != 0) {
