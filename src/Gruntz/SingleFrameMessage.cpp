@@ -1,11 +1,11 @@
-#include <Mfc.h> // RECT / CopyRect (the ctor centers the object in a bounds rect)
+#include <Mfc.h>                  // RECT / CopyRect (the ctor centers the object in a bounds rect)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
-#include <Gruntz/WwdGameReg.h>   // g_gameReg->GetMessageBounds (on-screen message bounds)
+#include <Gruntz/WwdGameReg.h>    // g_gameReg->GetMessageBounds (on-screen message bounds)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 RVA(0x0000f5a0, 0x47)
@@ -46,9 +46,12 @@ void CSingleFrameMessage::InitActReg() {
 
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
-    CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id));
+    CSingleFrameActEntry* e =
+        reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 
@@ -91,3 +94,8 @@ void CSingleFrameMessage::RegisterActs() {
 // g_singleFrameActReg (0x00245ef0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x00245ef0, 0x0, ?g_singleFrameActReg@@3UCActReg@@A)
+RVA(0x000ab910, 0x12)
+i32 CSingleFrameMessage::AdvanceAnim() {
+    m_38->m_flags |= 0x10000;
+    return 0;
+}

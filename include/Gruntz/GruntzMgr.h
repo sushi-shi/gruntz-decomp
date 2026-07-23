@@ -253,7 +253,6 @@ public:
     void RecomputeViewScale();                         // @0x08f7f0
     i32 PrepCmd4(i32 a0);                              // reloc-masked sibling (cmd-4 arm gate)
     i32 PrepCmd7(i32 a0);                              // reloc-masked sibling (cmd-7 arm gate)
-    void RunWinHook(); // reloc-masked sibling (win/level-complete hook)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==

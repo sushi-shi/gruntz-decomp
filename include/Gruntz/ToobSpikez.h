@@ -10,6 +10,8 @@ class CToobSpikez : public CUserLogic, public CWapX {
 public:
 public:
     CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
+    // The per-frame act handler ("A" PMF): advance the bound anim cursor.
+    i32 AdvanceAnim(); // 0x114bc0
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
     // 0x00012ba0 vtable slot 2: per-class logic-type id, inline (one
@@ -19,7 +21,7 @@ public:
         return LOGIC_TOOBSPIKEZ;
     }
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    void Register();                       // 0x1147e0 (reserve the activation range)
+    void Register();                              // 0x1147e0 (reserve the activation range)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
     static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)
@@ -30,7 +32,6 @@ SIZE(0x54);
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern i32 ToobLogic_114bc0();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -592,7 +592,8 @@ void CDroppedObject::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(DropLookup(id2)) = static_cast<void*>(&DropActB_c7be0);
+    *reinterpret_cast<DropHandler*>(DropLookup(id2)) =
+        reinterpret_cast<DropHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB));
 }
 
 // CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
@@ -863,3 +864,7 @@ DATA_SYMBOL(0x0024be90, 0x0, ?g_dropperActReg@@3UCSiblingActReg@@A)
 // g_dropColl (0x0024bed8): CSiblingActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x0024bed8, 0x0, ?g_dropColl@@3UCSiblingActReg@@A)
+RVA(0x000c7be0, 0x5)
+i32 CDroppedObject::ActB() {
+    return UserLogicVfunc5(); // retail: the bare `jmp [vtbl+0x1c]` tail-dispatch
+}

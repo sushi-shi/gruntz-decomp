@@ -4,6 +4,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
+#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
 #include <rva.h>
 #include <Wap32/ZVec.h>
 
@@ -130,6 +131,12 @@ void CStatusBarSprite::RegisterActs() {
     }
     (reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
+}
+
+RVA(0x0010c810, 0x17)
+i32 CStatusBarSprite::AdvanceAnim() {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    return 0;
 }
 
 RVA(0x00011ac0, 0x6)

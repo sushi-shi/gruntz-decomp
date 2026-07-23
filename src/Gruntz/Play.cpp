@@ -393,7 +393,7 @@ i32 CPlay::Render() {
 
         if (m_worldReady == 0) { // world-ready init
             if (w->m_cmdGrid->m_armed != 0) {
-                WorldSubstep();
+                m_mgr->m_cmdGrid->ScrollToActiveRecord(); // 0x7cfc0 (ex 'WorldSubstep')
             }
             LoadScrollSpeedOptions();
         }

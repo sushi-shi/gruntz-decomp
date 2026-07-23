@@ -886,7 +886,7 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_value;
         i32* slot = &m_hlGrid[row].m_value;
-        if (ResolveHandle(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             CDDrawSubMgrLeafScan* host =
                 g_gameReg->m_world
                     ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
@@ -927,7 +927,7 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
         && m_hlGrid[row + 4].m_state == 1) {
         i32 handle = m_hlGrid[row + 4].m_value;
         i32* slot = &m_hlGrid[row + 4].m_value;
-        if (ResolveHandle(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             CDDrawSubMgrLeafScan* host =
                 g_gameReg->m_world
                     ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
@@ -967,7 +967,7 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
         && m_hlGrid[row + 8].m_state == 1) {
         i32 handle = m_hlGrid[row + 8].m_value;
         i32* slot = &m_hlGrid[row + 8].m_value;
-        if (ResolveHandle(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             CDDrawSubMgrLeafScan* host =
                 g_gameReg->m_world
                     ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
@@ -2300,7 +2300,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                 return 0;
             }
         }
-        if (!ResolveHandle(0x66)) {
+        if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             return 0;
         }
         CDDrawSubMgrLeafScan* host =
@@ -2333,7 +2333,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if (m_slots[idx].m_state != kSlotReady) {
         return 0;
     }
-    if (!ResolveHandle(0x66)) {
+    if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
         return 0;
     }
     CDDrawSubMgrLeafScan* host =

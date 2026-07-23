@@ -231,7 +231,6 @@ public:
     i32 HlClickGroup0(i32 row);
     i32 HlClickGroup1(i32 row);
     i32 HlClickGroup2(i32 row);
-    void* ResolveHandle(i32 handle); // call 0x17a8 - validity probe
     i32 SetTab(i32 tab, i32 flag);
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);

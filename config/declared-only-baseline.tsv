@@ -19,14 +19,7 @@
 ??1CStringArray@@UAE@XZ
 ??1DSoundVoice@@UAE@XZ
 ??1zDArray@@UAE@XZ
-?Act_10f970@CCheckpointTrigger@@QAEHXZ
-?AdvanceAnim@CAniCycle@@QAEHXZ
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
-?AdvanceAnim@CSingleFrameMessage@@QAEHXZ
-?AdvanceAnim@CStatusBarSprite@@QAEHXZ
-?AdvanceAnim@CTileTrigger@@QAEHXZ
-?AdvanceAnim@CTileTriggerSwitch@@QAEHXZ
-?AdvanceAnim@CWarpStonePad@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
 ?ApplyDynSetting@CMulti@@QAEXVCString@@@Z
@@ -69,7 +62,6 @@
 ?Dispatch@CGrunt@@QAEHHH@Z
 ?DispatchServices@CMulti@@QAEHPBDHPAX@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
-?DropActB_c7be0@@YAHXZ
 ?Dtor@CActionOptionsMenuBar@@QAEXXZ
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?EmitMoveCueShort@CGrunt@@QAEXHHH@Z
@@ -234,7 +226,6 @@
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
 ?ResetNetSlots@@YAXXZ
 ?ResetTabWidgets2b44@CStatusBarMgr@@QAEXXZ
-?ResolveHandle@CStatusBarMgr@@QAEPAXH@Z
 ?ResolveImage_163ee0@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z
 ?ResolveItem_1159@@YGPAVCWnd@@H@Z
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
@@ -242,7 +233,6 @@
 ?Run@CDDSurface@@QAEHHHHHHHUClipRect16@@@Z
 ?Run@CStatusBarMgr@@QAEXXZ
 ?RunModal@CGameApp@@QAEXPBDPAUHWND__@@@Z
-?RunWinHook@CGruntzMgr@@QAEXXZ
 ?SaveRunCallback@@YAHPAX0HHH@Z
 ?SbiList_Dtor@@YAXXZ
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
@@ -281,8 +271,6 @@
 ?TempFileExists@@YAHPAUSaveTempRec@@@Z
 ?Tick@CGruntSpawnConfig@@QAEXXZ
 ?Tm_DestroyArray@@YAXPAXHH0@Z
-?ToobLogic_114bc0@@YAHXZ
-?Trigger@CBrickz@@QAEHXZ
 ?Type13Check@CGrunt@@QAEHXZ
 ?Unload@CDDrawSurfaceChildA@@UAEXXZ
 ?Unload@CDrawSubWorker@@UAEXXZ
@@ -294,7 +282,6 @@
 ?WantRead@CFileMemBase@@UAEHXZ
 ?WorldSoundCreateFull@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HHHHHH@Z
 ?WorldSoundCreateSimple@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HH@Z
-?WorldSubstep@CPlay@@QAEXXZ
 ?WriteCmdDelay@CMulti@@QAEHH@Z
 ?WriteName@@YAXPAX0@Z
 ?g_actReg_646188@@3UCActReg@@A

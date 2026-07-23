@@ -408,6 +408,11 @@ void CWarpStonePad::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
+RVA(0x0010dc20, 0x3)
+i32 CWarpStonePad::AdvanceAnim() {
+    return 0;
+}
+
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -460,6 +465,11 @@ void CTileTriggerSwitch::RegisterActs() {
     }
     (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))
         ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
+}
+
+RVA(0x0010e200, 0x3)
+i32 CTileTriggerSwitch::AdvanceAnim() {
+    return 0;
 }
 
 RVA(0x0010e220, 0x17d)
@@ -602,6 +612,16 @@ void CBrickz::RegisterActs() {
 // EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
 // byte-faithful; the residue is this ctor's own __ehfuncinfo state numbering + the
 // zero-register-pinning callee-saved choice (the shared CUserLogic-init wall). Deferred.
+RVA(0x0010ede0, 0x3)
+i32 CBrickz::Trigger() {
+    return 0;
+}
+
+RVA(0x0010ee00, 0x3)
+i32 CTileTrigger::AdvanceAnim() {
+    return 0;
+}
+
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -723,6 +743,12 @@ void CCheckpointTrigger::RegisterActs() {
 // (>512 B); the empty body keeps the PMF wired to the real method symbol.
 RVA(0x0010f6a0, 0x235)
 i32 CCheckpointTrigger::Act() {
+    return 0;
+}
+
+RVA(0x0010f970, 0x17)
+i32 CCheckpointTrigger::Act_10f970() {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 

@@ -2632,7 +2632,9 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
         if (done > 0) {
             m_frameGate = 1;
-            RunWinHook();
+            // retail: ecx still = m_curState here - the pause poke runs on the
+            // multiplayer state object (OnPauseChannel @0xbd130).
+            (static_cast<CMulti*>(m_curState))->OnPauseChannel();
             m_frameGate = 0;
             return 1;
         }

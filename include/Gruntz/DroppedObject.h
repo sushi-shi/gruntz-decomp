@@ -9,6 +9,8 @@ class CFileMemBase;
 class CDroppedObject : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    // The "B" act handler PMF (0xc7be0): virtual-dispatch Unload, return its residue.
+    i32 ActB(); // 0xc7be0
     RVA(0x00012560, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
@@ -32,6 +34,7 @@ public:
 SIZE_UNKNOWN();
 
 typedef void (CUserLogic::*DropHandler)();
+// (ActB @0xc7be0 - the "B" PMF: virtual-dispatch Unload; declared on the class below.)
 struct CDropEntry {
     DropHandler m_fn; // [entry]
 };
@@ -46,7 +49,6 @@ extern CSiblingActReg g_shadowActReg; // 0x0024bf00
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern i32 DropActB_c7be0();
 
 extern const double g_objDropDiv;
 extern double g_dropFallBias;

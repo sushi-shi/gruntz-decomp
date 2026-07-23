@@ -249,7 +249,6 @@ public:
     void SnapPostMessage(i32 wParam);
     void GutsStepB();
     void GutsStepC();
-    void WorldSubstep();
     // The two CLightFxRender thunks 0x1fa0/0x14dd are dispatched straight on
     // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
     void InputSubStep(void* in);         // (m_4->m_70)

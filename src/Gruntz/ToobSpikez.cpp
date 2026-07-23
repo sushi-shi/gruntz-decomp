@@ -89,6 +89,7 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CToobSpikez() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
 #include <rva.h>
 
 RVA(0x00114860, 0x102)
@@ -127,9 +128,15 @@ void CToobSpikez::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_toobColl.ResolveEntry(id)) = static_cast<void*>(&ToobLogic_114bc0);
+    *reinterpret_cast<i32 (CUserLogic::**)()>(g_toobColl.ResolveEntry(id)) =
+        static_cast<i32 (CUserLogic::*)()>(&CToobSpikez::AdvanceAnim);
 }
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+RVA(0x00114bc0, 0x17)
+i32 CToobSpikez::AdvanceAnim() {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    return 0;
+}

@@ -20,6 +20,7 @@ i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CAniCycle() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
 #include <rva.h>
 RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 
@@ -75,7 +76,8 @@ void CAniCycle::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
+    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 
 #include <rva.h>
@@ -85,3 +87,8 @@ void CAniCycle::RegisterActs() {
 // g_aniCycleActReg (0x00246088): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 DATA_SYMBOL(0x00246088, 0x0, ?g_aniCycleActReg@@3UCActReg@@A)
+RVA(0x000ab2e0, 0x17)
+i32 CAniCycle::AdvanceAnim() {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    return 0;
+}
