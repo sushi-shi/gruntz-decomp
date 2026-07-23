@@ -24,7 +24,6 @@
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?Eng_SpawnFx@@YGXHHHHHH@Z
-?EntranceApplyFrame@@YGXPBDH@Z
 ?Fade@CAmbientSound@@QAEHHHH@Z
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
 ?FinishAttackPowered@CGrunt@@QAEXXZ
@@ -34,9 +33,6 @@
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
-?GruntDropReady029b40@@YGHPAVCGrunt@@@Z
-?GruntNode_Delete@@YAXPAX@Z
-?GruntTileSwitchImpl@@YGHHHHHHH@Z
 ?HiTabB@CStatusBarMgr@@QAEXHH@Z
 ?Hit5@CTriggerMgr@@QAEPAVCGrunt@@HHHHH@Z
 ?Hit@CTriggerMgr@@QAEPAVCGrunt@@HHHPAH0@Z
@@ -129,7 +125,6 @@
 ?g_fortressFlagActReg@@3UCActReg@@A
 ?g_frontCandyActReg@@3UCActReg@@A
 ?g_gruntDefEntranceCell@@3PAHA
-?g_gruntSpawnScale@@3NB
 ?g_healthActReg@@3UCIndicatorActReg@@A
 ?g_lab504358@@3PADA
 ?g_lab545854@@3PADA
@@ -140,9 +135,6 @@
 ?g_mapNamePre@@3PADA
 ?g_multiCmdList@@3VCPtrList@@A
 ?g_multiplayerAvail@@3HA
-?g_pathOne@@3NB
-?g_pathTimeScale@@3NB
-?g_pathZero@@3NB
 ?g_pool@@3VCPtrList@@A
 ?g_powerupActReg@@3UCIndicatorActReg@@A
 ?g_projReg@@3UCCoordColl@@A

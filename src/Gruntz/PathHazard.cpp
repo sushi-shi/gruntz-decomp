@@ -226,21 +226,21 @@ i32 CPathHazard::Tick() {
     i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
     i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
 
-    if (m_unitX > g_pathZero) {
+    if (m_unitX > 0.0) {
         if (newX > m_wpX) {
             newX = m_wpX;
         }
-    } else if (m_unitX < g_pathZero) {
+    } else if (m_unitX < 0.0) {
         if (newX < m_wpX) {
             newX = m_wpX;
         }
     }
 
-    if (m_unitY > g_pathZero) {
+    if (m_unitY > 0.0) {
         if (newY > m_wpY) {
             newY = m_wpY;
         }
-    } else if (m_unitY < g_pathZero) {
+    } else if (m_unitY < 0.0) {
         if (newY < m_wpY) {
             newY = m_wpY;
         }
@@ -405,23 +405,23 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = g_pathOne / (static_cast<double>(obj->m_7c->m_bc) * g_pathTimeScale);
+    m_speed = 1.0 / (static_cast<double>(obj->m_7c->m_bc) * 0.03125);
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;
     m_unitY = uy;
 
-    if (ux > g_pathZero) {
+    if (ux > 0.0) {
         m_roundBiasX = 0.5;
-    } else if (ux < g_pathZero) {
+    } else if (ux < 0.0) {
         m_roundBiasX = -0.5;
     } else {
         m_roundBiasX = 0.0;
     }
 
-    if (uy > g_pathZero) {
+    if (uy > 0.0) {
         m_roundBiasY = 0.5;
-    } else if (uy < g_pathZero) {
+    } else if (uy < 0.0) {
         m_roundBiasY = -0.5;
     } else {
         m_roundBiasY = 0.0;

@@ -371,7 +371,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem =
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        EntranceApplyFrame(key, elem[0x14 / 4]);
+        m_38->ApplyLookupSprite(key, elem[0x14 / 4]);
     }
 }
 

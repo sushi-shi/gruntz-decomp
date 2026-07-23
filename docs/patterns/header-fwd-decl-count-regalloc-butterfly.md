@@ -114,3 +114,17 @@ directly changed its call relocation from the placeholder to the real mangled
 target and is not an unrelated butterfly control. Keep the real destination and
 the two-symbol declared-only reduction; MAX preserves both prior scores while
 later authentic `Grunt.h` declaration recovery can reverse the TU-state change.
+
+EIGHTH FIRING (2026-07-23, Grunt helper/signature cleanup): a later `Grunt.h`
+batch removed four more xref-disproved helper declarations and one pooled
+floating-literal declaration, and corrected `CGrunt::StepArrivalDrop` from
+`void` to its wrapper-proven `i32` return. Two direct includers moved without
+body edits: `CTriggerMgr::HitTestCell` 39.7921→39.7723 and
+`CGrunt::Activate` 34.2545→33.5727. The latter's dependency-aware fingerprint
+changed with the header signature even though its source body did not. The
+other outstanding regression rows were already isolated above:
+`LoadScrollSpeedOptions` belongs to the sixth firing, `ArrivalScanC` to the
+seventh, and `PhaseStep` to the fifth. Thus the two new deltas are header-state
+recolorings, not evidence against the helper or return-type corrections.
+Preserve both per-function MAX values and include the declaration/signature
+batch as a reverse-search dimension for these residues.

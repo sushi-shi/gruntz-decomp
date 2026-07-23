@@ -68,6 +68,20 @@ The odd `GruntPointVisible(y, x, rect)` spelling had only preserved the cdecl
 push order; restoring `PointInBounds(rect, x, y)` emits the same pushes with the
 real semantics.
 
+The same audit applies when a call lands inside a larger function rather than
+in the ILT band. A named destination at an internal shared tail is not evidence
+for a standalone helper. Chase the tail's calls and receiver instead. The
+Grunt entrance-animation tails both resolve to
+`CWwdGameObjectA::ApplyLookupSprite`; replacing the invented
+`EntranceApplyFrame` declaration with the real member call removed another
+declared-only function.
+
+A thin wrapper that is only `call <member>; ret` also preserves the callee's
+return register. If its caller consumes EAX, a `void` reconstruction of that
+member is disproved even when the source-inferred name looked plausible.
+`CGrunt::TileSwitch` exposed `CGrunt::StepArrivalDrop` this way: restoring the
+real `i32` return type removed the fake `GruntTileSwitchImpl` alias.
+
 ## Trap: FID false-positives on the destinations
 
 The ILT-reached bodies are often 1-6 byte defaults (`c3`, `33 c0 c3`, `b8 01 00 00 00 c3`).

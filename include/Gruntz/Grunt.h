@@ -46,8 +46,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
-
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 extern i32 g_cellLo;    // DAT_006bf658
@@ -127,8 +125,6 @@ struct CGruntLiveNode {
     CGruntPuddle* m_entry; // +0x08  placed puddle (tile x/y + pending gate)
 };
 SIZE_UNKNOWN();
-
-i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
 struct CGruntTypeCatalog {
     char m_pad0[0xc];
@@ -224,8 +220,6 @@ SIZE_UNKNOWN();
 // (CVtSlot9 DISSOLVED: DispatchVtbl24's +0x24 self-dispatch is the real slot-9
 // virtual, CUserLogic::StepAttackFire.)
 
-void GruntNode_Delete(void* p);
-
 struct CGruntVoiceRec;           // defined below (the 3-DWORD by-value voice record)
 extern CGruntVoiceRec g_voiceN;  // 0x6448e8  (dx==0, dy>0  -> South: down)
 extern CGruntVoiceRec g_voiceS;  // 0x6448d8  (dx==0, dy<0  -> North: up)
@@ -261,12 +255,11 @@ struct CGruntMotionBand {
     void SetZ(double z); // 0x58ca0 (thunk 0x3ea9)
 };
 SIZE_UNKNOWN();
-extern const double g_movingLogicMin;  // 0x5f04b0 (-2147483647.0)
-extern const double g_movingLogicMax;  // 0x5f04b8 (2147483646.0)
-extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
-extern u32 g_defaultZ;                 // 0x5f04e8 (default-Z int)
-extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-masked)
-extern "C" u32 g_frameTime;            // 0x645588 (the running game clock; FrameClock.h)
+extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
+extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
+extern u32 g_defaultZ;                // 0x5f04e8 (default-Z int)
+extern u32 g_gruntSpawnClock;         // 0x645588 (spawn-seed clock; reloc-masked)
+extern "C" u32 g_frameTime;           // 0x645588 (the running game clock; FrameClock.h)
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
@@ -938,7 +931,7 @@ public:
     // (Activate is the vtable slot-6 override, declared at the top of CGrunt.)
     i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
 
-    void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
+    i32 StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
     // (MovingSlot16 is the vtable slot-16 override, declared at the top of CGrunt.)
@@ -1157,7 +1150,6 @@ SIZE(0x4);
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 
 void GruntRecycleCoords(CGrunt* g); // 0x343f0
-i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
 extern char s_codeD[]; // "D" (0x0060cca4)
 extern char s_codeF[]; // "F" (0x0060d2e8)

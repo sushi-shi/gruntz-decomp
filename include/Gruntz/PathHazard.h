@@ -26,15 +26,6 @@ extern "C" u32 g_engineFrameDelta;
 
 extern "C" i32 g_frameDelta; // VA 0x645584
 
-DATA(0x001ea400)
-extern const double g_pathZero; // VA 0x5ea400
-
-DATA(0x001ea408)
-extern const double g_pathTimeScale; // VA 0x5ea408
-
-DATA(0x001ea410)
-extern const double g_pathOne; // VA 0x5ea410
-
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 

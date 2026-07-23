@@ -27,8 +27,6 @@
 #include <Rez/FrameClock.h> // g_frameDelta/g_engineFrameDelta (frame-clock band)
 
 VTBL(CKitchenSlime, 0x001e750c);
-DATA(0x001ea400)
-const double g_slimeZero = 0.0;
 
 #include <Gruntz/KitchenSlime.h>
 
@@ -245,7 +243,7 @@ i32 CKitchenSlime::Tick() {
     double* m88d = reinterpret_cast<double*>(&m_stepMag);
 
     i32 newX;
-    if (m_dirX > g_slimeZero) {
+    if (m_dirX > 0.0) {
         double t = (m_posX = m_posX + step);
         newX = static_cast<i32>(floor(t));
         i32 tx = m_tileX;
@@ -256,7 +254,7 @@ i32 CKitchenSlime::Tick() {
         if (newX > tx) {
             newX = newX;
         }
-    } else if (m_dirX < g_slimeZero) {
+    } else if (m_dirX < 0.0) {
         double t = (m_posX = m_posX - step);
         newX = static_cast<i32>(ceil(t));
         i32 tx = m_tileX;
@@ -269,7 +267,7 @@ i32 CKitchenSlime::Tick() {
     }
 
     i32 newY;
-    if (m_dirY > g_slimeZero) {
+    if (m_dirY > 0.0) {
         double t = (m_posY = m_posY + step);
         newY = static_cast<i32>(floor(t));
         i32 ty = m_tileY;
@@ -279,7 +277,7 @@ i32 CKitchenSlime::Tick() {
             Level()->m_screenY = ty;
             return 0;
         }
-    } else if (m_dirY < g_slimeZero) {
+    } else if (m_dirY < 0.0) {
         double t = (m_posY = m_posY - step);
         newY = static_cast<i32>(ceil(t));
         i32 ty = m_tileY;

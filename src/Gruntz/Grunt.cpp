@@ -245,7 +245,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
         0.0,
         0.0,
         0.0,
-        static_cast<double>(g_frameTime) * g_gruntSpawnScale,
+        static_cast<double>(g_frameTime) * 0.001,
         0.0
     );
     m->SetZ(static_cast<double>(g_defaultZ));
@@ -517,7 +517,7 @@ void CGrunt::UserLogicVfunc9() {
             continue;
         }
         void* p = m_338.RemoveHead();
-        GruntNode_Delete(p);
+        delete static_cast<char*>(p);
     }
 }
 
@@ -961,7 +961,7 @@ void CGrunt::ClearAllSprites() {
 // only the member spelling reproduces at the ~25 reconstructed sites.
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    return GruntTileSwitchImpl(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
+    return StepArrivalDrop(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
 }
 
 // ---------------------------------------------------------------------------
@@ -975,7 +975,7 @@ i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 // body. Needs a dedicated leaf-first reconstruction of that shared inlined tail (also
 // inlined into MovingSlot16) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0004b370, 0xafd)
-void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     m_arrivalNotified = 0; // m_464 cleared on entry
     bool eq;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
@@ -997,10 +997,10 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
         m_31c.RemoveAll();
     }
     StepDropApply();
-    return;
+    return 0;
 
 reachedTarget:
-    m_tileMgr->CellDispatch(a, b, c, d);
+    return m_tileMgr->CellDispatch(a, b, c, d);
 }
 
 // ---------------------------------------------------------------------------
@@ -1049,7 +1049,7 @@ i32 CGrunt::StepGruntMovement() {
     }
     if (m_arrivalState == 0x11) {
         CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_038;
-        if (slot != 0 && GruntDropReady029b40(this) == 0) {
+        if (slot != 0 && slot->ValidateUnitPath(reinterpret_cast<i32>(this)) == 0) {
             SetEntrancePos(1, 1);
             return 0;
         }
